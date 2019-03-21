@@ -23,11 +23,12 @@ from zerver.models import (
 from zerver.lib.actions import ensure_stream
 
 from zerver.lib.email_mirror import (
-    process_message, process_stream_message, ZulipEmailForwardError,
+    process_message, process_stream_message,
     create_missed_message_address,
     get_missed_message_token_from_address,
     strip_from_subject,
     is_forwarded,
+    ZulipEmailForwardError,
 )
 
 from zerver.lib.email_mirror_helpers import (
@@ -58,54 +59,46 @@ class TestEncodeDecode(ZulipTestCase):
         email_address = encode_email_address(stream)
         self.assertTrue(email_address.startswith('dev-help'))
         self.assertTrue(email_address.endswith('@testserver'))
-        tup = decode_email_address(email_address)
-        assert tup is not None
-        token, show_sender = tup
+        token, show_sender = decode_email_address(email_address)
         self.assertFalse(show_sender)
         self.assertEqual(token, stream.email_token)
 
         parts = email_address.split('@')
         parts[0] += "+show-sender"
         email_address_show = '@'.join(parts)
-        tup = decode_email_address(email_address_show)
-        assert tup is not None
-        token, show_sender = tup
+        token, show_sender = decode_email_address(email_address_show)
         self.assertTrue(show_sender)
         self.assertEqual(token, stream.email_token)
 
         email_address_dots = email_address.replace('+', '.')
-        tup = decode_email_address(email_address_dots)
-        assert tup is not None
-        token, show_sender = tup
+        token, show_sender = decode_email_address(email_address_dots)
         self.assertFalse(show_sender)
         self.assertEqual(token, stream.email_token)
 
         email_address_dots_show = email_address_show.replace('+', '.')
-        tup = decode_email_address(email_address_dots_show)
-        assert tup is not None
-        token, show_sender = tup
+        token, show_sender = decode_email_address(email_address_dots_show)
         self.assertTrue(show_sender)
         self.assertEqual(token, stream.email_token)
 
         email_address = email_address.replace('@testserver', '@zulip.org')
         email_address_show = email_address_show.replace('@testserver', '@zulip.org')
-        self.assertEqual(decode_email_address(email_address), None)
-        self.assertEqual(decode_email_address(email_address_show), None)
+        with self.assertRaises(ZulipEmailForwardError):
+            decode_email_address(email_address)
+
+        with self.assertRaises(ZulipEmailForwardError):
+            decode_email_address(email_address_show)
 
         with self.settings(EMAIL_GATEWAY_EXTRA_PATTERN_HACK='@zulip.org'):
-            tup = decode_email_address(email_address)
-            assert tup is not None
-            token, show_sender = tup
+            token, show_sender = decode_email_address(email_address)
             self.assertFalse(show_sender)
             self.assertEqual(token, stream.email_token)
 
-            tup = decode_email_address(email_address_show)
-            assert tup is not None
-            token, show_sender = tup
+            token, show_sender = decode_email_address(email_address_show)
             self.assertTrue(show_sender)
             self.assertEqual(token, stream.email_token)
 
-        self.assertEqual(decode_email_address('bogus'), None)
+        with self.assertRaises(ZulipEmailForwardError):
+            decode_email_address('bogus')
 
     # Test stream name encoding changes introduced due to
     # https://github.com/zulip/zulip/issues/9840
@@ -116,16 +109,13 @@ class TestEncodeDecode(ZulipTestCase):
         email_address = encode_email_address(stream)
 
         msg_string = get_email_gateway_message_string_from_address(email_address)
-        assert msg_string is not None
         parts = msg_string.split('+')
         # Stream name should be completely stripped to '', so msg_string
         # should only have the email_token in it.
         self.assertEqual(len(parts), 1)
 
         # Correctly decode the resulting address that doesn't have the stream name:
-        tup = decode_email_address(email_address)
-        assert tup is not None
-        token, show_sender = tup
+        token, show_sender = decode_email_address(email_address)
         self.assertFalse(show_sender)
         self.assertEqual(token, stream.email_token)
 
@@ -140,9 +130,7 @@ class TestEncodeDecode(ZulipTestCase):
         stream_to_address = stream_to_address.replace("denmark", "Some_name")
 
         # get the email_token:
-        tup = decode_email_address(stream_to_address)
-        assert tup is not None
-        token = tup[0]
+        token = decode_email_address(stream_to_address)[0]
         self.assertEqual(token, stream.email_token)
 
 class TestEmailMirrorLibrary(ZulipTestCase):
@@ -679,9 +667,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
         # get the email_token:
-        tup = decode_email_address(stream_to_address)
-        assert tup is not None
-        token = tup[0]
+        token = decode_email_address(stream_to_address)[0]
         stream_to_address = stream_to_address.replace(token, "Wrong_token")
 
         result = self.send_offline_message(stream_to_address, self.example_email('hamlet'))
