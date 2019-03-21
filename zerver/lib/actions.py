@@ -2242,6 +2242,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             stream = validate_stream_id_with_pm_notification(stream_id, realm, sender)
         else:
             stream = addressee.stream()
+        assert stream is not None
 
         recipient = get_stream_recipient(stream.id)
 
