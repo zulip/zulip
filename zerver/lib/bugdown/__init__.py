@@ -686,6 +686,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return match.group(2)
 
+    def youtube_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
+        title = extracted_data.get("title")
+        if title is not None:
+            return "YouTube - {}".format(title)
+        return None
+
     def youtube_image(self, url: str) -> Optional[str]:
         yt_id = self.youtube_id(url)
 
@@ -1023,13 +1029,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 div.set("class", "inline-preview-twitter")
                 div.insert(0, twitter_data)
                 continue
-            youtube = self.youtube_image(url)
-            if youtube is not None:
-                yt_id = self.youtube_id(url)
-                add_a(root, youtube, url, None, None,
-                      "youtube-video message_inline_image",
-                      yt_id, already_thumbnailed=True)
-                continue
 
             db_data = self.markdown.zulip_db_data
             if db_data and db_data['sent_by_bot']:
@@ -1043,7 +1042,18 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             except NotFoundInCache:
                 self.markdown.zulip_message.links_for_preview.add(url)
                 continue
+
             if extracted_data:
+                youtube = self.youtube_image(url)
+                if youtube is not None:
+                    yt_id = self.youtube_id(url)
+                    yt_title = self.youtube_title(extracted_data)
+                    add_a(root, youtube, url, yt_title, None,
+                          "youtube-video message_inline_image",
+                          yt_id, already_thumbnailed=True)
+                    found_url.family.child.text = yt_title
+                    continue
+
                 vm_id = self.vimeo_id(url)
                 if vm_id is not None:
                     vimeo_image = extracted_data.get('image')
