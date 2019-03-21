@@ -9,8 +9,8 @@ from email.mime.text import MIMEText
 from django.conf import settings
 from django.core.management.base import CommandParser
 
-from zerver.lib.actions import encode_email_address
 from zerver.lib.email_mirror import mirror_email_message
+from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.management import ZulipBaseCommand
 
 from zerver.models import Realm, get_stream, get_realm

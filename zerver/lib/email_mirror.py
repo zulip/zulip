@@ -9,10 +9,11 @@ import email.message as message
 
 from django.conf import settings
 
-from zerver.lib.actions import decode_email_address, get_email_gateway_message_string_from_address, \
-    internal_send_message, internal_send_private_message, \
+from zerver.lib.actions import internal_send_message, internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
     truncate_body, truncate_topic
+from zerver.lib.email_mirror_helpers import decode_email_address, \
+    get_email_gateway_message_string_from_address
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
@@ -58,7 +59,6 @@ def log_and_report(email_message: message.Message, error_message: str, debug_inf
 
     logger.error(scrubbed_error)
     report_to_zulip(scrubbed_error)
-
 
 # Temporary missed message addresses
 
