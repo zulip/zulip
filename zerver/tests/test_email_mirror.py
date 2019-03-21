@@ -359,6 +359,29 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
             exception_message = str(e)
         self.assertEqual(exception_message, "Unable to find plaintext or HTML message body")
 
+    def test_receive_stream_email_messages_empty_body_after_stripping(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        stream_to_address = encode_email_address(stream)
+        headers = {}
+        headers['Reply-To'] = self.example_email('othello')
+
+        # empty body
+        incoming_valid_message = MIMEText('-- \nFooter')
+
+        incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.content, "(No email body)")
+
 class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self) -> None:
 
