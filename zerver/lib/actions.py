@@ -4957,6 +4957,10 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
     notify_invites_changed(multiuse_invite.referred_by)
 
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
+    # These are two structurally for the caller's code path.
+    assert prereg_user.referred_by is not None
+    assert prereg_user.realm is not None
+
     check_invite_limit(prereg_user.referred_by.realm, 1)
 
     prereg_user.invited_at = timezone_now()
