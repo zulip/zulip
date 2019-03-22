@@ -1664,13 +1664,7 @@ class BugdownTest(ZulipTestCase):
         msg = "https://github.com/zulip/zulip/commit/a47edd4fc8a1b115e979bef6fc372ddf360cdcef"
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="https://github.com/zulip/zulip/commit/a47edd4fc8a1b115e979bef6fc372ddf360cdcef" target="_blank" title="https://github.com/zulip/zulip/commit/a47edd4fc8a1b115e979bef6fc372ddf360cdcef">zulip/zulip@a47edd4</a></p>'
-        )
-
-        msg = "https://github.com/zulip/zulip/pull/11922/commits/623ee15beef4bd8745e9f4746fcc11093909dcc3"
-        self.assertEqual(
-            bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="https://github.com/zulip/zulip/pull/11922/commits/623ee15beef4bd8745e9f4746fcc11093909dcc3" target="_blank" title="https://github.com/zulip/zulip/pull/11922/commits/623ee15beef4bd8745e9f4746fcc11093909dcc3">zulip/zulip@623ee15</a></p>'
+            '<p><a href="https://github.com/zulip/zulip/commit/a47edd4fc8a1b115e979bef6fc372ddf360cdcef" target="_blank" title="https://github.com/zulip/zulip/commit/a47edd4fc8a1b115e979bef6fc372ddf360cdcef">zulip/zulip@a47edd4fc8</a></p>'
         )
 
 class BugdownApiTests(ZulipTestCase):

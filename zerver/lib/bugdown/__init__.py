@@ -1379,8 +1379,8 @@ class GithubLink(CompiledPattern):
 
         if artifact is None or artifact_id is None:
             return url_to_a(db_data, url, shortened_repo_url)
-        elif artifact == 'commit' or artifact == 'commits':
-            return url_to_a(db_data, url, '{0}@{1}'.format(shortened_repo_url, artifact_id[0:7]))
+        elif artifact == 'commit':
+            return url_to_a(db_data, url, '{0}@{1}'.format(shortened_repo_url, artifact_id[0:10]))
         elif artifact == 'pull' or artifact == 'issues':
             return url_to_a(db_data, url, '{0}#{1}'.format(shortened_repo_url, artifact_id))
         else:
@@ -1879,18 +1879,18 @@ class Bugdown(markdown.Markdown):
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
         reg = markdown.util.Registry()
-        reg.register(BacktickPattern(BACKTICK_RE), 'backtick', 110)
-        reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 105)
-        reg.register(UserMentionPattern(mention.find_mentions, self), 'usermention', 100)
-        reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 95)
-        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 90)
-        reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 85)
-        reg.register(ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'), 'modal_link', 80)
+        reg.register(BacktickPattern(BACKTICK_RE), 'backtick', 105)
+        reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 100)
+        reg.register(UserMentionPattern(mention.find_mentions, self), 'usermention', 95)
+        reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 90)
+        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 85)
+        reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
+        reg.register(ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'), 'modal_link', 75)
         # Note that !gravatar syntax should be deprecated long term.
-        reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 75)
-        reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 70)
-        reg.register(AtomicLinkPattern(get_link_re(), self), 'link', 65)
-        reg.register(GithubLink(get_compiled_github_link_regex(), self), 'github_link', 60)
+        reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
+        reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
+        reg.register(AtomicLinkPattern(get_link_re(), self), 'link', 60)
+        reg.register(GithubLink(get_compiled_github_link_regex(), self), 'github_link', 56)
         reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
         # Reserve priority 45-54 for Realm Filters
         reg = self.register_realm_filters(reg)
