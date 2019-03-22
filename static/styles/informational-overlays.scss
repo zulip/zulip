@@ -73,10 +73,13 @@
     // aligns table name with dividing line
 }
 
-.hotkeys_table .hotkey {
+.hotkeys_table td:not(.definition) {
     text-align: center;
-    font-weight: bold;
     white-space: nowrap;
+}
+
+.hotkeys_table .hotkey {
+    font-weight: bold;
 }
 
 #keyboard-shortcuts table {
