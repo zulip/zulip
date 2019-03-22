@@ -30,6 +30,8 @@ from zerver.lib.email_mirror import (
     strip_from_subject,
     is_forwarded,
     filter_footer,
+    log_and_report,
+    redact_email_address,
     ZulipEmailForwardError,
 )
 
@@ -919,4 +921,126 @@ class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
         with mock.patch("zerver.lib.email_mirror.log_and_report") as mock_log_and_report:
             process_message(incoming_valid_message)
             mock_log_and_report.assert_called_with(incoming_valid_message,
-                                                   "Missing recipient in mirror email", {})
+                                                   "Missing recipient in mirror email", None)
+
+class TestEmailMirrorLogAndReport(ZulipTestCase):
+    def test_log_and_report(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "errors")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+
+        address_parts = stream_to_address.split('@')
+        scrubbed_address = 'X'*len(address_parts[0]) + '@' + address_parts[1]
+
+        incoming_valid_message = MIMEText('Test Body')
+        incoming_valid_message['Subject'] = "Test Subject"
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+
+        log_and_report(incoming_valid_message, "test error message", stream_to_address)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual("email mirror error", message.topic_name())
+
+        msg_content = message.content.strip('~').strip()
+        expected_content = "Sender: {}\nTo: {} <Address to stream id: {}>\ntest error message"
+        expected_content = expected_content.format(self.example_email('hamlet'), scrubbed_address,
+                                                   stream.id)
+        self.assertEqual(msg_content, expected_content)
+
+        log_and_report(incoming_valid_message, "test error message", None)
+        message = most_recent_message(user_profile)
+        self.assertEqual("email mirror error", message.topic_name())
+        msg_content = message.content.strip('~').strip()
+        expected_content = "Sender: {}\nTo: No recipient found\ntest error message"
+        expected_content = expected_content.format(self.example_email('hamlet'))
+        self.assertEqual(msg_content, expected_content)
+
+    @mock.patch('zerver.lib.email_mirror.logger.error')
+    def test_log_and_report_no_errorbot(self, mock_error: mock.MagicMock) -> None:
+        with self.settings(ERROR_BOT=None):
+            incoming_valid_message = MIMEText('Test Body')
+            incoming_valid_message['Subject'] = "Test Subject"
+            incoming_valid_message['From'] = self.example_email('hamlet')
+            log_and_report(incoming_valid_message, "test error message", None)
+
+            expected_content = "Sender: {}\nTo: No recipient found\ntest error message"
+            expected_content = expected_content.format(self.example_email('hamlet'))
+            mock_error.assert_called_with(expected_content)
+
+    def test_redact_email_address(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "errors")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        # Test for a stream address:
+        stream_to_address = encode_email_address(stream)
+        stream_address_parts = stream_to_address.split('@')
+        scrubbed_stream_address = 'X'*len(stream_address_parts[0]) + '@' + stream_address_parts[1]
+
+        error_message = "test message {}"
+        error_message = error_message.format(stream_to_address)
+        expected_message = "test message {} <Address to stream id: {}>"
+        expected_message = expected_message.format(scrubbed_stream_address, stream.id)
+
+        redacted_message = redact_email_address(error_message)
+        self.assertEqual(redacted_message, expected_message)
+
+        # Test for an invalid email address:
+        invalid_address = "invalid@testserver"
+        error_message = "test message {}"
+        error_message = error_message.format(invalid_address)
+        expected_message = "test message {} <Invalid address>"
+        expected_message = expected_message.format('XXXXXXX@testserver')
+
+        redacted_message = redact_email_address(error_message)
+        self.assertEqual(redacted_message, expected_message)
+
+        # Test for a missed message address:
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "test_redact_email_message",
+                "client": "test suite",
+                "to": ujson.dumps([self.example_email('cordelia'), self.example_email('iago')])
+            })
+        self.assert_json_success(result)
+
+        cordelia_profile = self.example_user('cordelia')
+        user_message = most_recent_usermessage(cordelia_profile)
+        mm_address = create_missed_message_address(user_profile, user_message.message)
+
+        error_message = "test message {}"
+        error_message = error_message.format(mm_address)
+        expected_message = "test message {} <Missed message address>"
+        expected_message = expected_message.format('X'*34 + '@testserver')
+
+        redacted_message = redact_email_address(error_message)
+        self.assertEqual(redacted_message, expected_message)
+
+        # Test if redacting correctly scrubs multiple occurrences of the address:
+        error_message = "test message first occurrence: {} second occurrence: {}"
+        error_message = error_message.format(stream_to_address, stream_to_address)
+        expected_message = "test message first occurrence: {} <Address to stream id: {}>"
+        expected_message += " second occurrence: {} <Address to stream id: {}>"
+        expected_message = expected_message.format(scrubbed_stream_address, stream.id,
+                                                   scrubbed_stream_address, stream.id)
+
+        redacted_message = redact_email_address(error_message)
+        self.assertEqual(redacted_message, expected_message)
+
+        # Test with EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
+        with self.settings(EMAIL_GATEWAY_EXTRA_PATTERN_HACK='@zulip.org'):
+            stream_to_address = stream_to_address.replace('@testserver', '@zulip.org')
+            scrubbed_stream_address = scrubbed_stream_address.replace('@testserver', '@zulip.org')
+            error_message = "test message {}"
+            error_message = error_message.format(stream_to_address)
+            expected_message = "test message {} <Address to stream id: {}>"
+            expected_message = expected_message.format(scrubbed_stream_address, stream.id)
+
+            redacted_message = redact_email_address(error_message)
+            self.assertEqual(redacted_message, expected_message)
