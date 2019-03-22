@@ -20,6 +20,15 @@ from typing import Optional
 # These settings MUST be set in production. In a development environment,
 # sensible default values will be used.
 
+# The email address for the person or team who maintains the Zulip
+# installation. Note that this is a public-facing email address; it may
+# appear on 404 pages, is used as the sender's address for many automated
+# emails, and is advertised as a support address. An email address like
+# support@example.com is totally reasonable, as is admin@example.com.
+# Do not put a display name; e.g. 'support@example.com', not
+# 'Zulip Support <support@example.com>'.
+ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
+
 # The user-accessible Zulip hostname for this installation, e.g.
 # zulip.example.com.  This should match what users will put in their
 # web browser.  If you want to allow multiple hostnames, add the rest
@@ -29,14 +38,18 @@ from typing import Optional
 # EXTERNAL_HOST to e.g. zulip.example.com:1234 here.
 EXTERNAL_HOST = 'zulip.example.com'
 
-# The email address for the person or team who maintains the Zulip
-# installation. Note that this is a public-facing email address; it may
-# appear on 404 pages, is used as the sender's address for many automated
-# emails, and is advertised as a support address. An email address like
-# support@example.com is totally reasonable, as is admin@example.com.
-# Do not put a display name; e.g. 'support@example.com', not
-# 'Zulip Support <support@example.com>'.
-ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
+# Alternative hostnames.  A comma-separated list of strings
+# representing the host/domain names that your users can enter in
+# their browsers to access Zulip.  This is a security measure; for
+# details, see the Django documentation:
+# https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
+#
+# Zulip automatically adds to this list 'localhost', '127.0.0.1', and
+# patterns representing EXTERNAL_HOST and subdomains of it.  If you are
+# accessing your server by other hostnames, list them here.
+#
+# Note that these should just be hostnames, without port numbers.
+#ALLOWED_HOSTS = ['zulip-alias.example.com', '192.0.2.1']
 
 
 ################
@@ -64,10 +77,6 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 #EMAIL_USE_TLS = True
 #EMAIL_PORT = 587
 
-
-################################
-# Optional settings.
-
 # The noreply address to be used as the sender for certain generated
 # emails.  Messages sent to this address could contain sensitive user
 # data and should not be delivered anywhere.  The default is
@@ -86,18 +95,6 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # this setting.
 # The address should have no newlines.
 #PHYSICAL_ADDRESS = ''
-
-# A comma-separated list of strings representing the host/domain names
-# that your users can enter in their browsers to access Zulip.
-# This is a security measure; for details, see the Django documentation:
-# https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
-#
-# Zulip automatically adds to this list 'localhost', '127.0.0.1', and
-# patterns representing EXTERNAL_HOST and subdomains of it.  If you are
-# accessing your server by other hostnames, list them here.
-#
-# Note that these should just be hostnames, without port numbers.
-#ALLOWED_HOSTS = ['zulip-alias.example.com', '192.0.2.1']
 
 
 ################
