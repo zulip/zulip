@@ -52,10 +52,6 @@ def log_and_report(email_message: message.Message, error_message: str, debug_inf
         scrubbed_error = "Stream: %s\n%s" % (redact_stream(debug_info["to"]),
                                              scrubbed_error)
 
-    if "stream" in debug_info:
-        scrubbed_error = "Realm: %s\n%s" % (debug_info["stream"].realm.string_id,
-                                            scrubbed_error)
-
     logger.error(scrubbed_error)
     report_to_zulip(scrubbed_error)
 
@@ -335,8 +331,7 @@ def is_forwarded(subject: str) -> bool:
     reg = r"([\[\(] *)?\b(FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
     return bool(re.match(reg, subject, flags=re.IGNORECASE))
 
-def process_stream_message(to: str, message: message.Message,
-                           debug_info: Dict[str, Any]) -> None:
+def process_stream_message(to: str, message: message.Message) -> None:
     subject_header = str(make_header(decode_header(message.get("Subject", ""))))
     subject = strip_from_subject(subject_header) or "(no topic)"
 
@@ -344,7 +339,6 @@ def process_stream_message(to: str, message: message.Message,
     # Don't remove quotations if message is forwarded:
     remove_quotations = not is_forwarded(subject_header)
     body = construct_zulip_body(message, stream.realm, show_sender, remove_quotations)
-    debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
     logger.info("Successfully processed email to %s (%s)" % (
         stream.name, stream.realm.string_id))
@@ -367,7 +361,7 @@ def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_c
         if is_missed_message_address(to):
             process_missed_message(to, message, pre_checked)
         else:
-            process_stream_message(to, message, debug_info)
+            process_stream_message(to, message)
     except ZulipEmailForwardError as e:
         if isinstance(e, ZulipEmailForwardUserError):
             # TODO: notify sender of error, retry if appropriate.
