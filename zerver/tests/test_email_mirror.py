@@ -29,6 +29,7 @@ from zerver.lib.email_mirror import (
     get_missed_message_token_from_address,
     strip_from_subject,
     is_forwarded,
+    is_missed_message_address,
     filter_footer,
     log_and_report,
     redact_email_address,
@@ -138,31 +139,30 @@ class TestEncodeDecode(ZulipTestCase):
         token = decode_email_address(stream_to_address)[0]
         self.assertEqual(token, stream.email_token)
 
-class TestEmailMirrorLibrary(ZulipTestCase):
+class TestGetMissedMessageToken(ZulipTestCase):
     def test_get_missed_message_token(self) -> None:
+        with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
+            address = 'mm' + ('x' * 32) + '@example.com'
+            self.assertTrue(is_missed_message_address(address))
+            token = get_missed_message_token_from_address(address)
+            self.assertEqual(token, 'x' * 32)
 
-        def get_token(address: str) -> str:
-            with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
-                return get_missed_message_token_from_address(address)
+            # This next section was a bug at one point--we'd treat ordinary
+            # user addresses that happened to begin with "mm" as being
+            # the special mm+32chars tokens.
+            address = 'mmathers@example.com'
+            self.assertFalse(is_missed_message_address(address))
+            with self.assertRaises(ZulipEmailForwardError):
+                get_missed_message_token_from_address(address)
 
-        address = 'mm' + ('x' * 32) + '@example.com'
-        token = get_token(address)
-        self.assertEqual(token, 'x' * 32)
-
-        # This next section was a bug at one point--we'd treat ordinary
-        # user addresses that happened to begin with "mm" as being
-        # the special mm+32chars tokens.
-        address = 'mmathers@example.com'
-        with self.assertRaises(ZulipEmailForwardError):
-            get_token(address)
-
-        # Now test the case where we our address does not match the
-        # EMAIL_GATEWAY_PATTERN.
-        # This used to crash in an ugly way; we want to throw a proper
-        # exception.
-        address = 'alice@not-the-domain-we-were-expecting.com'
-        with self.assertRaises(ZulipEmailForwardError):
-            get_token(address)
+            # Now test the case where we our address does not match the
+            # EMAIL_GATEWAY_PATTERN.
+            # This used to crash in an ugly way; we want to throw a proper
+            # exception.
+            address = 'alice@not-the-domain-we-were-expecting.com'
+            self.assertFalse(is_missed_message_address(address))
+            with self.assertRaises(ZulipEmailForwardError):
+                get_missed_message_token_from_address(address)
 
 class TestFilterFooter(ZulipTestCase):
     def test_filter_footer(self) -> None:
