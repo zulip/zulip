@@ -907,3 +907,16 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "Email fixture 1.txt body")
+
+class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
+    def test_process_message_no_valid_recipient(self) -> None:
+        incoming_valid_message = MIMEText('Test Body')
+        incoming_valid_message['Subject'] = "Test Subject"
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = "address@wrongdomain, address@notzulip"
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        with mock.patch("zerver.lib.email_mirror.log_and_report") as mock_log_and_report:
+            process_message(incoming_valid_message)
+            mock_log_and_report.assert_called_with(incoming_valid_message,
+                                                   "Missing recipient in mirror email", {})
