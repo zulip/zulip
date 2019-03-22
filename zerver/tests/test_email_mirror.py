@@ -24,7 +24,7 @@ from zerver.models import (
 from zerver.lib.actions import ensure_stream
 
 from zerver.lib.email_mirror import (
-    process_message, process_stream_message, process_missed_message,
+    process_message, process_missed_message,
     create_missed_message_address,
     get_missed_message_token_from_address,
     strip_from_subject,
@@ -52,7 +52,7 @@ import mock
 import os
 from django.conf import settings
 
-from typing import Any, Callable, Dict, Mapping, Union, Optional
+from typing import Any, Callable, Mapping, Union, Optional
 
 class TestEncodeDecode(ZulipTestCase):
     def test_encode_decode(self) -> None:
@@ -369,17 +369,13 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self) -> None:
-
         # build dummy messages for stream
         # test message with empty body is not sent
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
-
         stream_to_address = encode_email_address(stream)
-        headers = {}
-        headers['Reply-To'] = self.example_email('othello')
 
         # empty body
         incoming_valid_message = MIMEText('')
@@ -389,30 +385,16 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        exception_message = ""
-        debug_info = {}  # type: Dict[str, Any]
-
-        # process_message eats the exception & logs an error which can't be parsed here
-        # so calling process_stream_message directly
-        try:
-            process_stream_message(str(incoming_valid_message['To']),  # need to insert str() or mypy throws type error
-                                   incoming_valid_message,
-                                   debug_info)
-        except ZulipEmailForwardError as e:
-            # empty body throws exception
-            exception_message = str(e)
-        self.assertEqual(exception_message, "Email has no nonempty body sections; ignoring.")
+        with mock.patch('zerver.lib.email_mirror.logging.warning') as mock_warn:
+            process_message(incoming_valid_message)
+            mock_warn.assert_called_with("Email has no nonempty body sections; ignoring.")
 
     def test_receive_stream_email_messages_no_textual_body(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
-
         stream_to_address = encode_email_address(stream)
-        headers = {}
-        headers['Reply-To'] = self.example_email('othello')
-
         # No textual body
         incoming_valid_message = MIMEMultipart()
         with open(os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), 'rb') as f:
@@ -423,20 +405,9 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        exception_message = ""
-        debug_info = {}  # type: Dict[str, Any]
-
-        # process_message eats the exception & logs an error which can't be parsed here
-        # so calling process_stream_message directly
-        try:
-            with mock.patch('logging.warning'):
-                process_stream_message(str(incoming_valid_message['To']),  # need to insert str() or mypy throws type error
-                                       incoming_valid_message,
-                                       debug_info)
-        except ZulipEmailForwardError as e:
-            # empty body throws exception
-            exception_message = str(e)
-        self.assertEqual(exception_message, "Unable to find plaintext or HTML message body")
+        with mock.patch('zerver.lib.email_mirror.logging.warning') as mock_warn:
+            process_message(incoming_valid_message)
+            mock_warn.assert_called_with("Unable to find plaintext or HTML message body")
 
     def test_receive_stream_email_messages_empty_body_after_stripping(self) -> None:
         user_profile = self.example_user('hamlet')
