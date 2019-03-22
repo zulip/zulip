@@ -1158,10 +1158,20 @@ input#terminal:checked ~ #tab-terminal {
     padding-top: 10px;
 }
 
-.integration-instructions {
-    margin-left: 220px;
-}
+@media (min-width: 768px) {
+    .integration-instructions {
+        margin-left: 220px;
+    }
 
+    #integration-list-link {
+        position: absolute;
+        top: 200px;
+        left: 30px;
+        text-align: center;
+        display: none;
+        margin-left: 5px;
+    }
+}
 .api-page-header,
 .authors-page-header,
 .integrations-page-header,
@@ -1233,8 +1243,6 @@ input#terminal:checked ~ #tab-terminal {
 
 #integration-list-link {
     position: absolute;
-    top: 200px;
-    left: 30px;
     text-align: center;
     display: none;
     margin-left: 5px;
