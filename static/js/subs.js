@@ -828,12 +828,6 @@ exports.sub_or_unsub = function (sub) {
 
 
 exports.initialize = function () {
-    stream_list.create_initial_sidebar_rows();
-
-    // We build the stream_list now.  It may get re-built again very shortly
-    // when new messages come in, but it's fairly quick.
-    stream_list.build_stream_list();
-
     add_email_hint_handler();
 
     $("#subscriptions_table").on("click", ".create_stream_button", function (e) {

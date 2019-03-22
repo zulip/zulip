@@ -468,6 +468,15 @@ function actually_update_streams_for_search() {
 var update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
 exports.initialize = function () {
+    stream_list.create_initial_sidebar_rows();
+
+    // We build the stream_list now.  It may get re-built again very shortly
+    // when new messages come in, but it's fairly quick.
+    stream_list.build_stream_list();
+    exports.set_event_handlers();
+};
+
+exports.set_event_handlers = function () {
     $(document).on('subscription_add_done.zulip', function (event) {
         exports.create_sidebar_row(event.sub);
         exports.build_stream_list();

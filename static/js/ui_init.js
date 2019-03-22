@@ -286,6 +286,7 @@ exports.initialize_everything = function () {
     stream_data.initialize();
     muting.initialize();
     subs.initialize();
+    stream_list.initialize();
     condense.initialize();
     lightbox.initialize();
     click_handlers.initialize();
@@ -324,7 +325,6 @@ exports.initialize_everything = function () {
     emoji_picker.initialize();
     compose_fade.initialize();
     pm_list.initialize();
-    stream_list.initialize();
     topic_list.initialize();
     topic_zoom.initialize();
     drafts.initialize();

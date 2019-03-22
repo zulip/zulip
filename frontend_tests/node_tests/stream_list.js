@@ -280,7 +280,7 @@ run_test('zoom_in_and_zoom_out', () => {
         f.call(elem(stream_li1));
         f.call(elem(stream_li2));
     };
-    stream_list.initialize();
+    stream_list.set_event_handlers();
 
     stream_list.zoom_in_topics({stream_id: 42});
 
@@ -337,7 +337,7 @@ run_test('narrowing', () => {
 
     assert(!$('<devel sidebar row html>').hasClass('active-filter'));
 
-    stream_list.initialize();
+    stream_list.set_event_handlers();
 
     var filter;
 
