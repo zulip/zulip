@@ -110,6 +110,8 @@ cd /home/zulip/deployments/current
 This could take several minutes to run, depending on how much data you're
 importing.
 
+[upgrade-zulip-from-git]: ../production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
+
 **Import options**
 
 The commands above create an imported organization on the root domain
