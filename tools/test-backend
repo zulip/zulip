@@ -83,7 +83,6 @@ not_yet_fully_covered = {path for target in [
     'zerver/lib/camo.py',
     'zerver/lib/debug.py',
     'zerver/lib/digest.py',
-    'zerver/lib/email_mirror.py',
     'zerver/lib/error_notify.py',
     'zerver/lib/export.py',
     'zerver/lib/feedback.py',
