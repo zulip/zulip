@@ -22,6 +22,7 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_user,
     do_send_messages,
+    do_update_message,
     do_set_realm_property,
     extract_recipients,
     get_active_presence_idle_user_ids,
@@ -2801,6 +2802,77 @@ class EditMessageTest(ZulipTestCase):
         message.save()
         self.login(self.example_email("cordelia"))
         do_edit_message_assert_success(id_, 'D')
+
+    @mock.patch("zerver.lib.actions.send_event")
+    def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Macbeth"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(hamlet, stream_name)
+        self.login(hamlet.email)
+        message_id = self.send_stream_message(hamlet.email, stream_name, "Where am I?")
+
+        self.login(cordelia.email)
+        self.subscribe(cordelia, stream_name)
+        message = Message.objects.get(id=message_id)
+
+        def do_update_message_topic_success(user_profile: UserProfile, message: Message,
+                                            topic_name: str, users_to_be_notified: List[Dict[str, Any]]) -> None:
+            do_update_message(
+                user_profile=user_profile,
+                message=message,
+                topic_name=topic_name,
+                propagate_mode="change_later",
+                content=None,
+                rendered_content=None,
+                prior_mention_user_ids=set(),
+                mention_user_ids=set()
+            )
+
+            mock_send_event.assert_called_with(mock.ANY, mock.ANY, users_to_be_notified)
+
+        # Returns the users that need to be notified when a message topic is changed
+        def notify(user_id: int) -> Dict[str, Any]:
+            um = UserMessage.objects.get(message=message_id)
+            if um.user_profile_id == user_id:
+                return {
+                    "id": user_id,
+                    "flags": um.flags_list()
+                }
+
+            else:
+                return {
+                    "id": user_id,
+                    "flags": ["read"]
+                }
+
+        users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id]))
+        # Edit topic of a message sent before Cordelia subscribed the stream
+        do_update_message_topic_success(cordelia, message, "Othello eats apple", users_to_be_notified)
+
+        # If Cordelia is long-term idle, she doesn't get a notification.
+        cordelia.long_term_idle = True
+        cordelia.save()
+        users_to_be_notified = list(map(notify, [hamlet.id]))
+        do_update_message_topic_success(cordelia, message, "Another topic idle", users_to_be_notified)
+        cordelia.long_term_idle = False
+        cordelia.save()
+
+        # Even if Hamlet unsubscribes the stream, he should be notified when the topic is changed
+        # because he has a UserMessage row.
+        self.unsubscribe(hamlet, stream_name)
+        users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id]))
+        do_update_message_topic_success(cordelia, message, "Another topic", users_to_be_notified)
+
+        # Hamlet subscribes to the stream again and Cordelia unsubscribes, then Hamlet changes
+        # the message topic. Cordelia won't receive any updates when a message on that stream is
+        # changed because she is not a subscriber and doesn't have a UserMessage row.
+        self.subscribe(hamlet, stream_name)
+        self.unsubscribe(cordelia, stream_name)
+        self.login(hamlet.email)
+        users_to_be_notified = list(map(notify, [hamlet.id]))
+        do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
 
     def test_propagate_topic_forward(self) -> None:
         self.login(self.example_email("hamlet"))
