@@ -81,7 +81,7 @@ The Zulip server you're importing into needs to be running the same
 version of Zulip as the server you exported from, so that the same
 formats are consistent.  For exports from zulipchat.com, usually this
 means you need to upgrade your Zulip server to the latest `master`
-branch, using [upgrade-zulip-from-git][upgrade-zulip-from-git].
+branch, using [upgrade-zulip-from-git](https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository).
 
 First [install a new Zulip server](../production/install.html),
 skipping "Step 3: Create a Zulip organization, and log in" (you'll
