@@ -4260,9 +4260,11 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     }  # type: Dict[str, Any]
     changed_messages = [message]
 
+    stream_being_edited = None
     if message.is_stream_message():
         stream_id = message.recipient.type_id
-        event['stream_name'] = Stream.objects.get(id=stream_id).name
+        stream_being_edited = Stream.objects.get(id=stream_id)
+        event['stream_name'] = stream_being_edited.name
 
     ums = UserMessage.objects.filter(message=message.id)
 
@@ -4365,7 +4367,31 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
             'id': um.user_profile_id,
             'flags': um.flags_list()
         }
-    send_event(user_profile.realm, event, list(map(user_info, ums)))
+
+    def subscriber_info(user_id: int) -> Dict[str, Any]:
+        return {
+            'id': user_id,
+            'flags': ['read']
+        }
+
+    users_to_be_notified = list(map(user_info, ums))
+    if stream_being_edited is not None:
+        if stream_being_edited.is_history_public_to_subscribers:
+            subscribers = get_active_subscriptions_for_stream_id(stream_id)
+            # Remove duplicates by excluding the id of users already in users_to_be_notified list.
+            # This is the case where a user has a UserMessage row and is a Subscriber
+            subscribers = subscribers.exclude(user_profile_id__in=[um.user_profile_id for um in ums])
+            # All users that are subscribed to the stream must be notified when a message is edited
+            subscribers_ids = [user.user_profile_id for user in subscribers]
+            users_to_be_notified += list(map(subscriber_info, subscribers_ids))
+
+    # Note: We don't send the update event to users who are not subscribed to this
+    # stream and don't have a UserMessage row. This means if a non-subscriber is
+    # viewing the narrow, they won't get a real-time updates. This is a balance
+    # between sending message-edit notifications for every public stream to every
+    # user (too expansive, and also not what we do for newly sent messages anyway)
+    # and having magical live-updates where possible.
+    send_event(user_profile.realm, event, users_to_be_notified)
     return len(changed_messages)
 
 
