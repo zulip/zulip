@@ -27,8 +27,8 @@ from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode, \
 from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import to_non_negative_int
 
-from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
-    api_calls_left, RateLimitedUser, RateLimiterLockingException
+from zerver.lib.rate_limiter import rate_limit_entity, \
+    api_calls_left, RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 
 from functools import wraps
@@ -746,21 +746,12 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     the rate limit information"""
 
     entity = RateLimitedUser(user, domain=domain)
-    ratelimited, time = is_ratelimited(entity)
+    ratelimited, time = rate_limit_entity(entity)
     request._ratelimit_applied_limits = True
     request._ratelimit_secs_to_freedom = time
     request._ratelimit_over_limit = ratelimited
     # Abort this request if the user is over their rate limits
     if ratelimited:
-        statsd.incr("ratelimiter.limited.%s.%s" % (type(user), user.id))
-        raise RateLimited()
-
-    try:
-        incr_ratelimit(entity)
-    except RateLimiterLockingException:
-        logging.warning("Deadlock trying to incr_ratelimit for %s on %s" % (
-            user.id, request.path))
-        # rate-limit users who are hitting the API so hard we can't update our stats.
         raise RateLimited()
 
     calls_remaining, time_reset = api_calls_left(entity)

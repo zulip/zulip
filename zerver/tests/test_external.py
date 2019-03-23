@@ -109,12 +109,15 @@ class RateLimitTests(ZulipTestCase):
 
             self.assert_json_success(result)
 
-    def test_hit_ratelimiterlockingexception(self) -> None:
+    @mock.patch('zerver.lib.rate_limiter.logger.warning')
+    def test_hit_ratelimiterlockingexception(self, mock_warn: mock.MagicMock) -> None:
         user = self.example_user('cordelia')
         email = user.email
         clear_history(RateLimitedUser(user))
 
-        with mock.patch('zerver.decorator.incr_ratelimit',
+        with mock.patch('zerver.lib.rate_limiter.incr_ratelimit',
                         side_effect=RateLimiterLockingException):
             result = self.send_api_message(email, "some stuff")
             self.assertEqual(result.status_code, 429)
+            mock_warn.assert_called_with("Deadlock trying to incr_ratelimit for RateLimitedUser:Id: %s"
+                                         % (user.id,))
