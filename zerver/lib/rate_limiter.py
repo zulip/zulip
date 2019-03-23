@@ -5,9 +5,11 @@ from typing import List, Optional, Tuple
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
+from zerver.lib.utils import statsd
 
 from zerver.models import UserProfile
 
+import logging
 import redis
 import time
 
@@ -18,6 +20,8 @@ client = get_redis_client()
 rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
 
 KEY_PREFIX = ''
+
+logger = logging.getLogger(__name__)
 
 class RateLimiterLockingException(Exception):
     pass
@@ -34,10 +38,16 @@ class RateLimitedObject:
     def rules(self) -> List[Tuple[int, int]]:
         raise NotImplementedError()
 
+    def __str__(self) -> str:
+        raise NotImplementedError()
+
 class RateLimitedUser(RateLimitedObject):
     def __init__(self, user: UserProfile, domain: str='all') -> None:
         self.user = user
         self.domain = domain
+
+    def __str__(self) -> str:
+        return "Id: {}".format(self.user.id)
 
     def key_fragment(self) -> str:
         return "{}:{}:{}".format(type(self.user), self.user.id, self.domain)
@@ -233,3 +243,21 @@ def incr_ratelimit(entity: RateLimitedObject) -> None:
                 count += 1
 
                 continue
+
+def rate_limit_entity(entity: RateLimitedObject) -> Tuple[bool, float]:
+    # Returns (ratelimited, secs_to_freedom)
+    ratelimited, time = is_ratelimited(entity)
+
+    if ratelimited:
+        statsd.incr("ratelimiter.limited.%s.%s" % (type(entity), str(entity)))
+
+    else:
+        try:
+            incr_ratelimit(entity)
+        except RateLimiterLockingException:
+            logger.warning("Deadlock trying to incr_ratelimit for %s:%s" % (
+                           type(entity).__name__, str(entity)))
+            # rate-limit users who are hitting the API so hard we can't update our stats.
+            ratelimited = True
+
+    return ratelimited, time
