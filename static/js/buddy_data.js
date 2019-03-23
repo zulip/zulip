@@ -153,7 +153,7 @@ exports.my_user_status = function (user_id) {
 exports.user_last_seen_time_status = function (user_id) {
     var status = presence.get_status(user_id);
     if (status === "active") {
-        return i18n.t("Online now");
+        return i18n.t("Active now");
     }
 
     if (page_params.realm_is_zephyr_mirror_realm) {
