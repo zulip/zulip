@@ -237,9 +237,11 @@ class WorkerTest(ZulipTestCase):
 
         self.assertEqual(mock_mirror_email.call_count, 3)
 
+    @patch('zerver.lib.rate_limiter.logger.warning')
     @patch('zerver.worker.queue_processors.mirror_email')
     @override_settings(RATE_LIMITING_MIRROR_REALM_RULES=[(10, 2)])
-    def test_mirror_worker_rate_limiting(self, mock_mirror_email: MagicMock) -> None:
+    def test_mirror_worker_rate_limiting(self, mock_mirror_email: MagicMock,
+                                         mock_warn: MagicMock) -> None:
         fake_client = self.FakeClient()
         realm = get_realm('zulip')
         clear_history(RateLimitedRealmMirror(realm))
@@ -289,11 +291,13 @@ class WorkerTest(ZulipTestCase):
                 self.assertEqual(mock_mirror_email.call_count, 4)
 
                 # If RateLimiterLockingException is thrown, we rate-limit the new message:
-                with patch('zerver.lib.email_mirror.incr_ratelimit',
+                with patch('zerver.lib.rate_limiter.incr_ratelimit',
                            side_effect=RateLimiterLockingException):
                     fake_client.queue.append(('email_mirror', data[0]))
                     worker.start()
                     self.assertEqual(mock_mirror_email.call_count, 4)
+                    expected_warn = "Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip"
+                    mock_warn.assert_called_with(expected_warn)
 
     def test_email_sending_worker_retries(self) -> None:
         """Tests the retry_send_email_failures decorator to make sure it
