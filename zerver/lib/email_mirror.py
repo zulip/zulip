@@ -18,10 +18,9 @@ from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_file
-from zerver.lib.utils import generate_random_token, statsd
+from zerver.lib.utils import generate_random_token
 from zerver.lib.send_email import FromAddress
-from zerver.lib.rate_limiter import RateLimitedObject, RateLimiterLockingException, \
-    is_ratelimited, incr_ratelimit
+from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_entity
 from zerver.lib.exceptions import RateLimited
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
@@ -412,20 +411,12 @@ class RateLimitedRealmMirror(RateLimitedObject):
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_MIRROR_REALM_RULES
 
+    def __str__(self) -> str:
+        return self.realm.string_id
 
 def rate_limit_mirror_by_realm(recipient_realm: Realm) -> None:
-    # Code based on the rate_limit_user function:
     entity = RateLimitedRealmMirror(recipient_realm)
-    ratelimited, time = is_ratelimited(entity)
+    ratelimited = rate_limit_entity(entity)[0]
 
     if ratelimited:
-        statsd.incr("ratelimiter.limited.%s.%s" % (type(recipient_realm),
-                                                   recipient_realm.id))
-        raise RateLimited()
-
-    try:
-        incr_ratelimit(entity)
-    except RateLimiterLockingException:
-        logger.warning("Email mirror rate limiter: Deadlock trying to "
-                       "incr_ratelimit for realm %s" % (recipient_realm.name,))
         raise RateLimited()
