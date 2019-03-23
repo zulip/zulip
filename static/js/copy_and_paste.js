@@ -88,82 +88,14 @@ function copy_handler() {
     //
     // * Otherwise, we want to copy the bodies of all messages that
     //   were partially covered by the selection.
-    //
-    // Firefox and Chrome handle selection of multiple messages
-    // differently. Firefox typically creates multiple ranges for the
-    // selection, whereas Chrome typically creates just one.
-    //
-    // Our goal in the below loop is to compute and be prepared to
-    // analyze the combined range of the selections, and copy their
-    // full content.
 
     var selection = window.getSelection();
-    var i;
-    var range;
-    var ranges = [];
-    var startc;
-    var endc;
-    var initial_end_tr;
-    var start_id;
-    var end_id;
-    var start_data;
-    var end_data;
-    // skip_same_td_check is true whenever we know for a fact that the
-    // selection covers multiple messages (and thus we should no
-    // longer consider letting the browser handle the copy event).
-    var skip_same_td_check = false;
+    var analysis = exports.analyze_selection(selection);
+    var ranges = analysis.ranges;
+    var start_id = analysis.start_id;
+    var end_id = analysis.end_id;
+    var skip_same_td_check = analysis.skip_same_td_check;
     var div = $('<div>');
-
-    for (i = 0; i < selection.rangeCount; i += 1) {
-        range = selection.getRangeAt(i);
-        ranges.push(range);
-
-        startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('.selectable_row, .message_header')[0]), function (row) {
-            return row.next();
-        });
-        if (start_data === undefined) {
-            // Skip any selection sections that don't intersect a message.
-            continue;
-        }
-        if (start_id === undefined) {
-            // start_id is the Zulip message ID of the first message
-            // touched by the selection.
-            start_id = start_data[0];
-        }
-
-        endc = $(range.endContainer);
-        // If the selection ends in the bottom whitespace, we should
-        // act as though the selection ends on the final message.
-        // This handles the issue that Chrome seems to like selecting
-        // the compose_close button when you go off the end of the
-        // last message
-        if (endc.attr('id') === "bottom_whitespace" || endc.attr('id') === "compose_close") {
-            initial_end_tr = $(".message_row:last");
-            // The selection goes off the end of the message feed, so
-            // this is a multi-message selection.
-            skip_same_td_check = true;
-        } else {
-            initial_end_tr = $(endc.parents('.selectable_row')[0]);
-        }
-        end_data = find_boundary_tr(initial_end_tr, function (row) {
-            return row.prev();
-        });
-
-        if (end_data === undefined) {
-            // Skip any selection sections that don't intersect a message.
-            continue;
-        }
-        if (end_data[0] !== undefined) {
-            end_id = end_data[0];
-        }
-
-        if (start_data[1] || end_data[1]) {
-            // If the find_boundary_tr call for either the first or
-            // the last message covered by the selection
-            skip_same_td_check = true;
-        }
-    }
 
     if (start_id === undefined || end_id === undefined) {
         // In this case either the starting message or the ending
@@ -235,6 +167,92 @@ function copy_handler() {
         $('#copytempdiv').remove();
     }, 0);
 }
+
+exports.analyze_selection = function (selection) {
+    // Here we analyze our selection to determine if part of a message
+    // or multiple messages are selected.
+    //
+    // Firefox and Chrome handle selection of multiple messages
+    // differently. Firefox typically creates multiple ranges for the
+    // selection, whereas Chrome typically creates just one.
+    //
+    // Our goal in the below loop is to compute and be prepared to
+    // analyze the combined range of the selections, and copy their
+    // full content.
+
+    var i;
+    var range;
+    var ranges = [];
+    var startc;
+    var endc;
+    var initial_end_tr;
+    var start_id;
+    var end_id;
+    var start_data;
+    var end_data;
+    // skip_same_td_check is true whenever we know for a fact that the
+    // selection covers multiple messages (and thus we should no
+    // longer consider letting the browser handle the copy event).
+    var skip_same_td_check = false;
+
+    for (i = 0; i < selection.rangeCount; i += 1) {
+        range = selection.getRangeAt(i);
+        ranges.push(range);
+
+        startc = $(range.startContainer);
+        start_data = find_boundary_tr($(startc.parents('.selectable_row, .message_header')[0]), function (row) {
+            return row.next();
+        });
+        if (start_data === undefined) {
+            // Skip any selection sections that don't intersect a message.
+            continue;
+        }
+        if (start_id === undefined) {
+            // start_id is the Zulip message ID of the first message
+            // touched by the selection.
+            start_id = start_data[0];
+        }
+
+        endc = $(range.endContainer);
+        // If the selection ends in the bottom whitespace, we should
+        // act as though the selection ends on the final message.
+        // This handles the issue that Chrome seems to like selecting
+        // the compose_close button when you go off the end of the
+        // last message
+        if (endc.attr('id') === "bottom_whitespace" || endc.attr('id') === "compose_close") {
+            initial_end_tr = $(".message_row:last");
+            // The selection goes off the end of the message feed, so
+            // this is a multi-message selection.
+            skip_same_td_check = true;
+        } else {
+            initial_end_tr = $(endc.parents('.selectable_row')[0]);
+        }
+        end_data = find_boundary_tr(initial_end_tr, function (row) {
+            return row.prev();
+        });
+
+        if (end_data === undefined) {
+            // Skip any selection sections that don't intersect a message.
+            continue;
+        }
+        if (end_data[0] !== undefined) {
+            end_id = end_data[0];
+        }
+
+        if (start_data[1] || end_data[1]) {
+            // If the find_boundary_tr call for either the first or
+            // the last message covered by the selection
+            skip_same_td_check = true;
+        }
+    }
+
+    return {
+        ranges: ranges,
+        start_id: start_id,
+        end_id: end_id,
+        skip_same_td_check: skip_same_td_check,
+    };
+};
 
 exports.paste_handler_converter = function (paste_html) {
     var converters = {
