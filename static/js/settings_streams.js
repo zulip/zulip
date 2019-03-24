@@ -1,4 +1,4 @@
-var Dict = require('../ts/dict').Dict;
+var Dict = require('./dict').Dict;
 
 var settings_streams = (function () {
 
