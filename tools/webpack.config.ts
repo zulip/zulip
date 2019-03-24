@@ -8,7 +8,7 @@ const assets = require('./webpack.assets.json');
 
 // Adds on css-hot-loader in dev mode
 function getHotCSS(bundle:any[], isProd:boolean) {
-    if(isProd) {
+    if (isProd) {
         return bundle;
     }
     return [
@@ -18,7 +18,7 @@ function getHotCSS(bundle:any[], isProd:boolean) {
 
 export default (env?: string) : webpack.Configuration => {
     const production: boolean = env === "production";
-    let config: webpack.Configuration = {
+    const config: webpack.Configuration = {
         mode: production ? "production" : "development",
         context: resolve(__dirname, "../"),
         entry: assets,
@@ -29,8 +29,8 @@ export default (env?: string) : webpack.Configuration => {
                     test: /\.tsx?$/,
                     loader: 'ts-loader',
                     options: {
-                        configFile: require.resolve('../static/js/tsconfig.json')
-                    }
+                        configFile: require.resolve('../static/js/tsconfig.json'),
+                    },
                 },
                 // Uses script-loader on minified files so we don't change global variables in them.
                 // Also has the effect of making processing these files fast
@@ -39,7 +39,7 @@ export default (env?: string) : webpack.Configuration => {
                 {
                     // We dont want to match admin.js
                     test: /(\.min|min\.|zxcvbn)\.js/,
-                    use: [ 'script-loader' ],
+                    use: ['script-loader'],
                 },
                 // regular css files
                 {
@@ -49,10 +49,10 @@ export default (env?: string) : webpack.Configuration => {
                         {
                             loader: 'css-loader',
                             options: {
-                                sourceMap: true
+                                sourceMap: true,
                             },
                         },
-                    ], production)
+                    ], production),
                 },
                 // sass / scss loader
                 {
@@ -62,15 +62,15 @@ export default (env?: string) : webpack.Configuration => {
                         {
                             loader: 'css-loader',
                             options: {
-                                sourceMap: true
-                            }
+                                sourceMap: true,
+                            },
                         },
                         {
                             loader: 'sass-loader',
                             options: {
-                                sourceMap: true
-                            }
-                        }
+                                sourceMap: true,
+                            },
+                        },
                     ], production),
                 },
                 // load fonts and files
@@ -80,10 +80,10 @@ export default (env?: string) : webpack.Configuration => {
                         loader: 'file-loader',
                         options: {
                             name: '[name].[ext]',
-                            outputPath: 'files/'
-                        }
-                    }]
-                }
+                            outputPath: 'files/',
+                        },
+                    }],
+                },
             ],
         },
         output: {
@@ -111,8 +111,8 @@ export default (env?: string) : webpack.Configuration => {
     var importsOptions = [
         {
             path: "../static/third/spectrum/spectrum.js",
-            args: "this=>window"
-        }
+            args: "this=>window",
+        },
     ];
     config.module.rules.push(...getImportLoaders(importsOptions));
 
@@ -136,7 +136,7 @@ export default (env?: string) : webpack.Configuration => {
         { path: "../node_modules/handlebars/dist/handlebars.runtime.js", name: 'Handlebars' },
         { path: "../node_modules/to-markdown/dist/to-markdown.js", name: 'toMarkdown' },
         { path: "../node_modules/sortablejs/Sortable.js"},
-        { path: "../node_modules/winchan/winchan.js", name: 'WinChan'}
+        { path: "../node_modules/winchan/winchan.js", name: 'WinChan'},
     ];
     config.module.rules.push(...getExposeLoaders(exposeOptions));
 
@@ -149,17 +149,17 @@ export default (env?: string) : webpack.Configuration => {
                     // This is a special case in order to produce
                     // a static CSS file to be consumed by
                     // static/html/5xx.html
-                    if(data.chunk.name === 'error-styles') {
+                    if (data.chunk.name === 'error-styles') {
                         return 'error-styles.css';
                     }
                     return '[name].[contenthash].css';
                 },
-                chunkFilename: "[chunkhash].css"
-            })
+                chunkFilename: "[chunkhash].css",
+            }),
         ];
     } else {
         // Out JS debugging tools
-        config.entry['common'].push('./static/js/debug.js');
+        config.entry['common'].push('./static/js/debug.js');  // eslint-disable-line dot-notation
 
         config.output.publicPath = '/webpack/';
         config.plugins = [
@@ -171,15 +171,15 @@ export default (env?: string) : webpack.Configuration => {
             // Extract CSS from files
             new MiniCssExtractPlugin({
                 filename: "[name].css",
-                chunkFilename: "[chunkhash].css"
+                chunkFilename: "[chunkhash].css",
             }),
         ];
         config.devServer = {
             clientLogLevel: "error",
             stats: "errors-only",
             watchOptions: {
-                poll: 100
-            }
+                poll: 100,
+            },
         };
     }
     return config;
