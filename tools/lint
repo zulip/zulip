@@ -93,7 +93,7 @@ def run():
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
                                              '--quiet', '--cache'], ['js'])
     linter_config.external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
-                                             'static/ts/tslint.json'], ['ts'])
+                                             'static/js/tslint.json'], ['ts'])
     linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
     linter_config.external_linter('puppet-lint',
                                   ['puppet-lint'] + PUPPET_CHECK_RULES_TO_EXCLUDE, ['pp'])

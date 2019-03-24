@@ -29,7 +29,7 @@ export default (env?: string) : webpack.Configuration => {
                     test: /\.tsx?$/,
                     loader: 'ts-loader',
                     options: {
-                        configFile: require.resolve('../static/ts/tsconfig.json')
+                        configFile: require.resolve('../static/js/tsconfig.json')
                     }
                 },
                 // Uses script-loader on minified files so we don't change global variables in them.
