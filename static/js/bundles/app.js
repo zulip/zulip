@@ -37,7 +37,7 @@ import "js/search_util.js";
 import "js/keydown_util.js";
 import "js/lightbox_canvas.js";
 import "js/rtl.js";
-import "ts/dict.ts";
+import "js/dict.ts";
 import "js/scroll_util.js";
 import "js/components.js";
 import "js/feedback_widget.js";

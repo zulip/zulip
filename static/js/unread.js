@@ -1,4 +1,4 @@
-var Dict = require('../ts/dict').Dict;
+var Dict = require('./dict').Dict;
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
 // how this system is designed.
