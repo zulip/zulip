@@ -11,12 +11,12 @@ interface importLoaderOptions {
    path: string;
    args: string;
 }
-function getImportLoaders( optionsArr:Array<importLoaderOptions> ) {
-    let importsLoaders = [];
-    for(var loaderEntry of optionsArr) {
+function getImportLoaders(optionsArr:Array<importLoaderOptions>) {
+    const importsLoaders = [];
+    for (var loaderEntry of optionsArr) {
         importsLoaders.push({
             test: require.resolve(loaderEntry.path),
-            use: "imports-loader?" + loaderEntry.args
+            use: "imports-loader?" + loaderEntry.args,
         });
     }
     return importsLoaders;
@@ -38,21 +38,21 @@ interface exportLoaderOptions {
    path: string;
    name?: string | Array<string>;
 }
-function getExposeLoaders( optionsArr:Array<exportLoaderOptions> ) {
-    let exposeLoaders = [];
-    for(var loaderEntry of optionsArr) {
-        let path = loaderEntry.path;
+function getExposeLoaders(optionsArr:Array<exportLoaderOptions>) {
+    const exposeLoaders = [];
+    for (var loaderEntry of optionsArr) {
+        const path = loaderEntry.path;
         let name = "";
-        let useArr = [];
+        const useArr = [];
         // If no name is provided, infer it
-        if(!loaderEntry.name) {
+        if (!loaderEntry.name) {
             name = basename(path, '.js');
             useArr.push({loader: 'expose-loader', options: name});
         } else {
             // If name is an array
-            if(Array.isArray(loaderEntry.name)) {
-                for(var exposeName of loaderEntry.name) {
-                    useArr.push({loader: 'expose-loader', options: exposeName})
+            if (Array.isArray(loaderEntry.name)) {
+                for (var exposeName of loaderEntry.name) {
+                    useArr.push({loader: 'expose-loader', options: exposeName});
                 }
             // If name is a string
             } else {
@@ -61,12 +61,12 @@ function getExposeLoaders( optionsArr:Array<exportLoaderOptions> ) {
         }
         exposeLoaders.push({
             test: require.resolve(path),
-            use: useArr
+            use: useArr,
         });
     }
     return exposeLoaders;
 }
 export {
     getExposeLoaders,
-    getImportLoaders
-}
+    getImportLoaders,
+};

@@ -38,10 +38,11 @@ export class Dict<K, V> {
             throw new TypeError("Cannot convert argument to Dict");
         }
 
-        let dict = new Dict<string, V>(opts);
-        for (const key in obj) {
-            dict.set(key, obj[key]);
-        }
+        const dict = new Dict<string, V>(opts);
+        _.each(obj, function (val: V, key: string) {
+            dict.set(key, val);
+        });
+
         return dict;
     }
 
@@ -56,7 +57,7 @@ export class Dict<K, V> {
             throw new TypeError("Argument is not an array");
         }
 
-        let dict = new Dict<K, V | true>(opts);
+        const dict = new Dict<K, V | true>(opts);
         for (const key of arr) {
             dict.set(key, true);
         }
@@ -67,14 +68,14 @@ export class Dict<K, V> {
     private _munge(key: K): string | undefined {
         if (key === undefined) {
             blueslip.error("Tried to call a Dict method with an undefined key.");
-            return undefined;
+            return;
         }
-        let str_key = ':' + key.toString();
+        const str_key = ':' + key.toString();
         return this._fold_case ? str_key.toLowerCase() : str_key;
     }
 
     clone(): Dict<K, V> {
-        let dict = new Dict<K, V>({fold_case: this._fold_case});
+        const dict = new Dict<K, V>({fold_case: this._fold_case});
         dict._items = { ...this._items };
         return dict;
     }
@@ -82,7 +83,7 @@ export class Dict<K, V> {
     get(key: K): V | undefined {
         const mapping = this._items[this._munge(key)];
         if (mapping === undefined) {
-            return undefined;
+            return;
         }
         return mapping.v;
     }
@@ -128,7 +129,7 @@ export class Dict<K, V> {
 
     items(): [K, V][] {
         return _.map(_.values(this._items),
-            (mapping: KeyValue<K, V>): [K, V] => [mapping.k, mapping.v]);
+                     (mapping: KeyValue<K, V>): [K, V] => [mapping.k, mapping.v]);
     }
 
     num_items(): number {
