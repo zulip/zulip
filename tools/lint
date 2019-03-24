@@ -63,7 +63,7 @@ def run():
             sys.exit(1)
 
     backend_file_types = ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst']
-    frontend_file_types = ['js', 'css', 'scss', 'handlebars', 'html']
+    frontend_file_types = ['js', 'ts', 'css', 'scss', 'handlebars', 'html']
     file_types = backend_file_types + frontend_file_types
     if args.backend:
         file_types = backend_file_types
@@ -91,9 +91,7 @@ def run():
     linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'])
     linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'])
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
-                                             '--quiet', '--cache'], ['js'])
-    linter_config.external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
-                                             'static/js/tslint.json'], ['ts'])
+                                             '--quiet', '--cache', '--ext .js,.ts'], ['js', 'ts'])
     linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
     linter_config.external_linter('puppet-lint',
                                   ['puppet-lint'] + PUPPET_CHECK_RULES_TO_EXCLUDE, ['pp'])
