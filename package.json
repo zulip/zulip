@@ -60,7 +60,9 @@
     "casperjs": "casperjs/casperjs",
     "cssstyle": "0.2.29",
     "difflib": "0.2.4",
-    "eslint": "4.19.1",
+    "eslint": "5.15.3",
+    "@typescript-eslint/parser": "1.5.0",
+    "@typescript-eslint/eslint-plugin": "1.5.0",
     "eslint-plugin-empty-returns": "1.0.2",
     "htmlparser2": "3.8.3",
     "jsdom": "11.10.0",
@@ -70,7 +72,6 @@
     "stylelint": "9.3.0",
     "svgo": "1.0.5",
     "swagger-parser": "3.4.1",
-    "tslint": "5.12.1",
     "webpack-dev-server": "3.1.4",
     "xmlhttprequest": "1.8.0"
   },

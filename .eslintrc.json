@@ -407,5 +407,17 @@
         "wrap-iife": [ "error", "outside", { "functionPrototypeMethods": false } ],
         "wrap-regex": 0,
         "yoda": 2
-    }
+    },
+    "overrides": [
+        {
+            "files": ["**/*.ts"],
+            "parser": "@typescript-eslint/parser",
+            "parserOptions": {
+                "project": "static/js/tsconfig.json"
+            },
+            "plugins": ["@typescript-eslint"],
+            "rules": {
+            }
+        }
+    ]
 }

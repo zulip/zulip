@@ -1,2 +1,3 @@
 static/js/blueslip.js
 static/webpack-bundles
+static/js/js_typings/zulip/index.d.ts
