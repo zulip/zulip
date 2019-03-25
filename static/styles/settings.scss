@@ -1916,3 +1916,19 @@ thead .actions {
     margin-top: 13px;
     display: inline-block;
 }
+/* Modifications to PerfectScrollbar
+ to get rid of UI bug in settings-overlay scrollbar
+*/
+.ps__rail-y,
+.ps__rail-x {
+    opacity: 1;
+}
+
+.ps:hover > .ps__rail-x,
+.ps:hover > .ps__rail-y,
+.ps--focus > .ps__rail-x,
+.ps--focus > .ps__rail-y,
+.ps--scrolling-x > .ps__rail-x,
+.ps--scrolling-y > .ps__rail-y {
+    opacity: 1;
+}

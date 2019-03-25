@@ -84,6 +84,8 @@ exports.make_menu = function (opts) {
         $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
 
         settings.set_settings_header(section);
+        ui.update_scrollbar($("#settings_page .sidebar.left"));
+        ui.update_scrollbar($("#settings_content"));
     };
 
     self.get_panel = function () {
