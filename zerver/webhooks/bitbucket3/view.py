@@ -10,13 +10,32 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
     get_push_tag_event_message, get_remove_branch_event_message, \
-    get_create_branch_event_message, get_commits_comment_action_message
+    get_create_branch_event_message, get_commits_comment_action_message, \
+    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_pull_request_event_message, \
+    CONTENT_MESSAGE_TEMPLATE
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.webhooks.bitbucket2.view import BITBUCKET_TOPIC_TEMPLATE, \
     BITBUCKET_FORK_BODY, BITBUCKET_REPO_UPDATED_CHANGED
 
-BRANCH_UPDATED_MESSAGE_TEMPLATE = "{user_name} pushed to branch {branch_name}. Head is now {head}"
+BRANCH_UPDATED_MESSAGE_TEMPLATE = "{user_name} pushed to branch {branch_name}. Head is now {head}."
+PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE = """{user_name} marked [PR #{number}]({url}) \
+as \"needs work\""""
+PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE_WITH_TITLE = """{user_name} marked \
+[PR #{number} {title}]({url}) as \"needs work\""""
+PULL_REQUEST_REASSIGNED_TEMPLATE = """{user_name} reassigned [PR #{number}]({url}) \
+to {assignees}"""
+PULL_REQUEST_REASSIGNED_TEMPLATE_WITH_TITLE = """{user_name} reassigned [PR #{number} \
+{title}]({url}) to {assignees}"""
+PULL_REQUEST_REASSIGNED_TO_NONE_TEMPLATE = """{user_name} removed all reviewers from [PR \
+#{number}]({url})"""
+PULL_REQUEST_REASSIGNED_TO_NONE_TEMPLATE_WITH_TITLE = """{user_name} removed all reviewers \
+from [PR #{number} {title}]({url})"""
+PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS = """{user_name} {action} [PR #{number}]\
+({url})\nfrom `{source}` to `{destination}` (assigned to {assignees} for review)"""
+PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS_WITH_TITLE = """{user_name} {action} \
+[PR #{number} {title}]({url})\nfrom `{source}` to `{destination}` (assigned to {assignees} for \
+review)"""
 
 def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str, str]]:
     repo_name = payload["repository"]["name"]
@@ -25,11 +44,13 @@ def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str,
     sha = payload["commit"]
     commit_url = payload["repository"]["links"]["self"][0]["href"][:-6]  # remove the "browse" at the end
     commit_url += "commits/%s" % (sha,)
-    body = get_commits_comment_action_message(user_name=user_name,
-                                              action=action,
-                                              commit_url=commit_url,
-                                              sha=sha,
-                                              message=payload["comment"]["text"])
+    body = get_commits_comment_action_message(
+        user_name=user_name,
+        action=action,
+        commit_url=commit_url,
+        sha=sha,
+        message=payload["comment"]["text"]
+    )
     return [{"subject": subject, "body": body}]
 
 def repo_forked_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
@@ -62,11 +83,17 @@ def repo_push_branch_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Di
     branch_head = change["toHash"]
 
     if event_type == "ADD":
-        body = get_create_branch_event_message(user_name=user_name, url=None, branch_name=branch_name)
+        body = get_create_branch_event_message(
+            user_name=user_name,
+            url=None,
+            branch_name=branch_name
+        )
     elif event_type == "UPDATE":
-        body = BRANCH_UPDATED_MESSAGE_TEMPLATE.format(user_name=user_name,
-                                                      branch_name=branch_name,
-                                                      head=branch_head)
+        body = BRANCH_UPDATED_MESSAGE_TEMPLATE.format(
+            user_name=user_name,
+            branch_name=branch_name,
+            head=branch_head
+        )
     elif event_type == "DELETE":
         body = get_remove_branch_event_message(user_name, branch_name)
     else:
@@ -91,13 +118,11 @@ def repo_push_tag_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[
         raise UnexpectedWebhookEventType("BitBucket Server", message)
 
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
-    body = get_push_tag_event_message(
-        user_name,
-        tag_name,
-        action=action)
+    body = get_push_tag_event_message(user_name, tag_name, action=action)
     return {"subject": subject, "body": body}
 
-def repo_push_handler(payload: Dict[str, Any], branches: Optional[str]=None) -> List[Dict[str, str]]:
+def repo_push_handler(payload: Dict[str, Any], branches: Optional[str]=None
+                      ) -> List[Dict[str, str]]:
     data = []
     for change in payload["changes"]:
         event_target_type = change["ref"]["type"]
@@ -114,6 +139,150 @@ def repo_push_handler(payload: Dict[str, Any], branches: Optional[str]=None) -> 
             raise UnexpectedWebhookEventType("BitBucket Server", message)
     return data
 
+def get_assignees_string(pr: Dict[str, Any]) -> Optional[str]:
+    reviewers = []
+    for reviewer in pr["reviewers"]:
+        name = reviewer["user"]["name"]
+        link = reviewer["user"]["links"]["self"][0]["href"]
+        reviewers.append("[%s](%s)" % (name, link))
+    if len(reviewers) == 0:
+        assignees = None
+    elif len(reviewers) == 1:
+        assignees = reviewers[0]
+    else:
+        assignees = ", ".join(reviewers[:-1]) + " and " + reviewers[-1]
+    return assignees
+
+def get_pr_subject(repo: str, type: str, id: str, title: str) -> str:
+    return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(repo=repo, type=type, id=id, title=title)
+
+def get_simple_pr_body(payload: Dict[str, Any], action: str, include_title: Optional[bool]) -> str:
+    pr = payload["pullRequest"]
+    return get_pull_request_event_message(
+        user_name=payload["actor"]["name"],
+        action=action,
+        url=pr["links"]["self"][0]["href"],
+        number=pr["id"],
+        title=pr["title"] if include_title else None
+    )
+
+def get_pr_opened_or_modified_body(payload: Dict[str, Any], action: str,
+                                   include_title: Optional[bool]) -> str:
+    pr = payload["pullRequest"]
+    description = pr.get("description")
+    assignees_string = get_assignees_string(pr)
+    if assignees_string:
+        # Then use the custom message template for this particular integration so that we can
+        # specify the reviewers at the end of the message (but before the description/message).
+        parameters = {"user_name": payload["actor"]["name"],
+                      "action": action,
+                      "url": pr["links"]["self"][0]["href"],
+                      "number": pr["id"],
+                      "source": pr["fromRef"]["displayId"],
+                      "destination": pr["toRef"]["displayId"],
+                      "message": description,
+                      "assignees": assignees_string,
+                      "title": pr["title"] if include_title else None}
+        if include_title:
+            body = PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS_WITH_TITLE.format(
+                **parameters
+            )
+        else:
+            body = PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS.format(**parameters)
+        if description:
+            body += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=description)
+        return body
+    return get_pull_request_event_message(
+        user_name=payload["actor"]["name"],
+        action=action,
+        url=pr["links"]["self"][0]["href"],
+        number=pr["id"],
+        target_branch=pr["fromRef"]["displayId"],
+        base_branch=pr["toRef"]["displayId"],
+        message=pr.get("description"),
+        assignee=assignees_string if assignees_string else None,
+        title=pr["title"] if include_title else None
+    )
+
+def get_pr_needs_work_body(payload: Dict[str, Any], include_title: Optional[bool]) -> str:
+    pr = payload["pullRequest"]
+    if not include_title:
+        return PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE.format(
+            user_name=payload["actor"]["name"],
+            number=pr["id"],
+            url=pr["links"]["self"][0]["href"]
+        )
+    return PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE_WITH_TITLE.format(
+        user_name=payload["actor"]["name"],
+        number=pr["id"],
+        url=pr["links"]["self"][0]["href"],
+        title=pr["title"]
+    )
+
+def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool]) -> str:
+    pr = payload["pullRequest"]
+    assignees_string = get_assignees_string(pr)
+    if not assignees_string:
+        if not include_title:
+            return PULL_REQUEST_REASSIGNED_TO_NONE_TEMPLATE.format(
+                user_name=payload["actor"]["name"],
+                number=pr["id"],
+                url=pr["links"]["self"][0]["href"]
+            )
+        return PULL_REQUEST_REASSIGNED_TO_NONE_TEMPLATE_WITH_TITLE.format(
+            user_name=payload["actor"]["name"],
+            number=pr["id"],
+            url=pr["links"]["self"][0]["href"],
+            title=pr["title"]
+        )
+    if not include_title:
+        return PULL_REQUEST_REASSIGNED_TEMPLATE.format(
+            user_name=payload["actor"]["name"],
+            number=pr["id"],
+            url=pr["links"]["self"][0]["href"],
+            assignees=assignees_string
+        )
+    return PULL_REQUEST_REASSIGNED_TEMPLATE_WITH_TITLE.format(
+        user_name=payload["actor"]["name"],
+        number=pr["id"],
+        url=pr["links"]["self"][0]["href"],
+        assignees=assignees_string,
+        title=pr["title"]
+    )
+
+def pr_handler(payload: Dict[str, Any], action: str,
+               include_title: Optional[bool]=False) -> List[Dict[str, str]]:
+    pr = payload["pullRequest"]
+    subject = get_pr_subject(pr["toRef"]["repository"]["name"], type="PR", id=pr["id"],
+                             title=pr["title"])
+    if action in ["opened", "modified"]:
+        body = get_pr_opened_or_modified_body(payload, action, include_title)
+    elif action == "needs_work":
+        body = get_pr_needs_work_body(payload, include_title)
+    elif action == "reviewers_updated":
+        body = get_pr_reassigned_body(payload, include_title)
+    else:
+        body = get_simple_pr_body(payload, action, include_title)
+
+    return [{"subject": subject, "body": body}]
+
+def pr_comment_handler(payload: Dict[str, Any], action: str,
+                       include_title: Optional[bool]=False) -> List[Dict[str, str]]:
+    pr = payload["pullRequest"]
+    subject = get_pr_subject(pr["toRef"]["repository"]["name"], type="PR", id=pr["id"],
+                             title=pr["title"])
+    message = payload["comment"]["text"]
+    body = get_pull_request_event_message(
+        user_name=payload["actor"]["name"],
+        action=action,
+        url=pr["links"]["self"][0]["href"],
+        number=pr["id"],
+        message=message,
+        title=pr["title"] if include_title else None
+    )
+
+    return [{"subject": subject, "body": body}]
+
 EVENT_HANDLER_MAP = {
     "repo:comment:added": partial(repo_comment_handler, action="commented"),
     "repo:comment:edited": partial(repo_comment_handler, action="edited their comment"),
@@ -121,18 +290,18 @@ EVENT_HANDLER_MAP = {
     "repo:forked": repo_forked_handler,
     "repo:modified": repo_modified_handler,
     "repo:refs_changed": repo_push_handler,
-    "pr:comment:added": None,
-    "pr:comment:edited": None,
-    "pr:comment:deleted": None,
-    "pr:declined": None,
-    "pr:deleted": None,
-    "pr:merged": None,
-    "pr:modified": None,
-    "pr:opened": None,
-    "pr:reviewer:approved": None,
-    "pr:reviewer:needs_work": None,
-    "pr:reviewer:updated": None,
-    "pr:reviewer:unapproved": None,
+    "pr:comment:added": partial(pr_comment_handler, action="commented on"),
+    "pr:comment:edited": partial(pr_comment_handler, action="edited their comment on"),
+    "pr:comment:deleted": partial(pr_comment_handler, action="deleted their comment on"),
+    "pr:declined": partial(pr_handler, action="declined"),
+    "pr:deleted": partial(pr_handler, action="deleted"),
+    "pr:merged": partial(pr_handler, action="merged"),
+    "pr:modified": partial(pr_handler, action="modified"),
+    "pr:opened": partial(pr_handler, action="opened"),
+    "pr:reviewer:approved": partial(pr_handler, action="approved"),
+    "pr:reviewer:needs_work": partial(pr_handler, action="needs_work"),
+    "pr:reviewer:updated": partial(pr_handler, action="reviewers_updated"),
+    "pr:reviewer:unapproved": partial(pr_handler, action="unapproved"),
 }  # type Dict[str, Optional[Callable[..., List[Dict[str, str]]]]]
 
 def get_event_handler(eventkey: str) -> Callable[..., List[Dict[str, str]]]:
@@ -154,6 +323,8 @@ def api_bitbucket3_webhook(request: HttpRequest, user_profile: UserProfile,
 
     if "branches" in signature(handler).parameters:
         data = handler(payload, branches)
+    elif "include_title" in signature(handler).parameters:
+        data = handler(payload, include_title=user_specified_topic)
     else:
         data = handler(payload)
     for element in data:
