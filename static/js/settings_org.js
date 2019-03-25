@@ -616,7 +616,7 @@ exports.build_page = function () {
         exports.change_save_button_state(save_btn_controls, "discarded");
     });
 
-    exports.save_organization_settings = function (data, save_button, success_continuation) {
+    exports.save_organization_settings = function (data, save_button) {
         var subsection_parent = save_button.closest('.org-subsection-parent');
         var save_btn_container = subsection_parent.find('.save-button-controls');
         var failed_alert_elem = subsection_parent.find('.subsection-failed-status p');
@@ -624,12 +624,9 @@ exports.build_page = function () {
         channel.patch({
             url: "/json/realm",
             data: data,
-            success: function (response_data) {
+            success: function () {
                 failed_alert_elem.hide();
                 exports.change_save_button_state(save_btn_container, "succeeded");
-                if (success_continuation !== undefined) {
-                    success_continuation(response_data);
-                }
             },
             error: function (xhr) {
                 exports.change_save_button_state(save_btn_container, "failed");
@@ -645,31 +642,30 @@ exports.build_page = function () {
     exports.parse_time_limit = parse_time_limit;
 
     function get_complete_data_for_subsection(subsection) {
-        var opts = {};
+        var data = {};
         if (subsection === 'msg_editing') {
             var edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
-            opts.data = {};
             if (edit_limit_setting_value === 'never') {
-                opts.data.allow_message_editing = false;
+                data.allow_message_editing = false;
             } else if (edit_limit_setting_value === 'custom_limit') {
-                opts.data.message_content_edit_limit_seconds = parse_time_limit($('#id_realm_message_content_edit_limit_minutes'));
+                data.message_content_edit_limit_seconds = parse_time_limit($('#id_realm_message_content_edit_limit_minutes'));
                 // Disable editing if the parsed time limit is 0 seconds
-                opts.data.allow_message_editing = !!opts.data.message_content_edit_limit_seconds;
+                data.allow_message_editing = !!data.message_content_edit_limit_seconds;
             } else {
-                opts.data.allow_message_editing = true;
-                opts.data.message_content_edit_limit_seconds =
+                data.allow_message_editing = true;
+                data.message_content_edit_limit_seconds =
                     exports.msg_edit_limit_dropdown_values[edit_limit_setting_value].seconds;
             }
             var delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
             if (delete_limit_setting_value === 'never') {
-                opts.data.allow_message_deleting = false;
+                data.allow_message_deleting = false;
             } else if (delete_limit_setting_value === 'custom_limit') {
-                opts.data.message_content_delete_limit_seconds = parse_time_limit($('#id_realm_message_content_delete_limit_minutes'));
+                data.message_content_delete_limit_seconds = parse_time_limit($('#id_realm_message_content_delete_limit_minutes'));
                 // Disable deleting if the parsed time limit is 0 seconds
-                opts.data.allow_message_deleting = !!opts.data.message_content_delete_limit_seconds;
+                data.allow_message_deleting = !!data.message_content_delete_limit_seconds;
             } else {
-                opts.data.allow_message_deleting = true;
-                opts.data.message_content_delete_limit_seconds =
+                data.allow_message_deleting = true;
+                data.message_content_delete_limit_seconds =
                     exports.msg_delete_limit_dropdown_values[delete_limit_setting_value].seconds;
             }
         } else if (subsection === 'other_permissions') {
@@ -682,10 +678,8 @@ exports.build_page = function () {
                 new_message_retention_days = "";
             }
 
-            var data = {
-                message_retention_days: new_message_retention_days !== "" ?
-                    JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
-            };
+            data.message_retention_days = new_message_retention_days !== "" ?
+                JSON.stringify(parseInt(new_message_retention_days, 10)) : null;
 
             if (add_emoji_permission === "by_admins_only") {
                 data.add_emoji_by_admins_only = true;
@@ -705,36 +699,32 @@ exports.build_page = function () {
                 data.create_stream_by_admins_only = false;
                 data.waiting_period_threshold = 0;
             }
-            opts.data = data;
         } else if (subsection === 'org_join') {
-            opts.data = {};
-
             var org_join_restrictions = $('#id_realm_org_join_restrictions').val();
             if (org_join_restrictions === "only_selected_domain") {
-                opts.data.emails_restricted_to_domains = true;
-                opts.data.disallow_disposable_email_addresses = false;
+                data.emails_restricted_to_domains = true;
+                data.disallow_disposable_email_addresses = false;
             } else if (org_join_restrictions === "no_disposable_email") {
-                opts.data.emails_restricted_to_domains = false;
-                opts.data.disallow_disposable_email_addresses = true;
+                data.emails_restricted_to_domains = false;
+                data.disallow_disposable_email_addresses = true;
             } else if (org_join_restrictions === "no_restriction") {
-                opts.data.disallow_disposable_email_addresses = false;
-                opts.data.emails_restricted_to_domains = false;
+                data.disallow_disposable_email_addresses = false;
+                data.emails_restricted_to_domains = false;
             }
 
             var user_invite_restriction = $('#id_realm_user_invite_restriction').val();
             if (user_invite_restriction === 'no_invite_required') {
-                opts.data.invite_required = false;
-                opts.data.invite_by_admins_only = false;
+                data.invite_required = false;
+                data.invite_by_admins_only = false;
             } else if (user_invite_restriction === 'by_admins_only') {
-                opts.data.invite_required = true;
-                opts.data.invite_by_admins_only = true;
+                data.invite_required = true;
+                data.invite_by_admins_only = true;
             } else {
-                opts.data.invite_required = true;
-                opts.data.invite_by_admins_only = false;
+                data.invite_required = true;
+                data.invite_by_admins_only = false;
             }
         }
-
-        return opts;
+        return data;
     }
 
     $(".organization").on("click", ".subsection-header .subsection-changes-save .button", function (e) {
@@ -745,11 +735,8 @@ exports.build_page = function () {
         var subsection = subsection_id.split('-').join('_');
 
         var data = populate_data_for_request(subsection_id);
-        var opts = get_complete_data_for_subsection(subsection);
-        data = _.extend(data, opts.data);
-        var success_continuation = opts.success_continuation;
-
-        exports.save_organization_settings(data, save_button, success_continuation);
+        data = _.extend(data, get_complete_data_for_subsection(subsection));
+        exports.save_organization_settings(data, save_button);
     });
 
     $(".org-subsection-parent").on("keydown", "input", function (e) {
