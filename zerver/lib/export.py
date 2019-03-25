@@ -1597,8 +1597,10 @@ def get_analytics_config() -> Config:
 
     return analytics_config
 
-def export_realm_wrapper(realm: Realm, output_dir: str, threads: int,
-                         upload_to_s3: bool, public_only: bool) -> None:
+
+def export_realm_wrapper(realm: Realm, output_dir: str,
+                         threads: int, upload_to_s3: bool,
+                         public_only: bool, delete_after_upload: bool) -> None:
     do_export_realm(realm=realm, output_dir=output_dir, threads=threads, public_only=public_only)
     print("Finished exporting to %s; tarring" % (output_dir,))
 
@@ -1634,3 +1636,7 @@ def export_realm_wrapper(realm: Realm, output_dir: str, threads: int,
         bucket=bucket.name,
         key=key.key)
     print("Uploaded to %s" % (public_url,))
+
+    if delete_after_upload:
+        os.remove(tarball_path)
+        print("Successfully deleted the tarball at %s" % (tarball_path,))
