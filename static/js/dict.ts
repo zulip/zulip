@@ -4,9 +4,9 @@ import * as _ from 'underscore';
  * Implementation detail of the Dict class. `key` is `k` converted to a string,
  * in lowercase if the `fold_case` option is enabled.
  */
-type KeyValue<K, V> = { k: K, v: V }
+type KeyValue<K, V> = { k: K; v: V }
 type Items<K, V> = {
-    [key: string]: KeyValue<K, V>
+    [key: string]: KeyValue<K, V>;
 }
 
 /**
@@ -64,16 +64,6 @@ export class Dict<K, V> {
         return dict;
     }
 
-    // Handle case-folding of keys and the empty string.
-    private _munge(key: K): string | undefined {
-        if (key === undefined) {
-            blueslip.error("Tried to call a Dict method with an undefined key.");
-            return;
-        }
-        const str_key = ':' + key.toString();
-        return this._fold_case ? str_key.toLowerCase() : str_key;
-    }
-
     clone(): Dict<K, V> {
         const dict = new Dict<K, V>({fold_case: this._fold_case});
         dict._items = { ...this._items };
@@ -83,7 +73,7 @@ export class Dict<K, V> {
     get(key: K): V | undefined {
         const mapping = this._items[this._munge(key)];
         if (mapping === undefined) {
-            return;
+            return undefined;
         }
         return mapping.v;
     }
@@ -123,7 +113,7 @@ export class Dict<K, V> {
 
     items(): [K, V][] {
         return _.map(_.values(this._items),
-                     (mapping: KeyValue<K, V>): [K, V] => [mapping.k, mapping.v]);
+            (mapping: KeyValue<K, V>): [K, V] => [mapping.k, mapping.v]);
     }
 
     num_items(): number {
@@ -134,11 +124,21 @@ export class Dict<K, V> {
         return _.isEmpty(this._items);
     }
 
-    each(f: (v: V, k?: K) => void) {
+    each(f: (v: V, k?: K) => void): void {
         _.each(this._items, (mapping: KeyValue<K, V>) => f(mapping.v, mapping.k));
     }
 
-    clear() {
+    clear(): void {
         this._items = {};
+    }
+
+    // Handle case-folding of keys and the empty string.
+    private _munge(key: K): string | undefined {
+        if (key === undefined) {
+            blueslip.error("Tried to call a Dict method with an undefined key.");
+            return undefined;
+        }
+        const str_key = ':' + key.toString();
+        return this._fold_case ? str_key.toLowerCase() : str_key;
     }
 }

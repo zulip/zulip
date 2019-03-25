@@ -2,12 +2,12 @@ import { resolve } from 'path';
 import * as BundleTracker from 'webpack-bundle-tracker';
 import * as webpack from 'webpack';
 import { getExposeLoaders, getImportLoaders } from './webpack-helpers';
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 const assets = require('./webpack.assets.json');
 
 // Adds on css-hot-loader in dev mode
-function getHotCSS(bundle:any[], isProd:boolean) {
+function getHotCSS(bundle: any[], isProd: boolean): any[] {
     if (isProd) {
         return bundle;
     }
@@ -16,7 +16,7 @@ function getHotCSS(bundle:any[], isProd:boolean) {
     ].concat(bundle);
 }
 
-export default (env?: string) : webpack.Configuration => {
+export default (env?: string): webpack.Configuration => {
     const production: boolean = env === "production";
     const config: webpack.Configuration = {
         mode: production ? "production" : "development",

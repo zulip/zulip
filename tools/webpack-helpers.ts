@@ -1,5 +1,10 @@
 import { basename } from 'path';
 
+interface Loader {
+    test: string;
+    use: string;
+}
+
 /* Return imports-loader format to the config
     For example:
     [
@@ -7,11 +12,11 @@ import { basename } from 'path';
         {path: './foler/my_module.js', args: '?this=>window'},
     ]
 */
-interface importLoaderOptions {
-   path: string;
-   args: string;
+interface ImportLoaderOptions {
+    path: string;
+    args: string;
 }
-function getImportLoaders(optionsArr:Array<importLoaderOptions>) {
+function getImportLoaders(optionsArr: ImportLoaderOptions[]): Loader[] {
     const importsLoaders = [];
     for (var loaderEntry of optionsArr) {
         importsLoaders.push({
@@ -34,11 +39,11 @@ function getImportLoaders(optionsArr:Array<importLoaderOptions>) {
         {path: './folder/my_module.js', name: ['name1', 'name2']}
     ]
 */
-interface exportLoaderOptions {
-   path: string;
-   name?: string | Array<string>;
+interface ExportLoaderOptions {
+    path: string;
+    name?: string | string[];
 }
-function getExposeLoaders(optionsArr:Array<exportLoaderOptions>) {
+function getExposeLoaders(optionsArr: ExportLoaderOptions[]): Loader[] {
     const exposeLoaders = [];
     for (var loaderEntry of optionsArr) {
         const path = loaderEntry.path;
