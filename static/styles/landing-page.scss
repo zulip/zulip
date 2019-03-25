@@ -702,23 +702,23 @@ nav ul li.active::after {
 }
 
 .portico-landing.hello .gradients .gradient.dark-blue {
-    background: linear-gradient(10deg, transparent 50%, rgba(15, 46, 57, 0.7));
+    background: linear-gradient(10deg, rgba(15, 46, 57, 0) 50%, rgba(15, 46, 57, 0.7));
 }
 
 .portico-landing.hello .gradients .gradient.green {
-    background: linear-gradient(-25deg, transparent 40%, hsl(156, 47%, 47%));
+    background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
 }
 
 .portico-landing.hello .gradients .gradient.blue {
-    background: linear-gradient(25deg, transparent 40%, hsl(196, 38%, 51%));
+    background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
 }
 
 .portico-landing.hello .gradients .gradient.sunburst {
-    background: linear-gradient(5deg, transparent 20%, hsl(49, 71%, 68%));
+    background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
 }
 
 .portico-landing.hello .gradients .gradient.white-fade {
-    background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, transparent 40%);
+    background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
 }
 
 .portico-landing.hello .hero .waves {
@@ -2792,23 +2792,23 @@ nav ul li.active::after {
 }
 
 .gradients .gradient.dark-blue {
-    background: linear-gradient(10deg, transparent 50%, rgba(15, 46, 57, 0.7));
+    background: linear-gradient(10deg, rgba(15, 46, 57, 0) 50%, rgba(15, 46, 57, 0.7));
 }
 
 .gradients .gradient.green {
-    background: linear-gradient(-25deg, transparent 40%, hsl(156, 47%, 47%));
+    background: linear-gradient(-25deg, hsla(156, 47%, 47%, 0) 40%, hsl(156, 47%, 47%));
 }
 
 .gradients .gradient.blue {
-    background: linear-gradient(25deg, transparent 40%, hsl(196, 38%, 51%));
+    background: linear-gradient(25deg, hsla(196, 38%, 51%, 0) 40%, hsl(196, 38%, 51%));
 }
 
 .gradients .gradient.sunburst {
-    background: linear-gradient(5deg, transparent 20%, hsl(49, 71%, 68%));
+    background: linear-gradient(5deg, hsla(49, 71%, 68%, 0) 20%, hsl(49, 71%, 68%));
 }
 
 .gradients .gradient.white-fade {
-    background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, transparent 40%);
+    background: linear-gradient(0deg, hsl(0, 0%, 98%) 0%, hsla(0, 0%, 98%, 0) 40%);
 }
 
 /* -- pricing css -- */
