@@ -234,7 +234,6 @@ function test_submit_settings_form(submit_form) {
     };
     $("#id_realm_create_stream_permission").val("by_anyone");
     $("#id_realm_add_emoji_by_admins_only").val("by_anyone");
-    $("#id_realm_message_retention_days").val("15");
     const bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
     bot_creation_policy_elem.val("1");
     bot_creation_policy_elem.attr('id', 'id_realm_bot_creation_policy');
@@ -261,7 +260,6 @@ function test_submit_settings_form(submit_form) {
     let expected_value = {
         bot_creation_policy: '1',
         email_address_visibility: '1',
-        message_retention_days: '15',
         add_emoji_by_admins_only: false,
         create_stream_by_admins_only: false,
         waiting_period_threshold: 0,

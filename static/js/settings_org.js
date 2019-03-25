@@ -668,9 +668,7 @@ exports.build_page = function () {
                 data.message_content_delete_limit_seconds =
                     exports.msg_delete_limit_dropdown_values[delete_limit_setting_value].seconds;
             }
-        } else if (subsection === 'other_permissions') {
-            var create_stream_permission = $("#id_realm_create_stream_permission").val();
-            var add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
+        } else if (subsection == 'other_settings') {
             var new_message_retention_days = $("#id_realm_message_retention_days").val();
 
             if (parseInt(new_message_retention_days, 10).toString() !== new_message_retention_days
@@ -680,6 +678,9 @@ exports.build_page = function () {
 
             data.message_retention_days = new_message_retention_days !== "" ?
                 JSON.stringify(parseInt(new_message_retention_days, 10)) : null;
+        } else if (subsection === 'other_permissions') {
+            var create_stream_permission = $("#id_realm_create_stream_permission").val();
+            var add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
 
             if (add_emoji_permission === "by_admins_only") {
                 data.add_emoji_by_admins_only = true;
