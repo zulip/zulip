@@ -14,6 +14,7 @@ from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import make_aware as timezone_make_aware
 from django.utils.timezone import is_naive as timezone_is_naive
+from django.core.management.base import CommandError
 import glob
 import logging
 import os
@@ -21,6 +22,7 @@ import ujson
 import subprocess
 import tempfile
 import shutil
+import sys
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from analytics.models import RealmCount, UserCount, StreamCount
@@ -32,6 +34,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     RealmAuditLog, UserHotspot, MutedTopic, Service, UserGroup, \
     UserGroupMembership, BotStorageData, BotConfigData
 from zerver.lib.parallel import run_parallel
+from zerver.lib.utils import generate_random_token
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Union
 
@@ -1593,3 +1596,41 @@ def get_analytics_config() -> Config:
     )
 
     return analytics_config
+
+def export_realm_wrapper(realm: Realm, output_dir: str, threads: int,
+                         upload_to_s3: bool, public_only: bool) -> None:
+    do_export_realm(realm=realm, output_dir=output_dir, threads=threads, public_only=public_only)
+    print("Finished exporting to %s; tarring" % (output_dir,))
+
+    do_write_stats_file_for_realm_export(output_dir)
+
+    tarball_path = output_dir.rstrip('/') + '.tar.gz'
+    os.chdir(os.path.dirname(output_dir))
+    subprocess.check_call(["tar", "-czf", tarball_path, os.path.basename(output_dir)])
+    print("Tarball written to %s" % (tarball_path,))
+
+    if not upload_to_s3:
+        return
+
+    def percent_callback(complete: Any, total: Any) -> None:
+        sys.stdout.write('.')
+        sys.stdout.flush()
+
+    if settings.LOCAL_UPLOADS_DIR is not None:
+        raise CommandError("S3 backend must be configured to upload to S3")
+
+    print("Uploading export tarball to S3")
+
+    from zerver.lib.upload import S3Connection, get_bucket, Key
+    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+    # We use the avatar bucket, because it's world-readable.
+    bucket = get_bucket(conn, settings.S3_AVATAR_BUCKET)
+    key = Key(bucket)
+    key.key = os.path.join("exports", generate_random_token(32), os.path.basename(tarball_path))
+    key.set_contents_from_filename(tarball_path, cb=percent_callback, num_cb=40)
+
+    public_url = 'https://{bucket}.{host}/{key}'.format(
+        host=conn.server_name(),
+        bucket=bucket.name,
+        key=key.key)
+    print("Uploaded to %s" % (public_url,))
