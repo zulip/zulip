@@ -412,8 +412,10 @@ i18n_urls = [
         name='zerver.views.auth.log_into_subdomain'),
     url(r'^accounts/login/local/$', zerver.views.auth.dev_direct_login,
         name='zerver.views.auth.dev_direct_login'),
-    # We have two entries for accounts/login to allow reverses on the Django
-    # view we're wrapping to continue to function.
+    # We have two entries for accounts/login; only the first one is
+    # used for URL resolution.  The second here is to allow
+    # reverse("django.contrib.auth.views.login") in templates to
+    # return `/accounts/login/`.
     url(r'^accounts/login/', zerver.views.auth.login_page,
         {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
     url(r'^accounts/login/', login, {'template_name': 'zerver/login.html'},
