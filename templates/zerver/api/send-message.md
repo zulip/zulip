@@ -53,7 +53,7 @@ zulip(config).then((client) => {
 
 ```
 # For stream messages
-curl {{ api_url }}/v1/messages \
+curl -X POST {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "type=stream" \
     -d "to=Denmark" \
@@ -61,7 +61,7 @@ curl {{ api_url }}/v1/messages \
     -d $"content=I come not, friends, to steal away your hearts."
 
 # For private messages
-curl {{ api_url }}/v1/messages \
+curl -X POST {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "type=private" \
     -d "to=hamlet@example.com" \
