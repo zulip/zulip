@@ -32,13 +32,13 @@ from zerver.data_import.import_util import (
     build_personal_subscriptions,
     build_public_stream_subscriptions,
     build_stream_subscriptions,
-    build_user_message,
     build_user_profile,
     build_zerver_realm,
     create_converted_data_files,
     make_subscriber_map,
+    make_user_messages,
     write_avatar_png,
-    SubscriberHandler
+    SubscriberHandler,
 )
 
 from zerver.data_import.hipchat_attachment import AttachmentHandler
@@ -753,33 +753,6 @@ def process_raw_message_batch(realm_id: int,
     dump_file_id = NEXT_ID('dump_file_id')
     message_file = "/messages-%06d.json" % (dump_file_id,)
     create_converted_data_files(message_json, output_dir, message_file)
-
-def make_user_messages(zerver_message: List[ZerverFieldsT],
-                       subscriber_map: Dict[int, Set[int]],
-                       is_pm_data: bool,
-                       mention_map: Dict[int, Set[int]]) -> List[ZerverFieldsT]:
-
-    zerver_usermessage = []
-
-    for message in zerver_message:
-        message_id = message['id']
-        recipient_id = message['recipient']
-        sender_id = message['sender']
-        mention_user_ids = mention_map[message_id]
-        subscriber_ids = subscriber_map.get(recipient_id, set())
-        user_ids = subscriber_ids | {sender_id}
-
-        for user_id in user_ids:
-            is_mentioned = user_id in mention_user_ids
-            user_message = build_user_message(
-                user_id=user_id,
-                message_id=message_id,
-                is_private=is_pm_data,
-                is_mentioned=is_mentioned,
-            )
-            zerver_usermessage.append(user_message)
-
-    return zerver_usermessage
 
 def do_convert_data(input_tar_file: str,
                     output_dir: str,
