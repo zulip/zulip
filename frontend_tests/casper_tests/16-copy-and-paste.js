@@ -69,9 +69,7 @@ function copy_messages(start_message, end_message) {
         $('#copytempdiv').remove();
 
         // emulate copy event
-        var event = document.createEvent('Event');
-        event.initEvent('copy', true, true);
-        document.dispatchEvent(event);
+        $('body').trigger($.Event('keydown', { which: 67, ctrlKey: true }));
 
         // find temp div with copied text
         var temp_div = $('#copytempdiv');

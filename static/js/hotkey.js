@@ -53,6 +53,7 @@ var keydown_ctrl_mappings = {
 };
 
 var keydown_cmd_or_ctrl_mappings = {
+    67: {name: 'copy_with_c', message_view_only: false}, // 'C'
     75: {name: 'search_with_k', message_view_only: false}, // 'K'
     83: {name: 'star_message', message_view_only: true}, // 's'
     190: {name: 'narrow_to_compose_target', message_view_only: true}, // '.'
@@ -685,6 +686,9 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'star_deprecated':
         ui.maybe_show_deprecation_notice('*');
+        return true;
+    case 'copy_with_c':
+        copy_and_paste.copy_handler();
         return true;
     }
 
