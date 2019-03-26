@@ -37,15 +37,19 @@ PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS_WITH_TITLE = """{user_na
 [PR #{number} {title}]({url})\nfrom `{source}` to `{destination}` (assigned to {assignees} for \
 review)"""
 
+def get_user_name(payload: Dict[str, Any]) -> str:
+    user_name = "[{name}]({url})".format(name=payload["actor"]["name"],
+                                         url=payload["actor"]["links"]["self"][0]["href"])
+    return user_name
+
 def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str, str]]:
     repo_name = payload["repository"]["name"]
-    user_name = payload["actor"]["name"]
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     sha = payload["commit"]
     commit_url = payload["repository"]["links"]["self"][0]["href"][:-6]  # remove the "browse" at the end
     commit_url += "commits/%s" % (sha,)
     body = get_commits_comment_action_message(
-        user_name=user_name,
+        user_name=get_user_name(payload),
         action=action,
         commit_url=commit_url,
         sha=sha,
@@ -58,7 +62,7 @@ def repo_forked_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     body = BITBUCKET_FORK_BODY.format(
         display_name=payload["actor"]["displayName"],
-        username=payload["actor"]["name"],
+        username=get_user_name(payload),
         fork_name=payload["repository"]["name"],
         fork_url=payload["repository"]["links"]["self"][0]["href"]
     )
@@ -67,7 +71,7 @@ def repo_forked_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
 def repo_modified_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
     subject_new = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=payload["new"]["name"])
     body = BITBUCKET_REPO_UPDATED_CHANGED.format(
-        actor=payload["actor"]["name"],
+        actor=get_user_name(payload),
         change="name",
         repo_name=payload["old"]["name"],
         old=payload["old"]["name"],
@@ -78,7 +82,7 @@ def repo_modified_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
 def repo_push_branch_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[str, str]:
     event_type = change["type"]
     repo_name = payload["repository"]["name"]
-    user_name = payload["actor"]["name"]
+    user_name = get_user_name(payload)
     branch_name = change["ref"]["displayId"]
     branch_head = change["toHash"]
 
@@ -107,7 +111,6 @@ def repo_push_tag_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[
     event_type = change["type"]
     repo_name = payload["repository"]["name"]
     tag_name = change["ref"]["displayId"]
-    user_name = payload["actor"]["name"]
 
     if event_type == "ADD":
         action = "pushed"
@@ -118,7 +121,7 @@ def repo_push_tag_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[
         raise UnexpectedWebhookEventType("BitBucket Server", message)
 
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
-    body = get_push_tag_event_message(user_name, tag_name, action=action)
+    body = get_push_tag_event_message(get_user_name(payload), tag_name, action=action)
     return {"subject": subject, "body": body}
 
 def repo_push_handler(payload: Dict[str, Any], branches: Optional[str]=None
@@ -159,7 +162,7 @@ def get_pr_subject(repo: str, type: str, id: str, title: str) -> str:
 def get_simple_pr_body(payload: Dict[str, Any], action: str, include_title: Optional[bool]) -> str:
     pr = payload["pullRequest"]
     return get_pull_request_event_message(
-        user_name=payload["actor"]["name"],
+        user_name=get_user_name(payload),
         action=action,
         url=pr["links"]["self"][0]["href"],
         number=pr["id"],
@@ -174,7 +177,7 @@ def get_pr_opened_or_modified_body(payload: Dict[str, Any], action: str,
     if assignees_string:
         # Then use the custom message template for this particular integration so that we can
         # specify the reviewers at the end of the message (but before the description/message).
-        parameters = {"user_name": payload["actor"]["name"],
+        parameters = {"user_name": get_user_name(payload),
                       "action": action,
                       "url": pr["links"]["self"][0]["href"],
                       "number": pr["id"],
@@ -193,7 +196,7 @@ def get_pr_opened_or_modified_body(payload: Dict[str, Any], action: str,
             body += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=description)
         return body
     return get_pull_request_event_message(
-        user_name=payload["actor"]["name"],
+        user_name=get_user_name(payload),
         action=action,
         url=pr["links"]["self"][0]["href"],
         number=pr["id"],
@@ -208,12 +211,12 @@ def get_pr_needs_work_body(payload: Dict[str, Any], include_title: Optional[bool
     pr = payload["pullRequest"]
     if not include_title:
         return PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE.format(
-            user_name=payload["actor"]["name"],
+            user_name=get_user_name(payload),
             number=pr["id"],
             url=pr["links"]["self"][0]["href"]
         )
     return PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE_WITH_TITLE.format(
-        user_name=payload["actor"]["name"],
+        user_name=get_user_name(payload),
         number=pr["id"],
         url=pr["links"]["self"][0]["href"],
         title=pr["title"]
@@ -225,25 +228,25 @@ def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool
     if not assignees_string:
         if not include_title:
             return PULL_REQUEST_REASSIGNED_TO_NONE_TEMPLATE.format(
-                user_name=payload["actor"]["name"],
+                user_name=get_user_name(payload),
                 number=pr["id"],
                 url=pr["links"]["self"][0]["href"]
             )
         return PULL_REQUEST_REASSIGNED_TO_NONE_TEMPLATE_WITH_TITLE.format(
-            user_name=payload["actor"]["name"],
+            user_name=get_user_name(payload),
             number=pr["id"],
             url=pr["links"]["self"][0]["href"],
             title=pr["title"]
         )
     if not include_title:
         return PULL_REQUEST_REASSIGNED_TEMPLATE.format(
-            user_name=payload["actor"]["name"],
+            user_name=get_user_name(payload),
             number=pr["id"],
             url=pr["links"]["self"][0]["href"],
             assignees=assignees_string
         )
     return PULL_REQUEST_REASSIGNED_TEMPLATE_WITH_TITLE.format(
-        user_name=payload["actor"]["name"],
+        user_name=get_user_name(payload),
         number=pr["id"],
         url=pr["links"]["self"][0]["href"],
         assignees=assignees_string,
@@ -273,7 +276,7 @@ def pr_comment_handler(payload: Dict[str, Any], action: str,
                              title=pr["title"])
     message = payload["comment"]["text"]
     body = get_pull_request_event_message(
-        user_name=payload["actor"]["name"],
+        user_name=get_user_name(payload),
         action=action,
         url=pr["links"]["self"][0]["href"],
         number=pr["id"],
