@@ -73,7 +73,7 @@ function construct_copy_div(div, start_id, end_id) {
     }
 }
 
-function copy_handler() {
+exports.copy_handler = function () {
     // This is the main handler for copying message content via
     // `ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
@@ -166,7 +166,7 @@ function copy_handler() {
         });
         $('#copytempdiv').remove();
     }, 0);
-}
+};
 
 exports.analyze_selection = function (selection) {
     // Here we analyze our selection to determine if part of a message
@@ -337,7 +337,7 @@ exports.paste_handler = function (event) {
 };
 
 exports.initialize = function () {
-    $(document).on('copy', copy_handler);
+    $(document).on('copy', exports.copy_handler);
     $("#compose-textarea").bind('paste', exports.paste_handler);
     $('body').on('paste', '#message_edit_form', exports.paste_handler);
 };
