@@ -70,6 +70,7 @@ function zoom_in() {
     zoomed_in = true;
     var list_widget = $("ul.expanded_private_messages").expectOne();
     list_widget.removeClass("zoomed-out").addClass("zoomed-in");
+    ui.update_scrollbar($("#private-container"));
 }
 
 exports.close = function () {
