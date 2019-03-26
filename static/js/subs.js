@@ -13,10 +13,10 @@ exports.show_subs_pane = {
     },
 };
 
-function check_button_for_sub(sub) {
+exports.check_button_for_sub = function (sub) {
     var id = parseInt(sub.stream_id, 10);
     return $(".stream-row[data-stream-id='" + id + "'] .check");
-}
+};
 
 function row_for_stream_id(stream_id) {
     return $(".stream-row[data-stream-id='" + stream_id + "']");
@@ -240,7 +240,7 @@ exports.add_sub_to_table = function (sub) {
 exports.is_sub_already_present = function (sub) {
     // This checks if a stream is already listed the "Manage streams"
     // UI, by checking for its subscribe/unsubscribe checkmark button.
-    var button = check_button_for_sub(sub);
+    var button = exports.check_button_for_sub(sub);
     if (button.length !== 0) {
         return true;
     }
@@ -259,16 +259,15 @@ exports.remove_stream = function (stream_id) {
 };
 
 exports.update_settings_for_subscribed = function (sub) {
-    var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed").show();
     exports.update_add_subscriptions_elements(sub.can_add_subscribers);
     $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #preview-stream-button").show();
 
-    if (button.length !== 0) {
+    if (exports.is_sub_already_present(sub)) {
         exports.rerender_subscribers_count(sub, true);
 
-        button.toggleClass("checked");
         settings_button.text(i18n.t("Unsubscribe"));
+        stream_ui_updates.update_check_button_for_sub(sub);
 
         if (sub.can_change_stream_permissions) {
             $(".change-stream-privacy").show();
@@ -347,13 +346,12 @@ exports.update_add_subscriptions_elements = function (allow_user_to_add_subs) {
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
-    var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).addClass("unsubscribed").show();
 
-    button.toggleClass("checked");
     settings_button.text(i18n.t("Subscribe"));
     stream_edit.hide_sub_settings(sub);
     exports.rerender_subscriptions_settings(sub);
+    stream_ui_updates.update_check_button_for_sub(sub);
 
     stream_data.update_stream_email_address(sub, "");
     if (stream_edit.is_sub_settings_active(sub)) {
