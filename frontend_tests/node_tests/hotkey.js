@@ -99,6 +99,7 @@ run_test('mappings', () => {
     assert.equal(map_press(106).name, 'vim_down'); // j
 
     assert.equal(map_down(219, false, true).name, 'escape'); // ctrl + [
+    assert.equal(map_down(67, false, true).name, 'copy_with_c'); // ctrl + c
     assert.equal(map_down(75, false, true).name, 'search_with_k'); // ctrl + k
     assert.equal(map_down(83, false, true).name, 'star_message'); // ctrl + s
     assert.equal(map_down(190, false, true).name, 'narrow_to_compose_target'); // ctrl + .
@@ -107,7 +108,6 @@ run_test('mappings', () => {
     assert.equal(map_down(47), undefined);
     assert.equal(map_press(27), undefined);
     assert.equal(map_down(27, true), undefined);
-    assert.equal(map_down(67, false, true), undefined); // ctrl + c
     assert.equal(map_down(86, false, true), undefined); // ctrl + v
     assert.equal(map_down(90, false, true), undefined); // ctrl + z
     assert.equal(map_down(84, false, true), undefined); // ctrl + t
@@ -120,6 +120,7 @@ run_test('mappings', () => {
     assert.equal(map_down(88, false, true), undefined); // ctrl + x
     assert.equal(map_down(78, false, true), undefined); // ctrl + n
     assert.equal(map_down(77, false, true), undefined); // ctrl + m
+    assert.equal(map_down(67, false, false, true), undefined); // cmd + c
     assert.equal(map_down(75, false, false, true), undefined); // cmd + k
     assert.equal(map_down(83, false, false, true), undefined); // cmd + s
     assert.equal(map_down(75, true, true), undefined); // shift + ctrl + k
@@ -130,6 +131,8 @@ run_test('mappings', () => {
     global.navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
     assert.equal(map_down(219, false, true, false).name, 'escape'); // ctrl + [
     assert.equal(map_down(219, false, false, true), undefined); // cmd + [
+    assert.equal(map_down(67, false, true, true).name, 'copy_with_c'); // ctrl + c
+    assert.equal(map_down(67, false, true, false), undefined); // cmd + c
     assert.equal(map_down(75, false, false, true).name, 'search_with_k'); // cmd + k
     assert.equal(map_down(75, false, true, false), undefined); // ctrl + k
     assert.equal(map_down(83, false, false, true).name, 'star_message'); // cmd + s

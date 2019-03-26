@@ -102,12 +102,14 @@ exports.copy_handler = function () {
         // message is not defined, so this is definitely not a
         // multi-message selection and we can let the browser handle
         // the copy.
+        document.execCommand('copy');
         return;
     }
 
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message.  If so, Let the browser handle this.
+        document.execCommand('copy');
         return;
     }
 
@@ -140,6 +142,11 @@ exports.copy_handler = function () {
         .attr('id', 'copytempdiv');
     $('body').append(div);
     selection.selectAllChildren(div[0]);
+    // This is the point where we've selected the content from our
+    // temp div and we exec the "copy" command.
+    // Once we copy the content from temp div, we want to change
+    // the selection to the original selection
+    document.execCommand('copy');
 
     /*
     The techniques we use in this code date back to
@@ -337,7 +344,6 @@ exports.paste_handler = function (event) {
 };
 
 exports.initialize = function () {
-    $(document).on('copy', exports.copy_handler);
     $("#compose-textarea").bind('paste', exports.paste_handler);
     $('body').on('paste', '#message_edit_form', exports.paste_handler);
 };
