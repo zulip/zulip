@@ -3,6 +3,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, cast, TypeVar, 
 
 import copy
 import signal
+import tempfile
 from functools import wraps
 from threading import Timer
 
@@ -27,7 +28,7 @@ from zerver.lib.push_notifications import handle_push_notification, handle_remov
     initialize_push_notifications
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, \
+    internal_send_message, internal_send_private_message, notify_export_completed, \
     render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
@@ -46,6 +47,7 @@ from zerver.models import get_bot_services
 from zulip_bots.lib import extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 from zerver.lib.exceptions import RateLimited
+from zerver.lib.export import export_realm_wrapper
 
 import os
 import sys
@@ -609,3 +611,32 @@ class DeferredWorker(QueueProcessingWorker):
                 (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                                require_active=False)
                 do_mark_stream_messages_as_read(user_profile, client, stream)
+        elif event['type'] == 'realm_exported':
+            realm = Realm.objects.get(id=event['realm_id'])
+            output_dir = tempfile.mkdtemp(prefix="zulip-export-")
+
+            # TODO: Add support for the LOCAL_UPLOADS_DIR uploads
+            # backend in export_realm_wrapper so we don't need this assertion.
+            assert settings.LOCAL_UPLOADS_DIR is None
+
+            public_url = export_realm_wrapper(realm=realm, output_dir=output_dir,
+                                              upload_to_s3=True, threads=6, public_only=True,
+                                              delete_after_upload=True)
+            assert public_url is not None
+
+            # Send a private message notification letting the user who
+            # triggered the export know the export finished.
+            user_profile = get_user_profile_by_id(event['user_profile_id'])
+            content = "Your data export is complete and has been uploaded here:\n\n%s" % (
+                public_url,)
+            internal_send_private_message(
+                realm=user_profile.realm,
+                sender=get_system_bot(settings.NOTIFICATION_BOT),
+                recipient_user=user_profile,
+                content=content
+            )
+
+            # For future frontend use, also notify administrator
+            # clients that the export happened, including sending the
+            # url.
+            notify_export_completed(user_profile, public_url)

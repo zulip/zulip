@@ -92,6 +92,7 @@ from zerver.lib.actions import (
     get_typing_user_profiles,
     log_event,
     lookup_default_stream_groups,
+    notify_export_completed,
     notify_realm_custom_profile_fields,
     check_add_user_group,
     do_update_user_group_name,
@@ -2604,6 +2605,22 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: self.client_delete("/json/attachments/%s" % (entry.id,)),
             num_events=1, state_change_expected=False)
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_public_export_notify_admins(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm_exported')),
+            ('public_url', check_string),
+        ])
+
+        # Traditionally, we'd be testing the endpoint, but that
+        # requires somewhat annoying mocking setup for what to do with
+        # the export tarball.
+        events = self.do_test(
+            lambda: notify_export_completed(self.user_profile,
+                                            "http://localhost:9991/path/to/export.tar.gz"),
+            state_change_expected=False)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

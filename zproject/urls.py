@@ -36,6 +36,7 @@ import zerver.views.streams
 import zerver.views.realm
 import zerver.views.digest
 from zerver.context_processors import latest_info_context
+import zerver.views.public_export
 
 from zerver.lib.rest import rest_dispatch
 
@@ -381,7 +382,11 @@ v1_api_and_json_patterns = [
 
     # Used to generate a Zoom video call URL
     url(r'^calls/create$', rest_dispatch,
-        {'GET': 'zerver.views.video_calls.get_zoom_url'})
+        {'GET': 'zerver.views.video_calls.get_zoom_url'}),
+
+    # Used for public-only realm exporting
+    url(r'^export/realm', rest_dispatch,
+        {'POST': 'zerver.views.public_export.public_only_realm_export'}),
 ]
 
 # These views serve pages (HTML). As such, their internationalization

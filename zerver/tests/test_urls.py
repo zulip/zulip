@@ -69,6 +69,7 @@ class PublicURLTest(ZulipTestCase):
                            "/json/users/me/pointer",
                            "/json/users/me/subscriptions",
                            "/api/v1/users/me/subscriptions",
+                           "/json/export/realm",
                            ],
                      400: ["/api/v1/external/github",
                            "/api/v1/fetch_api_key",

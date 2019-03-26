@@ -794,6 +794,8 @@ def apply_event(state: Dict[str, Any],
             user_status.pop(user_id, None)
 
         state['user_status'] = user_status
+    elif event['type'] == 'realm_exported':
+        pass
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 

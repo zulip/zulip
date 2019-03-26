@@ -2399,6 +2399,7 @@ class RealmAuditLog(models.Model):
     REALM_SCRUBBED = 'realm_scrubbed'
     REALM_PLAN_TYPE_CHANGED = 'realm_plan_type_changed'
     REALM_LOGO_CHANGED = 'realm_logo_changed'
+    REALM_EXPORTED = 'realm_exported'
 
     SUBSCRIPTION_CREATED = 'subscription_created'
     SUBSCRIPTION_ACTIVATED = 'subscription_activated'
