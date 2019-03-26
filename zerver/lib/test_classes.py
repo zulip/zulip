@@ -560,11 +560,14 @@ class ZulipTestCase(TestCase):
         )
         return open(fn).read()
 
-    def fixture_data(self, file_name: str, type: str='') -> str:
-        fn = os.path.join(
+    def fixture_file_name(self, file_name: str, type: str='') -> str:
+        return os.path.join(
             os.path.dirname(__file__),
             "../tests/fixtures/%s/%s" % (type, file_name)
         )
+
+    def fixture_data(self, file_name: str, type: str='') -> str:
+        fn = self.fixture_file_name(file_name, type)
         return open(fn).read()
 
     def make_stream(self, stream_name: str, realm: Optional[Realm]=None,
