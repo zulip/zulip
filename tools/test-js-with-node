@@ -39,7 +39,7 @@ enforce_fully_covered = {
     'static/js/compose_ui.js',
     # Temporarily removed until we finish merging emoji commits.
     # 'static/js/composebox_typeahead.js',
-    'static/js/dict.js',
+    'static/js/dict.ts',
     'static/js/emoji.js',
     'static/js/fenced_code.js',
     'static/js/fetch_status.js',
