@@ -9,6 +9,11 @@ exports.update_check_button_for_sub = function (sub) {
     } else {
         button.removeClass("checked");
     }
+    if (sub.should_display_subscription_button) {
+        button.removeClass("disabled");
+    } else {
+        button.addClass("disabled");
+    }
 };
 
 exports.update_settings_button_for_sub = function (sub) {

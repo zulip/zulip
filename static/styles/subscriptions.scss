@@ -612,6 +612,11 @@ form#add_new_subscription {
     opacity: 0.5;
 }
 
+.stream-row .check.disabled {
+    pointer-events: none;
+    visibility: hidden;
+}
+
 .stream-row .icon {
     width: 35px;
     height: 35px;
