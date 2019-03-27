@@ -145,7 +145,9 @@ exports._build_private_messages_list = function (active_conversation, max_privat
 };
 
 exports.rebuild_recent = function (active_conversation) {
-    remove_expanded_private_messages();
+    stream_popover.hide_topic_popover();
+    $("#private-container").remove();
+
     if (private_messages_open) {
         var max_private_messages = 5;
         var private_li = get_filter_li();
