@@ -10,20 +10,20 @@ zrequire('top_left_corner');
 run_test('narrowing', () => {
     // activating narrow
 
-    var pm_expanded;
-    var pm_closed;
+    var pm_updated;
 
     set_global('pm_list', {
-        close: function () { pm_closed = true; },
-        expand: function () { pm_expanded = true; },
+        update_private_messages: () => {
+            pm_updated = true;
+        },
     });
 
-    assert(!pm_expanded);
+    assert(!pm_updated);
     var filter = new Filter([
         {operator: 'is', operand: 'private'},
     ]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(pm_expanded);
+    assert(pm_updated);
 
     const alice = {
         email: 'alice@example.com',
@@ -39,26 +39,26 @@ run_test('narrowing', () => {
     people.add_in_realm(alice);
     people.add_in_realm(bob);
 
-    pm_expanded = false;
+    pm_updated = false;
     filter = new Filter([
         {operator: 'pm-with', operand: 'alice@example.com'},
     ]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(pm_expanded);
+    assert(pm_updated);
 
-    pm_expanded = false;
+    pm_updated = false;
     filter = new Filter([
         {operator: 'pm-with', operand: 'bob@example.com,alice@example.com'},
     ]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(pm_expanded);
+    assert(pm_updated);
 
-    pm_expanded = false;
+    pm_updated = false;
     filter = new Filter([
         {operator: 'pm-with', operand: 'not@valid.com'},
     ]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(!pm_expanded);
+    assert(pm_updated);
 
     filter = new Filter([
         {operator: 'is', operand: 'mentioned'},
@@ -80,14 +80,14 @@ run_test('narrowing', () => {
 
     // deactivating narrow
 
-    pm_closed = false;
+    pm_updated = false;
     top_left_corner.handle_narrow_deactivated();
 
     assert($('.top_left_all_messages').hasClass('active-filter'));
     assert(!$('.top_left_mentions').hasClass('active-filter'));
     assert(!$('.top_left_private_messages').hasClass('active-filter'));
     assert(!$('.top_left_starred_messages').hasClass('active-filter'));
-    assert(pm_closed);
+    assert(pm_updated);
 });
 
 run_test('update_count_in_dom', () => {

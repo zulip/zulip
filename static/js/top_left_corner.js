@@ -74,38 +74,12 @@ exports.handle_narrow_activated = function (filter) {
         }
     }
 
-    if (exports.should_expand_pm_list(filter)) {
-        var op_pm = filter.operands('pm-with');
-        pm_list.expand(op_pm);
-    } else {
-        pm_list.close();
-    }
-};
-
-exports.should_expand_pm_list = function (filter) {
-    var op_is = filter.operands('is');
-
-    if (op_is.length >= 1 && _.contains(op_is, "private")) {
-        return true;
-    }
-
-    var op_pm = filter.operands('pm-with');
-
-    if (op_pm.length !== 1) {
-        return false;
-    }
-
-    var emails_strings = op_pm[0];
-    var emails = emails_strings.split(',');
-
-    var has_valid_emails = people.is_valid_bulk_emails_for_compose(emails);
-
-    return has_valid_emails;
+    pm_list.update_private_messages();
 };
 
 exports.handle_narrow_deactivated = function () {
     deselect_top_left_corner_items();
-    pm_list.close();
+    pm_list.update_private_messages();
 
     var filter_li = $('.top_left_all_messages');
     filter_li.addClass('active-filter');

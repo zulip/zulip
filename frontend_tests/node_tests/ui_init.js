@@ -34,6 +34,9 @@ set_global('resize', {});
 set_global('feature_flags', {});
 set_global('page_params', {});
 set_global('templates', {});
+set_global('stream_popover', {});
+
+stream_popover.hide_topic_popover = () => {};
 
 const ignore_modules = [
     'activity',
@@ -121,6 +124,7 @@ zrequire('starred_messages');
 zrequire('user_status');
 zrequire('user_status_ui');
 zrequire('ui_init');
+zrequire('pm_conversations');
 
 set_global('$', global.make_zjquery());
 
@@ -147,6 +151,7 @@ $('#compose').filedrop = () => {};
 server_events.home_view_loaded = () => true;
 
 resize.watch_manual_resize = () => {};
+resize.resize_stream_filters_container = () => {};
 
 $("#stream_message_recipient_stream").typeahead = () => {};
 $("#stream_message_recipient_topic").typeahead = () => {};
@@ -154,7 +159,9 @@ $("#private_message_recipient").typeahead = () => {};
 $("#compose-textarea").typeahead = () => {};
 $("#search_query").typeahead = () => {};
 $('#stream_filters').append = () => {};
+$(".top_left_private_messages").append = () => {};
 
+ui.set_up_scrollbar = () => {};
 
 const value_stub = $.create('value');
 const count_stub = $.create('count');

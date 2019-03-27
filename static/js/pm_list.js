@@ -2,8 +2,6 @@ var pm_list = (function () {
 
 var exports = {};
 
-var private_messages_open = false;
-
 // This module manages the "Private Messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
 
@@ -55,17 +53,6 @@ function set_pm_conversation_count(user_ids_string, count) {
     update_count_in_dom(count_span, value_span, count);
 }
 
-function remove_expanded_private_messages() {
-    stream_popover.hide_topic_popover();
-    $("#private-container").remove();
-    resize.resize_stream_filters_container();
-}
-
-exports.close = function () {
-    private_messages_open = false;
-    remove_expanded_private_messages();
-};
-
 exports._build_private_messages_list = function (active_conversation) {
 
     var private_messages = pm_conversations.recent.get();
@@ -115,13 +102,12 @@ exports.rebuild_recent = function (active_conversation) {
     stream_popover.hide_topic_popover();
     $("#private-container").remove();
 
-    if (private_messages_open) {
-        var private_li = get_filter_li();
-        var private_messages_dom = exports._build_private_messages_list(
-            active_conversation);
+    var private_li = get_filter_li();
+    var private_messages_dom = exports._build_private_messages_list(
+        active_conversation);
 
-        private_li.append(private_messages_dom);
-    }
+    private_li.append(private_messages_dom);
+
     if (active_conversation) {
         var active_li = exports.get_conversation_li(active_conversation);
         if (active_li) {
@@ -133,10 +119,6 @@ exports.rebuild_recent = function (active_conversation) {
 };
 
 exports.update_private_messages = function () {
-    if (!narrow_state.active()) {
-        return;
-    }
-
     var is_pm_filter = false;
     var pm_with = '';
     var filter = narrow_state.filter();
@@ -165,18 +147,6 @@ exports.update_private_messages = function () {
     }
 };
 
-exports.expand = function (op_pm) {
-    private_messages_open = true;
-    if (op_pm.length === 1) {
-        exports.rebuild_recent(op_pm[0]);
-    } else if (op_pm.length !== 0) {
-        // TODO: Should pass the reply-to of the thread
-        exports.rebuild_recent("");
-    } else {
-        exports.rebuild_recent("");
-    }
-};
-
 exports.update_dom_with_unread_counts = function (counts) {
     set_count(counts.private_message_count);
     counts.pm_count.each(function (count, user_ids_string) {
@@ -189,9 +159,8 @@ exports.update_dom_with_unread_counts = function (counts) {
                                       counts.private_message_count);
 };
 
-
 exports.initialize = function () {
-    // will add back soon
+    exports.update_private_messages();
 };
 
 return exports;

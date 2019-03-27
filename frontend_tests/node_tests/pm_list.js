@@ -53,15 +53,6 @@ run_test('get_conversation_li', () => {
     pm_list.get_conversation_li(test_conversation);
 });
 
-run_test('close', () => {
-    var collapsed;
-    $('#private-container').remove = function () {
-        collapsed = true;
-    };
-    pm_list.close();
-    assert(collapsed);
-});
-
 run_test('build_private_messages_list', () => {
     var active_conversation_1 = "alice@zulip.com,bob@zulip.com";
     var active_conversation_2 = 'me@zulip.com,alice@zulip.com';
@@ -109,16 +100,23 @@ run_test('build_private_messages_list', () => {
     expected_data.messages[0].unread = 0;
     expected_data.messages[0].is_zero = true;
     assert.deepEqual(template_data, expected_data);
-
-    pm_list.initialize();
-    pm_list._build_private_messages_list(active_conversation_2, max_conversations);
-    assert.deepEqual(template_data, expected_data);
 });
 
-run_test('expand_and_update_private_messages', () => {
+run_test('update_private_messages', () => {
+    var private_li = $(".top_left_private_messages");
+    var alice_li = $.create('alice-li-stub');
+
+    private_li.set_find_results("li[data-user-ids-string='101']", alice_li);
+
     var collapsed;
-    $('#private-container').remove = function () {
+    $('#private-container').remove = () => {
         collapsed = true;
+    };
+
+    var appended;
+
+    $('.top_left_private_messages').append = () => {
+        appended = true;
     };
 
     global.templates.render = function (template_name) {
@@ -126,95 +124,44 @@ run_test('expand_and_update_private_messages', () => {
         return 'fake-dom-for-pm-list';
     };
 
-    var private_li = $(".top_left_private_messages");
-    var alice_li = $.create('alice-li-stub');
-    var bob_li = $.create('bob-li-stub');
+    function test_basics() {
+        // We basically just make sure we don't crash and that
+        // things get "opened".
+        appended = false;
+        collapsed = false;
 
-    private_li.set_find_results("li[data-user-ids-string='101']", alice_li);
-    private_li.set_find_results("li[data-user-ids-string='102']", bob_li);
+        pm_list.update_private_messages();
 
-    var dom;
-    private_li.append = function (html) {
-        dom = html;
-    };
-
-    pm_list.expand([alice.email, bob.email]);
-    assert.equal(dom, 'fake-dom-for-pm-list');
-    assert(collapsed);
-    assert(!alice_li.hasClass('active-sub-filter'));
-
-    pm_list.expand([alice.email]);
-    assert.equal(dom, 'fake-dom-for-pm-list');
-    assert(collapsed);
-    assert(alice_li.hasClass('active-sub-filter'));
-
-    pm_list.expand([]);
-    assert.equal(dom, 'fake-dom-for-pm-list');
-    assert(collapsed);
-
-    // Next, simulate clicking on Bob.
-    narrow_state.active = function () { return true; };
+        assert(collapsed);
+        assert(appended);
+    }
 
     narrow_state.filter = function () {
         return {
             operands: function (operand) {
-                if (operand === 'is') {
-                    return 'private';
+                if (operand === 'pm-with') {
+                    return ['alice@zulip.com'];
                 }
-                assert.equal(operand, 'pm-with');
-                return [bob.email, alice.email];
             },
         };
     };
 
-    collapsed = false;
-
-    pm_list.update_private_messages();
-
-    assert(collapsed);
-    assert(!bob_li.hasClass('active-sub-filter'));
+    test_basics();
 
     narrow_state.filter = function () {
         return {
             operands: function (operand) {
-                if (operand === 'is') {
-                    return ['private'];
+                if (operand === 'pm-with') {
+                    return [];
                 }
-                assert.equal(operand, 'pm-with');
-                return [];
+
+                assert.equal(operand, 'is');
+                return ['private'];
             },
         };
     };
 
-    collapsed = false;
-
-    pm_list.update_private_messages();
-
-    assert(collapsed);
-    assert(!bob_li.hasClass('active-sub-filter'));
-
-    narrow_state.filter = function () {
-        return {
-            operands: function (operand) {
-                if (operand === 'is') {
-                    return ['private'];
-                }
-                assert.equal(operand, 'pm-with');
-                return [bob.email];
-            },
-        };
-    };
-
-    collapsed = false;
-
-    pm_list.update_private_messages();
-
-    assert(collapsed);
-    assert(bob_li.hasClass('active-sub-filter'));
-
-    narrow_state.active = function () { return false; };
-    pm_list.update_private_messages();
-
+    test_basics();
 });
 
 run_test('update_dom_with_unread_counts', () => {
