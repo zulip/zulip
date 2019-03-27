@@ -108,14 +108,8 @@ export class Dict<K, V> {
         return _.has(this._items, this._munge(key));
     }
 
-    del(key: K): boolean {
-        // `delete` could throw a TypeError in strict mode.
-        try {
-            delete this._items[this._munge(key)];
-        } catch (_e) {
-            return false;
-        }
-        return true;
+    del(key: K): void {
+        delete this._items[this._munge(key)];
     }
 
     keys(): K[] {
