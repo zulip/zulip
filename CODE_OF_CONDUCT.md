@@ -78,7 +78,7 @@ something you can do while a violation is happening, do it. A lot of the
 harms of harassment and other violations can be mitigated by the victim
 knowing that the other people present are on their side.
 
-All reports will be kept confidential. In some cases we may determine that a
+All reports will be kept confidential. In some cases, we may determine that a
 public statement will need to be made. In such cases, the identities of all
 victims and reporters will remain confidential unless those individuals
 instruct us otherwise.
