@@ -136,7 +136,8 @@ if options.coverage:
     coverage_lcov_file = os.path.join(coverage_dir, 'lcov.info')
 
     nyc = os.path.join(ROOT_DIR, 'node_modules/.bin/nyc')
-    command = [nyc, '--report-dir', coverage_dir]
+    command = [nyc, '--extension', '.ts']
+    command += ['--report-dir', coverage_dir]
     command += ['--temp-directory', coverage_dir, '-r=text-summary']
     command += node_tests_cmd
     command += ['&&', 'nyc', 'report', '-r=lcov', '-r=json']
