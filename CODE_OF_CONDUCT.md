@@ -21,7 +21,7 @@ The following behaviors are expected and requested of all community members:
 * Participate. In doing so, you contribute to the health and longevity of
   the community.
 * Exercise consideration and respect in your speech and actions.
-* Attempt collaboration before conflict. Assume good faith.
+* Attempt collaboration before a conflict. Assume good faith.
 * Refrain from demeaning, discriminatory, or harassing behavior and speech.
 * Take action or alert community leaders if you notice a dangerous
   situation, someone in distress, or violations of this code, even if they
@@ -78,7 +78,7 @@ something you can do while a violation is happening, do it. A lot of the
 harms of harassment and other violations can be mitigated by the victim
 knowing that the other people present are on their side.
 
-All reports will be kept confidential. In some cases we may determine that a
+All reports will be kept confidential. In some cases, we may determine that a
 public statement will need to be made. In such cases, the identities of all
 victims and reporters will remain confidential unless those individuals
 instruct us otherwise.
