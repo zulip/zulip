@@ -85,7 +85,7 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 On success, the install script prints a link.  If you're [restoring a
 backup][zulip-backups] or importing your data from [HipChat][hipchat-import],
 [Slack][slack-import], or another Zulip server, you should stop here
-and return to the the import instructions.
+and return to the import instructions.
 
 [hipchat-import]: https://zulipchat.com/help/import-from-hipchat
 [slack-import]: https://zulipchat.com/help/import-from-slack
