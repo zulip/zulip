@@ -52,9 +52,9 @@ templating systems.
 
 ----------------------------------------
 
-### JavaScript and other static assets
+### JavaScript, TypeScript, and other static assets
 
-* `static/js/` Zulip's own JavaScript.
+* `static/js/` Zulip's own JavaScript and TypeScript sources.
 
 * `static/styles/` Zulip's own CSS.
 

@@ -1,8 +1,8 @@
-# JavaScript unit tests
+# JavaScript/TypeScript unit tests
 
-Our node-based JavaScript unit tests system is the preferred way to
-test JavaScript code in Zulip.  We prefer it over the
-[Casper black-box whole-app testing](../testing/testing-with-casper.html),
+Our node-based unit tests system is the preferred way to test
+JavaScript/TypeScript code in Zulip.  We prefer it over the [Casper
+black-box whole-app testing](../testing/testing-with-casper.html),
 system since it is much (>100x) faster and also easier to do correctly
 than the Casper system.
 

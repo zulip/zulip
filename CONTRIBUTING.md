@@ -107,8 +107,8 @@ on.
   [#new members](https://chat.zulip.org/#narrow/stream/95-new-members) with a
   bit about your background and interests, and we'll help you out. The most
   important thing to say is whether you're looking for a backend (Python),
-  frontend (JavaScript), mobile (React Native), desktop (Electron),
-  documentation (English) or visual design (JavaScript + CSS) issue, and a
+  frontend (JavaScript and TypeScript), mobile (React Native), desktop (Electron),
+  documentation (English) or visual design (JavaScript/TypeScript + CSS) issue, and a
   bit about your programming experience and available time.
 
 We also welcome suggestions of features that you feel would be valuable or
