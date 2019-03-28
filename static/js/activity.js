@@ -262,23 +262,42 @@ exports.update_huddles = function () {
     show_huddles();
 };
 
+exports.compute_active_status = function () {
+    // The overall algorithm intent for the `status` field is to send
+    // `ACTIVE` (aka green circle) if we know the user is at their
+    // computer, and IDLE (aka orange circle) if the user might not
+    // be:
+    //
+    // * For the webapp, we just know whether this window has focus.
+    // * For the electron desktop app, we also know whether the
+    //   user is active or idle elsewhere on their system.
+    //
+    // The check for `idle_on_system === undefined` is feature
+    // detection; older desktop app releases never set that property.
+    if (window.electron_bridge !== undefined
+            && window.electron_bridge.idle_on_system !== undefined) {
+        if (window.electron_bridge.idle_on_system) {
+            return exports.IDLE;
+        }
+        return exports.ACTIVE;
+    }
+
+    if (exports.client_is_active) {
+        return exports.ACTIVE;
+    }
+    return exports.IDLE;
+};
+
 function send_presence_to_server(want_redraw) {
-    var status;
     if (reload_state.is_in_progress()) {
         blueslip.log("Skipping querying presence because reload in progress");
         return;
     }
 
-    if (exports.client_is_active) {
-        status = exports.ACTIVE;
-    } else {
-        status = exports.IDLE;
-    }
-
     channel.post({
         url: '/json/users/me/presence',
         data: {
-            status: status,
+            status: exports.compute_active_status(),
             ping_only: !want_redraw,
             new_user_input: exports.new_user_input,
         },

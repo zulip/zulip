@@ -894,3 +894,26 @@ run_test('away_status', () => {
     activity.on_revoke_away(alice.user_id);
     assert(!user_status.is_away(alice.user_id));
 });
+
+run_test('electron_bridge', () => {
+    activity.client_is_active = false;
+    window.electron_bridge = undefined;
+    assert.equal(activity.compute_active_status(), activity.IDLE);
+
+    activity.client_is_active = true;
+    assert.equal(activity.compute_active_status(), activity.ACTIVE);
+
+    window.electron_bridge = {
+        idle_on_system: true,
+    };
+    assert.equal(activity.compute_active_status(), activity.IDLE);
+    activity.client_is_active = false;
+    assert.equal(activity.compute_active_status(), activity.IDLE);
+
+    window.electron_bridge = {
+        idle_on_system: false,
+    };
+    assert.equal(activity.compute_active_status(), activity.ACTIVE);
+    activity.client_is_active = true;
+    assert.equal(activity.compute_active_status(), activity.ACTIVE);
+});
