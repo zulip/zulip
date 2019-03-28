@@ -4,14 +4,14 @@
     "data": {
         "type": "notification_event_data",
         "item": {
-            "type": "user",
-            "id": "5c9ab3e78cd7330140ce5033",
-            "user_id": "25",
-            "anonymous": false,
-            "email": "aaron@zulip.com",
-            "phone": "2345570987",
-            "name": "Aaron Smith",
-            "pseudonym": null,
+            "type": "contact",
+            "id": "5c96b122177026171b401e20",
+            "user_id": "8f9ef493-c5f9-4817-895d-874c3704ea49",
+            "anonymous": true,
+            "email": "jerryguitarist@gmail.com",
+            "phone": null,
+            "name": null,
+            "pseudonym": "Azure Bus from St. John's",
             "avatar": {
                 "type": "avatar",
                 "image_url": null
@@ -19,21 +19,25 @@
             "app_id": "i6wc9ipe",
             "companies": {
                 "type": "company.list",
-                "companies": [
-                    {
-                        "type": "company",
-                        "company_id": "366",
-                        "id": "5c9ab3e78cd7330140ce5034",
-                        "name": "Zulip"
-                    }
-                ]
+                "companies": []
             },
-            "location_data": {},
-            "last_request_at": null,
-            "created_at": "2019-03-26T23:21:11.907+00:00",
-            "remote_created_at": "2014-02-18T13:48:51.000+00:00",
-            "signed_up_at": "2014-02-18T13:48:51.000+00:00",
-            "updated_at": "2019-03-26T23:21:11.904+00:00",
+            "location_data": {
+                "type": "location_data",
+                "city_name": "St. John's",
+                "continent_code": "NA",
+                "country_name": "Canada",
+                "postal_code": "A1B",
+                "region_name": "Newfoundland and Labrador",
+                "timezone": "America/St_Johns",
+                "country_code": "CAN",
+                "latitude": null,
+                "longitude": null
+            },
+            "last_request_at": "2019-03-23T22:20:52.453+00:00",
+            "created_at": "2019-03-23T22:20:18.253+00:00",
+            "remote_created_at": null,
+            "signed_up_at": null,
+            "updated_at": "2019-03-23T22:21:46.437+00:00",
             "session_count": 0,
             "social_profiles": {
                 "type": "social_profile.list",
@@ -63,12 +67,12 @@
         }
     },
     "links": {},
-    "id": "notif_61f436a9-6a2e-4f9b-9e85-68043477da63",
-    "topic": "user.created",
+    "id": "notif_0cdd6657-8227-439f-899e-957646831785",
+    "topic": "contact.added_email",
     "delivery_status": "pending",
     "delivery_attempts": 1,
     "delivered_at": 0,
-    "first_sent_at": 1553642472,
-    "created_at": 1553642471,
+    "first_sent_at": 1553379706,
+    "created_at": 1553379706,
     "self": null
 }
