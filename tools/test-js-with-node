@@ -39,7 +39,7 @@ enforce_fully_covered = {
     'static/js/compose_ui.js',
     # Temporarily removed until we finish merging emoji commits.
     # 'static/js/composebox_typeahead.js',
-    'static/js/dict.js',
+    'static/js/dict.ts',
     'static/js/emoji.js',
     'static/js/fenced_code.js',
     'static/js/fetch_status.js',
@@ -119,7 +119,9 @@ INDEX_JS = 'frontend_tests/zjsunit/index.js'
 # Add ".js" to the end of all the file arguments, so index.js
 # can actually verify if the file exists or not.
 for index, arg in enumerate(options.args):
-    if not arg.endswith('.js'):
+    if not arg.endswith('.js') and not arg.endswith('.ts'):
+        # If it doesn't end with ".js" or ".ts", assume it is a JS file,
+        # since most files are currently JS files.
         options.args[index] = arg + '.js'
 
 individual_files = options.args
