@@ -1,32 +1,19 @@
-{!create-stream.md!}
+Get Intercom notifications in Zulip!
 
-{!create-bot-construct-url.md!}
+1. {!create-stream.md!}
 
-Intercom will use the `intercom` stream by default if no stream is given
-in the URL. Make sure the selected stream exists in Zulip.
+1. {!create-bot-construct-url-indented.md!}
 
-**Follow these steps:**
+1. Go to your Intercom account's **Settings** page and click on **Developers**
+   on the left sidebar. Click on **Developer Hub** and click **New app**.
 
-1. Go to the Integrations Page of your Intercom Console.
+1. Set **App name** to a name of your choice, such as `Zulip Webhook`. Set
+   **Workspace** to the Intercom workspace of your choice, and click
+   **Create app**.
 
-2. Find and select the `Zapier` integration option.
-
-3. Create an account on `Zapier` if you haven't
-already. Click on **Explore Intercom on Zapier!**.
-
-4. Select **Make A ZAP**. Choose `Intercom `in the apps section and
-`Webhooks` in the built-in apps section.
-
-5. Authenticate with your Intercom account to connect it with
-`Zapier`.
-
-6. Select the actions which will trigger the webhook.
-
-7. Select **POST** on the page that says **Webhooks by Zapier Action**, and
-click **Continue**.
-
-8. In the **URL** field, enter the URL constructed above. Select `JSON`
-for **Payload Type** and click **Continue**:
+1. Click on **Webhooks** on the left sidebar. Set **Your request endpoint URL**
+   to the URL constructed above. Select the topics you'd like to be notified
+   about, and click **Save**.
 
 {!congrats.md!}
 
