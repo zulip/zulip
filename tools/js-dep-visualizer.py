@@ -36,9 +36,9 @@ def get_js_edges():
     names = set()
     modules = []  # type: List[Dict[str, Any]]
     for js_file in os.listdir(JS_FILES_DIR):
-        if not js_file.endswith('.js'):
+        if not js_file.endswith('.js') and not js_file.endswith('.ts'):
             continue
-        name = js_file[:-3]  # remove .js
+        name = js_file[:-3]  # Remove .js or .ts
         path = os.path.join(JS_FILES_DIR, js_file)
         names.add(name)
         modules.append(dict(
@@ -266,11 +266,14 @@ def report_roadmap(edges, methods):
             callers[(child, method)].add(parent)
 
     for child in sorted(child_modules):
-        print(child + '.js')
+        # Since children are found using the regex pattern, it is difficult
+        # to know if they are JS or TS files without checking which files
+        # exist. Instead, just print the name of the module.
+        print(child)
         for method in module_methods[child]:
             print('    ' + child + '.' + method)
             for caller in sorted(callers[(child, method)]):
-                print('        ' + caller + '.js')
+                print('        ' + caller)
             print()
         print()
 
