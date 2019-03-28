@@ -268,7 +268,21 @@ function send_presence_to_server(want_redraw) {
         return;
     }
 
-    if (exports.client_is_active) {
+    // The overall algorithm intent for the `status` field is to send
+    // `ACTIVE` (aka green circle) if we know the user is at their
+    // computer, and IDLE (aka orange circle) if the user might not
+    // be:
+    //
+    // * For the webapp, we just know whether this window has focus.
+    // * For the electron desktop app, we also know whether the
+    //   user is active or idle elsewhere on their system.
+    if (window.electron_bridge !== undefined &&
+            // The check for `idle_on_system === undefined` is feature
+            // detection; older desktop app releases never set that
+            // property.
+            window.electron_bridge.idle_on_system !== undefined &&
+            !window.electron_bridge.idle_on_system ||
+            exports.client_is_active) {
         status = exports.ACTIVE;
     } else {
         status = exports.IDLE;
