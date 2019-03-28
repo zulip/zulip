@@ -323,7 +323,12 @@ def add_subscriptions_backend(
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        return json_error(_("Unable to access stream (%s).") % unauthorized_streams[0].name)
+        if user_profile.is_realm_admin and unauthorized_streams[0].invite_only:
+            return json_error(_("Unable to access stream (%s). "
+                                "Admin can not access unsubscribed private streams.")
+                              % (unauthorized_streams[0].name))
+        else:
+            return json_error(_("Unable to access stream (%s).") % unauthorized_streams[0].name)
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 

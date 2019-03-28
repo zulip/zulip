@@ -827,7 +827,8 @@ class StreamAdminTest(ZulipTestCase):
             "/json/users/me/subscriptions",
             {"subscriptions": ujson.dumps([{"name": deactivated_stream_name}])})
         self.assert_json_error(
-            result, "Unable to access stream (%s)." % (deactivated_stream_name,))
+            result, "Unable to access stream (%s). Admin can not access unsubscribed private streams." % (
+                deactivated_stream_name))
 
     def test_you_must_be_realm_admin(self) -> None:
         """
@@ -3272,6 +3273,12 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.login(email)
         result = self.common_subscribe_to_streams(email, [stream_name])
         self.assert_json_error(result, 'Unable to access stream (Saxony).')
+        # Even relam admin is not allowed to subscribe to private stream
+        user_profile = self.example_user('iago')
+        email = user_profile.email
+        self.login(email)
+        result = self.common_subscribe_to_streams(email, [stream_name])
+        self.assert_json_error(result, 'Unable to access stream (Saxony). Admin can not access unsubscribed private streams.')
 
         # authorization_errors_fatal=False works
         user_profile = self.example_user('othello')
