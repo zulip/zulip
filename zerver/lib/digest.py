@@ -23,7 +23,6 @@ from zerver.lib.logging_util import log_to_file
 logger = logging.getLogger(__name__)
 log_to_file(logger, settings.DIGEST_LOG_PATH)
 
-VALID_DIGEST_DAY = 1  # Tuesdays
 DIGEST_CUTOFF = 5
 
 # Digests accumulate 4 types of interesting traffic for a user:
@@ -64,10 +63,8 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
     if not settings.SEND_DIGEST_EMAILS:
         return
 
-    if timezone_now().weekday() != VALID_DIGEST_DAY:
-        return
-
-    for realm in Realm.objects.filter(deactivated=False, digest_emails_enabled=True):
+    weekday = timezone_now().weekday()
+    for realm in Realm.objects.filter(deactivated=False, digest_emails_enabled=True, digest_weekday=weekday):
         if not should_process_digest(realm.string_id):
             continue
 

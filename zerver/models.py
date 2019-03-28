@@ -189,6 +189,8 @@ class Realm(models.Model):
 
     # Whether digest emails are enabled for the organization.
     digest_emails_enabled = models.BooleanField(default=True)  # type: bool
+    # Day of the week on which the digest is sent (default: Tuesday).
+    digest_weekday = models.SmallIntegerField(default=1)  # type: int
 
     send_welcome_emails = models.BooleanField(default=True)  # type: bool
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)  # type: bool
