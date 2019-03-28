@@ -24,7 +24,7 @@ See also [fixing commits][fix-commit]
     - `git fetch origin`
     - `git fetch upstream`
 - grep
-    - `git grep update_unread_counts -- '*.js'`
+    - `git grep update_unread_counts -- '*.js' '*.ts'`
 - log
     - `git log`
 - pull
@@ -79,7 +79,8 @@ See also [fixing commits][fix-commit]
     - `git fetch origin`: fetch origin repository
     - `git fetch upstream`: fetch upstream repository
 - grep
-    - `git grep update_unread_counts -- '*.js'`: search all files (ending in `.js`) for `update_unread_counts`
+    - `git grep update_unread_counts -- '*.js' '*.ts'`: search all
+      files (ending in `.js` or in `.ts`) for `update_unread_counts`
 - log
     - `git log`: show commit logs
     - `git log --oneline | head`: To quickly see the latest ten commits on a branch.

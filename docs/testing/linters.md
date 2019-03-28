@@ -3,7 +3,7 @@
 ## Overview
 
 Zulip does extensive linting of much of its source code, including
-Python/JavaScript files, HTML templates (Django/handlebars), CSS files,
+Python/JavaScript/TypeScript files, HTML templates (Django/handlebars), CSS files,
 JSON fixtures, Markdown documents, puppet manifests, and shell scripts.
 
 For some files we simply check for small things like trailing whitespace,
@@ -92,7 +92,7 @@ Most of our lint checks get performed by `./tools/lint`.  These include the
 following checks:
 
 - Check Python code with pyflakes.
-- Check JavaScript code with eslint.
+- Check JavaScript and TypeScript code with eslint.
 - Check Python code for custom Zulip rules.
 - Check non-Python code for custom Zulip rules.
 - Check puppet manifests with the puppet validator.

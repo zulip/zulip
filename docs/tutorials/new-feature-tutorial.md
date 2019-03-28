@@ -114,10 +114,10 @@ Realm setting, in `test_realm.py`).
 
 ### Frontend changes
 
-**JavaScript:** Zulip's JavaScript is located in the directory
-`static/js/`. The exact files you may need to change depend on your
-feature. If you've added a new event that is sent to clients, be sure to
-add a handler for it in `static/js/server_events_dispatch.js`.
+**JavaScript/TypeScript:** Zulip's JavaScript and TypeScript sources are
+located in the directory `static/js/`. The exact files you may need to change
+depend on your feature. If you've added a new event that is sent to clients,
+be sure to add a handler for it in `static/js/server_events_dispatch.js`.
 
 **CSS:** The primary CSS file is `static/styles/zulip.css`. If your new
 feature requires UI changes, you may need to add additional CSS to this
@@ -129,7 +129,7 @@ Handlebars templates located in `static/templates`. Templates are
 precompiled as part of the build/deploy process.
 
 Zulip is fully internationalized, so when writing both HTML templates
-or JavaScript code that generates user-facing strings, be sure to
+or JavaScript/TypeScript code that generates user-facing strings, be sure to
 [tag those strings for translation](../translating/translating.html).
 
 **Testing:** There are two types of frontend tests: node-based unit

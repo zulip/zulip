@@ -1,7 +1,7 @@
-# JavaScript unit tests
+# JavaScript and TypeScript unit tests
 
 As an alternative to the black-box whole-app testing, you can unit test
-individual JavaScript files.
+individual JavaScript and TypeScript files.
 
 You can run tests as follow:
 ```
