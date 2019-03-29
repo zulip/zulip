@@ -43,6 +43,21 @@ function construct_recipient_header(message_row) {
     return $('<p>').append($('<strong>').text(message_header_content));
 }
 
+/*
+The techniques we use in this code date back to
+2013 and may be obsolete today (and may not have
+been even the best workaround back then).
+
+https://github.com/zulip/zulip/commit/fc0b7c00f16316a554349f0ad58c6517ebdd7ac4
+
+The idea is that we build a temp div, let jQuery process the
+selection, then restore the selection on a zero-second timer back
+to the original selection.
+
+Do not be afraid to change this code if you understand
+how modern browsers deal with copy/paste.  Just test
+your changes carefully.
+*/
 function construct_copy_div(div, start_id, end_id) {
     var start_row = current_msg_list.get_row(start_id);
     var start_recipient_row = rows.get_message_recipient_row(start_row);
@@ -71,6 +86,36 @@ function construct_copy_div(div, start_id, end_id) {
     if (should_include_start_recipient_header) {
         div.prepend(construct_recipient_header(start_row));
     }
+}
+
+function select_div(div, selection) {
+    div.css({
+        position: 'absolute',
+        left: '-99999px',
+        // Color and background is made according to "day mode"
+        // exclusively here because when copying the content
+        // into, say, Gmail compose box, the styles come along.
+        // This is done to avoid copying the content with dark
+        // background when using the app in night mode.
+        // We can avoid other custom styles since they are wrapped
+        // inside another parent such as `.message_content`.
+        color: '#333',
+        background: '#FFF',
+    })
+        .attr('id', 'copytempdiv');
+    $('body').append(div);
+    selection.selectAllChildren(div[0]);
+}
+
+function remove_div(div, ranges, selection) {
+    window.setTimeout(function () {
+        selection = window.getSelection();
+        selection.removeAllRanges();
+        _.each(ranges, function (range) {
+            selection.addRange(range);
+        });
+        $('#copytempdiv').remove();
+    }, 0);
 }
 
 exports.copy_handler = function () {
@@ -126,49 +171,9 @@ exports.copy_handler = function () {
 
     // Select div so that the browser will copy it
     // instead of copying the original selection
-    div.css({
-        position: 'absolute',
-        left: '-99999px',
-        // Color and background is made according to "day mode"
-        // exclusively here because when copying the content
-        // into, say, Gmail compose box, the styles come along.
-        // This is done to avoid copying the content with dark
-        // background when using the app in night mode.
-        // We can avoid other custom styles since they are wrapped
-        // inside another parent such as `.message_content`.
-        color: '#333',
-        background: '#FFF',
-    })
-        .attr('id', 'copytempdiv');
-    $('body').append(div);
-    selection.selectAllChildren(div[0]);
+    select_div(div, selection);
     document.execCommand('copy');
-
-    /*
-    The techniques we use in this code date back to
-    2013 and may be obsolete today (and may not have
-    been even the best workaround back then).
-
-    https://github.com/zulip/zulip/commit/fc0b7c00f16316a554349f0ad58c6517ebdd7ac4
-
-    The idea is that we build a temp div, return from
-    this function, let jQuery process the selection,
-    then restore the selection on a zero-second timer
-    back to the original selection.
-
-    Do not be afraid to change this code if you understand
-    how modern browsers deal with copy/paste.  Just test
-    your changes carefully.
-    */
-
-    window.setTimeout(function () {
-        selection = window.getSelection();
-        selection.removeAllRanges();
-        _.each(ranges, function (range) {
-            selection.addRange(range);
-        });
-        $('#copytempdiv').remove();
-    }, 0);
+    remove_div(div, ranges, selection);
 };
 
 exports.analyze_selection = function (selection) {
