@@ -63,10 +63,28 @@ function construct_copy_div(div, start_id, end_id) {
     var start_recipient_row = rows.get_message_recipient_row(start_row);
     var start_recipient_row_id = rows.id_for_recipient_row(start_recipient_row);
     var should_include_start_recipient_header = false;
-
+    var row;
+    var recipient_row_id;
+    var message;
+    var message_firstp;
     var last_recipient_row_id = start_recipient_row_id;
-    for (var row = start_row; rows.id(row) <= end_id; row = rows.next_visible(row)) {
-        var recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row(row));
+
+    // Check if all messages are from a single user or not.
+    var first_sender_id;
+    var only_one_user = true;
+    for (row = start_row; rows.id(row) <= end_id; row = rows.next_visible(row)) {
+        message = current_msg_list.get(rows.id(row));
+        if (first_sender_id === undefined) {
+            first_sender_id = message.sender_id;
+            continue;
+        }
+        if (first_sender_id !== message.sender_id) {
+            only_one_user = false;
+        }
+    }
+
+    for (row = start_row; rows.id(row) <= end_id; row = rows.next_visible(row)) {
+        recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row(row));
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
         // so we have to add new recipient's bar to final copied message
@@ -76,9 +94,13 @@ function construct_copy_div(div, start_id, end_id) {
             last_recipient_row_id = recipient_row_id;
             should_include_start_recipient_header = true;
         }
-        var message = current_msg_list.get(rows.id(row));
-        var message_firstp = $(message.content).slice(0, 1);
-        message_firstp.prepend(message.sender_full_name + ": ");
+        message = current_msg_list.get(rows.id(row));
+        message_firstp = $(message.content).slice(0, 1);
+        // If messages are from a different user, we want their names.
+        // If they are all from the same user, then no name.
+        if (only_one_user === false) {
+            message_firstp.prepend(message.sender_full_name + ": ");
+        }
         div.append(message_firstp);
         div.append($(message.content).slice(1));
     }
