@@ -70,6 +70,7 @@ import urllib
 import ujson
 from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
 
+
 class AuthBackendTest(ZulipTestCase):
     def get_username(self, email_to_username: Optional[Callable[[str], str]]=None) -> str:
         username = self.example_email('hamlet')
@@ -412,6 +413,7 @@ class AuthBackendTest(ZulipTestCase):
             httpretty.disable()
             httpretty.reset()
 
+
 class ResponseMock:
     def __init__(self, status_code: int, data: Any) -> None:
         self.status_code = status_code
@@ -423,6 +425,7 @@ class ResponseMock:
     @property
     def text(self) -> str:
         return "Response text"
+
 
 class SocialAuthBase(ZulipTestCase):
     """This is a base class for testing social-auth backends. Following
@@ -844,6 +847,7 @@ class SocialAuthBase(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
 
+
 class GitHubAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
 
@@ -953,6 +957,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
             self.assertTrue(github_auth_enabled())
 
+
 class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response: ResponseMock, account_response: ResponseMock,
                            *, subdomain: Optional[str]=None,
@@ -995,6 +1000,7 @@ class GoogleOAuthTest(ZulipTestCase):
             result = self.client_get("/accounts/login/google/done/",
                                      dict(state=csrf_state), **headers)
         return result
+
 
 class GoogleSubdomainLoginTest(GoogleOAuthTest):
     def test_google_oauth2_start(self) -> None:
@@ -1423,6 +1429,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertEqual(sorted(self.get_streams(email, realm)), stream_names)
 
+
 class GoogleLoginTest(GoogleOAuthTest):
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_google_oauth2_subdomains_homepage(self) -> None:
@@ -1503,6 +1510,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         self.assertEqual(m.call_args_list[0][0][0],
                          'Google oauth2 CSRF error')
 
+
 class JSONFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
@@ -1528,6 +1536,7 @@ class JSONFetchAPIKeyTest(ZulipTestCase):
                                   dict(user_profile=self.user_profile,
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 400)
+
 
 class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
@@ -1640,6 +1649,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                                        password=initial_password(self.email)))
         self.assert_json_error_contains(result, "This organization has been deactivated", 403)
 
+
 class DevFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
@@ -1684,6 +1694,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
                                       dict(username=self.email))
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
+
 class DevGetEmailsTest(ZulipTestCase):
     def test_success(self) -> None:
         result = self.client_get("/api/v1/dev_list_users")
@@ -1695,6 +1706,7 @@ class DevGetEmailsTest(ZulipTestCase):
         with mock.patch('zerver.views.auth.dev_auth_enabled', return_value=False):
             result = self.client_get("/api/v1/dev_list_users")
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
+
 
 class FetchAuthBackends(ZulipTestCase):
     def assert_on_error(self, error: Optional[str]) -> None:
@@ -1814,6 +1826,7 @@ class FetchAuthBackends(ZulipTestCase):
                 data = result.json()
                 self.assertEqual(data, get_expected_result({"dev"}))
 
+
 class TestTwoFactor(ZulipTestCase):
     def test_direct_dev_login_with_2fa(self) -> None:
         email = self.example_email('hamlet')
@@ -1898,6 +1911,7 @@ class TestTwoFactor(ZulipTestCase):
             result = self.client_get('/accounts/login/')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result['Location'], 'http://zulip.testserver')
+
 
 class TestDevAuthBackend(ZulipTestCase):
     def test_login_success(self) -> None:
@@ -2001,6 +2015,7 @@ class TestDevAuthBackend(ZulipTestCase):
         with mock.patch('django.core.handlers.exception.logger'):
             response = self.client_post('/accounts/login/local/', data)
             self.assertRedirects(response, reverse('dev_not_supported'))
+
 
 class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_success(self) -> None:
@@ -2185,6 +2200,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         res = test_with_redirect_to_param_set_as_next('#narrow/stream/7-test-here')
         self.assertEqual('http://zulip.testserver', res.url)
 
+
 class TestJWTLogin(ZulipTestCase):
     """
     JWT uses ZulipDummyBackend.
@@ -2298,6 +2314,7 @@ class TestJWTLogin(ZulipTestCase):
                 user_profile = self.example_user('hamlet')
                 self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+
 class ZulipLDAPTestCase(ZulipTestCase):
     def setUp(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -2322,6 +2339,7 @@ class ZulipLDAPTestCase(ZulipTestCase):
         realm = user_profile.realm
         realm.string_id = 'zulip'
         realm.save()
+
 
 class TestLDAP(ZulipLDAPTestCase):
     def test_generate_dev_ldap_dir(self) -> None:
@@ -2716,6 +2734,7 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertEqual(user_profile.full_name, 'Non Existing')
             self.assertEqual(user_profile.realm.string_id, 'zulip')
 
+
 class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_authenticate(self) -> None:
         backend = ZulipLDAPUserPopulator()
@@ -2949,6 +2968,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         actual_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=no_op_field).value
         self.assertEqual(actual_value, expected_value)
 
+
 class TestQueryLDAP(ZulipLDAPTestCase):
     class _LDAPUser:
         attrs = {
@@ -3007,17 +3027,20 @@ class TestQueryLDAP(ZulipLDAPTestCase):
         self.assertIn('short_name: Hamlet', values)
         self.assertIn('email: separate_email@zulip.com', values)
 
+
 class TestZulipAuthMixin(ZulipTestCase):
     def test_get_user(self) -> None:
         backend = ZulipAuthMixin()
         result = backend.get_user(11111)
         self.assertIs(result, None)
 
+
 class TestPasswordAuthEnabled(ZulipTestCase):
     def test_password_auth_enabled_for_ldap(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',)):
             realm = Realm.objects.get(string_id='zulip')
             self.assertTrue(password_auth_enabled(realm))
+
 
 class TestRequireEmailFormatUsernames(ZulipTestCase):
     def test_require_email_format_usernames_for_ldap_with_append_domain(
@@ -3054,6 +3077,7 @@ class TestRequireEmailFormatUsernames(ZulipTestCase):
                            LDAP_APPEND_DOMAIN="zulip.com"):
             realm = Realm.objects.get(string_id='zulip')
             self.assertFalse(require_email_format_usernames(realm))
+
 
 class TestMaybeSendToRegistration(ZulipTestCase):
     def test_sso_only_when_preregistration_user_does_not_exist(self) -> None:
@@ -3112,6 +3136,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 self.assertIn('do_confirm/' + confirmation_key, result.url)
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
 
+
 class TestAdminSetBackends(ZulipTestCase):
 
     def test_change_enabled_backends(self) -> None:
@@ -3147,6 +3172,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assertTrue(dev_auth_enabled(realm))
         self.assertFalse(password_auth_enabled(realm))
 
+
 class EmailValidatorTestCase(ZulipTestCase):
     def test_valid_email(self) -> None:
         validate_login_email(self.example_email("hamlet"))
@@ -3173,6 +3199,7 @@ class EmailValidatorTestCase(ZulipTestCase):
 
         _, error = validate_email(inviter, 'fred-is-fine@zulip.com')
         self.assertEqual(error, None)
+
 
 class LDAPBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
