@@ -10,8 +10,10 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 class MissingUploadFileException(Exception):
     pass
+
 
 def get_file_size_local(path_id: Text) -> int:
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
@@ -20,6 +22,7 @@ def get_file_size_local(path_id: Text) -> int:
     except OSError:
         raise MissingUploadFileException
     return size
+
 
 def sync_filesizes(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     attachments = apps.get_model('zerver', 'Attachment')
@@ -46,9 +49,11 @@ def sync_filesizes(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None
                 attachment.size = new_size
                 attachment.save(update_fields=["size"])
 
+
 def reverse_sync_filesizes(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     """Does nothing"""
     return None
+
 
 class Migration(migrations.Migration):
 
