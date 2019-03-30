@@ -6,14 +6,17 @@ from zerver.models import BotStorageData, UserProfile
 
 from typing import Optional, List, Tuple
 
+
 class StateError(Exception):
     pass
+
 
 def get_bot_storage(bot_profile: UserProfile, key: str) -> str:
     try:
         return BotStorageData.objects.get(bot_profile=bot_profile, key=key).value
     except BotStorageData.DoesNotExist:
         raise StateError("Key does not exist.")
+
 
 def get_bot_storage_size(bot_profile: UserProfile, key: Optional[str]=None) -> int:
     if key is None:
@@ -25,6 +28,7 @@ def get_bot_storage_size(bot_profile: UserProfile, key: Optional[str]=None) -> i
             return len(key) + len(BotStorageData.objects.get(bot_profile=bot_profile, key=key).value)
         except BotStorageData.DoesNotExist:
             return 0
+
 
 def set_bot_storage(bot_profile: UserProfile, entries: List[Tuple[str, str]]) -> None:
     storage_size_limit = settings.USER_STATE_SIZE_LIMIT
@@ -44,14 +48,17 @@ def set_bot_storage(bot_profile: UserProfile, entries: List[Tuple[str, str]]) ->
             BotStorageData.objects.update_or_create(bot_profile=bot_profile, key=key,
                                                     defaults={'value': value})
 
+
 def remove_bot_storage(bot_profile: UserProfile, keys: List[str]) -> None:
     queryset = BotStorageData.objects.filter(bot_profile=bot_profile, key__in=keys)
     if len(queryset) < len(keys):
         raise StateError("Key does not exist.")
     queryset.delete()
 
+
 def is_key_in_bot_storage(bot_profile: UserProfile, key: str) -> bool:
     return BotStorageData.objects.filter(bot_profile=bot_profile, key=key).exists()
+
 
 def get_keys_in_bot_storage(bot_profile: UserProfile) -> List[str]:
     return list(BotStorageData.objects.filter(bot_profile=bot_profile).values_list('key', flat=True))
