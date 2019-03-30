@@ -3,6 +3,7 @@ import urllib
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class TravisHookTests(WebhookTestCase):
     STREAM_NAME = 'travis'
     URL_TEMPLATE = u"/api/v1/external/travis?stream={stream}&api_key={api_key}"
