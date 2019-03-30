@@ -5,6 +5,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.users import get_api_key
 
+
 class Command(ZulipBaseCommand):
     help = "Print the initial password and API key for accounts as created by populate_db"
 
