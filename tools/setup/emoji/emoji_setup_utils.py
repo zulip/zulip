@@ -46,6 +46,7 @@ EMOTICON_CONVERSIONS = {
     ':/': ':confused:',
 }
 
+
 def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
     emoji_names = []  # type: List[str]
     for emoji_code, name_info in emoji_name_maps.items():
@@ -53,6 +54,7 @@ def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[s
         emoji_names.extend(name_info["aliases"])
 
     return sorted(emoji_names)
+
 
 def get_emoji_code(emoji_dict: Dict[str, Any]) -> str:
     # Starting from version 4.0.0, `emoji_datasource` package has started to
@@ -71,6 +73,8 @@ def get_emoji_code(emoji_dict: Dict[str, Any]) -> str:
 # Returns a dict from categories to list of codepoints. The list of
 # codepoints are sorted according to the `sort_order` as defined in
 # `emoji_data`.
+
+
 def generate_emoji_catalog(emoji_data: List[Dict[str, Any]],
                            emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, List[str]]:
     sort_order = {}  # type: Dict[str, int]
@@ -93,17 +97,21 @@ def generate_emoji_catalog(emoji_data: List[Dict[str, Any]],
 
 # Use only those names for which images are present in all
 # the emoji sets so that we can switch emoji sets seemlessly.
+
+
 def emoji_is_universal(emoji_dict: Dict[str, Any]) -> bool:
     for emoji_set in EMOJISETS:
         if not emoji_dict['has_img_' + emoji_set]:
             return False
     return True
 
+
 def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
     codepoint_to_name = {}  # type: Dict[str, str]
     for emoji_code, name_info in emoji_name_maps.items():
         codepoint_to_name[emoji_code] = name_info["canonical_name"]
     return codepoint_to_name
+
 
 def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
     name_to_codepoint = {}
