@@ -10,6 +10,7 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import F
 
+
 def reset_is_private_flag(
         apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserMessage = apps.get_model("zerver", "UserMessage")
@@ -45,6 +46,7 @@ def reset_is_private_flag(
             percent = round((i / total) * 100, 2)
             print("Processed %s/%s %s%%" % (i, total, percent))
             sys.stdout.flush()
+
 
 class Migration(migrations.Migration):
     atomic = False
