@@ -8,6 +8,7 @@ if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Iterable, List, MutableSet
 
+
 def expand_reqs_helper(fpath, visited):
     # type: (str, MutableSet[str]) -> List[str]
     if fpath in visited:
@@ -30,6 +31,7 @@ def expand_reqs_helper(fpath, visited):
                 result.append(dep)
     return result
 
+
 def expand_reqs(fpath):
     # type: (str) -> List[str]
     """
@@ -41,10 +43,12 @@ def expand_reqs(fpath):
     output = expand_reqs_helper(absfpath, set())
     return sorted(set(output))
 
+
 def hash_deps(deps):
     # type: (Iterable[str]) -> str
     deps_str = "\n".join(deps) + "\n"
     return hashlib.sha1(deps_str.encode('utf-8')).hexdigest()
+
 
 def main():
     # type: () -> int
