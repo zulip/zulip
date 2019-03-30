@@ -13,6 +13,7 @@ import ujson
 import os
 from typing import Any, Dict, List, Tuple
 
+
 class SlackMessageConversion(ZulipTestCase):
     def assertEqual(self, first: Any, second: Any, msg: str="") -> None:
         if isinstance(first, str) and isinstance(second, str):
