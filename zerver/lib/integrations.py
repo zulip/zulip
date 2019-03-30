@@ -286,6 +286,7 @@ WEBHOOK_INTEGRATIONS = [
         stream_name='commits',
         legacy=True
     ),
+    WebhookIntegration('buildbot', ['continuous-integration'], display_name='Buildbot'),
     WebhookIntegration('circleci', ['continuous-integration'], display_name='CircleCI'),
     WebhookIntegration('clubhouse', ['project-management']),
     WebhookIntegration('codeship', ['continuous-integration', 'deployment']),
