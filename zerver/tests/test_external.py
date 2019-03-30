@@ -22,6 +22,7 @@ import DNS
 import mock
 import time
 
+
 class MITNameTest(ZulipTestCase):
     def test_valid_hesiod(self) -> None:
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
@@ -44,6 +45,7 @@ class MITNameTest(ZulipTestCase):
     def test_notmailinglist(self) -> None:
         with mock.patch('DNS.dnslookup', return_value=[['POP IMAP.EXCHANGE.MIT.EDU starnine']]):
             email_is_not_mit_mailing_list("sipbexch@mit.edu")
+
 
 class RateLimitTests(ZulipTestCase):
 
