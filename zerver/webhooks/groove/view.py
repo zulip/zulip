@@ -13,10 +13,12 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     validate_extract_webhook_http_header
 from zerver.models import UserProfile
 
+
 def ticket_started_body(payload: Dict[str, Any]) -> str:
     body = u'New ticket from {customer_name}'
     body += u"\n```quote\n**[Ticket #{number}: {title}]({app_url})**\n{summary}\n```"
     return body.format(**payload)
+
 
 def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[str]:
     # Take the state, assignee, and assigned group from the payload.
@@ -46,6 +48,7 @@ def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[str]:
     else:
         return None
 
+
 def agent_replied_body(payload: Dict[str, Any]) -> str:
     # Take the agent's email and the ticket number from the payload.
     agent = payload['links']['author']['href'].split("http://api.groovehq.com/v1/agents/")[1]
@@ -55,6 +58,7 @@ def agent_replied_body(payload: Dict[str, Any]) -> str:
     body = u"%s has just replied to a ticket\n```quote\n**[Ticket #%s]" % (agent, number)
     body += u"({app_ticket_url})**\n{plain_text_body}\n```"
     return body.format(**payload)
+
 
 def customer_replied_body(payload: Dict[str, Any]) -> str:
     # Take the customer's email and the ticket number from the payload.
@@ -66,6 +70,7 @@ def customer_replied_body(payload: Dict[str, Any]) -> str:
     body += u"({app_ticket_url})**\n{plain_text_body}\n```"
     return body.format(**payload)
 
+
 def note_added_body(payload: Dict[str, Any]) -> str:
     # Take the agent's email and the ticket number from the payload.
     agent = payload['links']['author']['href'].split("http://api.groovehq.com/v1/agents/")[1]
@@ -75,6 +80,7 @@ def note_added_body(payload: Dict[str, Any]) -> str:
     body = u"%s has left a note\n```quote\n**[Ticket #%s]" % (agent, number)
     body += u"({app_ticket_url})**\n{plain_text_body}\n```"
     return body.format(**payload)
+
 
 @api_key_only_webhook_view('Groove')
 @has_request_variables
