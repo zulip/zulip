@@ -25,9 +25,11 @@ from zerver.views.push_notifications import validate_token
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     RemoteRealmCount, RemoteInstallationCount
 
+
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> None:
     if not isinstance(entity, RemoteZulipServer):
         raise JsonableError(err_("Must validate with valid Zulip server API key"))
+
 
 def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer],
                                    token: bytes, kind: int) -> None:
@@ -35,6 +37,7 @@ def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer]
         raise JsonableError(err_("Invalid token type"))
     validate_entity(entity)
     validate_token(token, kind)
+
 
 @csrf_exempt
 @require_post
@@ -79,6 +82,7 @@ def register_remote_server(
 
     return json_success({'created': created})
 
+
 @has_request_variables
 def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                 user_id: int=REQ(), token: bytes=REQ(),
@@ -102,6 +106,7 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
 
     return json_success()
 
+
 @has_request_variables
 def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                   token: bytes=REQ(),
@@ -118,6 +123,7 @@ def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfil
         return json_error(err_("Token does not exist"))
 
     return json_success()
+
 
 @has_request_variables
 def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
@@ -150,6 +156,7 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
 
     return json_success()
 
+
 def validate_count_stats(server: RemoteZulipServer, model: Any,
                          counts: List[Dict[str, Any]]) -> None:
     last_id = get_last_id_from_server(server, model)
@@ -159,6 +166,7 @@ def validate_count_stats(server: RemoteZulipServer, model: Any,
         if item['id'] <= last_id:
             raise JsonableError(_("Data is out of order."))
         last_id = item['id']
+
 
 @has_request_variables
 def remote_server_post_analytics(request: HttpRequest,
@@ -219,11 +227,13 @@ def remote_server_post_analytics(request: HttpRequest,
         RemoteInstallationCount.objects.bulk_create(objects_to_create)
     return json_success()
 
+
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
     last_count = model.objects.filter(server=server).order_by("remote_id").last()
     if last_count is not None:
         return last_count.remote_id
     return 0
+
 
 @has_request_variables
 def remote_server_check_analytics(request: HttpRequest,
