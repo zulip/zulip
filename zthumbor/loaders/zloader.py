@@ -16,12 +16,14 @@ from typing import Any, Callable
 import base64
 import logging
 
+
 def get_not_found_result():
     # type: () -> LoaderResult
     result = LoaderResult()
     result.error = LoaderResult.ERROR_NOT_FOUND
     result.successful = False
     return result
+
 
 @return_future
 def load(context, url, callback):
