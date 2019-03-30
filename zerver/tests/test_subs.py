@@ -84,6 +84,7 @@ import mock
 import random
 import ujson
 
+
 class TestMiscStuff(ZulipTestCase):
     def test_empty_results(self) -> None:
         # These are essentially just tests to ensure line
@@ -108,6 +109,7 @@ class TestMiscStuff(ZulipTestCase):
             include_default=False,
         )
         self.assertEqual(streams, [])
+
 
 class TestCreateStreams(ZulipTestCase):
     def test_creating_streams(self) -> None:
@@ -266,6 +268,7 @@ class TestCreateStreams(ZulipTestCase):
             '**Description**: Talk about **stuff**.'
         )
 
+
 class RecipientTest(ZulipTestCase):
     def test_recipient(self) -> None:
         realm = get_realm('zulip')
@@ -276,6 +279,7 @@ class RecipientTest(ZulipTestCase):
         )
         self.assertEqual(str(recipient), '<Recipient: Verona (%d, %d)>' % (
             stream.id, Recipient.STREAM))
+
 
 class StreamAdminTest(ZulipTestCase):
     def test_make_stream_public(self) -> None:
@@ -1046,6 +1050,7 @@ class StreamAdminTest(ZulipTestCase):
             "User not authorized to execute queries on behalf of 'baduser@zulip.com'",
             status_code=403)
 
+
 class DefaultStreamTest(ZulipTestCase):
     def get_default_stream_names(self, realm: Realm) -> Set[str]:
         streams = get_default_streams_for_realm(realm.id)
@@ -1127,6 +1132,7 @@ class DefaultStreamTest(ZulipTestCase):
         result = self.client_delete('/json/default_streams', dict(stream_name=stream_name))
         self.assert_json_success(result)
         self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
+
 
 class DefaultStreamGroupTest(ZulipTestCase):
     def test_create_update_and_remove_default_stream_group(self) -> None:
@@ -1388,6 +1394,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, 'Invalid default stream group invalid-name'):
             lookup_default_stream_groups(['invalid-name'], realm)
 
+
 class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self) -> None:
         """
@@ -1587,6 +1594,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_error(result,
                                "Unknown subscription property: bad")
 
+
 class SubscriptionRestApiTest(ZulipTestCase):
     def test_basic_add_delete(self) -> None:
         email = self.example_email('hamlet')
@@ -1778,6 +1786,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
         user_profile = self.example_user('hamlet')
         self.assertEqual(user_profile.full_name, 'Hamlet')
+
 
 class SubscriptionAPITest(ZulipTestCase):
 
@@ -2962,6 +2971,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
         self.assert_length(queries, 52)
 
+
 class GetBotOwnerStreamsTest(ZulipTestCase):
     def test_streams_api_for_bot_owners(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -3047,6 +3057,7 @@ class GetBotOwnerStreamsTest(ZulipTestCase):
 
         self.assertEqual(actual, expected)
 
+
 class GetPublicStreamsTest(ZulipTestCase):
 
     def test_public_streams_api(self) -> None:
@@ -3089,6 +3100,7 @@ class GetPublicStreamsTest(ZulipTestCase):
         result = self.api_get(email, "/api/v1/streams?include_all_active=true")
         self.assertEqual(result.status_code, 400)
 
+
 class StreamIdTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
@@ -3104,6 +3116,7 @@ class StreamIdTest(ZulipTestCase):
     def test_get_stream_id_wrong_name(self) -> None:
         result = self.client_get("/json/get_stream_id?stream=wrongname")
         self.assert_json_error(result, u"Invalid stream name 'wrongname'")
+
 
 class InviteOnlyStreamTest(ZulipTestCase):
     def test_must_be_subbed_to_send(self) -> None:
@@ -3195,6 +3208,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
 
         self.assertTrue(self.example_email("othello") in json['subscribers'])
         self.assertTrue(self.example_email('hamlet') in json['subscribers'])
+
 
 class GetSubscribersTest(ZulipTestCase):
 
@@ -3582,6 +3596,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.login(self.example_email("iago"))
         self.make_successful_subscriber_request(stream_name)
 
+
 class AccessStreamTest(ZulipTestCase):
     def test_access_stream(self) -> None:
         """
@@ -3688,6 +3703,7 @@ class AccessStreamTest(ZulipTestCase):
         self.assertEqual(stream.id, stream_ret.id)
         self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
+
 
 class StreamTrafficTest(ZulipTestCase):
     def test_average_weekly_stream_traffic_calculation(self) -> None:
