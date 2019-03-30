@@ -10,6 +10,7 @@ from zerver.lib.actions import bulk_add_subscriptions, \
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import Message, UserProfile, get_realm
 
+
 class Command(BaseCommand):
     help = """Add a mock conversation to the development environment.
 
