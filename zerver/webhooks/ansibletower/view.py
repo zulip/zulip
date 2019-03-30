@@ -17,6 +17,7 @@ ANSIBLETOWER_JOB_MESSAGE_TEMPLATE = ("{friendly_name}: [#{id} {name}]({url}) {st
 
 ANSIBLETOWER_JOB_HOST_ROW_TEMPLATE = '* {hostname}: {status}\n'
 
+
 @api_key_only_webhook_view('Ansibletower')
 @has_request_variables
 def api_ansibletower_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -27,6 +28,7 @@ def api_ansibletower_webhook(request: HttpRequest, user_profile: UserProfile,
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
+
 
 def get_body(payload: Dict[str, Any]) -> str:
     if (payload['friendly_name'] == 'Job'):
@@ -72,6 +74,7 @@ def get_body(payload: Dict[str, Any]) -> str:
         }
 
         return ANSIBLETOWER_DEFAULT_MESSAGE_TEMPLATE.format(**data)
+
 
 def get_hosts_content(hosts_data: List[Dict[str, Any]]) -> str:
     hosts_data = sorted(hosts_data, key=operator.itemgetter('hostname'))
