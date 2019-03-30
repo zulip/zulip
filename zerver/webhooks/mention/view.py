@@ -9,6 +9,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 @api_key_only_webhook_view('Mention')
 @has_request_variables
 def api_mention_webhook(
