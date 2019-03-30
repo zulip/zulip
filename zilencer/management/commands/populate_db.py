@@ -41,6 +41,7 @@ settings.CACHES['default'] = {
 # Suppress spammy output from the push notifications logger
 push_notifications_logger.disabled = True
 
+
 def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
                  bot_type: Optional[int]=None,
                  bot_owner: Optional[UserProfile]=None) -> None:
@@ -50,6 +51,7 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
         user_set.add((email, full_name, short_name, True))
     tos_version = settings.TOS_VERSION if bot_type is None else None
     bulk_create_users(realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version)
+
 
 def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
     subscriptions_to_add = []
@@ -76,6 +78,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, An
             all_subscription_logs.append(log)
     Subscription.objects.bulk_create(subscriptions_to_add)
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
+
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -542,6 +545,8 @@ class Command(BaseCommand):
             self.stdout.write("Successfully populated test database.\n")
 
 recipient_hash = {}  # type: Dict[int, Recipient]
+
+
 def get_recipient_by_id(rid: int) -> Recipient:
     if rid in recipient_hash:
         return recipient_hash[rid]
@@ -554,6 +559,8 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple personals converastions
 # - multiple messages per subject
 # - both single and multi-line content
+
+
 def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
                               Callable[[str], Any], int]) -> int:
     (tot_messages, personals_pairs, options, output, random_seed) = data
@@ -656,6 +663,7 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
         num_messages += 1
     return tot_messages
 
+
 def create_user_presences(user_profiles: Iterable[UserProfile]) -> None:
     for user in user_profiles:
         status = 1  # type: int
@@ -666,6 +674,7 @@ def create_user_presences(user_profiles: Iterable[UserProfile]) -> None:
             client=client,
             timestamp=date,
             status=status)
+
 
 def create_user_groups() -> None:
     zulip = get_realm('zulip')
