@@ -20,6 +20,8 @@ from zerver.logging_handlers import AdminNotifyHandler
 
 captured_request = None  # type: Optional[HttpRequest]
 captured_exc_info = None  # type: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]
+
+
 def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewFuncT]:
     def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)
@@ -34,6 +36,7 @@ def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewF
                 raise e
         return wrapped_view  # type: ignore # https://github.com/python/mypy/issues/1927
     return wrapper
+
 
 class AdminNotifyHandlerTest(ZulipTestCase):
     logger = logging.getLogger('django')
@@ -183,6 +186,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
+
 class LoggingConfigTest(TestCase):
     @staticmethod
     def all_loggers() -> Iterator[logging.Logger]:
@@ -200,6 +204,7 @@ class LoggingConfigTest(TestCase):
             # `all_loggers`.
             for handler in logger.handlers:
                 assert not isinstance(handler, AdminEmailHandler)
+
 
 class ErrorFiltersTest(TestCase):
     def test_clean_data_from_query_parameters(self) -> None:
