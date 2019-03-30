@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.response import json_error, json_success
 from zerver.lib.user_agent import parse_user_agent
 
+
 def pop_numerals(ver: str) -> Tuple[List[int], str]:
     match = re.search(r'^( \d+ (?: \. \d+ )* ) (.*)', ver, re.X)
     if match is None:
@@ -15,6 +16,7 @@ def pop_numerals(ver: str) -> Tuple[List[int], str]:
     numerals, rest = match.groups()
     numbers = [int(n) for n in numerals.split('.')]
     return numbers, rest
+
 
 def version_lt(ver1: str, ver2: str) -> Optional[bool]:
     '''
@@ -71,6 +73,7 @@ def find_mobile_os(user_agent: str) -> Optional[str]:
 # notifications once the "remove_push_notification" feature is
 # enabled on the user's Zulip server.
 android_min_app_version = '16.2.96'
+
 
 def check_global_compatibility(request: HttpRequest) -> HttpResponse:
     if request.META.get('HTTP_USER_AGENT') is None:
