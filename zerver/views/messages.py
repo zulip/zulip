@@ -1286,7 +1286,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
 
     ret = check_send_message(sender, client, message_type_name, message_to,
                              topic_name, message_content, forged=forged,
-                             forged_timestamp = request.POST.get('time'),
+                             forged_timestamp=request.POST.get('time'),
                              forwarder_user_profile=user_profile, realm=realm,
                              local_id=local_id, sender_queue_id=queue_id,
                              widget_content=widget_content)
@@ -1330,11 +1330,11 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
                 message.id)
 
     message_history.append(dict(
-        topic = prev_topic,
-        content = prev_content,
-        rendered_content = prev_rendered_content,
-        timestamp = datetime_to_timestamp(message.pub_date),
-        user_id = message.sender_id,
+        topic=prev_topic,
+        content=prev_content,
+        rendered_content=prev_rendered_content,
+        timestamp=datetime_to_timestamp(message.pub_date),
+        user_id=message.sender_id,
     ))
 
 @has_request_variables
