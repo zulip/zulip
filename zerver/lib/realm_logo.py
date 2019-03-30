@@ -3,8 +3,10 @@ from django.conf import settings
 from zerver.lib.upload import upload_backend
 from zerver.models import Realm
 
+
 def realm_logo_url(realm: Realm, night: bool) -> str:
     return get_realm_logo_url(realm, night)
+
 
 def get_realm_logo_url(realm: Realm, night: bool) -> str:
     if not night:
