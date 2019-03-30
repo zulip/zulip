@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 from pipeline.storage import PipelineMixin
 
+
 class AddHeaderMixin:
     def post_process(self, paths: Dict[str, Tuple['ZulipStorage', str]], dry_run: bool=False,
                      **kwargs: Any) -> List[Tuple[str, str, bool]]:
@@ -76,6 +77,7 @@ class RemoveUnminifiedFilesMixin:
 
         return []
 
+
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
     def hashed_name(self, name: str, content: Optional[str]=None, filename: Optional[str]=None) -> str:
         ext = os.path.splitext(name)[1]
@@ -120,6 +122,7 @@ if settings.PRODUCTION:
             return name
         return orig_path(self, name)
     ManifestStaticFilesStorage.path = path
+
 
 class ZulipStorage(PipelineMixin,
                    AddHeaderMixin, RemoveUnminifiedFilesMixin,
