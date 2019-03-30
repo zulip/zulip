@@ -1,3 +1,4 @@
+from zulip_bots.lib import RateLimit
 import json
 import os
 import importlib
@@ -16,7 +17,6 @@ from typing import Any, Dict
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
-from zulip_bots.lib import RateLimit
 
 
 def get_bot_handler(service_name: str) -> Any:
