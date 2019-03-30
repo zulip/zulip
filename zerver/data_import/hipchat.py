@@ -48,6 +48,7 @@ from zerver.data_import.sequencer import NEXT_ID, IdMapper
 # stubs
 ZerverFieldsT = Dict[str, Any]
 
+
 def str_date_to_float(date_str: str) -> float:
     '''
         Dates look like this:
@@ -63,6 +64,7 @@ def str_date_to_float(date_str: str) -> float:
         microseconds = int(parts[1])
         timestamp += microseconds / 1000000.0
     return timestamp
+
 
 def untar_input_file(tar_file: str) -> str:
     data_dir = tar_file.replace('.tar', '')
@@ -80,11 +82,13 @@ def untar_input_file(tar_file: str) -> str:
 
     return data_dir
 
+
 def read_user_data(data_dir: str) -> List[ZerverFieldsT]:
     fn = 'users.json'
     data_file = os.path.join(data_dir, fn)
     with open(data_file, "r") as fp:
         return ujson.load(fp)
+
 
 def convert_user_data(user_handler: UserHandler,
                       slim_mode: bool,
@@ -152,6 +156,7 @@ def convert_user_data(user_handler: UserHandler,
         user = process(raw_item)
         user_handler.add_user(user)
 
+
 def convert_avatar_data(avatar_folder: str,
                         raw_data: List[ZerverFieldsT],
                         user_id_mapper: IdMapper,
@@ -195,12 +200,14 @@ def convert_avatar_data(avatar_folder: str,
 
     return avatar_records
 
+
 def read_room_data(data_dir: str) -> List[ZerverFieldsT]:
     fn = 'rooms.json'
     data_file = os.path.join(data_dir, fn)
     with open(data_file) as f:
         data = ujson.load(f)
     return data
+
 
 def convert_room_data(raw_data: List[ZerverFieldsT],
                       subscriber_handler: SubscriberHandler,
@@ -275,6 +282,7 @@ def convert_room_data(raw_data: List[ZerverFieldsT],
 
     return streams
 
+
 def make_realm(realm_id: int) -> ZerverFieldsT:
     NOW = float(timezone_now().timestamp())
     domain_name = settings.EXTERNAL_HOST
@@ -286,6 +294,7 @@ def make_realm(realm_id: int) -> ZerverFieldsT:
     realm['zerver_defaultstream'] = []
 
     return realm
+
 
 def write_avatar_data(raw_user_data: List[ZerverFieldsT],
                       output_dir: str,
@@ -303,6 +312,7 @@ def write_avatar_data(raw_user_data: List[ZerverFieldsT],
     )
 
     create_converted_data_files(avatar_records, output_dir, '/avatars/records.json')
+
 
 def write_emoticon_data(realm_id: int,
                         data_dir: str,
@@ -424,6 +434,7 @@ def write_emoticon_data(realm_id: int,
 
     return realmemoji
 
+
 def write_message_data(realm_id: int,
                        slim_mode: bool,
                        message_key: str,
@@ -501,6 +512,7 @@ def write_message_data(realm_id: int,
             attachment_handler=attachment_handler,
         )
 
+
 def get_hipchat_sender_id(realm_id: int,
                           slim_mode: bool,
                           message_dict: Dict[str, Any],
@@ -549,6 +561,7 @@ def get_hipchat_sender_id(realm_id: int,
     # sender_id.
     sender_id = user_id_mapper.get(raw_sender_id)
     return sender_id
+
 
 def process_message_file(realm_id: int,
                          slim_mode: bool,
@@ -645,6 +658,7 @@ def process_message_file(realm_id: int,
         chunk_size=chunk_size,
         process_batch=process_batch,
     )
+
 
 def process_raw_message_batch(realm_id: int,
                               raw_messages: List[Dict[str, Any]],
@@ -754,6 +768,7 @@ def process_raw_message_batch(realm_id: int,
     message_file = "/messages-%06d.json" % (dump_file_id,)
     create_converted_data_files(message_json, output_dir, message_file)
 
+
 def make_user_messages(zerver_message: List[ZerverFieldsT],
                        subscriber_map: Dict[int, Set[int]],
                        is_pm_data: bool,
@@ -780,6 +795,7 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
             zerver_usermessage.append(user_message)
 
     return zerver_usermessage
+
 
 def do_convert_data(input_tar_file: str,
                     output_dir: str,
