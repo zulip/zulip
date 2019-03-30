@@ -9,6 +9,7 @@ import threading
 
 # Based on http://code.activestate.com/recipes/483752/
 
+
 class TimeoutExpired(Exception):
     '''Exception raised when a function times out.'''
 
@@ -16,6 +17,7 @@ class TimeoutExpired(Exception):
         return 'Function call timed out.'
 
 ResultT = TypeVar('ResultT')
+
 
 def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: Any) -> ResultT:
     '''Call the function in a separate thread.
