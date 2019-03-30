@@ -13,6 +13,7 @@ from django.db.migrations.state import StateApps
 
 import zerver.models
 
+
 def migrate_existing_attachment_data(apps: StateApps,
                                      schema_editor: DatabaseSchemaEditor) -> None:
     Attachment = apps.get_model('zerver', 'Attachment')
@@ -31,6 +32,7 @@ def migrate_existing_attachment_data(apps: StateApps,
                     entry.is_realm_public = entry.is_realm_public or is_realm_public
 
         entry.save()
+
 
 class Migration(migrations.Migration):
 
