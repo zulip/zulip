@@ -86,9 +86,11 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
 )
 
+
 def rm_tree(path: str) -> None:
     if os.path.exists(path):
         shutil.rmtree(path)
+
 
 class QueryUtilTest(ZulipTestCase):
     def _create_messages(self) -> None:
