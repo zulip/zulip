@@ -6,6 +6,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import send_initial_realm_messages
 from zerver.models import Realm, UserProfile
 
+
 class Command(ZulipBaseCommand):
     help = """Add a new realm and initial user for manual testing of the onboarding process."""
 
