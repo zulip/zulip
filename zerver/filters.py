@@ -5,6 +5,7 @@ from typing import Any, Dict
 from django.http import HttpRequest
 from django.views.debug import SafeExceptionReporterFilter
 
+
 class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
     def get_post_parameters(self, request: HttpRequest) -> Dict[str, Any]:
         filtered_post = SafeExceptionReporterFilter.get_post_parameters(self, request).copy()
@@ -15,6 +16,7 @@ class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
             if var in filtered_post:
                 filtered_post[var] = '**********'
         return filtered_post
+
 
 def clean_data_from_query_parameters(val: str) -> str:
     return re.sub(r"([a-z_-]+=)([^&]+)([&]|$)", r"\1******\3", val)
