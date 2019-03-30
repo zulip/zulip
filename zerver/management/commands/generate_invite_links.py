@@ -9,6 +9,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.models import PreregistrationUser, email_allowed_for_realm, \
     DomainNotAllowedForRealmError
 
+
 class Command(ZulipBaseCommand):
     help = "Generate activation links for users and print them to stdout."
 
