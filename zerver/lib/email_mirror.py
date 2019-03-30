@@ -322,7 +322,7 @@ def strip_from_subject(subject: str) -> str:
     # strips RE and FWD from the subject
     # from: https://stackoverflow.com/questions/9153629/regex-code-for-removing-fwd-re-etc-from-email-subject
     reg = r"([\[\(] *)?\b(RE|FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
-    stripped = re.sub(reg, "", subject, flags = re.IGNORECASE | re.MULTILINE)
+    stripped = re.sub(reg, "", subject, flags=re.IGNORECASE | re.MULTILINE)
     return stripped.strip()
 
 def is_forwarded(subject: str) -> bool:
