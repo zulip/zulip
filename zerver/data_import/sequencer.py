@@ -11,6 +11,7 @@ for data imports that's usually easy to
 manage.  See hipchat.py for example usage.
 '''
 
+
 def _seq() -> Callable[[], int]:
     i = 0
 
@@ -20,6 +21,7 @@ def _seq() -> Callable[[], int]:
         return i
 
     return next_one
+
 
 def sequencer() -> Callable[[str], int]:
     '''
@@ -49,6 +51,7 @@ import of the file.
 
 NEXT_ID = sequencer()
 
+
 def is_int(key: Any) -> bool:
     try:
         n = int(key)
@@ -56,6 +59,7 @@ def is_int(key: Any) -> bool:
         return False
 
     return n <= 999999999
+
 
 class IdMapper:
     def __init__(self) -> None:
