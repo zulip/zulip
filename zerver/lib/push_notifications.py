@@ -43,8 +43,11 @@ else:  # nocoverage  -- Not convenient to add test for this.
 DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
 
 # We store the token as b64, but apns-client wants hex strings
+
+
 def b64_to_hex(data: bytes) -> str:
     return binascii.hexlify(base64.b64decode(data)).decode('utf-8')
+
 
 def hex_to_b64(data: str) -> bytes:
     return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
@@ -55,6 +58,7 @@ def hex_to_b64(data: str) -> bytes:
 
 _apns_client = None  # type: Optional[Any]
 _apns_client_initialized = False
+
 
 def get_apns_client() -> Any:
     # We lazily do this import as part of optimizing Zulip's base
@@ -71,9 +75,11 @@ def get_apns_client() -> Any:
         _apns_client_initialized = True
     return _apns_client
 
+
 def apns_enabled() -> bool:
     client = get_apns_client()
     return client is not None
+
 
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
     '''Take a payload in an unknown Zulip version's format, and return in current format.'''
@@ -101,6 +107,7 @@ def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
         return data
 
 APNS_MAX_RETRIES = 3
+
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
@@ -178,6 +185,7 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
 # Sending to GCM, for Android
 #
 
+
 def make_gcm_client() -> gcm.GCM:  # nocoverage
     # From GCM upstream's doc for migrating to FCM:
     #
@@ -200,14 +208,17 @@ if settings.ANDROID_GCM_API_KEY:  # nocoverage
 else:
     gcm_client = None
 
+
 def gcm_enabled() -> bool:  # nocoverage
     return gcm_client is not None
+
 
 def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict[str, Any],
                                            options: Dict[str, Any]) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile,
                                                   kind=PushDeviceToken.GCM))
     send_android_push_notification(devices, data, options)
+
 
 def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     """
@@ -246,6 +257,7 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
                             % (ujson.dumps(options),))
 
     return priority  # when this grows a second option, can make it a tuple
+
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
@@ -333,8 +345,10 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
 # Sending to a bouncer
 #
 
+
 def uses_notification_bouncer() -> bool:
     return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+
 
 def send_notifications_to_bouncer(user_profile_id: int,
                                   apns_payload: Dict[str, Any],
@@ -353,11 +367,13 @@ def send_notifications_to_bouncer(user_profile_id: int,
 # Managing device tokens
 #
 
+
 def num_push_devices_for_user(user_profile: UserProfile, kind: Optional[int]=None) -> PushDeviceToken:
     if kind is None:
         return PushDeviceToken.objects.filter(user=user_profile).count()
     else:
         return PushDeviceToken.objects.filter(user=user_profile, kind=kind).count()
+
 
 def add_push_device_token(user_profile: UserProfile,
                           token_str: bytes,
@@ -396,6 +412,7 @@ def add_push_device_token(user_profile: UserProfile,
     except IntegrityError:
         pass
 
+
 def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: int) -> None:
 
     # If we're sending things to the push notification bouncer
@@ -422,6 +439,7 @@ def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: 
 # Push notifications in general
 #
 
+
 def push_notifications_enabled() -> bool:
     '''True just if this server has configured a way to send push notifications.'''
     if (uses_notification_bouncer()
@@ -438,6 +456,7 @@ def push_notifications_enabled() -> bool:
         return True
     return False
 
+
 def initialize_push_notifications() -> None:
     if not push_notifications_enabled():
         if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
@@ -446,6 +465,7 @@ def initialize_push_notifications() -> None:
         logger.warning("Mobile push notifications are not configured.\n  "
                        "See https://zulip.readthedocs.io/en/latest/"
                        "production/mobile-push-notifications.html")
+
 
 def get_gcm_alert(message: Message) -> str:
     """
@@ -460,6 +480,7 @@ def get_gcm_alert(message: Message) -> str:
         return "New mention from %s" % (sender_str,)
     else:  # message.is_stream_message() and message.trigger == 'stream_push_notify'
         return "New stream message from %s in %s" % (sender_str, get_display_recipient(message.recipient),)
+
 
 def get_mobile_push_content(rendered_content: str) -> str:
     def get_text(elem: lxml.html.HtmlElement) -> str:
@@ -504,6 +525,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
     plain_text = process(elem)
     return plain_text
 
+
 def truncate_content(content: str) -> Tuple[str, bool]:
     # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
     # of three dots as this saves two extra characters for textual
@@ -512,6 +534,7 @@ def truncate_content(content: str) -> Tuple[str, bool]:
     if len(content) <= 200:
         return content, False
     return content[:200] + "…", True
+
 
 def get_base_payload(realm: Realm) -> Dict[str, Any]:
     '''Common fields for all notification payloads.'''
@@ -523,6 +546,7 @@ def get_base_payload(realm: Realm) -> Dict[str, Any]:
     data['realm_uri'] = realm.uri
 
     return data
+
 
 def get_message_payload(message: Message) -> Dict[str, Any]:
     '''Common fields for `message` payloads, for all platforms.'''
@@ -544,6 +568,7 @@ def get_message_payload(message: Message) -> Dict[str, Any]:
 
     return data
 
+
 def get_apns_alert_title(message: Message) -> str:
     """
     On an iOS notification, this is the first bolded line.
@@ -556,6 +581,7 @@ def get_apns_alert_title(message: Message) -> str:
     # For personal PMs, we just show the sender name.
     return message.sender.full_name
 
+
 def get_apns_alert_subtitle(message: Message) -> str:
     """
     On an iOS notification, this is the second bolded line.
@@ -566,6 +592,7 @@ def get_apns_alert_subtitle(message: Message) -> str:
         return ""
     # For group PMs, or regular messages to a stream, just use a colon to indicate this is the sender.
     return message.sender.full_name + ":"
+
 
 def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     '''A `message` payload for iOS, via APNs.'''
@@ -587,6 +614,7 @@ def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dic
     }
     return apns_data
 
+
 def get_message_payload_gcm(
         user_profile: UserProfile, message: Message,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -607,6 +635,7 @@ def get_message_payload_gcm(
     gcm_options = {'priority': 'high'}
     return data, gcm_options
 
+
 def get_remove_payload_gcm(
         user_profile: UserProfile, message_ids: List[int],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -621,6 +650,7 @@ def get_remove_payload_gcm(
     })
     gcm_options = {'priority': 'normal'}
     return gcm_payload, gcm_options
+
 
 def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]) -> None:
     """This should be called when a message that had previously had a
@@ -656,6 +686,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     ).update(
         flags=F('flags').bitand(
             ~UserMessage.flags.active_mobile_push_notification))
+
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
