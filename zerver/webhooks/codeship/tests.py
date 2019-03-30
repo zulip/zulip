@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class CodeshipHookTests(WebhookTestCase):
     STREAM_NAME = 'codeship'
     URL_TEMPLATE = u"/api/v1/external/codeship?stream={stream}&api_key={api_key}"
