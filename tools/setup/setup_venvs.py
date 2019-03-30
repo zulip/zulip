@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from scripts.lib.setup_venv import setup_virtualenv
+from scripts.lib.zulip_tools import overwrite_symlink, subprocess_text_output
 import os
 import sys
 
@@ -7,8 +9,6 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
-from scripts.lib.setup_venv import setup_virtualenv
-from scripts.lib.zulip_tools import overwrite_symlink, subprocess_text_output
 
 VENV_PATH = "/srv/zulip-py3-venv"
 
