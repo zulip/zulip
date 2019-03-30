@@ -5,9 +5,11 @@ from distutils.version import LooseVersion
 from version import PROVISION_VERSION
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
 
+
 def get_major_version(v):
     # type: (str) -> int
     return int(v.split('.')[0])
+
 
 def get_version_file():
     # type: () -> str
@@ -20,6 +22,7 @@ is correct by looking at var/provision_version, which is at
 version %s, and we compare it to the version in source
 control (version.py), which is %s.
 '''
+
 
 def preamble(version):
     # type: (str) -> str
@@ -43,6 +46,7 @@ is likely to fail until you add dependencies by provisioning.
 
 Do this: `./tools/provision`
 '''
+
 
 def get_provisioning_status():
     # type: () -> Tuple[bool, Optional[str]]
