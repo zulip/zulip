@@ -20,6 +20,7 @@ kerberos_alter_egos = {
     'golem': 'ctl',
 }
 
+
 @authenticated_json_view
 @has_request_variables
 def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
