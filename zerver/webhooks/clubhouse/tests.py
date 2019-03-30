@@ -3,6 +3,7 @@ from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class ClubhouseWebhookTest(WebhookTestCase):
     STREAM_NAME = 'clubhouse'
     URL_TEMPLATE = "/api/v1/external/clubhouse?stream={stream}&api_key={api_key}"
