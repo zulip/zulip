@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 def generate_zulip_bots_static_files() -> None:
     import glob
     import os
