@@ -6,6 +6,7 @@ from django.db.migrations.state import StateApps
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
 
+
 def backfill_subscription_log_events(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     migration_time = timezone_now()
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
@@ -42,6 +43,7 @@ def backfill_subscription_log_events(apps: StateApps, schema_editor: DatabaseSch
         objects_to_create.append(entry)
     RealmAuditLog.objects.bulk_create(objects_to_create)
     objects_to_create = []
+
 
 def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
