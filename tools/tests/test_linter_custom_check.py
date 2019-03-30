@@ -11,6 +11,7 @@ from tools.linter_lib.custom_check import custom_check_file
 ROOT_DIR = os.path.abspath(os.path.join(__file__, '..', '..', '..'))
 CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py`."
 
+
 class TestCustomRules(TestCase):
 
     def setUp(self) -> None:
