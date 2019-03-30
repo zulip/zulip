@@ -1929,7 +1929,7 @@ def build_engine(realm_filters: List[Tuple[str, str, int]],
         realm_filters=realm_filters,
         realm=realm_filters_key,
         code_block_processor_disabled=email_gateway,
-        extensions = [
+        extensions=[
             nl2br.makeExtension(),
             tables.makeExtension(),
             codehilite.makeExtension(
