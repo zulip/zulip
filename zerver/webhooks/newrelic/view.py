@@ -11,6 +11,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
 from zerver.lib.validator import check_dict
 from zerver.models import UserProfile
 
+
 @api_key_only_webhook_view("NewRelic")
 @has_request_variables
 def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
