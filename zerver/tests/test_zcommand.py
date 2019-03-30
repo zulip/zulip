@@ -4,6 +4,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
+
 class ZcommandTest(ZulipTestCase):
 
     def test_invalid_zcommand(self) -> None:
