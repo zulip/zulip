@@ -18,6 +18,7 @@ from django.db.migrations.state import StateApps
 from PIL import Image, ImageOps
 from requests import ConnectionError, Response
 
+
 def force_str(s: Union[Text, bytes], encoding: Text='utf-8') -> str:
     """converts a string to a native string"""
     if isinstance(s, str):
@@ -123,6 +124,7 @@ class S3Uploader(Uploader):
         else:
             self.upload_to_s3(dst_path_id, response.content, headers)
         self.upload_to_s3('.'.join((dst_path_id, 'original')), response.content, headers)
+
 
 def get_uploader() -> Uploader:
     if settings.LOCAL_UPLOADS_DIR is None:
