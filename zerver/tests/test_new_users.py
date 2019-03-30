@@ -11,6 +11,7 @@ from zerver.lib.initial_password import initial_password
 from unittest import mock
 from zerver.lib.timezone import get_timezone
 
+
 class SendLoginEmailTest(ZulipTestCase):
     """
     Uses django's user_logged_in signal to send emails on new login.
