@@ -34,12 +34,12 @@ class EmojiName2IdTestCase(MigrationsTestCase):
 
         def send_fake_message(message_content: str, stream: ModelBase) -> ModelBase:
             recipient = Recipient.objects.get(type_id=stream.id, type=2)
-            return Message.objects.create(sender = sender,
-                                          recipient = recipient,
-                                          subject = subject,
-                                          content = message_content,
-                                          pub_date = timezone_now(),
-                                          sending_client = sending_client)
+            return Message.objects.create(sender=sender,
+                                          recipient=recipient,
+                                          subject=subject,
+                                          content=message_content,
+                                          pub_date=timezone_now(),
+                                          sending_client=sending_client)
         message = send_fake_message('Test 1', stream)
 
         # Create reactions for all the realm emoji's on the message we faked.
