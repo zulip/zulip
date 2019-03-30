@@ -31,8 +31,8 @@ def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
     body = "Splunk alert from saved search"
     body_template = ('\n[{search}]({link})\nhost: {host}'
                      '\nsource: {source}\n\nraw: {raw}')
-    body += body_template.format(search = search_name, link = results_link,
-                                 host = host, source = source, raw = raw)
+    body += body_template.format(search=search_name, link=results_link,
+                                 host=host, source=source, raw=raw)
 
     # send the message
     check_send_webhook_message(request, user_profile, topic, body)
