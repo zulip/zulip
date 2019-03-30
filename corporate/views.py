@@ -28,11 +28,13 @@ from corporate.models import Customer, CustomerPlan, \
 
 billing_logger = logging.getLogger('corporate.stripe')
 
+
 def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
     try:
         return int(unsign_string(signed_seat_count, salt))
     except signing.BadSignature:
         raise BillingError('tampered seat count')
+
 
 def check_upgrade_parameters(
         billing_modality: str, schedule: str, license_management: str, licenses: int,
@@ -56,6 +58,8 @@ def check_upgrade_parameters(
                            _("You must invoice for at least {} users.".format(min_licenses)))
 
 # Should only be called if the customer is being charged automatically
+
+
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
     stripe_source = stripe_customer.default_source
     # In case of e.g. an expired card
@@ -70,6 +74,7 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     # automatic payments, but in theory we could add it for a customer via
     # the Stripe dashboard.
     return _("Unknown payment method. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))  # nocoverage
+
 
 @has_request_variables
 def upgrade(request: HttpRequest, user: UserProfile,
@@ -111,6 +116,7 @@ def upgrade(request: HttpRequest, user: UserProfile,
     else:
         return json_success()
 
+
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if not settings.BILLING_ENABLED:
@@ -145,6 +151,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
+
 
 @zulip_login_required
 def billing_home(request: HttpRequest) -> HttpResponse:
@@ -205,6 +212,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     })
     return render(request, 'corporate/billing.html', context=context)
 
+
 @require_billing_access
 def downgrade(request: HttpRequest, user: UserProfile) -> HttpResponse:  # nocoverage
     try:
@@ -212,6 +220,7 @@ def downgrade(request: HttpRequest, user: UserProfile) -> HttpResponse:  # nocov
     except BillingError as e:
         return json_error(e.message, data={'error_description': e.description})
     return json_success()
+
 
 @require_billing_access
 @has_request_variables
