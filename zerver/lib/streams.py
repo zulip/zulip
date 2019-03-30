@@ -9,12 +9,14 @@ from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
     bulk_get_streams, get_realm_stream, DefaultStreamGroup
 
+
 def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[str]) -> None:
     if stream_id is None and stream is None:
         raise JsonableError(_("Please supply 'stream'."))
 
     if stream_id is not None and stream is not None:
         raise JsonableError(_("Please choose one: 'stream' or 'stream_id'."))
+
 
 def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
 
@@ -37,6 +39,8 @@ def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int
 
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
 # access unsubscribed private stream content.
+
+
 def access_stream_common(user_profile: UserProfile, stream: Stream,
                          error: str,
                          require_active: bool=True,
@@ -79,6 +83,7 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
     # an error.
     raise JsonableError(error)
 
+
 def access_stream_by_id(user_profile: UserProfile,
                         stream_id: int,
                         require_active: bool=True,
@@ -91,6 +96,7 @@ def access_stream_by_id(user_profile: UserProfile,
                                             allow_realm_admin=allow_realm_admin)
     return (stream, recipient, sub)
 
+
 def get_stream_by_id(stream_id: int) -> Stream:
     error = _("Invalid stream id")
     try:
@@ -99,6 +105,7 @@ def get_stream_by_id(stream_id: int) -> Stream:
         raise JsonableError(error)
     return stream
 
+
 def check_stream_name_available(realm: Realm, name: str) -> None:
     check_stream_name(name)
     try:
@@ -106,6 +113,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
         raise JsonableError(_("Stream name '%s' is already taken.") % (name,))
     except Stream.DoesNotExist:
         pass
+
 
 def access_stream_by_name(user_profile: UserProfile,
                           stream_name: str,
@@ -119,6 +127,7 @@ def access_stream_by_name(user_profile: UserProfile,
     (recipient, sub) = access_stream_common(user_profile, stream, error,
                                             allow_realm_admin=allow_realm_admin)
     return (stream, recipient, sub)
+
 
 def access_stream_for_unmute_topic_by_name(user_profile: UserProfile,
                                            stream_name: str,
@@ -142,6 +151,7 @@ def access_stream_for_unmute_topic_by_name(user_profile: UserProfile,
         raise JsonableError(error)
     return stream
 
+
 def access_stream_for_unmute_topic_by_id(user_profile: UserProfile,
                                          stream_id: int,
                                          error: str) -> Stream:
@@ -150,6 +160,7 @@ def access_stream_for_unmute_topic_by_id(user_profile: UserProfile,
     except Stream.DoesNotExist:
         raise JsonableError(error)
     return stream
+
 
 def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: str) -> bool:
     """Determine whether the provided user is allowed to access the
@@ -185,6 +196,7 @@ def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: st
         return True
     return False
 
+
 def filter_stream_authorization(user_profile: UserProfile,
                                 streams: Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]:
     streams_subscribed = set()  # type: Set[int]
@@ -210,6 +222,7 @@ def filter_stream_authorization(user_profile: UserProfile,
     authorized_streams = [stream for stream in streams if
                           stream.id not in set(stream.id for stream in unauthorized_streams)]
     return authorized_streams, unauthorized_streams
+
 
 def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
                     user_profile: UserProfile,
@@ -277,6 +290,7 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
         existing_streams += dup_streams
 
     return existing_streams, created_streams
+
 
 def access_default_stream_group_by_id(realm: Realm, group_id: int) -> DefaultStreamGroup:
     try:
