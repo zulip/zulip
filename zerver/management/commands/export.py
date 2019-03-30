@@ -15,6 +15,7 @@ from zerver.lib.export import do_export_realm, \
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.utils import generate_random_token
 
+
 class Command(ZulipBaseCommand):
     help = """Exports all data from a Zulip realm
 
