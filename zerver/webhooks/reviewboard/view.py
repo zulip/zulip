@@ -50,6 +50,7 @@ REPLY_PUBLISHED = """
 
 BRANCH_TEMPLATE = "**Branch**: {branch_name}"
 
+
 def get_target_people_string(payload: Dict[str, Any]) -> str:
     result = ""
     target_people = payload['review_request']['target_people']
@@ -61,6 +62,7 @@ def get_target_people_string(payload: Dict[str, Any]) -> str:
         result += "and **{title}**".format(**target_people[-1])
 
     return result
+
 
 def get_review_published_body(payload: Dict[str, Any]) -> str:
     kwargs = {
@@ -74,6 +76,7 @@ def get_review_published_body(payload: Dict[str, Any]) -> str:
 
     return REVIEW_PUBLISHED.format(**kwargs).strip()
 
+
 def get_reply_published_body(payload: Dict[str, Any]) -> str:
     kwargs = {
         'reply_url': payload['reply']['links']['self']['href'],
@@ -86,6 +89,7 @@ def get_reply_published_body(payload: Dict[str, Any]) -> str:
     }
 
     return REPLY_PUBLISHED.format(**kwargs).strip()
+
 
 def get_review_request_published_body(payload: Dict[str, Any]) -> str:
     kwargs = {
@@ -107,6 +111,7 @@ def get_review_request_published_body(payload: Dict[str, Any]) -> str:
 
     return message.format(**kwargs).strip()
 
+
 def get_review_request_reopened_body(payload: Dict[str, Any]) -> str:
     kwargs = {
         'id': payload['review_request']['id'],
@@ -126,6 +131,7 @@ def get_review_request_reopened_body(payload: Dict[str, Any]) -> str:
         kwargs['extra_info'] = branch_info
 
     return message.format(**kwargs).strip()
+
 
 def get_review_request_closed_body(payload: Dict[str, Any]) -> str:
     kwargs = {
@@ -147,6 +153,7 @@ def get_review_request_closed_body(payload: Dict[str, Any]) -> str:
 
     return message.format(**kwargs).strip()
 
+
 def get_review_request_repo_title(payload: Dict[str, Any]) -> str:
     return payload['review_request']['links']['repository']['title']
 
@@ -157,6 +164,7 @@ RB_MESSAGE_FUNCTIONS = {
     'review_published': get_review_published_body,
     'reply_published': get_reply_published_body,
 }
+
 
 @api_key_only_webhook_view('ReviewBoard')
 @has_request_variables
