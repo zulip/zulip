@@ -8,6 +8,7 @@ from django.db.models import F
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def copy_email_field(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model('zerver', 'UserProfile')
     UserProfile.objects.all().update(delivery_email=F('email'))
