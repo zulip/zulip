@@ -26,11 +26,13 @@ suppress_patterns = [
     (b"docs/conf.py", b"undefined name 'tags'"),
 ]
 
+
 def suppress_line(line: str) -> bool:
     for file_pattern, line_pattern in suppress_patterns:
         if file_pattern in line and line_pattern in line:
             return True
     return False
+
 
 def check_pyflakes(files, options):
     # type: (List[str], argparse.Namespace) -> bool
