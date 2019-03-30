@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class FlockHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = u"/api/v1/external/flock?api_key={api_key}&stream={stream}"
