@@ -17,6 +17,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 @api_key_only_webhook_view('Taiga')
 @has_request_variables
 def api_taiga_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -127,6 +128,8 @@ templates = {
 
 
 return_type = Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
+
+
 def get_old_and_new_values(change_type: str,
                            message: Mapping[str, Any]) -> return_type:
     """ Parses the payload and finds previous and current value of change_type."""
@@ -151,6 +154,7 @@ def parse_comment(message: Mapping[str, Any]) -> Dict[str, Any]:
             'subject': get_subject(message)
         }
     }
+
 
 def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
     """ Parses create or delete event. """
@@ -258,12 +262,15 @@ def parse_message(message: Mapping[str, Any]) -> List[Dict[str, Any]]:
 
     return events
 
+
 def generate_content(data: Mapping[str, Any]) -> str:
     """ Gets the template string and formats it with parsed data. """
     return templates[data['type']][data['event']] % data['values']
 
+
 def get_owner_name(message: Mapping[str, Any]) -> str:
     return message["by"]["full_name"]
+
 
 def get_subject(message: Mapping[str, Any]) -> str:
     data = message["data"]
