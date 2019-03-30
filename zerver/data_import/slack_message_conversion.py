@@ -56,6 +56,7 @@ SLACK_BOLD_REGEX = r"""
                     ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
                     """
 
+
 def get_user_full_name(user: ZerverFieldsT) -> str:
     if user['deleted'] is False:
         if user['real_name'] == '':
@@ -66,6 +67,8 @@ def get_user_full_name(user: ZerverFieldsT) -> str:
         return user['name']
 
 # Markdown mapping
+
+
 def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
                               added_channels: AddedChannelsT,
                               added_users: AddedUsersT) -> Tuple[str, List[int], bool]:
@@ -112,6 +115,7 @@ def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
 
     return text, mentioned_users_id, message_has_link
 
+
 def get_user_mentions(token: str, users: List[ZerverFieldsT],
                       added_users: AddedUsersT) -> Tuple[str, Optional[int]]:
     slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
@@ -128,6 +132,8 @@ def get_user_mentions(token: str, users: List[ZerverFieldsT],
     return token, None
 
 # Map italic, bold and strikethrough markdown
+
+
 def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     """
     Returns:
@@ -141,6 +147,7 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
         text = text.replace(match.group(0), converted_token)
     return text
 
+
 def convert_link_format(text: str) -> Tuple[str, bool]:
     """
     1. Converts '<https://foo.com>' to 'https://foo.com'
@@ -152,6 +159,7 @@ def convert_link_format(text: str) -> Tuple[str, bool]:
         has_link = True
         text = text.replace(match.group(0), converted_text)
     return text, has_link
+
 
 def convert_mailto_format(text: str) -> Tuple[str, bool]:
     """
