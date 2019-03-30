@@ -4,6 +4,7 @@ from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
 
+
 def create_index_if_not_exist(index_name: str, table_name: str,
                               column_string: str, where_clause: str) -> None:
     #
@@ -102,6 +103,7 @@ def create_indexes() -> None:
         column_string='user_profile_id, message_id',
         where_clause='WHERE (flags & 4096) != 0',
     )
+
 
 class Command(ZulipBaseCommand):
     help = """Create concurrent indexes for large tables."""
