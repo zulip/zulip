@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from zulint.printer import print_err, colors
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -13,7 +14,6 @@ if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Any, Callable, Dict, List
 
-from zulint.printer import print_err, colors
 
 
 def add_default_linter_arguments(parser):
