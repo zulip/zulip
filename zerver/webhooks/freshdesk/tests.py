@@ -4,6 +4,7 @@ from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class FreshdeskHookTests(WebhookTestCase):
     STREAM_NAME = 'freshdesk'
     URL_TEMPLATE = u"/api/v1/external/freshdesk?stream={stream}"
