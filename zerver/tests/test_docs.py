@@ -20,6 +20,7 @@ from zerver.views.documentation import (
     add_api_uri_context,
 )
 
+
 class DocPageTest(ZulipTestCase):
     def get_doc(self, url: str, subdomain: str) -> HttpResponse:
         if url[0:23] == "/integrations/doc-html/":
@@ -192,6 +193,7 @@ class DocPageTest(ZulipTestCase):
                                  HTTP_USER_AGENT="ZulipElectron/1.0.0")
         self.assertTrue('data-platform="ZulipElectron"' in result.content.decode("utf-8"))
 
+
 class HelpTest(ZulipTestCase):
     def test_help_settings_links(self) -> None:
         result = self.client_get('/help/change-the-time-format')
@@ -227,6 +229,7 @@ class HelpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertIn('<strong>Manage streams</strong>', str(result.content))
         self.assertNotIn('/#streams', str(result.content))
+
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
@@ -286,6 +289,7 @@ class IntegrationTest(TestCase):
             context['subscriptions_html'],
             '<a target="_blank" href="/#streams">streams page</a>')
 
+
 class AboutPageTest(ZulipTestCase):
     def setUp(self) -> None:
         """ Manual installation which did not execute `tools/provision`
@@ -310,6 +314,7 @@ class AboutPageTest(ZulipTestCase):
         flat_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         expected_result = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         self.assertEqual(split_by(flat_list, 3, None), expected_result)
+
 
 class ConfigErrorTest(ZulipTestCase):
     @override_settings(GOOGLE_OAUTH2_CLIENT_ID=None)
@@ -347,6 +352,7 @@ class ConfigErrorTest(ZulipTestCase):
         result = self.client_get("/config-error/dev")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["DevAuthBackend"], result)
+
 
 class PlansPageTest(ZulipTestCase):
     def test_plans_auth(self) -> None:
