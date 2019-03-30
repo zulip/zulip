@@ -6,6 +6,7 @@ from django.db import migrations, models
 
 import zerver.models
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
