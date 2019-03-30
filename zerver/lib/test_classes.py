@@ -65,9 +65,11 @@ import urllib
 
 API_KEYS = {}  # type: Dict[str, str]
 
+
 def flush_caches_for_testing() -> None:
     global API_KEYS
     API_KEYS = {}
+
 
 class UploadSerializeMixin(SerializeMixin):
     """
@@ -86,6 +88,7 @@ class UploadSerializeMixin(SerializeMixin):
                 pass
 
         super(UploadSerializeMixin, cls).setUpClass(*args, **kwargs)
+
 
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
@@ -683,6 +686,7 @@ class ZulipTestCase(TestCase):
                                    key='abcd', method='sms')
         phone_device.save()
 
+
 class WebhookTestCase(ZulipTestCase):
     """
     Common for all webhooks tests
@@ -769,6 +773,7 @@ class WebhookTestCase(ZulipTestCase):
     def do_test_message(self, msg: Message, expected_message: Optional[str]) -> None:
         if expected_message is not None:
             self.assertEqual(msg.content, expected_message)
+
 
 class MigrationsTestCase(ZulipTestCase):
     """
