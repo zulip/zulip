@@ -14,6 +14,7 @@ from django.conf import settings
 
 T = TypeVar('T')
 
+
 def statsd_key(val: Any, clean_periods: bool=False) -> str:
     if not isinstance(val, str):
         val = str(val)
@@ -25,6 +26,7 @@ def statsd_key(val: Any, clean_periods: bool=False) -> str:
         val = val.replace('.', '_')
 
     return val
+
 
 class StatsDWrapper:
     """Transparently either submit metrics to statsd
@@ -60,6 +62,8 @@ class StatsDWrapper:
 statsd = StatsDWrapper()
 
 # Runs the callback with slices of all_list of a given batch_size
+
+
 def run_in_batches(all_list: Sequence[T],
                    batch_size: int,
                    callback: Callable[[Sequence[T]], None],
@@ -83,6 +87,7 @@ def run_in_batches(all_list: Sequence[T],
 
         if i != limit - 1:
             sleep(sleep_time)
+
 
 def make_safe_digest(string: str,
                      hash_func: Callable[[bytes], Any]=hashlib.sha1) -> str:
@@ -108,14 +113,17 @@ def log_statsd_event(name: str) -> None:
     event_name = "events.%s" % (name,)
     statsd.incr(event_name)
 
+
 def generate_random_token(length: int) -> str:
     return str(base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower())
+
 
 def generate_api_key() -> str:
     choices = string.ascii_letters + string.digits
     altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
     api_key = base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
     return api_key
+
 
 def query_chunker(queries: List[Any],
                   id_collector: Optional[Set[int]]=None,
@@ -175,6 +183,7 @@ def query_chunker(queries: List[Any],
 
         yield [row for row_id, i, row in tup_chunk]
 
+
 def process_list_in_batches(lst: List[Any],
                             chunk_size: int,
                             process_batch: Callable[[List[Any]], None]) -> None:
@@ -187,6 +196,7 @@ def process_list_in_batches(lst: List[Any],
         process_batch(items)
         offset += chunk_size
 
+
 def split_by(array: List[Any], group_size: int, filler: Any) -> List[List[Any]]:
     """
     Group elements into list of size `group_size` and fill empty cells with
@@ -194,6 +204,7 @@ def split_by(array: List[Any], group_size: int, filler: Any) -> List[List[Any]]:
     """
     args = [iter(array)] * group_size
     return list(map(list, zip_longest(*args, fillvalue=filler)))
+
 
 def is_remote_server(identifier: str) -> bool:
     """
