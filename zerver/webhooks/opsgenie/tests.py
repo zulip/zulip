@@ -2,6 +2,7 @@
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class OpsGenieHookTests(WebhookTestCase):
     STREAM_NAME = 'opsgenie'
     URL_TEMPLATE = "/api/v1/external/opsgenie?&api_key={api_key}&stream={stream}"
