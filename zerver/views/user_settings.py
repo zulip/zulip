@@ -26,6 +26,7 @@ from confirmation.models import get_object_from_key, render_confirmation_key_err
     ConfirmationKeyException, Confirmation
 from zproject.backends import email_belongs_to_ldap
 
+
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
         email_change_object = get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
@@ -51,6 +52,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
         'old_email': old_email,
     }
     return render(request, 'confirmation/confirm_email_change.html', context=ctx)
+
 
 @human_users_only
 @has_request_variables
@@ -110,6 +112,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 
     return json_success(result)
 
+
 @human_users_only
 @has_request_variables
 def update_display_settings_backend(
@@ -145,6 +148,7 @@ def update_display_settings_backend(
             result[k] = v
 
     return json_success(result)
+
 
 @human_users_only
 @has_request_variables
@@ -183,6 +187,7 @@ def json_change_notify_settings(
 
     return json_success(result)
 
+
 def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one avatar."))
@@ -199,6 +204,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
         avatar_url=user_avatar_url
     )
     return json_success(json_result)
+
 
 def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
@@ -218,6 +224,7 @@ def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpR
         api_key=user_profile.api_key
     )
     return json_success(json_result)
+
 
 @human_users_only
 @has_request_variables
