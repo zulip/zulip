@@ -10,6 +10,7 @@ from zerver.lib.soft_deactivation import do_soft_activate_users, \
     do_soft_deactivate_users, do_auto_soft_deactivate_users, logger
 from zerver.models import Realm, UserProfile
 
+
 def get_users_from_emails(emails: Any,
                           filter_kwargs: Any) -> List[UserProfile]:
     users = UserProfile.objects.filter(
@@ -22,6 +23,7 @@ def get_users_from_emails(emails: Any,
         raise CommandError('Users with the following emails were not found:\n\n%s\n\n'
                            'Check if they are correct.' % (user_emails_not_found))
     return users
+
 
 class Command(ZulipBaseCommand):
     help = """Soft activate/deactivate users. Users are recognised by their emails here."""
