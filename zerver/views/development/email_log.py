@@ -23,6 +23,7 @@ import ujson
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 
+
 def email_page(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         set_forward_address(request.POST["forward_address"])
@@ -36,12 +37,14 @@ def email_page(request: HttpRequest) -> HttpResponse:
                   {'log': content,
                    'forward_address': get_forward_address()})
 
+
 def clear_emails(request: HttpRequest) -> HttpResponse:
     try:
         os.remove(settings.EMAIL_CONTENT_LOG_PATH)
     except FileNotFoundError:  # nocoverage
         pass
     return redirect(email_page)
+
 
 @require_GET
 def generate_all_emails(request: HttpRequest) -> HttpResponse:
