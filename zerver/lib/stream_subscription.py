@@ -9,6 +9,7 @@ from zerver.models import (
     UserProfile,
 )
 
+
 def get_active_subscriptions_for_stream_id(stream_id: int) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
     return Subscription.objects.filter(
@@ -16,6 +17,7 @@ def get_active_subscriptions_for_stream_id(stream_id: int) -> QuerySet:
         recipient__type_id=stream_id,
         active=True,
     )
+
 
 def get_active_subscriptions_for_stream_ids(stream_ids: List[int]) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
@@ -25,12 +27,14 @@ def get_active_subscriptions_for_stream_ids(stream_ids: List[int]) -> QuerySet:
         active=True
     )
 
+
 def get_stream_subscriptions_for_user(user_profile: UserProfile) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
     return Subscription.objects.filter(
         user_profile=user_profile,
         recipient__type=Recipient.STREAM,
     )
+
 
 def get_stream_subscriptions_for_users(user_profiles: List[UserProfile]) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
@@ -43,6 +47,7 @@ SubInfo = TypedDict('SubInfo', {
     'sub': Subscription,
     'stream': Stream,
 })
+
 
 def get_bulk_stream_subscriber_info(
         user_profiles: List[UserProfile],
@@ -69,6 +74,7 @@ def get_bulk_stream_subscriber_info(
         result[user_profile_id].append((sub, stream))
 
     return result
+
 
 def num_subscribers_for_stream_id(stream_id: int) -> int:
     return get_active_subscriptions_for_stream_id(stream_id).filter(
