@@ -9,6 +9,7 @@ from zerver.data_import.import_util import (
 
 from typing import Any, Dict, List, Optional
 
+
 class AttachmentHandler:
     def __init__(self) -> None:
         self.info_dict = dict()  # type: Dict[str, Dict[str, Any]]
