@@ -222,23 +222,23 @@ class MessageDict:
     @staticmethod
     def to_dict_uncached_helper(message: Message) -> Dict[str, Any]:
         return MessageDict.build_message_dict(
-            message = message,
-            message_id = message.id,
-            last_edit_time = message.last_edit_time,
-            edit_history = message.edit_history,
-            content = message.content,
-            topic_name = message.topic_name(),
-            pub_date = message.pub_date,
-            rendered_content = message.rendered_content,
-            rendered_content_version = message.rendered_content_version,
-            sender_id = message.sender.id,
-            sender_realm_id = message.sender.realm_id,
-            sending_client_name = message.sending_client.name,
-            recipient_id = message.recipient.id,
-            recipient_type = message.recipient.type,
-            recipient_type_id = message.recipient.type_id,
-            reactions = Reaction.get_raw_db_rows([message.id]),
-            submessages = SubMessage.get_raw_db_rows([message.id]),
+            message=message,
+            message_id=message.id,
+            last_edit_time=message.last_edit_time,
+            edit_history=message.edit_history,
+            content=message.content,
+            topic_name=message.topic_name(),
+            pub_date=message.pub_date,
+            rendered_content=message.rendered_content,
+            rendered_content_version=message.rendered_content_version,
+            sender_id=message.sender.id,
+            sender_realm_id=message.sender.realm_id,
+            sending_client_name=message.sending_client.name,
+            recipient_id=message.recipient.id,
+            recipient_type=message.recipient.type,
+            recipient_type_id=message.recipient.type_id,
+            reactions=Reaction.get_raw_db_rows([message.id]),
+            submessages=SubMessage.get_raw_db_rows([message.id]),
         )
 
     @staticmethod
@@ -276,21 +276,21 @@ class MessageDict:
         all the relevant fields populated
         '''
         return MessageDict.build_message_dict(
-            message = None,
-            message_id = row['id'],
-            last_edit_time = row['last_edit_time'],
-            edit_history = row['edit_history'],
-            content = row['content'],
-            topic_name = row[DB_TOPIC_NAME],
-            pub_date = row['pub_date'],
-            rendered_content = row['rendered_content'],
-            rendered_content_version = row['rendered_content_version'],
-            sender_id = row['sender_id'],
-            sender_realm_id = row['sender__realm_id'],
-            sending_client_name = row['sending_client__name'],
-            recipient_id = row['recipient_id'],
-            recipient_type = row['recipient__type'],
-            recipient_type_id = row['recipient__type_id'],
+            message=None,
+            message_id=row['id'],
+            last_edit_time=row['last_edit_time'],
+            edit_history=row['edit_history'],
+            content=row['content'],
+            topic_name=row[DB_TOPIC_NAME],
+            pub_date=row['pub_date'],
+            rendered_content=row['rendered_content'],
+            rendered_content_version=row['rendered_content_version'],
+            sender_id=row['sender_id'],
+            sender_realm_id=row['sender__realm_id'],
+            sending_client_name=row['sending_client__name'],
+            recipient_id=row['recipient_id'],
+            recipient_type=row['recipient__type'],
+            recipient_type_id=row['recipient__type_id'],
             reactions=row['reactions'],
             submessages=row['submessages'],
         )
@@ -317,14 +317,14 @@ class MessageDict:
     ) -> Dict[str, Any]:
 
         obj = dict(
-            id                = message_id,
-            sender_id         = sender_id,
-            content           = content,
-            recipient_type_id = recipient_type_id,
-            recipient_type    = recipient_type,
-            recipient_id      = recipient_id,
-            timestamp         = datetime_to_timestamp(pub_date),
-            client            = sending_client_name)
+            id=message_id,
+            sender_id=sender_id,
+            content=content,
+            recipient_type_id=recipient_type_id,
+            recipient_type=recipient_type,
+            recipient_id=recipient_id,
+            timestamp=datetime_to_timestamp(pub_date),
+            client=sending_client_name)
 
         obj[TOPIC_NAME] = topic_name
         obj['sender_realm_id'] = sender_realm_id
