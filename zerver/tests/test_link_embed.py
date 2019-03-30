@@ -30,6 +30,7 @@ TEST_CACHES = {
     }
 }
 
+
 @override_settings(INLINE_URL_EMBED_PREVIEW=True)
 class OembedTestCase(ZulipTestCase):
     @mock.patch('pyoembed.requests.get')
