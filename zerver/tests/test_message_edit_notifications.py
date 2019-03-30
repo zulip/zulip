@@ -24,6 +24,7 @@ from zerver.tornado.event_queue import (
     maybe_enqueue_notifications,
 )
 
+
 class EditMessageSideEffectsTest(ZulipTestCase):
     def _assert_update_does_not_notify_anybody(self, message_id: int, content: str) -> None:
         url = '/json/messages/' + str(message_id)
