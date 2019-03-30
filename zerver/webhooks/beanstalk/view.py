@@ -18,6 +18,8 @@ from zerver.webhooks.github_legacy.view import build_message_from_gitlog
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
 # So we ask the user to replace them with %40
 # We manually fix the username here before passing it along to @authenticated_rest_api_view
+
+
 def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -32,6 +34,7 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
 
 @beanstalk_decoder
 @authenticated_rest_api_view(webhook_client_name="Beanstalk")
