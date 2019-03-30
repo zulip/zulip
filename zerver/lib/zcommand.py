@@ -5,6 +5,7 @@ from zerver.models import UserProfile
 from zerver.lib.actions import do_set_user_display_setting
 from zerver.lib.exceptions import JsonableError
 
+
 def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
     if not content.startswith('/'):
         raise JsonableError(_('There should be a leading slash in the zcommand.'))
