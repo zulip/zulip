@@ -30,6 +30,7 @@ from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_str
     CustomProfileField, Message, UserMessage, Attachment, get_user_profile_by_email, \
     get_user_profile_by_id
 
+
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, user_profile: UserProfile,
                                                 new_realm_name: str) -> None:
@@ -515,6 +516,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
+
 class RealmAPITest(ZulipTestCase):
 
     def setUp(self) -> None:
@@ -613,6 +615,7 @@ class RealmAPITest(ZulipTestCase):
         realm = self.update_with_api('message_content_delete_limit_seconds', 600)
         self.assertEqual(realm.allow_message_deleting, True)
         self.assertEqual(realm.message_content_delete_limit_seconds, 600)
+
 
 class ScrubRealmTest(ZulipTestCase):
     def test_scrub_realm(self) -> None:
