@@ -6,6 +6,7 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Count
 
+
 def fix_duplicate_attachments(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     """Migration 0041 had a bug, where if multiple messages referenced the
     same attachment, rather than creating a single attachment object
@@ -34,6 +35,7 @@ def fix_duplicate_attachments(apps: StateApps, schema_editor: DatabaseSchemaEdit
             surviving.is_realm_public = surviving.is_realm_public or a.is_realm_public
             surviving.save()
             a.delete()
+
 
 class Migration(migrations.Migration):
 
