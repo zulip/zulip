@@ -4,6 +4,7 @@ from unittest import TestCase
 from tools.lib.capitalization import check_capitalization, is_capitalized, \
     get_safe_text
 
+
 class GetSafeTextTestCase(TestCase):
     def test_get_safe_text(self) -> None:
         string = ('Messages in __page_params.product_name__ go to a '
@@ -69,6 +70,7 @@ class GetSafeTextTestCase(TestCase):
         safe_text = get_safe_text(string)
         self.assertEqual(safe_text, 'One two etc_ three. four')
 
+
 class IsCapitalizedTestCase(TestCase):
     def test_process_text(self) -> None:
         string = "Zulip zulip. Zulip some text!"
@@ -119,6 +121,7 @@ class IsCapitalizedTestCase(TestCase):
         string = "One two etc_ three"
         capitalized = is_capitalized(string)
         self.assertTrue(capitalized)
+
 
 class CheckCapitalizationTestCase(TestCase):
     def test_check_capitalization(self) -> None:
