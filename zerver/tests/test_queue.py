@@ -8,6 +8,7 @@ from zerver.lib.queue import TornadoQueueClient, queue_json_publish, \
     get_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 
+
 class TestTornadoQueueClient(ZulipTestCase):
     @mock.patch('zerver.lib.queue.logging.getLogger', autospec=True)
     @mock.patch('zerver.lib.queue.ExceptionFreeTornadoConnection', autospec=True)
