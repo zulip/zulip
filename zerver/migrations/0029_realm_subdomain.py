@@ -6,6 +6,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def set_subdomain_of_default_realm(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     if settings.DEVELOPMENT:
         Realm = apps.get_model('zerver', 'Realm')
@@ -17,6 +18,7 @@ def set_subdomain_of_default_realm(apps: StateApps, schema_editor: DatabaseSchem
         if default_realm is not None:
             default_realm.subdomain = "zulip"
             default_realm.save()
+
 
 class Migration(migrations.Migration):
 
