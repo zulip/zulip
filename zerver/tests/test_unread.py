@@ -31,6 +31,7 @@ from zerver.lib.topic_mutes import add_topic_mute
 import mock
 import ujson
 
+
 class PointerTest(ZulipTestCase):
 
     def test_update_pointer(self) -> None:
@@ -203,6 +204,7 @@ class PointerTest(ZulipTestCase):
                 anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
         self.assert_length(messages, 1)
 
+
 class UnreadCountTests(ZulipTestCase):
     def setUp(self) -> None:
         with mock.patch('zerver.lib.push_notifications.push_notifications_enabled',
@@ -358,6 +360,7 @@ class UnreadCountTests(ZulipTestCase):
         })
         self.assert_json_error(result, 'No such topic \'abc\'')
 
+
 class FixUnreadTests(ZulipTestCase):
     def test_fix_unreads(self) -> None:
         user = self.example_user('hamlet')
@@ -473,6 +476,7 @@ class FixUnreadTests(ZulipTestCase):
         assert_unread(um_muted_stream_id)
         assert_unread(um_post_pointer_id)
         assert_read(um_unsubscribed_id)
+
 
 class PushNotificationMarkReadFlowsTest(ZulipTestCase):
     def get_mobile_push_notification_ids(self, user_profile: UserProfile) -> List[int]:
