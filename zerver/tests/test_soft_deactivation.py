@@ -18,6 +18,7 @@ from zerver.models import (
     Client, UserProfile, UserActivity, get_realm, UserMessage
 )
 
+
 class UserSoftDeactivationTests(ZulipTestCase):
 
     def test_do_soft_deactivate_user(self) -> None:
