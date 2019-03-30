@@ -285,11 +285,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d2_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
         two_week_ago = timezone_now() - datetime.timedelta(weeks=2)
-        d1_attachment = Attachment.objects.get(path_id = d1_path_id)
+        d1_attachment = Attachment.objects.get(path_id=d1_path_id)
         d1_attachment.create_time = two_week_ago
         d1_attachment.save()
         self.assertEqual(str(d1_attachment), u'<Attachment: dummy_1.txt>')
-        d2_attachment = Attachment.objects.get(path_id = d2_path_id)
+        d2_attachment = Attachment.objects.get(path_id=d2_path_id)
         d2_attachment.create_time = two_week_ago
         d2_attachment.save()
 
@@ -300,14 +300,14 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # dummy_2 should not exist in database or the uploads folder
         do_delete_old_unclaimed_attachments(2)
-        self.assertTrue(not Attachment.objects.filter(path_id = d2_path_id).exists())
+        self.assertTrue(not Attachment.objects.filter(path_id=d2_path_id).exists())
         self.assertTrue(not delete_message_image(d2_path_id))
 
     def test_attachment_url_without_upload(self) -> None:
         self.login(self.example_email("hamlet"))
         body = "Test message ...[zulip.txt](http://localhost:9991/user_uploads/1/64/fake_path_id.txt)"
         self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
-        self.assertFalse(Attachment.objects.filter(path_id = "1/64/fake_path_id.txt").exists())
+        self.assertFalse(Attachment.objects.filter(path_id="1/64/fake_path_id.txt").exists())
 
     def test_multiple_claim_attachments(self) -> None:
         """
@@ -442,7 +442,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {'file': d1})
         d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
-        d1_attachment = Attachment.objects.get(path_id = d1_path_id)
+        d1_attachment = Attachment.objects.get(path_id=d1_path_id)
         self.assert_json_success(result)
 
         realm = get_realm("zulip")
@@ -498,7 +498,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
-        with self.settings(CROSS_REALM_BOT_EMAILS = set((user2_email, user3_email))):
+        with self.settings(CROSS_REALM_BOT_EMAILS=set((user2_email, user3_email))):
             internal_send_private_message(
                 realm=r1,
                 sender=get_system_bot(user2_email),
@@ -1691,8 +1691,8 @@ class S3Test(ZulipTestCase):
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
 
     def test_upload_realm_logo_image(self) -> None:
-        self._test_upload_logo_image(night = False, file_name = 'logo')
-        self._test_upload_logo_image(night = True, file_name = 'night_logo')
+        self._test_upload_logo_image(night=False, file_name='logo')
+        self._test_upload_logo_image(night=True, file_name='night_logo')
 
     @use_s3_backend
     def test_upload_emoji_image(self) -> None:
