@@ -36,10 +36,12 @@ from datetime import datetime
 from zerver.lib.request import JsonableError
 from zerver.lib.types import Validator, ProfileFieldData
 
+
 def check_string(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
         return _('%s is not a string') % (var_name,)
     return None
+
 
 def check_required_string(var_name: str, val: object) -> Optional[str]:
     error = check_string(var_name, val)
@@ -52,8 +54,10 @@ def check_required_string(var_name: str, val: object) -> Optional[str]:
 
     return None
 
+
 def check_short_string(var_name: str, val: object) -> Optional[str]:
     return check_capped_string(50)(var_name, val)
+
 
 def check_capped_string(max_length: int) -> Validator:
     def validator(var_name: str, val: object) -> Optional[str]:
@@ -65,6 +69,7 @@ def check_capped_string(max_length: int) -> Validator:
         return None
     return validator
 
+
 def check_string_fixed_length(length: int) -> Validator:
     def validator(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, str):
@@ -75,8 +80,10 @@ def check_string_fixed_length(length: int) -> Validator:
         return None
     return validator
 
+
 def check_long_string(var_name: str, val: object) -> Optional[str]:
     return check_capped_string(500)(var_name, val)
+
 
 def check_date(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
@@ -87,20 +94,24 @@ def check_date(var_name: str, val: object) -> Optional[str]:
         return _('%s is not a date') % (var_name,)
     return None
 
+
 def check_int(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, int):
         return _('%s is not an integer') % (var_name,)
     return None
+
 
 def check_float(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, float):
         return _('%s is not a float') % (var_name,)
     return None
 
+
 def check_bool(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, bool):
         return _('%s is not a boolean') % (var_name,)
     return None
+
 
 def check_color(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
@@ -111,6 +122,7 @@ def check_color(var_name: str, val: object) -> Optional[str]:
         return _('%s is not a valid hex color code') % (var_name,)
     return None
 
+
 def check_none_or(sub_validator: Validator) -> Validator:
     def f(var_name: str, val: object) -> Optional[str]:
         if val is None:
@@ -118,6 +130,7 @@ def check_none_or(sub_validator: Validator) -> Validator:
         else:
             return sub_validator(var_name, val)
     return f
+
 
 def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -> Validator:
     def f(var_name: str, val: object) -> Optional[str]:
@@ -137,6 +150,7 @@ def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -
 
         return None
     return f
+
 
 def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                optional_keys: Iterable[Tuple[str, Validator]]=[],
@@ -180,9 +194,11 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
 
     return f
 
+
 def check_dict_only(required_keys: Iterable[Tuple[str, Validator]],
                     optional_keys: Iterable[Tuple[str, Validator]]=[]) -> Validator:
     return check_dict(required_keys, optional_keys, _allow_only_listed_keys=True)
+
 
 def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
     """
@@ -199,6 +215,7 @@ def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
         return _('%s is not an allowed_type') % (var_name,)
     return enumerated_type_check
 
+
 def equals(expected_val: object) -> Validator:
     def f(var_name: str, val: object) -> Optional[str]:
         if val != expected_val:
@@ -209,11 +226,13 @@ def equals(expected_val: object) -> Validator:
         return None
     return f
 
+
 def validate_login_email(email: str) -> None:
     try:
         validate_email(email)
     except ValidationError as err:
         raise JsonableError(str(err.message))
+
 
 def check_url(var_name: str, val: object) -> Optional[str]:
     # First, ensure val is a string
@@ -227,6 +246,7 @@ def check_url(var_name: str, val: object) -> Optional[str]:
         return None
     except ValidationError:
         return _('%s is not a URL') % (var_name,)
+
 
 def validate_field_data(field_data: ProfileFieldData) -> Optional[str]:
     """
@@ -248,6 +268,7 @@ def validate_field_data(field_data: ProfileFieldData) -> Optional[str]:
 
     return None
 
+
 def validate_choice_field(var_name: str, field_data: str, value: object) -> Optional[str]:
     """
     This function is used to validate the value selected by the user against a
@@ -258,6 +279,7 @@ def validate_choice_field(var_name: str, field_data: str, value: object) -> Opti
         msg = _("'{value}' is not a valid choice for '{field_name}'.")
         return msg.format(value=value, field_name=var_name)
     return None
+
 
 def check_widget_content(widget_content: object) -> Optional[str]:
     if not isinstance(widget_content, dict):
