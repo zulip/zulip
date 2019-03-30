@@ -101,15 +101,18 @@ YUM_THUMBOR_VENV_DEPENDENCIES = [
     "gifsicle",
 ]
 
+
 def install_venv_deps(pip, requirements_file):
     # type: (str, str) -> None
     pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
     run([pip, "install", "-U", "--requirement", pip_requirements])
     run([pip, "install", "--no-deps", "--requirement", requirements_file])
 
+
 def get_index_filename(venv_path):
     # type: (str) -> str
     return os.path.join(venv_path, 'package_index')
+
 
 def get_package_names(requirements_file):
     # type: (str) -> List[str]
@@ -134,6 +137,7 @@ def get_package_names(requirements_file):
 
     return sorted(cleaned)
 
+
 def create_requirements_index_file(venv_path, requirements_file):
     # type: (str, str) -> str
     """
@@ -150,6 +154,7 @@ def create_requirements_index_file(venv_path, requirements_file):
 
     return index_filename
 
+
 def get_venv_packages(venv_path):
     # type: (str) -> Set[str]
     """
@@ -158,6 +163,7 @@ def get_venv_packages(venv_path):
     """
     with open(get_index_filename(venv_path)) as reader:
         return set(p.strip() for p in reader.read().split('\n') if p.strip())
+
 
 def try_to_copy_venv(venv_path, new_packages):
     # type: (str, Set[str]) -> bool
@@ -233,9 +239,11 @@ def try_to_copy_venv(venv_path, new_packages):
 
     return False
 
+
 def get_logfile_name(venv_path):
     # type: (str) -> str
     return "{}/setup-venv.log".format(venv_path)
+
 
 def create_log_entry(target_log, parent, copied_packages, new_packages):
     # type: (str, str, Set[str], Set[str]) -> None
@@ -253,10 +261,12 @@ def create_log_entry(target_log, parent, copied_packages, new_packages):
         writer.write("\n".join('- {}'.format(p) for p in sorted(new_packages)))
         writer.write("\n\n")
 
+
 def copy_parent_log(source_log, target_log):
     # type: (str, str) -> None
     if os.path.exists(source_log):
         shutil.copyfile(source_log, target_log)
+
 
 def do_patch_activate_script(venv_path):
     # type: (str) -> None
@@ -277,6 +287,7 @@ def do_patch_activate_script(venv_path):
     file_obj = open(script_path, 'w')
     file_obj.write("".join(lines))
     file_obj.close()
+
 
 def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, patch_activate_script=False):
     # type: (Optional[str], str, Optional[List[str]], bool) -> str
@@ -301,12 +312,14 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
             do_patch_activate_script(target_venv_path)
     return cached_venv_path
 
+
 def add_cert_to_pipconf():
     # type: () -> None
     conffile = os.path.expanduser("~/.pip/pip.conf")
     confdir = os.path.expanduser("~/.pip/")
     os.makedirs(confdir, exist_ok=True)
     run(["crudini", "--set", conffile, "global", "cert", os.environ["CUSTOM_CA_CERTIFICATES"]])
+
 
 def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # type: (str, str, List[str]) -> None
