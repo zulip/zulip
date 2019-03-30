@@ -6,6 +6,7 @@ from zerver.data_import.import_util import (
     build_user_profile,
 )
 
+
 class UserHandler:
     '''
     Our UserHandler class is a glorified wrapper
