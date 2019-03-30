@@ -176,6 +176,7 @@ BANNED_WORDS = {
               'Use organization instead.'),
 }
 
+
 def get_safe_phrase(phrase):
     # type: (str) -> str
     """
@@ -185,6 +186,7 @@ def get_safe_phrase(phrase):
     """
     phrase = SPLIT_BOUNDARY_REGEX.sub('_', phrase)
     return phrase.lower()
+
 
 def replace_with_safe_phrase(matchobj):
     # type: (Match[str]) -> str
@@ -211,6 +213,7 @@ def replace_with_safe_phrase(matchobj):
 
     return safe_string
 
+
 def get_safe_text(text):
     # type: (str) -> str
     """
@@ -223,6 +226,7 @@ def get_safe_text(text):
         text = phrase_regex.sub(replace_with_safe_phrase, text)
 
     return text
+
 
 def is_capitalized(safe_text):
     # type: (str) -> bool
@@ -240,6 +244,7 @@ def is_capitalized(safe_text):
 
     return True
 
+
 def check_banned_words(text: str) -> List[str]:
     lower_cased_text = text.lower()
     errors = []
@@ -254,6 +259,7 @@ def check_banned_words(text: str) -> List[str]:
             errors.append(msg)
 
     return errors
+
 
 def check_capitalization(strings):
     # type: (List[str]) -> Tuple[List[str], List[str], List[str]]
