@@ -12,6 +12,7 @@ import time
 
 client = get_redis_client()
 
+
 def has_enough_time_expired_since_last_message(sender_email: str, min_delay: float) -> bool:
     # This function returns a boolean, but it also has the side effect
     # of noting that a new message was received.
@@ -22,6 +23,7 @@ def has_enough_time_expired_since_last_message(sender_email: str, min_delay: flo
         return True
     delay = t - int(last_time)
     return delay > min_delay
+
 
 def deliver_feedback_by_zulip(message: Mapping[str, Any]) -> None:
     subject = "%s" % (message["sender_email"],)
@@ -53,6 +55,7 @@ def deliver_feedback_by_zulip(message: Mapping[str, Any]) -> None:
     user_profile = get_system_bot(settings.FEEDBACK_BOT)
     internal_send_message(user_profile.realm, settings.FEEDBACK_BOT,
                           "stream", settings.FEEDBACK_STREAM, subject, content)
+
 
 def handle_feedback(event: Mapping[str, Any]) -> None:
     if not settings.ENABLE_FEEDBACK:
