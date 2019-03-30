@@ -1,3 +1,7 @@
+import scripts.lib.setup_path_on_import
+import django
+import zerver.models
+from django.core.wsgi import get_wsgi_application
 """
 WSGI config for zulip project.
 
@@ -18,20 +22,16 @@ import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
-import scripts.lib.setup_path_on_import
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
-import django
 django.setup()  # We need to call setup to load applications.
 
 # Because import_module does not correctly handle safe circular imports we
 # need to import zerver.models first before the middleware tries to import it.
 
-import zerver.models
 zerver.models
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
-from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
