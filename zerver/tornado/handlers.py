@@ -28,8 +28,10 @@ from zerver.tornado.descriptors import get_descriptor_by_handler_id
 current_handler_id = 0
 handlers = {}  # type: Dict[int, 'AsyncDjangoHandler']
 
+
 def get_handler_by_id(handler_id: int) -> 'AsyncDjangoHandler':
     return handlers[handler_id]
+
 
 def allocate_handler_id(handler: 'AsyncDjangoHandler') -> int:
     global current_handler_id
@@ -38,11 +40,14 @@ def allocate_handler_id(handler: 'AsyncDjangoHandler') -> int:
     current_handler_id += 1
     return handler.handler_id
 
+
 def clear_handler_by_id(handler_id: int) -> None:
     del handlers[handler_id]
 
+
 def handler_stats_string() -> str:
     return "%s handlers, latest ID %s" % (len(handlers), current_handler_id)
+
 
 def finish_handler(handler_id: int, event_queue_id: str,
                    contents: List[Dict[str, Any]], apply_markdown: bool) -> None:
@@ -323,6 +328,7 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
             response = self.handle_uncaught_exception(request, resolver, sys.exc_info())
 
         return response
+
 
 class AsyncDjangoHandler(AsyncDjangoHandlerBase):
     def zulip_finish(self, response: Dict[str, Any], request: HttpRequest,
