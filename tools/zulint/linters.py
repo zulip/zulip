@@ -8,6 +8,7 @@ if False:
 
 from zulint.printer import print_err, colors
 
+
 def run_pycodestyle(files, ignored_rules):
     # type: (List[str], List[str]) -> bool
     if len(files) == 0:
