@@ -707,6 +707,7 @@ if settings.DEVELOPMENT:
 # tests to fail
 urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
 
+
 def handler400(request: HttpRequest, exception: Exception) -> HttpResponse:
     # (This workaround should become obsolete with Django 2.1; the
     #  issue was fixed upstream in commit 7ec0fdf62 on 2018-02-14.)
