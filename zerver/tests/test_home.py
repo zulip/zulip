@@ -25,6 +25,7 @@ from zerver.models import (
 from zerver.views.home import home, sent_time_in_epoch_seconds, compute_navbar_logo_url
 from corporate.models import Customer, CustomerPlan
 
+
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
 
