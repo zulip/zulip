@@ -4,6 +4,7 @@ from django.db import migrations
 
 from zerver.lib.migrate import create_index_if_not_exist  # nolint
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
