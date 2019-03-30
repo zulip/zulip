@@ -8,6 +8,7 @@ from typing import Dict, Any
 
 CHECK_IS_REPLY = "in reply to"
 
+
 @api_key_only_webhook_view('Flock')
 @has_request_variables
 def api_flock_webhook(request: HttpRequest, user_profile: UserProfile,
