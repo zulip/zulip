@@ -964,7 +964,7 @@ class BugdownTest(ZulipTestCase):
             return render_markdown(msg,
                                    content,
                                    realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   user_ids=user_ids)
 
         content = "hello how is this possible how are you doing today"
         render(msg, content)
@@ -998,7 +998,7 @@ class BugdownTest(ZulipTestCase):
             return render_markdown(msg,
                                    content,
                                    realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   user_ids=user_ids)
 
         content = """Hello, everyone. Prod deployment has been completed
         And this is a new line
@@ -1039,7 +1039,7 @@ class BugdownTest(ZulipTestCase):
             return render_markdown(msg,
                                    content,
                                    realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   user_ids=user_ids)
 
         content = """This is to test out alert words work in languages with accented characters too
         bonjour est (énormément) ce a quoi ressemble le français
@@ -1069,7 +1069,7 @@ class BugdownTest(ZulipTestCase):
             return render_markdown(msg,
                                    content,
                                    realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   user_ids=user_ids)
 
         content = """hello how is this possible how are you doing today
         This is to test that the no user_ids who have alrert wourldword is participating
@@ -1106,7 +1106,7 @@ class BugdownTest(ZulipTestCase):
             return render_markdown(msg,
                                    content,
                                    realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   user_ids=user_ids)
 
         content = """This is to test a empty alert words i.e. no user has any alert-words set"""
         render(msg, content)
@@ -1136,7 +1136,7 @@ class BugdownTest(ZulipTestCase):
             return render_markdown(msg,
                                    content,
                                    realm_alert_words_automaton=realm_alert_words_automaton,
-                                   user_ids = user_ids)
+                                   user_ids=user_ids)
 
         content = """The code above will print 10 random values of numbers between 1 and 100.
         The second line, for x in range(10), determines how many values will be printed (when you use
