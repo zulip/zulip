@@ -8,6 +8,7 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.utils.timezone import now as timezone_now
 
+
 def backfill_user_activations_and_deactivations(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     migration_time = timezone_now()
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
@@ -22,6 +23,7 @@ def backfill_user_activations_and_deactivations(apps: StateApps, schema_editor: 
         RealmAuditLog.objects.create(realm=user.realm, modified_user=user,
                                      event_type='user_deactivated', event_time=migration_time,
                                      backfilled=True)
+
 
 def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
