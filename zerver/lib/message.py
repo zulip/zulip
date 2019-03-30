@@ -78,6 +78,7 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
 # user has more older unread messages that were cut off.
 MAX_UNREAD_MESSAGES = 50000
 
+
 def messages_for_ids(message_ids: List[int],
                      user_message_flags: Dict[int, List[str]],
                      search_fields: Dict[int, Dict[str, str]],
@@ -113,6 +114,7 @@ def messages_for_ids(message_ids: List[int],
 
     return message_list
 
+
 def sew_messages_and_reactions(messages: List[Dict[str, Any]],
                                reactions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Given a iterable of messages and reactions stitch reactions
@@ -146,15 +148,19 @@ def sew_messages_and_submessages(messages: List[Dict[str, Any]],
             message = message_dict[message_id]
             message['submessages'].append(submessage)
 
+
 def extract_message_dict(message_bytes: bytes) -> Dict[str, Any]:
     return ujson.loads(zlib.decompress(message_bytes).decode("utf-8"))
+
 
 def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
     return zlib.compress(ujson.dumps(message_dict).encode())
 
+
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
 def message_to_dict_json(message: Message) -> bytes:
     return MessageDict.to_dict_uncached(message)
+
 
 def save_message_rendered_content(message: Message, content: str) -> str:
     rendered_content = render_markdown(message, content, realm=message.get_realm())
@@ -162,6 +168,7 @@ def save_message_rendered_content(message: Message, content: str) -> str:
     message.rendered_content_version = bugdown.version
     message.save_rendered_content()
     return rendered_content
+
 
 class MessageDict:
     @staticmethod
@@ -478,6 +485,7 @@ class MessageDict:
             client_gravatar=client_gravatar,
         )
 
+
 class ReactionDict:
     @staticmethod
     def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -508,6 +516,7 @@ def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message,
     if has_message_access(user_profile, message, user_message):
         return (message, user_message)
     raise JsonableError(_("Invalid message(s)"))
+
 
 def has_message_access(user_profile: UserProfile, message: Message,
                        user_message: Optional[UserMessage]) -> bool:
@@ -547,6 +556,7 @@ def has_message_access(user_profile: UserProfile, message: Message,
 
     return True
 
+
 def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message]) -> List[Message]:
     filtered_messages = []
 
@@ -555,6 +565,7 @@ def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message])
         if has_message_access(user_profile, message, user_message):
             filtered_messages.append(message)
     return filtered_messages
+
 
 def bulk_access_messages_expect_usermessage(
         user_profile_id: int, message_ids: Sequence[int]) -> List[int]:
@@ -575,6 +586,7 @@ def bulk_access_messages_expect_usermessage(
         user_profile_id=user_profile_id,
         message_id__in=message_ids,
     ).values_list('message_id', flat=True)
+
 
 def render_markdown(message: Message,
                     content: str,
@@ -613,6 +625,7 @@ def render_markdown(message: Message,
 
     return rendered_content
 
+
 def do_render_markdown(message: Message,
                        content: str,
                        realm: Realm,
@@ -648,6 +661,7 @@ def do_render_markdown(message: Message,
     )
     return rendered_content
 
+
 def huddle_users(recipient_id: int) -> str:
     display_recipient = get_display_recipient_by_id(recipient_id,
                                                     Recipient.HUDDLE,
@@ -659,6 +673,7 @@ def huddle_users(recipient_id: int) -> str:
     user_ids = [obj['id'] for obj in display_recipient]  # type: List[int]
     user_ids = sorted(user_ids)
     return ','.join(str(uid) for uid in user_ids)
+
 
 def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
                            lookup_fields: List[str],
@@ -722,6 +737,7 @@ def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
 
     return [lookup_dict[k] for k in sorted_keys]
 
+
 def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
     rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=False,
@@ -732,6 +748,7 @@ def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
         row['recipient_id']
         for row in rows]
     return inactive_recipient_ids
+
 
 def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
     rows = get_stream_subscriptions_for_user(user_profile).filter(
@@ -745,6 +762,7 @@ def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
         for row in rows]
     return muted_stream_ids
 
+
 def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     return list(UserMessage.objects.filter(
         user_profile=user_profile,
@@ -753,6 +771,7 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     ).order_by(
         'message_id'
     ).values_list('message_id', flat=True)[0:10000])
+
 
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
@@ -849,6 +868,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         mentions=mentions,
     )
 
+
 def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
 
     pm_dict = raw_data['pm_dict']
@@ -892,6 +912,7 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
         count=count)  # type: UnreadMessagesResult
 
     return result
+
 
 def apply_unread_message_event(user_profile: UserProfile,
                                state: Dict[str, Any],
@@ -949,19 +970,23 @@ def apply_unread_message_event(user_profile: UserProfile,
     if 'mentioned' in flags:
         state['mentions'].add(message_id)
 
+
 def estimate_recent_messages(realm: Realm, hours: int) -> int:
     stat = COUNT_STATS['messages_sent:is_bot:hour']
     d = timezone_now() - datetime.timedelta(hours=hours)
     return RealmCount.objects.filter(property=stat.property, end_time__gt=d,
                                      realm=realm).aggregate(Sum('value'))['value__sum'] or 0
 
+
 def get_first_visible_message_id(realm: Realm) -> int:
     return realm.first_visible_message_id
+
 
 def maybe_update_first_visible_message_id(realm: Realm, lookback_hours: int) -> None:
     recent_messages_count = estimate_recent_messages(realm, lookback_hours)
     if realm.message_visibility_limit is not None and recent_messages_count > 0:
         update_first_visible_message_id(realm)
+
 
 def update_first_visible_message_id(realm: Realm) -> None:
     if realm.message_visibility_limit is None:
