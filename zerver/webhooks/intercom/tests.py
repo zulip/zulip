@@ -1,5 +1,6 @@
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class IntercomWebHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/intercom?&api_key={api_key}&stream={stream}"
