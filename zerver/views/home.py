@@ -34,6 +34,7 @@ import logging
 import os
 import time
 
+
 @zulip_login_required
 def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
@@ -56,12 +57,14 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
                  'special_message_template': special_message_template},
     )
 
+
 def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[float]:
     if user_message is None:
         return None
     # We have USE_TZ = True, so our datetime objects are timezone-aware.
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
+
 
 def get_bot_types(user_profile: UserProfile) -> List[Dict[str, object]]:
     bot_types = []
@@ -73,12 +76,14 @@ def get_bot_types(user_profile: UserProfile) -> List[Dict[str, object]]:
         })
     return bot_types
 
+
 def compute_navbar_logo_url(page_params: Dict[str, Any]) -> str:
     if page_params["night_mode"] and page_params["realm_night_logo_source"] != Realm.LOGO_DEFAULT:
         navbar_logo_url = page_params["realm_night_logo_url"]
     else:
         navbar_logo_url = page_params["realm_logo_url"]
     return navbar_logo_url
+
 
 def home(request: HttpRequest) -> HttpResponse:
     if (settings.DEVELOPMENT and not settings.TEST_SUITE and
@@ -97,6 +102,7 @@ def home(request: HttpRequest) -> HttpResponse:
         return home_real(request)
 
     return render(request, 'zerver/hello.html', latest_info_context())
+
 
 @zulip_login_required
 def home_real(request: HttpRequest) -> HttpResponse:
@@ -306,14 +312,17 @@ def home_real(request: HttpRequest) -> HttpResponse:
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response
 
+
 @zulip_login_required
 def desktop_home(request: HttpRequest) -> HttpResponse:
     return HttpResponseRedirect(reverse('zerver.views.home.home'))
+
 
 def apps_view(request: HttpRequest, _: str) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
         return render(request, 'zerver/apps.html')
     return HttpResponseRedirect('https://zulipchat.com/apps/', status=301)
+
 
 def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
