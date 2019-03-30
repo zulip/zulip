@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class ZapierHookTests(WebhookTestCase):
     STREAM_NAME = 'zapier'
     URL_TEMPLATE = "/api/v1/external/zapier?stream={stream}&api_key={api_key}"
@@ -20,6 +21,7 @@ class ZapierHookTests(WebhookTestCase):
         expected_topic = u"Here is your weather update for the day:"
         expected_message = u"Foggy in the morning.\nMaximum temperature to be 24.\nMinimum temperature to be 12"
         self.send_and_test_stream_message('weather_update', expected_topic, expected_message)
+
 
 class ZapierZulipAppTests(WebhookTestCase):
     STREAM_NAME = 'zapier'
