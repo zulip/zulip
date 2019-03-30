@@ -15,9 +15,11 @@ orig_poll_impl = select.epoll
 # into this early-initialized module.
 logging_data = {}  # type: Dict[str, str]
 
+
 class InstrumentedPollIOLoop(PollIOLoop):
     def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
         super().initialize(impl=InstrumentedPoll(), **kwargs)
+
 
 def instrument_tornado_ioloop() -> None:
     IOLoop.configure(InstrumentedPollIOLoop)
@@ -29,6 +31,7 @@ def instrument_tornado_ioloop() -> None:
 # don't get processed), so instead we modify the ioloop module variable holding
 # the default poll implementation.  We need to do this before any Tornado code
 # runs that might instantiate the default event loop.
+
 
 class InstrumentedPoll:
     def __init__(self) -> None:
