@@ -10,6 +10,7 @@ from django.conf import settings
 LDAP_USER_ACCOUNT_CONTROL_NORMAL = '512'
 LDAP_USER_ACCOUNT_CONTROL_DISABLED = '514'
 
+
 def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, Any]]:
     mode = mode.lower()
     ldap_data = []
@@ -47,6 +48,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
                 **common_data)
 
     return ldap_dir
+
 
 def init_fakeldap(directory: Optional[Dict[str, Dict[str, List[str]]]]=None) -> None:
     # We only use this in development.  Importing mock inside
