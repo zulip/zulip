@@ -1,4 +1,5 @@
 
+from django.db.backends.postgresql.creation import DatabaseCreation
 from functools import partial
 import random
 
@@ -218,7 +219,6 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     return subsuite_index, result.events
 
 # Monkey-patch database creation to fix unnecessary sleep(1)
-from django.db.backends.postgresql.creation import DatabaseCreation
 
 
 def _replacement_destroy_test_db(self: DatabaseCreation,
