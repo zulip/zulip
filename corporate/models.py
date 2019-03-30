@@ -7,6 +7,7 @@ from django.db.models import CASCADE
 
 from zerver.models import Realm
 
+
 class Customer(models.Model):
     realm = models.OneToOneField(Realm, on_delete=CASCADE)  # type: Realm
     stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)  # type: str
@@ -15,6 +16,7 @@ class Customer(models.Model):
 
     def __str__(self) -> str:
         return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
+
 
 class CustomerPlan(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)  # type: Customer
@@ -55,8 +57,10 @@ class CustomerPlan(models.Model):
 
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc are immutable
 
+
 def get_active_plan(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(customer=customer, status=CustomerPlan.ACTIVE).first()
+
 
 class LicenseLedger(models.Model):
     plan = models.ForeignKey(CustomerPlan, on_delete=CASCADE)  # type: CustomerPlan
