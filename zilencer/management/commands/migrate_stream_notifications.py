@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.models import Subscription
 
+
 class Command(BaseCommand):
     help = """One-off script to migration users' stream notification settings."""
 
