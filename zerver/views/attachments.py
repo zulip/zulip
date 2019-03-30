@@ -13,6 +13,7 @@ def list_by_user(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
         "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
     })
 
+
 def remove(request: HttpRequest, user_profile: UserProfile, attachment_id: str) -> HttpResponse:
     attachment = access_attachment_by_id(user_profile, int(attachment_id),
                                          needs_owner=True)
