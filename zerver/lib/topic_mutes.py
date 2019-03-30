@@ -17,6 +17,7 @@ from sqlalchemy.sql import (
     Selectable
 )
 
+
 def get_topic_mutes(user_profile: UserProfile) -> List[List[str]]:
     rows = MutedTopic.objects.filter(
         user_profile=user_profile,
@@ -28,6 +29,7 @@ def get_topic_mutes(user_profile: UserProfile) -> List[List[str]]:
         [row['stream__name'], row['topic_name']]
         for row in rows
     ]
+
 
 def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[str]]) -> None:
 
@@ -50,6 +52,7 @@ def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[str]]) ->
             topic_name=topic_name,
         )
 
+
 def add_topic_mute(user_profile: UserProfile, stream_id: int, recipient_id: int, topic_name: str) -> None:
     MutedTopic.objects.create(
         user_profile=user_profile,
@@ -57,6 +60,7 @@ def add_topic_mute(user_profile: UserProfile, stream_id: int, recipient_id: int,
         recipient_id=recipient_id,
         topic_name=topic_name,
     )
+
 
 def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str) -> None:
     row = MutedTopic.objects.get(
@@ -66,6 +70,7 @@ def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str
     )
     row.delete()
 
+
 def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -> bool:
     is_muted = MutedTopic.objects.filter(
         user_profile=user_profile,
@@ -73,6 +78,7 @@ def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -
         topic_name__iexact=topic_name,
     ).exists()
     return is_muted
+
 
 def exclude_topic_mutes(conditions: List[Selectable],
                         user_profile: UserProfile,
@@ -104,6 +110,7 @@ def exclude_topic_mutes(conditions: List[Selectable],
 
     condition = not_(or_(*list(map(mute_cond, rows))))
     return conditions + [condition]
+
 
 def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], bool]:
     rows = MutedTopic.objects.filter(
