@@ -9,6 +9,7 @@ from zerver.lib.thumbnail import generate_thumbnail_url
 
 import codecs
 
+
 def handle_camo_url(request: HttpRequest, digest: str,
                     received_url: str) -> HttpResponse:
     if not settings.THUMBOR_SERVES_CAMO:
