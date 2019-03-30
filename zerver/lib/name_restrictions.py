@@ -1,5 +1,6 @@
 from disposable_email_domains import blacklist
 
+
 def is_reserved_subdomain(subdomain: str) -> bool:
     if subdomain in ZULIP_RESERVED_SUBDOMAINS:
         return True
@@ -10,6 +11,7 @@ def is_reserved_subdomain(subdomain: str) -> bool:
     if subdomain[-1] == 's' and subdomain[:-1] in GENERIC_RESERVED_SUBDOMAINS:
         return True
     return False
+
 
 def is_disposable_domain(domain: str) -> bool:
     if domain.lower() in WHITELISTED_EMAIL_DOMAINS:
