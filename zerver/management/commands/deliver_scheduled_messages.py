@@ -17,6 +17,7 @@ from zerver.lib.actions import do_send_messages
 logger = logging.getLogger(__name__)
 log_to_file(logger, settings.SCHEDULED_MESSAGE_DELIVERER_LOG_PATH)
 
+
 class Command(BaseCommand):
     help = """Deliver scheduled messages from the ScheduledMessage table.
 Run this command under supervisor.
