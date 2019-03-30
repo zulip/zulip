@@ -488,17 +488,17 @@ class EventsRegisterTest(ZulipTestCase):
         clear_client_event_queues_for_testing()
 
         client = allocate_client_descriptor(
-            dict(user_profile_id = self.user_profile.id,
-                 user_profile_email = self.user_profile.email,
-                 realm_id = self.user_profile.realm_id,
-                 event_types = event_types,
-                 client_type_name = "website",
-                 apply_markdown = True,
-                 client_gravatar = client_gravatar,
-                 all_public_streams = False,
-                 queue_timeout = 600,
-                 last_connection_time = time.time(),
-                 narrow = [])
+            dict(user_profile_id=self.user_profile.id,
+                 user_profile_email=self.user_profile.email,
+                 realm_id=self.user_profile.realm_id,
+                 event_types=event_types,
+                 client_type_name="website",
+                 apply_markdown=True,
+                 client_gravatar=client_gravatar,
+                 all_public_streams=False,
+                 queue_timeout=600,
+                 last_connection_time=time.time(),
+                 narrow=[])
         )
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
@@ -1442,7 +1442,7 @@ class EventsRegisterTest(ZulipTestCase):
         venice_stream = get_stream("Venice", self.user_profile.realm)
         self.do_test(lambda: do_add_streams_to_default_stream_group(self.user_profile.realm,
                                                                     group, [venice_stream]),
-                     state_change_expected = False, num_events=0)
+                     state_change_expected=False, num_events=0)
 
     def test_default_streams_events(self) -> None:
         default_streams_checker = self.check_events_dict([
@@ -1466,9 +1466,9 @@ class EventsRegisterTest(ZulipTestCase):
         do_change_is_guest(self.user_profile, True)
         stream = get_stream("Scotland", self.user_profile.realm)
         self.do_test(lambda: do_add_default_stream(stream),
-                     state_change_expected = False, num_events=0)
+                     state_change_expected=False, num_events=0)
         self.do_test(lambda: do_remove_default_stream(stream),
-                     state_change_expected = False, num_events=0)
+                     state_change_expected=False, num_events=0)
 
     def test_muted_topics_events(self) -> None:
         muted_topics_checker = self.check_events_dict([
@@ -1748,9 +1748,9 @@ class EventsRegisterTest(ZulipTestCase):
         """Test updating each setting in UserProfile.property_types dict."""
 
         test_changes = dict(
-            emojiset = [u'apple', u'twitter'],
-            default_language = [u'es', u'de', u'en'],
-            timezone = [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']
+            emojiset=[u'apple', u'twitter'],
+            default_language=[u'es', u'de', u'en'],
+            timezone=[u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']
         )  # type: Dict[str, Any]
 
         property_type = UserProfile.property_types[setting_name]
