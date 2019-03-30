@@ -676,8 +676,8 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         message_id = event['message']['id']
         # Pass on the information on whether a push or email notification was already sent.
         already_notified = dict(
-            push_notified = event.get("push_notified", False),
-            email_notified = event.get("email_notified", False),
+            push_notified=event.get("push_notified", False),
+            email_notified=event.get("email_notified", False),
         )
         maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
                                     stream_push_notify, stream_email_notify, stream_name,
@@ -1001,8 +1001,8 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
     if settings.TORNADO_SERVER and not settings.RUNNING_INSIDE_TORNADO:
         tornado_uri = get_tornado_uri(realm)
         requests_client.post(tornado_uri + '/notify_tornado', data=dict(
-            data   = ujson.dumps(data),
-            secret = settings.SHARED_SECRET))
+            data=ujson.dumps(data),
+            secret=settings.SHARED_SECRET))
     else:
         process_notification(data)
 
