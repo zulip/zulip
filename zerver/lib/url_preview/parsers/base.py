@@ -1,5 +1,6 @@
 from typing import Any
 
+
 class BaseParser:
     def __init__(self, html_source: str) -> None:
         # We import BeautifulSoup here, because it's not used by most
