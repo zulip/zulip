@@ -17,10 +17,12 @@ from zerver.tornado.event_queue import fetch_events, \
     get_client_descriptor, process_notification
 from zerver.tornado.exceptions import BadEventQueueIdError
 
+
 @internal_notify_view(True)
 def notify(request: HttpRequest) -> HttpResponse:
     process_notification(ujson.loads(request.POST['data']))
     return json_success()
+
 
 @has_request_variables
 def cleanup_event_queue(request: HttpRequest, user_profile: UserProfile,
@@ -34,6 +36,7 @@ def cleanup_event_queue(request: HttpRequest, user_profile: UserProfile,
     client.cleanup()
     return json_success()
 
+
 @asynchronous
 @internal_notify_view(True)
 @has_request_variables
@@ -44,10 +47,12 @@ def get_events_internal(request: HttpRequest, handler: BaseHandler,
     process_client(request, user_profile, client_name="internal")
     return get_events_backend(request, user_profile, handler)
 
+
 @asynchronous
 def get_events(request: HttpRequest, user_profile: UserProfile,
                handler: BaseHandler) -> Union[HttpResponse, _RespondAsynchronously]:
     return get_events_backend(request, user_profile, handler)
+
 
 @has_request_variables
 def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler: BaseHandler,
