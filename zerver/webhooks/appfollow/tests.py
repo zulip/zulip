@@ -5,6 +5,7 @@ from django.test import TestCase
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.webhooks.appfollow.view import convert_markdown
 
+
 class AppFollowHookTests(WebhookTestCase):
     STREAM_NAME = 'appfollow'
     URL_TEMPLATE = u"/api/v1/external/appfollow?stream={stream}&api_key={api_key}"
@@ -48,6 +49,7 @@ Acme enables me to manage the flow of information quite well. I only wish I coul
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("appfollow", fixture_name, file_type="json")
+
 
 class ConvertMarkdownTest(TestCase):
     def test_convert_bold(self) -> None:
