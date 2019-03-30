@@ -3,6 +3,7 @@ import mock
 from zerver.lib.test_classes import ZulipTestCase
 from typing import Dict
 
+
 class TestFeedbackBot(ZulipTestCase):
     def setUp(self) -> None:
         user_profile = self.example_user('hamlet')
