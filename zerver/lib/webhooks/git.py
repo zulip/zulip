@@ -101,6 +101,7 @@ def get_push_commits_event_message(user_name: str, compare_url: Optional[str],
             commits_data=get_commits_content(commits_data, is_truncated),
         ).rstrip()
 
+
 def get_force_push_commits_event_message(user_name: str, url: str, branch_name: str, head: str) -> str:
     return FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE.format(
         user_name=user_name,
@@ -108,6 +109,7 @@ def get_force_push_commits_event_message(user_name: str, url: str, branch_name: 
         branch_name=branch_name,
         head=head
     )
+
 
 def get_create_branch_event_message(user_name: str, url: Optional[str], branch_name: str) -> str:
     if url is None:
@@ -121,11 +123,13 @@ def get_create_branch_event_message(user_name: str, url: Optional[str], branch_n
         branch_name=branch_name,
     )
 
+
 def get_remove_branch_event_message(user_name: str, branch_name: str) -> str:
     return REMOVE_BRANCH_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         branch_name=branch_name,
     )
+
 
 def get_pull_request_event_message(user_name: str, action: str, url: str, number: Optional[int]=None,
                                    target_branch: Optional[str]=None, base_branch: Optional[str]=None,
@@ -171,11 +175,13 @@ def get_pull_request_event_message(user_name: str, action: str, url: str, number
         main_message += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=message)
     return main_message.rstrip()
 
+
 def get_setup_webhook_message(integration: str, user_name: Optional[str]=None) -> str:
     content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
     if user_name:
         content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
     return content
+
 
 def get_issue_event_message(user_name: str,
                             action: str,
@@ -197,6 +203,7 @@ def get_issue_event_message(user_name: str,
         title=title,
     )
 
+
 def get_push_tag_event_message(user_name: str,
                                tag_name: str,
                                tag_url: Optional[str]=None,
@@ -210,6 +217,7 @@ def get_push_tag_event_message(user_name: str,
         action=action,
         tag=tag_part
     )
+
 
 def get_commits_comment_action_message(user_name: str,
                                        action: str,
@@ -227,6 +235,7 @@ def get_commits_comment_action_message(user_name: str,
             message=message
         )
     return content
+
 
 def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: Optional[bool]=False) -> str:
     commits_content = ''
@@ -247,8 +256,10 @@ def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: Option
         ).replace('  ', ' ')
     return commits_content.rstrip()
 
+
 def get_short_sha(sha: str) -> str:
     return sha[:7]
+
 
 def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, int]]:
     committers = defaultdict(int)  # type: Dict[str, int]
