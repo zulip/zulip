@@ -230,9 +230,9 @@ def patch_bot_backend(
     json_result = dict(
         full_name=bot.full_name,
         avatar_url=avatar_url(bot),
-        service_interface = service_interface,
-        service_payload_url = service_payload_url,
-        config_data = config_data,
+        service_interface=service_interface,
+        service_payload_url=service_payload_url,
+        config_data=config_data,
         default_sending_stream=get_stream_name(bot.default_sending_stream),
         default_events_register_stream=get_stream_name(bot.default_events_register_stream),
         default_all_public_streams=bot.default_all_public_streams,
@@ -252,7 +252,7 @@ def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_
 
     do_regenerate_api_key(bot, user_profile)
     json_result = dict(
-        api_key = bot.api_key
+        api_key=bot.api_key
     )
     return json_success(json_result)
 
@@ -488,15 +488,15 @@ def generate_client_id() -> str:
     return generate_random_token(32)
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    result = dict(pointer        = user_profile.pointer,
-                  client_id      = generate_client_id(),
-                  max_message_id = -1,
-                  user_id        = user_profile.id,
-                  full_name      = user_profile.full_name,
-                  email          = user_profile.email,
-                  is_bot         = user_profile.is_bot,
-                  is_admin       = user_profile.is_realm_admin,
-                  short_name     = user_profile.short_name)
+    result = dict(pointer=user_profile.pointer,
+                  client_id=generate_client_id(),
+                  max_message_id=-1,
+                  user_id=user_profile.id,
+                  full_name=user_profile.full_name,
+                  email=user_profile.email,
+                  is_bot=user_profile.is_bot,
+                  is_admin=user_profile.is_realm_admin,
+                  short_name=user_profile.short_name)
 
     messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
     if messages:
