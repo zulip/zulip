@@ -60,10 +60,12 @@ from io import StringIO
 
 logger = logging.getLogger(__name__)
 
+
 class WorkerDeclarationException(Exception):
     pass
 
 ConcreteQueueWorker = TypeVar('ConcreteQueueWorker', bound='QueueProcessingWorker')
+
 
 def assign_queue(
         queue_name: str, enabled: bool=True, queue_type: str="consumer"
@@ -77,20 +79,25 @@ def assign_queue(
 
 worker_classes = {}  # type: Dict[str, Type[QueueProcessingWorker]]
 queues = {}  # type: Dict[str, Dict[str, Type[QueueProcessingWorker]]]
+
+
 def register_worker(queue_name: str, clazz: Type['QueueProcessingWorker'], queue_type: str) -> None:
     if queue_type not in queues:
         queues[queue_type] = {}
     queues[queue_type][queue_name] = clazz
     worker_classes[queue_name] = clazz
 
+
 def get_worker(queue_name: str) -> 'QueueProcessingWorker':
     return worker_classes[queue_name]()
+
 
 def get_active_worker_queues(queue_type: Optional[str]=None) -> List[str]:
     """Returns all the non-test worker queues."""
     if queue_type is None:
         return list(worker_classes.keys())
     return list(queues[queue_type].keys())
+
 
 def check_and_send_restart_signal() -> None:
     try:
@@ -99,6 +106,7 @@ def check_and_send_restart_signal() -> None:
             os.kill(os.getpid(), signal.SIGUSR1)
     except Exception:
         pass
+
 
 def retry_send_email_failures(
         func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None]
@@ -115,6 +123,7 @@ def retry_send_email_failures(
             retry_event(worker.queue_name, data, on_failure)
 
     return wrapper
+
 
 class QueueProcessingWorker:
     queue_name = None  # type: str
@@ -158,6 +167,7 @@ class QueueProcessingWorker:
     def stop(self) -> None:  # nocoverage
         self.q.stop_consuming()
 
+
 class LoopQueueProcessingWorker(QueueProcessingWorker):
     sleep_delay = 0
 
@@ -177,6 +187,7 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     def consume(self, event: Dict[str, Any]) -> None:
         """In LoopQueueProcessingWorker, consume is used just for automated tests"""
         self.consume_batch([event])
+
 
 @assign_queue('signups')
 class SignupWorker(QueueProcessingWorker):
@@ -200,6 +211,7 @@ class SignupWorker(QueueProcessingWorker):
                 retry_event('signups', data, lambda e: r.raise_for_status())
             else:
                 r.raise_for_status()
+
 
 @assign_queue('invites')
 class ConfirmationEmailWorker(QueueProcessingWorker):
@@ -237,6 +249,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             context=context,
             delay=datetime.timedelta(days=2))
 
+
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
@@ -246,12 +259,14 @@ class UserActivityWorker(QueueProcessingWorker):
         query = event["query"]
         do_update_user_activity(user_profile, client, query, log_time)
 
+
 @assign_queue('user_activity_interval')
 class UserActivityIntervalWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         log_time = timestamp_to_datetime(event["time"])
         do_update_user_activity_interval(user_profile, log_time)
+
 
 @assign_queue('user_presence')
 class UserPresenceWorker(QueueProcessingWorker):
@@ -262,6 +277,7 @@ class UserPresenceWorker(QueueProcessingWorker):
         log_time = timestamp_to_datetime(event["time"])
         status = event["status"]
         do_update_user_presence(user_profile, client, log_time, status)
+
 
 @assign_queue('missedmessage_emails', queue_type="loop")
 class MissedMessageWorker(QueueProcessingWorker):
@@ -325,6 +341,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         if len(self.batch_start_by_recipient) > 0:
             self.ensure_timer()
 
+
 @assign_queue('email_senders')
 class EmailSendingWorker(QueueProcessingWorker):
     @retry_send_email_failures
@@ -338,6 +355,7 @@ class EmailSendingWorker(QueueProcessingWorker):
         handle_send_email_format_changes(copied_event)
         send_email_from_dict(copied_event)
 
+
 @assign_queue('missedmessage_email_senders')
 class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
     """
@@ -350,6 +368,7 @@ class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
     """
     # TODO: zulip-1.8: Delete code related to missedmessage_email_senders queue.
     pass
+
 
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
@@ -376,12 +395,14 @@ class FeedbackBot(QueueProcessingWorker):
         logging.info("Received feedback from %s" % (event["sender_email"],))
         handle_feedback(event)
 
+
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         logging.info("Processing traceback with type %s for %s" % (event['type'], event.get('user_email')))
         if settings.ERROR_REPORTING:
             do_report_error(event['report']['host'], event['type'], event['report'])
+
 
 @assign_queue('slow_queries', queue_type="loop")
 class SlowQueryWorker(LoopQueueProcessingWorker):
@@ -410,6 +431,7 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
             error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
             internal_send_message(error_bot_realm, settings.ERROR_BOT,
                                   "stream", settings.SLOW_QUERY_LOGS_STREAM, topic, content)
+
 
 @assign_queue("message_sender")
 class MessageSenderWorker(QueueProcessingWorker):
@@ -471,6 +493,7 @@ class MessageSenderWorker(QueueProcessingWorker):
         queue_json_publish(server_meta['return_queue'], result,
                            respond_send_message)
 
+
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):  # nocoverage
     # Who gets a digest is entirely determined by the enqueue_digest_emails
@@ -478,6 +501,7 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
     def consume(self, event: Mapping[str, Any]) -> None:
         logging.info("Received digest event: %s" % (event,))
         handle_digest_email(event["user_profile_id"], event["cutoff"])
+
 
 @assign_queue('email_mirror')
 class MirrorWorker(QueueProcessingWorker):
@@ -499,6 +523,7 @@ class MirrorWorker(QueueProcessingWorker):
         mirror_email(email.message_from_string(event["message"]),
                      rcpt_to=rcpt_to, pre_checked=True)
 
+
 @assign_queue('test', queue_type="test")
 class TestWorker(QueueProcessingWorker):
     # This worker allows you to test the queue worker infrastructure without
@@ -511,6 +536,7 @@ class TestWorker(QueueProcessingWorker):
         logging.info("TestWorker should append this message to %s: %s" % (fn, message))
         with open(fn, 'a') as f:
             f.write(message + '\n')
+
 
 @assign_queue('embed_links')
 class FetchLinksEmbedData(QueueProcessingWorker):
@@ -541,6 +567,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             do_update_embedded_data(
                 message.sender, message, message.content, rendered_content)
 
+
 @assign_queue('outgoing_webhooks')
 class OutgoingWebhookWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
@@ -558,6 +585,7 @@ class OutgoingWebhookWorker(QueueProcessingWorker):
                              request_data,
                              dup_event,
                              service_handler)
+
 
 @assign_queue('embedded_bots')
 class EmbeddedBotWorker(QueueProcessingWorker):
@@ -594,6 +622,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 )
             except EmbeddedBotQuitException as e:
                 logging.warning(str(e))
+
 
 @assign_queue('deferred_work')
 class DeferredWorker(QueueProcessingWorker):
