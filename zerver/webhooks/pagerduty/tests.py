@@ -2,6 +2,7 @@
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class PagerDutyHookTests(WebhookTestCase):
     STREAM_NAME = 'pagerduty'
     URL_TEMPLATE = u"/api/v1/external/pagerduty?api_key={api_key}&stream={stream}"
