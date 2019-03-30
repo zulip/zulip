@@ -7,6 +7,7 @@ from django.db.models import Q
 from zerver.models import Message, Realm, \
     Recipient, Stream, Subscription, get_realm
 
+
 class Command(BaseCommand):
     help = "Generate statistics on the streams for a realm."
 
