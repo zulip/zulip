@@ -3,17 +3,20 @@ import ujson
 import random
 from typing import List, Dict, Any
 
+
 def load_config() -> Dict[str, Any]:
     with open("zerver/tests/fixtures/config.generate_data.json", "r") as infile:
         config = ujson.load(infile)
 
     return config
 
+
 def get_stream_title(gens: Dict[str, Any]) -> str:
 
     return next(gens["adjectives"]) + " " + next(gens["nouns"]) + " " + \
         next(gens["connectors"]) + " " + next(gens["verbs"]) + " " + \
         next(gens["adverbs"])
+
 
 def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
 
@@ -37,6 +40,7 @@ def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
 
     return results
 
+
 def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -> List[str]:
 
     # First, load the entire file into a dictionary,
@@ -51,6 +55,7 @@ def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -
 
     return paragraphs
 
+
 def get_flair_gen(length: int) -> List[str]:
 
     # Grab the percentages from the config file
@@ -64,6 +69,7 @@ def get_flair_gen(length: int) -> List[str]:
 
     random.shuffle(result)
     return result
+
 
 def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
 
@@ -105,6 +111,7 @@ def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
 
     return results
 
+
 def add_md(mode: str, text: str) -> str:
 
     # mode means: bold, italic, etc.
@@ -120,6 +127,7 @@ def add_md(mode: str, text: str) -> str:
 
     return " ".join(vals).strip()
 
+
 def add_emoji(text: str, emoji: str) -> str:
 
     vals = text.split()
@@ -127,6 +135,7 @@ def add_emoji(text: str, emoji: str) -> str:
 
     vals[start] = vals[start] + " " + emoji + " "
     return " ".join(vals)
+
 
 def add_link(text: str, link: str) -> str:
 
@@ -136,6 +145,7 @@ def add_link(text: str, link: str) -> str:
     vals[start] = vals[start] + " " + link + " "
 
     return " ".join(vals)
+
 
 def remove_line_breaks(fh: Any) -> List[str]:
 
@@ -158,10 +168,12 @@ def remove_line_breaks(fh: Any) -> List[str]:
 
     return results
 
+
 def write_file(paragraphs: List[str], filename: str) -> None:
 
     with open(filename, "w") as outfile:
         outfile.write(ujson.dumps(paragraphs))
+
 
 def create_test_data() -> None:
 
