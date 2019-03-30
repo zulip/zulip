@@ -1,3 +1,13 @@
+import collections
+import mock
+import os
+import re
+import sys
+import time
+import ujson
+from moto import mock_s3_deprecated
+import fakeldap
+import ldap
 from contextlib import contextmanager
 from typing import (
     Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
@@ -42,17 +52,7 @@ if False:
     # Avoid an import cycle; we only need these for type annotations.
     from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
 
-import collections
-import mock
-import os
-import re
-import sys
-import time
-import ujson
-from moto import mock_s3_deprecated
 
-import fakeldap
-import ldap
 
 
 class MockLDAP(fakeldap.MockLDAP):
