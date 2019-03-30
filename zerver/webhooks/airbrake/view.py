@@ -12,6 +12,7 @@ from zerver.models import UserProfile
 AIRBRAKE_TOPIC_TEMPLATE = '{project_name}'
 AIRBRAKE_MESSAGE_TEMPLATE = '[{error_class}]({error_url}): "{error_message}" occurred.'
 
+
 @api_key_only_webhook_view('Airbrake')
 @has_request_variables
 def api_airbrake_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -21,8 +22,10 @@ def api_airbrake_webhook(request: HttpRequest, user_profile: UserProfile,
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
+
 def get_subject(payload: Dict[str, Any]) -> str:
     return AIRBRAKE_TOPIC_TEMPLATE.format(project_name=payload['error']['project']['name'])
+
 
 def get_body(payload: Dict[str, Any]) -> str:
     data = {
