@@ -7,6 +7,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.sessions import user_sessions
 from zerver.models import UserProfile
 
+
 class Command(ZulipBaseCommand):
     help = "Deactivate a user, including forcibly logging them out."
 
