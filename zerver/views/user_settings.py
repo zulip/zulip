@@ -196,7 +196,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     user_avatar_url = avatar_url(user_profile)
 
     json_result = dict(
-        avatar_url = user_avatar_url
+        avatar_url=user_avatar_url
     )
     return json_success(json_result)
 
@@ -205,7 +205,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     gravatar_url = avatar_url(user_profile)
 
     json_result = dict(
-        avatar_url = gravatar_url
+        avatar_url=gravatar_url
     )
     return json_success(json_result)
 
@@ -215,7 +215,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
 def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     do_regenerate_api_key(user_profile, user_profile)
     json_result = dict(
-        api_key = user_profile.api_key
+        api_key=user_profile.api_key
     )
     return json_success(json_result)
 
