@@ -6,6 +6,7 @@ from typing import Callable, DefaultDict, Iterator, List, Optional, Set, Tuple
 Edge = Tuple[str, str]
 EdgeSet = Set[Edge]
 
+
 class Graph:
     def __init__(self, tuples):
         # type: (EdgeSet) -> None
@@ -84,6 +85,7 @@ class Graph:
         for tup in tups:
             print(tup)
 
+
 def best_edge_to_remove(orig_graph, is_exempt):
     # type: (Graph, Callable[[Edge], bool]) -> Optional[Edge]
     # expects an already reduced graph as input
@@ -108,6 +110,7 @@ def best_edge_to_remove(orig_graph, is_exempt):
         raise Exception('no edges work here')
     return best_edge
 
+
 def make_dot_file(graph):
     # type: (Graph) -> str
     buffer = 'digraph G {\n'
@@ -117,6 +120,7 @@ def make_dot_file(graph):
             buffer += '{} -> {};\n'.format(node, child)
     buffer += '}'
     return buffer
+
 
 def test():
     # type: () -> None
