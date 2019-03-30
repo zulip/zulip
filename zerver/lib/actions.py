@@ -440,7 +440,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
                default_events_register_stream=default_events_register_stream_name,
                default_all_public_streams=user_profile.default_all_public_streams,
                avatar_url=avatar_url(user_profile),
-               services = get_service_dicts_for_bot(user_profile.id),
+               services=get_service_dicts_for_bot(user_profile.id),
                )
 
     # Set the owner key only when the bot has an owner.
@@ -905,7 +905,7 @@ def render_incoming_message(message: Message,
             message=message,
             content=content,
             realm=realm,
-            realm_alert_words_automaton = realm_alert_words_automaton,
+            realm_alert_words_automaton=realm_alert_words_automaton,
             user_ids=user_ids,
             mention_data=mention_data,
             email_gateway=email_gateway,
@@ -1294,8 +1294,8 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 message=message['message'],
                 um_eligible_user_ids=message['um_eligible_user_ids'],
                 long_term_idle_user_ids=message['long_term_idle_user_ids'],
-                stream_push_user_ids = message['stream_push_user_ids'],
-                stream_email_user_ids = message['stream_email_user_ids'],
+                stream_push_user_ids=message['stream_push_user_ids'],
+                stream_email_user_ids=message['stream_email_user_ids'],
                 mentioned_user_ids=mentioned_user_ids,
             )
 
@@ -1651,10 +1651,10 @@ def do_send_typing_notification(realm: Realm, notification: Dict[str, Any]) -> N
     recipient_dicts = [{'user_id': profile.id, 'email': profile.email}
                        for profile in recipient_user_profiles]
     event = dict(
-        type            = 'typing',
-        op              = notification['op'],
-        sender          = sender_dict,
-        recipients      = recipient_dicts)
+        type='typing',
+        op=notification['op'],
+        sender=sender_dict,
+        recipients=recipient_dicts)
 
     send_event(realm, event, user_ids_to_notify)
 
@@ -1757,7 +1757,7 @@ def create_stream_if_needed(realm: Realm,
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
         name__iexact=stream_name,
-        defaults = dict(
+        defaults=dict(
             name=stream_name,
             description=stream_description,
             invite_only=invite_only,
@@ -3792,9 +3792,9 @@ def do_update_user_activity(user_profile: UserProfile,
                             query: str,
                             log_time: datetime.datetime) -> None:
     (activity, created) = UserActivity.objects.get_or_create(
-        user_profile = user_profile,
-        client = client,
-        query = query,
+        user_profile=user_profile,
+        client=client,
+        query=query,
         defaults={'last_visit': log_time, 'count': 0})
 
     activity.count += 1
@@ -3827,9 +3827,9 @@ def do_update_user_presence(user_profile: UserProfile,
                             status: int) -> None:
     client = consolidate_client(client)
     (presence, created) = UserPresence.objects.get_or_create(
-        user_profile = user_profile,
-        client = client,
-        defaults = {'timestamp': log_time,
+        user_profile=user_profile,
+        client=client,
+        defaults={'timestamp': log_time,
                     'status': status})
 
     stale_status = (log_time - presence.timestamp) > datetime.timedelta(minutes=1, seconds=10)
@@ -4739,10 +4739,10 @@ def validate_email_for_realm(target_realm: Realm, email: str) -> None:
         if existing_user_profile.is_mirror_dummy:
             raise AssertionError("Mirror dummy user is already active!")
         # Other users should not already exist at all.
-        raise ValidationError('%s already has an account' % (email,), code = _("Already has an account."))
+        raise ValidationError('%s already has an account' % (email,), code=_("Already has an account."))
     elif not existing_user_profile.is_mirror_dummy:
         raise ValidationError('The account for %s has been deactivated' % (email,),
-                              code = _("Account has been deactivated."))
+                              code=_("Account has been deactivated."))
 
 def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str], Optional[str]]:
     try:
@@ -5392,7 +5392,7 @@ def do_update_outgoing_webhook_service(bot_profile: UserProfile,
                     op='update',
                     bot=dict(email=bot_profile.email,
                              user_id=bot_profile.id,
-                             services = [dict(base_url=service.base_url,
+                             services=[dict(base_url=service.base_url,
                                               interface=service.interface,
                                               token=service.token,)],
                              ),
@@ -5409,7 +5409,7 @@ def do_update_bot_config_data(bot_profile: UserProfile,
                     op='update',
                     bot=dict(email=bot_profile.email,
                              user_id=bot_profile.id,
-                             services = [dict(config_data=updated_config_data)],
+                             services=[dict(config_data=updated_config_data)],
                              ),
                     ),
                bot_owner_user_ids(bot_profile))
