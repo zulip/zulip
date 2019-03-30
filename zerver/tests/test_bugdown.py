@@ -49,8 +49,10 @@ import ujson
 
 from typing import cast, Any, Dict, List, Optional, Set, Tuple
 
+
 class FakeMessage:
     pass
+
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:
@@ -165,6 +167,7 @@ class FencedBlockPreprocessorTest(TestCase):
         lines = processor.run(markdown)
         self.assertEqual(lines, expected)
 
+
 def bugdown_convert(content: str) -> str:
     message = cast(Message, FakeMessage())
     message.content = content
@@ -174,6 +177,7 @@ def bugdown_convert(content: str) -> str:
         message_realm=get_realm('zulip'),
         message=message
     )
+
 
 class BugdownMiscTest(ZulipTestCase):
     def test_diffs_work_as_expected(self) -> None:
@@ -247,6 +251,7 @@ class BugdownMiscTest(ZulipTestCase):
             with mock.patch('logging.error') as mock_logger:
                 render_tex("random text")
                 mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
+
 
 class BugdownTest(ZulipTestCase):
     def setUp(self) -> None:
@@ -1638,6 +1643,7 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
 
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'
@@ -1663,6 +1669,7 @@ class BugdownApiTests(ZulipTestCase):
         stream_id = get_stream('Denmark', get_realm('zulip')).id
         self.assertEqual(result.json()['rendered'],
                          u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/%s-Denmark">#Denmark</a> and <span class="user-mention" data-user-id="%s">@King Hamlet</span>.</p>' % (stream_id, stream_id, user_id))
+
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self) -> None:
