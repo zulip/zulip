@@ -62,10 +62,12 @@ TAB_DISPLAY_NAMES = {
     'jitsi-on-premise': 'Jitsi on-premise',
 }
 
+
 class TabbedSectionsGenerator(Extension):
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
             'tabbed_sections', TabbedSectionsPreprocessor(md, self.getConfigs()), '_end')
+
 
 class TabbedSectionsPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
@@ -141,6 +143,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 block['end_tabs_index'] = index
                 break
         return block
+
 
 def makeExtension(*args: Any, **kwargs: str) -> TabbedSectionsGenerator:
     return TabbedSectionsGenerator(**kwargs)
