@@ -52,11 +52,14 @@ import os
 import mock
 from typing import Any, Dict, List, Set, Tuple, Iterator
 
+
 def remove_folder(path: str) -> None:
     if os.path.exists(path):
         shutil.rmtree(path)
 
 # This method will be used by the mock to replace requests.get
+
+
 def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> mock.Mock:
     class MockResponse:
         def __init__(self, json_data: Dict[str, Any], status_code: int) -> None:
@@ -72,6 +75,7 @@ def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> mock.Mock:
         return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
     else:
         return MockResponse(None, 404)
+
 
 class SlackImporter(ZulipTestCase):
     logger = logging.getLogger()
