@@ -39,6 +39,7 @@ if PRODUCTION:
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
+
 def get_secret(key: str, default_value: Optional[Any]=None,
                development_only: bool=False) -> Optional[Any]:
     if development_only and PRODUCTION:
@@ -46,6 +47,7 @@ def get_secret(key: str, default_value: Optional[Any]=None,
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
     return default_value
+
 
 def get_config(section: str, key: str, default_value: Optional[Any]=None) -> Optional[Any]:
     if config_file.has_option(section, key):
@@ -522,6 +524,8 @@ ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
 ALLOWED_HOSTS += REALM_HOSTS.values()
 
 from django.template.loaders import app_directories
+
+
 class TwoFactorLoader(app_directories.Loader):
     def get_dirs(self):
         dirs = super().get_dirs()
