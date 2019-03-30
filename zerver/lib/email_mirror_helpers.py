@@ -7,8 +7,10 @@ from zerver.models import Stream
 
 from typing import Tuple
 
+
 class ZulipEmailForwardError(Exception):
     pass
+
 
 def get_email_gateway_message_string_from_address(address: str) -> str:
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
@@ -24,8 +26,10 @@ def get_email_gateway_message_string_from_address(address: str) -> str:
 
     return msg_string
 
+
 def encode_email_address(stream: Stream) -> str:
     return encode_email_address_helper(stream.name, stream.email_token)
+
 
 def encode_email_address_helper(name: str, email_token: str) -> str:
     # Some deployments may not use the email gateway
@@ -51,6 +55,7 @@ def encode_email_address_helper(name: str, email_token: str) -> str:
         encoded_token = email_token
 
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
+
 
 def decode_email_address(email: str) -> Tuple[str, bool]:
     # Perform the reverse of encode_email_address. Returns a tuple of
