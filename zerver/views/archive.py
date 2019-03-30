@@ -15,6 +15,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.exceptions import JsonableError
 
+
 def archive(request: HttpRequest,
             stream_id: int,
             topic_name: str) -> HttpResponse:
@@ -77,6 +78,7 @@ def archive(request: HttpRequest,
         rendered_msg = loader.render_to_string('zerver/archive/single_message.html', context)
         rendered_message_list.append(rendered_msg)
     return get_response(rendered_message_list, True, stream.name)
+
 
 def get_web_public_topics_backend(request: HttpRequest, stream_id: int) -> HttpResponse:
     try:
