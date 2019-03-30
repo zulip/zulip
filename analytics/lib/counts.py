@@ -28,6 +28,7 @@ TIMEDELTA_MAX = timedelta(days=365*1000)
 
 ## Class definitions ##
 
+
 class CountStat:
     HOUR = 'hour'
     DAY = 'day'
@@ -51,15 +52,18 @@ class CountStat:
     def __str__(self) -> str:
         return "<CountStat: %s>" % (self.property,)
 
+
 class LoggingCountStat(CountStat):
     def __init__(self, property: str, output_table: Type[BaseCount], frequency: str) -> None:
         CountStat.__init__(self, property, DataCollector(output_table, None), frequency)
+
 
 class DependentCountStat(CountStat):
     def __init__(self, property: str, data_collector: 'DataCollector', frequency: str,
                  interval: Optional[timedelta]=None, dependencies: List[str]=[]) -> None:
         CountStat.__init__(self, property, data_collector, frequency, interval=interval)
         self.dependencies = dependencies
+
 
 class DataCollector:
     def __init__(self, output_table: Type[BaseCount],
@@ -68,6 +72,7 @@ class DataCollector:
         self.pull_function = pull_function
 
 ## CountStat-level operations ##
+
 
 def process_count_stat(stat: CountStat, fill_to_time: datetime) -> None:
     if stat.frequency == CountStat.HOUR:
@@ -119,6 +124,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime) -> None:
         currently_filled = currently_filled + time_increment
         logger.info("DONE %s (%dms)" % (stat.property, (end-start)*1000))
 
+
 def do_update_fill_state(fill_state: FillState, end_time: datetime, state: int) -> None:
     fill_state.end_time = end_time
     fill_state.state = state
@@ -126,6 +132,8 @@ def do_update_fill_state(fill_state: FillState, end_time: datetime, state: int) 
 
 # We assume end_time is valid (e.g. is on a day or hour boundary as appropriate)
 # and is timezone aware. It is the caller's responsibility to enforce this!
+
+
 def do_fill_count_stat_at_hour(stat: CountStat, end_time: datetime) -> None:
     start_time = end_time - stat.interval
     if not isinstance(stat, LoggingCountStat):
@@ -135,6 +143,7 @@ def do_fill_count_stat_at_hour(stat: CountStat, end_time: datetime) -> None:
         logger.info("%s run pull_function (%dms/%sr)" %
                     (stat.property, (time.time()-timer)*1000, rows_added))
     do_aggregate_to_summary_table(stat, end_time)
+
 
 def do_delete_counts_at_hour(stat: CountStat, end_time: datetime) -> None:
     if isinstance(stat, LoggingCountStat):
@@ -146,6 +155,7 @@ def do_delete_counts_at_hour(stat: CountStat, end_time: datetime) -> None:
         StreamCount.objects.filter(property=stat.property, end_time=end_time).delete()
         RealmCount.objects.filter(property=stat.property, end_time=end_time).delete()
         InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
+
 
 def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime) -> None:
     cursor = connection.cursor()
@@ -197,6 +207,8 @@ def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime) -> None:
 ## Utility functions called from outside counts.py ##
 
 # called from zerver/lib/actions.py; should not throw any errors
+
+
 def do_increment_logging_stat(zerver_object: Union[Realm, UserProfile, Stream], stat: CountStat,
                               subgroup: Optional[Union[str, int, bool]], event_time: datetime,
                               increment: int=1) -> None:
@@ -220,12 +232,14 @@ def do_increment_logging_stat(zerver_object: Union[Realm, UserProfile, Stream], 
         row.value = F('value') + increment
         row.save(update_fields=['value'])
 
+
 def do_drop_all_analytics_tables() -> None:
     UserCount.objects.all().delete()
     StreamCount.objects.all().delete()
     RealmCount.objects.all().delete()
     InstallationCount.objects.all().delete()
     FillState.objects.all().delete()
+
 
 def do_drop_single_stat(property: str) -> None:
     UserCount.objects.filter(property=property).delete()
@@ -235,6 +249,7 @@ def do_drop_single_stat(property: str) -> None:
     FillState.objects.filter(property=property).delete()
 
 ## DataCollector-level operations ##
+
 
 def do_pull_by_sql_query(property: str, start_time: datetime, end_time: datetime, query: str,
                          group_by: Optional[Tuple[models.Model, str]]) -> int:
@@ -257,11 +272,13 @@ def do_pull_by_sql_query(property: str, start_time: datetime, end_time: datetime
     cursor.close()
     return rowcount
 
+
 def sql_data_collector(output_table: Type[BaseCount], query: str,
                        group_by: Optional[Tuple[models.Model, str]]) -> DataCollector:
     def pull_function(property: str, start_time: datetime, end_time: datetime) -> int:
         return do_pull_by_sql_query(property, start_time, end_time, query, group_by)
     return DataCollector(output_table, pull_function)
+
 
 def do_pull_minutes_active(property: str, start_time: datetime, end_time: datetime) -> int:
     user_activity_intervals = UserActivityInterval.objects.filter(
