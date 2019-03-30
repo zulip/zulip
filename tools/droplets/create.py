@@ -33,11 +33,13 @@ parser.add_argument("username", help="Github username for whom you want to creat
 parser.add_argument('--tags', nargs='+', default=[])
 parser.add_argument('-f', '--recreate', dest='recreate', action="store_true", default=False)
 
+
 def get_config():
     # type: () -> configparser.ConfigParser
     config = configparser.ConfigParser()
     config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini'))
     return config
+
 
 def user_exists(username):
     # type: (str) -> bool
@@ -52,6 +54,7 @@ def user_exists(username):
         print(err)
         print("Does the github user {0} exist?".format(username))
         sys.exit(1)
+
 
 def get_keys(username):
     # type: (str) -> List[Dict[str, Any]]
@@ -70,6 +73,7 @@ def get_keys(username):
         print("Has user {0} added ssh keys to their github account?".format(username))
         sys.exit(1)
 
+
 def fork_exists(username):
     # type: (str) -> bool
     print("Checking to see GitHub user has forked zulip/zulip...")
@@ -83,6 +87,7 @@ def fork_exists(username):
         print(err)
         print("Has user {0} forked zulip/zulip?".format(username))
         sys.exit(1)
+
 
 def exit_if_droplet_exists(my_token: str, username: str, recreate: bool) -> None:
     print("Checking to see if droplet for {0} already exists...".format(username))
@@ -99,6 +104,7 @@ def exit_if_droplet_exists(my_token: str, username: str, recreate: bool) -> None
                 droplet.destroy()
                 return
     print("...No droplet found...proceeding.")
+
 
 def set_user_data(username, userkeys):
     # type: (str, List[Dict[str, Any]]) -> str
@@ -137,6 +143,7 @@ cd /home/zulipdev/{1} && git remote add origin https://github.com/{0}/{1}.git &&
     print("...returning cloud-config data.")
     return cloudconf
 
+
 def create_droplet(my_token, template_id, username, tags, user_data):
     # type: (str, str, str, List[str], str) -> str
     droplet = digitalocean.Droplet(
@@ -168,6 +175,7 @@ def create_droplet(my_token, template_id, username, tags, user_data):
     print("...ip address for new droplet is: {0}.".format(droplet.ip_address))
     return droplet.ip_address
 
+
 def delete_existing_records(records: List[digitalocean.Record], record_name: str) -> None:
     count = 0
     for record in records:
@@ -176,6 +184,7 @@ def delete_existing_records(records: List[digitalocean.Record], record_name: str
             count = count + 1
     if count:
         print("Deleted {0} existing A records for {1}.zulipdev.org.".format(count, record_name))
+
 
 def create_dns_record(my_token, username, ip_address):
     # type: (str, str, str) -> None
@@ -191,6 +200,7 @@ def create_dns_record(my_token, username, ip_address):
     domain.create_new_domain_record(type='A', name=username, data=ip_address)
     print("Creating new A record for *.{0}.zulipdev.org that points to {1}.".format(username, ip_address))
     domain.create_new_domain_record(type='A', name=wildcard_name, data=ip_address)
+
 
 def print_completion(username):
     # type: (str) -> None
