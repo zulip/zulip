@@ -3,6 +3,7 @@ from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class Bitbucket2HookTests(WebhookTestCase):
     STREAM_NAME = 'bitbucket2'
     URL_TEMPLATE = "/api/v1/external/bitbucket2?stream={stream}&api_key={api_key}"
