@@ -67,9 +67,11 @@ class SettingHelpExtension(markdown.Extension):
 
 relative_settings_links = None  # type: Optional[bool]
 
+
 def set_relative_settings_links(value: bool) -> None:
     global relative_settings_links
     relative_settings_links = value
+
 
 class Setting(Preprocessor):
     def run(self, lines: List[str]) -> List[str]:
@@ -104,6 +106,7 @@ class Setting(Preprocessor):
             return "1. Go to [%s](%s)." % (setting_name, setting_link)
         return settings_markdown % {'setting_type_name': setting_type_name,
                                     'setting_reference': "**%s**" % (setting_name,)}
+
 
 def makeExtension(*args: Any, **kwargs: Any) -> SettingHelpExtension:
     return SettingHelpExtension(*args, **kwargs)
