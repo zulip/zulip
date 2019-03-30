@@ -17,12 +17,14 @@ from zerver.decorator import JsonableError
 
 from version import ZULIP_VERSION
 
+
 class OutgoingWebhookServiceInterface:
 
     def __init__(self, token: str, user_profile: UserProfile, service_name: str) -> None:
         self.token = token  # type: str
         self.user_profile = user_profile  # type: UserProfile
         self.service_name = service_name  # type: str
+
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
@@ -64,6 +66,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             return success_data
 
         return None
+
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
@@ -108,11 +111,13 @@ AVAILABLE_OUTGOING_WEBHOOK_INTERFACES = {
     SLACK_INTERFACE: SlackOutgoingWebhookService,
 }   # type: Dict[str, Any]
 
+
 def get_service_interface_class(interface: str) -> Any:
     if interface is None or interface not in AVAILABLE_OUTGOING_WEBHOOK_INTERFACES:
         return AVAILABLE_OUTGOING_WEBHOOK_INTERFACES[GENERIC_INTERFACE]
     else:
         return AVAILABLE_OUTGOING_WEBHOOK_INTERFACES[interface]
+
 
 def get_outgoing_webhook_service_handler(service: Service) -> Any:
 
@@ -121,6 +126,7 @@ def get_outgoing_webhook_service_handler(service: Service) -> Any:
                                                 user_profile=service.user_profile,
                                                 service_name=service.name)
     return service_interface
+
 
 def send_response_message(bot_id: str, message_info: Dict[str, Any], response_data: Dict[str, Any]) -> None:
     """
@@ -170,12 +176,14 @@ def send_response_message(bot_id: str, message_info: Dict[str, Any], response_da
         realm=realm,
     )
 
+
 def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
     bot_id = event['user_profile_id']
     message_info = event['message']
     content = "Failure! " + failure_message
     response_data = dict(content=content)
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
+
 
 def get_message_url(event: Dict[str, Any]) -> str:
     bot_user = get_user_profile_by_id(event['user_profile_id'])
@@ -186,6 +194,7 @@ def get_message_url(event: Dict[str, Any]) -> str:
         realm=realm,
         message=message,
     )
+
 
 def notify_bot_owner(event: Dict[str, Any],
                      request_data: Dict[str, Any],
@@ -217,6 +226,7 @@ def notify_bot_owner(event: Dict[str, Any],
     response_data = dict(content=notification_message)
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
+
 def request_retry(event: Dict[str, Any],
                   request_data: Dict[str, Any],
                   failure_message: Optional[str]=None) -> None:
@@ -233,6 +243,7 @@ def request_retry(event: Dict[str, Any],
             bot_user.email, event['command']))
 
     retry_event('outgoing_webhooks', event, failure_processor)
+
 
 def process_success_response(event: Dict[str, Any],
                              service_handler: Any,
@@ -258,6 +269,7 @@ def process_success_response(event: Dict[str, Any],
     message_info = event['message']
     response_data = dict(content=content, widget_content=widget_content)
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
+
 
 def do_rest_call(base_url: str,
                  request_data: Any,
