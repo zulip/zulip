@@ -10,6 +10,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for more information
 #
 ########################################################################
+from django.template.loaders import app_directories
 from copy import deepcopy
 import os
 import time
@@ -523,7 +524,6 @@ ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
 # ... and with the hosts in REALM_HOSTS.
 ALLOWED_HOSTS += REALM_HOSTS.values()
 
-from django.template.loaders import app_directories
 
 
 class TwoFactorLoader(app_directories.Loader):
