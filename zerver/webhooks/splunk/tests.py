@@ -2,6 +2,7 @@
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class SplunkHookTests(WebhookTestCase):
 
     STREAM_NAME = 'splunk'
