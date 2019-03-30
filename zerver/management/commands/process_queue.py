@@ -13,6 +13,7 @@ from django.utils import autoreload
 
 from zerver.worker.queue_processors import get_active_worker_queues, get_worker
 
+
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--queue_name', metavar='<queue name>', type=str,
@@ -83,6 +84,7 @@ class Command(BaseCommand):
             signal.signal(signal.SIGUSR1, signal_handler)
 
             worker.start()
+
 
 class Threaded_worker(threading.Thread):
     def __init__(self, queue_name: str) -> None:
