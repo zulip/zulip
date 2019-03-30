@@ -4,6 +4,7 @@ from django.conf import settings
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models import get_system_bot
 
+
 class HelloWorldHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
