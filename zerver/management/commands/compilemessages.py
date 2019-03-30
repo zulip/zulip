@@ -15,6 +15,7 @@ from django.utils.translation.trans_real import to_language
 
 from zerver.lib.i18n import with_language
 
+
 class Command(compilemessages.Command):
 
     def add_arguments(self, parser: CommandParser) -> None:
