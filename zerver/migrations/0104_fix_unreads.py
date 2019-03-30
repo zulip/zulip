@@ -7,11 +7,13 @@ from django.db.migrations.state import StateApps
 
 from zerver.lib.fix_unreads import fix
 
+
 def fix_unreads(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model("zerver", "UserProfile")
     user_profiles = list(UserProfile.objects.filter(is_bot=False))
     for user_profile in user_profiles:
         fix(user_profile)
+
 
 class Migration(migrations.Migration):
 
