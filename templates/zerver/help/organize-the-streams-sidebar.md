@@ -1,5 +1,22 @@
 # Organize the Streams sidebar
 
+At an organization level, we recommend starting with a few streams and
+growing organically, and doing a cleanup once every year or two to archive
+streams that are no longer relevant.
+
+Nevertheless, over time, it's easy to end up with more streams than you have
+room for in the left sidebar.
+
+Zulip tries to help by automatically pushes inactive streams to the bottom.
+
+Zulip automatically moves inactive streams to the bottom
+
+
+## Related articles
+
+* [Mute a stream](/help/mute-a-stream)
+
+
 On Zulip, it is useful to organize streams in the sidebar in order to easily
  access streams which you use frequently. This is because streams are initially
  arranged alphabetically which makes it difficult to quickly access your
