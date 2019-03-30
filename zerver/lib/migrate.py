@@ -5,6 +5,7 @@ import time
 
 CursorObj = TypeVar('CursorObj', bound=cursor)
 
+
 def create_index_if_not_exist(index_name: str, table_name: str, column_string: str,
                               where_clause: str) -> str:
     #
