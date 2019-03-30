@@ -80,6 +80,7 @@ _reload_attempted = False
 _io_loops = weakref.WeakKeyDictionary()  # type: ignore # upstream
 needs_to_reload = False
 
+
 def start(io_loop=None, check_time=500):
     """Begins watching source files for changes.
 
@@ -187,6 +188,7 @@ def _check_file(modify_times, module, path):
         traceback.print_exc()
         return False
     return True
+
 
 def _reload():
     global _reload_attempted
