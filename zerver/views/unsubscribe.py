@@ -9,6 +9,7 @@ from zerver.lib.send_email import clear_scheduled_emails
 from zerver.models import UserProfile, ScheduledEmail
 from zerver.context_processors import common_context
 
+
 def process_unsubscribe(request: HttpRequest, confirmation_key: str, subscription_type: str,
                         unsubscribe_function: Callable[[UserProfile], None]) -> HttpResponse:
     try:
@@ -24,14 +25,18 @@ def process_unsubscribe(request: HttpRequest, confirmation_key: str, subscriptio
 # Email unsubscribe functions. All have the function signature
 # processor(user_profile).
 
+
 def do_missedmessage_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(user_profile, 'enable_offline_email_notifications', False)
+
 
 def do_welcome_unsubscribe(user_profile: UserProfile) -> None:
     clear_scheduled_emails([user_profile.id], ScheduledEmail.WELCOME)
 
+
 def do_digest_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(user_profile, 'enable_digest_emails', False)
+
 
 def do_login_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(user_profile, 'enable_login_emails', False)
@@ -48,6 +53,8 @@ email_unsubscribers = {
 }
 
 # Login NOT required. These are for one-click unsubscribes.
+
+
 def email_unsubscribe(request: HttpRequest, email_type: str,
                       confirmation_key: str) -> HttpResponse:
     if email_type in email_unsubscribers:
