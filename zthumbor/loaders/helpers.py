@@ -28,6 +28,7 @@ if PRODUCTION:
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
+
 def get_secret(key, default_value=None, development_only=False):
     # type: (str, Optional[Any], bool) -> Optional[Any]
     if development_only and PRODUCTION:
@@ -39,6 +40,7 @@ def get_secret(key, default_value=None, development_only=False):
 THUMBOR_EXTERNAL_TYPE = 'external'
 THUMBOR_S3_TYPE = 's3'
 THUMBOR_LOCAL_FILE_TYPE = 'local_file'
+
 
 def separate_url_and_source_type(url):
     # type: (Text) -> Tuple[Text, Text]
