@@ -1,3 +1,5 @@
+import ldap
+from django_auth_ldap.config import LDAPSearch
 from typing import Optional
 
 ################################################################
@@ -404,8 +406,6 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 # Zulip supports retrieving information about users via LDAP, and
 # optionally using LDAP as an authentication mechanism.
 
-import ldap
-from django_auth_ldap.config import LDAPSearch
 
 ########
 # LDAP integration, part 1: Connecting to the LDAP server.
