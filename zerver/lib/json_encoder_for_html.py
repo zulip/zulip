@@ -4,6 +4,8 @@ from typing import Any, Iterator
 # Taken from
 # https://github.com/simplejson/simplejson/blob/8edc82afcf6f7512b05fba32baa536fe756bd273/simplejson/encoder.py#L378-L402
 # License: MIT
+
+
 class JSONEncoderForHTML(json.JSONEncoder):
     """An encoder that produces JSON safe to embed in HTML.
     To embed JSON content in, say, a script tag on a web page, the
