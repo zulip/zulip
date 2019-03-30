@@ -14,6 +14,7 @@ APPVEYOR_MESSAGE_TEMPLATE = ('[Build {project_name} {build_version} {status}]({b
                              'Build Started: {started}\n'
                              'Build Finished: {finished}')
 
+
 @api_key_only_webhook_view('Appveyor')
 @has_request_variables
 def api_appveyor_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -25,9 +26,11 @@ def api_appveyor_webhook(request: HttpRequest, user_profile: UserProfile,
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
+
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
     event_data = payload['eventData']
     return APPVEYOR_TOPIC_TEMPLATE.format(project_name=event_data['projectName'])
+
 
 def get_body_for_http_request(payload: Dict[str, Any]) -> str:
     event_data = payload['eventData']
