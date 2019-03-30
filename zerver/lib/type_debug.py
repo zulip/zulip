@@ -4,6 +4,7 @@ import functools
 
 from typing import Any, Callable, IO, Mapping, Sequence, TypeVar
 
+
 def get_mapping_type_str(x: Mapping[Any, Any]) -> str:
     container_type = type(x).__name__
     if not x:
@@ -24,6 +25,7 @@ def get_mapping_type_str(x: Mapping[Any, Any]) -> str:
             return '%s([(%s, %s)])' % (container_type, key_type, value_type)
         else:
             return '%s([(%s, %s), ...])' % (container_type, key_type, value_type)
+
 
 def get_sequence_type_str(x: Sequence[Any]) -> str:
     container_type = type(x).__name__
@@ -46,6 +48,7 @@ def get_sequence_type_str(x: Sequence[Any]) -> str:
 
 expansion_blacklist = [str, bytes]
 
+
 def get_type_str(x: Any) -> str:
     if x is None:
         return 'None'
@@ -66,6 +69,7 @@ def get_type_str(x: Any) -> str:
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
+
 def print_types_to(file_obj: IO[str]) -> Callable[[FuncT], FuncT]:
     def decorator(func: FuncT) -> FuncT:
         @functools.wraps(func)
@@ -80,6 +84,7 @@ def print_types_to(file_obj: IO[str]) -> Callable[[FuncT], FuncT]:
             return ret_val
         return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
     return decorator
+
 
 def print_types(func: FuncT) -> FuncT:
     return print_types_to(sys.stdout)(func)
