@@ -10,12 +10,14 @@ INCIDENT_TEMPLATE = u'**{name}** \n * State: **{state}** \n * Description: {cont
 COMPONENT_TEMPLATE = u'**{name}** has changed status from **{old_status}** to **{new_status}**'
 TOPIC_TEMPLATE = u'{name}: {description}'
 
+
 def get_incident_events_body(payload: Dict[str, Any]) -> str:
     return INCIDENT_TEMPLATE.format(
         name=payload["incident"]["name"],
         state=payload["incident"]["status"],
         content=payload["incident"]["incident_updates"][0]["body"],
     )
+
 
 def get_components_update_body(payload: Dict[str, Any]) -> str:
     return COMPONENT_TEMPLATE.format(
@@ -24,17 +26,20 @@ def get_components_update_body(payload: Dict[str, Any]) -> str:
         new_status=payload["component_update"]["new_status"],
     )
 
+
 def get_incident_topic(payload: Dict[str, Any]) -> str:
     return TOPIC_TEMPLATE.format(
         name=payload["incident"]["name"],
         description=payload["page"]["status_description"],
     )
 
+
 def get_component_topic(payload: Dict[str, Any]) -> str:
     return TOPIC_TEMPLATE.format(
         name=payload["component"]["name"],
         description=payload["page"]["status_description"],
     )
+
 
 @api_key_only_webhook_view('Statuspage')
 @has_request_variables
