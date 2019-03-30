@@ -7,6 +7,7 @@ from typing import Optional
 
 from zerver.models import get_realm, Realm, UserProfile
 
+
 def get_subdomain(request: HttpRequest) -> str:
 
     # The HTTP spec allows, but doesn't require, a client to omit the
@@ -24,6 +25,7 @@ def get_subdomain(request: HttpRequest) -> str:
     host = request.get_host().lower()
     return get_subdomain_from_hostname(host)
 
+
 def get_subdomain_from_hostname(host: str) -> str:
     m = re.search(r'\.%s(:\d+)?$' % (settings.EXTERNAL_HOST,),
                   host)
@@ -40,13 +42,16 @@ def get_subdomain_from_hostname(host: str) -> str:
 
     return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 
+
 def is_subdomain_root_or_alias(request: HttpRequest) -> bool:
     return get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+
 
 def user_matches_subdomain(realm_subdomain: Optional[str], user_profile: UserProfile) -> bool:
     if realm_subdomain is None:
         return True  # nocoverage # This state may no longer be possible.
     return user_profile.realm.subdomain == realm_subdomain
+
 
 def is_root_domain_available() -> bool:
     if settings.ROOT_DOMAIN_LANDING_PAGE:
