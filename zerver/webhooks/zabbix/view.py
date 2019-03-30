@@ -22,6 +22,7 @@ need further help!
 ZABBIX_TOPIC_TEMPLATE = '{hostname}'
 ZABBIX_MESSAGE_TEMPLATE = '{status} ({severity}) alert on [{hostname}]({link}).\n{trigger}\n{item}'
 
+
 @api_key_only_webhook_view('Zabbix')
 @has_request_variables
 def api_zabbix_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -43,8 +44,10 @@ def api_zabbix_webhook(request: HttpRequest, user_profile: UserProfile,
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
+
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
     return ZABBIX_TOPIC_TEMPLATE.format(hostname=payload['hostname'])
+
 
 def get_body_for_http_request(payload: Dict[str, Any]) -> str:
     hostname = payload['hostname']
