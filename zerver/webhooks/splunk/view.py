@@ -9,6 +9,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import MAX_TOPIC_NAME_LENGTH, UserProfile
 
+
 @api_key_only_webhook_view('Splunk')
 @has_request_variables
 def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
