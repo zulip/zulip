@@ -61,10 +61,12 @@ frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
 multiline_js_comment = re.compile(r"/\*.*?\*/", re.DOTALL)
 singleline_js_comment = re.compile("//.*?\n")
 
+
 def strip_whitespaces(src: str) -> str:
     src = strip_whitespace_left.sub('\\1', src)
     src = strip_whitespace_right.sub('\\1', src)
     return src
+
 
 class Command(makemessages.Command):
 
