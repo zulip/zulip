@@ -32,6 +32,7 @@ GENERIC_KEYWORDS = [
     'zoom-out',
 ]
 
+
 def raise_error(fn, i, line):
     # type: (str, int, str) -> None
     error = '''
@@ -55,6 +56,7 @@ def raise_error(fn, i, line):
         ''' % (fn, i, line, __file__)
     raise Exception(error)
 
+
 def generic(html_class):
     # type: (str) -> bool
     for kw in GENERIC_KEYWORDS:
@@ -62,11 +64,13 @@ def generic(html_class):
             return True
     return False
 
+
 def display(fns):
     # type: (List[str]) -> None
     for tup in find(fns):
         # this format is for code generation purposes
         print(' ' * 8 + repr(tup) + ',')
+
 
 def find(fns):
     # type: (List[str]) -> List[Tuple[str, str]]
