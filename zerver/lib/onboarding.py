@@ -9,6 +9,7 @@ from zerver.models import Message, Realm, UserProfile, get_system_bot
 
 from typing import Dict, List
 
+
 def setup_realm_internal_bots(realm: Realm) -> None:
     """Create this realm's internal bots.
 
@@ -27,6 +28,7 @@ def setup_realm_internal_bots(realm: Realm) -> None:
         bot.bot_owner = bot
         bot.save()
 
+
 def create_if_missing_realm_internal_bots() -> None:
     """This checks if there is any realm internal bot missing.
 
@@ -35,6 +37,7 @@ def create_if_missing_realm_internal_bots() -> None:
     if missing_any_realm_internal_bots():
         for realm in Realm.objects.all():
             setup_realm_internal_bots(realm)
+
 
 def send_initial_pms(user: UserProfile) -> None:
     organization_setup_text = ""
@@ -58,6 +61,7 @@ def send_initial_pms(user: UserProfile) -> None:
 
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user, content)
+
 
 def send_initial_realm_messages(realm: Realm) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
