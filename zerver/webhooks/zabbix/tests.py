@@ -5,6 +5,7 @@ from zerver.models import Recipient
 from zerver.lib.send_email import FromAddress
 from zerver.webhooks.zabbix.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
+
 class ZabbixHookTests(WebhookTestCase):
     STREAM_NAME = 'zabbix'
     URL_TEMPLATE = u"/api/v1/external/zabbix?api_key={api_key}&stream={stream}"
