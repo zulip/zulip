@@ -15,6 +15,7 @@ from tools.lib.html_branches import (
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TEST_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_template_data")
 
+
 class TestHtmlBranches(unittest.TestCase):
 
     def test_get_tag_info(self) -> None:
