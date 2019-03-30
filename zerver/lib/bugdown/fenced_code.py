@@ -107,6 +107,7 @@ FENCE_RE = re.compile("""
 CODE_WRAP = '<pre><code%s>%s\n</code></pre>'
 LANG_TAG = ' class="%s"'
 
+
 class FencedCodeExtension(markdown.Extension):
 
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
@@ -122,6 +123,7 @@ class BaseHandler:
     def done(self) -> None:
         raise NotImplementedError()
 
+
 def generic_handler(processor: Any, output: MutableSequence[str], fence: str, lang: str) -> BaseHandler:
     if lang in ('quote', 'quoted'):
         return QuoteHandler(processor, output, fence)
@@ -129,6 +131,7 @@ def generic_handler(processor: Any, output: MutableSequence[str], fence: str, la
         return TexHandler(processor, output, fence)
     else:
         return CodeHandler(processor, output, fence, lang)
+
 
 def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str) -> None:
     m = FENCE_RE.match(line)
@@ -140,6 +143,7 @@ def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str)
     else:
         output.append(line)
 
+
 class OuterHandler(BaseHandler):
     def __init__(self, processor: Any, output: MutableSequence[str]) -> None:
         self.output = output
@@ -150,6 +154,7 @@ class OuterHandler(BaseHandler):
 
     def done(self) -> None:
         self.processor.pop()
+
 
 class CodeHandler(BaseHandler):
     def __init__(self, processor: Any, output: MutableSequence[str], fence: str, lang: str) -> None:
@@ -175,6 +180,7 @@ class CodeHandler(BaseHandler):
         self.output.append('')
         self.processor.pop()
 
+
 class QuoteHandler(BaseHandler):
     def __init__(self, processor: Any, output: MutableSequence[str], fence: str) -> None:
         self.processor = processor
@@ -196,6 +202,7 @@ class QuoteHandler(BaseHandler):
         self.output.extend(processed_lines)
         self.output.append('')
         self.processor.pop()
+
 
 class TexHandler(BaseHandler):
     def __init__(self, processor: Any, output: MutableSequence[str], fence: str) -> None:
