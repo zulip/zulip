@@ -8,7 +8,9 @@ stream unread counts.
 
 Muted topics still appear in the left sidebar, though they are grayed out.
 
-### Mute or unmute a topic from the left sidebar
+### From the left sidebar
+
+{start_tabs}
 
 1. On the left, click on the stream that contains the topic you want to mute or unmute.
 
@@ -16,19 +18,33 @@ Muted topics still appear in the left sidebar, though they are grayed out.
    (<i class="fa fa-chevron-down"></i>) to its right.
    Click on the down chevron (<i class="fa fa-chevron-down"></i>).
 
-4. Select **Mute (or unmute) the topic <topic name\>**.
+4. Select **Mute the topic <topic name\>**.
 
-### Mute or unmute a topic from the message view
+{end_tabs}
+
+Follow the same procedure to unmute the topic.
+
+### From the message view
+
+{start_tabs}
 
 1. Find a message belonging to the topic that you wish to mute or unmute.
 
 {!message-actions-menu.md!}
 
-1. Select **Mute (or unmute) the topic <topic name\>**.
+1. Select **Mute the topic <topic name\>**.
+
+{end_tabs}
+
+Follow the same procedure to unmute the topic.
 
 ### See your list of muted topics
 
+{start_tabs}
+
 {settings_tab|muted-topics}
+
+{end_tabs}
 
 From there, you can also unmute any muted topics.
 

@@ -70,8 +70,8 @@
 ## Notifications
 * [Stream notifications](/help/stream-notifications)
 * [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
-* [Mute or unmute a stream](/help/mute-a-stream)
-* [Mute or unmute a topic](/help/mute-a-topic)
+* [Mute a stream](/help/mute-a-stream)
+* [Mute a topic](/help/mute-a-topic)
 * [Alert words](/help/add-an-alert-word)
 * [Disable new login emails](/help/disable-new-login-emails)
 * [Configure missed message emails](/help/configure-missed-message-emails)
