@@ -14,6 +14,7 @@ from .card_actions import SUPPORTED_CARD_ACTIONS, \
 from .board_actions import SUPPORTED_BOARD_ACTIONS, process_board_action
 from .exceptions import UnsupportedAction
 
+
 @api_key_only_webhook_view('Trello')
 @return_success_on_head_request
 @has_request_variables
@@ -36,6 +37,7 @@ def api_trello_webhook(request: HttpRequest,
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
+
 
 def get_subject_and_body(payload: Mapping[str, Any], action_type: str) -> Optional[Tuple[str, str]]:
     if action_type in SUPPORTED_CARD_ACTIONS:
