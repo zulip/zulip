@@ -41,6 +41,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/tests/test_narrow.py',
 }
 
+
 def get_line_info_from_file(fn: str) -> List[LineTup]:
     line_tups = []
     for i, line in enumerate(open(fn)):
@@ -51,6 +52,7 @@ def get_line_info_from_file(fn: str) -> List[LineTup]:
         tup = (i, line, line_newline_stripped, line_fully_stripped)
         line_tups.append(tup)
     return line_tups
+
 
 def get_rules_applying_to_fn(fn: str, rules: RuleList) -> RuleList:
     rules_to_apply = []
@@ -72,6 +74,7 @@ def get_rules_applying_to_fn(fn: str, rules: RuleList) -> RuleList:
         rules_to_apply.append(rule)
 
     return rules_to_apply
+
 
 def check_file_for_pattern(fn: str,
                            line_tups: List[LineTup],
@@ -129,6 +132,7 @@ def check_file_for_pattern(fn: str,
         print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
 
     return ok
+
 
 def custom_check_file(fn: str,
                       identifier: str,
@@ -195,6 +199,7 @@ def custom_check_file(fn: str,
 
     return failed
 
+
 def check_file_for_long_lines(fn: str,
                               max_length: int,
                               line_tups: List[LineTup]) -> bool:
@@ -215,6 +220,7 @@ def check_file_for_long_lines(fn: str,
             print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             ok = False
     return ok
+
 
 def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
