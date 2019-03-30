@@ -11,6 +11,7 @@ from zerver.models import CustomProfileField, \
     custom_profile_fields_for_realm, CustomProfileFieldValue
 import ujson
 
+
 class CustomProfileFieldTest(ZulipTestCase):
     def setUp(self) -> None:
         self.realm = get_realm("zulip")
