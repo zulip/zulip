@@ -13,6 +13,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 class TicketDict(Dict[str, Any]):
     """
     A helper class to turn a dictionary with ticket information into
@@ -102,6 +103,7 @@ def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
         ticket.type, ticket.priority, ticket.status)
 
     return content
+
 
 @authenticated_rest_api_view(webhook_client_name="Freshdesk")
 @has_request_variables
