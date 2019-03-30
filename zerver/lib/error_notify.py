@@ -12,15 +12,18 @@ from zerver.models import get_system_bot
 from zerver.lib.actions import internal_send_message
 from zerver.lib.response import json_success, json_error
 
+
 def format_email_subject(email_subject: str) -> str:
     """
     Escape CR and LF characters.
     """
     return email_subject.replace('\n', '\\n').replace('\r', '\\r')
 
+
 def logger_repr(report: Dict[str, Any]) -> str:
     return ("Logger %(logger_name)s, from module %(log_module)s line %(log_lineno)d:"
             % report)
+
 
 def user_info_str(report: Dict[str, Any]) -> str:
     if report['user_full_name'] and report['user_email']:
@@ -30,6 +33,7 @@ def user_info_str(report: Dict[str, Any]) -> str:
 
     user_info += " on %s deployment"  % (report['deployment'],)
     return user_info
+
 
 def deployment_repr(report: Dict[str, Any]) -> str:
     deployment = 'Deployed code:\n'
@@ -41,11 +45,13 @@ def deployment_repr(report: Dict[str, Any]) -> str:
             deployment += '- %s: %s\n' % (label, report[field])
     return deployment
 
+
 def notify_browser_error(report: Dict[str, Any]) -> None:
     report = defaultdict(lambda: None, report)
     if settings.ERROR_BOT:
         zulip_browser_error(report)
     email_browser_error(report)
+
 
 def email_browser_error(report: Dict[str, Any]) -> None:
     email_subject = "Browser error for %s" % (user_info_str(report))
@@ -69,6 +75,7 @@ def email_browser_error(report: Dict[str, Any]) -> None:
 
     mail_admins(email_subject, body)
 
+
 def zulip_browser_error(report: Dict[str, Any]) -> None:
     email_subject = "JS error: %s" % (report['user_email'],)
 
@@ -82,11 +89,13 @@ def zulip_browser_error(report: Dict[str, Any]) -> None:
     internal_send_message(realm, settings.ERROR_BOT,
                           "stream", "errors", format_email_subject(email_subject), body)
 
+
 def notify_server_error(report: Dict[str, Any], skip_error_zulip: Optional[bool]=False) -> None:
     report = defaultdict(lambda: None, report)
     email_server_error(report)
     if settings.ERROR_BOT and not skip_error_zulip:
         zulip_server_error(report)
+
 
 def zulip_server_error(report: Dict[str, Any]) -> None:
     email_subject = '%(node)s: %(message)s' % (report)
@@ -116,6 +125,7 @@ def zulip_server_error(report: Dict[str, Any]) -> None:
     internal_send_message(realm, settings.ERROR_BOT, "stream", "errors",
                           format_email_subject(email_subject), message)
 
+
 def email_server_error(report: Dict[str, Any]) -> None:
     email_subject = '%(node)s: %(message)s' % (report)
 
@@ -140,6 +150,7 @@ def email_server_error(report: Dict[str, Any]) -> None:
                % (logger_str, user_info, report['stack_trace'], deployment, request_repr))
 
     mail_admins(format_email_subject(email_subject), message, fail_silently=True)
+
 
 def do_report_error(deployment_name: str, type: str, report: Dict[str, Any]) -> HttpResponse:
     report['deployment'] = deployment_name
