@@ -11,11 +11,11 @@ def request_zoom_video_call_url(user_id: str, api_key: str, api_secret: str) -> 
 
     response = requests.post(
         'https://api.zoom.us/v2/users/' + user_id + '/meetings',
-        headers = {
+        headers={
             'Authorization': 'Bearer ' + encodedToken,
             'content-type': 'application/json'
         },
-        json = {}
+        json={}
     )
 
     try:
