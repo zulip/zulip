@@ -13,6 +13,7 @@ from zerver.models import (
 
 from typing import Any, Dict, List
 
+
 class TestBasics(ZulipTestCase):
     def test_get_raw_db_rows(self) -> None:
         cordelia = self.example_user('cordelia')
