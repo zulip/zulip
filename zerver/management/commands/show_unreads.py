@@ -8,6 +8,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.topic_mutes import build_topic_mute_checker
 from zerver.models import Recipient, Subscription, UserMessage, UserProfile
 
+
 def get_unread_messages(user_profile: UserProfile) -> List[Dict[str, Any]]:
     user_msgs = UserMessage.objects.filter(
         user_profile=user_profile,
@@ -32,6 +33,7 @@ def get_unread_messages(user_profile: UserProfile) -> List[Dict[str, Any]]:
 
     return result
 
+
 def get_muted_streams(user_profile: UserProfile, stream_ids: Set[int]) -> Set[int]:
     rows = Subscription.objects.filter(
         user_profile=user_profile,
@@ -45,6 +47,7 @@ def get_muted_streams(user_profile: UserProfile, stream_ids: Set[int]) -> Set[in
         for row in rows}
 
     return muted_stream_ids
+
 
 def show_all_unread(user_profile: UserProfile) -> None:
     unreads = get_unread_messages(user_profile)
@@ -62,6 +65,7 @@ def show_all_unread(user_profile: UserProfile) -> None:
 
     for row in unreads:
         print(row)
+
 
 class Command(ZulipBaseCommand):
     help = """Show unread counts for a particular user."""
