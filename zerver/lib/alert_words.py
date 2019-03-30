@@ -7,6 +7,7 @@ import ujson
 import ahocorasick
 from typing import Dict, Iterable, List
 
+
 @cache_with_key(realm_alert_words_cache_key, timeout=3600*24)
 def alert_words_in_realm(realm: Realm) -> Dict[int, List[str]]:
     users_query = UserProfile.objects.filter(realm=realm, is_active=True)
@@ -14,6 +15,7 @@ def alert_words_in_realm(realm: Realm) -> Dict[int, List[str]]:
     all_user_words = dict((elt['id'], ujson.loads(elt['alert_words'])) for elt in alert_word_data)
     user_ids_with_words = dict((user_id, w) for (user_id, w) in all_user_words.items() if len(w))
     return user_ids_with_words
+
 
 @cache_with_key(realm_alert_words_automaton_cache_key, timeout=3600*24)
 def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
@@ -36,8 +38,10 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
         return None
     return alert_word_automaton
 
+
 def user_alert_words(user_profile: UserProfile) -> List[str]:
     return ujson.loads(user_profile.alert_words)
+
 
 def add_user_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> List[str]:
     words = user_alert_words(user_profile)
@@ -49,6 +53,7 @@ def add_user_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) 
 
     return words
 
+
 def remove_user_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> List[str]:
     words = user_alert_words(user_profile)
     words = [w for w in words if w not in alert_words]
@@ -56,6 +61,7 @@ def remove_user_alert_words(user_profile: UserProfile, alert_words: Iterable[str
     set_user_alert_words(user_profile, words)
 
     return words
+
 
 def set_user_alert_words(user_profile: UserProfile, alert_words: List[str]) -> None:
     user_profile.alert_words = ujson.dumps(alert_words)
