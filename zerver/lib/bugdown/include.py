@@ -19,6 +19,7 @@ class MarkdownIncludeCustom(MarkdownInclude):
             '_begin'
         )
 
+
 class IncludeCustomPreprocessor(IncludePreprocessor):
     """
     This is a custom implementation of the markdown_include
@@ -62,6 +63,7 @@ class IncludeCustomPreprocessor(IncludePreprocessor):
                 done = True
 
         return lines
+
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownIncludeCustom:
     return MarkdownIncludeCustom(kwargs)
