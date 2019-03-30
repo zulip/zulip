@@ -106,6 +106,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from collections import namedtuple
 
+
 class MiscMessageTest(ZulipTestCase):
     def test_get_last_message_id(self) -> None:
         self.assertEqual(
@@ -116,6 +117,7 @@ class MiscMessageTest(ZulipTestCase):
         Message.objects.all().delete()
 
         self.assertEqual(get_last_message_id(), -1)
+
 
 class TopicHistoryTest(ZulipTestCase):
     def test_topics_history_zephyr_mirror(self) -> None:
@@ -275,6 +277,7 @@ class TopicHistoryTest(ZulipTestCase):
         result = self.client_get(endpoint, dict())
         self.assert_json_error(result, 'Invalid stream id')
 
+
 class TopicDeleteTest(ZulipTestCase):
     def test_topic_delete(self) -> None:
         initial_last_msg_id = self.get_last_message().id
@@ -327,6 +330,7 @@ class TopicDeleteTest(ZulipTestCase):
         })
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, initial_last_msg_id)
+
 
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
@@ -441,6 +445,7 @@ class TestCrossRealmPMs(ZulipTestCase):
             self.send_huddle_message(user1_email, [user2_email, user3_email],
                                      sender_realm="1.example.com")
 
+
 class TestAddressee(ZulipTestCase):
     def test_addressee_for_user_ids(self) -> None:
         realm = get_realm('zulip')
@@ -495,6 +500,7 @@ class TestAddressee(ZulipTestCase):
 
         stream_id = result.stream_id()
         self.assertEqual(stream.id, stream_id)
+
 
 class InternalPrepTest(ZulipTestCase):
 
@@ -622,6 +628,7 @@ class InternalPrepTest(ZulipTestCase):
         # wasn't automatically created.
         Stream.objects.get(name=stream_name, realm_id=realm.id)
 
+
 class ExtractedRecipientsTest(TestCase):
     def test_extract_recipients_emails(self) -> None:
 
@@ -678,6 +685,7 @@ class ExtractedRecipientsTest(TestCase):
         mixed = ujson.dumps([3, 4, 'eeshan@example.com'])
         with self.assertRaisesRegex(TypeError, 'Recipient lists may contain emails or user IDs, but not both.'):
             extract_recipients(mixed)
+
 
 class PersonalMessagesTest(ZulipTestCase):
 
@@ -812,6 +820,7 @@ class PersonalMessagesTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
         self.assert_personal(self.example_email("hamlet"), self.example_email("othello"), u"hümbüǵ")
+
 
 class StreamMessagesTest(ZulipTestCase):
 
@@ -1154,6 +1163,7 @@ class StreamMessagesTest(ZulipTestCase):
         # only these two messages are present in msg_data
         self.assertEqual(len(msg_data["huddle_dict"].keys()), 2)
 
+
 class MessageDictTest(ZulipTestCase):
     @slow('builds lots of messages')
     def test_bulk_message_fetching(self) -> None:
@@ -1302,6 +1312,7 @@ class MessageDictTest(ZulipTestCase):
 
         self.assert_json_error(
             result, "Missing 'anchor' argument (or set 'use_first_unread_anchor'=True).")
+
 
 class SewMessageAndReactionTest(ZulipTestCase):
     def test_sew_messages_and_reaction(self) -> None:
@@ -2077,6 +2088,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.api_post(sender.email, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
+
 class ScheduledMessageTest(ZulipTestCase):
 
     def last_scheduled_message(self) -> ScheduledMessage:
@@ -2210,6 +2222,7 @@ class ScheduledMessageTest(ZulipTestCase):
         result = self.do_schedule_message('stream', 'Verona',
                                           content + ' 1')
         self.assert_json_error(result, 'Missing deliver_at in a request for delayed message delivery')
+
 
 class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id: int, topic_name: Optional[str]=None,
@@ -2819,6 +2832,7 @@ class EditMessageTest(ZulipTestCase):
         self.check_message(id5, topic_name="edited")
         self.check_message(id6, topic_name="topic3")
 
+
 class MirroredMessageUsersTest(ZulipTestCase):
     def test_invalid_sender(self) -> None:
         user = self.example_user('hamlet')
@@ -2980,6 +2994,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         bob = get_user(self.nonreg_email('bob'), sender.realm)
         self.assertTrue(bob.is_mirror_dummy)
+
 
 class MessageAccessTests(ZulipTestCase):
     def test_update_invalid_flags(self) -> None:
@@ -3334,6 +3349,7 @@ class MessageAccessTests(ZulipTestCase):
 
         self.assertEqual(len(filtered_messages), 2)
 
+
 class AttachmentTest(ZulipTestCase):
     def test_basics(self) -> None:
         self.assertFalse(Message.content_has_attachment('whatever'))
@@ -3379,6 +3395,7 @@ class AttachmentTest(ZulipTestCase):
         for file_name, path_id, size in dummy_files:
             attachment = Attachment.objects.get(path_id=path_id)
             self.assertTrue(attachment.is_claimed())
+
 
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:
@@ -3426,6 +3443,7 @@ class MissedMessageTest(ZulipTestCase):
         message_type = 'private'
         assert_missing([othello.id])
 
+
 class LogDictTest(ZulipTestCase):
     def test_to_log_dict(self) -> None:
         email = self.example_email('hamlet')
@@ -3452,6 +3470,7 @@ class LogDictTest(ZulipTestCase):
         self.assertEqual(dct['sending_client'], 'test suite')
         self.assertEqual(dct[DB_TOPIC_NAME], 'Copenhagen')
         self.assertEqual(dct['type'], 'stream')
+
 
 class CheckMessageTest(ZulipTestCase):
     def test_basic_check_message_call(self) -> None:
@@ -3538,6 +3557,7 @@ class CheckMessageTest(ZulipTestCase):
         test_bot.realm.deactivated = True
         send_rate_limited_pm_notification_to_bot_owner(test_bot, good_realm, content)
         self.assertEqual(test_bot.last_reminder, None)
+
 
 class DeleteMessageTest(ZulipTestCase):
 
@@ -3636,6 +3656,7 @@ class DeleteMessageTest(ZulipTestCase):
             m.side_effect = Message.DoesNotExist()
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
+
 
 class SoftDeactivationMessageTest(ZulipTestCase):
 
@@ -4024,6 +4045,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         assert_um_count(cordelia, general_user_msg_count + 1)
         assert_last_um_content(cordelia, message)
 
+
 class MessageHydrationTest(ZulipTestCase):
     def test_hydrate_stream_recipient_info(self) -> None:
         realm = get_realm('zulip')
@@ -4127,6 +4149,7 @@ class MessageHydrationTest(ZulipTestCase):
 
         self.assertIn('class="user-mention"', new_message['content'])
         self.assertEqual(new_message['flags'], ['mentioned'])
+
 
 class MessageVisibilityTest(ZulipTestCase):
     def test_update_first_visible_message_id(self) -> None:
