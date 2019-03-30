@@ -6,6 +6,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
+
 class TestRealmInternalBotCreation(ZulipTestCase):
     def test_create_if_missing_realm_internal_bots(self) -> None:
         realm_internal_bots_dict = [{'var_name': 'TEST_BOT',
