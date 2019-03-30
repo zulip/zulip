@@ -3,6 +3,7 @@ from mock import MagicMock, patch
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 
+
 class GithubWebhookTest(WebhookTestCase):
     STREAM_NAME = 'github'
     URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
