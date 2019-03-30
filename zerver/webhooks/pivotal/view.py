@@ -15,6 +15,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
+
 def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
     payload = xml_fromstring(request.body)
 
@@ -78,6 +79,7 @@ UNSUPPORTED_EVENT_TYPES = [
     "story_move_into_project_activity",
     "epic_update_activity",
 ]
+
 
 def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
     payload = ujson.loads(request.body)
@@ -163,6 +165,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
         raise UnexpectedWebhookEventType('Pivotal Tracker', event_type)
 
     return subject, content
+
 
 @api_key_only_webhook_view("Pivotal")
 @has_request_variables
