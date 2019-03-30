@@ -6,6 +6,7 @@ from zerver.models import get_realm, get_user, UserProfile
 
 import ujson
 
+
 class TutorialTests(ZulipTestCase):
     def setUp(self) -> None:
         # This emulates the welcome message sent by the welcome bot to hamlet@zulip.com
