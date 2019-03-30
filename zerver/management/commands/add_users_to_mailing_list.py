@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.models import UserProfile
 
+
 class Command(BaseCommand):
     help = """Add users to a MailChimp mailing list."""
 
