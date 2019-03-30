@@ -13,8 +13,10 @@ from version import ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import floatify_datetime_fields
 
+
 class PushNotificationBouncerException(Exception):
     pass
+
 
 def send_to_push_bouncer(method: str,
                          endpoint: str,
@@ -83,6 +85,7 @@ def send_to_push_bouncer(method: str,
     # If we don't throw an exception, it's a successful bounce!
     return ujson.loads(res.content), False
 
+
 def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, Any]) -> None:
     send_to_push_bouncer(
         method,
@@ -90,6 +93,7 @@ def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, A
         ujson.dumps(post_data),
         extra_headers={"Content-type": "application/json"},
     )
+
 
 def build_analytics_data(realm_count_query: Any,
                          installation_count_query: Any) -> Tuple[List[Dict[str, Any]],
@@ -109,6 +113,7 @@ def build_analytics_data(realm_count_query: Any,
     floatify_datetime_fields(data, 'analytics_realmcount')
     floatify_datetime_fields(data, 'analytics_installationcount')
     return (data['analytics_realmcount'], data['analytics_installationcount'])
+
 
 def send_analytics_to_remote_server() -> None:
     # first, check what's latest
