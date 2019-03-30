@@ -643,7 +643,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         string_id='Total',
         plan_type_string="",
         amount=total_amount,
-        stats_link = '',
+        stats_link='',
         date_created_day='',
         realm_admin_email='',
         dau_count=total_dau_count,
