@@ -22,6 +22,7 @@ from zerver.lib.realm_description import get_realm_rendered_description
 from version import ZULIP_VERSION, LATEST_RELEASE_VERSION, LATEST_MAJOR_VERSION, \
     LATEST_RELEASE_ANNOUNCEMENT
 
+
 def common_context(user: UserProfile) -> Dict[str, Any]:
     """Common context used for things like outgoing emails that don't
     have a request.
@@ -35,6 +36,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
         'user_name': user.full_name,
     }
 
+
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
@@ -46,6 +48,7 @@ def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
         subdomain = get_subdomain(request)
         request.realm = get_realm(subdomain)
     return request.realm
+
 
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
@@ -135,6 +138,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
 
     return context
 
+
 def login_context(request: HttpRequest) -> Dict[str, Any]:
     realm = get_realm_from_request(request)
 
@@ -181,6 +185,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     context['no_auth_enabled'] = no_auth_enabled
 
     return context
+
 
 def latest_info_context() -> Dict[str, str]:
     context = {
