@@ -2,6 +2,7 @@ from unittest.mock import patch, MagicMock
 from django.conf import settings
 from zerver.lib.test_classes import ZulipTestCase
 
+
 class TestFeedbackBot(ZulipTestCase):
     @patch('logging.info')
     def test_pm_to_feedback_bot(self, logging_info_mock: MagicMock) -> None:
