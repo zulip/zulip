@@ -13,6 +13,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.models import get_realm, get_user, SLACK_INTERFACE
 
+
 class TestGenericOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self) -> None:
@@ -94,6 +95,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         response = dict()
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
+
 
 class TestSlackOutgoingWebhookService(ZulipTestCase):
 
