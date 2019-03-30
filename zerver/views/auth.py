@@ -52,12 +52,14 @@ from two_factor.views import LoginView as BaseTwoFactorLoginView
 
 ExtraContext = Optional[Dict[str, Any]]
 
+
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
     is_url_safe = is_safe_url(url=url, host=redirect_host)
     if is_url_safe:
         return urllib.parse.urljoin(redirect_host, url)
     else:
         return redirect_host
+
 
 def create_preregistration_user(email: str, request: HttpRequest, realm_creation: bool=False,
                                 password_required: bool=True) -> HttpResponse:
@@ -68,6 +70,7 @@ def create_preregistration_user(email: str, request: HttpRequest, realm_creation
                                               realm_creation=realm_creation,
                                               password_required=password_required,
                                               realm=realm)
+
 
 def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str='',
                                is_signup: bool=False, password_required: bool=True,
@@ -139,13 +142,16 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
     context.update(extra_context)
     return render(request, 'zerver/accounts_home.html', context=context)
 
+
 def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
     redirect_url = login_url + '?subdomain=1'
     return HttpResponseRedirect(redirect_url)
 
+
 def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
     return HttpResponseRedirect("/config-error/%s" % (error_type,))
+
 
 def login_or_register_remote_user(request: HttpRequest, remote_username: Optional[str],
                                   user_profile: Optional[UserProfile], full_name: str='',
@@ -215,6 +221,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
 
+
 @log_view_func
 @has_request_variables
 def remote_user_sso(request: HttpRequest,
@@ -253,6 +260,7 @@ def remote_user_sso(request: HttpRequest,
                                          invalid_subdomain=bool(return_data.get("invalid_subdomain")),
                                          mobile_flow_otp=mobile_flow_otp,
                                          redirect_to=redirect_to)
+
 
 @csrf_exempt
 @log_view_func
@@ -299,6 +307,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
 
     return login_or_register_remote_user(request, email, user_profile, remote_user)
 
+
 def google_oauth2_csrf(request: HttpRequest, value: str) -> str:
     # In Django 1.10, get_token returns a salted token which changes
     # every time get_token is called.
@@ -306,8 +315,10 @@ def google_oauth2_csrf(request: HttpRequest, value: str) -> str:
     token = _unsalt_cipher_token(get_token(request))
     return hmac.new(token.encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
+
 def reverse_on_root(viewname: str, args: List[str]=None, kwargs: Dict[str, str]=None) -> str:
     return settings.ROOT_DOMAIN_URI + reverse(viewname, args=args, kwargs=kwargs)
+
 
 def oauth_redirect_to_root(request: HttpRequest, url: str,
                            sso_type: str, is_signup: bool=False) -> HttpResponse:
@@ -339,6 +350,7 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
 
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
+
 def start_google_oauth2(request: HttpRequest) -> HttpResponse:
     url = reverse('zerver.views.auth.send_oauth_request_to_google')
 
@@ -347,6 +359,7 @@ def start_google_oauth2(request: HttpRequest) -> HttpResponse:
 
     is_signup = bool(request.GET.get('is_signup'))
     return oauth_redirect_to_root(request, url, 'google', is_signup=is_signup)
+
 
 def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
@@ -357,9 +370,11 @@ def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
 
     return oauth_redirect_to_root(request, backend_url, 'social')
 
+
 def start_social_signup(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True)
+
 
 def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
     subdomain = request.GET.get('subdomain', '')
@@ -388,6 +403,7 @@ def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
         'prompt': 'select_account',
     }
     return redirect(google_uri + urllib.parse.urlencode(params))
+
 
 @log_view_func
 def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
@@ -470,6 +486,7 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
         realm, full_name, email_address, is_signup=is_signup,
         redirect_to=next, multiuse_object_key=multiuse_object_key)
 
+
 def authenticate_remote_user(realm: Realm, email_address: str) -> Tuple[UserProfile, Dict[str, Any]]:
     return_data = {}  # type: Dict[str, bool]
     if email_address is None:
@@ -488,6 +505,7 @@ def authenticate_remote_user(realm: Realm, email_address: str) -> Tuple[UserProf
     return user_profile, return_data
 
 _subdomain_token_salt = 'zerver.views.auth.log_into_subdomain'
+
 
 @log_view_func
 def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
@@ -557,6 +575,7 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
                                          is_signup=is_signup, redirect_to=redirect_to,
                                          multiuse_object_key=multiuse_object_key)
 
+
 def redirect_and_log_into_subdomain(realm: Realm, full_name: str, email_address: str,
                                     is_signup: bool=False, redirect_to: str='',
                                     multiuse_object_key: str='') -> HttpResponse:
@@ -567,6 +586,7 @@ def redirect_and_log_into_subdomain(realm: Realm, full_name: str, email_address:
     subdomain_login_uri = (realm.uri
                            + reverse('zerver.views.auth.log_into_subdomain', args=[token]))
     return redirect(subdomain_login_uri)
+
 
 def get_dev_users(realm: Optional[Realm]=None, extra_users_count: int=10) -> List[UserProfile]:
     # Development environments usually have only a few users, but
@@ -584,6 +604,7 @@ def get_dev_users(realm: Optional[Realm]=None, extra_users_count: int=10) -> Lis
     users = list(shakespearian_users) + list(extra_users)
     return users
 
+
 def redirect_to_misconfigured_ldap_notice(error_type: int) -> HttpResponse:
     if error_type == ZulipLDAPAuthBackend.REALM_IS_NONE_ERROR:
         url = reverse('ldap_error_realm_is_none')
@@ -591,6 +612,7 @@ def redirect_to_misconfigured_ldap_notice(error_type: int) -> HttpResponse:
         raise AssertionError("Invalid error type")
 
     return HttpResponseRedirect(url)
+
 
 def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
@@ -600,8 +622,10 @@ def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
 
     return HttpResponseRedirect(reverse('zerver.views.auth.login_page'))
 
+
 def redirect_to_deactivation_notice() -> HttpResponse:
     return HttpResponseRedirect(reverse('zerver.views.auth.show_deactivation_notice'))
+
 
 def add_dev_login_context(realm: Realm, context: Dict[str, Any]) -> None:
     users = get_dev_users(realm)
@@ -612,6 +636,7 @@ def add_dev_login_context(realm: Realm, context: Dict[str, Any]) -> None:
     context['guest_users'] = [u for u in users if u.is_guest]
     context['direct_users'] = [u for u in users if not (u.is_realm_admin or u.is_guest)]
 
+
 def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
     for key in ('email', 'subdomain', 'already_registered'):
         try:
@@ -620,6 +645,7 @@ def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> 
             pass
 
     context['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
+
 
 class TwoFactorLoginView(BaseTwoFactorLoginView):
     extra_context = None  # type: ExtraContext
@@ -662,6 +688,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         from mock import patch
         with patch.object(settings, 'LOGIN_REDIRECT_URL', realm_uri):
             return super().done(form_list, **kwargs)
+
 
 def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
@@ -716,6 +743,7 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
     return template_response
 
+
 def start_two_factor_auth(request: HttpRequest,
                           extra_context: ExtraContext=None,
                           **kwargs: Any) -> HttpResponse:
@@ -747,6 +775,7 @@ def start_two_factor_auth(request: HttpRequest,
                                              **kwargs)
     return two_fa_view(request, **kwargs)
 
+
 @csrf_exempt
 def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     # This function allows logging in without a password and should only be called
@@ -767,6 +796,7 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     next = request.GET.get('next', '')
     redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
+
 
 @csrf_exempt
 @require_post
@@ -805,6 +835,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.email})
 
+
 @csrf_exempt
 def api_dev_list_users(request: HttpRequest) -> HttpResponse:
     if not dev_auth_enabled() or settings.PRODUCTION:
@@ -814,6 +845,7 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
                                             for u in users if u.is_realm_admin],
                              direct_users=[dict(email=u.email, realm_uri=u.realm.uri)
                                            for u in users if not u.is_realm_admin]))
+
 
 @csrf_exempt
 @require_post
@@ -869,6 +901,7 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.email})
 
+
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
     """Returns which authentication methods are enabled on the server"""
     subdomain = get_subdomain(request)
@@ -894,6 +927,7 @@ def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
         result[key] = auth_enabled_helper([auth_backend_name], realm)
     return result
 
+
 @csrf_exempt
 def api_get_auth_backends(request: HttpRequest) -> HttpResponse:
     """Deprecated route; this is to be replaced by api_get_server_settings"""
@@ -901,9 +935,11 @@ def api_get_auth_backends(request: HttpRequest) -> HttpResponse:
     auth_backends['zulip_version'] = ZULIP_VERSION
     return json_success(auth_backends)
 
+
 def check_server_incompatibility(request: HttpRequest) -> bool:
     user_agent = parse_user_agent(request.META.get("HTTP_USER_AGENT", "Missing User-Agent"))
     return user_agent['name'] == "ZulipInvalid"
+
 
 @require_GET
 @csrf_exempt
@@ -934,6 +970,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
             result[settings_item] = context[settings_item]
     return json_success(result)
 
+
 @has_request_variables
 def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
                        password: str=REQ(default='')) -> HttpResponse:
@@ -947,15 +984,18 @@ def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key})
 
+
 @csrf_exempt
 def api_fetch_google_client_id(request: HttpRequest) -> HttpResponse:
     if not settings.GOOGLE_CLIENT_ID:
         return json_error(_("GOOGLE_CLIENT_ID is not configured"), status=400)
     return json_success({"google_client_id": settings.GOOGLE_CLIENT_ID})
 
+
 @require_post
 def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     return django_logout_then_login(request, kwargs)
+
 
 def password_reset(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     realm = get_realm(get_subdomain(request))
