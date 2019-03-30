@@ -1,6 +1,7 @@
 #  -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class Bitbucket3HookTests(WebhookTestCase):
     STREAM_NAME = "bitbucket3"
     URL_TEMPLATE = "/api/v1/external/bitbucket3?stream={stream}&api_key={api_key}"
