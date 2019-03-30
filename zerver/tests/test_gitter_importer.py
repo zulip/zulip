@@ -24,6 +24,7 @@ import os
 import mock
 from typing import Any, Dict, List, Set
 
+
 class GitterImporter(ZulipTestCase):
     logger = logging.getLogger()
     # set logger to a higher level to suppress 'logger.INFO' outputs
