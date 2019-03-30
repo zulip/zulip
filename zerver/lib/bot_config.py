@@ -13,14 +13,17 @@ import os
 import configparser
 import importlib
 
+
 class ConfigError(Exception):
     pass
+
 
 def get_bot_config(bot_profile: UserProfile) -> Dict[str, str]:
     entries = BotConfigData.objects.filter(bot_profile=bot_profile)
     if not entries:
         raise ConfigError("No config data available.")
     return {entry.key: entry.value for entry in entries}
+
 
 def get_bot_configs(bot_profile_ids: List[int]) -> Dict[int, Dict[str, str]]:
     if not bot_profile_ids:
@@ -30,6 +33,7 @@ def get_bot_configs(bot_profile_ids: List[int]) -> Dict[int, Dict[str, str]]:
     for entry in entries:
         entries_by_uid[entry.bot_profile_id].update({entry.key: entry.value})
     return entries_by_uid
+
 
 def get_bot_config_size(bot_profile: UserProfile, key: Optional[str]=None) -> int:
     if key is None:
@@ -41,6 +45,7 @@ def get_bot_config_size(bot_profile: UserProfile, key: Optional[str]=None) -> in
             return len(key) + len(BotConfigData.objects.get(bot_profile=bot_profile, key=key).value)
         except BotConfigData.DoesNotExist:
             return 0
+
 
 def set_bot_config(bot_profile: UserProfile, key: str, value: str) -> None:
     config_size_limit = settings.BOT_CONFIG_SIZE_LIMIT
@@ -57,6 +62,7 @@ def set_bot_config(bot_profile: UserProfile, key: str, value: str) -> None:
     if not created:
         obj.value = value
         obj.save()
+
 
 def load_bot_config_template(bot: str) -> Dict[str, str]:
     bot_module_name = 'zulip_bots.bots.{}'.format(bot)
