@@ -2088,21 +2088,21 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp="1234"),
                                   REMOTE_USER=email,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+                                  HTTP_USER_AGENT="ZulipAndroid")
         self.assertIs(get_session_dict_user(self.client.session), None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp="invalido" * 8),
                                   REMOTE_USER=email,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+                                  HTTP_USER_AGENT="ZulipAndroid")
         self.assertIs(get_session_dict_user(self.client.session), None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp=mobile_flow_otp),
                                   REMOTE_USER=email,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+                                  HTTP_USER_AGENT="ZulipAndroid")
         self.assertEqual(result.status_code, 302)
         redirect_url = result['Location']
         parsed_url = urllib.parse.urlparse(redirect_url)
@@ -2131,21 +2131,21 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp="1234"),
                                   REMOTE_USER=remote_user,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+                                  HTTP_USER_AGENT="ZulipAndroid")
         self.assertIs(get_session_dict_user(self.client.session), None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp="invalido" * 8),
                                   REMOTE_USER=remote_user,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+                                  HTTP_USER_AGENT="ZulipAndroid")
         self.assertIs(get_session_dict_user(self.client.session), None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp=mobile_flow_otp),
                                   REMOTE_USER=remote_user,
-                                  HTTP_USER_AGENT = "ZulipAndroid")
+                                  HTTP_USER_AGENT="ZulipAndroid")
         self.assertEqual(result.status_code, 302)
         redirect_url = result['Location']
         parsed_url = urllib.parse.urlparse(redirect_url)
