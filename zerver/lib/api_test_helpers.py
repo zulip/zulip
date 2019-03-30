@@ -12,6 +12,7 @@ if False:
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FIXTURE_PATH = os.path.join(ZULIP_DIR, 'templates', 'zerver', 'api', 'fixtures.json')
 
+
 def load_api_fixtures():
     # type: () -> Dict[str, Any]
     with open(FIXTURE_PATH, 'r') as fp:
@@ -19,6 +20,7 @@ def load_api_fixtures():
         return json_dict
 
 FIXTURES = load_api_fixtures()
+
 
 def add_subscriptions(client):
     # type: (Client) -> None
@@ -51,6 +53,7 @@ def add_subscriptions(client):
     assert result['result'] == 'success'
     assert 'newbie@zulip.com' in result['subscribed']
 
+
 def test_add_subscriptions_already_subscribed(client):
     # type: (Client) -> None
     result = client.add_subscriptions(
@@ -62,6 +65,7 @@ def test_add_subscriptions_already_subscribed(client):
 
     validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
                                     '200_already_subscribed')
+
 
 def test_authorization_errors_fatal(client, nonadmin_client):
     # type: (Client, Client) -> None
@@ -98,6 +102,7 @@ def test_authorization_errors_fatal(client, nonadmin_client):
     validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
                                     '400_unauthorized_errors_fatal_true')
 
+
 def get_user_presence(client):
     # type: (Client) -> None
 
@@ -107,6 +112,7 @@ def get_user_presence(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/users/{email}/presence', 'get', '200')
+
 
 def create_user(client):
     # type: (Client) -> None
@@ -128,6 +134,7 @@ def create_user(client):
     result = client.create_user(request)
 
     validate_against_openapi_schema(result, '/users', 'post', '400')
+
 
 def get_members(client):
     # type: (Client) -> None
@@ -153,6 +160,7 @@ def get_members(client):
     validate_against_openapi_schema(result, '/users', 'get', '200')
     assert result['members'][0]['avatar_url'] is None
 
+
 def get_realm_filters(client):
     # type: (Client) -> None
 
@@ -162,6 +170,7 @@ def get_realm_filters(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/realm/filters', 'get', '200')
+
 
 def add_realm_filter(client):
     # type: (Client) -> None
@@ -175,6 +184,7 @@ def add_realm_filter(client):
 
     validate_against_openapi_schema(result, '/realm/filters', 'post', '200')
 
+
 def remove_realm_filter(client):
     # type: (Client) -> None
 
@@ -184,6 +194,7 @@ def remove_realm_filter(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/realm/filters/<filter_id>', 'delete', '200')
+
 
 def get_profile(client):
     # type: (Client) -> None
@@ -201,6 +212,7 @@ def get_profile(client):
     test_against_fixture(result, fixture, check_if_equal=check_if_equal,
                          check_if_exists=check_if_exists)
 
+
 def get_stream_id(client):
     # type: (Client) -> None
 
@@ -211,6 +223,7 @@ def get_stream_id(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/get_stream_id', 'get', '200')
+
 
 def get_streams(client):
     # type: (Client) -> None
@@ -233,6 +246,7 @@ def get_streams(client):
     validate_against_openapi_schema(result, '/streams', 'get', '200')
     assert len(result['streams']) == 4
 
+
 def get_user_groups(client):
     # type: (Client) -> None
 
@@ -245,6 +259,7 @@ def get_user_groups(client):
     user_groups = [u for u in result['user_groups'] if u['name'] == "hamletcharacters"]
     assert user_groups[0]['description'] == 'Characters of Hamlet'
 
+
 def test_user_not_authorized_error(nonadmin_client):
     # type: (Client) -> None
     result = nonadmin_client.get_streams(include_all_active=True)
@@ -252,17 +267,20 @@ def test_user_not_authorized_error(nonadmin_client):
     fixture = FIXTURES['user-not-authorized-error']
     test_against_fixture(result, fixture)
 
+
 def get_subscribers(client):
     # type: (Client) -> None
 
     result = client.get_subscribers(stream='new stream')
     assert result['subscribers'] == ['iago@zulip.com', 'newbie@zulip.com']
 
+
 def get_user_agent(client):
     # type: (Client) -> None
 
     result = client.get_user_agent()
     assert result.startswith('ZulipPython/')
+
 
 def list_subscriptions(client):
     # type: (Client) -> None
@@ -277,6 +295,7 @@ def list_subscriptions(client):
 
     streams = [s for s in result['subscriptions'] if s['name'] == 'new stream']
     assert streams[0]['description'] == 'New stream for testing'
+
 
 def remove_subscriptions(client):
     # type: (Client) -> None
@@ -307,6 +326,7 @@ def remove_subscriptions(client):
 
     validate_against_openapi_schema(result, '/users/me/subscriptions',
                                     'delete', '200')
+
 
 def toggle_mute_topic(client):
     # type: (Client) -> None
@@ -352,6 +372,7 @@ def toggle_mute_topic(client):
                                     '/users/me/subscriptions/muted_topics',
                                     'patch', '200')
 
+
 def mark_all_as_read(client):
     # type: (Client) -> None
 
@@ -362,6 +383,7 @@ def mark_all_as_read(client):
 
     validate_against_openapi_schema(result, '/mark_all_as_read', 'post', '200')
 
+
 def mark_stream_as_read(client):
     # type: (Client) -> None
 
@@ -371,6 +393,7 @@ def mark_stream_as_read(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/mark_stream_as_read', 'post', '200')
+
 
 def mark_topic_as_read(client):
     # type: (Client) -> None
@@ -384,6 +407,7 @@ def mark_topic_as_read(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/mark_stream_as_read', 'post', '200')
+
 
 def update_subscription_settings(client):
     # type: (Client) -> None
@@ -407,6 +431,7 @@ def update_subscription_settings(client):
                                     '/users/me/subscriptions/properties',
                                     'POST', '200')
 
+
 def render_message(client):
     # type: (Client) -> None
 
@@ -419,6 +444,7 @@ def render_message(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/messages/render', 'post', '200')
+
 
 def get_messages(client):
     # type: (Client) -> None
@@ -440,6 +466,7 @@ def get_messages(client):
     validate_against_openapi_schema(result, '/messages', 'get', '200')
     assert len(result['messages']) <= request['num_before']
 
+
 def get_raw_message(client, message_id):
     # type: (Client, int) -> None
 
@@ -452,6 +479,7 @@ def get_raw_message(client, message_id):
 
     validate_against_openapi_schema(result, '/messages/{message_id}', 'get',
                                     '200')
+
 
 def send_message(client):
     # type: (Client) -> int
@@ -503,6 +531,7 @@ def send_message(client):
 
     return message_id
 
+
 def add_reaction(client, message_id):
     # type: (Client, int) -> None
     request = {
@@ -514,6 +543,7 @@ def add_reaction(client, message_id):
     result = client.add_reaction(request)
 
     assert result['result'] == 'success'
+
 
 def test_nonexistent_stream_error(client):
     # type: (Client) -> None
@@ -528,6 +558,7 @@ def test_nonexistent_stream_error(client):
     validate_against_openapi_schema(result, '/messages', 'post',
                                     '400_non_existing_stream')
 
+
 def test_private_message_invalid_recipient(client):
     # type: (Client) -> None
     request = {
@@ -539,6 +570,7 @@ def test_private_message_invalid_recipient(client):
 
     validate_against_openapi_schema(result, '/messages', 'post',
                                     '400_non_existing_user')
+
 
 def update_message(client, message_id):
     # type: (Client, int) -> None
@@ -568,6 +600,7 @@ def update_message(client, message_id):
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
 
+
 def test_update_message_edit_permission_error(client, nonadmin_client):
     # type: (Client, Client) -> None
     request = {
@@ -587,6 +620,7 @@ def test_update_message_edit_permission_error(client, nonadmin_client):
     fixture = FIXTURES['update-message-edit-permission-error']
     test_against_fixture(result, fixture)
 
+
 def delete_message(client, message_id):
     # type: (Client, int) -> None
 
@@ -597,6 +631,7 @@ def delete_message(client, message_id):
 
     validate_against_openapi_schema(result, '/messages/{message_id}', 'delete',
                                     '200')
+
 
 def test_delete_message_edit_permission_error(client, nonadmin_client):
     # type: (Client, Client) -> None
@@ -613,6 +648,7 @@ def test_delete_message_edit_permission_error(client, nonadmin_client):
     validate_against_openapi_schema(result, '/messages/{message_id}', 'delete',
                                     '400_not_admin')
 
+
 def get_message_history(client, message_id):
     # type: (Client, int) -> None
 
@@ -624,6 +660,7 @@ def get_message_history(client, message_id):
     validate_against_openapi_schema(result, '/messages/{message_id}/history',
                                     'get', '200')
 
+
 def get_realm_emoji(client):
     # type: (Client) -> None
 
@@ -632,6 +669,7 @@ def get_realm_emoji(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/realm/emoji', 'GET', '200')
+
 
 def update_message_flags(client):
     # type: (Client) -> None
@@ -673,6 +711,7 @@ def update_message_flags(client):
     validate_against_openapi_schema(result, '/messages/flags', 'post',
                                     '200')
 
+
 def register_queue(client):
     # type: (Client) -> str
 
@@ -685,6 +724,7 @@ def register_queue(client):
 
     validate_against_openapi_schema(result, '/register', 'post', '200')
     return result['queue_id']
+
 
 def deregister_queue(client, queue_id):
     # type: (Client, str) -> None
@@ -701,6 +741,7 @@ def deregister_queue(client, queue_id):
     result = client.deregister(queue_id)
     validate_against_openapi_schema(result, '/events', 'delete', '400')
 
+
 def get_server_settings(client):
     # type: (Client) -> None
 
@@ -710,6 +751,7 @@ def get_server_settings(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/server_settings', 'get', '200')
+
 
 def upload_file(client):
     # type: (Client) -> None
@@ -727,6 +769,7 @@ def upload_file(client):
 
     validate_against_openapi_schema(result, '/user_uploads', 'post', '200')
 
+
 def get_stream_topics(client, stream_id):
     # type: (Client, int) -> None
 
@@ -736,6 +779,7 @@ def get_stream_topics(client, stream_id):
 
     validate_against_openapi_schema(result, '/users/me/{stream_id}/topics',
                                     'get', '200')
+
 
 def set_typing_status(client):
     # type: (Client) -> None
@@ -762,6 +806,7 @@ def set_typing_status(client):
 
     validate_against_openapi_schema(result, '/typing', 'post', '200')
 
+
 def upload_custom_emoji(client):
     # type: (Client) -> None
     emoji_path = os.path.join(ZULIP_DIR, 'zerver', 'tests', 'images', 'img.jpg')
@@ -781,11 +826,13 @@ def upload_custom_emoji(client):
                                     '/realm/emoji/<emoji_name>',
                                     'post', '200')
 
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
     fixture = FIXTURES['invalid-api-key']
     test_against_fixture(result, fixture)
+
 
 def test_missing_request_argument(client):
     # type: (Client) -> None
@@ -793,6 +840,7 @@ def test_missing_request_argument(client):
 
     fixture = FIXTURES['missing-request-argument-error']
     test_against_fixture(result, fixture)
+
 
 def test_invalid_stream_error(client):
     # type: (Client) -> None
@@ -839,6 +887,7 @@ TEST_FUNCTIONS = {
 
 # SETUP METHODS FOLLOW
 
+
 def test_against_fixture(result, fixture, check_if_equal=[], check_if_exists=[]):
     # type: (Dict[str, Any], Dict[str, Any], Optional[Iterable[str]], Optional[Iterable[str]]) -> None
     assertLength(result, fixture)
@@ -855,6 +904,7 @@ def test_against_fixture(result, fixture, check_if_equal=[], check_if_exists=[])
         for key in check_if_exists:
             assertIn(key, result)
 
+
 def assertEqual(key, result, fixture):
     # type: (str, Dict[str, Any], Dict[str, Any]) -> None
     if result[key] != fixture[key]:
@@ -864,6 +914,7 @@ def assertEqual(key, result, fixture):
                              mdiff.diff_strings(first, second))
     else:
         assert result[key] == fixture[key]
+
 
 def assertLength(result, fixture):
     # type: (Dict[str, Any], Dict[str, Any]) -> None
@@ -875,6 +926,7 @@ def assertLength(result, fixture):
     else:
         assert len(result) == len(fixture)
 
+
 def assertIn(key, result):
     # type: (str, Dict[str, Any]) -> None
     if key not in result.keys():
@@ -883,6 +935,7 @@ def assertIn(key, result):
         )
     else:
         assert key in result
+
 
 def test_messages(client, nonadmin_client):
     # type: (Client, Client) -> None
@@ -905,6 +958,7 @@ def test_messages(client, nonadmin_client):
     test_update_message_edit_permission_error(client, nonadmin_client)
     test_delete_message_edit_permission_error(client, nonadmin_client)
 
+
 def test_users(client):
     # type: (Client) -> None
 
@@ -915,6 +969,7 @@ def test_users(client):
     set_typing_status(client)
     get_user_presence(client)
     get_user_groups(client)
+
 
 def test_streams(client, nonadmin_client):
     # type: (Client, Client) -> None
@@ -944,6 +999,7 @@ def test_queues(client):
     queue_id = register_queue(client)
     deregister_queue(client, queue_id)
 
+
 def test_server_organizations(client):
     # type: (Client) -> None
 
@@ -954,10 +1010,12 @@ def test_server_organizations(client):
     get_realm_emoji(client)
     upload_custom_emoji(client)
 
+
 def test_errors(client):
     # type: (Client) -> None
     test_missing_request_argument(client)
     test_invalid_stream_error(client)
+
 
 def test_the_api(client, nonadmin_client):
     # type: (Client, Client) -> None
