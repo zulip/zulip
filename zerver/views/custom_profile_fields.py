@@ -23,12 +23,14 @@ from zerver.models import (UserProfile,
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.users import validate_user_custom_profile_data
 
+
 def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)
     return json_success({'custom_fields': [f.as_dict() for f in fields]})
 
 hint_validator = check_capped_string(CustomProfileField.HINT_MAX_LENGTH)
 name_validator = check_capped_string(CustomProfileField.NAME_MAX_LENGTH)
+
 
 def validate_field_name_and_hint(name: str, hint: str) -> None:
     if not name.strip():
@@ -41,6 +43,7 @@ def validate_field_name_and_hint(name: str, hint: str) -> None:
     error = name_validator('name', name)
     if error:
         raise JsonableError(error)
+
 
 @require_realm_admin
 @has_request_variables
@@ -76,6 +79,7 @@ def create_realm_custom_profile_field(request: HttpRequest,
     except IntegrityError:
         return json_error(_("A field with that name already exists."))
 
+
 @require_realm_admin
 def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
                                       field_id: int) -> HttpResponse:
@@ -87,6 +91,7 @@ def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
     do_remove_realm_custom_profile_field(realm=user_profile.realm,
                                          field=field)
     return json_success()
+
 
 @require_realm_admin
 @has_request_variables
@@ -115,6 +120,7 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
         return json_error(_('A field with that name already exists.'))
     return json_success()
 
+
 @require_realm_admin
 @has_request_variables
 def reorder_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile,
@@ -122,6 +128,7 @@ def reorder_realm_custom_profile_fields(request: HttpRequest, user_profile: User
                                             check_int))) -> HttpResponse:
     try_reorder_realm_custom_profile_fields(user_profile.realm, order)
     return json_success()
+
 
 @human_users_only
 @has_request_variables
@@ -131,6 +138,7 @@ def remove_user_custom_profile_data(request: HttpRequest, user_profile: UserProf
     for field_id in data:
         check_remove_custom_profile_field_value(user_profile, field_id)
     return json_success()
+
 
 @human_users_only
 @has_request_variables
