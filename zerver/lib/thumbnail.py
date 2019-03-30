@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 # See https://zulip.readthedocs.io/en/latest/subsystems/thumbnailing.html
+from zthumbor.loaders.helpers import (
+    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_EXTERNAL_TYPE
+)
+from zerver.lib.camo import get_camo_url
 import base64
 import os
 import sys
@@ -10,10 +14,6 @@ from libthumbor import CryptoURL
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath('__file__'))))
 sys.path.append(ZULIP_PATH)
 
-from zthumbor.loaders.helpers import (
-    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_EXTERNAL_TYPE
-)
-from zerver.lib.camo import get_camo_url
 
 
 def is_thumbor_enabled() -> bool:
