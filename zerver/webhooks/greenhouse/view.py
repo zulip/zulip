@@ -10,6 +10,7 @@ from zerver.models import UserProfile
 
 MESSAGE_TEMPLATE = "Applying for role:\n{}\n**Emails:**\n{}\n\n>**Attachments:**\n{}"
 
+
 def dict_list_to_string(some_list: List[Any]) -> str:
     internal_template = ''
     for item in some_list:
@@ -22,12 +23,14 @@ def dict_list_to_string(some_list: List[Any]) -> str:
             internal_template += "[{}]({})\n".format(item_type, item_url)
     return internal_template
 
+
 def message_creator(action: str, application: Dict[str, Any]) -> str:
     message = MESSAGE_TEMPLATE.format(
         application['jobs'][0]['name'],
         dict_list_to_string(application['candidate']['email_addresses']),
         dict_list_to_string(application['candidate']['attachments']))
     return message
+
 
 @api_key_only_webhook_view('Greenhouse')
 @has_request_variables
