@@ -1764,7 +1764,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
         result = self.submit_reg_form_for_user(email, password,
-                                               realm_subdomain = string_id,
+                                               realm_subdomain=string_id,
                                                realm_name=realm_name,
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=string_id + ".testserver")
@@ -1806,14 +1806,14 @@ class RealmCreationTest(ZulipTestCase):
                   'zephyr': "unavailable"}
         for string_id, error_msg in errors.items():
             result = self.submit_reg_form_for_user(email, password,
-                                                   realm_subdomain = string_id,
-                                                   realm_name = realm_name)
+                                                   realm_subdomain=string_id,
+                                                   realm_name=realm_name)
             self.assert_in_response(error_msg, result)
 
         # test valid subdomain
         result = self.submit_reg_form_for_user(email, password,
-                                               realm_subdomain = 'a-0',
-                                               realm_name = realm_name)
+                                               realm_subdomain='a-0',
+                                               realm_name=realm_name)
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result.url.startswith('http://a-0.testserver/accounts/login/subdomain/'))
 
@@ -1831,14 +1831,14 @@ class RealmCreationTest(ZulipTestCase):
         # test root domain will fail with ROOT_DOMAIN_LANDING_PAGE
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.submit_reg_form_for_user(email, password,
-                                                   realm_subdomain = '',
-                                                   realm_name = realm_name)
+                                                   realm_subdomain='',
+                                                   realm_name=realm_name)
             self.assert_in_response('unavailable', result)
 
         # test valid use of root domain
         result = self.submit_reg_form_for_user(email, password,
-                                               realm_subdomain = '',
-                                               realm_name = realm_name)
+                                               realm_subdomain='',
+                                               realm_name=realm_name)
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result.url.startswith('http://testserver/accounts/login/subdomain/'))
 
@@ -1856,16 +1856,16 @@ class RealmCreationTest(ZulipTestCase):
         # test root domain will fail with ROOT_DOMAIN_LANDING_PAGE
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.submit_reg_form_for_user(email, password,
-                                                   realm_subdomain = 'abcdef',
-                                                   realm_in_root_domain = 'true',
-                                                   realm_name = realm_name)
+                                                   realm_subdomain='abcdef',
+                                                   realm_in_root_domain='true',
+                                                   realm_name=realm_name)
             self.assert_in_response('unavailable', result)
 
         # test valid use of root domain
         result = self.submit_reg_form_for_user(email, password,
-                                               realm_subdomain = 'abcdef',
-                                               realm_in_root_domain = 'true',
-                                               realm_name = realm_name)
+                                               realm_subdomain='abcdef',
+                                               realm_in_root_domain='true',
+                                               realm_name=realm_name)
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result.url.startswith('http://testserver/accounts/login/subdomain/'))
 
@@ -2383,7 +2383,7 @@ class UserSignUpTest(InviteUserBase):
         realm.invite_required = False
         realm.save()
 
-        request = HostRequestMock(host = realm.host)
+        request = HostRequestMock(host=realm.host)
         request.session = {}  # type: ignore
         email = 'user@acme.com'
         form = HomepageForm({'email': email}, realm=realm)
@@ -2396,7 +2396,7 @@ class UserSignUpTest(InviteUserBase):
         realm.disallow_disposable_email_addresses = True
         realm.save()
 
-        request = HostRequestMock(host = realm.host)
+        request = HostRequestMock(host=realm.host)
         request.session = {}  # type: ignore
         email = 'abc@mailnator.com'
         form = HomepageForm({'email': email}, realm=realm)
@@ -2407,7 +2407,7 @@ class UserSignUpTest(InviteUserBase):
         realm.emails_restricted_to_domains = True
         realm.save()
 
-        request = HostRequestMock(host = realm.host)
+        request = HostRequestMock(host=realm.host)
         request.session = {}  # type: ignore
         email = 'iago+label@zulip.com'
         form = HomepageForm({'email': email}, realm=realm)
@@ -2417,7 +2417,7 @@ class UserSignUpTest(InviteUserBase):
         realm = get_realm('zulip')
         realm.invite_required = True
         realm.save()
-        request = HostRequestMock(host = realm.host)
+        request = HostRequestMock(host=realm.host)
         request.session = {}  # type: ignore
         email = 'user@zulip.com'
         form = HomepageForm({'email': email}, realm=realm)
@@ -2425,7 +2425,7 @@ class UserSignUpTest(InviteUserBase):
                       form.errors['email'][0])
 
     def test_failed_signup_due_to_nonexistent_realm(self) -> None:
-        request = HostRequestMock(host = 'acme.' + settings.EXTERNAL_HOST)
+        request = HostRequestMock(host='acme.' + settings.EXTERNAL_HOST)
         request.session = {}  # type: ignore
         email = 'user@acme.com'
         form = HomepageForm({'email': email}, realm=None)
