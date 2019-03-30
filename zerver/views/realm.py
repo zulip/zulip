@@ -27,6 +27,7 @@ from zerver.models import Realm, UserProfile
 from zerver.forms import check_subdomain_available as check_subdomain
 from confirmation.models import get_object_from_key, Confirmation, ConfirmationKeyException
 
+
 @require_realm_admin
 @has_request_variables
 def update_realm(
@@ -190,12 +191,14 @@ def update_realm(
 
     return json_success(data)
 
+
 @require_realm_admin
 @has_request_variables
 def deactivate_realm(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     realm = user_profile.realm
     do_deactivate_realm(realm)
     return json_success()
+
 
 @require_GET
 def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpResponse:
@@ -204,6 +207,7 @@ def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpRespo
         return json_success({"msg": "available"})
     except ValidationError as e:
         return json_success({"msg": e.message})
+
 
 def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
