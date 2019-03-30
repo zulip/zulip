@@ -107,12 +107,14 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
         for row in user_dicts
     }
 
+
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state['realm_logo_url'] = realm_logo_url(realm, night=False)
     state['realm_logo_source'] = realm.logo_source
     state['realm_night_logo_url'] = realm_logo_url(realm, night=True)
     state['realm_night_logo_source'] = realm.night_logo_source
     state['max_logo_file_size'] = settings.MAX_LOGO_FILE_SIZE
+
 
 def always_want(msg_type: str) -> bool:
     '''
@@ -128,6 +130,8 @@ def always_want(msg_type: str) -> bool:
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
+
+
 def fetch_initial_state_data(user_profile: UserProfile,
                              event_types: Optional[Iterable[str]],
                              queue_id: str, client_gravatar: bool,
@@ -339,6 +343,7 @@ def remove_message_id_from_unread_mgs(state: Dict[str, Dict[str, Any]],
     raw_unread['unmuted_stream_msgs'].discard(message_id)
     raw_unread['mentions'].discard(message_id)
 
+
 def apply_events(state: Dict[str, Any], events: Iterable[Dict[str, Any]],
                  user_profile: UserProfile, client_gravatar: bool,
                  include_subscribers: bool = True,
@@ -355,6 +360,7 @@ def apply_events(state: Dict[str, Any], events: Iterable[Dict[str, Any]],
             # `fetch_event_types`.
             continue
         apply_event(state, event, user_profile, client_gravatar, include_subscribers)
+
 
 def apply_event(state: Dict[str, Any],
                 event: Dict[str, Any],
@@ -737,6 +743,7 @@ def apply_event(state: Dict[str, Any],
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 
+
 def do_events_register(user_profile: UserProfile, user_client: Client,
                        apply_markdown: bool = True,
                        client_gravatar: bool = False,
@@ -787,6 +794,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     else:
         ret['last_event_id'] = -1
     return ret
+
 
 def post_process_state(ret: Dict[str, Any]) -> None:
     '''
