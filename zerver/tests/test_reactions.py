@@ -11,6 +11,7 @@ from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, Message, Reaction, RealmEmoji, UserMessage
 
+
 class ReactionEmojiTest(ZulipTestCase):
     def test_missing_emoji(self) -> None:
         """
@@ -147,6 +148,7 @@ class ReactionEmojiTest(ZulipTestCase):
             emoji_name_to_emoji_code(realm, 'invalid_emoji')
         self.assertEqual(str(exc.exception), "Emoji 'invalid_emoji' does not exist")
 
+
 class ReactionMessageIDTest(ZulipTestCase):
     def test_missing_message_id(self) -> None:
         """
@@ -180,6 +182,7 @@ class ReactionMessageIDTest(ZulipTestCase):
         pm_id = result.json()['id']
         result = self.api_put(reaction_sender, '/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,))
         self.assert_json_error(result, "Invalid message(s)")
+
 
 class ReactionTest(ZulipTestCase):
     def test_add_existing_reaction(self) -> None:
@@ -256,6 +259,7 @@ class ReactionTest(ZulipTestCase):
         result = self.api_delete(sender, '/api/v1/messages/1/emoji_reactions/green_tick')
         self.assert_json_success(result)
 
+
 class ReactionEventTest(ZulipTestCase):
     def test_add_event(self) -> None:
         """
@@ -329,6 +333,7 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event['emoji_name'], 'smile')
         self.assertEqual(event['message_id'], pm_id)
 
+
 class EmojiReactionBase(ZulipTestCase):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.reaction_type = 'realm_emoji'
@@ -378,6 +383,7 @@ class EmojiReactionBase(ZulipTestCase):
                                             emoji_code=emoji_code,
                                             reaction_type=reaction_type)
         return list(reactions)
+
 
 class DefaultEmojiReactionTests(EmojiReactionBase):
     def setUp(self) -> None:
@@ -575,6 +581,7 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
         self.assertTrue(user_message.flags.read)
         self.assertFalse(user_message.flags.starred)
 
+
 class ZulipExtraEmojiReactionTest(EmojiReactionBase):
     def test_add_zulip_emoji_reaction(self) -> None:
         result = self.post_zulip_reaction()
@@ -615,6 +622,7 @@ class ZulipExtraEmojiReactionTest(EmojiReactionBase):
     def test_delete_non_existent_zulip_reaction(self) -> None:
         result = self.delete_zulip_reaction()
         self.assert_json_error(result, "Reaction doesn't exist.")
+
 
 class RealmEmojiReactionTests(EmojiReactionBase):
     def setUp(self) -> None:
@@ -706,6 +714,7 @@ class RealmEmojiReactionTests(EmojiReactionBase):
         result = self.api_post(sender, '/api/v1/messages/%s/reactions' % (message_id,),
                                reaction_info)
         self.assert_json_error(result, "Invalid emoji type.")
+
 
 class ReactionAPIEventTest(EmojiReactionBase):
     def test_add_event(self) -> None:
