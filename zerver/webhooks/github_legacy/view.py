@@ -22,6 +22,7 @@ from zerver.views.messages import send_message_backend
 ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
 
+
 def flexible_boolean(boolean: str) -> bool:
     """Returns True for any of "1", "true", or "True".  Returns False otherwise."""
     if boolean in ("1", "true", "True"):
@@ -29,11 +30,14 @@ def flexible_boolean(boolean: str) -> bool:
     else:
         return False
 
+
 def is_test_repository(repository: Mapping[str, Any]) -> bool:
     return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID
 
+
 class UnknownEventType(Exception):
     pass
+
 
 def github_pull_request_content(payload: Mapping[str, Any]) -> str:
     pull_request = payload['pull_request']
@@ -57,6 +61,7 @@ def github_pull_request_content(payload: Mapping[str, Any]) -> str:
         pull_request['number']
     )
 
+
 def github_issues_content(payload: Mapping[str, Any]) -> str:
     issue = payload['issue']
     action = get_pull_request_or_issue_action(payload)
@@ -77,6 +82,7 @@ def github_issues_content(payload: Mapping[str, Any]) -> str:
         issue['number'],
     )
 
+
 def github_object_commented_content(payload: Mapping[str, Any], type: str) -> str:
     comment = payload['comment']
     issue = payload['issue']
@@ -91,14 +97,17 @@ def github_object_commented_content(payload: Mapping[str, Any], type: str) -> st
         type=type
     )
 
+
 def get_pull_request_or_issue_action(payload: Mapping[str, Any]) -> str:
     return 'synchronized' if payload['action'] == 'synchronize' else payload['action']
+
 
 def get_pull_request_or_issue_assignee(object_payload: Mapping[str, Any]) -> Optional[str]:
     assignee_dict = object_payload.get('assignee')
     if assignee_dict:
         return assignee_dict.get('login')
     return None
+
 
 def get_pull_request_or_issue_subject(repository: Mapping[str, Any],
                                       payload_object: Mapping[str, Any],
@@ -110,9 +119,11 @@ def get_pull_request_or_issue_subject(repository: Mapping[str, Any],
         title=payload_object['title']
     )
 
+
 def github_generic_subject(noun: str, topic_focus: str, blob: Mapping[str, Any]) -> str:
     # issue and pull_request objects have the same fields we're interested in
     return u'%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
+
 
 def api_github_v1(user_profile: UserProfile,
                   event: str,
@@ -198,6 +209,7 @@ def api_github_v2(user_profile: UserProfile, event: str, payload: Mapping[str, A
         raise UnknownEventType(u'Event %s is unknown and cannot be handled' % (event,))
 
     return target_stream, subject, content
+
 
 @authenticated_api_view(is_webhook=True)
 @has_request_variables
@@ -286,6 +298,7 @@ def api_github_landing(request: HttpRequest, user_profile: UserProfile, event: s
                                 forged=False, topic_name=subject,
                                 message_content=content)
 
+
 def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
                               commits: List[Dict[str, str]], before: str, after: str,
                               url: str, pusher: str, forced: Optional[str]=None,
@@ -310,6 +323,7 @@ def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
                 "Malformed commit data")
 
     return subject, content
+
 
 def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> List[Dict[str, str]]:
     new_commits_list = []
