@@ -16,6 +16,7 @@ from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Stream, Client, \
     RealmAuditLog, Recipient, Subscription
 
+
 class Command(BaseCommand):
     help = """Populates analytics tables with randomly generated data."""
 
