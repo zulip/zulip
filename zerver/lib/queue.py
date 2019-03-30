@@ -23,6 +23,8 @@ Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str],
 # rabbitmq/pika's queuing system; its purpose is to just provide an
 # interface for external files to put things into queues and take them
 # out from bots without having to import pika code all over our codebase.
+
+
 class SimpleQueueClient:
     def __init__(self,
                  # Disable RabbitMQ heartbeats by default because BlockingConnection can't process them
@@ -165,6 +167,8 @@ class SimpleQueueClient:
 # Patch pika.adapters.tornado_connection.TornadoConnection so that a socket error doesn't
 # throw an exception and disconnect the tornado process from the rabbitmq
 # queue. Instead, just re-connect as usual
+
+
 class ExceptionFreeTornadoConnection(pika.adapters.tornado_connection.TornadoConnection):
     def _adapter_disconnect(self) -> None:
         try:
@@ -287,6 +291,8 @@ class TornadoQueueClient(SimpleQueueClient):
                                                              consumer_tag=self._generate_ctag(queue_name)))
 
 queue_client = None  # type: Optional[SimpleQueueClient]
+
+
 def get_queue_client() -> SimpleQueueClient:
     global queue_client
     if queue_client is None:
@@ -304,6 +310,7 @@ def get_queue_client() -> SimpleQueueClient:
 # randomly close.
 queue_lock = threading.RLock()
 
+
 def queue_json_publish(queue_name: str,
                        event: Union[Dict[str, Any], str],
                        processor: Callable[[Any], None]=None) -> None:
@@ -317,6 +324,7 @@ def queue_json_publish(queue_name: str,
             # Must be imported here: A top section import leads to obscure not-defined-ish errors.
             from zerver.worker.queue_processors import get_worker
             get_worker(queue_name).consume_wrapper(event)
+
 
 def retry_event(queue_name: str,
                 event: Dict[str, Any],
