@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
+import scripts.lib.setup_path_on_import
+import django
+from zerver.worker.queue_processors import get_active_worker_queues
 import argparse
 import os
 import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
-import scripts.lib.setup_path_on_import
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 
-import django
 django.setup()
-from zerver.worker.queue_processors import get_active_worker_queues
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
