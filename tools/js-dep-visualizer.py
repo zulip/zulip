@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+from tools.lib.graph import (
+    Graph,
+    make_dot_file,
+    best_edge_to_remove,
+)
 """
 $ ./tools/js-dep-visualizer.py
 $ dot -Tpng var/zulip-deps.dot -o var/zulip-deps.png
@@ -21,11 +26,6 @@ MethodDict = DefaultDict[Edge, List[Method]]
 TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 sys.path.insert(0, ROOT_DIR)
-from tools.lib.graph import (
-    Graph,
-    make_dot_file,
-    best_edge_to_remove,
-)
 
 JS_FILES_DIR = os.path.join(ROOT_DIR, 'static/js')
 OUTPUT_FILE_PATH = os.path.relpath(os.path.join(ROOT_DIR, 'var/zulip-deps.dot'))
