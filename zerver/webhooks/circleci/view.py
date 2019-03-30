@@ -15,6 +15,7 @@ CIRCLECI_MESSAGE_TEMPLATE = u'[Build]({build_url}) triggered by {username} on {b
 
 FAILED_STATUS = 'failed'
 
+
 @api_key_only_webhook_view('CircleCI')
 @has_request_variables
 def api_circleci_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -26,8 +27,10 @@ def api_circleci_webhook(request: HttpRequest, user_profile: UserProfile,
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
+
 def get_subject(payload: Dict[str, Any]) -> str:
     return CIRCLECI_TOPIC_TEMPLATE.format(repository_name=payload['reponame'])
+
 
 def get_body(payload: Dict[str, Any]) -> str:
     data = {
@@ -37,6 +40,7 @@ def get_body(payload: Dict[str, Any]) -> str:
         'status': get_status(payload)
     }
     return CIRCLECI_MESSAGE_TEMPLATE.format(**data)
+
 
 def get_status(payload: Dict[str, Any]) -> str:
     status = payload['status']
