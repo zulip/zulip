@@ -14,6 +14,7 @@ from zerver.tornado.event_queue import maybe_enqueue_notifications, \
     get_client_descriptor, missedmessage_hook, persistent_queue_filename
 from zerver.tornado.views import get_events
 
+
 class MissedMessageNotificationsTest(ZulipTestCase):
     """Tests the logic for when missed-message notifications
     should be triggered, based on user settings"""
@@ -319,6 +320,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         change_subscription_properties(user_profile, stream, sub,
                                        {'push_notifications': True,
                                         'in_home_view': True})
+
 
 class FileReloadLogicTest(ZulipTestCase):
     def test_persistent_queue_filename(self) -> None:
