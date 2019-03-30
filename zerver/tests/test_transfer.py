@@ -14,6 +14,7 @@ from zerver.models import Attachment, RealmEmoji
 from zerver.lib.actions import check_add_realm_emoji
 from zerver.lib.avatar_hash import user_avatar_path
 
+
 class TransferUploadsToS3Test(ZulipTestCase):
     logger = logging.getLogger()
     logger.setLevel(logging.WARNING)
