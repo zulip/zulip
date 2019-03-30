@@ -144,5 +144,6 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
         return table
 
+
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownArgumentsTableGenerator:
     return MarkdownArgumentsTableGenerator(kwargs)
