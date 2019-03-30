@@ -45,6 +45,7 @@ CATEGORIES = {
     'bots': _('Interactive bots'),
 }  # type: Dict[str, str]
 
+
 class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
@@ -98,6 +99,7 @@ class Integration:
 
         return None
 
+
 class BotIntegration(Integration):
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/generated/bots/{name}/logo.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/generated/bots/{name}/logo.svg'
@@ -133,9 +135,11 @@ class BotIntegration(Integration):
             doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
 
+
 class EmailIntegration(Integration):
     def is_enabled(self) -> bool:
         return settings.EMAIL_GATEWAY_PATTERN != ""
+
 
 class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = 'zerver.webhooks.{name}.view.api_{name}_webhook'
@@ -182,6 +186,7 @@ class WebhookIntegration(Integration):
     def url_object(self) -> LocaleRegexProvider:
         return url(self.url, self.function)
 
+
 class HubotIntegration(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
 
@@ -203,6 +208,7 @@ class HubotIntegration(Integration):
             doc='zerver/integrations/hubot_common.md',
             legacy=legacy
         )
+
 
 class GithubIntegration(WebhookIntegration):
     """
@@ -233,6 +239,7 @@ class GithubIntegration(WebhookIntegration):
     @property
     def url_object(self) -> None:
         return
+
 
 class EmbeddedBotIntegration(Integration):
     '''
