@@ -22,6 +22,7 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path, run
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile(r'[\W\-_]')
 
+
 def run_db_migrations(platform: str) -> None:
     if platform == 'dev':
         migration_status_file = 'migration_status_dev'
@@ -44,6 +45,7 @@ def run_db_migrations(platform: str) -> None:
          './manage.py', 'get_migration_status',
          '--output=%s' % (migration_status_file)])
 
+
 def run_generate_fixtures_if_required(use_force: bool=False) -> None:
     generate_fixtures_command = ['tools/setup/generate-fixtures']
     test_template_db_status = template_database_status()
@@ -52,6 +54,7 @@ def run_generate_fixtures_if_required(use_force: bool=False) -> None:
     elif test_template_db_status == 'run_migrations':
         run_db_migrations('test')
     subprocess.check_call(generate_fixtures_command)
+
 
 def database_exists(database_name: str, **options: Any) -> bool:
     db = options.get('database', DEFAULT_DB_ALIAS)
@@ -65,6 +68,7 @@ def database_exists(database_name: str, **options: Any) -> bool:
         return return_value
     except OperationalError:
         return False
+
 
 def get_migration_status(**options: Any) -> str:
     verbosity = options.get('verbosity', 1)
@@ -92,9 +96,11 @@ def get_migration_status(**options: Any) -> str:
     output = out.read()
     return re.sub(r'\x1b\[(1|0)m', '', output)
 
+
 def extract_migrations_as_list(migration_status: str) -> List[str]:
     MIGRATIONS_RE = re.compile(r'\[[X| ]\] (\d+_.+)\n')
     return MIGRATIONS_RE.findall(migration_status)
+
 
 def what_to_do_with_migrations(migration_file: str, **options: Any) -> str:
     if not os.path.exists(migration_file):
@@ -118,10 +124,12 @@ def what_to_do_with_migrations(migration_file: str, **options: Any) -> str:
 
     return 'migrate'
 
+
 def _get_hash_file_path(source_file_path: str, status_dir: str) -> str:
     basename = os.path.basename(source_file_path)
     filename = '_'.join(FILENAME_SPLITTER.split(basename)).lower()
     return os.path.join(status_dir, filename)
+
 
 def _check_hash(source_hash_file: str, target_content: str) -> bool:
     """
@@ -141,6 +149,7 @@ def _check_hash(source_hash_file: str, target_content: str) -> bool:
 
     return source_hash_content == target_hash_content
 
+
 def check_file_hash(target_file_path: str, status_dir: str) -> bool:
     source_hash_file = _get_hash_file_path(target_file_path, status_dir)
 
@@ -149,6 +158,7 @@ def check_file_hash(target_file_path: str, status_dir: str) -> bool:
 
     return _check_hash(source_hash_file, target_content)
 
+
 def check_setting_hash(setting_name: str, status_dir: str) -> bool:
     hash_filename = '_'.join(['settings', setting_name])
     source_hash_file = os.path.join(status_dir, hash_filename)
@@ -156,6 +166,7 @@ def check_setting_hash(setting_name: str, status_dir: str) -> bool:
     target_content = json.dumps(getattr(settings, setting_name), sort_keys=True)
 
     return _check_hash(source_hash_file, target_content)
+
 
 def template_database_status(
         database_name: str='zulip_test_template',
