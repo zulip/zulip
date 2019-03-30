@@ -3,6 +3,7 @@ from django.utils.translation import ugettext as _
 
 import re
 
+
 def validate_domain(domain: str) -> None:
     if domain is None or len(domain) == 0:
         raise ValidationError(_("Domain can't be empty."))
