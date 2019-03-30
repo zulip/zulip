@@ -434,15 +434,15 @@ class WorkerTest(ZulipTestCase):
 
         user = self.example_user('hamlet')
         UserActivity.objects.filter(
-            user_profile = user.id,
-            client = get_client('ios')
+            user_profile=user.id,
+            client=get_client('ios')
         ).delete()
 
         data = dict(
-            user_profile_id = user.id,
-            client = 'ios',
-            time = time.time(),
-            query = 'send_message'
+            user_profile_id=user.id,
+            client='ios',
+            time=time.time(),
+            query='send_message'
         )
         fake_client.queue.append(('user_activity', data))
 
@@ -451,8 +451,8 @@ class WorkerTest(ZulipTestCase):
             worker.setup()
             worker.start()
             activity_records = UserActivity.objects.filter(
-                user_profile = user.id,
-                client = get_client('ios')
+                user_profile=user.id,
+                client=get_client('ios')
             )
             self.assertTrue(len(activity_records), 1)
             self.assertTrue(activity_records[0].count, 1)
