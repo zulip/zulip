@@ -5,6 +5,7 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def fix_realm_string_ids(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Realm = apps.get_model('zerver', 'Realm')
     if Realm.objects.filter(deactivated=False).count() != 2:
@@ -18,6 +19,7 @@ def fix_realm_string_ids(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
 
     user_realm.string_id = ""
     user_realm.save()
+
 
 class Migration(migrations.Migration):
 
