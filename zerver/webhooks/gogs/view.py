@@ -14,6 +14,7 @@ from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
     get_pull_request_event_message, get_push_commits_event_message
 from zerver.models import UserProfile
 
+
 def format_push_event(payload: Dict[str, Any]) -> str:
 
     for commit in payload['commits']:
@@ -30,6 +31,7 @@ def format_push_event(payload: Dict[str, Any]) -> str:
 
     return get_push_commits_event_message(**data)
 
+
 def format_new_branch_event(payload: Dict[str, Any]) -> str:
 
     branch_name = payload['ref']
@@ -41,6 +43,7 @@ def format_new_branch_event(payload: Dict[str, Any]) -> str:
         'branch_name': branch_name
     }
     return get_create_branch_event_message(**data)
+
 
 def format_pull_request_event(payload: Dict[str, Any],
                               include_title: Optional[bool]=False) -> str:
@@ -60,6 +63,7 @@ def format_pull_request_event(payload: Dict[str, Any],
         data['action'] = 'merged'
 
     return get_pull_request_event_message(**data)
+
 
 @api_key_only_webhook_view('Gogs')
 @has_request_variables
