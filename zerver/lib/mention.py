@@ -10,8 +10,10 @@ user_group_mentions = r'(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)'
 
 wildcards = ['all', 'everyone', 'stream']
 
+
 def user_mention_matches_wildcard(mention: str) -> bool:
     return mention in wildcards
+
 
 def extract_mention_text(m: Tuple[str, str]) -> Optional[str]:
     # re.findall provides tuples of match elements; we want the second
@@ -26,6 +28,7 @@ def extract_mention_text(m: Tuple[str, str]) -> Optional[str]:
     # We don't care about @all, @everyone or @stream
     return None
 
+
 def possible_mentions(content: str) -> Set[str]:
     matches = re.findall(find_mentions, content)
     # mention texts can either be names, or an extended name|id syntax.
@@ -33,8 +36,10 @@ def possible_mentions(content: str) -> Set[str]:
     texts = {text for text in texts_with_none if text}
     return texts
 
+
 def extract_user_group(matched_text: str) -> str:
     return matched_text[1:-1]
+
 
 def possible_user_group_mentions(content: str) -> Set[str]:
     matches = re.findall(user_group_mentions, content)
