@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class PingdomHookTests(WebhookTestCase):
     STREAM_NAME = 'pingdom'
     URL_TEMPLATE = u"/api/v1/external/pingdom?stream={stream}&api_key={api_key}"
