@@ -12,6 +12,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+from recommonmark.parser import CommonMarkParser
+from recommonmark.transform import AutoStructify
 import os
 
 from typing import Any, Dict, List, Optional
@@ -297,8 +299,6 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
-from recommonmark.parser import CommonMarkParser
-from recommonmark.transform import AutoStructify
 
 source_parsers = {
     '.md': CommonMarkParser,
