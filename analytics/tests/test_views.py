@@ -16,6 +16,7 @@ from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, datetime_to_timestamp
 from zerver.models import Client, get_realm
 
+
 class TestStatsEndpoint(ZulipTestCase):
     def test_stats(self) -> None:
         self.user = self.example_user('hamlet')
@@ -66,6 +67,7 @@ class TestStatsEndpoint(ZulipTestCase):
         result = self.client_get('/stats/installation')
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Zulip analytics for", result)
+
 
 class TestGetChartData(ZulipTestCase):
     def setUp(self) -> None:
@@ -328,6 +330,7 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
 
+
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
         def check_hamlet_user_result(result: HttpResponse) -> None:
@@ -416,6 +419,7 @@ class TestSupportEndpoint(ZulipTestCase):
             m.assert_called_once_with(get_realm("lear"), 25)
             self.assert_in_success_response(["Discount of Lear &amp; Co. changed to 25 from None"], result)
 
+
 class TestGetChartDataHelpers(ZulipTestCase):
     # last_successful_fill is in analytics/models.py, but get_chart_data is
     # the only function that uses it at the moment
@@ -439,6 +443,7 @@ class TestGetChartDataHelpers(ZulipTestCase):
         data = {'everyone': {'a': [16], 'c': [15], 'b': [14], 'e': [13], 'd': [12], 'h': [11]},
                 'user': {'a': [6], 'b': [5], 'd': [4], 'e': [3], 'f': [2], 'g': [1]}}
         self.assertEqual(sort_client_labels(data), ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])
+
 
 class TestTimeRange(ZulipTestCase):
     def test_time_range(self) -> None:
@@ -465,6 +470,7 @@ class TestTimeRange(ZulipTestCase):
                          [floor_hour-2*HOUR, floor_hour-HOUR, floor_hour, floor_hour+HOUR])
         self.assertEqual(time_range(floor_day, floor_day+DAY, CountStat.DAY, 4),
                          [floor_day-2*DAY, floor_day-DAY, floor_day, floor_day+DAY])
+
 
 class TestMapArrays(ZulipTestCase):
     def test_map_arrays(self) -> None:
