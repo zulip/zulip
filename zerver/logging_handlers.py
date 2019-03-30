@@ -149,8 +149,8 @@ class AdminNotifyHandler(logging.Handler):
                 notify_server_error(report, is_bugdown_rendering_exception)
             else:
                 queue_json_publish('error_reports', dict(
-                    type = "server",
-                    report = report,
+                    type="server",
+                    report=report,
                 ))
         except Exception:
             # If this breaks, complain loudly but don't pass the traceback up the stream
