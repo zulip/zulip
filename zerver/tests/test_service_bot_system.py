@@ -28,6 +28,7 @@ BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.EMBEDDED_BOT: 'embedded_bots',
 }
 
+
 class TestServiceBotBasics(ZulipTestCase):
     def _get_outgoing_bot(self) -> UserProfile:
         outgoing_bot = do_create_user(
@@ -167,6 +168,7 @@ class TestServiceBotBasics(ZulipTestCase):
         self.assertEqual(len(event_dict), 0)
         arg = log_mock.call_args_list[0][0][0]
         self.assertIn('Unexpected bot_type', arg)
+
 
 class TestServiceBotStateHandler(ZulipTestCase):
     def setUp(self) -> None:
@@ -347,6 +349,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         result = self.client_get('/json/bot_storage')
         self.assert_json_success(result)
         self.assertEqual(result.json()['storage'], {})
+
 
 class TestServiceBotConfigHandler(ZulipTestCase):
     def setUp(self) -> None:
