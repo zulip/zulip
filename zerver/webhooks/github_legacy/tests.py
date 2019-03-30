@@ -7,6 +7,7 @@ from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.models import Message
 
+
 class GithubV1HookTests(WebhookTestCase):
     STREAM_NAME = None  # type: Optional[str]
     URL_TEMPLATE = u"/api/v1/external/github"
@@ -131,6 +132,7 @@ class GithubV1HookTests(WebhookTestCase):
         self.basic_test('commit_comment_line', 'commits',
                         "zulip-test",
                         "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on [7c99467](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533)\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
+
 
 class GithubV2HookTests(WebhookTestCase):
     STREAM_NAME = None  # type: Optional[str]
