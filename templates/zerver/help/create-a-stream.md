@@ -13,6 +13,8 @@ first.
 
 ## Create a stream
 
+{start_tabs}
+
 {relative|stream|all}
 
 1. Click **Create stream** on the right.
@@ -20,8 +22,10 @@ first.
 1. Fill out the requested info, and click **Create**.
 
 !!! warn ""
-    You will only see the **Create stream** button if you have
+    **Note**: You will only see the **Create stream** button if you have
     permission to create streams.
+
+{end_tabs}
 
 ## Stream options
 
@@ -35,9 +39,9 @@ There are several parameters you can set while creating a stream. All but
 * **Stream description**: Helps users decide whether to subscribe when they
   are browsing streams.
 
-* **Announce stream**: Posts a message to `#announce` advertising the new
+* **Announce stream**: Posts a message to `#general` advertising the new
   stream. Organization administrators can change the stream used for stream
-  creation announcements in organization settings.
+  creation announcements.
 
 * **Stream permissions**: See [Stream permissions](/help/stream-permissions).
 
