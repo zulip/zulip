@@ -4,6 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 from zerver.webhooks.gosquared.view import CHAT_MESSAGE_TEMPLATE
 
+
 class GoSquaredHookTests(WebhookTestCase):
     STREAM_NAME = 'gosquared'
     URL_TEMPLATE = "/api/v1/external/gosquared?stream={stream}&api_key={api_key}"
