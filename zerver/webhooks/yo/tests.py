@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class YoHookTests(WebhookTestCase):
     STREAM_NAME = 'yo'
     URL_TEMPLATE = u"/api/v1/external/yo?api_key={api_key}"
