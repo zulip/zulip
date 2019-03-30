@@ -22,9 +22,11 @@ from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import UserActivity, UserPresence, UserProfile, \
     get_active_user_by_delivery_email
 
+
 def get_status_list(requesting_user_profile: UserProfile) -> Dict[str, Any]:
     return {'presences': get_status_dict(requesting_user_profile),
             'server_timestamp': time.time()}
+
 
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
                          email: str) -> HttpResponse:
@@ -50,6 +52,7 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
         val.pop('pushable', None)
     return json_success(result)
 
+
 @human_users_only
 @has_request_variables
 def update_user_status_backend(request: HttpRequest,
@@ -73,6 +76,7 @@ def update_user_status_backend(request: HttpRequest,
     )
 
     return json_success()
+
 
 @human_users_only
 @has_request_variables
@@ -108,6 +112,7 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
             ret['zephyr_mirror_active'] = False
 
     return json_success(ret)
+
 
 def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     return json_success(get_status_list(user_profile))
