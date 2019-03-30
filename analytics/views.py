@@ -1,4 +1,6 @@
 
+from zerver.models import Client, get_realm, Realm, \
+    UserActivity, UserActivityInterval, UserProfile
 import itertools
 import logging
 import re
@@ -44,8 +46,6 @@ from zerver.lib.actions import do_change_plan_type
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
 
-from zerver.models import Client, get_realm, Realm, \
-    UserActivity, UserActivityInterval, UserProfile
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteInstallationCount, RemoteRealmCount, \
