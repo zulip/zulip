@@ -41,6 +41,7 @@ The following functions are for user-facing APIs
 where we'll want to support "subject" for a while.
 '''
 
+
 def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
     '''
     Use this where you are getting dicts that are based off of messages
@@ -54,6 +55,7 @@ def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
         return message_info['topic']
 
     return message_info['subject']
+
 
 def REQ_topic() -> Optional[str]:
     # REQ handlers really return a REQ, but we
@@ -78,21 +80,26 @@ using "subject" in the DB sense, and nothing customer facing.
 DB_TOPIC_NAME = "subject"
 MESSAGE__TOPIC = 'message__subject'
 
+
 def topic_match_sa(topic_name: str) -> Any:
     # _sa is short for Sql Alchemy, which we use mostly for
     # queries that search messages
     topic_cond = func.upper(column("subject")) == func.upper(literal(topic_name))
     return topic_cond
 
+
 def topic_column_sa() -> Any:
     return column("subject")
+
 
 def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet:
     topic_name = message.topic_name()
     return query.filter(subject=topic_name)
 
+
 def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
     return query.filter(message__subject__iexact=topic_name)
+
 
 def messages_for_topic(stream_id: int, topic_name: str) -> QuerySet:
     return Message.objects.filter(
@@ -100,10 +107,12 @@ def messages_for_topic(stream_id: int, topic_name: str) -> QuerySet:
         subject__iexact=topic_name,
     )
 
+
 def save_message_for_edit_use_case(message: Message) -> None:
     message.save(update_fields=["subject", "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history"])
+
 
 def user_message_exists_for_topic(user_profile: UserProfile,
                                   recipient: Recipient,
@@ -113,6 +122,7 @@ def user_message_exists_for_topic(user_profile: UserProfile,
         message__recipient=recipient,
         message__subject__iexact=topic_name,
     ).exists()
+
 
 def update_messages_for_topic_edit(message: Message,
                                    propagate_mode: str,
@@ -142,6 +152,7 @@ def update_messages_for_topic_edit(message: Message,
 
     return messages_list
 
+
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
     canonical_topic_names = {}  # type: Dict[str, Tuple[int, str]]
 
@@ -161,6 +172,7 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
             max_id=max_message_id)
         )
     return sorted(history, key=lambda x: -x['max_id'])
+
 
 def get_topic_history_for_stream(user_profile: UserProfile,
                                  recipient: Recipient,
@@ -204,6 +216,7 @@ def get_topic_history_for_stream(user_profile: UserProfile,
     cursor.close()
 
     return generate_topic_history_from_db_rows(rows)
+
 
 def get_topic_history_for_web_public_stream(recipient: Recipient) -> List[Dict[str, Any]]:
     cursor = connection.cursor()
