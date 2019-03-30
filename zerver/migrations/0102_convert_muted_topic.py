@@ -6,6 +6,7 @@ from django.db import connection, migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     stream_query = '''
         SELECT
@@ -64,6 +65,7 @@ def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
         cursor.execute('DELETE from zerver_mutedtopic')
 
     MutedTopic.objects.bulk_create(new_objs)
+
 
 class Migration(migrations.Migration):
 
