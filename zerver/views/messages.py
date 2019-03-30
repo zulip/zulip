@@ -64,6 +64,7 @@ import datetime
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 MAX_MESSAGES_PER_FETCH = 5000
 
+
 class BadNarrowOperator(JsonableError):
     code = ErrorCode.BAD_NARROW
     data_fields = ['desc']
@@ -82,6 +83,8 @@ Query = Any
 ConditionTransform = Any
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
+
+
 class NarrowBuilder:
     '''
     Build up a SQLAlchemy query to find messages matching a narrow.
@@ -418,6 +421,8 @@ class NarrowBuilder:
 # The offsets we get from PGroonga are counted in characters
 # whereas the offsets from tsearch_extras are in bytes, so we
 # have to account for both cases in the logic below.
+
+
 def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
     highlight_start = '<span class="highlight">'
     highlight_stop = '</span>'
@@ -467,12 +472,14 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
     result += final_frag
     return result
 
+
 def get_search_fields(rendered_content: str, topic_name: str, content_matches: Iterable[Tuple[int, int]],
                       topic_matches: Iterable[Tuple[int, int]]) -> Dict[str, str]:
     return {
         'match_content': highlight_string(rendered_content, content_matches),
         MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
     }
+
 
 def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
@@ -514,6 +521,7 @@ def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
     return list(map(convert_term, data))
 
+
 def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], user_profile: UserProfile) -> bool:
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
@@ -540,12 +548,14 @@ def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], user_profi
 
     return include_history
 
+
 def get_stream_name_from_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> Optional[str]:
     if narrow is not None:
         for term in narrow:
             if term['operator'] == 'stream':
                 return term['operand'].lower()
     return None
+
 
 def exclude_muting_conditions(user_profile: UserProfile,
                               narrow: Optional[Iterable[Dict[str, Any]]]) -> List[Selectable]:
@@ -580,6 +590,7 @@ def exclude_muting_conditions(user_profile: UserProfile,
 
     return conditions
 
+
 def get_base_query_for_search(user_profile: UserProfile,
                               need_message: bool,
                               need_user_message: bool) -> Tuple[Query, ColumnElement]:
@@ -606,6 +617,7 @@ def get_base_query_for_search(user_profile: UserProfile,
                        table("zerver_message"))
         inner_msg_id_col = literal_column("zerver_message.id")
         return (query, inner_msg_id_col)
+
 
 def add_narrow_conditions(user_profile: UserProfile,
                           inner_msg_id_col: ColumnElement,
@@ -639,6 +651,7 @@ def add_narrow_conditions(user_profile: UserProfile,
         query = builder.add_term(query, search_term)
 
     return (query, is_search)
+
 
 def find_first_unread_anchor(sa_conn: Any,
                              user_profile: UserProfile,
@@ -699,10 +712,12 @@ def find_first_unread_anchor(sa_conn: Any,
 
     return anchor
 
+
 @has_request_variables
 def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
                      command: str=REQ('command')) -> HttpResponse:
     return json_success(process_zcommands(command, user_profile))
+
 
 @has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
@@ -874,6 +889,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     )
     return json_success(ret)
 
+
 def limit_query_to_range(query: Query,
                          num_before: int,
                          num_after: int,
@@ -954,6 +970,7 @@ def limit_query_to_range(query: Query,
 
     return query
 
+
 def post_process_limited_query(rows: List[Any],
                                num_before: int,
                                num_after: int,
@@ -1018,6 +1035,7 @@ def post_process_limited_query(rows: List[Any],
         history_limited=history_limited,
     )
 
+
 @has_request_variables
 def update_message_flags(request: HttpRequest, user_profile: UserProfile,
                          messages: List[int]=REQ(validator=check_list(check_int)),
@@ -1033,6 +1051,7 @@ def update_message_flags(request: HttpRequest, user_profile: UserProfile,
                          'messages': messages,
                          'msg': ''})
 
+
 @has_request_variables
 def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     count = do_mark_all_as_read(user_profile, request.client)
@@ -1042,6 +1061,7 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 
     return json_success({'result': 'success',
                          'msg': ''})
+
 
 @has_request_variables
 def mark_stream_as_read(request: HttpRequest,
@@ -1055,6 +1075,7 @@ def mark_stream_as_read(request: HttpRequest,
 
     return json_success({'result': 'success',
                          'msg': ''})
+
 
 @has_request_variables
 def mark_topic_as_read(request: HttpRequest,
@@ -1080,6 +1101,7 @@ def mark_topic_as_read(request: HttpRequest,
 
     return json_success({'result': 'success',
                          'msg': ''})
+
 
 def create_mirrored_message_users(request: HttpRequest, user_profile: UserProfile,
                                   recipients: Iterable[str]) -> Tuple[bool, Optional[UserProfile]]:
@@ -1117,6 +1139,7 @@ def create_mirrored_message_users(request: HttpRequest, user_profile: UserProfil
     sender = get_user_including_cross_realm(sender_email, user_profile.realm)
     return (True, sender)
 
+
 def same_realm_zephyr_user(user_profile: UserProfile, email: str) -> bool:
     #
     # Are the sender and recipient both addresses in the same Zephyr
@@ -1136,6 +1159,7 @@ def same_realm_zephyr_user(user_profile: UserProfile, email: str) -> bool:
     return user_profile.realm.is_zephyr_mirror_realm and \
         RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
+
 def same_realm_irc_user(user_profile: UserProfile, email: str) -> bool:
     # Check whether the target email address is an IRC user in the
     # same realm as user_profile, i.e. if the domain were example.com,
@@ -1151,6 +1175,7 @@ def same_realm_irc_user(user_profile: UserProfile, email: str) -> bool:
     # these realms.
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
+
 def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
     try:
         validators.validate_email(email)
@@ -1164,6 +1189,7 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
     # Assumes allow_subdomains=False for all RealmDomain's corresponding to
     # these realms.
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
+
 
 def handle_deferred_message(sender: UserProfile, client: Client,
                             message_type_name: str,
@@ -1292,6 +1318,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                              widget_content=widget_content)
     return json_success({"id": ret})
 
+
 def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:
     """This fills out the message edit history entries from the database,
     which are designed to have the minimum data possible, to instead
@@ -1337,6 +1364,7 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
         user_id=message.sender_id,
     ))
 
+
 @has_request_variables
 def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
                              message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
@@ -1353,6 +1381,7 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
     # Fill in all the extra data that will make it usable
     fill_edit_history_entries(message_edit_history, message)
     return json_success({"message_history": reversed(message_edit_history)})
+
 
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
@@ -1474,6 +1503,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
         raise JsonableError(_("The time limit for deleting this message has passed"))
     return
 
+
 @has_request_variables
 def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
                            message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
@@ -1485,11 +1515,13 @@ def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
         raise JsonableError(_("Message already deleted"))
     return json_success()
 
+
 @has_request_variables
 def json_fetch_raw_message(request: HttpRequest, user_profile: UserProfile,
                            message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     (message, user_message) = access_message(user_profile, message_id)
     return json_success({"raw_content": message.content})
+
 
 @has_request_variables
 def render_message_backend(request: HttpRequest, user_profile: UserProfile,
@@ -1501,6 +1533,7 @@ def render_message_backend(request: HttpRequest, user_profile: UserProfile,
 
     rendered_content = render_markdown(message, content, realm=user_profile.realm)
     return json_success({"rendered": rendered_content})
+
 
 @has_request_variables
 def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
