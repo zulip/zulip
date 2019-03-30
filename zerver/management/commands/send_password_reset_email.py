@@ -8,6 +8,7 @@ from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.models import UserProfile
 
+
 class Command(ZulipBaseCommand):
     help = """Send email to specified email address."""
 
