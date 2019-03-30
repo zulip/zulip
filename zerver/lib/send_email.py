@@ -23,6 +23,7 @@ from confirmation.models import generate_key
 logger = logging.getLogger('zulip.send_email')
 log_to_file(logger, settings.EMAIL_LOG_PATH)
 
+
 class FromAddress:
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
@@ -33,6 +34,7 @@ class FromAddress:
         if settings.ADD_TOKENS_TO_NOREPLY_ADDRESS:
             return parseaddr(settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS)[1].format(token=generate_key())
         return FromAddress.NOREPLY
+
 
 def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
@@ -101,11 +103,14 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
         mail.attach_alternative(html_message, 'text/html')
     return mail
 
+
 class EmailNotDeliveredException(Exception):
     pass
 
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
+
+
 def send_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
@@ -120,8 +125,10 @@ def send_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
         logger.error("Error sending %s email to %s" % (template, mail.to))
         raise EmailNotDeliveredException
 
+
 def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
     send_email(**dict(email_dict))
+
 
 def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[List[int]]=None,
                       to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
@@ -158,6 +165,7 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
         email.delete()
         raise e
 
+
 def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional[str]=None,
                          from_address: Optional[str]=None, context: Dict[str, Any]={}) -> None:
     admins = realm.get_admin_users()
@@ -165,12 +173,14 @@ def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional
     send_email(template_prefix, to_user_ids=admin_user_ids, from_name=from_name,
                from_address=from_address, context=context)
 
+
 def clear_scheduled_invitation_emails(email: str) -> None:
     """Unlike most scheduled emails, invitation emails don't have an
     existing user object to key off of, so we filter by address here."""
     items = ScheduledEmail.objects.filter(address__iexact=email,
                                           type=ScheduledEmail.INVITATION_REMINDER)
     items.delete()
+
 
 def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int]=None) -> None:
     items = ScheduledEmail.objects.filter(users__in=user_ids).distinct()
@@ -180,6 +190,7 @@ def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int]=None) 
         item.users.remove(*user_ids)
         if item.users.all().count() == 0:
             item.delete()
+
 
 def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
     # Reformat any jobs that used the old to_email
@@ -192,6 +203,7 @@ def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
         if job['to_user_id'] is not None:
             job['to_user_ids'] = [job['to_user_id']]
         del job['to_user_id']
+
 
 def deliver_email(email: ScheduledEmail) -> None:
     data = ujson.loads(email.data)
