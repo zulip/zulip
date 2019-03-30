@@ -400,7 +400,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_usermessage[3]['id'], um_id + 4)
         self.assertEqual(zerver_usermessage[3]['message'], message_id)
 
-    @mock.patch("zerver.data_import.slack.build_usermessages", return_value = (2, 4))
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message(self, mock_build_usermessage: mock.Mock) -> None:
 
         user_data = [{"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
@@ -524,9 +524,9 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(test_reactions, reactions)
 
-    @mock.patch("zerver.data_import.slack.process_uploads", return_value = [])
+    @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
     @mock.patch("zerver.data_import.slack.build_attachment",
-                return_value = [])
+                return_value=[])
     @mock.patch("zerver.data_import.slack.build_avatar_url")
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
