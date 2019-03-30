@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class GrooveHookTests(WebhookTestCase):
     STREAM_NAME = 'groove'
     URL_TEMPLATE = '/api/v1/external/groove?stream={stream}&api_key={api_key}'
