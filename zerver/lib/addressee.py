@@ -11,6 +11,7 @@ from zerver.models import (
     Stream,
 )
 
+
 def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
     frags = email_str.split(',')
     emails = [s.strip().lower() for s in frags]
@@ -20,6 +21,7 @@ def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
         emails = [email for email in emails if email != my_email.lower()]
 
     return emails
+
 
 def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     user_profiles = []  # type: List[UserProfile]
@@ -31,6 +33,7 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
         user_profiles.append(user_profile)
     return user_profiles
 
+
 def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[UserProfile]:
     user_profiles = []  # type: List[UserProfile]
     for user_id in user_ids:
@@ -41,6 +44,7 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
         user_profiles.append(user_profile)
     return user_profiles
 
+
 def validate_topic(topic: str) -> str:
     if topic is None:
         raise JsonableError(_("Missing topic"))
@@ -49,6 +53,7 @@ def validate_topic(topic: str) -> str:
         raise JsonableError(_("Topic can't be empty"))
 
     return topic
+
 
 class Addressee:
     # This is really just a holder for vars that tended to be passed
