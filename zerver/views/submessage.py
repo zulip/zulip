@@ -16,6 +16,7 @@ from zerver.lib.response import (
 )
 from zerver.models import UserProfile
 
+
 @has_request_variables
 def process_submessage(request: HttpRequest,
                        user_profile: UserProfile,
