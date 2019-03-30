@@ -10,6 +10,7 @@ import ujson
 
 from typing import Optional
 
+
 def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
     """Warning: Does not save, to avoid extra database queries"""
     for settings_name in UserProfile.property_types:
@@ -31,6 +32,7 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
 
     copy_hotpots(source_profile, target_profile)
 
+
 def get_display_email_address(user_profile: UserProfile, realm: Realm) -> str:
     if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # TODO: realm.host isn't always a valid option here.
@@ -44,6 +46,8 @@ def get_display_email_address(user_profile: UserProfile, realm: Realm) -> str:
 # Only use this for bulk_create -- for normal usage one should use
 # create_user (below) which will also make the Subscription and
 # Recipient objects
+
+
 def create_user_profile(realm: Realm, email: str, password: Optional[str],
                         active: bool, bot_type: Optional[int], full_name: str,
                         short_name: str, bot_owner: Optional[UserProfile],
@@ -75,6 +79,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
     user_profile.set_password(password)
     user_profile.api_key = generate_api_key()
     return user_profile
+
 
 def create_user(email: str, password: Optional[str], realm: Realm,
                 full_name: str, short_name: str, active: bool = True,
