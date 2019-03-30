@@ -8,6 +8,7 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 
 from zerver.lib.actions import render_stream_description
 
+
 def render_all_stream_descriptions(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Stream = apps.get_model('zerver', 'Stream')
     all_streams = Stream.objects.exclude(description='')
