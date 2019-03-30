@@ -12,13 +12,16 @@ from django.db.migrations.state import StateApps
 
 from zerver.lib.avatar_hash import user_avatar_hash, user_avatar_path
 
+
 def mkdirs(path: Text) -> None:
     dirname = os.path.dirname(path)
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
 
+
 class MissingAvatarException(Exception):
     pass
+
 
 def move_local_file(type: Text, path_src: Text, path_dst: Text) -> None:
     src_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path_src)
@@ -31,6 +34,7 @@ def move_local_file(type: Text, path_src: Text, path_dst: Text) -> None:
         return
     mkdirs(dst_file_path)
     os.rename(src_file_path, dst_file_path)
+
 
 def move_avatars_to_be_uid_based(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     user_profile_model = apps.get_model('zerver', 'UserProfile')
@@ -83,6 +87,7 @@ def move_avatars_to_be_uid_based(apps: StateApps, schema_editor: DatabaseSchemaE
             bucket.delete_key(user_avatar_hash(user_profile.email) + ".original")
             bucket.delete_key(user_avatar_hash(user_profile.email) + "-medium.png")
             bucket.delete_key(user_avatar_hash(user_profile.email))
+
 
 class Migration(migrations.Migration):
 
