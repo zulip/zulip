@@ -1,4 +1,5 @@
 
+from zerver.lib.user_agent import parse_user_agent
 import django_otp
 from two_factor.utils import default_device
 from django_otp import user_has_device, _user_is_authenticated
@@ -154,7 +155,6 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
         return func(request, user_profile, *args, **kwargs)
     return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
 
-from zerver.lib.user_agent import parse_user_agent
 
 
 def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:
