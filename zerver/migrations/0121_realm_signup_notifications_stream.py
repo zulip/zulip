@@ -7,6 +7,7 @@ import django.db.models.deletion
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def set_initial_value_for_signup_notifications_stream(
         apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     realm_model = apps.get_model("zerver", "Realm")
@@ -14,6 +15,7 @@ def set_initial_value_for_signup_notifications_stream(
     for realm in realms:
         realm.signup_notifications_stream = realm.notifications_stream
         realm.save(update_fields=["signup_notifications_stream"])
+
 
 class Migration(migrations.Migration):
 
