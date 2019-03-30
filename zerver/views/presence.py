@@ -98,7 +98,7 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
         # users, but each user **is** interested in whether their mirror bot
         # (running as their user) has been active.
         try:
-            activity = UserActivity.objects.get(user_profile = user_profile,
+            activity = UserActivity.objects.get(user_profile=user_profile,
                                                 query="get_events",
                                                 client__name="zephyr_mirror")
 
