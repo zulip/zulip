@@ -5,8 +5,10 @@ from django.db import models
 from zerver.models import AbstractPushDeviceToken
 from analytics.models import BaseCount
 
+
 def get_remote_server_by_uuid(uuid: str) -> 'RemoteZulipServer':
     return RemoteZulipServer.objects.get(uuid=uuid)
+
 
 class RemoteZulipServer(models.Model):
     UUID_LENGTH = 36
@@ -24,6 +26,8 @@ class RemoteZulipServer(models.Model):
         return "<RemoteZulipServer %s %s>" % (self.hostname, self.uuid[0:12])
 
 # Variant of PushDeviceToken for a remote server.
+
+
 class RemotePushDeviceToken(AbstractPushDeviceToken):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)  # type: RemoteZulipServer
     # The user id on the remote server for this device device this is
@@ -34,6 +38,7 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
 
     def __str__(self) -> str:
         return "<RemotePushDeviceToken %s %s>" % (self.server, self.user_id)
+
 
 class RemoteInstallationCount(BaseCount):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)  # type: RemoteZulipServer
@@ -47,6 +52,8 @@ class RemoteInstallationCount(BaseCount):
         return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
 
 # We can't subclass RealmCount because we only have a realm_id here, not a foreign key.
+
+
 class RemoteRealmCount(BaseCount):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)  # type: RemoteZulipServer
     realm_id = models.IntegerField(db_index=True)  # type: int
