@@ -8,6 +8,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.models import Realm, RealmEmoji, UserProfile
 
+
 class RealmEmojiTest(ZulipTestCase):
 
     def create_test_emoji(self, name: str, author: UserProfile) -> RealmEmoji:
