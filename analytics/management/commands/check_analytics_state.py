@@ -21,6 +21,7 @@ states = {
     3: "UNKNOWN"
 }
 
+
 class Command(BaseCommand):
     help = """Checks FillState table.
 
