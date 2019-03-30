@@ -20,6 +20,7 @@ MESSAGE_TEMPLATE = (
     u'Comment: {}'
 )
 
+
 @api_key_only_webhook_view('Gocd')
 @has_request_variables
 def api_gocd_webhook(request: HttpRequest, user_profile: UserProfile,
