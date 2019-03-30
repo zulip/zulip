@@ -7,6 +7,7 @@ from django.template import Library, Node
 
 register = Library()
 
+
 class MinifiedJSNode(Node):
     def __init__(self, sourcefile: str, csp_nonce: str) -> None:
         self.sourcefile = sourcefile
