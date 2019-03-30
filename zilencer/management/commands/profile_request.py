@@ -13,9 +13,11 @@ from zerver.views.messages import get_messages_backend
 
 request_logger = LogRequests()
 
+
 class MockSession:
     def __init__(self) -> None:
         self.modified = False
+
 
 class MockRequest(HttpRequest):
     def __init__(self, user: UserProfile) -> None:
@@ -35,6 +37,7 @@ class MockRequest(HttpRequest):
     def get_full_path(self) -> str:
         return self.path
 
+
 def profile_request(request: HttpRequest) -> HttpResponse:
     request_logger.process_request(request)
     prof = cProfile.Profile()
@@ -47,6 +50,7 @@ def profile_request(request: HttpRequest) -> HttpResponse:
         request_logger.process_response(request, ret)
         logging.info("Profiling data written to {}".format(stats_file.name))
     return ret
+
 
 class Command(ZulipBaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
