@@ -8,6 +8,7 @@ from confirmation.models import generate_realm_creation_url
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm
 
+
 class Command(ZulipBaseCommand):
     help = """
     Outputs a randomly generated, 1-time-use link for Organization creation.
