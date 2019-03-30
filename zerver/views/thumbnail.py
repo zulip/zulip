@@ -8,6 +8,7 @@ from zerver.models import UserProfile, validate_attachment_request
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.thumbnail import generate_thumbnail_url
 
+
 def validate_thumbnail_request(user_profile: UserProfile, path: str) -> Optional[bool]:
     # path here does not have a leading / as it is parsed from request hitting the
     # thumbnail endpoint (defined in urls.py) that way.
@@ -17,6 +18,7 @@ def validate_thumbnail_request(user_profile: UserProfile, path: str) -> Optional
 
     # This is an external link and we don't enforce restricted view policy here.
     return True
+
 
 @has_request_variables
 def backend_serve_thumbnail(request: HttpRequest, user_profile: UserProfile,
