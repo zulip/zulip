@@ -32,7 +32,7 @@ def reset_is_private_flag(
             # on a large server.  We address this issue by doing a bit
             # of hackery to generate the SQL just right (with an
             # `ORDER BY` clause that forces using the new index).
-            flag_set_objects = UserMessage.objects.filter(user_profile__id = user_id).extra(
+            flag_set_objects = UserMessage.objects.filter(user_profile__id=user_id).extra(
                 where=["flags & 2048 != 0"]).order_by("message_id")[0:1000]
             user_message_ids = flag_set_objects.values_list("id", flat=True)
             count = UserMessage.objects.filter(id__in=user_message_ids).update(
