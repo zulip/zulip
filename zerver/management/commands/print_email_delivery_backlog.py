@@ -12,6 +12,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.models import ScheduledEmail
 
+
 class Command(BaseCommand):
     help = """Shows backlog count of ScheduledEmail
 (The number of currently overdue (by at least a minute) email jobs)
