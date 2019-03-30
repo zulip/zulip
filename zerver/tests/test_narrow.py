@@ -51,17 +51,21 @@ import os
 import re
 import ujson
 
+
 def get_sqlalchemy_query_params(query: str) -> Dict[str, str]:
     dialect = get_sqlalchemy_connection().dialect
     comp = compiler.SQLCompiler(dialect, query)
     return comp.params
 
+
 def fix_ws(s: str) -> str:
     return re.sub(r'\s+', ' ', str(s)).strip()
+
 
 def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> str:
     stream = get_stream(stream_name, realm)
     return get_stream_recipient(stream.id).id
+
 
 def mute_stream(realm: Realm, user_profile: str, stream_name: str) -> None:
     stream = get_stream(stream_name, realm)
@@ -70,11 +74,13 @@ def mute_stream(realm: Realm, user_profile: str, stream_name: str) -> None:
     subscription.in_home_view = False
     subscription.save()
 
+
 def first_visible_id_as(message_id: int) -> Any:
     return mock.patch(
         'zerver.views.messages.get_first_visible_message_id',
         return_value=message_id,
     )
+
 
 class NarrowBuilderTest(ZulipTestCase):
     def setUp(self) -> None:
@@ -362,6 +368,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def _build_query(self, term: Dict[str, Any]) -> Query:
         return self.builder.add_term(self.raw_query, term)
 
+
 class NarrowLibraryTest(TestCase):
     def test_build_narrow_filter(self) -> None:
         fixtures_path = os.path.join(os.path.dirname(__file__),
@@ -414,6 +421,7 @@ class NarrowLibraryTest(TestCase):
                                                     "operand": "private"}]))
         # Malformed input not allowed
         self.assertFalse(is_web_public_compatible([{"operator": "has"}]))
+
 
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self) -> None:
@@ -509,6 +517,7 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, guest_user_profile))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
+
 
 class PostProcessTest(ZulipTestCase):
     def test_basics(self) -> None:
@@ -908,6 +917,7 @@ class PostProcessTest(ZulipTestCase):
             found_anchor=False, found_oldest=False,
             found_newest=False, history_limited=False
         )
+
 
 class GetOldMessagesTest(ZulipTestCase):
 
