@@ -16,6 +16,7 @@ logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
 BULK_CREATE_BATCH_SIZE = 10000
 
+
 def filter_by_subscription_history(user_profile: UserProfile,
                                    all_stream_messages: DefaultDict[int, List[Message]],
                                    all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]],
@@ -63,6 +64,7 @@ def filter_by_subscription_history(user_profile: UserProfile,
                 for stream_message in stream_messages:
                     store_user_message_to_insert(stream_message)
     return user_messages_to_insert
+
 
 def add_missing_messages(user_profile: UserProfile) -> None:
     """This function takes a soft-deactivated user, and computes and adds
@@ -167,6 +169,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         user_profile.last_active_message_id = messages[-1].message_id
         user_profile.save(update_fields=['last_active_message_id'])
 
+
 def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     try:
         user_profile.last_active_message_id = UserMessage.objects.filter(
@@ -182,6 +185,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
         'last_active_message_id'])
     logger.info('Soft Deactivated user %s (%s)' %
                 (user_profile.id, user_profile.email))
+
 
 def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
     BATCH_SIZE = 100
@@ -210,6 +214,7 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
 
     return users_soft_deactivated
 
+
 def do_auto_soft_deactivate_users(inactive_for_days: int, realm: Optional[Realm]) -> List[UserProfile]:
     filter_kwargs = {}  # type: Dict[str, Realm]
     if realm is not None:
@@ -227,6 +232,7 @@ def do_auto_soft_deactivate_users(inactive_for_days: int, realm: Optional[Realm]
     do_catch_up_soft_deactivated_users(users_to_catch_up)
     return users_deactivated
 
+
 def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[UserProfile, None]:
     if user_profile.long_term_idle:
         add_missing_messages(user_profile)
@@ -242,6 +248,7 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[User
                     (user_profile.id, user_profile.email))
         return user_profile
     return None
+
 
 def get_users_for_soft_deactivation(inactive_for_days: int, filter_kwargs: Any) -> List[UserProfile]:
     users_activity = list(UserActivity.objects.filter(
@@ -259,6 +266,7 @@ def get_users_for_soft_deactivation(inactive_for_days: int, filter_kwargs: Any) 
         id__in=user_ids_to_deactivate))
     return users_to_deactivate
 
+
 def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
     users_soft_activated = []
     for user_profile in users:
@@ -266,6 +274,7 @@ def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
         if user_activated:
             users_soft_activated.append(user_activated)
     return users_soft_activated
+
 
 def do_catch_up_soft_deactivated_users(users: List[UserProfile]) -> List[UserProfile]:
     users_caught_up = []
@@ -275,6 +284,7 @@ def do_catch_up_soft_deactivated_users(users: List[UserProfile]) -> List[UserPro
             users_caught_up.append(user_profile)
     logging.info("Caught up %d soft-deactivated users" % (len(users_caught_up),))
     return users_caught_up
+
 
 def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> List[UserProfile]:
     users_to_catch_up = UserProfile.objects.select_related().filter(
