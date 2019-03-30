@@ -12,6 +12,7 @@ from zerver.lib.test_classes import WebhookTestCase
 # stream=deskdotcom&topic=static%20text%20notification&data=This%20is%20a%20custom%20action.
 #
 
+
 class DeskDotComHookTests(WebhookTestCase):
     STREAM_NAME = 'deskdotcom'
     URL_TEMPLATE = "/api/v1/external/deskdotcom?stream={stream}"
