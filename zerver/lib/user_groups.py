@@ -6,6 +6,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile, Realm, UserGroupMembership, UserGroup
 from typing import Dict, List, Any
 
+
 def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> UserGroup:
     try:
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
@@ -17,9 +18,11 @@ def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> Us
         raise JsonableError(_("Invalid user group"))
     return user_group
 
+
 def user_groups_in_realm(realm: Realm) -> List[UserGroup]:
     user_groups = UserGroup.objects.filter(realm=realm)
     return list(user_groups)
+
 
 def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
     """This function is used in do_events_register code path so this code
@@ -46,18 +49,22 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
 
     return sorted(group_dicts.values(), key=lambda group_dict: group_dict['id'])
 
+
 def get_user_groups(user_profile: UserProfile) -> List[UserGroup]:
     return list(user_profile.usergroup_set.all())
+
 
 def check_add_user_to_user_group(user_profile: UserProfile, user_group: UserGroup) -> bool:
     member_obj, created = UserGroupMembership.objects.get_or_create(
         user_group=user_group, user_profile=user_profile)
     return created
 
+
 def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup) -> int:
     num_deleted, _ = UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=user_group).delete()
     return num_deleted
+
 
 def check_remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup) -> bool:
     try:
@@ -65,6 +72,7 @@ def check_remove_user_from_user_group(user_profile: UserProfile, user_group: Use
         return bool(num_deleted)
     except Exception:
         return False
+
 
 def create_user_group(name: str, members: List[UserProfile], realm: Realm,
                       description: str='') -> UserGroup:
@@ -77,9 +85,11 @@ def create_user_group(name: str, members: List[UserProfile], realm: Realm,
         ])
         return user_group
 
+
 def get_user_group_members(user_group: UserGroup) -> List[UserProfile]:
     members = UserGroupMembership.objects.filter(user_group=user_group)
     return [member.user_profile.id for member in members]
+
 
 def get_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) -> List[int]:
     return list(UserGroupMembership.objects.filter(
