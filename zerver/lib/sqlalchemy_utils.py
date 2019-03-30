@@ -7,6 +7,8 @@ import sqlalchemy
 
 # This is a Pool that doesn't close connections.  Therefore it can be used with
 # existing Django database connections.
+
+
 class NonClosingPool(sqlalchemy.pool.NullPool):
     def status(self) -> str:
         return "NonClosingPool"
@@ -24,6 +26,8 @@ class NonClosingPool(sqlalchemy.pool.NullPool):
                               _dispatch=self.dispatch)
 
 sqlalchemy_engine = None  # type: Optional[Any]
+
+
 def get_sqlalchemy_connection() -> sqlalchemy.engine.base.Connection:
     global sqlalchemy_engine
     if sqlalchemy_engine is None:
