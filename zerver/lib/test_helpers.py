@@ -54,6 +54,7 @@ from moto import mock_s3_deprecated
 import fakeldap
 import ldap
 
+
 class MockLDAP(fakeldap.MockLDAP):
     class LDAPError(ldap.LDAPError):
         pass
@@ -67,6 +68,7 @@ class MockLDAP(fakeldap.MockLDAP):
     class ALREADY_EXISTS(ldap.ALREADY_EXISTS):
         pass
 
+
 @contextmanager
 def stub_event_queue_user_events(event_queue_return: Any, user_events_return: Any) -> Iterator[None]:
     with mock.patch('zerver.lib.events.request_event_queue',
@@ -75,12 +77,14 @@ def stub_event_queue_user_events(event_queue_return: Any, user_events_return: An
                         return_value=user_events_return):
             yield
 
+
 @contextmanager
 def simulated_queue_client(client: Callable[..., Any]) -> Iterator[None]:
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
     queue_processors.SimpleQueueClient = client  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
     queue_processors.SimpleQueueClient = real_SimpleQueueClient  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
+
 
 @contextmanager
 def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
@@ -94,12 +98,14 @@ def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
     yield
     event_queue.process_notification = real_event_queue_process_notification
 
+
 class EventInfo:
     def populate(self, call_args_list: List[Any]) -> None:
         args = call_args_list[0][0]
         self.realm_id = args[0]
         self.payload = args[1]
         self.user_ids = args[2]
+
 
 @contextmanager
 def capture_event(event_info: EventInfo) -> Iterator[None]:
@@ -115,6 +121,7 @@ def capture_event(event_info: EventInfo) -> Iterator[None]:
         raise AssertionError('Too many events sent by action')
 
     event_info.populate(m.call_args_list)
+
 
 @contextmanager
 def simulated_empty_cache() -> Generator[
@@ -136,6 +143,7 @@ def simulated_empty_cache() -> Generator[
     yield cache_queries
     cache.cache_get = old_get
     cache.cache_get_many = old_get_many
+
 
 @contextmanager
 def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
@@ -183,6 +191,7 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
     TimeTrackingCursor.execute = old_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.executemany = old_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
+
 @contextmanager
 def stdout_suppressed() -> Iterator[IO[str]]:
     """Redirect stdout to /dev/null."""
@@ -192,9 +201,11 @@ def stdout_suppressed() -> Iterator[IO[str]]:
         yield stdout
         sys.stdout = stdout
 
+
 def get_test_image_file(filename: str) -> IO[Any]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))
     return open(os.path.join(test_avatar_dir, filename), 'rb')
+
 
 def avatar_disk_path(user_profile: UserProfile, medium: bool=False, original: bool=False) -> str:
     avatar_url_path = avatar_url(user_profile, medium)
@@ -205,9 +216,11 @@ def avatar_disk_path(user_profile: UserProfile, medium: bool=False, original: bo
         return avatar_disk_path.replace(".png", ".original")
     return avatar_disk_path
 
+
 def make_client(name: str) -> Client:
     client, _ = Client.objects.get_or_create(name=name)
     return client
+
 
 def find_key_by_email(address: str) -> Optional[str]:
     from django.core.mail import outbox
@@ -217,11 +230,13 @@ def find_key_by_email(address: str) -> Optional[str]:
             return key_regex.search(message.body).groups()[0]
     return None  # nocoverage -- in theory a test might want this case, but none do
 
+
 def message_stream_count(user_profile: UserProfile) -> int:
     return UserMessage.objects. \
         select_related("message"). \
         filter(user_profile=user_profile). \
         count()
+
 
 def most_recent_usermessage(user_profile: UserProfile) -> UserMessage:
     query = UserMessage.objects. \
@@ -230,15 +245,18 @@ def most_recent_usermessage(user_profile: UserProfile) -> UserMessage:
         order_by('-message')
     return query[0]  # Django does LIMIT here
 
+
 def most_recent_message(user_profile: UserProfile) -> Message:
     usermessage = most_recent_usermessage(user_profile)
     return usermessage.message
+
 
 def get_subscription(stream_name: str, user_profile: UserProfile) -> Subscription:
     stream = get_stream(stream_name, user_profile.realm)
     recipient = get_stream_recipient(stream.id)
     return Subscription.objects.get(user_profile=user_profile,
                                     recipient=recipient, active=True)
+
 
 def get_user_messages(user_profile: UserProfile) -> List[Message]:
     query = UserMessage.objects. \
@@ -247,9 +265,11 @@ def get_user_messages(user_profile: UserProfile) -> List[Message]:
         order_by('message')
     return [um.message for um in query]
 
+
 class DummyHandler:
     def __init__(self) -> None:
         allocate_handler_id(self)  # type: ignore # this is a testing mock
+
 
 class POSTRequestMock:
     method = "POST"
@@ -262,6 +282,7 @@ class POSTRequestMock:
         self._log_data = {}  # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
         self.path = ''
+
 
 class HostRequestMock:
     """A mock request object where get_host() works.  Useful for testing
@@ -282,6 +303,7 @@ class HostRequestMock:
     def get_host(self) -> str:
         return self.host
 
+
 class MockPythonResponse:
     def __init__(self, text: str, status_code: int) -> None:
         self.text = text
@@ -296,8 +318,10 @@ INSTRUMENTED_CALLS = []  # type: List[Dict[str, Any]]
 
 UrlFuncT = Callable[..., HttpResponse]  # TODO: make more specific
 
+
 def append_instrumentation_data(data: Dict[str, Any]) -> None:
     INSTRUMENTED_CALLS.append(data)
+
 
 def instrument_url(f: UrlFuncT) -> UrlFuncT:
     if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
@@ -325,6 +349,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
                 kwargs=kwargs))
             return result
         return wrapper
+
 
 def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> None:
     if INSTRUMENTING:
@@ -427,6 +452,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                 print("   %s" % (untested_pattern,))
             sys.exit(1)
 
+
 def get_all_templates() -> List[str]:
     templates = []
 
@@ -457,12 +483,14 @@ def get_all_templates() -> List[str]:
 
     return templates
 
+
 def load_subdomain_token(response: HttpResponse) -> Dict[str, Any]:
     assert isinstance(response, HttpResponseRedirect)
     token = response.url.rsplit('/', 1)[1]
     return signing.loads(token, salt='zerver.views.auth.log_into_subdomain')
 
 FuncT = TypeVar('FuncT', bound=Callable[..., None])
+
 
 def use_s3_backend(method: FuncT) -> FuncT:
     @mock_s3_deprecated
@@ -475,10 +503,12 @@ def use_s3_backend(method: FuncT) -> FuncT:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
 
+
 def create_s3_buckets(*bucket_names: Tuple[str]) -> List[Bucket]:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     buckets = [conn.create_bucket(name) for name in bucket_names]
     return buckets
+
 
 def use_db_models(method: Callable[..., None]) -> Callable[..., None]:
     def method_patched_with_mock(self: 'MigrationsTestCase', apps: StateApps) -> None:
