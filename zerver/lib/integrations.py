@@ -200,7 +200,7 @@ class HubotIntegration(Integration):
         super().__init__(
             name, name, categories,
             logo=logo, display_name=display_name,
-            doc = 'zerver/integrations/hubot_common.md',
+            doc='zerver/integrations/hubot_common.md',
             legacy=legacy
         )
 
