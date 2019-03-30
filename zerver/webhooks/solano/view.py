@@ -10,6 +10,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 @api_key_only_webhook_view('SolanoLabs')
 @has_request_variables
 def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -60,6 +61,7 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
 
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
+
 
 def handle_test_event(request: HttpRequest, user_profile: UserProfile,
                       topic: str) -> HttpResponse:
