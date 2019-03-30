@@ -16,6 +16,7 @@ import ujson
 import urllib
 import base64
 
+
 class ThumbnailTest(ZulipTestCase):
 
     @use_s3_backend
