@@ -9,6 +9,8 @@ import ujson
 
 # Splitting this out, since I imagine this will eventually have most of the
 # complicated hotspots logic.
+
+
 class TestGetNextHotspots(ZulipTestCase):
     def setUp(self) -> None:
         self.user = do_create_user(
@@ -36,6 +38,7 @@ class TestGetNextHotspots(ZulipTestCase):
     def test_send_all(self) -> None:
         with self.settings(DEVELOPMENT=True, ALWAYS_SEND_ALL_HOTSPOTS=True):
             self.assertEqual(len(ALL_HOTSPOTS), len(get_next_hotspots(self.user)))
+
 
 class TestHotspots(ZulipTestCase):
     def test_do_mark_hotspot_as_read(self) -> None:
