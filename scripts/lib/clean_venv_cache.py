@@ -19,6 +19,7 @@ VENV_CACHE_DIR = '/srv/zulip-venv-cache'
 if ENV == "travis":
     VENV_CACHE_DIR = os.path.join(os.environ["HOME"], "zulip-venv-cache")
 
+
 def get_caches_in_use(threshold_days):
     # type: (int) -> Set[str]
     setups_to_check = set([ZULIP_PATH, ])
@@ -49,6 +50,7 @@ def get_caches_in_use(threshold_days):
             caches_in_use.add(os.path.join(VENV_CACHE_DIR, hash_val))
 
     return caches_in_use
+
 
 def main(args: argparse.Namespace) -> None:
     caches_in_use = get_caches_in_use(args.threshold_days)
