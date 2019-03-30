@@ -14,6 +14,7 @@ from zerver.models import Message, Reaction, UserMessage, UserProfile
 
 from typing import Optional
 
+
 def create_historical_message(user_profile: UserProfile, message: Message) -> None:
     # Users can see and react to messages sent to streams they
     # were not a subscriber to; in order to receive events for
@@ -23,6 +24,7 @@ def create_historical_message(user_profile: UserProfile, message: Message) -> No
     UserMessage.objects.create(user_profile=user_profile,
                                message=message,
                                flags=UserMessage.flags.historical | UserMessage.flags.read)
+
 
 @has_request_variables
 def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: int,
@@ -81,6 +83,7 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
 
     return json_success()
 
+
 @has_request_variables
 def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id: int,
                     emoji_name: Optional[str]=REQ(default=None),
@@ -119,6 +122,7 @@ def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id:
 
     return json_success()
 
+
 @has_request_variables
 def add_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
                         message_id: int, emoji_name: str) -> HttpResponse:
@@ -142,6 +146,7 @@ def add_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
     do_add_reaction_legacy(user_profile, message, emoji_name)
 
     return json_success()
+
 
 @has_request_variables
 def remove_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
