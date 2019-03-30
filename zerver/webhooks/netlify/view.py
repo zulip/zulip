@@ -11,6 +11,7 @@ from zerver.models import UserProfile
 
 EVENTS = ['deploy_failed', 'deploy_locked', 'deploy_unlocked', 'deploy_building', 'deploy_created']
 
+
 @api_key_only_webhook_view('Netlify')
 @has_request_variables
 def api_netlify_webhook(
@@ -30,6 +31,7 @@ def api_netlify_webhook(
     check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()
+
 
 def get_template(request: HttpRequest, payload: Dict[str, Any]) -> str:
 
