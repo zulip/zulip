@@ -7,6 +7,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def set_users_for_existing_scheduledemails(
         apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
