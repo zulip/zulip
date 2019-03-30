@@ -54,6 +54,7 @@ class APIDocumentationSpider(UnusedImagesLinterSpider):
     deny_domains = []  # type: List[str]
     images_path = "static/images/api"
 
+
 class PorticoDocumentationSpider(BaseDocumentationSpider):
     name = 'portico_documentation_crawler'
     start_urls = ['http://localhost:9981/hello',
