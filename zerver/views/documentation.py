@@ -17,6 +17,7 @@ from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
 from zerver.context_processors import zulip_default_context
 
+
 def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context.update(zulip_default_context(request))
 
@@ -47,11 +48,13 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context['settings_html'] = settings_html
     context['subscriptions_html'] = subscriptions_html
 
+
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, str]:
         context = super().get_context_data(**kwargs)
         add_api_uri_context(context, self.request)
         return context
+
 
 class APIView(ApiURLView):
     template_name = 'zerver/api.html'
@@ -131,6 +134,7 @@ class MarkdownDirectoryView(ApiURLView):
         if http_status != 200:
             result.status_code = http_status
         return result
+
 
 def add_integrations_context(context: Dict[str, Any]) -> None:
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
