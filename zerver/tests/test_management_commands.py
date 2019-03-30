@@ -23,6 +23,7 @@ from zerver.lib.test_helpers import most_recent_message
 from zerver.models import get_realm, UserProfile, Realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 
+
 class TestCheckConfig(ZulipTestCase):
     def test_check_config(self) -> None:
         with self.assertRaisesRegex(CommandError, "Error: You must set ZULIP_ADMINISTRATOR in /etc/zulip/settings.py."):
@@ -35,6 +36,7 @@ class TestCheckConfig(ZulipTestCase):
     def test_check_send_email(self) -> None:
         with self.assertRaisesRegex(CommandError, "Outgoing email not yet configured, see"):
             call_command("send_test_email", 'test@example.com')
+
 
 class TestZulipBaseCommand(ZulipTestCase):
     def setUp(self) -> None:
@@ -136,6 +138,7 @@ class TestZulipBaseCommand(ZulipTestCase):
                                               is_bot=False)
         self.assertEqual(user_profiles, expected_user_profiles)
 
+
 class TestCommandsCanStart(TestCase):
 
     def setUp(self) -> None:
@@ -159,6 +162,7 @@ class TestCommandsCanStart(TestCase):
         # zerver/management/commands/runtornado.py sets this to True;
         # we need to reset it here.  See #3685 for details.
         settings.RUNNING_INSIDE_TORNADO = False
+
 
 class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
@@ -238,6 +242,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         with self.assertRaises(SystemExit):
             command.parse_headers('{"X-Custom - Headers": "some_val"}')
 
+
 class TestGenerateRealmCreationLink(ZulipTestCase):
     COMMAND_NAME = "generate_realm_creation_link"
 
@@ -299,6 +304,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         result = self.client_get(generated_link)
         self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
+
 class TestCalculateFirstVisibleMessageID(ZulipTestCase):
     COMMAND_NAME = 'calculate_first_visible_message_id'
 
@@ -312,6 +318,7 @@ class TestCalculateFirstVisibleMessageID(ZulipTestCase):
         calls = [call(realm, 35) for realm in Realm.objects.all()]
         m.has_calls(calls, any_order=True)
 
+
 class TestPasswordRestEmail(ZulipTestCase):
     COMMAND_NAME = "send_password_reset_email"
 
@@ -324,6 +331,7 @@ class TestPasswordRestEmail(ZulipTestCase):
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
         self.assertIn("reset your password", outbox[0].body)
 
+
 class TestRealmReactivationEmail(ZulipTestCase):
     COMMAND_NAME = "send_realm_reactivation_email"
 
@@ -331,6 +339,7 @@ class TestRealmReactivationEmail(ZulipTestCase):
         realm = get_realm('zulip')
         with self.assertRaisesRegex(CommandError, "The realm %s is already active." % (realm.name,)):
             call_command(self.COMMAND_NAME, "--realm=zulip")
+
 
 class TestSendToEmailMirror(ZulipTestCase):
     COMMAND_NAME = "send_to_email_mirror"
