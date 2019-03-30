@@ -22,6 +22,7 @@ from random import SystemRandom
 import string
 from typing import Dict, Optional, Union
 
+
 class ConfirmationKeyException(Exception):
     WRONG_LENGTH = 1
     EXPIRED = 2
@@ -31,6 +32,7 @@ class ConfirmationKeyException(Exception):
         super().__init__()
         self.error_type = error_type
 
+
 def render_confirmation_key_error(request: HttpRequest, exception: ConfirmationKeyException) -> HttpResponse:
     if exception.error_type == ConfirmationKeyException.WRONG_LENGTH:
         return render(request, 'confirmation/link_malformed.html')
@@ -38,12 +40,15 @@ def render_confirmation_key_error(request: HttpRequest, exception: ConfirmationK
         return render(request, 'confirmation/link_expired.html')
     return render(request, 'confirmation/link_does_not_exist.html')
 
+
 def generate_key() -> str:
     generator = SystemRandom()
     # 24 characters * 5 bits of entropy/character = 120 bits of entropy
     return ''.join(generator.choice(string.ascii_lowercase + string.digits) for _ in range(24))
 
 ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
+
+
 def get_object_from_key(confirmation_key: str,
                         confirmation_type: int) -> ConfirmationObjT:
     # Confirmation keys used to be 40 characters
@@ -65,6 +70,7 @@ def get_object_from_key(confirmation_key: str,
         obj.save(update_fields=['status'])
     return obj
 
+
 def create_confirmation_link(obj: ContentType, host: str,
                              confirmation_type: int,
                              url_args: Optional[Dict[str, str]]=None) -> str:
@@ -76,6 +82,7 @@ def create_confirmation_link(obj: ContentType, host: str,
                                 realm=realm, type=confirmation_type)
     return confirmation_url(key, host, confirmation_type, url_args)
 
+
 def confirmation_url(confirmation_key: str, host: str,
                      confirmation_type: int,
                      url_args: Optional[Dict[str, str]]=None) -> str:
@@ -84,6 +91,7 @@ def confirmation_url(confirmation_key: str, host: str,
     url_args['confirmation_key'] = confirmation_key
     return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME, host,
                        reverse(_properties[confirmation_type].url_name, kwargs=url_args))
+
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=CASCADE)
@@ -107,6 +115,7 @@ class Confirmation(models.Model):
     def __str__(self) -> str:
         return '<Confirmation: %s>' % (self.content_object,)
 
+
 class ConfirmationType:
     def __init__(self, url_name: str,
                  validity_in_days: int=settings.CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS) -> None:
@@ -127,6 +136,7 @@ _properties = {
     Confirmation.REALM_REACTIVATION: ConfirmationType('zerver.views.realm.realm_reactivation'),
 }
 
+
 def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> str:
     """
     Generate a unique link that a logged-out user can visit to unsubscribe from
@@ -144,6 +154,7 @@ def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> st
 # Arguably RealmCreationKey should just be another ConfirmationObjT and we should
 # add another Confirmation.type for this; it's this way for historical reasons.
 
+
 def validate_key(creation_key: Optional[str]) -> Optional['RealmCreationKey']:
     """Get the record for this key, raising InvalidCreationKey if non-None but invalid."""
     if creation_key is None:
@@ -157,6 +168,7 @@ def validate_key(creation_key: Optional[str]) -> Optional['RealmCreationKey']:
         raise RealmCreationKey.Invalid()
     return key_record
 
+
 def generate_realm_creation_url(by_admin: bool=False) -> str:
     key = generate_key()
     RealmCreationKey.objects.create(creation_key=key,
@@ -166,6 +178,7 @@ def generate_realm_creation_url(by_admin: bool=False) -> str:
                        settings.EXTERNAL_HOST,
                        reverse('zerver.views.create_realm',
                                kwargs={'creation_key': key}))
+
 
 class RealmCreationKey(models.Model):
     creation_key = models.CharField('activation key', max_length=40)
