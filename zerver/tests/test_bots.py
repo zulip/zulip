@@ -25,6 +25,7 @@ from zerver.lib.bot_lib import get_bot_handler
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
+
 class BotTest(ZulipTestCase, UploadSerializeMixin):
     def get_bot_user(self, email: str) -> UserProfile:
         realm = get_realm("zulip")
