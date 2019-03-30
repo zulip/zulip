@@ -13,6 +13,7 @@ from django.db.models.base import ModelBase
 
 from zerver.models import get_stream
 
+
 class EmojiName2IdTestCase(MigrationsTestCase):
 
     migrate_from = '0144_remove_realm_create_generic_bot_by_admins_only'
