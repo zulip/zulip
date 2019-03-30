@@ -1,4 +1,5 @@
 # This file is used by both Python 2.7 (thumbor) and 3 (zulip).
+import six.moves.configparser
 from __future__ import absolute_import
 
 import os
@@ -11,7 +12,6 @@ sys.path.append(ZULIP_PATH)
 
 # Piece of code below relating to secrets conf has been duplicated with that of
 # django settings in zproject/settings.py
-import six.moves.configparser
 
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..', '..')
 
