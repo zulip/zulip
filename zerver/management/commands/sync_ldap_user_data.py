@@ -17,6 +17,8 @@ logger = logging.getLogger('zulip.sync_ldap_user_data')
 log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 
 # Run this on a cronjob to pick up on name changes.
+
+
 def sync_ldap_user_data(user_profiles: List[UserProfile]) -> None:
     logger.info("Starting update.")
     for u in user_profiles:
@@ -33,6 +35,7 @@ def sync_ldap_user_data(user_profiles: List[UserProfile]) -> None:
             logger.error("Error attempting to update user %s:" % (u.email,))
             logger.error(e)
     logger.info("Finished update.")
+
 
 class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
