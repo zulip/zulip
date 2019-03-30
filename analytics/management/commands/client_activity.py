@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserActivity
 
+
 class Command(ZulipBaseCommand):
     help = """Report rough client activity globally, for a realm, or for a user
 
