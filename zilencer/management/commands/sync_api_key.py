@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.models import UserProfile, get_realm, get_user_by_delivery_email
 
+
 class Command(BaseCommand):
     help = """Sync your API key from ~/.zuliprc into your development instance"""
 
