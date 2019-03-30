@@ -85,6 +85,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertEqual(msg.sender.email, self.notification_bot().email)
         self.assertEqual(msg.content, expected_msg.strip())
 
+
 class MissingEventHeaderTestCase(WebhookTestCase):
     STREAM_NAME = 'groove'
     URL_TEMPLATE = '/api/v1/external/groove?stream={stream}&api_key={api_key}'
