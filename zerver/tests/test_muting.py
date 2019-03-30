@@ -16,6 +16,7 @@ from zerver.lib.topic_mutes import (
     topic_is_muted,
 )
 
+
 class MutedTopicsTests(ZulipTestCase):
     def test_user_ids_muting_topic(self) -> None:
         hamlet = self.example_user('hamlet')
