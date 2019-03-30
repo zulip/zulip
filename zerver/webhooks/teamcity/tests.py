@@ -6,6 +6,7 @@ from zerver.lib.send_email import FromAddress
 from zerver.models import Recipient, get_user_by_delivery_email, get_realm
 from zerver.webhooks.teamcity.view import MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE
 
+
 class TeamcityHookTests(WebhookTestCase):
     STREAM_NAME = 'teamcity'
     URL_TEMPLATE = u"/api/v1/external/teamcity?stream={stream}&api_key={api_key}"
