@@ -25,6 +25,7 @@ from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.data_import.hipchat import do_convert_data
 
+
 class Command(BaseCommand):
     help = """Convert the Hipchat data into Zulip data format."""
 
