@@ -10,6 +10,7 @@ from zerver.lib.rate_limiter import RateLimitedUser, \
     client, max_api_calls, max_api_window
 from zerver.models import get_user_profile_by_id
 
+
 class Command(BaseCommand):
     help = """Checks redis to make sure our rate limiting system hasn't grown a bug
     and left redis with a bunch of data
