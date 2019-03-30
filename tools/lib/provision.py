@@ -236,6 +236,7 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 user_id = os.getuid()
 
+
 def setup_shell_profile(shell_profile):
     # type: (str) -> None
     shell_profile_path = os.path.expanduser(shell_profile)
@@ -255,6 +256,7 @@ def setup_shell_profile(shell_profile):
     source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
     write_command(source_activate_command)
     write_command('cd /srv/zulip')
+
 
 def install_system_deps(retry=False):
     # type: (bool) -> None
@@ -276,6 +278,7 @@ def install_system_deps(retry=False):
     if BUILD_TSEARCH_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-tsearch-extras"])
 
+
 def install_apt_deps(deps_to_install, retry=False):
     # type: (List[str], bool) -> None
     if retry:
@@ -290,6 +293,7 @@ def install_apt_deps(deps_to_install, retry=False):
     # setup-apt-repo does an `apt-get update`
     run_as_root(["./scripts/lib/setup-apt-repo"])
     run_as_root(["apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
+
 
 def install_yum_deps(deps_to_install, retry=False):
     # type: (List[str], bool) -> None
@@ -351,6 +355,7 @@ def install_yum_deps(deps_to_install, retry=False):
                       % (POSTGRES_VERSION,))
     overwrite_symlink("/usr/share/myspell/en_US.aff", "/usr/pgsql-%s/share/tsearch_data/en_us.affix"
                       % (POSTGRES_VERSION,))
+
 
 def main(options):
     # type: (Any) -> int
