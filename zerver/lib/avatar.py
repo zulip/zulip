@@ -7,6 +7,7 @@ from zerver.lib.upload import upload_backend, MEDIUM_AVATAR_SIZE
 from zerver.models import UserProfile
 import urllib
 
+
 def avatar_url(user_profile: UserProfile, medium: bool=False, client_gravatar: bool=False) -> Optional[str]:
 
     return get_avatar_field(
@@ -18,6 +19,7 @@ def avatar_url(user_profile: UserProfile, medium: bool=False, client_gravatar: b
         medium=medium,
         client_gravatar=client_gravatar,
     )
+
 
 def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool=False) -> str:
     '''
@@ -35,6 +37,7 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool=False) -> str:
         medium=medium)
     url += '&version=%d' % (userdict['avatar_version'],)
     return url
+
 
 def get_avatar_field(user_id: int,
                      realm_id: int,
@@ -85,10 +88,12 @@ def get_avatar_field(user_id: int,
     url += '&version=%d' % (avatar_version,)
     return url
 
+
 def get_gravatar_url(email: str, avatar_version: int, medium: bool=False) -> str:
     url = _get_unversioned_gravatar_url(email, medium)
     url += '&version=%d' % (avatar_version,)
     return url
+
 
 def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
     if settings.ENABLE_GRAVATAR:
@@ -96,6 +101,7 @@ def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
         hash_key = gravatar_hash(email)
         return "https://secure.gravatar.com/avatar/%s?d=identicon%s" % (hash_key, gravitar_query_suffix)
     return settings.DEFAULT_AVATAR_URI+'?x=x'
+
 
 def _get_unversioned_avatar_url(user_profile_id: int,
                                 avatar_source: str,
@@ -107,6 +113,7 @@ def _get_unversioned_avatar_url(user_profile_id: int,
         return upload_backend.get_avatar_url(hash_key, medium=medium)
     assert email is not None
     return _get_unversioned_gravatar_url(email, medium)
+
 
 def absolute_avatar_url(user_profile: UserProfile) -> str:
     """
