@@ -12,11 +12,14 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
+
 class SuppressedEvent(Exception):
     pass
 
+
 class NotImplementedEventType(SuppressedEvent):
     pass
+
 
 @api_key_only_webhook_view('Stripe')
 @has_request_variables
@@ -29,6 +32,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
         return json_success()
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
+
 
 def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
     event_type = payload["type"]  # invoice.created, customer.subscription.created, etc
@@ -178,6 +182,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         raise UnexpectedWebhookEventType('Stripe', event_type)
     return (topic, body)
 
+
 def amount_string(amount: int, currency: str) -> str:
     zero_decimal_currencies = ["bif", "djf", "jpy", "krw", "pyg", "vnd", "xaf",
                                "xpf", "clp", "gnf", "kmf", "mga", "rwf", "vuv", "xof"]
@@ -189,6 +194,7 @@ def amount_string(amount: int, currency: str) -> str:
     if currency == 'usd':  # nocoverage
         return '$' + decimal_amount
     return decimal_amount + ' {}'.format(currency.upper())
+
 
 def linkified_id(object_id: str, lower: bool=False) -> str:
     names_and_urls = {
@@ -234,6 +240,7 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
     if url_prefix is None:  # nocoverage
         return name
     return '[{}](https://dashboard.stripe.com/{}/{})'.format(name, url_prefix, object_id)
+
 
 def stringify(value: Any) -> str:
     if isinstance(value, int) and value > 1500000000 and value < 2000000000:
