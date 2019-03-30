@@ -15,6 +15,7 @@ from zerver.lib.test_helpers import queries_captured
 from zerver.models import get_client, get_realm, flush_per_request_caches, \
     Realm, Message, UserActivity, UserProfile
 
+
 class TestDigestEmailMessages(ZulipTestCase):
 
     @mock.patch('zerver.lib.digest.enough_traffic')
@@ -270,6 +271,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         do_create_user('abc@mit.edu', password='abc', realm=user.realm, full_name='abc', short_name='abc')
         gathered_no_of_user, _ = gather_new_users(user, cutoff)
         self.assertEqual(gathered_no_of_user, 0)
+
 
 class TestDigestContentInBrowser(ZulipTestCase):
     def test_get_digest_content_in_browser(self) -> None:
