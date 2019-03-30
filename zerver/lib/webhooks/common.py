@@ -31,12 +31,14 @@ that this integration expects!
 # Django prefixes all custom HTTP headers with `HTTP_`
 DJANGO_HTTP_PREFIX = "HTTP_"
 
+
 def notify_bot_owner_about_invalid_json(user_profile: UserProfile,
                                         webhook_client_name: str) -> None:
     send_rate_limited_pm_notification_to_bot_owner(
         user_profile, user_profile.realm,
         INVALID_JSON_MESSAGE.format(webhook_name=webhook_client_name).strip()
     )
+
 
 class UnexpectedWebhookEventType(JsonableError):
     code = ErrorCode.UNEXPECTED_WEBHOOK_EVENT_TYPE
@@ -50,6 +52,7 @@ class UnexpectedWebhookEventType(JsonableError):
     def msg_format() -> str:
         return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")
 
+
 class MissingHTTPEventHeader(JsonableError):
     code = ErrorCode.MISSING_HTTP_EVENT_HEADER
     data_fields = ['header']
@@ -60,6 +63,7 @@ class MissingHTTPEventHeader(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Missing the HTTP event header '{header}'")
+
 
 @has_request_variables
 def check_send_webhook_message(
@@ -95,6 +99,7 @@ def check_send_webhook_message(
             # stream, so we don't need to re-raise it since it clutters up
             # webhook-errors.log
             pass
+
 
 def validate_extract_webhook_http_header(request: HttpRequest, header: str,
                                          integration_name: str,
