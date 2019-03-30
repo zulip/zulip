@@ -7,6 +7,7 @@ from zerver.models import (
 
 from typing import Any, Dict, Optional
 
+
 def get_user_info_dict(realm_id: int) -> Dict[int, Dict[str, Any]]:
     rows = UserStatus.objects.filter(
         user_profile__realm_id=realm_id,
@@ -35,6 +36,7 @@ def get_user_info_dict(realm_id: int) -> Dict[int, Dict[str, Any]]:
         user_dict[user_id] = dct
 
     return user_dict
+
 
 def update_user_status(user_profile_id: int,
                        status: Optional[int],
