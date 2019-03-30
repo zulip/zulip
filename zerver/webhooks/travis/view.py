@@ -20,6 +20,7 @@ MESSAGE_TEMPLATE = (
     u'Details: [changes]({}), [build log]({})'
 )
 
+
 @api_key_only_webhook_view('Travis')
 @has_request_variables
 def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
