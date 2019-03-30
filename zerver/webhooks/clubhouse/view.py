@@ -50,6 +50,7 @@ def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     return action_with_primary_id
 
+
 def get_event(payload: Dict[str, Any]) -> Optional[str]:
     action = get_action_with_primary_id(payload)
     event = "{}_{}".format(action["entity_type"], action["action"])
@@ -88,13 +89,16 @@ def get_event(payload: Dict[str, Any]) -> Optional[str]:
 
     return event
 
+
 def get_topic_function_based_on_type(payload: Dict[str, Any]) -> Any:
     entity_type = get_action_with_primary_id(payload)["entity_type"]
     return EVENT_TOPIC_FUNCTION_MAPPER.get(entity_type)
 
+
 def get_delete_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
     return DELETE_TEMPLATE.format(**action)
+
 
 def get_story_create_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
@@ -116,10 +120,12 @@ def get_story_create_body(payload: Dict[str, Any]) -> str:
 
     return message.format(**kwargs)
 
+
 def get_epic_create_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
     message = "New epic **{name}**({state}) was created."
     return message.format(**action)
+
 
 def get_comment_added_body(payload: Dict[str, Any], entity: str) -> str:
     actions = payload["actions"]
@@ -135,6 +141,7 @@ def get_comment_added_body(payload: Dict[str, Any], entity: str) -> str:
             kwargs["name_template"] = name_template
 
     return COMMENT_ADDED_TEMPLATE.format(**kwargs)
+
 
 def get_update_description_body(payload: Dict[str, Any], entity: str) -> str:
     action = get_action_with_primary_id(payload)
@@ -159,6 +166,7 @@ def get_update_description_body(payload: Dict[str, Any], entity: str) -> str:
 
     return body
 
+
 def get_epic_update_state_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
     state = action["changes"]["state"]
@@ -170,6 +178,7 @@ def get_epic_update_state_body(payload: Dict[str, Any]) -> str:
     }
 
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
+
 
 def get_story_update_state_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
@@ -195,6 +204,7 @@ def get_story_update_state_body(payload: Dict[str, Any]) -> str:
 
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
 
+
 def get_update_name_body(payload: Dict[str, Any], entity: str) -> str:
     action = get_action_with_primary_id(payload)
     name = action["changes"]["name"]
@@ -209,6 +219,7 @@ def get_update_name_body(payload: Dict[str, Any], entity: str) -> str:
     }
 
     return NAME_CHANGED_TEMPLATE.format(**kwargs)
+
 
 def get_update_archived_body(payload: Dict[str, Any], entity: str) -> str:
     primary_action = get_action_with_primary_id(payload)
@@ -229,6 +240,7 @@ def get_update_archived_body(payload: Dict[str, Any], entity: str) -> str:
 
     return ARCHIVED_TEMPLATE.format(**kwargs)
 
+
 def get_story_task_body(payload: Dict[str, Any], action: str) -> str:
     primary_action = get_action_with_primary_id(payload)
 
@@ -245,6 +257,7 @@ def get_story_task_body(payload: Dict[str, Any], action: str) -> str:
             )
 
     return STORY_TASK_TEMPLATE.format(**kwargs)
+
 
 def get_story_task_completed_body(payload: Dict[str, Any]) -> Optional[str]:
     action = get_action_with_primary_id(payload)
@@ -265,6 +278,7 @@ def get_story_task_completed_body(payload: Dict[str, Any]) -> Optional[str]:
         return STORY_TASK_COMPLETED_TEMPLATE.format(**kwargs)
     else:
         return None
+
 
 def get_story_update_epic_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
@@ -299,6 +313,7 @@ def get_story_update_epic_body(payload: Dict[str, Any]) -> str:
 
     return STORY_ADDED_REMOVED_EPIC_TEMPLATE.format(**kwargs)
 
+
 def get_story_update_estimate_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
 
@@ -317,6 +332,7 @@ def get_story_update_estimate_body(payload: Dict[str, Any]) -> str:
 
     return STORY_ESTIMATE_TEMPLATE.format(**kwargs)
 
+
 def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
     ref = {}  # type: Dict[str, Any]
     for reference in payload['references']:
@@ -324,6 +340,7 @@ def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
             ref = reference
 
     return ref
+
 
 def get_story_create_github_entity_body(payload: Dict[str, Any],
                                         entity: str) -> str:
@@ -351,6 +368,7 @@ def get_story_create_github_entity_body(payload: Dict[str, Any],
     template = STORY_GITHUB_PR_TEMPLATE if entity == 'pull-request' else STORY_GITHUB_BRANCH_TEMPLATE
     return template.format(**kwargs)
 
+
 def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
     action = get_action_with_primary_id(payload)
 
@@ -375,6 +393,7 @@ def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
             })
 
     return FILE_ATTACHMENT_TEMPLATE.format(**kwargs)
+
 
 def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
     action = get_action_with_primary_id(payload)
@@ -407,6 +426,7 @@ def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
 
     return STORY_LABEL_TEMPLATE.format(**kwargs)
 
+
 def get_story_update_project_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
     kwargs = {
@@ -426,6 +446,7 @@ def get_story_update_project_body(payload: Dict[str, Any]) -> str:
 
     return STORY_UPDATE_PROJECT_TEMPLATE.format(**kwargs)
 
+
 def get_story_update_type_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
     kwargs = {
@@ -439,6 +460,7 @@ def get_story_update_type_body(payload: Dict[str, Any]) -> str:
 
     return STORY_UPDATE_TYPE_TEMPLATE.format(**kwargs)
 
+
 def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
     kwargs = {
@@ -449,6 +471,7 @@ def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
     }
 
     return STORY_UPDATE_OWNER_TEMPLATE.format(**kwargs)
+
 
 def get_entity_name(payload: Dict[str, Any], entity: Optional[str]=None) -> Optional[str]:
     action = get_action_with_primary_id(payload)
@@ -465,6 +488,7 @@ def get_entity_name(payload: Dict[str, Any], entity: Optional[str]=None) -> Opti
                 name = ref["name"]
 
     return name
+
 
 def get_name_template(entity: str) -> str:
     if entity == "story":
@@ -513,6 +537,7 @@ EVENT_TOPIC_FUNCTION_MAPPER = {
 IGNORED_EVENTS = {
     'story-comment_update',
 }
+
 
 @api_key_only_webhook_view('ClubHouse')
 @has_request_variables
