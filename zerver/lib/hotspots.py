@@ -35,6 +35,7 @@ ALL_HOTSPOTS = {
     },
 }  # type: Dict[str, Dict[str, str]]
 
+
 def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     # For manual testing, it can be convenient to set
     # ALWAYS_SEND_ALL_HOTSPOTS=True in `zproject/dev_settings.py` to
@@ -65,6 +66,7 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     user.tutorial_status = UserProfile.TUTORIAL_FINISHED
     user.save(update_fields=['tutorial_status'])
     return []
+
 
 def copy_hotpots(source_profile: UserProfile, target_profile: UserProfile) -> None:
     for userhotspot in frozenset(UserHotspot.objects.filter(user=source_profile)):
