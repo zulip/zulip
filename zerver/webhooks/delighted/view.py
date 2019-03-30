@@ -8,11 +8,13 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 def body_template(score: int) -> str:
     if score >= 7:
         return 'Kudos! You have a new promoter.\n>Score of {score}/10 from {email}\n>{comment}'
     else:
         return 'Great! You have new feedback.\n>Score of {score}/10 from {email}\n>{comment}'
+
 
 @api_key_only_webhook_view("Delighted")
 @has_request_variables
