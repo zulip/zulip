@@ -13,6 +13,7 @@ from zerver.lib.test_runner import slow
 from zerver.models import Stream
 from zproject import urls
 
+
 class PublicURLTest(ZulipTestCase):
     """
     Account creation URLs are accessible even when not logged in. Authenticated
@@ -106,6 +107,7 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
 
+
 class URLResolutionTest(TestCase):
     def get_callback_string(self, pattern: django.urls.resolvers.RegexURLPattern) -> Optional[str]:
         callback_str = hasattr(pattern, 'lookup_str') and 'lookup_str'
@@ -136,6 +138,7 @@ class URLResolutionTest(TestCase):
             if callback_str:
                 (module_name, base_view) = callback_str.rsplit(".", 1)
                 self.check_function_exists(module_name, base_view)
+
 
 class ErrorPageTest(TestCase):
     def test_bogus_http_host(self) -> None:
