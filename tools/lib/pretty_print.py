@@ -7,6 +7,7 @@ from .template_parser import (
 )
 import subprocess
 
+
 def pretty_print_html(html, num_spaces=4):
     # type: (str, int) -> str
     # We use 1-based indexing for both rows and columns.
