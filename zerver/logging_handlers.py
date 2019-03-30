@@ -15,6 +15,7 @@ from zerver.lib.logging_util import find_log_caller_module
 from zerver.lib.queue import queue_json_publish
 from version import ZULIP_VERSION
 
+
 def try_git_describe() -> Optional[str]:
     try:  # nocoverage
         return subprocess.check_output(
@@ -25,6 +26,7 @@ def try_git_describe() -> Optional[str]:
     except Exception:  # nocoverage
         return None
 
+
 def add_deployment_metadata(report: Dict[str, Any]) -> None:
     report['git_described'] = try_git_describe()
     report['zulip_version_const'] = ZULIP_VERSION
@@ -32,6 +34,7 @@ def add_deployment_metadata(report: Dict[str, Any]) -> None:
     version_path = os.path.join(os.path.dirname(__file__), '../version')
     if os.path.exists(version_path):
         report['zulip_version_file'] = open(version_path).read().strip()  # nocoverage
+
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
     report['has_request'] = True
@@ -73,6 +76,7 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
         # request.get_host() will throw a DisallowedHost
         # exception if the host is invalid
         report['host'] = platform.node()
+
 
 class AdminNotifyHandler(logging.Handler):
     """An logging handler that sends the log/exception to the queue to be
