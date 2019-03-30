@@ -5,6 +5,7 @@ from django.conf import settings
 
 from zerver.lib.transfer import transfer_uploads_to_s3
 
+
 class Command(BaseCommand):
     help = """Transfer uploads to S3 """
 
