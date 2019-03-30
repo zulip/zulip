@@ -74,7 +74,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
     def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
         avatar_url = get_avatar_field(
             user_id=row['id'],
-            realm_id= realm_id,
+            realm_id=realm_id,
             email=row['email'],
             avatar_source=row['avatar_source'],
             avatar_version=row['avatar_version'],
@@ -95,8 +95,8 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
             is_bot=is_bot,
             full_name=row['full_name'],
             timezone=row['timezone'],
-            is_active = row['is_active'],
-            date_joined = row['date_joined'].isoformat(),
+            is_active=row['is_active'],
+            date_joined=row['date_joined'].isoformat(),
         )
         if not is_bot:
             result['profile_data'] = profiles_by_user_id.get(row['id'], {})
@@ -108,9 +108,9 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
     }
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
-    state['realm_logo_url'] = realm_logo_url(realm, night = False)
+    state['realm_logo_url'] = realm_logo_url(realm, night=False)
     state['realm_logo_source'] = realm.logo_source
-    state['realm_night_logo_url'] = realm_logo_url(realm, night = True)
+    state['realm_night_logo_url'] = realm_logo_url(realm, night=True)
     state['realm_night_logo_source'] = realm.night_logo_source
     state['max_logo_file_size'] = settings.MAX_LOGO_FILE_SIZE
 
