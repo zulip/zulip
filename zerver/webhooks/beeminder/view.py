@@ -8,10 +8,12 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 import time
 
+
 def get_time(payload: Dict[str, Any]) -> Any:
     losedate = payload["goal"]["losedate"]
     time_remaining = (losedate - time.time())/3600
     return time_remaining
+
 
 @api_key_only_webhook_view("beeminder")
 @has_request_variables
