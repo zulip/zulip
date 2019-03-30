@@ -8,6 +8,7 @@ from django.db.models import QuerySet
 from zerver.lib.message import render_markdown
 from zerver.models import Message
 
+
 def queryset_iterator(queryset: QuerySet, chunksize: int=5000) -> Iterator[Any]:
     queryset = queryset.order_by('id')
     while queryset.exists():
