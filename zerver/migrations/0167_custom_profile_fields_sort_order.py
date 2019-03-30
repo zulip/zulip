@@ -7,9 +7,11 @@ from django.db.models import F
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def migrate_set_order_value(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     CustomProfileField = apps.get_model('zerver', 'CustomProfileField')
     CustomProfileField.objects.all().update(order=F('id'))
+
 
 class Migration(migrations.Migration):
 
