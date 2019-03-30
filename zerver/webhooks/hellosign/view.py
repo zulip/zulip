@@ -13,6 +13,7 @@ IS_AWAITING_SIGNATURE = "is awaiting the signature of {awaiting_recipients}"
 WAS_JUST_SIGNED_BY = "was just signed by {signed_recipients}"
 BODY = "The `{contract_title}` document {actions}."
 
+
 def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
     contract_title = payload['signature_request']['title']
     recipients = {}  # type: Dict[str, List[str]]
@@ -41,6 +42,7 @@ def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
     return BODY.format(contract_title=contract_title,
                        actions=recipients_text).strip()
 
+
 def get_recipients_text(recipients: List[str]) -> str:
     recipients_text = ""
     if len(recipients) == 1:
@@ -51,6 +53,7 @@ def get_recipients_text(recipients: List[str]) -> str:
         recipients_text += "and {}".format(recipients[-1])
 
     return recipients_text
+
 
 @api_key_only_webhook_view('HelloSign')
 @has_request_variables
