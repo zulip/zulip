@@ -1,6 +1,6 @@
 # Browse and subscribe to streams
 
-Most communication in Zulip happens in streams.
+{start_tabs}
 
 {relative|stream|all}
 
@@ -8,3 +8,9 @@ Most communication in Zulip happens in streams.
    name or description.
 
 1. **Subscribe to a stream** by clicking on the gray checkmark to its left.
+
+{end_tabs}
+
+## Related articles
+
+* [About streams and topics](/help/about-streams-and-topics)

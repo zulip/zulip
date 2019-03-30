@@ -8,6 +8,10 @@ message editing entirely. See the
 [guide to message and topic editing](/help/configure-message-editing-and-deletion)
 for the details on when topic editing is allowed.
 
+### Rename a topic
+
+{start_tabs}
+
 {!message-actions-menu.md!}
 
 1. Select the first option. It may be called **View source / Edit topic**,
@@ -20,3 +24,5 @@ for the details on when topic editing is allowed.
    dropdown to the right.
 
 1. Click **Save**.
+
+{end_tabs}

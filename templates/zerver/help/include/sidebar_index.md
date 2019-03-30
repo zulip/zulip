@@ -58,14 +58,14 @@
 * [About streams and topics](/help/about-streams-and-topics)
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Create a stream](/help/create-a-stream)
-* [Add someone to a stream](/help/add-or-remove-users-from-a-stream)
+* [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
 * [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Message a stream by email](/help/message-a-stream-by-email)
 * [Start a new topic](/help/start-a-new-topic)
-* [Edit the topic of a message](/help/change-the-topic-of-a-message)
+* [Change the topic of a message](/help/change-the-topic-of-a-message)
 * [Rename a topic](/help/rename-a-topic)
 
 ## Notifications

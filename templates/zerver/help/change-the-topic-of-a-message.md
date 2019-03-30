@@ -10,6 +10,10 @@ message editing entirely. See the
 [guide to message and topic editing](/help/configure-message-editing-and-deletion)
 for the details on when topic editing is allowed.
 
+### Change the topic of a message
+
+{start_tabs}
+
 {!message-actions-menu.md!}
 
 1. Select the first option. It may be called **View source / Edit topic**,
@@ -24,3 +28,5 @@ for the details on when topic editing is allowed.
 option.
 
 4. Click **Save**.
+
+{end_tabs}
