@@ -35,6 +35,7 @@ _worker_id = 0  # Used to identify the worker process.
 
 ReturnT = TypeVar('ReturnT')  # Constrain return type to match
 
+
 def slow(slowness_reason: str) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     '''
     This is a decorate that annotates a test as being "known
@@ -48,14 +49,17 @@ def slow(slowness_reason: str) -> Callable[[Callable[..., ReturnT]], Callable[..
 
     return decorator
 
+
 def is_known_slow_test(test_method: Any) -> bool:
     return hasattr(test_method, 'slowness_reason')
+
 
 def full_test_name(test: TestCase) -> str:
     test_module = test.__module__
     test_class = test.__class__.__name__
     test_method = test._testMethodName
     return '%s.%s.%s' % (test_module, test_class, test_method)
+
 
 def get_test_method(test: TestCase) -> Callable[[], None]:
     return getattr(test, test._testMethodName)
@@ -81,6 +85,7 @@ def report_slow_tests() -> None:
             print('      consider removing @slow decorator')
             print('      This may no longer be true: %s' % (slowness_reason,))
 
+
 def enforce_timely_test_completion(test_method: Any, test_name: str,
                                    delay: float, result: TestResult) -> None:
     if hasattr(test_method, 'slowness_reason'):
@@ -92,8 +97,10 @@ def enforce_timely_test_completion(test_method: Any, test_name: str,
         msg = '** Test is TOO slow: %s (%.3f s)\n' % (test_name, delay)
         result.addInfo(test_method, msg)
 
+
 def fast_tests_only() -> bool:
     return "FAST_TESTS_ONLY" in os.environ
+
 
 def run_test(test: TestCase, result: TestResult) -> bool:
     failed = False
@@ -127,6 +134,7 @@ def run_test(test: TestCase, result: TestResult) -> bool:
 
     test._post_teardown()
     return failed
+
 
 class TextTestResult(runner.TextTestResult):
     """
@@ -168,6 +176,7 @@ class TextTestResult(runner.TextTestResult):
                                                         reason))
         self.stream.flush()
 
+
 class RemoteTestResult(django_runner.RemoteTestResult):
     """
     The class follows the unpythonic style of function names of the
@@ -183,12 +192,14 @@ class RemoteTestResult(django_runner.RemoteTestResult):
 
         self.events.append(('addInstrumentation', self.test_index, data))
 
+
 def process_instrumented_calls(func: Callable[[Dict[str, Any]], None]) -> None:
     for call in test_helpers.INSTRUMENTED_CALLS:
         func(call)
 
 SerializedSubsuite = Tuple[Type['TestSuite'], List[str]]
 SubsuiteArgs = Tuple[Type['RemoteTestRunner'], int, SerializedSubsuite, bool]
+
 
 def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     # Reset the accumulated INSTRUMENTED_CALLS before running this subsuite.
@@ -208,6 +219,8 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
 
 # Monkey-patch database creation to fix unnecessary sleep(1)
 from django.db.backends.postgresql.creation import DatabaseCreation
+
+
 def _replacement_destroy_test_db(self: DatabaseCreation,
                                  test_database_name: str,
                                  verbosity: Any) -> None:
@@ -217,6 +230,7 @@ def _replacement_destroy_test_db(self: DatabaseCreation,
         cursor.execute("DROP DATABASE %s"
                        % self.connection.ops.quote_name(test_database_name))
 DatabaseCreation._destroy_test_db = _replacement_destroy_test_db
+
 
 def destroy_test_databases(database_id: Optional[int]=None) -> None:
     """
@@ -230,6 +244,7 @@ def destroy_test_databases(database_id: Optional[int]=None) -> None:
         except ProgrammingError:
             # DB doesn't exist. No need to do anything.
             pass
+
 
 def create_test_databases(database_id: int) -> None:
     for alias in connections:
@@ -246,6 +261,7 @@ def create_test_databases(database_id: int) -> None:
         # to the default database instead of the appropriate clone.
         connection.settings_dict.update(settings_dict)
         connection.close()
+
 
 def init_worker(counter: Synchronized) -> None:
     """
@@ -297,6 +313,7 @@ def init_worker(counter: Synchronized) -> None:
     if not found:
         print("*** Upload directory not found.")
 
+
 class TestSuite(unittest.TestSuite):
     def run(self, result: TestResult, debug: Optional[bool]=False) -> TestResult:
         """
@@ -335,8 +352,10 @@ class TestSuite(unittest.TestSuite):
             result._testRunEntered = False
         return result
 
+
 class TestLoader(loader.TestLoader):
     suiteClass = TestSuite
+
 
 class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite
@@ -350,6 +369,7 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
         # definitions.
         self.subsuites = SubSuiteList(self.subsuites)  # type: ignore # Type of self.subsuites changes.
 
+
 def check_import_error(test_name: str) -> None:
     try:
         # Directly using __import__ is not recommeded, but here it gives
@@ -357,6 +377,7 @@ def check_import_error(test_name: str) -> None:
         __import__(test_name)
     except ImportError as exc:
         raise exc from exc  # Disable exception chaining in Python 3.
+
 
 class Runner(DiscoverRunner):
     test_suite = TestSuite
@@ -476,6 +497,7 @@ class Runner(DiscoverRunner):
             write_instrumentation_reports(full_suite=full_suite, include_webhooks=include_webhooks)
         return failed, result.failed_tests
 
+
 def get_test_names(suite: unittest.TestSuite) -> List[str]:
     if isinstance(suite, ParallelTestSuite):
         # suite is ParallelTestSuite. It will have a subsuites parameter of
@@ -488,6 +510,7 @@ def get_test_names(suite: unittest.TestSuite) -> List[str]:
         suite = cast(TestSuite, suite)
         return [full_test_name(t) for t in get_tests_from_suite(suite)]
 
+
 def get_tests_from_suite(suite: TestSuite) -> TestCase:
     for test in suite:
         if isinstance(test, TestSuite):
@@ -496,8 +519,10 @@ def get_tests_from_suite(suite: TestSuite) -> TestCase:
         else:
             yield test
 
+
 def serialize_suite(suite: TestSuite) -> Tuple[Type[TestSuite], List[str]]:
     return type(suite), get_test_names(suite)
+
 
 def deserialize_suite(args: Tuple[Type[TestSuite], List[str]]) -> TestSuite:
     suite_class, test_names = args
@@ -507,8 +532,10 @@ def deserialize_suite(args: Tuple[Type[TestSuite], List[str]]) -> TestSuite:
         suite.addTest(test)
     return suite
 
+
 class RemoteTestRunner(django_runner.RemoteTestRunner):
     resultclass = RemoteTestResult
+
 
 class SubSuiteList(List[Tuple[Type[TestSuite], List[str]]]):
     """
