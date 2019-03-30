@@ -18,6 +18,7 @@ ENDC = '\033[0m'
 
 colors = cycle([GREEN, YELLOW, BLUE, MAGENTA, CYAN])
 
+
 def print_err(name, color, line):
     # type: (str, str, Union[Text, bytes]) -> None
 
