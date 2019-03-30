@@ -18,6 +18,7 @@ from django.http import HttpRequest, HttpResponse
 
 from typing import Any, Callable, List, Optional, Type
 
+
 class RequestConfusingParmsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
     data_fields = ['var_name1', 'var_name2']
@@ -30,6 +31,7 @@ class RequestConfusingParmsError(JsonableError):
     def msg_format() -> str:
         return _("Can't decide between '{var_name1}' and '{var_name2}' arguments")
 
+
 class RequestVariableMissingError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_MISSING
     data_fields = ['var_name']
@@ -40,6 +42,7 @@ class RequestVariableMissingError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Missing '{var_name}' argument")
+
 
 class RequestVariableConversionError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_INVALID
@@ -54,6 +57,8 @@ class RequestVariableConversionError(JsonableError):
         return _("Bad value for '{var_name}': {bad_value}")
 
 # Used in conjunction with @has_request_variables, below
+
+
 class REQ:
     # NotSpecified is a sentinel value for determining whether a
     # default value was specified for a request variable.  We can't
@@ -126,6 +131,8 @@ class REQ:
 # Note that this can't be used in helper functions which are not
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
+
+
 def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
     num_params = view_func.__code__.co_argcount
     if view_func.__defaults__ is None:
