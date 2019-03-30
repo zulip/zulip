@@ -5,6 +5,7 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def delete_old_scheduled_jobs(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     """Delete any old scheduled jobs, to handle changes in the format of
     send_email. Ideally, we'd translate the jobs, but it's not really
@@ -13,6 +14,7 @@ def delete_old_scheduled_jobs(apps: StateApps, schema_editor: DatabaseSchemaEdit
     """
     ScheduledJob = apps.get_model('zerver', 'ScheduledJob')
     ScheduledJob.objects.all().delete()
+
 
 class Migration(migrations.Migration):
 
