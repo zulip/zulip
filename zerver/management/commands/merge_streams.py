@@ -9,6 +9,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, Subscription, \
     get_stream, get_stream_recipient
 
+
 def bulk_delete_cache_keys(message_ids_to_clear: List[int]) -> None:
     while len(message_ids_to_clear) > 0:
         batch = message_ids_to_clear[0:5000]
@@ -17,6 +18,7 @@ def bulk_delete_cache_keys(message_ids_to_clear: List[int]) -> None:
         cache_delete_many(keys_to_delete)
 
         message_ids_to_clear = message_ids_to_clear[5000:]
+
 
 class Command(ZulipBaseCommand):
     help = """Merge two streams."""
