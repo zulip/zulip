@@ -1,4 +1,7 @@
 
+import django
+import requests
+from zerver.lib.test_fixtures import run_generate_fixtures_if_required
 import os
 import subprocess
 import sys
@@ -12,14 +15,11 @@ from typing import Iterator, Optional
 from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
 
-import django
-import requests
 
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if TOOLS_DIR not in sys.path:
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
-from zerver.lib.test_fixtures import run_generate_fixtures_if_required
 
 
 def set_up_django(external_host):
