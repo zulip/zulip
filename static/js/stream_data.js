@@ -441,6 +441,17 @@ exports.receives_notifications = function (stream_name, notification_name) {
     return page_params["enable_stream_" + notification_name];
 };
 
+exports.get_non_guest_subscriber_count = function (sub) {
+    const user_ids = Array.from(sub.subscribers.keys());
+    const non_guest_user_ids = [];
+    _.each (user_ids, function (user_id) {
+        if (people.get_user_type(user_id) !== i18n.t('Guest')) {
+            non_guest_user_ids.push(user_id);
+        }
+    });
+    return non_guest_user_ids.length;
+};
+
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
     // Admin can change any stream's name & description either stream is public or

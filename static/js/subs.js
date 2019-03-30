@@ -866,13 +866,22 @@ exports.open_create_stream = function () {
     hashchange.update_browser_history('#streams/new');
 };
 
-
 exports.sub_or_unsub = function (sub, stream_row) {
+    let ajax_called = true;
     if (sub.subscribed) {
-        ajaxUnsubscribe(sub, stream_row);
+        if (sub.invite_only === true) {
+            if (stream_data.get_non_guest_subscriber_count(sub) > 1) {
+                ajaxUnsubscribe(sub, stream_row);
+            } else {
+                ajax_called = false;
+            }
+        } else {
+            ajaxUnsubscribe(sub, stream_row);
+        }
     } else {
         ajaxSubscribe(sub.name, sub.color, stream_row);
     }
+    return ajax_called;
 };
 
 

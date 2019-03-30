@@ -20,7 +20,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_remove_default_stream, do_change_stream_post_policy, do_delete_messages, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
-    do_change_default_stream_group_description, do_change_default_stream_group_name
+    do_change_default_stream_group_description, do_change_default_stream_group_name, \
+    private_stream_non_guest_user_count
 from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
@@ -265,6 +266,17 @@ def remove_subscriptions_backend(
         streams_as_dict.append({"name": stream_name.strip()})
 
     streams, __ = list_to_streams(streams_as_dict, user_profile)
+
+    for stream in streams:
+        if stream.invite_only and (private_stream_non_guest_user_count(stream.id) <= 1):
+            if principals:
+                for principal in principals:
+                    if not principal_to_user_profile(user_profile, principal).is_guest:
+                        return json_error(_(
+                                          "The last non-guest user cannot unsubscribe from a private stream"
+                                          ))
+            else:
+                return json_error(_("The last non-guest user cannot unsubscribe from a private stream"))
 
     if principals:
         people_to_unsub = {principal_to_user_profile(

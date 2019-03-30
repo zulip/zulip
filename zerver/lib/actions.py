@@ -225,6 +225,11 @@ def private_stream_user_ids(stream_id: int) -> Set[int]:
     subscriptions = get_active_subscriptions_for_stream_id(stream_id)
     return {sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')}
 
+def private_stream_non_guest_user_count(stream_id: int) -> int:
+    user_ids = private_stream_user_ids(stream_id)
+    non_guest_users = [user_id for user_id in user_ids if not get_user_profile_by_id(user_id).is_guest]
+    return len(non_guest_users)
+
 def public_stream_user_ids(stream: Stream) -> Set[int]:
     guest_subscriptions = get_active_subscriptions_for_stream_id(
         stream.id).filter(user_profile__role=UserProfile.ROLE_GUEST)

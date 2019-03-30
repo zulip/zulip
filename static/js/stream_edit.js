@@ -627,9 +627,14 @@ exports.initialize = function () {
             stream_subscription_info_elem.text(i18n.t("Error removing user from this stream."))
                 .addClass("text-error").removeClass("text-success");
         }
-
-        exports.remove_user_from_stream(principal, sub, removal_success,
-                                        removal_failure);
+        if (sub.invite_only === true && stream_data.get_non_guest_subscriber_count(sub) <= 1 &&
+              !people.get_by_email(principal).is_guest) {
+            stream_subscription_info_elem.text(i18n.t("Last non-guest user cannot be unsubscribed"))
+                .addClass("text-error").removeClass("text-success");
+        } else {
+            exports.remove_user_from_stream(principal, sub, removal_success,
+                                            removal_failure);
+        }
     });
 
     // This handler isn't part of the normal edit interface; it's the convenient
@@ -638,10 +643,14 @@ exports.initialize = function () {
         const sub = get_sub_for_target(e.target);
         // Makes sure we take the correct stream_row.
         const stream_row = $("#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']");
-        subs.sub_or_unsub(sub, stream_row);
+        const ajax_called = subs.sub_or_unsub(sub, stream_row);
 
-        if (!sub.subscribed) {
-            exports.open_edit_panel_for_row(stream_row);
+        if (ajax_called) {
+            if (!sub.subscribed) {
+                exports.open_edit_panel_for_row(stream_row);
+            }
+        } else {
+            ui_report.message(i18n.t("You cannot unsubscribe as you are the last non-guest user"), $(".stream_change_property_info"), 'alert-error');
         }
         stream_ui_updates.update_regular_sub_settings(sub);
 

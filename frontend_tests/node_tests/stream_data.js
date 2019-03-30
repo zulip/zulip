@@ -158,6 +158,7 @@ run_test('unsubscribe', () => {
     // make sure subsequent calls work
     sub = stream_data.get_sub('devel');
     assert(!sub.subscribed);
+
 });
 
 run_test('subscribers', () => {
@@ -623,6 +624,37 @@ run_test('get_subscriber_count', () => {
     const sub = stream_data.get_sub_by_name('India');
     delete sub.subscribers;
     assert.deepStrictEqual(stream_data.get_subscriber_count('India'), 0);
+});
+
+run_test('get_non_guest_subscriber_count', () => {
+    const india = {
+        stream_id: 102,
+        name: 'India',
+    };
+    stream_data.clear_subscriptions();
+    stream_data.add_sub(india);
+    const sub = stream_data.get_sub('India');
+
+    assert.equal(stream_data.get_non_guest_subscriber_count(sub), 0);
+
+    const fred = {
+        email: 'fred@zulip.com',
+        full_name: 'Fred',
+        user_id: 101,
+    };
+    people.add(fred);
+    stream_data.add_subscriber('India', 101);
+    assert.equal(stream_data.get_non_guest_subscriber_count(sub), 1);
+    const george = {
+        email: 'george@zulip.com',
+        full_name: 'George',
+        user_id: 103,
+        is_guest: true,
+    };
+    people.add(george);
+    stream_data.add_subscriber('India', 103);
+    assert.equal(stream_data.get_non_guest_subscriber_count(sub), 1);
+
 });
 
 run_test('notifications', () => {

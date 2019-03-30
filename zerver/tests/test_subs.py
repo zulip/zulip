@@ -1012,7 +1012,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, is_admin=True, is_subbed=True, invite_only=True,
+            query_count=24, is_admin=True, is_subbed=True, invite_only=True,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -1024,11 +1024,17 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, is_admin=True, is_subbed=False, invite_only=True,
+            query_count=24, is_admin=True, is_subbed=False, invite_only=True,
             other_user_subbed=True, other_sub_users=[self.example_user("othello")])
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
+
+    def test_admin_cant_remove_last_non_guest_user_from_unsubbed_private_stream(self) -> None:
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=8, is_admin=True, is_subbed=False, invite_only=True,
+            other_user_subbed=True, other_sub_users=[self.example_user("polonius")])
+        self.assert_json_error(result, "The last non-guest user cannot unsubscribe from a private stream")
 
     def test_create_stream_policy_setting(self) -> None:
         """
@@ -2962,6 +2968,21 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.client_delete("/json/users/me/subscriptions",
                                     {"subscriptions": ujson.dumps(streams_to_remove)})
         self.assert_json_error(result, "Stream(s) (%s) do not exist" % (random_streams[0],))
+
+    def test_subscription_remove_last_non_guest_user_private_stream(self) -> None:
+        stream_name = "private-test"
+        self.make_stream(stream_name, invite_only=True)
+
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        self.subscribe(user, stream_name)
+
+        guest_user = self.example_user("polonius")
+        self.subscribe(guest_user, stream_name)
+
+        result = self.client_delete("/json/users/me/subscriptions",
+                                    {"subscriptions": ujson.dumps([stream_name])})
+        self.assert_json_error(result, "The last non-guest user cannot unsubscribe from a private stream")
 
     def helper_subscriptions_exists(self, stream: str, expect_success: bool, subscribed: bool) -> None:
         """

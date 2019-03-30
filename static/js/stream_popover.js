@@ -138,8 +138,12 @@ function build_stream_popover(opts) {
     popovers.hide_all();
     exports.show_streamlist_sidebar();
 
+    const sub = stream_data.get_sub_by_id(stream_id);
+    const show_unsubscribe = !(sub.invite_only &&
+        stream_data.get_non_guest_subscriber_count(sub) <= 1);
     const content = render_stream_sidebar_actions({
-        stream: stream_data.get_sub_by_id(stream_id),
+        stream: sub,
+        show_unsubscribe: show_unsubscribe,
     });
 
     $(elt).popover({
