@@ -2335,7 +2335,7 @@ class EditMessageTest(ZulipTestCase):
             'content': ' '
         })
         self.assert_json_success(result)
-        content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
+        content = Message.objects.filter(id=msg_id).values_list('content', flat=True)[0]
         self.assertEqual(content, "(deleted)")
 
     def test_edit_message_history_disabled(self) -> None:
@@ -2842,8 +2842,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         recipients = []  # type: List[str]
 
         Request = namedtuple('Request', ['POST', 'client'])
-        request = Request(POST = dict(sender=sender.email, type='private'),
-                          client = client)
+        request = Request(POST=dict(sender=sender.email, type='private'),
+                          client=client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -2864,8 +2864,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         for client_name in ['zephyr_mirror', 'irc_mirror', 'jabber_mirror']:
             client = get_client(name=client_name)
 
-            request = Request(POST = dict(sender=sender.email, type='private'),
-                              client = client)
+            request = Request(POST=dict(sender=sender.email, type='private'),
+                              client=client)
 
             (valid_input, mirror_sender) = \
                 create_mirrored_message_users(request, user, recipients)
@@ -2887,8 +2887,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         # Now make the request.
         Request = namedtuple('Request', ['POST', 'client'])
-        request = Request(POST = dict(sender=sender.email, type='private'),
-                          client = client)
+        request = Request(POST=dict(sender=sender.email, type='private'),
+                          client=client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -2916,8 +2916,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         # Now make the request.
         Request = namedtuple('Request', ['POST', 'client'])
-        request = Request(POST = dict(sender=sender_email, type='stream'),
-                          client = client)
+        request = Request(POST=dict(sender=sender_email, type='stream'),
+                          client=client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -2937,8 +2937,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         # Now make the request.
         Request = namedtuple('Request', ['POST', 'client'])
-        request = Request(POST = dict(sender=sender.email, type='private'),
-                          client = client)
+        request = Request(POST=dict(sender=sender.email, type='private'),
+                          client=client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -2964,8 +2964,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         # Now make the request.
         Request = namedtuple('Request', ['POST', 'client'])
-        request = Request(POST = dict(sender=sender.email, type='private'),
-                          client = client)
+        request = Request(POST=dict(sender=sender.email, type='private'),
+                          client=client)
 
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user, recipients)
@@ -3691,11 +3691,11 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         def send_fake_message(message_content: str, stream: Stream) -> Message:
             recipient = get_stream_recipient(stream.id)
-            message = Message(sender = sender,
-                              recipient = recipient,
-                              content = message_content,
-                              pub_date = timezone_now(),
-                              sending_client = sending_client)
+            message = Message(sender=sender,
+                              recipient=recipient,
+                              content=message_content,
+                              pub_date=timezone_now(),
+                              sending_client=sending_client)
             message.set_topic_name(topic_name)
             message.save()
             return message
