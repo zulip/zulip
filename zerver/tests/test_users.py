@@ -43,11 +43,14 @@ import ujson
 
 K = TypeVar('K')
 V = TypeVar('V')
+
+
 def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
     for dct in lst:
         if dct[k] == v:
             return dct
     raise AssertionError('Cannot find element in list where key %s == %s' % (k, v))
+
 
 class PermissionTest(ZulipTestCase):
     def test_do_change_is_admin(self) -> None:
@@ -468,6 +471,7 @@ class PermissionTest(ZulipTestCase):
                                    {'profile_data': ujson.dumps(new_profile_data)})
         self.assert_json_error(result, 'Insufficient permission')
 
+
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self) -> None:
 
@@ -566,6 +570,7 @@ class AdminCreateUserTest(ZulipTestCase):
         valid_params["email"] = "iago+label@zulip.com"
         result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
+
 
 class UserProfileTest(ZulipTestCase):
     def test_get_emails_from_user_ids(self) -> None:
@@ -794,6 +799,7 @@ class UserProfileTest(ZulipTestCase):
             get_user_by_id_in_realm_including_cross_realm(
                 hamlet.id, get_realm('invalid'))
 
+
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
         user = self.example_user('hamlet')
@@ -911,6 +917,7 @@ class ActivateTest(ZulipTestCase):
         for message in outbox:
             self.assertEqual(set([hamlet.delivery_email, iago.delivery_email]), set(message.to))
         self.assertEqual(ScheduledEmail.objects.count(), 0)
+
 
 class RecipientInfoTest(ZulipTestCase):
     def test_stream_recipient_info(self) -> None:
@@ -1032,6 +1039,7 @@ class RecipientInfoTest(ZulipTestCase):
                 stream_topic=stream_topic,
             )
 
+
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self) -> None:
         self.login(self.example_email('cordelia'))
@@ -1065,6 +1073,7 @@ class BulkUsersTest(ZulipTestCase):
             'gravatar.com',
             get_hamlet_avatar(client_gravatar=False),
         )
+
 
 class GetProfileTest(ZulipTestCase):
 
