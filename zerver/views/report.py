@@ -130,21 +130,21 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
         full_name = "Anonymous User"
 
     queue_json_publish('error_reports', dict(
-        type = "browser",
-        report = dict(
-            host = request.get_host().split(":")[0],
-            ip_address = remote_ip,
-            user_email = email,
-            user_full_name = full_name,
-            user_visible = ui_message,
-            server_path = settings.DEPLOY_ROOT,
-            version = version,
-            user_agent = user_agent,
-            href = href,
-            message = message,
-            stacktrace = stacktrace,
-            log = log,
-            more_info = more_info,
+        type="browser",
+        report=dict(
+            host=request.get_host().split(":")[0],
+            ip_address=remote_ip,
+            user_email=email,
+            user_full_name=full_name,
+            user_visible=ui_message,
+            server_path=settings.DEPLOY_ROOT,
+            version=version,
+            user_agent=user_agent,
+            href=href,
+            message=message,
+            stacktrace=stacktrace,
+            log=log,
+            more_info=more_info,
         )
     ))
 
