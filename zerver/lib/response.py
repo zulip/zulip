@@ -5,6 +5,7 @@ import ujson
 from typing import Optional, Any, Dict, List
 from zerver.lib.exceptions import JsonableError
 
+
 class HttpResponseUnauthorized(HttpResponse):
     status_code = 401
 
@@ -17,11 +18,13 @@ class HttpResponseUnauthorized(HttpResponse):
         else:
             raise AssertionError("Invalid www_authenticate value!")
 
+
 def json_unauthorized(message: str, www_authenticate: Optional[str]=None) -> HttpResponse:
     resp = HttpResponseUnauthorized("zulip", www_authenticate=www_authenticate)
     resp.content = (ujson.dumps({"result": "error",
                                  "msg": message}) + "\n").encode()
     return resp
+
 
 def json_method_not_allowed(methods: List[str]) -> HttpResponseNotAllowed:
     resp = HttpResponseNotAllowed(methods)
@@ -29,6 +32,7 @@ def json_method_not_allowed(methods: List[str]) -> HttpResponseNotAllowed:
                                 "msg": "Method Not Allowed",
                                 "allowed_methods": methods}).encode()
     return resp
+
 
 def json_response(res_type: str="success",
                   msg: str="",
@@ -40,8 +44,10 @@ def json_response(res_type: str="success",
     return HttpResponse(content=ujson.dumps(content) + "\n",
                         content_type='application/json', status=status)
 
+
 def json_success(data: Optional[Dict[str, Any]]=None) -> HttpResponse:
     return json_response(data=data)
+
 
 def json_response_from_error(exception: JsonableError) -> HttpResponse:
     '''
@@ -55,6 +61,7 @@ def json_response_from_error(exception: JsonableError) -> HttpResponse:
                          msg=exception.msg,
                          data=exception.data,
                          status=exception.http_status_code)
+
 
 def json_error(msg: str, data: Optional[Dict[str, Any]]=None, status: int=400) -> HttpResponse:
     return json_response(res_type="error", msg=msg, data=data, status=status)
