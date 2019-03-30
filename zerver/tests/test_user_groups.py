@@ -22,6 +22,7 @@ from zerver.lib.user_groups import (
 from zerver.models import UserGroup, get_realm, Realm, \
     UserGroupMembership
 
+
 class UserGroupTestCase(ZulipTestCase):
     def create_user_group_for_test(self, group_name: str,
                                    realm: Realm=get_realm('zulip')) -> UserGroup:
@@ -78,6 +79,7 @@ class UserGroupTestCase(ZulipTestCase):
         with mock.patch('zerver.lib.user_groups.remove_user_from_user_group',
                         side_effect=Exception):
             self.assertFalse(check_remove_user_from_user_group(othello, user_group))
+
 
 class UserGroupAPITestCase(ZulipTestCase):
     def test_user_group_create(self) -> None:
