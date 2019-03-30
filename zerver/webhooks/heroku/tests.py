@@ -2,6 +2,7 @@
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class HerokuHookTests(WebhookTestCase):
     STREAM_NAME = 'heroku'
     URL_TEMPLATE = u"/api/v1/external/heroku?stream={stream}&api_key={api_key}"
