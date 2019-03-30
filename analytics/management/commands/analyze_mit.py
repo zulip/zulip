@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand, CommandParser
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Message, Recipient
 
+
 def compute_stats(log_level: int) -> None:
     logger = logging.getLogger()
     logger.setLevel(log_level)
@@ -67,6 +68,7 @@ def compute_stats(log_level: int) -> None:
     logging.info("%15s | %s" % ("Client", "Percentage"))
     for client in total_counts.keys():
         logging.info("%15s | %s%%" % (client, round(100. * total_counts[client] / grand_total, 1)))
+
 
 class Command(BaseCommand):
     help = "Compute statistics on MIT Zephyr usage."
