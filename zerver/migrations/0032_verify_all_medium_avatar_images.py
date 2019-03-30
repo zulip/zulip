@@ -19,10 +19,13 @@ from zerver.models import UserProfile
 # from zerver.lib.upload (which would pretty annoying, but would be a
 # pain) and just using the current version, which doesn't work
 # since we rearranged the avatars in Zulip 1.6.
+
+
 def patched_user_avatar_path(user_profile: UserProfile) -> Text:
     email = user_profile.email
     user_key = email.lower() + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
+
 
 @patch('zerver.lib.upload.user_avatar_path', patched_user_avatar_path)
 def verify_medium_avatar_image(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
