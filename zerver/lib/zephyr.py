@@ -2,6 +2,7 @@ import re
 import traceback
 import DNS
 
+
 def compute_mit_user_fullname(email: str) -> str:
     try:
         # Input is either e.g. username@mit.edu or user|CROSSREALM.INVALID@mit.edu
