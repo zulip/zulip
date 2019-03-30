@@ -8,8 +8,10 @@ from zerver.lib.request import has_request_variables, JsonableError, REQ
 from zerver.lib.response import json_success
 from zerver.models import UserProfile, get_usermessage_by_message_id
 
+
 def get_pointer_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     return json_success({'pointer': user_profile.pointer})
+
 
 @has_request_variables
 def update_pointer_backend(request: HttpRequest, user_profile: UserProfile,
