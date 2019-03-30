@@ -29,7 +29,7 @@ from zerver.models import Client, Huddle, Message, Realm, \
     UserProfile, get_client, get_user, PreregistrationUser
 
 class AnalyticsTestCase(TestCase):
-    MINUTE = timedelta(seconds = 60)
+    MINUTE = timedelta(seconds=60)
     HOUR = MINUTE * 60
     DAY = HOUR * 24
     TIME_ZERO = datetime(1988, 3, 14).replace(tzinfo=timezone_utc)
