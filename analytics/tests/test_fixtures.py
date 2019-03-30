@@ -3,6 +3,8 @@ from analytics.lib.fixtures import generate_time_series_data
 from zerver.lib.test_classes import ZulipTestCase
 
 # A very light test suite; the code being tested is not run in production.
+
+
 class TestFixtures(ZulipTestCase):
     def test_deterministic_settings(self) -> None:
         # test basic business_hour / non_business_hour calculation
