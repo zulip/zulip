@@ -18,6 +18,7 @@ from zerver.webhooks.bitbucket2.view import BITBUCKET_TOPIC_TEMPLATE, \
 
 BRANCH_UPDATED_MESSAGE_TEMPLATE = "{user_name} pushed to branch {branch_name}. Head is now {head}"
 
+
 def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str, str]]:
     repo_name = payload["repository"]["name"]
     user_name = payload["actor"]["name"]
@@ -32,6 +33,7 @@ def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str,
                                               message=payload["comment"]["text"])
     return [{"subject": subject, "body": body}]
 
+
 def repo_forked_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
     repo_name = payload["repository"]["origin"]["name"]
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
@@ -43,6 +45,7 @@ def repo_forked_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
     )
     return [{"subject": subject, "body": body}]
 
+
 def repo_modified_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
     subject_new = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=payload["new"]["name"])
     body = BITBUCKET_REPO_UPDATED_CHANGED.format(
@@ -53,6 +56,7 @@ def repo_modified_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
         new=payload["new"]["name"]
     )  # As of writing this, the only change we'd be notified about is a name change.
     return [{"subject": subject_new, "body": body}]
+
 
 def repo_push_branch_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[str, str]:
     event_type = change["type"]
@@ -76,6 +80,7 @@ def repo_push_branch_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Di
     subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repo_name, branch=branch_name)
     return {"subject": subject, "body": body}
 
+
 def repo_push_tag_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[str, str]:
     event_type = change["type"]
     repo_name = payload["repository"]["name"]
@@ -96,6 +101,7 @@ def repo_push_tag_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[
         tag_name,
         action=action)
     return {"subject": subject, "body": body}
+
 
 def repo_push_handler(payload: Dict[str, Any], branches: Optional[str]=None) -> List[Dict[str, str]]:
     data = []
@@ -135,12 +141,14 @@ EVENT_HANDLER_MAP = {
     "pr:reviewer:unapproved": None,
 }  # type Dict[str, Optional[Callable[..., List[Dict[str, str]]]]]
 
+
 def get_event_handler(eventkey: str) -> Callable[..., List[Dict[str, str]]]:
     # The main reason for this function existance is because of mypy
     handler = EVENT_HANDLER_MAP.get(eventkey)  # type: Any
     if handler is None:
         raise UnexpectedWebhookEventType("BitBucket Server", eventkey)
     return handler
+
 
 @api_key_only_webhook_view("Bitbucket3")
 @has_request_variables
