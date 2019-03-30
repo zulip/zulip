@@ -290,7 +290,7 @@ class Realm(models.Model):
         bot_creation_policy=int,
         create_stream_by_admins_only=bool,
         default_language=str,
-        default_twenty_four_hour_time = bool,
+        default_twenty_four_hour_time=bool,
         description=str,
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
@@ -1093,9 +1093,9 @@ class PreregistrationUser(models.Model):
     # settings_invites.invited_as_values in
     # static/js/settings_invites.js
     INVITE_AS = dict(
-        MEMBER = 1,
-        REALM_ADMIN = 2,
-        GUEST_USER = 3,
+        MEMBER=1,
+        REALM_ADMIN=2,
+        GUEST_USER=3,
     )
     invited_as = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])  # type: int
 
@@ -1487,18 +1487,18 @@ class Message(AbstractMessage):
 
     def to_log_dict(self) -> Dict[str, Any]:
         return dict(
-            id                = self.id,
-            sender_id         = self.sender.id,
-            sender_email      = self.sender.email,
-            sender_realm_str  = self.sender.realm.string_id,
-            sender_full_name  = self.sender.full_name,
-            sender_short_name = self.sender.short_name,
-            sending_client    = self.sending_client.name,
-            type              = self.recipient.type_name(),
-            recipient         = get_display_recipient(self.recipient),
-            subject           = self.topic_name(),
-            content           = self.content,
-            timestamp         = datetime_to_timestamp(self.pub_date))
+            id=self.id,
+            sender_id=self.sender.id,
+            sender_email=self.sender.email,
+            sender_realm_str=self.sender.realm.string_id,
+            sender_full_name=self.sender.full_name,
+            sender_short_name=self.sender.short_name,
+            sending_client=self.sending_client.name,
+            type=self.recipient.type_name(),
+            recipient=get_display_recipient(self.recipient),
+            subject=self.topic_name(),
+            content=self.content,
+            timestamp=datetime_to_timestamp(self.pub_date))
 
     def sent_by_human(self) -> bool:
         """Used to determine whether a message was sent by a full Zulip UI
