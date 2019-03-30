@@ -13,6 +13,7 @@ import os
 import ujson
 import logging
 
+
 def with_language(string: str, language: str) -> str:
     """
     This is an expensive function. If you are using it in a loop, it will
@@ -24,12 +25,14 @@ def with_language(string: str, language: str) -> str:
     translation.activate(old_language)
     return result
 
+
 @lru_cache()
 def get_language_list() -> List[Dict[str, Any]]:
     path = os.path.join(settings.STATIC_ROOT, 'locale', 'language_name_map.json')
     with open(path, 'r') as reader:
         languages = ujson.load(reader)
         return languages['name_map']
+
 
 def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dict[str, str]]]:
     language_list = [l for l in get_language_list()
@@ -68,6 +71,7 @@ def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dic
 
     return formatted_list
 
+
 def get_language_name(code: str) -> str:
     for lang in get_language_list():
         if code in (lang['code'], lang['locale']):
@@ -76,10 +80,12 @@ def get_language_name(code: str) -> str:
     logging.error("Unknown language code '%s'" % (code,))
     return "Unknown"
 
+
 def get_available_language_codes() -> List[str]:
     language_list = get_language_list()
     codes = [language['code'] for language in language_list]
     return codes
+
 
 def get_language_translation_data(language: str) -> Dict[str, str]:
     if language == 'zh-hans':
