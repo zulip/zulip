@@ -18,6 +18,7 @@ EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 if ENV == "travis":
     EMOJI_CACHE_PATH = os.path.join(os.environ["HOME"], "zulip-emoji-cache")
 
+
 def get_caches_in_use(threshold_days):
     # type: (int) -> Set[str]
     setups_to_check = set([ZULIP_PATH, ])
@@ -39,6 +40,7 @@ def get_caches_in_use(threshold_days):
         # The actual cache path doesn't include the /emoji
         caches_in_use.add(os.path.dirname(os.readlink(emoji_link_path)))
     return caches_in_use
+
 
 def main(args: argparse.Namespace) -> None:
     caches_in_use = get_caches_in_use(args.threshold_days)
