@@ -6,6 +6,7 @@ from typing import Any, TypeVar, Callable
 
 ReturnT = TypeVar('ReturnT')
 
+
 def profiled(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
     """
     This decorator should obviously be used only in a dev environment.
