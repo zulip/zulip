@@ -3,6 +3,7 @@ from unittest.mock import patch
 from typing import Any
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class BeeminderHookTests(WebhookTestCase):
     STREAM_NAME = 'beeminder'
     URL_TEMPLATE = u"/api/v1/external/beeminder?api_key={api_key}&stream={stream}"
