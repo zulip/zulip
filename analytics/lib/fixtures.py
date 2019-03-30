@@ -4,6 +4,7 @@ from typing import List
 
 from analytics.lib.counts import CountStat
 
+
 def generate_time_series_data(days: int=100, business_hours_base: float=10,
                               non_business_hours_base: float=10, growth: float=1,
                               autocorrelation: float=0, spikiness: float=1,
