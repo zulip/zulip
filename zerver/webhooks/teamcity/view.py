@@ -24,6 +24,7 @@ in your TeamCity webhook configuration. Contact {support_email} if you
 need further help!
 """
 
+
 def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Optional[UserProfile]:
     try:
         # Try to find a matching user in Zulip
@@ -39,11 +40,13 @@ def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Opti
     except IndexError:
         return None
 
+
 def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) -> Optional[str]:
     for property in property_list:
         if property['name'] == name:
             return property['value']
     return None
+
 
 @api_key_only_webhook_view('Teamcity')
 @has_request_variables
