@@ -23,11 +23,13 @@ from zerver.lib.cache import ignore_unhashable_lru_cache
 
 register = Library()
 
+
 def and_n_others(values: List[str], limit: int) -> str:
     # A helper for the commonly appended "and N other(s)" string, with
     # the appropriate pluralization.
     return " and %d other%s" % (len(values) - limit,
                                 "" if len(values) == limit + 1 else "s")
+
 
 @register.filter(name='display_list', is_safe=True)
 def display_list(values: List[str], display_limit: int) -> str:
