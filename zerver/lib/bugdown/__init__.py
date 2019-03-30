@@ -55,6 +55,7 @@ from zerver.lib.exceptions import BugdownRenderingException
 
 ReturnT = TypeVar('ReturnT')
 
+
 def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
     '''
         Use this decorator with extreme caution.
@@ -90,11 +91,13 @@ AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
 GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
 EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
 
+
 def verbose_compile(pattern: str) -> Any:
     return re.compile(
         "^(.*?)%s(.*?)$" % pattern,
         re.DOTALL | re.UNICODE | re.VERBOSE
     )
+
 
 def normal_compile(pattern: str) -> Any:
     return re.compile(
@@ -109,11 +112,13 @@ STREAM_LINK_REGEX = r"""
                      \*\*                         # ends by double asterisks
                     """
 
+
 @one_time
 def get_compiled_stream_link_regex() -> Pattern:
     return verbose_compile(STREAM_LINK_REGEX)
 
 LINK_REGEX = None  # type: Pattern
+
 
 def get_web_link_regex() -> str:
     # We create this one time, but not at startup.  So the
@@ -174,6 +179,7 @@ def get_web_link_regex() -> str:
     LINK_REGEX = verbose_compile(REGEX)
     return LINK_REGEX
 
+
 def clear_state_for_testing() -> None:
     # The link regex never changes in production, but our tests
     # try out both sides of ENABLE_FILE_LINKS, so we need
@@ -182,6 +188,7 @@ def clear_state_for_testing() -> None:
     LINK_REGEX = None
 
 bugdown_logger = logging.getLogger()
+
 
 def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str:
     """ If the link points to a local destination we can just switch to that
@@ -194,6 +201,7 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
             return link[len(realm_uri_prefix):]
 
     return link
+
 
 def url_embed_preview_enabled(message: Optional[Message]=None,
                               realm: Optional[Realm]=None,
@@ -216,6 +224,7 @@ def url_embed_preview_enabled(message: Optional[Message]=None,
 
     return realm.inline_url_embed_preview
 
+
 def image_preview_enabled(message: Optional[Message]=None,
                           realm: Optional[Realm]=None,
                           no_previews: Optional[bool]=False) -> bool:
@@ -237,6 +246,7 @@ def image_preview_enabled(message: Optional[Message]=None,
 
     return realm.inline_image_preview
 
+
 def list_of_tlds() -> List[str]:
     # HACK we manually blacklist a few domains
     blacklist = ['PY\n', "MD\n"]
@@ -247,6 +257,7 @@ def list_of_tlds() -> List[str]:
             if tld not in blacklist and not tld[0].startswith('#')]
     tlds.sort(key=len, reverse=True)
     return tlds
+
 
 def walk_tree(root: Element,
               processor: Callable[[Element], Optional[_T]],
@@ -284,6 +295,7 @@ ElementPair = NamedTuple('ElementPair', [
     ('value', Element)
 ])
 
+
 def walk_tree_with_family(root: Element,
                           processor: Callable[[Element], Optional[_T]]
                           ) -> List[ResultWithFamily]:
@@ -316,6 +328,8 @@ def walk_tree_with_family(root: Element,
     return results
 
 # height is not actually used
+
+
 def add_a(
         root: Element,
         url: str,
@@ -368,6 +382,7 @@ def add_a(
         desc_div = markdown.util.etree.SubElement(summary_div, "desc")
         desc_div.set("class", "message_inline_image_desc")
 
+
 def add_embed(root: Element, link: str, extracted_data: Dict[str, Any]) -> None:
     container = markdown.util.etree.SubElement(root, "div")
     container.set("class", "message_embed")
@@ -403,6 +418,7 @@ def add_embed(root: Element, link: str, extracted_data: Dict[str, Any]) -> None:
         description_elm = markdown.util.etree.SubElement(data_container, "div")
         description_elm.set("class", "message_embed_description")
         description_elm.text = description
+
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
@@ -469,6 +485,7 @@ HEAD_END_RE = re.compile('^/head[ >]')
 META_START_RE = re.compile('^meta[ >]')
 META_END_RE = re.compile('^/meta[ >]')
 
+
 def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
     in_head = False
     # HTML will auto close meta tags, when we start the next tag add
@@ -533,6 +550,7 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
         desc = og_desc.get('content')
     return {'image': image, 'title': title, 'desc': desc}
 
+
 def get_tweet_id(url: str) -> Optional[str]:
     parsed_url = urllib.parse.urlparse(url)
     if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
@@ -548,6 +566,7 @@ def get_tweet_id(url: str) -> Optional[str]:
         return None
     return tweet_id_match.group("tweetid")
 
+
 class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
@@ -558,6 +577,7 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
                 # Don't rewrite images on our own site (e.g. emoji).
                 continue
             img.set("src", get_camo_url(url))
+
 
 class BacktickPattern(markdown.inlinepatterns.Pattern):
     """ Return a `<code>` element containing the matching text. """
@@ -574,6 +594,7 @@ class BacktickPattern(markdown.inlinepatterns.Pattern):
             return el
         else:
             return m.group(2).replace('\\\\', self.ESCAPED_BSLASH)
+
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
@@ -1057,6 +1078,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 else:
                     add_embed(root, url, extracted_data)
 
+
 class Avatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         img = markdown.util.etree.Element('img')
@@ -1075,6 +1097,7 @@ class Avatar(markdown.inlinepatterns.Pattern):
         img.set('title', email)
         img.set('alt', email)
         return img
+
 
 def possible_avatar_emails(content: str) -> Set[str]:
     emails = set()
@@ -1141,6 +1164,7 @@ unicode_emoji_regex = '(?P<syntax>['\
 # For more information, please refer to the following article:
 # http://crocodillon.com/blog/parsing-emoji-unicode-in-javascript
 
+
 def make_emoji(codepoint: str, display_string: str) -> Element:
     # Replace underscore in emoji's title with space
     title = display_string[1:-1].replace("_", " ")
@@ -1152,6 +1176,7 @@ def make_emoji(codepoint: str, display_string: str) -> Element:
     span.text = display_string
     return span
 
+
 def make_realm_emoji(src: str, display_string: str) -> Element:
     elt = markdown.util.etree.Element('img')
     elt.set('src', src)
@@ -1160,6 +1185,7 @@ def make_realm_emoji(src: str, display_string: str) -> Element:
     elt.set("title", display_string[1:-1].replace("_", " "))
     return elt
 
+
 def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
     codepoint = hex(ord(unicode_emoji))[2:]
     # Unicode codepoints are minimum of length 4, padded
@@ -1167,6 +1193,7 @@ def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
     while len(codepoint) < 4:
         codepoint = '0' + codepoint
     return codepoint
+
 
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """ Translates emoticons like `:)` into emoji like `:smile:`. """
@@ -1180,6 +1207,7 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
         name = translated[1:-1]
         return make_emoji(name_to_codepoint[name], translated)
 
+
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         orig_syntax = match.group('syntax')
@@ -1189,6 +1217,7 @@ class UnicodeEmoji(markdown.inlinepatterns.Pattern):
             return make_emoji(codepoint, display_string)
         else:
             return None
+
 
 class Emoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
@@ -1209,8 +1238,10 @@ class Emoji(markdown.inlinepatterns.Pattern):
         else:
             return orig_syntax
 
+
 def content_has_emoji_syntax(content: str) -> bool:
     return re.search(EMOJI_REGEX, content) is not None
+
 
 class ModalLink(markdown.inlinepatterns.Pattern):
     """
@@ -1228,6 +1259,7 @@ class ModalLink(markdown.inlinepatterns.Pattern):
 
         return a_tag
 
+
 class Tex(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Element:
         rendered = render_tex(match.group('body'), is_inline=True)
@@ -1240,6 +1272,8 @@ class Tex(markdown.inlinepatterns.Pattern):
             return span
 
 upload_title_re = re.compile("^(https?://[^/]*)?(/user_uploads/\\d+)(/[^/]*)?/[^/]*/(?P<filename>[^/]*)$")
+
+
 def url_filename(url: str) -> str:
     """Extract the filename if a URL is an uploaded file, or return the original URL"""
     match = upload_title_re.match(url)
@@ -1247,6 +1281,7 @@ def url_filename(url: str) -> str:
         return match.group('filename')
     else:
         return url
+
 
 def fixup_link(link: markdown.util.etree.Element, target_blank: bool=True) -> None:
     """Set certain attributes we want on every link."""
@@ -1309,6 +1344,7 @@ def sanitize_url(url: str) -> Optional[str]:
     # Url passes all tests. Return url as-is.
     return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
 
+
 def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> Union[Element, str]:
     a = markdown.util.etree.Element('a')
 
@@ -1328,6 +1364,7 @@ def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> U
     fixup_link(a, target_blank)
     return a
 
+
 class CompiledPattern(markdown.inlinepatterns.Pattern):
     def __init__(self, compiled_re: Pattern, md: markdown.Markdown) -> None:
         # This is similar to the superclass's small __init__ function,
@@ -1336,11 +1373,13 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
         self.compiled_re = compiled_re
         self.md = md
 
+
 class AutoLink(CompiledPattern):
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group('url')
         db_data = self.markdown.zulip_db_data
         return url_to_a(db_data, url)
+
 
 class UListProcessor(markdown.blockprocessors.UListProcessor):
     """ Process unordered list blocks.
@@ -1360,6 +1399,7 @@ class UListProcessor(markdown.blockprocessors.UListProcessor):
         super().__init__(parser)
         parser.markdown.tab_length = 4
 
+
 class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
     """ Process unordered list blocks.
 
@@ -1374,6 +1414,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         parser.markdown.tab_length = 2
         super().__init__(parser)
         parser.markdown.tab_length = 4
+
 
 class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     """ Process BlockQuotes.
@@ -1392,6 +1433,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
+
 
 class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows unordered list blocks that come directly after a
@@ -1426,6 +1468,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
                 copy.insert(i+inserts+1, '')
                 inserts += 1
         return copy
+
 
 class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Finds a sequence of lines numbered by the same number"""
@@ -1529,6 +1572,7 @@ def get_link_re() -> str:
         r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\12\s*)?\)'''
     return normal_compile(LINK_RE)
 
+
 def prepare_realm_pattern(source: str) -> str:
     """ Augment a realm filter so it only matches after start-of-string,
     whitespace, or opening delimiters, won't match if there are word
@@ -1537,6 +1581,8 @@ def prepare_realm_pattern(source: str) -> str:
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
+
+
 class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
 
@@ -1552,6 +1598,7 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
                         m.group("name"))
+
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
@@ -1597,6 +1644,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             return el
         return None
 
+
 class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
         match = m.group(2)
@@ -1620,6 +1668,7 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
             el.text = "@%s" % (name,)
             return el
         return None
+
 
 class StreamPattern(CompiledPattern):
     def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
@@ -1649,9 +1698,11 @@ class StreamPattern(CompiledPattern):
             return el
         return None
 
+
 def possible_linked_stream_names(content: str) -> Set[str]:
     matches = re.findall(STREAM_LINK_REGEX, content, re.VERBOSE)
     return set(matches)
+
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 
@@ -1692,6 +1743,8 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 # This prevents realm_filters from running on the content of a
 # Markdown link, breaking up the link.  This is a monkey-patch, but it
 # might be worth sending a version of this change upstream.
+
+
 class AtomicLinkPattern(CompiledPattern):
     def get_element(self, m: Match[str]) -> Optional[Element]:
         href = m.group(9)
@@ -1721,6 +1774,7 @@ class AtomicLinkPattern(CompiledPattern):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
 
+
 def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
     # Registry is a new class added by py-markdown to replace Ordered List.
     # Since Registry doesn't support .keys(), it is easier to make a new
@@ -1734,6 +1788,7 @@ def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.uti
 # realm filter caches
 DEFAULT_BUGDOWN_KEY = -1
 ZEPHYR_MIRROR_BUGDOWN_KEY = -2
+
 
 class Bugdown(markdown.Markdown):
     def __init__(self, *args: Any, **kwargs: Union[bool, int, List[Any]]) -> None:
@@ -1910,6 +1965,7 @@ class Bugdown(markdown.Markdown):
 md_engines = {}  # type: Dict[Tuple[int, bool], markdown.Markdown]
 realm_filter_data = {}  # type: Dict[int, List[Tuple[str, str, int]]]
 
+
 def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
     md_engine_key = (realm_filters_key, email_gateway)
     if md_engine_key in md_engines:
@@ -1921,6 +1977,7 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
         realm_filters_key=realm_filters_key,
         email_gateway=email_gateway,
     )
+
 
 def build_engine(realm_filters: List[Tuple[str, str, int]],
                  realm_filters_key: int,
@@ -1939,6 +1996,7 @@ def build_engine(realm_filters: List[Tuple[str, str, int]],
         ])
     return engine
 
+
 def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
     matches = []  # type: List[str]
 
@@ -1949,6 +2007,7 @@ def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
         for m in re.finditer(pattern, topic_name):
             matches += [realm_filter[1] % m.groupdict()]
     return matches
+
 
 def maybe_update_markdown_engines(realm_filters_key: Optional[int], email_gateway: bool) -> None:
     # If realm_filters_key is None, load all filters
@@ -1985,8 +2044,11 @@ def maybe_update_markdown_engines(realm_filters_key: Optional[int], email_gatewa
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
 _privacy_re = re.compile('\\w', flags=re.UNICODE)
+
+
 def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub('x', content))
+
 
 def log_bugdown_error(msg: str) -> None:
     """We use this unusual logging approach to log the bugdown error, in
@@ -1994,6 +2056,7 @@ def log_bugdown_error(msg: str) -> None:
     original markdown formatting into another Zulip message, which
     could cause an infinite exception loop."""
     bugdown_logger.error(msg)
+
 
 def get_email_info(realm_id: int, emails: Set[str]) -> Dict[str, FullNameInfo]:
     if not emails:
@@ -2018,6 +2081,7 @@ def get_email_info(realm_id: int, emails: Set[str]) -> Dict[str, FullNameInfo]:
         for row in rows
     }
     return dct
+
 
 def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[FullNameInfo]:
     if not mention_texts:
@@ -2050,6 +2114,7 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
         'email',
     )
     return list(rows)
+
 
 class MentionData:
     def __init__(self, realm_id: int, content: str) -> None:
@@ -2108,6 +2173,7 @@ class MentionData:
     def get_group_members(self, user_group_id: int) -> List[int]:
         return self.user_group_members.get(user_group_id, [])
 
+
 def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[str, UserGroup]:
     if not user_group_names:
         return dict()
@@ -2116,6 +2182,7 @@ def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[
                                     name__in=user_group_names)
     dct = {row.name.lower(): row for row in rows}
     return dct
+
 
 def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, FullNameInfo]:
     if not stream_names:
@@ -2270,15 +2337,19 @@ bugdown_time_start = 0.0
 bugdown_total_time = 0.0
 bugdown_total_requests = 0
 
+
 def get_bugdown_time() -> float:
     return bugdown_total_time
+
 
 def get_bugdown_requests() -> int:
     return bugdown_total_requests
 
+
 def bugdown_stats_start() -> None:
     global bugdown_time_start
     bugdown_time_start = time.time()
+
 
 def bugdown_stats_finish() -> None:
     global bugdown_total_time
@@ -2286,6 +2357,7 @@ def bugdown_stats_finish() -> None:
     global bugdown_time_start
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
+
 
 def convert(content: str,
             realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
