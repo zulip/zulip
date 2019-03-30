@@ -140,7 +140,10 @@ var apps_events = function () {
 
         update_path();
         update_page();
-        $("body").animate({ scrollTop: 0 }, 200);
+        // Jquery code for scrolling on top with animation when click on apps icon
+        $('html, body').animate({
+            scrollTop: $("#apps_flex_id").offset().top,
+        }, 500);
 
         return false;
     });
