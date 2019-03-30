@@ -15,6 +15,7 @@ if False:
 
 from zulint.printer import print_err, colors
 
+
 def add_default_linter_arguments(parser):
     # type: (argparse.ArgumentParser) -> None
     parser.add_argument('--modified', '-m',
@@ -26,6 +27,7 @@ def add_default_linter_arguments(parser):
     parser.add_argument('targets',
                         nargs='*',
                         help='Specify directories to check')
+
 
 def run_parallel(lint_functions):
     # type: (Dict[str, Callable[[], int]]) -> bool
@@ -47,6 +49,7 @@ def run_parallel(lint_functions):
         if status != 0:
             failed = True
     return failed
+
 
 class LinterConfig:
     lint_functions = {}  # type: Dict[str, Callable[[], int]]
