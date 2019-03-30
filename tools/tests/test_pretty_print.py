@@ -468,6 +468,7 @@ GOOD_HTML17 = """
 </div>
 """
 
+
 class TestPrettyPrinter(unittest.TestCase):
     def compare(self, a: str, b: str) -> None:
         self.assertEqual(a.split('\n'), b.split('\n'))
