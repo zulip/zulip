@@ -40,6 +40,7 @@ BLUE = '\x1b[34m'
 MAGENTA = '\x1b[35m'
 CYAN = '\x1b[36m'
 
+
 def overwrite_symlink(src, dst):
     # type: (str, str) -> None
     while True:
@@ -56,6 +57,7 @@ def overwrite_symlink(src, dst):
     except Exception:
         os.remove(tmp)
         raise
+
 
 def parse_cache_script_args(description):
     # type: (str) -> argparse.Namespace
@@ -80,12 +82,14 @@ def parse_cache_script_args(description):
     args.verbose |= args.dry_run    # Always print a detailed report in case of dry run.
     return args
 
+
 def get_deploy_root() -> str:
     # This calls realpath twice to handle both symlinks and users
     # running our scripts with relative paths from a current working
     # directory of `scripts/`.
     return os.path.realpath(os.path.dirname(os.path.dirname(
         os.path.dirname(os.path.realpath(__file__)))))
+
 
 def get_deployment_version(extract_path):
     # type: (str) -> str
@@ -100,15 +104,18 @@ def get_deployment_version(extract_path):
             break
     return version
 
+
 def is_invalid_upgrade(current_version, new_version):
     # type: (str, str) -> bool
     if new_version > '1.4.3' and current_version <= '1.3.10':
         return True
     return False
 
+
 def subprocess_text_output(args):
     # type: (Sequence[str]) -> str
     return subprocess.check_output(args, universal_newlines=True).strip()
+
 
 def get_zulip_pwent() -> pwd.struct_passwd:
     deploy_root_uid = os.stat(get_deploy_root()).st_uid
@@ -119,6 +126,7 @@ def get_zulip_pwent() -> pwd.struct_passwd:
     # directory is unexpectedly owned by root, we fallback to the
     # `zulip` user as that's the correct value in production.
     return pwd.getpwnam("zulip")
+
 
 def su_to_zulip(save_suid=False):
     # type: (bool) -> None
@@ -135,6 +143,7 @@ def su_to_zulip(save_suid=False):
         os.setuid(pwent.pw_uid)
     os.environ['HOME'] = pwent.pw_dir
 
+
 def make_deploy_path():
     # type: () -> str
     timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
@@ -144,6 +153,7 @@ if __name__ == '__main__':
     cmd = sys.argv[1]
     if cmd == 'make_deploy_path':
         print(make_deploy_path())
+
 
 def get_dev_uuid_var_path(create_if_missing=False):
     # type: (bool) -> str
@@ -165,6 +175,7 @@ def get_dev_uuid_var_path(create_if_missing=False):
     result_path = os.path.join(zulip_path, "var", zulip_uuid)
     os.makedirs(result_path, exist_ok=True)
     return result_path
+
 
 def get_deployment_lock(error_rerun_script):
     # type: (str) -> None
@@ -190,9 +201,11 @@ def get_deployment_lock(error_rerun_script):
               ENDC)
         sys.exit(1)
 
+
 def release_deployment_lock():
     # type: () -> None
     shutil.rmtree(LOCK_DIR)
+
 
 def run(args, **kwargs):
     # type: (Sequence[str], **Any) -> None
@@ -211,6 +224,7 @@ def run(args, **kwargs):
         print()
         raise
 
+
 def log_management_command(cmd, log_path):
     # type: (str, str) -> None
     log_dir = os.path.dirname(log_path)
@@ -226,6 +240,7 @@ def log_management_command(cmd, log_path):
 
     logger.info("Ran '%s'" % (cmd,))
 
+
 def get_environment():
     # type: () -> str
     if os.path.exists(DEPLOYMENTS_DIR):
@@ -233,6 +248,7 @@ def get_environment():
     if os.environ.get("TRAVIS"):
         return "travis"
     return "dev"
+
 
 def get_recent_deployments(threshold_days):
     # type: (int) -> Set[str]
@@ -262,6 +278,7 @@ def get_recent_deployments(threshold_days):
         recent.add("/root/zulip")
     return recent
 
+
 def get_threshold_timestamp(threshold_days):
     # type: (int) -> int
     # Given number of days, this function returns timestamp corresponding
@@ -269,6 +286,7 @@ def get_threshold_timestamp(threshold_days):
     threshold = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
     threshold_timestamp = int(time.mktime(threshold.utctimetuple()))
     return threshold_timestamp
+
 
 def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
     # type: (str, Set[str], int) -> Set[str]
@@ -290,6 +308,7 @@ def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
             caches_to_purge.add(cache_dir)
     return caches_to_purge
 
+
 def purge_unused_caches(caches_dir, caches_in_use, cache_type, args):
     # type: (str, Set[str], str, argparse.Namespace) -> None
     all_caches = set([os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)])
@@ -300,6 +319,7 @@ def purge_unused_caches(caches_dir, caches_in_use, cache_type, args):
         caches_to_purge, caches_to_keep, cache_type, args.dry_run, args.verbose)
     if args.verbose:
         print("Done!")
+
 
 def generate_sha1sum_emoji(zulip_path):
     # type: (str) -> str
@@ -328,6 +348,7 @@ def generate_sha1sum_emoji(zulip_path):
 
     return sha.hexdigest()
 
+
 def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbose):
     # type: (Set[str], Set[str], str, bool, bool) -> None
     if dry_run:
@@ -344,6 +365,7 @@ def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbo
     for directory in dirs_to_keep:
         if verbose:
             print("Keeping used %s: %s" % (dir_type, directory))
+
 
 def parse_lsb_release():
     # type: () -> Dict[str, str]
@@ -394,6 +416,7 @@ def parse_lsb_release():
         )
     return distro_info
 
+
 def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]):
     # type: (List[str], str, bool, List[str]) -> bool
     # Check whether the files or package_versions passed as arguments
@@ -421,10 +444,12 @@ def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]
             return True
     return False
 
+
 def is_root() -> bool:
     if 'posix' in os.name and os.geteuid() == 0:
         return True
     return False
+
 
 def run_as_root(args, **kwargs):
     # type: (List[str], **Any) -> None
@@ -432,6 +457,7 @@ def run_as_root(args, **kwargs):
     if not is_root():
         args = ['sudo'] + sudo_args + ['--'] + args
     run(args, **kwargs)
+
 
 def assert_not_running_as_root() -> None:
     script_name = os.path.abspath(sys.argv[0])
@@ -446,6 +472,7 @@ def assert_not_running_as_root() -> None:
         print(msg)
         sys.exit(1)
 
+
 def assert_running_as_root(strip_lib_from_paths: bool=False) -> None:
     script_name = os.path.abspath(sys.argv[0])
     # Since these Python scripts are run inside a thin shell wrapper,
@@ -457,16 +484,19 @@ def assert_running_as_root(strip_lib_from_paths: bool=False) -> None:
         print("{} must be run as root.".format(script_name))
         sys.exit(1)
 
+
 def get_config(config_file, section, key, default_value=""):
     # type: (configparser.RawConfigParser, str, str, str) -> str
     if config_file.has_option(section, key):
         return config_file.get(section, key)
     return default_value
 
+
 def get_config_file() -> configparser.RawConfigParser:
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
     return config_file
+
 
 def get_deploy_options(config_file):
     # type: (configparser.RawConfigParser) -> List[str]
