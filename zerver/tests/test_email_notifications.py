@@ -24,6 +24,7 @@ from zerver.models import (
     ScheduledEmail
 )
 
+
 class TestFollowupEmails(ZulipTestCase):
     def test_day1_email_context(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -165,6 +166,7 @@ class TestFollowupEmails(ZulipTestCase):
         self.assertEqual(len(scheduled_emails), 1)
         email_data = ujson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["template_prefix"], 'zerver/emails/followup_day1')
+
 
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s: str) -> str:
