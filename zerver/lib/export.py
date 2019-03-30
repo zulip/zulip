@@ -248,6 +248,7 @@ DATE_FIELDS = {
     'analytics_streamcount': ['end_time'],
 }  # type: Dict[TableName, List[Field]]
 
+
 def sanity_check_output(data: TableData) -> None:
     # First, we verify that the export tool has a declared
     # configuration for every table declared in the `models.py` files.
@@ -288,9 +289,11 @@ def sanity_check_output(data: TableData) -> None:
         if table not in data:
             logging.warning('??? NO DATA EXPORTED FOR TABLE %s!!!' % (table,))
 
+
 def write_data_to_file(output_file: Path, data: Any) -> None:
     with open(output_file, "w") as f:
         f.write(ujson.dumps(data, indent=4))
+
 
 def make_raw(query: Any, exclude: Optional[List[Field]]=None) -> List[Record]:
     '''
@@ -314,6 +317,7 @@ def make_raw(query: Any, exclude: Optional[List[Field]]=None) -> List[Record]:
 
     return rows
 
+
 def floatify_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
         for field in DATE_FIELDS[table]:
@@ -327,6 +331,7 @@ def floatify_datetime_fields(data: TableData, table: TableName) -> None:
                 dt = orig_dt
             utc_naive  = dt.replace(tzinfo=None) - dt.utcoffset()
             item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
+
 
 class Config:
     '''A Config object configures a single table for exporting (and, maybe
@@ -527,6 +532,7 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
             config=child_config,
             context=context,
         )
+
 
 def get_realm_config() -> Config:
     # This function generates the main Config object that defines how
@@ -761,6 +767,7 @@ def get_realm_config() -> Config:
 
     return realm_config
 
+
 def sanity_check_stream_data(response: TableData, config: Config, context: Context) -> None:
 
     if context['exportable_user_ids'] is not None:
@@ -784,6 +791,7 @@ def sanity_check_stream_data(response: TableData, config: Config, context: Conte
         print("Usually, this is caused by a stream having been created that never had subscribers.")
         print("(Due to a bug elsewhere in Zulip, not in the export tool)")
         raise AssertionError("Aborting!  Please investigate.")
+
 
 def fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
     realm = context['realm']
@@ -814,6 +822,7 @@ def fetch_user_profile(response: TableData, config: Config, context: Context) ->
     response['zerver_userprofile'] = normal_rows
     response['zerver_userprofile_mirrordummy'] = dummy_rows
 
+
 def fetch_user_profile_cross_realm(response: TableData, config: Config, context: Context) -> None:
     realm = context['realm']
     response['zerver_userprofile_crossrealm'] = []
@@ -832,6 +841,7 @@ def fetch_user_profile_cross_realm(response: TableData, config: Config, context:
             id=bot_user.id,
             recipient_id=recipient_id,
         ))
+
 
 def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[int]) -> None:
     filter_args = {'realm_id': realm_id}
@@ -860,9 +870,11 @@ def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[i
         row for row in response['zerver_attachment']
         if row['messages']]
 
+
 def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
     query = Reaction.objects.filter(message_id__in=list(message_ids))
     response['zerver_reaction'] = make_raw(list(query))
+
 
 def fetch_huddle_objects(response: TableData, config: Config, context: Context) -> None:
 
@@ -900,6 +912,7 @@ def fetch_huddle_objects(response: TableData, config: Config, context: Context) 
     response['_huddle_subscription'] = huddle_subscription_dicts
     response['zerver_huddle'] = make_raw(Huddle.objects.filter(id__in=huddle_ids))
 
+
 def fetch_usermessages(realm: Realm,
                        message_ids: Set[int],
                        user_profile_ids: Set[int],
@@ -919,6 +932,7 @@ def fetch_usermessages(realm: Realm,
     logging.info("Fetched UserMessages for %s" % (message_filename,))
     return user_message_chunk
 
+
 def export_usermessages_batch(input_path: Path, output_path: Path) -> None:
     """As part of the system for doing parallel exports, this runs on one
     batch of Message objects and adds the corresponding UserMessage
@@ -935,9 +949,11 @@ def export_usermessages_batch(input_path: Path, output_path: Path) -> None:
     write_message_export(output_path, output)
     os.unlink(input_path)
 
+
 def write_message_export(message_filename: Path, output: MessageOutput) -> None:
     write_data_to_file(output_file=message_filename, data=output)
     logging.info("Dumped to %s" % (message_filename,))
+
 
 def export_partial_message_files(realm: Realm,
                                  response: TableData,
@@ -1030,6 +1046,7 @@ def export_partial_message_files(realm: Realm,
 
     return all_message_ids
 
+
 def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_id: int,
                                     all_message_ids: Set[int], output_dir: Path,
                                     user_profile_ids: Set[int],
@@ -1072,6 +1089,7 @@ def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_
 
     return dump_file_id
 
+
 def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
     uploads_output_dir = os.path.join(output_dir, 'uploads')
     avatars_output_dir = os.path.join(output_dir, 'avatars')
@@ -1106,6 +1124,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
                              output_dir=emoji_output_dir,
                              processing_emoji=True)
 
+
 def _check_key_metadata(email_gateway_bot: Optional[UserProfile],
                         key: Key, processing_avatars: bool,
                         realm: Realm, user_ids: Set[int]) -> None:
@@ -1122,6 +1141,7 @@ def _check_key_metadata(email_gateway_bot: Optional[UserProfile],
             raise AssertionError("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
     elif 'realm_id' not in key.metadata:
         raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
+
 
 def _get_exported_s3_record(
         bucket_name: str,
@@ -1149,6 +1169,7 @@ def _get_exported_s3_record(
 
     return record
 
+
 def _save_s3_object_to_file(
         key: Key,
         output_dir: str,
@@ -1168,6 +1189,7 @@ def _save_s3_object_to_file(
     if not os.path.exists(dirname):
         os.makedirs(dirname)
     key.get_contents_to_filename(filename)
+
 
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
                          processing_avatars: bool=False,
@@ -1219,6 +1241,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
+
 def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 
     count = 0
@@ -1245,6 +1268,7 @@ def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
             logging.info("Finished %s" % (count,))
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
+
 
 def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 
@@ -1290,6 +1314,7 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
+
 def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 
     count = 0
@@ -1323,6 +1348,7 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
+
 def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     stats_file = os.path.join(output_dir, 'stats.txt')
     realm_file = os.path.join(output_dir, 'realm.json')
@@ -1350,6 +1376,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             data = ujson.loads(payload)
             f.write('%5d records\n' % len(data))
             f.write('\n')
+
 
 def do_export_realm(realm: Realm, output_dir: Path, threads: int,
                     exportable_user_ids: Optional[Set[int]]=None,
@@ -1412,12 +1439,14 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     logging.info("Finished exporting %s" % (realm.string_id))
     create_soft_link(source=output_dir, in_progress=False)
 
+
 def export_attachment_table(realm: Realm, output_dir: Path, message_ids: Set[int]) -> None:
     response = {}  # type: TableData
     fetch_attachment_data(response=response, realm_id=realm.id, message_ids=message_ids)
     output_file = os.path.join(output_dir, "attachment.json")
     logging.info('Writing attachment table data to %s' % (output_file,))
     write_data_to_file(output_file=output_file, data=response)
+
 
 def create_soft_link(source: Path, in_progress: bool=True) -> None:
     is_done = not in_progress
@@ -1456,6 +1485,7 @@ def launch_user_message_subprocesses(threads: int, output_dir: Path) -> None:
                                       threads=threads):
         print("Shard %s finished, status %s" % (job, status))
 
+
 def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     response = {}  # type: TableData
 
@@ -1465,6 +1495,7 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     logging.info("Exporting messages")
     export_messages_single_user(user_profile, output_dir)
 
+
 def export_single_user(user_profile: UserProfile, response: TableData) -> None:
 
     config = get_single_user_config()
@@ -1473,6 +1504,7 @@ def export_single_user(user_profile: UserProfile, response: TableData) -> None:
         config=config,
         seed_object=user_profile,
     )
+
 
 def get_single_user_config() -> Config:
     # This function defines the limited configuration for what data to
@@ -1514,6 +1546,7 @@ def get_single_user_config() -> Config:
 
     return user_profile_config
 
+
 def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
                                 chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> None:
     user_message_query = UserMessage.objects.filter(user_profile=user_profile).order_by("id")
@@ -1549,6 +1582,7 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
         min_id = max(user_message_ids)
         dump_file_id += 1
 
+
 def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
     response = {}  # type: TableData
 
@@ -1561,6 +1595,7 @@ def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
         seed_object=realm,
     )
     write_data_to_file(output_file=export_file, data=response)
+
 
 def get_analytics_config() -> Config:
     # The Config function defines what data to export for the
