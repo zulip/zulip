@@ -8,6 +8,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.middleware import is_slow_query
 from zerver.middleware import write_log_line
 
+
 class SlowQueryTest(ZulipTestCase):
     SLOW_QUERY_TIME = 10
     log_data = {'extra': '[transport=websocket]',
@@ -51,6 +52,7 @@ class SlowQueryTest(ZulipTestCase):
         write_log_line(self.log_data, path='/socket/open', method='SOCKET',
                        remote_ip='123.456.789.012', email='unknown', client_name='?')
         mock_internal_send_message.assert_not_called()
+
 
 class OpenGraphTest(ZulipTestCase):
     def check_title_and_description(self, path: str, title: str,
