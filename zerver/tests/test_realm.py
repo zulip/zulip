@@ -235,21 +235,21 @@ class RealmTest(ZulipTestCase):
         self.login(email)
 
         disabled_notif_stream_id = -1
-        req = dict(notifications_stream_id = ujson.dumps(disabled_notif_stream_id))
+        req = dict(notifications_stream_id=ujson.dumps(disabled_notif_stream_id))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
         self.assertEqual(realm.notifications_stream, None)
 
         new_notif_stream_id = 4
-        req = dict(notifications_stream_id = ujson.dumps(new_notif_stream_id))
+        req = dict(notifications_stream_id=ujson.dumps(new_notif_stream_id))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
         self.assertEqual(realm.notifications_stream.id, new_notif_stream_id)
 
         invalid_notif_stream_id = 1234
-        req = dict(notifications_stream_id = ujson.dumps(invalid_notif_stream_id))
+        req = dict(notifications_stream_id=ujson.dumps(invalid_notif_stream_id))
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid stream id')
         realm = get_realm('zulip')
@@ -272,14 +272,14 @@ class RealmTest(ZulipTestCase):
         self.login(email)
 
         disabled_signup_notifications_stream_id = -1
-        req = dict(signup_notifications_stream_id = ujson.dumps(disabled_signup_notifications_stream_id))
+        req = dict(signup_notifications_stream_id=ujson.dumps(disabled_signup_notifications_stream_id))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
         self.assertEqual(realm.signup_notifications_stream, None)
 
         new_signup_notifications_stream_id = 4
-        req = dict(signup_notifications_stream_id = ujson.dumps(new_signup_notifications_stream_id))
+        req = dict(signup_notifications_stream_id=ujson.dumps(new_signup_notifications_stream_id))
 
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
@@ -287,7 +287,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.signup_notifications_stream.id, new_signup_notifications_stream_id)
 
         invalid_signup_notifications_stream_id = 1234
-        req = dict(signup_notifications_stream_id = ujson.dumps(invalid_signup_notifications_stream_id))
+        req = dict(signup_notifications_stream_id=ujson.dumps(invalid_signup_notifications_stream_id))
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid stream id')
         realm = get_realm('zulip')
@@ -354,12 +354,12 @@ class RealmTest(ZulipTestCase):
         # We need an admin user.
         email = 'iago@zulip.com'
         self.login(email)
-        req = dict(bot_creation_policy = ujson.dumps(Realm.BOT_CREATION_LIMIT_GENERIC_BOTS))
+        req = dict(bot_creation_policy=ujson.dumps(Realm.BOT_CREATION_LIMIT_GENERIC_BOTS))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
         invalid_add_bot_permission = 4
-        req = dict(bot_creation_policy = ujson.dumps(invalid_add_bot_permission))
+        req = dict(bot_creation_policy=ujson.dumps(invalid_add_bot_permission))
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid bot creation policy')
 
@@ -368,13 +368,13 @@ class RealmTest(ZulipTestCase):
         user_profile = self.example_user("iago")
         self.login(user_profile.email)
         invalid_value = 4
-        req = dict(email_address_visibility = ujson.dumps(invalid_value))
+        req = dict(email_address_visibility=ujson.dumps(invalid_value))
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid email address visibility policy')
 
         realm = get_realm("zulip")
         self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
-        req = dict(email_address_visibility = ujson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS))
+        req = dict(email_address_visibility=ujson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm("zulip")
