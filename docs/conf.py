@@ -308,6 +308,7 @@ source_parsers = {
 # You can specify multiple suffix as a list of string:
 source_suffix = ['.rst', '.md']
 
+
 def setup(app: Any) -> None:
 
     app.add_config_value('recommonmark_config', {
