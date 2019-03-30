@@ -40,6 +40,7 @@ import urllib.parse
 from unittest.mock import patch
 from typing import Any, Callable, Dict, Generator, Optional, List, cast
 
+
 class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -105,6 +106,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         self.assertIn('queue_id', body)
         return body['queue_id']
 
+
 class EventsTestCase(TornadoWebTestCase):
     def test_create_queue(self) -> None:
         self.login(self.example_email('hamlet'))
@@ -140,6 +142,7 @@ class EventsTestCase(TornadoWebTestCase):
         self.assertEqual(events[0]['data'], 'test data')
         self.assertEqual(data['result'], 'success')
 
+
 class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def setUp(self) -> None:
         settings.RUNNING_INSIDE_TORNADO = True
@@ -165,6 +168,7 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
         """Close a websocket connection and wait for the server side.
         """
         ws.close()
+
 
 class TornadoTestCase(WebSocketBaseTestCase):
     @override_settings(DEBUG=False)
