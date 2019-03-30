@@ -8,6 +8,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 class Uploader:
     def __init__(self) -> None:
         self.old_orig_image_path_template = "{realm_id}/emoji/{emoji_file_name}.original"
@@ -33,6 +34,7 @@ class Uploader:
                                                       emoji_file_name=new_filename)
         self.copy_files(old_file_path, new_file_path)
 
+
 class LocalUploader(Uploader):
     def __init__(self) -> None:
         super().__init__()
@@ -50,6 +52,7 @@ class LocalUploader(Uploader):
         self.mkdirs(dst_path)
         shutil.copyfile(src_path, dst_path)
 
+
 class S3Uploader(Uploader):
     def __init__(self) -> None:
         super().__init__()
@@ -60,14 +63,17 @@ class S3Uploader(Uploader):
     def copy_files(self, src_key: str, dst_key: str) -> None:
         self.bucket.copy_key(dst_key, self.bucket_name, src_key)
 
+
 def get_uploader() -> Uploader:
     if settings.LOCAL_UPLOADS_DIR is None:
         return S3Uploader()
     return LocalUploader()
 
+
 def get_emoji_file_name(emoji_file_name: str, new_name: str) -> str:
     _, image_ext = os.path.splitext(emoji_file_name)
     return ''.join((new_name, image_ext))
+
 
 def migrate_realm_emoji_image_files(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     RealmEmoji = apps.get_model('zerver', 'RealmEmoji')
@@ -79,6 +85,7 @@ def migrate_realm_emoji_image_files(apps: StateApps, schema_editor: DatabaseSche
         realm_emoji.file_name = new_file_name
         realm_emoji.save(update_fields=['file_name'])
 
+
 def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     # Ensures that migration can be re-run in case of a failure.
     RealmEmoji = apps.get_model('zerver', 'RealmEmoji')
@@ -87,6 +94,7 @@ def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
         correct_file_name = get_emoji_file_name(corrupt_file_name, realm_emoji.name)
         realm_emoji.file_name = correct_file_name
         realm_emoji.save(update_fields=['file_name'])
+
 
 class Migration(migrations.Migration):
 
