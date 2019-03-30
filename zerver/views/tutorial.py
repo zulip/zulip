@@ -7,6 +7,7 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import check_string
 from zerver.models import UserProfile
 
+
 @human_users_only
 @has_request_variables
 def set_tutorial_status(request: HttpRequest, user_profile: UserProfile,
