@@ -8,12 +8,14 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.models import Stream, UserProfile
 
+
 def _default_all_public_streams(user_profile: UserProfile,
                                 all_public_streams: Optional[bool]) -> bool:
     if all_public_streams is not None:
         return all_public_streams
     else:
         return user_profile.default_all_public_streams
+
 
 def _default_narrow(user_profile: UserProfile,
                     narrow: Iterable[Sequence[str]]) -> Iterable[Sequence[str]]:
