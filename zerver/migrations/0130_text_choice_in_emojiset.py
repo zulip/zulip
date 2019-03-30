@@ -3,11 +3,14 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 # change emojiset to text if emoji_alt_code is true.
+
+
 def change_emojiset(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model("zerver", "UserProfile")
     for user in UserProfile.objects.filter(emoji_alt_code=True):
         user.emojiset = "text"
         user.save(update_fields=["emojiset"])
+
 
 def reverse_change_emojiset(apps: StateApps,
                             schema_editor: DatabaseSchemaEditor) -> None:
@@ -19,6 +22,7 @@ def reverse_change_emojiset(apps: StateApps,
         user.emoji_alt_code = True
         user.emojiset = "google"
         user.save(update_fields=["emoji_alt_code", "emojiset"])
+
 
 class Migration(migrations.Migration):
 
