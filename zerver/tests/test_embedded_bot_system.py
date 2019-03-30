@@ -11,6 +11,7 @@ from zerver.models import (
 
 import ujson
 
+
 class TestEmbeddedBotMessaging(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
@@ -70,6 +71,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
                                          content="@**{}** foo".format(self.bot_profile.full_name),
                                          topic_name="bar")
                 mock_logging.assert_called_once_with("I'm quitting!")
+
 
 class TestEmbeddedBotFailures(ZulipTestCase):
     def test_message_embedded_bot_with_invalid_service(self) -> None:
