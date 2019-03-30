@@ -68,31 +68,31 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
         valid_user_client = user_client
 
     events_query = dict(
-        user_profile_id = user_profile.id,
-        user_profile_email = user_profile.email,
-        queue_id = queue_id,
-        last_event_id = last_event_id,
-        event_types = event_types,
-        client_type_name = valid_user_client.name,
-        all_public_streams = all_public_streams,
-        lifespan_secs = lifespan_secs,
-        narrow = narrow,
-        dont_block = dont_block,
-        handler_id = handler.handler_id)
+        user_profile_id=user_profile.id,
+        user_profile_email=user_profile.email,
+        queue_id=queue_id,
+        last_event_id=last_event_id,
+        event_types=event_types,
+        client_type_name=valid_user_client.name,
+        all_public_streams=all_public_streams,
+        lifespan_secs=lifespan_secs,
+        narrow=narrow,
+        dont_block=dont_block,
+        handler_id=handler.handler_id)
 
     if queue_id is None:
         events_query['new_queue_data'] = dict(
-            user_profile_id = user_profile.id,
-            realm_id = user_profile.realm_id,
-            user_profile_email = user_profile.email,
-            event_types = event_types,
-            client_type_name = valid_user_client.name,
-            apply_markdown = apply_markdown,
-            client_gravatar = client_gravatar,
-            all_public_streams = all_public_streams,
-            queue_timeout = lifespan_secs,
-            last_connection_time = time.time(),
-            narrow = narrow)
+            user_profile_id=user_profile.id,
+            realm_id=user_profile.realm_id,
+            user_profile_email=user_profile.email,
+            event_types=event_types,
+            client_type_name=valid_user_client.name,
+            apply_markdown=apply_markdown,
+            client_gravatar=client_gravatar,
+            all_public_streams=all_public_streams,
+            queue_timeout=lifespan_secs,
+            last_connection_time=time.time(),
+            narrow=narrow)
 
     result = fetch_events(events_query)
     if "extra_log_data" in result:
