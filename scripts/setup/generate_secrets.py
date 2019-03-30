@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # This tools generates /etc/zulip/zulip-secrets.conf
 
+import scripts.lib.setup_path_on_import
+from django.utils.crypto import get_random_string
+import argparse
+import uuid
+import configparser
+from zerver.lib.utils import generate_random_token
 import sys
 import os
 if False:
@@ -9,15 +15,9 @@ if False:
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
-import scripts.lib.setup_path_on_import
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 
-from django.utils.crypto import get_random_string
-import argparse
-import uuid
-import configparser
-from zerver.lib.utils import generate_random_token
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..', '..'))
 
