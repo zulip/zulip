@@ -147,7 +147,7 @@ def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
 def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
     return HttpResponseRedirect("/config-error/%s" % (error_type,))
 
-def login_or_register_remote_user(request: HttpRequest, remote_username: Optional[str],
+def login_or_register_remote_user(request: HttpRequest, remote_username: str,
                                   user_profile: Optional[UserProfile], full_name: str='',
                                   invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
                                   is_signup: bool=False, redirect_to: str='',
@@ -306,7 +306,7 @@ def google_oauth2_csrf(request: HttpRequest, value: str) -> str:
     token = _unsalt_cipher_token(get_token(request))
     return hmac.new(token.encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
-def reverse_on_root(viewname: str, args: List[str]=None, kwargs: Dict[str, str]=None) -> str:
+def reverse_on_root(viewname: str, *args: str, **kwargs: str) -> str:
     return settings.ROOT_DOMAIN_URI + reverse(viewname, args=args, kwargs=kwargs)
 
 def oauth_redirect_to_root(request: HttpRequest, url: str,

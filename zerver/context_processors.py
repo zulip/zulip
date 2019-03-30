@@ -1,5 +1,5 @@
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from django.http import HttpRequest
 from django.conf import settings
 from django.urls import reverse
@@ -35,7 +35,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
         'user_name': user.full_name,
     }
 
-def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
+def get_realm_from_request(request: HttpRequest) -> Realm:
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
     if not hasattr(request, "realm"):
