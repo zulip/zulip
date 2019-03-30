@@ -16,6 +16,7 @@ ALERT_CLEAR = 'clear'
 ALERT_VIOLATION = 'violations'
 SNAPSHOT = 'image_url'
 
+
 class LibratoWebhookParser:
     ALERT_URL_TEMPLATE = "https://metrics.librato.com/alerts#/{alert_id}"
 
@@ -55,6 +56,7 @@ class LibratoWebhookParser:
     def parse_snapshot(self, snapshot: Dict[str, Any]) -> Tuple[str, str, str]:
         author_name, image_url, title = snapshot['author_name'], snapshot['image_url'], snapshot['title']
         return author_name, image_url, title
+
 
 class LibratoWebhookHandler(LibratoWebhookParser):
     def __init__(self, payload: Dict[str, Any], attachments: List[Dict[str, Any]]) -> None:
@@ -140,6 +142,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
             content += u" by {duration}s".format(duration=duration)
         content += u", recorded at {recorded_at} UTC".format(recorded_at=recorded_at)
         return content
+
 
 @api_key_only_webhook_view('Librato')
 @has_request_variables
