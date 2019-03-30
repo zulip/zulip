@@ -3,6 +3,7 @@
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.users import get_api_key
 
+
 class DropboxHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/dropbox?&api_key={api_key}&stream={stream}"
