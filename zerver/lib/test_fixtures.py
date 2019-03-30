@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from scripts.lib.zulip_tools import get_dev_uuid_var_path, run
 import json
 import os
 import re
@@ -17,7 +18,6 @@ from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from scripts.lib.zulip_tools import get_dev_uuid_var_path, run
 
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile(r'[\W\-_]')
