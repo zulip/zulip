@@ -8,6 +8,7 @@ from zerver.lib.digest import handle_digest_email, DIGEST_CUTOFF
 from zerver.decorator import zulip_login_required
 from datetime import timedelta
 
+
 @zulip_login_required
 def digest_page(request: HttpRequest) -> HttpResponse:
     user_profile_id = request.user.id
