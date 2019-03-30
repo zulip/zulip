@@ -11,6 +11,7 @@ from django.core.management.base import BaseCommand, CommandParser, CommandError
 from zerver.lib.import_realm import do_import_realm, do_import_system_bots
 from zerver.forms import check_subdomain_available
 
+
 class Command(BaseCommand):
     help = """Import extracted Zulip database dump directories into a fresh Zulip instance.
 
