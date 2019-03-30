@@ -32,8 +32,11 @@ Event = Dict[str, Any]
 # This is used for testing LoopQueueProcessingWorker, which
 # would run forever if we don't mock time.sleep to abort the
 # loop.
+
+
 class AbortLoop(Exception):
     pass
+
 
 class WorkerTest(ZulipTestCase):
     class FakeClient:
