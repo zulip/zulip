@@ -16,6 +16,7 @@ from zerver.lib.timezone import get_timezone
 
 JUST_CREATED_THRESHOLD = 60
 
+
 def get_device_browser(user_agent: str) -> Optional[str]:
     user_agent = user_agent.lower()
     if "zulip" in user_agent:
