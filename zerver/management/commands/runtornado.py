@@ -36,6 +36,7 @@ def handle_callback_exception(callback: Callable[..., Any]) -> None:
     logging.exception("Exception in callback")
     app_log.error("Exception in callback %r", callback, exc_info=True)
 
+
 class Command(BaseCommand):
     help = "Starts a Tornado Web server wrapping Django."
 
