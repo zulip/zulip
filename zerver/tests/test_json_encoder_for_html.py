@@ -2,6 +2,7 @@ import json
 from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.test_classes import ZulipTestCase
 
+
 class TestJSONEncoder(ZulipTestCase):
     # Test EncoderForHTML
     # Taken from
