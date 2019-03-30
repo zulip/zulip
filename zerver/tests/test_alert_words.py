@@ -22,6 +22,7 @@ from zerver.models import (
 
 import ujson
 
+
 class AlertWordTests(ZulipTestCase):
     interesting_alert_word_list = ['alert', 'multi-word word', u'☃']
 
