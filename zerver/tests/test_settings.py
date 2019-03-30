@@ -14,6 +14,7 @@ from zerver.lib.users import get_all_api_keys
 from zerver.models import get_realm, UserProfile, \
     get_user_profile_by_api_key
 
+
 class ChangeSettingsTest(ZulipTestCase):
 
     def check_well_formed_change_settings_response(self, result: Dict[str, Any]) -> None:
