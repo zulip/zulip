@@ -6,6 +6,7 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from typing import Any, Dict
 
+
 def realm_emoji_name_to_id(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Reaction = apps.get_model('zerver', 'Reaction')
     RealmEmoji = apps.get_model('zerver', 'RealmEmoji')
@@ -31,11 +32,13 @@ def realm_emoji_name_to_id(apps: StateApps, schema_editor: DatabaseSchemaEditor)
             reaction.emoji_code = realm_emoji["id"]
             reaction.save()
 
+
 def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Reaction = apps.get_model('zerver', 'Reaction')
     for reaction in Reaction.objects.filter(reaction_type='realm_emoji'):
         reaction.emoji_code = reaction.emoji_name
         reaction.save()
+
 
 class Migration(migrations.Migration):
 
