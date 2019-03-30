@@ -9,6 +9,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 @api_key_only_webhook_view('IFTTT')
 @has_request_variables
 def api_iftt_app_webhook(request: HttpRequest, user_profile: UserProfile,
