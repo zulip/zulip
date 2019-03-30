@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 
 from analytics.lib.counts import COUNT_STATS, do_drop_single_stat
 
+
 class Command(BaseCommand):
     help = """Clear analytics tables."""
 
