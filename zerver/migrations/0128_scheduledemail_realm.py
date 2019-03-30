@@ -7,6 +7,7 @@ import django.db.models.deletion
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def set_realm_for_existing_scheduledemails(
         apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     scheduledemail_model = apps.get_model("zerver", "ScheduledEmail")
@@ -23,6 +24,7 @@ def set_realm_for_existing_scheduledemails(
 
     # Shouldn't be needed, but just in case
     scheduledemail_model.objects.filter(realm=None).delete()
+
 
 class Migration(migrations.Migration):
 
