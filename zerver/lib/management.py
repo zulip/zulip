@@ -11,12 +11,14 @@ from typing import Any, Dict, Optional, List
 
 from zerver.models import Realm, UserProfile, Client, get_client
 
+
 def is_integer_string(val: str) -> bool:
     try:
         int(val)
         return True
     except ValueError:
         return False
+
 
 def check_config() -> None:
     for (setting_name, default) in settings.REQUIRED_SETTINGS:
@@ -30,9 +32,11 @@ def check_config() -> None:
 
         raise CommandError("Error: You must set %s in /etc/zulip/settings.py." % (setting_name,))
 
+
 def sleep_forever() -> None:
     while True:  # nocoverage
         time.sleep(10**9)
+
 
 class ZulipBaseCommand(BaseCommand):
 
