@@ -13,6 +13,7 @@ from zerver.models import UserProfile
 
 from typing import Dict, List, Optional
 
+
 @has_request_variables
 def update_storage(request: HttpRequest, user_profile: UserProfile,
                    storage: Dict[str, str]=REQ(validator=check_dict([]))) -> HttpResponse:
@@ -21,6 +22,7 @@ def update_storage(request: HttpRequest, user_profile: UserProfile,
     except StateError as e:
         return json_error(str(e))
     return json_success()
+
 
 @has_request_variables
 def get_storage(
@@ -34,6 +36,7 @@ def get_storage(
     except StateError as e:
         return json_error(str(e))
     return json_success({'storage': storage})
+
 
 @has_request_variables
 def remove_storage(
