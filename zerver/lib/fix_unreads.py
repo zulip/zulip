@@ -1,4 +1,6 @@
 
+from django.db import connection
+from zerver.models import UserProfile
 import time
 import logging
 
@@ -6,9 +8,7 @@ from typing import Callable, List, TypeVar
 from psycopg2.extensions import cursor
 CursorObj = TypeVar('CursorObj', bound=cursor)
 
-from django.db import connection
 
-from zerver.models import UserProfile
 
 '''
 NOTE!  Be careful modifying this library, as it is used
