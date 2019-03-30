@@ -1081,10 +1081,13 @@ def mark_topic_as_read(request: HttpRequest,
     return json_success({'result': 'success',
                          'msg': ''})
 
+class InvalidMirrorInput(Exception):
+    pass
+
 def create_mirrored_message_users(request: HttpRequest, user_profile: UserProfile,
-                                  recipients: Iterable[str]) -> Tuple[bool, Optional[UserProfile]]:
+                                  recipients: Iterable[str]) -> UserProfile:
     if "sender" not in request.POST:
-        return (False, None)
+        raise InvalidMirrorInput("No sender")
 
     sender_email = request.POST["sender"].strip().lower()
     referenced_users = set([sender_email])
@@ -1102,20 +1105,19 @@ def create_mirrored_message_users(request: HttpRequest, user_profile: UserProfil
         user_check = same_realm_jabber_user
         fullname_function = compute_jabber_user_fullname
     else:
-        # Unrecognized mirroring client
-        return (False, None)
+        raise InvalidMirrorInput("Unrecognized mirroring client")
 
     for email in referenced_users:
         # Check that all referenced users are in our realm:
         if not user_check(user_profile, email):
-            return (False, None)
+            raise InvalidMirrorInput("At least one user cannot be mirrored")
 
     # Create users for the referenced users, if needed.
     for email in referenced_users:
         create_mirror_user_if_needed(user_profile.realm, email, fullname_function)
 
     sender = get_user_including_cross_realm(sender_email, user_profile.realm)
-    return (True, sender)
+    return sender
 
 def same_realm_zephyr_user(user_profile: UserProfile, email: str) -> bool:
     #
@@ -1264,10 +1266,11 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         # type parameter.
         message_to = cast(Sequence[str], message_to)
 
-        (valid_input, mirror_sender) = \
-            create_mirrored_message_users(request, user_profile, message_to)
-        if not valid_input:
+        try:
+            mirror_sender = create_mirrored_message_users(request, user_profile, message_to)
+        except InvalidMirrorInput:
             return json_error(_("Invalid mirrored message"))
+
         if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
             return json_error(_("Zephyr mirroring is not allowed in this organization"))
         sender = mirror_sender

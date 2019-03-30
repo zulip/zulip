@@ -93,7 +93,7 @@ from zerver.lib.timezone import get_timezone
 from zerver.lib.upload import create_attachment
 from zerver.lib.url_encoding import near_message_url
 
-from zerver.views.messages import create_mirrored_message_users
+from zerver.views.messages import create_mirrored_message_users, InvalidMirrorInput
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
@@ -1854,7 +1854,7 @@ class MessagePOSTTest(ZulipTestCase):
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
     def test_send_message_create_mirrored_message_user_returns_invalid_input(
             self, create_mirrored_message_users_mock: Any) -> None:
-        create_mirrored_message_users_mock.return_value = (False, True)
+        create_mirrored_message_users_mock.side_effect = InvalidMirrorInput()
         self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
         result = self.client_post("/json/messages", {"type": "private",
                                                      "sender": self.mit_email("sipbtest"),
@@ -1867,7 +1867,7 @@ class MessagePOSTTest(ZulipTestCase):
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
     def test_send_message_when_client_is_zephyr_mirror_but_string_id_is_not_zephyr(
             self, create_mirrored_message_users_mock: Any) -> None:
-        create_mirrored_message_users_mock.return_value = (True, True)
+        create_mirrored_message_users_mock.return_value = mock.Mock()
         user = self.mit_user("starnine")
         email = user.email
         user.realm.string_id = 'notzephyr'
@@ -1884,7 +1884,7 @@ class MessagePOSTTest(ZulipTestCase):
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
     def test_send_message_when_client_is_zephyr_mirror_but_recipient_is_user_id(
             self, create_mirrored_message_users_mock: Any) -> None:
-        create_mirrored_message_users_mock.return_value = (True, True)
+        create_mirrored_message_users_mock.return_value = mock.Mock()
         user = self.mit_user("starnine")
         user_id = user.id
         user_email = user.email
@@ -2827,11 +2827,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         Request = namedtuple('Request', ['POST'])
         request = Request(POST=dict())  # no sender
 
-        (valid_input, mirror_sender) = \
+        with self.assertRaises(InvalidMirrorInput):
             create_mirrored_message_users(request, user, recipients)
-
-        self.assertEqual(valid_input, False)
-        self.assertEqual(mirror_sender, None)
 
     def test_invalid_client(self) -> None:
         client = get_client(name='banned_mirror')  # Invalid!!!
@@ -2845,11 +2842,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         request = Request(POST = dict(sender=sender.email, type='private'),
                           client = client)
 
-        (valid_input, mirror_sender) = \
+        with self.assertRaises(InvalidMirrorInput):
             create_mirrored_message_users(request, user, recipients)
-
-        self.assertEqual(valid_input, False)
-        self.assertEqual(mirror_sender, None)
 
     def test_invalid_email(self) -> None:
         invalid_email = 'alice AT example.com'
@@ -2867,11 +2861,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
             request = Request(POST = dict(sender=sender.email, type='private'),
                               client = client)
 
-            (valid_input, mirror_sender) = \
+            with self.assertRaises(InvalidMirrorInput):
                 create_mirrored_message_users(request, user, recipients)
-
-            self.assertEqual(valid_input, False)
-            self.assertEqual(mirror_sender, None)
 
     @mock.patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
     def test_zephyr_mirror_new_recipient(self, ignored: Any) -> None:
@@ -2890,10 +2881,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         request = Request(POST = dict(sender=sender.email, type='private'),
                           client = client)
 
-        (valid_input, mirror_sender) = \
-            create_mirrored_message_users(request, user, recipients)
+        mirror_sender = create_mirrored_message_users(request, user, recipients)
 
-        self.assertTrue(valid_input)
         self.assertEqual(mirror_sender, sender)
 
         realm_users = UserProfile.objects.filter(realm=sender.realm)
@@ -2919,11 +2908,9 @@ class MirroredMessageUsersTest(ZulipTestCase):
         request = Request(POST = dict(sender=sender_email, type='stream'),
                           client = client)
 
-        (valid_input, mirror_sender) = \
-            create_mirrored_message_users(request, user, recipients)
+        mirror_sender = create_mirrored_message_users(request, user, recipients)
 
         assert(mirror_sender is not None)
-        self.assertTrue(valid_input)
         self.assertEqual(mirror_sender.email, sender_email)
         self.assertTrue(mirror_sender.is_mirror_dummy)
 
@@ -2940,10 +2927,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         request = Request(POST = dict(sender=sender.email, type='private'),
                           client = client)
 
-        (valid_input, mirror_sender) = \
-            create_mirrored_message_users(request, user, recipients)
+        mirror_sender = create_mirrored_message_users(request, user, recipients)
 
-        self.assertEqual(valid_input, True)
         self.assertEqual(mirror_sender, sender)
 
         realm_users = UserProfile.objects.filter(realm=sender.realm)
@@ -2967,10 +2952,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         request = Request(POST = dict(sender=sender.email, type='private'),
                           client = client)
 
-        (valid_input, mirror_sender) = \
-            create_mirrored_message_users(request, user, recipients)
+        mirror_sender = create_mirrored_message_users(request, user, recipients)
 
-        self.assertEqual(valid_input, True)
         self.assertEqual(mirror_sender, sender)
 
         realm_users = UserProfile.objects.filter(realm=sender.realm)
