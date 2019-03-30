@@ -14,6 +14,7 @@ HUMAN_CLIENT_LIST = MOBILE_CLIENT_LIST + ["website"]
 
 human_messages = Message.objects.filter(sending_client__name__in=HUMAN_CLIENT_LIST)
 
+
 class Command(BaseCommand):
     help = "Generate statistics on realm activity."
 
