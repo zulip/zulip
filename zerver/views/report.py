@@ -24,6 +24,8 @@ import logging
 js_source_map = None  # type: Optional[SourceMap]
 
 # Read the source map information for decoding JavaScript backtraces.
+
+
 def get_js_source_map() -> Optional[SourceMap]:
     global js_source_map
     if not js_source_map and not (settings.DEVELOPMENT or settings.TEST_SUITE):
@@ -32,6 +34,7 @@ def get_js_source_map() -> Optional[SourceMap]:
             os.path.join(settings.STATIC_ROOT, 'webpack-bundles')
         ])
     return js_source_map
+
 
 @human_users_only
 @has_request_variables
@@ -64,6 +67,7 @@ def report_send_times(request: HttpRequest, user_profile: UserProfile,
         statsd.incr('render_disparity')
     return json_success()
 
+
 @human_users_only
 @has_request_variables
 def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
@@ -77,6 +81,7 @@ def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
     statsd.timing("narrow.network.%s" % (base_key,), network)
     return json_success()
 
+
 @human_users_only
 @has_request_variables
 def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
@@ -87,6 +92,7 @@ def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
     statsd.timing("unnarrow.initial_core.%s" % (base_key,), initial_core)
     statsd.timing("unnarrow.initial_free.%s" % (base_key,), initial_free)
     return json_success()
+
 
 @has_request_variables
 def report_error(request: HttpRequest, user_profile: UserProfile, message: str=REQ(),
@@ -149,6 +155,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
     ))
 
     return json_success()
+
 
 @csrf_exempt
 @require_POST
