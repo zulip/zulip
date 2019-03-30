@@ -18,6 +18,7 @@ EXCLUDE_PROPERTIES = {
     }
 }
 
+
 class OpenAPISpec():
     def __init__(self, path: str) -> None:
         self.path = path
@@ -54,10 +55,12 @@ class OpenAPISpec():
         assert(self.data)
         return self.data
 
+
 class SchemaError(Exception):
     pass
 
 openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH)
+
 
 def get_openapi_fixture(endpoint: str, method: str,
                         response: Optional[str]='200') -> Dict[str, Any]:
@@ -67,9 +70,11 @@ def get_openapi_fixture(endpoint: str, method: str,
             [response]['content']['application/json']['schema']
             ['example'])
 
+
 def get_openapi_parameters(endpoint: str,
                            method: str) -> List[Dict[str, Any]]:
     return (openapi_spec.spec()['paths'][endpoint][method.lower()]['parameters'])
+
 
 def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
                                     method: str, response: str) -> None:
@@ -103,6 +108,7 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
     for req_key in schema['required']:
         if req_key not in content.keys():
             raise SchemaError('Expected to find the "{}" required key')
+
 
 def to_python_type(py_type: str) -> type:
     """Transform an OpenAPI-like type to a Pyton one.
