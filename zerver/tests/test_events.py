@@ -272,6 +272,7 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post_request('/notify_tornado', req)
         self.assert_json_success(result)
 
+
 class GetEventsTest(ZulipTestCase):
     def tornado_call(self, view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
                      user_profile: UserProfile,
@@ -454,6 +455,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertEqual(message["avatar_url"], None)
+
 
 class EventsRegisterTest(ZulipTestCase):
     def setUp(self) -> None:
@@ -2599,6 +2601,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+
 class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots
     def test_realm_bots_non_admin(self) -> None:
@@ -2625,6 +2628,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         UserMessage.objects.filter(user_profile=user_profile).delete()
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
+
 
 class GetUnreadMsgsTest(ZulipTestCase):
     def mute_stream(self, user_profile: UserProfile, stream: Stream) -> None:
@@ -2877,6 +2881,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         result = get_unread_data()
         self.assertEqual(result['mentions'], [stream_message_id])
 
+
 class EventQueueTest(TestCase):
     def test_one_event(self) -> None:
         queue = EventQueue("1")
@@ -3005,6 +3010,7 @@ class EventQueueTest(TestCase):
                           {'id': 1,
                            'type': 'unknown',
                            "timestamp": "1"}])
+
 
 class ClientDescriptorsTest(ZulipTestCase):
     def test_get_client_info_for_all_public_streams(self) -> None:
@@ -3288,6 +3294,7 @@ class ClientDescriptorsTest(ZulipTestCase):
             ),
         ])
 
+
 class FetchQueriesTest(ZulipTestCase):
     def test_queries(self) -> None:
         user = self.example_user("hamlet")
@@ -3400,6 +3407,7 @@ class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
         self.user_profile.save()
         result = _default_all_public_streams(self.user_profile, None)
         self.assertFalse(result)
+
 
 class TestEventsRegisterNarrowDefaults(ZulipTestCase):
     def setUp(self) -> None:
