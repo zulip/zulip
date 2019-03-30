@@ -18,6 +18,7 @@ our_dir = os.path.dirname(os.path.abspath(__file__))
 
 from zulip_bots.lib import RateLimit
 
+
 def get_bot_handler(service_name: str) -> Any:
 
     # Check that this service is present in EMBEDDED_BOTS, add exception handling.
@@ -50,11 +51,14 @@ class StateHandler:
     def contains(self, key: str) -> bool:
         return is_key_in_bot_storage(self.user_profile, key)
 
+
 class EmbeddedBotQuitException(Exception):
     pass
 
+
 class EmbeddedBotEmptyRecipientsList(Exception):
     pass
+
 
 class EmbeddedBotHandler:
     def __init__(self, user_profile: UserProfile) -> None:
