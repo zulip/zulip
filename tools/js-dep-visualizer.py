@@ -31,6 +31,7 @@ JS_FILES_DIR = os.path.join(ROOT_DIR, 'static/js')
 OUTPUT_FILE_PATH = os.path.relpath(os.path.join(ROOT_DIR, 'var/zulip-deps.dot'))
 PNG_FILE_PATH = os.path.relpath(os.path.join(ROOT_DIR, 'var/zulip-deps.png'))
 
+
 def get_js_edges():
     # type: () -> Tuple[EdgeSet, MethodDict]
     names = set()
@@ -74,6 +75,7 @@ def get_js_edges():
                     edges.add(tup)
                     methods[tup].append(method)
     return edges, methods
+
 
 def find_edges_to_remove(graph, methods):
     # type: (Graph, MethodDict) -> Tuple[Graph, List[Edge]]
@@ -255,6 +257,7 @@ def find_edges_to_remove(graph, methods):
 
     return graph, removed_edges
 
+
 def report_roadmap(edges, methods):
     # type: (List[Edge], MethodDict) -> None
     child_modules = {child for parent, child in edges}
@@ -274,6 +277,7 @@ def report_roadmap(edges, methods):
             print()
         print()
 
+
 def produce_partial_output(graph):
     # type: (Graph) -> None
     print(graph.num_edges())
@@ -286,6 +290,7 @@ def produce_partial_output(graph):
     print()
     print('See dot file here: {}'.format(OUTPUT_FILE_PATH))
     print('See output png file: {}'.format(PNG_FILE_PATH))
+
 
 def run():
     # type: () -> None
