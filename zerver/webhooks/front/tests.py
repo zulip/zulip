@@ -2,6 +2,7 @@ import ujson
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class FrontHookTests(WebhookTestCase):
     STREAM_NAME = 'front'
     URL_TEMPLATE = "/api/v1/external/front?&api_key={api_key}&stream={stream}"
