@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class SolanoHookTests(WebhookTestCase):
     STREAM_NAME = 'solano labs'
     URL_TEMPLATE = u"/api/v1/external/solano?api_key={api_key}&stream={stream}"
