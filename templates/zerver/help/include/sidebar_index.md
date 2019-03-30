@@ -60,7 +60,6 @@
 * [Create a stream](/help/create-a-stream)
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
-* [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Message a stream by email](/help/message-a-stream-by-email)
