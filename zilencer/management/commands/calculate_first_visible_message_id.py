@@ -22,12 +22,12 @@ class Command(ZulipBaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
-        realm = self.get_realm(options)
+        specific_realm = self.get_realm(options)
 
-        if realm is None:
+        if specific_realm is None:
             realms = Realm.objects.all()
         else:
-            realms = [realm]
+            realms = [specific_realm]
 
         for realm in realms:
             maybe_update_first_visible_message_id(realm, options['lookback_hours'])
