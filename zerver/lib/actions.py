@@ -1,3 +1,12 @@
+import ujson
+import time
+import datetime
+import os
+import platform
+import logging
+import itertools
+from collections import defaultdict
+from operator import itemgetter
 from typing import (
     AbstractSet, Any, Callable, Dict, Iterable, List, Mapping, MutableMapping,
     Optional, Sequence, Set, Tuple, Union, cast
@@ -153,15 +162,6 @@ from analytics.models import StreamCount
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import update_license_ledger_if_needed
 
-import ujson
-import time
-import datetime
-import os
-import platform
-import logging
-import itertools
-from collections import defaultdict
-from operator import itemgetter
 
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.
