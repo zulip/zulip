@@ -10,6 +10,7 @@ from zerver.lib import utils
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserMessage
 
+
 class Command(ZulipBaseCommand):
     help = """Sets user message flags. Used internally by actions.py. Marks all
     Expects a comma-delimited list of user message ids via stdin, and an EOF to terminate."""
