@@ -8,6 +8,7 @@ from zerver.lib.actions import check_send_typing_notification, \
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
 
+
 @has_request_variables
 def send_notification_backend(
         request: HttpRequest, user_profile: UserProfile,
