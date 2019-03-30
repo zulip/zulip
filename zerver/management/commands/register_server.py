@@ -15,6 +15,7 @@ if settings.DEVELOPMENT:
 else:
     SECRETS_FILENAME = "/etc/zulip/zulip-secrets.conf"
 
+
 class Command(ZulipBaseCommand):
     help = """Register a remote Zulip server for push notifications."""
 
