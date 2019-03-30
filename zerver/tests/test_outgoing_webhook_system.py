@@ -19,22 +19,27 @@ from zerver.models import get_realm, get_user, UserProfile, get_display_recipien
 
 from version import ZULIP_VERSION
 
+
 class ResponseMock:
     def __init__(self, status_code: int, content: Optional[Any]=None) -> None:
         self.status_code = status_code
         self.content = content
         self.text = ujson.dumps(content)
 
+
 def request_exception_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.RequestException("I'm a generic exception :(")
 
+
 def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.Timeout("Time is up!")
+
 
 def connection_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.ConnectionError()
 
 service_handler = GenericOutgoingWebhookService(None, None, None)
+
 
 class DoRestCallTests(ZulipTestCase):
     def setUp(self) -> None:
@@ -136,6 +141,7 @@ When trying to send a request to the webhook service, an exception of type Reque
 I'm a generic exception :(
 ```''')
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
+
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
     def setUp(self) -> None:
