@@ -56,6 +56,7 @@ else:
     RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
     RemoteRealmCount = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
+
 def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
                  for_installation: bool=False, remote: bool=False) -> HttpRequest:
     page_params = dict(
@@ -69,6 +70,7 @@ def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
                   context=dict(target_name=target_name,
                                page_params=JSONEncoderForHTML().encode(page_params)))
 
+
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:
     realm = request.user.realm
@@ -77,6 +79,7 @@ def stats(request: HttpRequest) -> HttpResponse:
         # can use @require_non_guest_human_user
         raise JsonableError(_("Not allowed for guest users"))
     return render_stats(request, '', realm.name or realm.string_id)
+
 
 @require_server_admin
 @has_request_variables
@@ -87,6 +90,7 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
 
     return render_stats(request, '/realm/%s' % (realm_str,), realm.name or realm.string_id)
 
+
 @require_server_admin
 @has_request_variables
 def stats_for_remote_realm(request: HttpRequest, remote_server_id: str,
@@ -94,6 +98,7 @@ def stats_for_remote_realm(request: HttpRequest, remote_server_id: str,
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return render_stats(request, '/remote/%s/realm/%s' % (server.id, remote_realm_id),
                         "Realm %s on server %s" % (remote_realm_id, server.hostname))
+
 
 @require_server_admin_api
 @has_request_variables
@@ -105,6 +110,7 @@ def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
 
     return get_chart_data(request=request, user_profile=user_profile, realm=realm, **kwargs)
 
+
 @require_server_admin_api
 @has_request_variables
 def get_chart_data_for_remote_realm(
@@ -114,9 +120,11 @@ def get_chart_data_for_remote_realm(
     return get_chart_data(request=request, user_profile=user_profile, server=server,
                           remote=True, remote_realm_id=int(remote_realm_id), **kwargs)
 
+
 @require_server_admin
 def stats_for_installation(request: HttpRequest) -> HttpResponse:
     return render_stats(request, '/installation', 'Installation', True)
+
 
 @require_server_admin
 def stats_for_remote_installation(request: HttpRequest, remote_server_id: str) -> HttpResponse:
@@ -124,11 +132,13 @@ def stats_for_remote_installation(request: HttpRequest, remote_server_id: str) -
     return render_stats(request, '/remote/%s/installation' % (server.id,),
                         'remote Installation %s' % (server.hostname), True, True)
 
+
 @require_server_admin_api
 @has_request_variables
 def get_chart_data_for_installation(request: HttpRequest, user_profile: UserProfile,
                                     chart_name: str=REQ(), **kwargs: Any) -> HttpResponse:
     return get_chart_data(request=request, user_profile=user_profile, for_installation=True, **kwargs)
+
 
 @require_server_admin_api
 @has_request_variables
@@ -141,6 +151,7 @@ def get_chart_data_for_remote_installation(
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return get_chart_data(request=request, user_profile=user_profile, for_installation=True,
                           remote=True, server=server, **kwargs)
+
 
 @require_non_guest_user
 @has_request_variables
@@ -280,6 +291,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         data['display_order'] = None
     return json_success(data=data)
 
+
 def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:
     totals = [(sum(values), label) for label, values in value_arrays.items()]
     totals.sort(reverse=True)
@@ -291,6 +303,8 @@ def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:
 # understanding the realm's traffic and the user's traffic. This function
 # tries to rank the clients so that taking the first N elements of the
 # sorted list has a reasonable chance of doing so.
+
+
 def sort_client_labels(data: Dict[str, Dict[str, List[int]]]) -> List[str]:
     realm_order = sort_by_totals(data['everyone'])
     user_order = sort_by_totals(data['user'])
@@ -301,6 +315,7 @@ def sort_client_labels(data: Dict[str, Dict[str, List[int]]]) -> List[str]:
         label_sort_values[label] = min(i-.1, label_sort_values.get(label, i))
     return [label for label, sort_value in sorted(label_sort_values.items(),
                                                   key=lambda x: x[1])]
+
 
 def table_filtered_to_id(table: Type[BaseCount], key_id: int) -> QuerySet:
     if table == RealmCount:
@@ -317,6 +332,7 @@ def table_filtered_to_id(table: Type[BaseCount], key_id: int) -> QuerySet:
         return RemoteRealmCount.objects.filter(realm_id=key_id)
     else:
         raise AssertionError("Unknown table: %s" % (table,))
+
 
 def client_label_map(name: str) -> str:
     if name == "website":
@@ -337,6 +353,7 @@ def client_label_map(name: str) -> str:
         return name[len("Zulip"):-len("Webhook")] + " webhook"
     return name
 
+
 def rewrite_client_arrays(value_arrays: Dict[str, List[int]]) -> Dict[str, List[int]]:
     mapped_arrays = {}  # type: Dict[str, List[int]]
     for label, array in value_arrays.items():
@@ -347,6 +364,7 @@ def rewrite_client_arrays(value_arrays: Dict[str, List[int]]) -> Dict[str, List[
         else:
             mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(0, len(array))]
     return mapped_arrays
+
 
 def get_time_series_by_subgroup(stat: CountStat,
                                 table: Type[BaseCount],
@@ -374,6 +392,7 @@ def get_time_series_by_subgroup(stat: CountStat,
 
 eastern_tz = pytz.timezone('US/Eastern')
 
+
 def make_table(title: str, cols: List[str], rows: List[Any], has_row_class: bool=False) -> str:
 
     if not has_row_class:
@@ -389,6 +408,7 @@ def make_table(title: str, cols: List[str], rows: List[Any], has_row_class: bool
     )
 
     return content
+
 
 def dictfetchall(cursor: connection.cursor) -> List[Dict[str, Any]]:
     "Returns all rows from a cursor as a dict"
@@ -455,8 +475,10 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
 
     return result
 
+
 def get_plan_name(plan_type: int) -> str:
     return ['', 'self hosted', 'limited', 'standard', 'open source'][plan_type]
+
 
 def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     now = timezone_now()
@@ -713,6 +735,7 @@ def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
     content = mark_safe('<pre>' + output + '</pre>')
     return content, realm_minutes
 
+
 def sent_messages_report(realm: str) -> str:
     title = 'Recently sent messages for ' + realm
 
@@ -779,6 +802,7 @@ def sent_messages_report(realm: str) -> str:
     cursor.close()
 
     return make_table(title, cols, rows)
+
 
 def ad_hoc_queries() -> List[Dict[str, str]]:
     def get_page(query: str, cols: List[str], title: str,
@@ -1006,6 +1030,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 
     return pages
 
+
 @require_server_admin
 @has_request_variables
 def get_activity(request: HttpRequest) -> HttpResponse:
@@ -1025,6 +1050,7 @@ def get_activity(request: HttpRequest) -> HttpResponse:
         'analytics/activity.html',
         context=dict(data=data, title=title, is_home=True),
     )
+
 
 @require_server_admin
 def support(request: HttpRequest) -> HttpResponse:
@@ -1086,6 +1112,7 @@ def support(request: HttpRequest) -> HttpResponse:
             context["realms"] = realms
     return render(request, 'analytics/support.html', context=context)
 
+
 def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
     fields = [
         'user_profile__full_name',
@@ -1105,6 +1132,7 @@ def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
     records = records.select_related('user_profile', 'client').only(*fields)
     return records
 
+
 def get_user_activity_records_for_email(email: str) -> List[QuerySet]:
     fields = [
         'user_profile__full_name',
@@ -1120,6 +1148,7 @@ def get_user_activity_records_for_email(email: str) -> List[QuerySet]:
     records = records.order_by("-last_visit")
     records = records.select_related('user_profile', 'client').only(*fields)
     return records
+
 
 def raw_user_activity_table(records: List[QuerySet]) -> str:
     cols = [
@@ -1140,6 +1169,7 @@ def raw_user_activity_table(records: List[QuerySet]) -> str:
     rows = list(map(row, records))
     title = 'Raw Data'
     return make_table(title, cols, rows)
+
 
 def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, Any]]:
     #: `Any` used above should be `Union(int, datetime)`.
@@ -1190,11 +1220,13 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, An
 
     return summary
 
+
 def format_date_for_activity_reports(date: Optional[datetime]) -> str:
     if date:
         return date.astimezone(eastern_tz).strftime('%Y-%m-%d %H:%M')
     else:
         return ''
+
 
 def user_activity_link(email: str) -> mark_safe:
     url_name = 'analytics.views.get_user_activity'
@@ -1202,11 +1234,13 @@ def user_activity_link(email: str) -> mark_safe:
     email_link = '<a href="%s">%s</a>' % (url, email)
     return mark_safe(email_link)
 
+
 def realm_activity_link(realm_str: str) -> mark_safe:
     url_name = 'analytics.views.get_realm_activity'
     url = reverse(url_name, kwargs=dict(realm_str=realm_str))
     realm_link = '<a href="%s">%s</a>' % (url, realm_str)
     return mark_safe(realm_link)
+
 
 def realm_stats_link(realm_str: str) -> mark_safe:
     url_name = 'analytics.views.stats_for_realm'
@@ -1214,11 +1248,13 @@ def realm_stats_link(realm_str: str) -> mark_safe:
     stats_link = '<a href="{}"><i class="fa fa-pie-chart"></i></a>'.format(url, realm_str)
     return mark_safe(stats_link)
 
+
 def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
     url_name = 'analytics.views.stats_for_remote_installation'
     url = reverse(url_name, kwargs=dict(remote_server_id=server_id))
     stats_link = '<a href="{}"><i class="fa fa-pie-chart"></i>{}</a>'.format(url, hostname)
     return mark_safe(stats_link)
+
 
 def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
     exclude_keys = [
@@ -1264,6 +1300,7 @@ def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> 
 
     return make_table(title, cols, rows)
 
+
 def user_activity_summary_table(user_summary: Dict[str, Dict[str, Any]]) -> str:
     rows = []
     for k, v in user_summary.items():
@@ -1289,6 +1326,7 @@ def user_activity_summary_table(user_summary: Dict[str, Dict[str, Any]]) -> str:
 
     title = 'User Activity'
     return make_table(title, cols, rows)
+
 
 def realm_user_summary_table(all_records: List[QuerySet],
                              admin_emails: Set[str]) -> Tuple[Dict[str, Dict[str, Any]], str]:
@@ -1356,6 +1394,7 @@ def realm_user_summary_table(all_records: List[QuerySet],
     content = make_table(title, cols, rows, has_row_class=True)
     return user_records, content
 
+
 @require_server_admin
 def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     data = []  # type: List[Tuple[str, str]]
@@ -1390,6 +1429,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
         'analytics/activity.html',
         context=dict(data=data, realm_link=None, title=title),
     )
+
 
 @require_server_admin
 def get_user_activity(request: HttpRequest, email: str) -> HttpResponse:
