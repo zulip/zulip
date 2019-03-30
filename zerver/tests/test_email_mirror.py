@@ -51,6 +51,7 @@ from django.conf import settings
 
 from typing import Any, Callable, Dict, Mapping, Union, Optional
 
+
 class TestEncodeDecode(ZulipTestCase):
     def test_encode_decode(self) -> None:
         realm = get_realm('zulip')
@@ -133,6 +134,7 @@ class TestEncodeDecode(ZulipTestCase):
         token = decode_email_address(stream_to_address)[0]
         self.assertEqual(token, stream.email_token)
 
+
 class TestEmailMirrorLibrary(ZulipTestCase):
     def test_get_missed_message_token(self) -> None:
 
@@ -158,6 +160,7 @@ class TestEmailMirrorLibrary(ZulipTestCase):
         address = 'alice@not-the-domain-we-were-expecting.com'
         with self.assertRaises(ZulipEmailForwardError):
             get_token(address)
+
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
     def test_receive_stream_email_messages_success(self) -> None:
@@ -287,6 +290,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
+
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self) -> None:
 
@@ -358,6 +362,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
             exception_message = str(e)
         self.assertEqual(exception_message, "Unable to find plaintext or HTML message body")
 
+
 class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self) -> None:
 
@@ -397,6 +402,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.sender, self.example_user('othello'))
         self.assertEqual(message.recipient.id, user_profile.id)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
+
 
 class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_huddle_message_email_messages(self) -> None:
@@ -445,6 +451,7 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.sender, self.example_user('cordelia'))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
+
 class TestEmptyGatewaySetting(ZulipTestCase):
     def test_missed_message(self) -> None:
         email = self.example_email('othello')
@@ -468,6 +475,7 @@ class TestEmptyGatewaySetting(ZulipTestCase):
         with self.settings(EMAIL_GATEWAY_PATTERN=''):
             test_address = encode_email_address(stream)
             self.assertEqual(test_address, '')
+
 
 class TestReplyExtraction(ZulipTestCase):
     def test_is_forwarded(self) -> None:
@@ -569,6 +577,7 @@ class TestReplyExtraction(ZulipTestCase):
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
         self.assertEqual(message.content, convert_html_to_markdown(html))
+
 
 class TestScriptMTA(ZulipTestCase):
 
