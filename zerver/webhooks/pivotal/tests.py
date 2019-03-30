@@ -2,6 +2,7 @@
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class PivotalV3HookTests(WebhookTestCase):
     STREAM_NAME = 'pivotal'
     URL_TEMPLATE = u"/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
@@ -70,6 +71,7 @@ class PivotalV3HookTests(WebhookTestCase):
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data('pivotal', fixture_name, file_type='xml')
+
 
 class PivotalV5HookTests(WebhookTestCase):
     STREAM_NAME = 'pivotal'
