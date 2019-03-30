@@ -5,6 +5,7 @@ from xml.etree.cElementTree import Element
 
 from zerver.lib.bugdown import walk_tree_with_family, ResultWithFamily
 
+
 class NestedCodeBlocksRenderer(Extension):
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.treeprocessors.add(
@@ -12,6 +13,7 @@ class NestedCodeBlocksRenderer(Extension):
             NestedCodeBlocksRendererTreeProcessor(md, self.getConfigs()),
             '_end'
         )
+
 
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
@@ -69,6 +71,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
             if child is element_to_replace:
                 parent.insert(index, replacement)
                 parent.remove(element_to_replace)
+
 
 def makeExtension(*args: Any, **kwargs: str) -> NestedCodeBlocksRenderer:
     return NestedCodeBlocksRenderer(**kwargs)
