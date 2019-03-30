@@ -14,6 +14,7 @@ except ImportError:
     print('ERROR!!! You need to run this via tools/test-tools.')
     sys.exit(1)
 
+
 class ParserTest(unittest.TestCase):
     def _assert_validate_error(self, error: str, fn: Optional[str]=None,
                                text: Optional[str]=None, check_indent: bool=True) -> None:
