@@ -10,6 +10,7 @@ from datetime import timedelta
 from dateutil import parser
 import pytz
 
+
 class TestTimestamp(ZulipTestCase):
     def test_datetime_and_timestamp_conversions(self) -> None:
         timestamp = 1483228800
