@@ -33,6 +33,7 @@ from zerver.tornado.sharding import tornado_return_queue_name
 
 logger = logging.getLogger('zulip.socket')
 
+
 def get_user_profile(session_id: Optional[str]) -> Optional[UserProfile]:
     if session_id is None:
         return None
@@ -50,8 +51,10 @@ def get_user_profile(session_id: Optional[str]) -> Optional[UserProfile]:
 
 connections = dict()  # type: Dict[Union[int, str], 'SocketConnection']
 
+
 def get_connection(id: Union[int, str]) -> Optional['SocketConnection']:
     return connections.get(id)
+
 
 def register_connection(id: Union[int, str], conn: 'SocketConnection') -> None:
     # Kill any old connections if they exist
@@ -61,19 +64,23 @@ def register_connection(id: Union[int, str], conn: 'SocketConnection') -> None:
     conn.client_id = id
     connections[conn.client_id] = conn
 
+
 def deregister_connection(conn: 'SocketConnection') -> None:
     assert conn.client_id is not None
     del connections[conn.client_id]
 
 redis_client = get_redis_client()
 
+
 def req_redis_key(req_id: str) -> str:
     return 'socket_req_status:%s' % (req_id,)
+
 
 class CloseErrorInfo:
     def __init__(self, status_code: int, err_msg: str) -> None:
         self.status_code = status_code
         self.err_msg = err_msg
+
 
 class SocketConnection(sockjs.tornado.SockJSConnection):
     client_id = None  # type: Optional[Union[int, str]]
@@ -243,6 +250,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         self.did_close = True
 
+
 def respond_send_message(data: Mapping[str, Any]) -> None:
     log_data = data['server_meta']['log_data']
     record_request_restart_data(log_data)
@@ -276,6 +284,8 @@ sockjs_url = '%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.ROOT_DOMAIN_UR
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
                                             {'sockjs_url': sockjs_url,
                                              'disabled_transports': ['eventsource', 'htmlfile']})
+
+
 def get_sockjs_router(port: int) -> sockjs.tornado.SockJSRouter:
     sockjs_router._connection.port = port
     return sockjs_router
