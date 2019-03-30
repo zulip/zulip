@@ -14,6 +14,7 @@ if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Union, List, Dict
 
+
 def get_ftype(fpath, use_shebang):
     # type: (str, bool) -> str
     ext = os.path.splitext(fpath)[1]
@@ -40,6 +41,7 @@ def get_ftype(fpath, use_shebang):
                 return ''
     else:
         return ''
+
 
 def list_files(targets=[], ftypes=[], use_shebang=True,
                modified_only=False, exclude=[], group_by_ftype=False,
