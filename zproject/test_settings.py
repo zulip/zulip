@@ -1,3 +1,4 @@
+from .settings import *
 import os
 # test_settings.py works differently from
 # dev_settings.py/prod_settings.py; it actually is directly referenced
@@ -16,7 +17,6 @@ import os
 # Ick.
 if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
-from .settings import *
 
 # Clear out the REALM_HOSTS set in dev_settings.py
 REALM_HOSTS = {}
