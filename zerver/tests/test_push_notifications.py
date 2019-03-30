@@ -71,6 +71,7 @@ from django.utils.timezone import now
 
 ZERVER_DIR = os.path.dirname(os.path.dirname(__file__))
 
+
 class BouncerTestCase(ZulipTestCase):
     def setUp(self) -> None:
         self.server_uuid = "1234-abcd"
@@ -113,6 +114,7 @@ class BouncerTestCase(ZulipTestCase):
         return {'user_id': user_id,
                 'token': token,
                 'token_kind': token_kind}
+
 
 class PushBouncerNotificationTest(BouncerTestCase):
     DEFAULT_SUBDOMAIN = ""
@@ -305,6 +307,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                                                server=server))
             self.assertEqual(len(tokens), 0)
 
+
 class AnalyticsBouncerTest(BouncerTestCase):
     TIME_ZERO = datetime.datetime(1988, 3, 14).replace(tzinfo=timezone_utc)
 
@@ -389,6 +392,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             send_analytics_to_remote_server()
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
 
+
 class PushNotificationTest(BouncerTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -457,6 +461,7 @@ class PushNotificationTest(BouncerTestCase):
                 user_id=self.user_profile.id,
                 server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
             )
+
 
 class HandlePushNotificationTest(PushNotificationTest):
     DEFAULT_SUBDOMAIN = ""
@@ -830,6 +835,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_android.assert_called_with(android_devices, {'gcm': True}, {})
             mock_push_notifications.assert_called_once()
 
+
 class TestAPNs(PushNotificationTest):
     def devices(self) -> List[DeviceToken]:
         return list(PushDeviceToken.objects.filter(
@@ -950,6 +956,7 @@ class TestAPNs(PushNotificationTest):
         self.assertEqual(
             modernize_apns_payload(payload),
             payload)
+
 
 class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_personal_message(self) -> None:
@@ -1119,6 +1126,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+
 class TestGetGCMPayload(PushNotificationTest):
     def test_get_message_payload_gcm(self) -> None:
         stream = Stream.objects.filter(name='Verona').get()
@@ -1255,10 +1263,12 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
                                      extra_headers={'Content-type':
                                                     'application/json'})
 
+
 class Result:
     def __init__(self, status: int=200, content: str=ujson.dumps({'msg': 'error'})) -> None:
         self.status_code = status
         self.content = content
+
 
 class TestSendToPushBouncer(ZulipTestCase):
     @mock.patch('requests.request', return_value=Result(status=500))
@@ -1302,6 +1312,7 @@ class TestSendToPushBouncer(ZulipTestCase):
         self.assertEqual(str(exc.exception),
                          'Push notification bouncer returned unexpected status code 300')
 
+
 class TestNumPushDevicesForUser(PushNotificationTest):
     def test_when_kind_is_none(self) -> None:
         self.setup_apns_tokens()
@@ -1312,6 +1323,7 @@ class TestNumPushDevicesForUser(PushNotificationTest):
         count = num_push_devices_for_user(self.user_profile,
                                           kind=PushDeviceToken.APNS)
         self.assertEqual(count, 2)
+
 
 class TestPushApi(ZulipTestCase):
     def test_push_api(self) -> None:
@@ -1366,6 +1378,7 @@ class TestPushApi(ZulipTestCase):
             tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
             self.assertEqual(len(tokens), 0)
 
+
 class GCMParseOptionsTest(TestCase):
     def test_invalid_option(self) -> None:
         with self.assertRaises(JsonableError):
@@ -1388,6 +1401,7 @@ class GCMParseOptionsTest(TestCase):
             "normal", parse_gcm_options({"priority": "normal"}, {}))
         self.assertEqual(
             "high", parse_gcm_options({"priority": "high"}, {}))
+
 
 @mock.patch('zerver.lib.push_notifications.gcm_client')
 class GCMSendTest(PushNotificationTest):
@@ -1528,6 +1542,7 @@ class GCMSendTest(PushNotificationTest):
         c1 = call("GCM: Delivery to %s failed: Failed" % (token,))
         mock_warn.assert_has_calls([c1], any_order=True)
 
+
 class TestClearOnRead(ZulipTestCase):
     def test_mark_stream_as_read(self) -> None:
         n_msgs = 3
@@ -1560,6 +1575,7 @@ class TestClearOnRead(ZulipTestCase):
             self.assertEqual(len(g), 1)
         self.assertEqual(sum(len(g) for g in groups), len(msgids))
         self.assertEqual(set(id for g in groups for id in g), set(msgids))
+
 
 class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self) -> None:
@@ -1647,6 +1663,7 @@ class TestReceivesNotificationsFunctions(ZulipTestCase):
         self.user.enable_stream_push_notifications = False
         self.assertFalse(receives_stream_notifications(self.user))
 
+
 class TestPushNotificationsContent(ZulipTestCase):
     def test_fixtures(self) -> None:
         fixtures = ujson.loads(self.fixture_data("markdown_test_cases.json"))
@@ -1678,6 +1695,7 @@ class TestPushNotificationsContent(ZulipTestCase):
         for test in fixtures:
             actual_output = get_mobile_push_content(test["rendered_content"])
             self.assertEqual(actual_output, test["expected_output"])
+
 
 class PushBouncerSignupTest(ZulipTestCase):
     def test_push_signup_invalid_host(self) -> None:
