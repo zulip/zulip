@@ -11,10 +11,12 @@ from zerver.lib.utils import statsd
 import mock
 import ujson
 
+
 def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:
     # A few of our few legacy endpoints need their
     # individual parameters serialized as JSON.
     return {k: ujson.dumps(v) for k, v in raw_params.items()}
+
 
 class StatsMock:
     def __init__(self, settings: Callable[..., Any]) -> None:
@@ -29,6 +31,7 @@ class StatsMock:
             self.func_calls.append((name, args))
 
         return f
+
 
 class TestReport(ZulipTestCase):
     def test_send_time(self) -> None:
