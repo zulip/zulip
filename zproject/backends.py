@@ -46,6 +46,8 @@ from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAll
 # `settings.AUTHENTICATION_BACKENDS`, queried via
 # `django.contrib.auth.get_backends`) and at the realm level (via the
 # `Realm.authentication_methods` BitField).
+
+
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are
@@ -54,6 +56,7 @@ def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
         if key not in method_dict:
             method_dict[key] = False
     return method_dict
+
 
 def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
     if realm is not None:
@@ -69,34 +72,43 @@ def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) ->
                 return True
     return False
 
+
 def ldap_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['LDAP'], realm)
+
 
 def email_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['Email'], realm)
 
+
 def password_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return ldap_auth_enabled(realm) or email_auth_enabled(realm)
+
 
 def dev_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['Dev'], realm)
 
+
 def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['Google'], realm)
 
+
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
+
 
 def any_oauth_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
     return auth_enabled_helper(OAUTH_BACKEND_NAMES, realm)
 
+
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
         if settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN:
             return False
     return True
+
 
 def common_get_active_user(email: str, realm: Realm,
                            return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
@@ -130,6 +142,7 @@ def common_get_active_user(email: str, realm: Realm,
         return None
     return user_profile
 
+
 class ZulipAuthMixin:
     """This common mixin is used to override Django's default behavior for
     looking up a logged-in user by ID to use a version that fetches
@@ -143,6 +156,7 @@ class ZulipAuthMixin:
             return get_user_profile_by_id(user_profile_id)
         except UserProfile.DoesNotExist:
             return None
+
 
 class ZulipDummyBackend(ZulipAuthMixin):
     """Used when we want to log you in without checking any
@@ -162,6 +176,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
             assert realm is not None
             return common_get_active_user(username, realm, return_data)
         return None
+
 
 class EmailAuthBackend(ZulipAuthMixin):
     """
@@ -196,6 +211,7 @@ class EmailAuthBackend(ZulipAuthMixin):
         if user_profile.check_password(password):
             return user_profile
         return None
+
 
 class GoogleMobileOauth2Backend(ZulipAuthMixin):
     """
@@ -238,6 +254,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         return_data["valid_attestation"] = True
         return common_get_active_user(token_payload["email"], realm, return_data)
 
+
 class ZulipRemoteUserBackend(RemoteUserBackend):
     """Authentication backend that reads the Apache REMOTE_USER variable.
     Used primarily in enterprise environments with an SSO solution
@@ -260,12 +277,14 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
         email = remote_user_to_email(remote_user)
         return common_get_active_user(email, realm, return_data=return_data)
 
+
 def is_valid_email(email: str) -> bool:
     try:
         validate_email(email)
     except ValidationError:
         return False
     return True
+
 
 def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     """Used to make determinations on whether a user's email address is
@@ -287,18 +306,22 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     # Otherwise, check if the email ends with LDAP_APPEND_DOMAIN
     return email.strip().lower().endswith("@" + settings.LDAP_APPEND_DOMAIN)
 
+
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     """Since this inherits from _LDAPUser.AuthenticationFailed, these will
     be caught and logged at debug level inside django-auth-ldap's authenticate()"""
     pass
 
+
 class ZulipLDAPExceptionOutsideDomain(ZulipLDAPException):
     pass
+
 
 class ZulipLDAPConfigurationError(Exception):
     pass
 
 LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK = 2
+
 
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     """Common code between LDAP authentication (ZulipLDAPAuthBackend) and
@@ -467,6 +490,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 do_reactivate_user(user)
         return (user, built)
 
+
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
@@ -583,6 +607,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         return user_profile, True
 
+
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     """Just like ZulipLDAPAuthBackend, but doesn't let you log in.  Used
     for syncing data like names, avatars, and custom profile fields
@@ -594,6 +619,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
                      return_data: Optional[Dict[str, Any]]=None) -> None:
         return None
 
+
 def sync_user_from_ldap(user_profile: UserProfile) -> bool:
     backend = ZulipLDAPUserPopulator()
     updated_user = backend.populate_user(backend.django_to_ldap_username(user_profile.email))
@@ -604,6 +630,8 @@ def sync_user_from_ldap(user_profile: UserProfile) -> bool:
     return True
 
 # Quick tool to test whether you're correctly authenticating to LDAP
+
+
 def query_ldap(email: str) -> List[str]:
     values = []
     backend = next((backend for backend in get_backends() if isinstance(backend, LDAPBackend)), None)
@@ -624,6 +652,7 @@ def query_ldap(email: str) -> List[str]:
         values.append("LDAP backend not configured on this server.")
     return values
 
+
 class DevAuthBackend(ZulipAuthMixin):
     """Allow logging in as any user without a password.  This is used for
     convenience when developing Zulip, and is disabled in production."""
@@ -635,6 +664,7 @@ class DevAuthBackend(ZulipAuthMixin):
         if not dev_auth_enabled(realm):
             return None
         return common_get_active_user(dev_auth_username, realm, return_data=return_data)
+
 
 def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
                                  *args: Any, **kwargs: Any) -> Optional[UserProfile]:
@@ -704,6 +734,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
 
     return user_profile
 
+
 def social_auth_associate_user(
         backend: BaseAuth,
         *args: Any,
@@ -720,6 +751,7 @@ def social_auth_associate_user(
 
     return {'user_profile': user_profile,
             'return_data': return_data}
+
 
 def social_auth_finish(backend: Any,
                        details: Dict[str, Any],
@@ -822,6 +854,7 @@ def social_auth_finish(backend: Any,
                                            redirect_to=redirect_to,
                                            multiuse_object_key=multiuse_object_key)
 
+
 class SocialAuthMixin(ZulipAuthMixin):
     auth_backend_name = "undeclared"
     # Used to determine how to order buttons on login form, backend with
@@ -850,6 +883,7 @@ class SocialAuthMixin(ZulipAuthMixin):
             # interesting enough that we should log a warning.
             logging.warning(str(e))
             return None
+
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
@@ -903,6 +937,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 return dict(auth_failed_reason="GitHub user is not member of required organization")
 
         raise AssertionError("Invalid configuration")
+
 
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50
