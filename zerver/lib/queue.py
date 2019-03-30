@@ -190,9 +190,9 @@ class TornadoQueueClient(SimpleQueueClient):
         self.log.info("Beginning TornadoQueueClient connection")
         self.connection = ExceptionFreeTornadoConnection(
             self._get_parameters(),
-            on_open_callback = self._on_open,
-            on_open_error_callback = self._on_connection_open_error,
-            on_close_callback = self._on_connection_closed,
+            on_open_callback=self._on_open,
+            on_open_error_callback=self._on_connection_open_error,
+            on_close_callback=self._on_connection_closed,
         )
 
     def _reconnect(self) -> None:
@@ -240,7 +240,7 @@ class TornadoQueueClient(SimpleQueueClient):
         self._connection_failure_count = 0
         try:
             self.connection.channel(
-                on_open_callback = self._on_channel_open)
+                on_open_callback=self._on_channel_open)
         except pika.exceptions.ConnectionClosed:
             # The connection didn't stay open long enough for this code to get to it.
             # Let _on_connection_closed deal with trying again.
