@@ -18,6 +18,7 @@ from zerver.lib.test_classes import (
 from zerver.management.commands import makemessages
 from zerver.lib.email_notifications import enqueue_welcome_emails
 
+
 class EmailTranslationTestCase(ZulipTestCase):
     def test_email_translation(self) -> None:
         def check_translation(phrase: str, request_type: str, *args: Any, **kwargs: Any) -> None:
@@ -53,6 +54,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         with self.settings(DEVELOPMENT_LOG_EMAILS=True):
             enqueue_welcome_emails(hamlet)
         check_translation("Viele Grüße", "")
+
 
 class TranslationTestCase(ZulipTestCase):
     """
