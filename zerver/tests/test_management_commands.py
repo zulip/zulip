@@ -82,7 +82,7 @@ class TestZulipBaseCommand(ZulipTestCase):
     def get_users_sorted(self, options: Dict[str, Any], realm: Optional[Realm],
                          is_bot: Optional[bool]=None) -> List[UserProfile]:
         user_profiles = self.command.get_users(options, realm, is_bot=is_bot)
-        return sorted(user_profiles, key = lambda x: x.email)
+        return sorted(user_profiles, key=lambda x: x.email)
 
     def test_get_users(self) -> None:
         user_emails = self.example_email("hamlet") + "," + self.example_email("iago")
@@ -115,7 +115,7 @@ class TestZulipBaseCommand(ZulipTestCase):
             self.command.get_users(dict(users=user_emails, all_users=True), None)
 
         expected_user_profiles = sorted(UserProfile.objects.filter(realm=self.zulip_realm),
-                                        key = lambda x: x.email)
+                                        key=lambda x: x.email)
         user_profiles = self.get_users_sorted(dict(users=None, all_users=True), self.zulip_realm)
         self.assertEqual(user_profiles, expected_user_profiles)
 
@@ -130,7 +130,7 @@ class TestZulipBaseCommand(ZulipTestCase):
     def test_get_non_bot_users(self) -> None:
         expected_user_profiles = sorted(UserProfile.objects.filter(realm=self.zulip_realm,
                                                                    is_bot=False),
-                                        key = lambda x: x.email)
+                                        key=lambda x: x.email)
         user_profiles = self.get_users_sorted(dict(users=None, all_users=True),
                                               self.zulip_realm,
                                               is_bot=False)
