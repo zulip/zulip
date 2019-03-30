@@ -5,6 +5,7 @@ from zulint.linters import run_pycodestyle
 
 from typing import List
 
+
 def check_pep8(files):
     # type: (List[str]) -> bool
     ignored_rules = [
