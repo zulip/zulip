@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand, CommandParser, CommandError
 
 from zerver.data_import.gitter import do_convert_data
 
+
 class Command(BaseCommand):
     help = """Convert the Gitter data into Zulip data format."""
 
