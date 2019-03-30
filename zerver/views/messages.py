@@ -610,7 +610,7 @@ def get_base_query_for_search(user_profile: UserProfile,
 def add_narrow_conditions(user_profile: UserProfile,
                           inner_msg_id_col: ColumnElement,
                           query: Query,
-                          narrow: List[Dict[str, Any]]) -> Tuple[Query, bool]:
+                          narrow: Optional[List[Dict[str, Any]]]) -> Tuple[Query, bool]:
     is_search = False  # for now
 
     if narrow is None:
@@ -642,7 +642,7 @@ def add_narrow_conditions(user_profile: UserProfile,
 
 def find_first_unread_anchor(sa_conn: Any,
                              user_profile: UserProfile,
-                             narrow: List[Dict[str, Any]]) -> int:
+                             narrow: Optional[List[Dict[str, Any]]]) -> int:
     # We always need UserMessage in our query, because it has the unread
     # flag for the user.
     need_user_message = True
@@ -773,11 +773,9 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     anchored_to_left = (anchor == 0)
 
-    # Set values that will be used to short circuit the after_query
+    # Set value that will be used to short circuit the after_query
     # altogether and avoid needless conditions in the before_query.
     anchored_to_right = (anchor == LARGER_THAN_MAX_MESSAGE_ID)
-    if anchored_to_right:
-        num_after = None
 
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     query = limit_query_to_range(
@@ -1172,7 +1170,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
                             message_to: Union[Sequence[str], Sequence[int]],
                             topic_name: Optional[str],
                             message_content: str, delivery_type: str,
-                            defer_until: str, tz_guess: str,
+                            defer_until: str, tz_guess: Optional[str],
                             forwarder_user_profile: UserProfile,
                             realm: Optional[Realm]) -> HttpResponse:
     deliver_at = None
@@ -1311,6 +1309,7 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
     # Make sure that the latest entry in the history corresponds to the
     # message's last edit time
     if len(message_history) > 0:
+        assert message.last_edit_time is not None
         assert(datetime_to_timestamp(message.last_edit_time) ==
                message_history[0]['timestamp'])
 
@@ -1327,6 +1326,7 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
             del entry['prev_rendered_content_version']
             prev_content = entry['prev_content']
             prev_rendered_content = entry['prev_rendered_content']
+            assert prev_rendered_content is not None
             entry['content_html_diff'] = highlight_html_differences(
                 prev_rendered_content,
                 entry['rendered_content'],
