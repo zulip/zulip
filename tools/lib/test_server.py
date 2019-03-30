@@ -21,6 +21,7 @@ if TOOLS_DIR not in sys.path:
 
 from zerver.lib.test_fixtures import run_generate_fixtures_if_required
 
+
 def set_up_django(external_host):
     # type: (str) -> None
     os.environ['EXTERNAL_HOST'] = external_host
@@ -28,6 +29,7 @@ def set_up_django(external_host):
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
     django.setup()
     os.environ['PYTHONUNBUFFERED'] = 'y'
+
 
 def assert_server_running(server, log_file):
     # type: (subprocess.Popen, Optional[str]) -> None
@@ -38,6 +40,7 @@ def assert_server_running(server, log_file):
             message += '\nSee %s\n' % (log_file,)
         raise RuntimeError(message)
 
+
 def server_is_up(server, log_file):
     # type: (subprocess.Popen, Optional[str]) -> bool
     assert_server_running(server, log_file)
@@ -46,6 +49,7 @@ def server_is_up(server, log_file):
         return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
     except Exception:
         return False
+
 
 @contextmanager
 def test_server_running(force: bool=False, external_host: str='testserver',
