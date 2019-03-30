@@ -4,6 +4,7 @@ from typing import (Dict, List)
 from django.db import connection
 from zerver.models import Recipient
 
+
 class StreamRecipientMap:
     '''
     This class maps stream_id -> recipient_id and vice versa.
