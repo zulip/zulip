@@ -13,9 +13,11 @@ from django.conf import settings
 from sendfile import sendfile
 from mimetypes import guess_type
 
+
 def serve_s3(request: HttpRequest, url_path: str) -> HttpResponse:
     uri = get_signed_upload_url(url_path)
     return redirect(uri)
+
 
 def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
     local_path = get_local_file_path(path_id)
@@ -46,6 +48,7 @@ def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
 
     return sendfile(request, local_path, attachment=attachment)
 
+
 def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
                        realm_id_str: str, filename: str) -> HttpResponse:
     path_id = "%s/%s" % (realm_id_str, filename)
@@ -59,6 +62,7 @@ def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
         return serve_local(request, path_id)
 
     return serve_s3(request, path_id)
+
 
 def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) == 0:
