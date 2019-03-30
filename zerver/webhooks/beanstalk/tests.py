@@ -6,6 +6,7 @@ from mock import MagicMock, patch
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 
+
 class BeanstalkHookTests(WebhookTestCase):
     STREAM_NAME = 'commits'
     URL_TEMPLATE = u"/api/v1/external/beanstalk?stream={stream}"
