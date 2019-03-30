@@ -21,6 +21,7 @@ IGNORED_EVENTS = [
     'sprint_started',
 ]
 
+
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[UserProfile]:
     try:
         # Try to find a matching user in Zulip
@@ -35,6 +36,7 @@ def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[Use
         return user
     except IndexError:
         return None
+
 
 def convert_jira_markup(content: str, realm: Realm) -> str:
     # Attempt to do some simplistic conversion of JIRA
@@ -87,6 +89,7 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
 
     return content
 
+
 def get_in(payload: Dict[str, Any], keys: List[str], default: str='') -> Any:
     try:
         for key in keys:
@@ -94,6 +97,7 @@ def get_in(payload: Dict[str, Any], keys: List[str], default: str='') -> Any:
     except (AttributeError, KeyError, TypeError):
         return default
     return payload
+
 
 def get_issue_string(payload: Dict[str, Any], issue_id: Optional[str]=None) -> str:
     # Guess the URL as it is not specified in the payload
@@ -108,6 +112,7 @@ def get_issue_string(payload: Dict[str, Any], issue_id: Optional[str]=None) -> s
     else:
         return issue_id
 
+
 def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
     if assignee_email != '':
         try:
@@ -117,17 +122,22 @@ def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
         return u"**{}**".format(assignee_name)
     return ''
 
+
 def get_issue_author(payload: Dict[str, Any]) -> str:
     return get_in(payload, ['user', 'displayName'])
+
 
 def get_issue_id(payload: Dict[str, Any]) -> str:
     return get_in(payload, ['issue', 'key'])
 
+
 def get_issue_title(payload: Dict[str, Any]) -> str:
     return get_in(payload, ['issue', 'fields', 'summary'])
 
+
 def get_issue_subject(payload: Dict[str, Any]) -> str:
     return u"{}: {}".format(get_issue_id(payload), get_issue_title(payload))
+
 
 def get_sub_event_for_update_issue(payload: Dict[str, Any]) -> str:
     sub_event = payload.get('issue_event_type_name', '')
@@ -138,11 +148,13 @@ def get_sub_event_for_update_issue(payload: Dict[str, Any]) -> str:
             return 'issue_transited'
     return sub_event
 
+
 def get_event_type(payload: Dict[str, Any]) -> Optional[str]:
     event = payload.get('webhookEvent')
     if event is None and payload.get('transition'):
         event = 'jira:issue_updated'
     return event
+
 
 def add_change_info(content: str, field: str, from_field: str, to_field: str) -> str:
     content += u"* Changed {}".format(field)
@@ -151,6 +163,7 @@ def add_change_info(content: str, field: str, from_field: str, to_field: str) ->
     if to_field:
         content += u" to {}\n".format(to_field)
     return content
+
 
 def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
     # Reassigned, commented, reopened, and resolved events are all bundled
@@ -214,6 +227,7 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
 
     return content
 
+
 def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
     return u"{} **created** {} priority {}, assigned to **{}**:\n\n> {}".format(
         get_issue_author(payload),
@@ -222,6 +236,7 @@ def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfil
         get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one'),
         get_issue_title(payload)
     )
+
 
 def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
     return u"{} **deleted** {}!".format(get_issue_author(payload), get_issue_string(payload))
@@ -232,6 +247,7 @@ JIRA_CONTENT_FUNCTION_MAPPER = {
     "jira:issue_updated": handle_updated_issue_event,
     "comment_created": handle_updated_issue_event
 }
+
 
 @api_key_only_webhook_view("JIRA")
 @has_request_variables
