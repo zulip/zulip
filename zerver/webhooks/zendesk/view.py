@@ -8,10 +8,12 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 def truncate(string: str, length: int) -> str:
     if len(string) > length:
         string = string[:length-3] + '...'
     return string
+
 
 @authenticated_rest_api_view(webhook_client_name="Zendesk")
 @has_request_variables
