@@ -495,8 +495,8 @@ def bulk_import_user_message_data(data: TableData, dump_file_id: int) -> None:
     def process_batch(items: List[Dict[str, Any]]) -> None:
         ums = [
             UserMessageLite(
-                user_profile_id = item['user_profile_id'],
-                message_id = item['message_id'],
+                user_profile_id=item['user_profile_id'],
+                message_id=item['message_id'],
                 flags=item['flags'],
             )
             for item in items
