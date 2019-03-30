@@ -7,6 +7,7 @@ import errno
 
 JobData = TypeVar('JobData')
 
+
 def run_parallel(job: Callable[[JobData], int],
                  data: Iterable[JobData],
                  threads: int=6) -> Iterator[Tuple[int, JobData]]:
