@@ -4,6 +4,7 @@ from typing import Any
 from zerver.lib.management import ZulipBaseCommand
 from zilencer.models import RemoteZulipServer
 
+
 class Command(ZulipBaseCommand):
     help = """Add a remote Zulip server for push notifications."""
 
