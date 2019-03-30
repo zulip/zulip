@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+from scripts.lib.zulip_tools import run, run_as_root, OKBLUE, ENDC, WARNING, \
+    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated, \
+    overwrite_symlink
+from scripts.lib.setup_venv import (
+    VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
+    THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
+    FEDORA_VENV_DEPENDENCIES
+)
+from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
+from version import PROVISION_VERSION
+from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 import os
 import sys
 import logging
@@ -13,22 +24,11 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, run_as_root, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated, \
-    overwrite_symlink
-from scripts.lib.setup_venv import (
-    VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
-    THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
-    FEDORA_VENV_DEPENDENCIES
-)
-from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
-from version import PROVISION_VERSION
 if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Any, List
 
-from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
