@@ -341,7 +341,7 @@ def install_yum_deps(deps_to_install, retry=False):
         return
 
     run_as_root(["/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"],
-                sudo_args = ['-H'])
+                sudo_args=['-H'])
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
     # Later steps will ensure postgres is started
@@ -398,7 +398,7 @@ def main(options):
         "https_proxy=" + os.environ.get("https_proxy", ""),
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
-    run_as_root(proxy_env + ["scripts/lib/install-node"], sudo_args = ['-H'])
+    run_as_root(proxy_env + ["scripts/lib/install-node"], sudo_args=['-H'])
 
     # This is a wrapper around `yarn`, which we run last since
     # it can often fail due to network issues beyond our control.
@@ -488,8 +488,8 @@ def main(options):
         run_as_root(["service", "postgresql", "restart"])
     elif family == 'redhat':
         for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "memcached", "redis"]:
-            run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
-            run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
+            run_as_root(["systemctl", "enable", service], sudo_args=['-H'])
+            run_as_root(["systemctl", "start", service], sudo_args=['-H'])
     elif options.is_docker:
         run_as_root(["service", "rabbitmq-server", "restart"])
         run_as_root(["pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
