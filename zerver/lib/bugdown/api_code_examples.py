@@ -33,6 +33,7 @@ client = zulip.Client(config_file="~/zuliprc-admin")
 
 """
 
+
 def extract_python_code_example(source: List[str], snippet: List[str]) -> List[str]:
     start = -1
     end = -1
@@ -53,6 +54,7 @@ def extract_python_code_example(source: List[str], snippet: List[str]) -> List[s
     snippet.append('\n')
     source = source[end + 1:]
     return extract_python_code_example(source, snippet)
+
 
 def render_python_code_example(function: str, admin_config: Optional[bool]=False) -> List[str]:
     method = zerver.lib.api_test_helpers.TEST_FUNCTIONS[function]
@@ -84,6 +86,7 @@ SUPPORTED_LANGUAGES = {
         'render': render_python_code_example,
     }
 }  # type: Dict[str, Any]
+
 
 class APICodeExamplesGenerator(Extension):
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
@@ -154,6 +157,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
         fixture.append('```')
 
         return fixture
+
 
 def makeExtension(*args: Any, **kwargs: str) -> APICodeExamplesGenerator:
     return APICodeExamplesGenerator(**kwargs)
