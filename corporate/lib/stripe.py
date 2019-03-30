@@ -330,7 +330,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
         customer=customer.stripe_customer_id,
         description='Zulip Standard',
         discountable=False,
-        period = {'start': datetime_to_timestamp(billing_cycle_anchor),
+        period={'start': datetime_to_timestamp(billing_cycle_anchor),
                   'end': datetime_to_timestamp(period_end)},
         quantity=billed_licenses,
         unit_amount=price_per_license)
@@ -415,7 +415,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
                 customer=plan.customer.stripe_customer_id,
                 description=description,
                 discountable=False,
-                period = {'start': datetime_to_timestamp(ledger_entry.event_time),
+                period={'start': datetime_to_timestamp(ledger_entry.event_time),
                           'end': datetime_to_timestamp(next_renewal_date(plan, ledger_entry.event_time))},
                 idempotency_key=idempotency_key,
                 **price_args)
