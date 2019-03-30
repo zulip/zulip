@@ -10,6 +10,7 @@ from zerver.lib.widget import get_widget_data
 
 from zerver.lib.validator import check_widget_content
 
+
 class WidgetContentTestCase(ZulipTestCase):
     def test_validation(self) -> None:
         def assert_error(obj: object, msg: str) -> None:
