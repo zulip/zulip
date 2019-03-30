@@ -5,6 +5,7 @@ from django.conf import settings
 from zerver.lib.test_classes import ZulipTestCase
 from zproject.email_backends import get_forward_address
 
+
 class EmailLogTest(ZulipTestCase):
     def test_generate_and_clear_email_log(self) -> None:
         with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'), \
