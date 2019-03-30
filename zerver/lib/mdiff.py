@@ -2,8 +2,10 @@ import os
 import subprocess
 import logging
 
+
 class DiffException(Exception):
     pass
+
 
 def diff_strings(output: str, expected_output: str) -> str:
 
