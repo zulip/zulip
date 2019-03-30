@@ -9,6 +9,7 @@ from django.test import Client
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import get_realm
 
+
 class Command(ZulipBaseCommand):
     help = """
 Create webhook message based on given fixture
