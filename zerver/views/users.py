@@ -38,12 +38,14 @@ from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm,
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
     EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm
 
+
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id)
     if check_last_admin(target):
         return json_error(_('Cannot deactivate the only organization administrator'))
     return _deactivate_user_profile_backend(request, user_profile, target)
+
 
 def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if UserProfile.objects.filter(realm=user_profile.realm, is_active=True).count() == 1:
@@ -54,19 +56,23 @@ def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile)
     do_deactivate_user(user_profile, acting_user=user_profile)
     return json_success()
 
+
 def check_last_admin(user_profile: UserProfile) -> bool:
     admins = set(user_profile.realm.get_admin_users())
     return user_profile.is_realm_admin and len(admins) == 1
+
 
 def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
                            bot_id: int) -> HttpResponse:
     target = access_bot_by_id(user_profile, bot_id)
     return _deactivate_user_profile_backend(request, user_profile, target)
 
+
 def _deactivate_user_profile_backend(request: HttpRequest, user_profile: UserProfile,
                                      target: UserProfile) -> HttpResponse:
     do_deactivate_user(target, acting_user=user_profile)
     return json_success()
+
 
 def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
@@ -76,6 +82,7 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
         check_bot_creation_policy(user_profile, target.bot_type)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success()
+
 
 @has_request_variables
 def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
@@ -123,6 +130,7 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
 
     return json_success()
 
+
 def avatar(request: HttpRequest, user_profile: UserProfile,
            email_or_id: str, medium: bool=False) -> HttpResponse:
     """Accepts an email address or user ID and returns the avatar"""
@@ -155,10 +163,12 @@ def avatar(request: HttpRequest, user_profile: UserProfile,
     url += '&' + request.META['QUERY_STRING']
     return redirect(url)
 
+
 def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
     if stream:
         return stream.name
     return None
+
 
 @require_non_guest_human_user
 @has_request_variables
@@ -245,6 +255,7 @@ def patch_bot_backend(
 
     return json_success(json_result)
 
+
 @require_non_guest_human_user
 @has_request_variables
 def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_id: int) -> HttpResponse:
@@ -255,6 +266,7 @@ def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_
         api_key=bot.api_key
     )
     return json_success(json_result)
+
 
 @require_non_guest_human_user
 @has_request_variables
@@ -360,6 +372,7 @@ def add_bot_backend(
     )
     return json_success(json_result)
 
+
 @require_non_guest_human_user
 def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
@@ -387,6 +400,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
         )
 
     return json_success({'bots': list(map(bot_info, bot_profiles))})
+
 
 @has_request_variables
 def get_members_backend(request: HttpRequest, user_profile: UserProfile,
@@ -451,6 +465,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
 
     return json_success({'members': members})
 
+
 @require_realm_admin
 @has_request_variables
 def create_user_backend(request: HttpRequest, user_profile: UserProfile,
@@ -484,8 +499,10 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     do_create_user(email, password, realm, full_name, short_name)
     return json_success()
 
+
 def generate_client_id() -> str:
     return generate_random_token(32)
+
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     result = dict(pointer=user_profile.pointer,
@@ -503,6 +520,7 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         result['max_message_id'] = messages[0].id
 
     return json_success(result)
+
 
 def team_view(request: HttpRequest) -> HttpResponse:
     with open(settings.CONTRIBUTORS_DATA) as f:
