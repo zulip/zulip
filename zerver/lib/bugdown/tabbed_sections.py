@@ -60,6 +60,10 @@ TAB_DISPLAY_NAMES = {
     'google-hangouts': 'Google Hangouts',
     'zoom': 'Zoom (experimental)',
     'jitsi-on-premise': 'Jitsi on-premise',
+
+    'chrome': 'Chrome',
+    'firefox': 'Firefox',
+    'desktop-app': 'Desktop app',
 }
 
 class TabbedSectionsGenerator(Extension):

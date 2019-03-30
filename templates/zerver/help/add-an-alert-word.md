@@ -1,7 +1,11 @@
 # Alert words
 
 Zulip lets you to specify **alert words or phrases** that notify you whenever
-the alert word is included in a message.
+the alert word is included in a message. Alert words are case-insensitive.
+
+### Add an alert word or phrase
+
+{start_tabs}
 
 {settings_tab|alert-words}
 
@@ -9,8 +13,7 @@ the alert word is included in a message.
 
 1. Click **Add alert word**.
 
-!!! tip ""
-    Alert words are case-insensitive.
+{end_tabs}
 
 ## Related articles
 

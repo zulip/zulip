@@ -14,34 +14,11 @@ tab or in the Zulip desktop app to receive desktop notifications.
 The most common issue is that your browser or system settings are blocking
 notifications from Zulip.
 
-## Desktop app on macOS
+### Check platform settings
 
-1. Open your Mac **System Preferences** and select **Notifications**.
+{start_tabs}
 
-2. Select **Zulip** from the list of apps.
-
-3. Configure the notification style that you would like Zulip to use.
-
-## Desktop app on Windows
-
-1. Click the **Start** button and select **Settings**. Select **System**,
-   and then **Notifications & actions**.
-
-2. Select **Zulip** from the list of apps.
-
-3. Configure the notification style that you would like Zulip to use.
-
-## Firefox
-
-1. Open the Firefox **Edit** menu. Select **Preferences**.
-
-2. On the left, select **Privacy & Security**. Scroll to the **Permissions**
-   section and select the **Settings** button next to **Notifications**.
-
-3. Find the URL for your Zulip organization, and adjust the **Status**
-   selector to **Allow**.
-
-## Chrome
+{tab|chrome}
 
 1. Click on **Secure** to the left of the URL bar. It should be green and
    have a lock icon next to it.
@@ -65,3 +42,34 @@ Alternate instructions:
 
 5. Paste the Zulip URL for your organization into the site field, and click
     **Add**.
+
+{tab|firefox}
+
+1. Open the Firefox **Edit** menu. Select **Preferences**.
+
+2. On the left, select **Privacy & Security**. Scroll to the **Permissions**
+   section and select the **Settings** button next to **Notifications**.
+
+3. Find the URL for your Zulip organization, and adjust the **Status**
+   selector to **Allow**.
+
+{tab|desktop-app}
+
+**Windows**
+
+1. Click the **Start** button and select **Settings**. Select **System**,
+   and then **Notifications & actions**.
+
+2. Select **Zulip** from the list of apps.
+
+3. Configure the notification style that you would like Zulip to use.
+
+**macOS**
+
+1. Open your Mac **System Preferences** and select **Notifications**.
+
+2. Select **Zulip** from the list of apps.
+
+3. Configure the notification style that you would like Zulip to use.
+
+{end_tabs}
