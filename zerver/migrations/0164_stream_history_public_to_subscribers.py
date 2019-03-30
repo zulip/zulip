@@ -24,6 +24,7 @@ def set_initial_value_for_history_public_to_subscribers(
 
         stream.save(update_fields=["history_public_to_subscribers"])
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
