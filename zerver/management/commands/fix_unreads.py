@@ -13,6 +13,7 @@ from zerver.models import Realm, UserProfile
 
 logging.getLogger('zulip.fix_unreads').setLevel(logging.INFO)
 
+
 class Command(ZulipBaseCommand):
     help = """Fix problems related to unread counts."""
 
