@@ -7,6 +7,7 @@ from zerver.lib.rate_limiter import RateLimitedUser, \
     block_access, unblock_access
 from zerver.models import UserProfile, get_user_profile_by_api_key
 
+
 class Command(ZulipBaseCommand):
     help = """Manually block or unblock a user from accessing the API"""
 
