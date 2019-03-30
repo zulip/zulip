@@ -4,6 +4,7 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def add_domain_to_realm_alias_if_needed(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Realm = apps.get_model('zerver', 'Realm')
     RealmAlias = apps.get_model('zerver', 'RealmAlias')
@@ -12,6 +13,7 @@ def add_domain_to_realm_alias_if_needed(apps: StateApps, schema_editor: Database
         # if realm.domain already exists in RealmAlias, assume it is correct
         if not RealmAlias.objects.filter(domain=realm.domain).exists():
             RealmAlias.objects.create(realm=realm, domain=realm.domain)
+
 
 class Migration(migrations.Migration):
 
