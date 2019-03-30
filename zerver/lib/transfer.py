@@ -12,11 +12,13 @@ from zerver.lib.parallel import run_parallel
 
 s3backend = S3UploadBackend()
 
+
 def transfer_uploads_to_s3(processes: int) -> None:
     # TODO: Eventually, we'll want to add realm icon and logo
     transfer_avatars_to_s3(processes)
     transfer_message_files_to_s3(processes)
     transfer_emoji_to_s3(processes)
+
 
 def transfer_avatars_to_s3(processes: int) -> None:
     def _transfer_avatar_to_s3(user: UserProfile) -> int:
@@ -40,6 +42,7 @@ def transfer_avatars_to_s3(processes: int) -> None:
         for (status, job) in run_parallel(_transfer_avatar_to_s3, users, processes):
             output.append(job)
 
+
 def transfer_message_files_to_s3(processes: int) -> None:
     def _transfer_message_files_to_s3(attachment: Attachment) -> int:
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", attachment.path_id)
@@ -62,6 +65,7 @@ def transfer_message_files_to_s3(processes: int) -> None:
         connection.close()
         for status, job in run_parallel(_transfer_message_files_to_s3, attachments, processes):
             output.append(job)
+
 
 def transfer_emoji_to_s3(processes: int) -> None:
     def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> int:
