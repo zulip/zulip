@@ -1,18 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 
-import copy
-
-from collections import defaultdict
-from django.utils.translation import ugettext as _
-from django.conf import settings
-from importlib import import_module
-from typing import (
-    Any, Callable, Dict, Iterable, Optional, Sequence, Set
-)
-
-session_engine = import_module(settings.SESSION_ENGINE)
-
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.bot_config import load_bot_config_template
@@ -50,6 +38,18 @@ from zerver.models import Client, Message, Realm, UserPresence, UserProfile, Cus
     get_default_stream_groups, CustomProfileField, Stream
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
+import copy
+
+from collections import defaultdict
+from django.utils.translation import ugettext as _
+from django.conf import settings
+from importlib import import_module
+from typing import (
+    Any, Callable, Dict, Iterable, Optional, Sequence, Set
+)
+
+session_engine = import_module(settings.SESSION_ENGINE)
+
 
 
 def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[str, str]]:
