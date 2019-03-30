@@ -257,9 +257,9 @@ class ChangeSettingsTest(ZulipTestCase):
     def do_test_change_user_display_setting(self, setting_name: str) -> None:
 
         test_changes = dict(
-            default_language = 'de',
-            emojiset = 'google',
-            timezone = 'US/Mountain',
+            default_language='de',
+            emojiset='google',
+            timezone='US/Mountain',
         )  # type: Dict[str, Any]
 
         email = self.example_email('hamlet')
