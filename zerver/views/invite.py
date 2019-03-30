@@ -14,6 +14,7 @@ from zerver.models import PreregistrationUser, Stream, UserProfile, MultiuseInvi
 
 import re
 
+
 @require_non_guest_human_user
 @has_request_variables
 def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
@@ -54,6 +55,7 @@ def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
     do_invite_users(user_profile, invitee_emails, streams, invite_as)
     return json_success()
 
+
 def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
     invitee_emails_list = set(re.split(r'[,\n]', invitee_emails_raw))
     invitee_emails = set()
@@ -64,10 +66,12 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
         invitee_emails.add(email.strip())
     return invitee_emails
 
+
 @require_realm_admin
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_user_invites(user_profile)
     return json_success({'invites': all_users})
+
 
 @require_realm_admin
 @has_request_variables
@@ -83,6 +87,7 @@ def revoke_user_invite(request: HttpRequest, user_profile: UserProfile,
 
     do_revoke_user_invite(prereg_user)
     return json_success()
+
 
 @require_realm_admin
 @has_request_variables
@@ -100,6 +105,7 @@ def revoke_multiuse_invite(request: HttpRequest, user_profile: UserProfile,
     do_revoke_multi_use_invite(invite)
     return json_success()
 
+
 @require_realm_admin
 @has_request_variables
 def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
@@ -116,6 +122,7 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
 
     timestamp = do_resend_user_invite_email(prereg_user)
     return json_success({'timestamp': timestamp})
+
 
 @require_realm_admin
 @has_request_variables
