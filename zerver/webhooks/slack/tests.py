@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class SlackWebhookTests(WebhookTestCase):
     STREAM_NAME = 'slack'
     URL_TEMPLATE = "/api/v1/external/slack?stream={stream}&api_key={api_key}"
