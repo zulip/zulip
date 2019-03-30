@@ -5,6 +5,7 @@ from zerver.models import Realm, Stream, UserProfile, \
     Subscription, Recipient, RealmAuditLog
 from zerver.lib.create_user import create_user_profile
 
+
 def bulk_create_users(realm: Realm,
                       users_raw: Set[Tuple[str, str, str, bool]],
                       bot_type: Optional[int]=None,
@@ -63,6 +64,8 @@ def bulk_create_users(realm: Realm,
     Subscription.objects.bulk_create(subscriptions_to_create)
 
 # This is only sed in populate_db, so doesn't realy need tests
+
+
 def bulk_create_streams(realm: Realm,
                         stream_dict: Dict[str, Dict[str, Any]]) -> None:  # nocoverage
     existing_streams = frozenset([name.lower() for name in
