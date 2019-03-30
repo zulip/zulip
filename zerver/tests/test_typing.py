@@ -12,6 +12,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.models import get_display_recipient
 
+
 class TypingNotificationOperatorTest(ZulipTestCase):
     def test_missing_parameter(self) -> None:
         """
@@ -30,6 +31,7 @@ class TypingNotificationOperatorTest(ZulipTestCase):
         recipient = self.example_email("othello")
         result = self.api_post(sender, '/api/v1/typing', {'to': recipient, 'op': 'foo'})
         self.assert_json_error(result, 'Invalid \'op\' value (should be start or stop)')
+
 
 class TypingNotificationRecipientsTest(ZulipTestCase):
     def test_missing_recipient(self) -> None:
@@ -174,6 +176,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'start')
 
+
 class TypingStartedNotificationTest(ZulipTestCase):
     def test_send_notification_to_self_event(self) -> None:
         """
@@ -267,6 +270,7 @@ class TypingStartedNotificationTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'start')
 
+
 class StoppedTypingNotificationTest(ZulipTestCase):
     def test_send_notification_to_self_event(self) -> None:
         """
@@ -326,6 +330,7 @@ class StoppedTypingNotificationTest(ZulipTestCase):
         self.assertEqual(event['sender']['email'], sender.email)
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'stop')
+
 
 class TypingValidationHelpersTest(ZulipTestCase):
     def test_recipient_for_user_ids(self) -> None:
