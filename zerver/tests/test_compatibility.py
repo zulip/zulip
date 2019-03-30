@@ -2,6 +2,7 @@
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.views.compatibility import find_mobile_os, version_lt
 
+
 class VersionTest(ZulipTestCase):
     data = [case.split() for case in '''
         1.2.3    <  1.2.4
