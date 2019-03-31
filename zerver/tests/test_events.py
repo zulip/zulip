@@ -1570,6 +1570,7 @@ class EventsRegisterTest(ZulipTestCase):
         test_values = dict(
             default_language=[u'es', u'de', u'en'],
             description=[u'Realm description', u'New description'],
+            digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],

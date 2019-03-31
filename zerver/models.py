@@ -315,6 +315,7 @@ class Realm(models.Model):
         message_content_allowed_in_email_notifications=bool,
         video_chat_provider=str,
         waiting_period_threshold=int,
+        digest_weekday=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
     # Icon is the square mobile icon.

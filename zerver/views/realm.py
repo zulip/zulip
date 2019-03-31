@@ -68,6 +68,7 @@ def update_realm(
         zoom_user_id: Optional[str]=REQ(validator=check_string, default=None),
         zoom_api_key: Optional[str]=REQ(validator=check_string, default=None),
         zoom_api_secret: Optional[str]=REQ(validator=check_string, default=None),
+        digest_weekday: Optional[int]=REQ(validator=check_int, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 
