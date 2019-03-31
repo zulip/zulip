@@ -1115,6 +1115,7 @@ run_test('settings_tab', () => {
         enable_sounds: true, enable_offline_email_notifications: true,
         enable_offline_push_notifications: true, enable_online_push_notifications: true,
         enable_digest_emails: true,
+        realm_digest_emails_enabled: true,
         realm_name_in_notifications: true,
         realm_push_notifications_enabled: true,
     };
