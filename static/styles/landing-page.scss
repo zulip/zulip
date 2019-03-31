@@ -2118,11 +2118,14 @@ nav ul li.active::after {
 .portico-landing.apps .hero .image img[src="/static/images/app-screenshots/zulip-android.png"] {
     height: 100%;
 }
-
 .portico-landing.apps .hero .info .flex,
 .portico-landing.apps .hero .image .flex {
     height: 500px;
     min-height: 0px;
+}
+
+.portico-landing.apps .hero .info .flex {
+    width: 90%;
 }
 
 .portico-landing.apps .hero .info button {
@@ -3777,6 +3780,7 @@ nav ul li.active::after {
     .portico-landing.apps .hero .image .flex {
         height: 300px;
         min-height: 0px;
+        width: 100%;
     }
 
     .portico-landing.apps .other-apps {
