@@ -134,7 +134,7 @@ var apps_events = function () {
 
     $(".apps a .icon").click(function (e) {
         var next_version = $(e.target).closest('a')
-            .attr('href')
+            .attr('class')
             .replace('/apps/', '');
         version = next_version;
 
@@ -169,7 +169,7 @@ var events = function () {
         // if the pathname is different than what we are already on, run the
         // custom transition function.
         if (window.location.pathname !== this.pathname && !this.hasAttribute("download") &&
-            !/no-action/.test(this.className)) {
+            !/no-action/.test(this.className) && this.hasAttribute("href")) {
             e.preventDefault();
 
             setTimeout(function () {
