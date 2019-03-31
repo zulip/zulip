@@ -1411,9 +1411,11 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
         copy = lines[:]
         for i in range(len(lines) - 1):
             # Ignore anything that is inside a fenced code block
+            # but not quoted
             m = FENCE_RE.match(lines[i])
             if not fence and m:
-                fence = m.group('fence')
+                quote = m.group('lang') in ('quote', 'quoted')
+                fence = m.group('fence') and not quote
             elif fence and m and fence == m.group('fence'):
                 fence = None
 

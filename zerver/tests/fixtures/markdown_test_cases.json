@@ -156,6 +156,12 @@
       "text_content": "Plain list\n\nAlpha\nBeta\n\nAnd Again:\n\nA\nB\nC\n\nOnce more for feeling:\n\nQ\nE\nD\n"
     },
     {
+      "name": "ulist_hanging_quoted",
+      "input": "```quote\nSome text with a hanging list inside quote:\n* one\n* two\n* three\n```",
+      "expected_output": "<blockquote>\n<p>Some text with a hanging list inside quote:</p>\n<ul>\n<li>one</li>\n<li>two</li>\n<li>three</li>\n</ul>\n</blockquote>",
+      "text_content": "> Some text with a hanging list inside quote:\n> one\n> two\n> three\n"
+    },
+    {
       "name": "ulist_nested_ulist_two_space_indent",
       "input": "Nested list\n* I am outer list\n  * I am inner nested list first item\n  * I am inner nested list second item",
       "expected_output": "<p>Nested list</p>\n<ul>\n<li>I am outer list<ul>\n<li>I am inner nested list first item</li>\n<li>I am inner nested list second item</li>\n</ul>\n</li>\n</ul>",
