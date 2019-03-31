@@ -22,12 +22,12 @@ function row_for_stream_id(stream_id) {
     return $(".stream-row[data-stream-id='" + stream_id + "']");
 }
 
-function settings_button_for_sub(sub) {
+exports.settings_button_for_sub = function (sub) {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
     var id = parseInt(sub.stream_id, 10);
     return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
-}
+};
 
 function get_row_data(row) {
     var row_id = row.attr('data-stream-id');
@@ -259,15 +259,13 @@ exports.remove_stream = function (stream_id) {
 };
 
 exports.update_settings_for_subscribed = function (sub) {
-    var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed").show();
     exports.update_add_subscriptions_elements(sub.can_add_subscribers);
     $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #preview-stream-button").show();
 
     if (exports.is_sub_already_present(sub)) {
         exports.rerender_subscribers_count(sub, true);
-
-        settings_button.text(i18n.t("Unsubscribe"));
         stream_ui_updates.update_check_button_for_sub(sub);
+        stream_ui_updates.update_settings_button_for_sub(sub);
 
         if (sub.can_change_stream_permissions) {
             $(".change-stream-privacy").show();
@@ -346,19 +344,16 @@ exports.update_add_subscriptions_elements = function (allow_user_to_add_subs) {
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
-    var settings_button = settings_button_for_sub(sub).addClass("unsubscribed").show();
-
-    settings_button.text(i18n.t("Subscribe"));
     stream_edit.hide_sub_settings(sub);
     exports.rerender_subscriptions_settings(sub);
     stream_ui_updates.update_check_button_for_sub(sub);
+    stream_ui_updates.update_settings_button_for_sub(sub);
 
     stream_data.update_stream_email_address(sub, "");
     if (stream_edit.is_sub_settings_active(sub)) {
         // If user unsubscribed from private stream then user cannot subscribe to
         // stream without invitation and cannot add subscribers to stream.
         if (!sub.should_display_subscription_button) {
-            settings_button.hide();
             exports.update_add_subscriptions_elements(sub.can_add_subscribers);
         }
     }

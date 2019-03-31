@@ -11,6 +11,20 @@ exports.update_check_button_for_sub = function (sub) {
     }
 };
 
+exports.update_settings_button_for_sub = function (sub) {
+    var settings_button = subs.settings_button_for_sub(sub);
+    if (sub.subscribed) {
+        settings_button.text(i18n.t("Unsubscribe")).removeClass("unsubscribed");
+    } else {
+        settings_button.text(i18n.t("Subscribe")).addClass("unsubscribed");
+    }
+    if (sub.should_display_subscription_button) {
+        settings_button.show();
+    } else {
+        settings_button.hide();
+    }
+};
+
 return exports;
 }());
 
