@@ -63,6 +63,7 @@ exports.build_page = function () {
         realm_default_twenty_four_hour_time: page_params.realm_default_twenty_four_hour_time,
         settings_send_digest_emails: page_params.settings_send_digest_emails,
         realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
+        realm_digest_weekday: page_params.realm_digest_weekday,
         development: page_params.development_environment,
     };
 
@@ -87,6 +88,7 @@ exports.build_page = function () {
     $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
+    $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
 };
 
 
