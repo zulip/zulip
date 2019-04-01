@@ -319,7 +319,7 @@ MessageListView.prototype = {
             self._add_msg_timestring(message_container);
 
             message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
-            if (message_container.msg.stream !== undefined) {
+            if (message_container.msg.stream) {
                 message_container.background_color =
                     stream_data.get_color(message_container.msg.stream);
             }
