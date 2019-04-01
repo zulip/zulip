@@ -26,6 +26,6 @@ root)
     ;;
 esac
 
-"${psql[@]}" <<EOF
+"${psql[@]}" -v ON_ERROR_STOP=1 <<EOF
 SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname IN ($tables);
 EOF

@@ -17,7 +17,7 @@ GRANT USAGE ON SCHEMA pgroonga TO zulip;
 "
 
 if [ -f /.dockerenv ]; then
-    echo "$DATABASE_CREATE" | psql
+    echo "$DATABASE_CREATE" | psql -v ON_ERROR_STOP=1 -e
 else
-    echo "$DATABASE_CREATE" | su postgres -c psql
+    echo "$DATABASE_CREATE" | su postgres -c 'psql -v ON_ERROR_STOP=1 -e'
 fi
