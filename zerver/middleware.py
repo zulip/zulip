@@ -326,23 +326,25 @@ class RateLimitMiddleware(MiddlewareMixin):
 
         from zerver.lib.rate_limiter import max_api_calls, RateLimitedUser
         # Add X-RateLimit-*** headers
-        if hasattr(request, '_ratelimit_applied_limits'):
+        if hasattr(request, '_ratelimit'):
+            # Right now, the only kind of limiting requests is user-based.
+            ratelimit_user_results = request._ratelimit['RateLimitedUser']
             entity = RateLimitedUser(request.user)
             response['X-RateLimit-Limit'] = str(max_api_calls(entity))
-            if hasattr(request, '_ratelimit_secs_to_freedom'):
-                response['X-RateLimit-Reset'] = str(int(time.time() + request._ratelimit_secs_to_freedom))
-            if hasattr(request, '_ratelimit_remaining'):
-                response['X-RateLimit-Remaining'] = str(request._ratelimit_remaining)
+            response['X-RateLimit-Reset'] = str(int(time.time() + ratelimit_user_results['secs_to_freedom']))
+            if 'remaining' in ratelimit_user_results:
+                response['X-RateLimit-Remaining'] = str(ratelimit_user_results['remaining'])
         return response
 
     def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
         if isinstance(exception, RateLimited):
+            entity_type = str(exception)  # entity type is passed to RateLimited when raising
             resp = json_error(
                 _("API usage exceeded rate limit"),
-                data={'retry-after': request._ratelimit_secs_to_freedom},
+                data={'retry-after': request._ratelimit[entity_type]['secs_to_freedom']},
                 status=429
             )
-            resp['Retry-After'] = request._ratelimit_secs_to_freedom
+            resp['Retry-After'] = request._ratelimit[entity_type]['secs_to_freedom']
             return resp
         return None
 

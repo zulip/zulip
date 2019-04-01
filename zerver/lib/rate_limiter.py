@@ -4,6 +4,8 @@ import os
 from typing import List, Optional, Tuple
 
 from django.conf import settings
+from django.http import HttpRequest
+from zerver.lib.exceptions import RateLimited
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.utils import statsd
 
@@ -261,3 +263,23 @@ def rate_limit_entity(entity: RateLimitedObject) -> Tuple[bool, float]:
             ratelimited = True
 
     return ratelimited, time
+
+def rate_limit_request_by_entity(request: HttpRequest, entity: RateLimitedObject) -> None:
+    ratelimited, time = rate_limit_entity(entity)
+
+    entity_type = type(entity).__name__
+    if not hasattr(request, '_ratelimit'):
+        request._ratelimit = {}
+    request._ratelimit[entity_type] = {}
+    request._ratelimit[entity_type]['applied_limits'] = True
+    request._ratelimit[entity_type]['secs_to_freedom'] = time
+    request._ratelimit[entity_type]['over_limit'] = ratelimited
+    # Abort this request if the user is over their rate limits
+    if ratelimited:
+        # Pass information about what kind of entity got limited in the exception:
+        raise RateLimited(entity_type)
+
+    calls_remaining, time_reset = api_calls_left(entity)
+
+    request._ratelimit[entity_type]['remaining'] = calls_remaining
+    request._ratelimit[entity_type]['secs_to_freedom'] = time_reset

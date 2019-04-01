@@ -22,13 +22,12 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server
-from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode, \
+from zerver.lib.exceptions import JsonableError, ErrorCode, \
     InvalidJSONError, InvalidAPIKeyError
 from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import to_non_negative_int
 
-from zerver.lib.rate_limiter import rate_limit_entity, \
-    api_calls_left, RateLimitedUser
+from zerver.lib.rate_limiter import rate_limit_request_by_entity, RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 
 from functools import wraps
@@ -746,18 +745,7 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     the rate limit information"""
 
     entity = RateLimitedUser(user, domain=domain)
-    ratelimited, time = rate_limit_entity(entity)
-    request._ratelimit_applied_limits = True
-    request._ratelimit_secs_to_freedom = time
-    request._ratelimit_over_limit = ratelimited
-    # Abort this request if the user is over their rate limits
-    if ratelimited:
-        raise RateLimited()
-
-    calls_remaining, time_reset = api_calls_left(entity)
-
-    request._ratelimit_remaining = calls_remaining
-    request._ratelimit_secs_to_freedom = time_reset
+    rate_limit_request_by_entity(request, entity)
 
 def rate_limit(domain: str='all') -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to
