@@ -18,9 +18,9 @@ exports.check_button_for_sub = function (sub) {
     return $(".stream-row[data-stream-id='" + id + "'] .check");
 };
 
-function row_for_stream_id(stream_id) {
+exports.row_for_stream_id = function (stream_id) {
     return $(".stream-row[data-stream-id='" + stream_id + "']");
-}
+};
 
 exports.settings_button_for_sub = function (sub) {
     // We don't do expectOne() here, because this button is only
@@ -138,7 +138,7 @@ exports.update_stream_name = function (sub, new_name) {
     stream_edit.update_stream_name(sub, new_name);
 
     // Update the subscriptions page
-    var sub_row = row_for_stream_id(stream_id);
+    var sub_row = exports.row_for_stream_id(stream_id);
     sub_row.find(".stream-name").text(new_name);
 
     // Update the message feed.
@@ -150,7 +150,7 @@ exports.update_stream_description = function (sub, description, rendered_descrip
     sub.rendered_description = rendered_description.replace('<p>', '').replace('</p>', '');
 
     // Update stream row
-    var sub_row = row_for_stream_id(sub.stream_id);
+    var sub_row = exports.row_for_stream_id(sub.stream_id);
     sub_row.find(".description").html(sub.rendered_description);
 
     // Update stream settings
@@ -167,7 +167,7 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
         // If the streams overlay isn't open, we don't need to rerender anything.
         return;
     }
-    var stream_row = row_for_stream_id(sub.stream_id);
+    var stream_row = exports.row_for_stream_id(sub.stream_id);
     stream_data.update_subscribers_count(sub);
     if (!sub.can_access_subscribers || just_subscribed && sub.invite_only) {
         var rendered_sub_count = templates.render("subscription_count", sub);
@@ -241,7 +241,7 @@ exports.add_sub_to_table = function (sub) {
         // good way to associate with this request because the stream
         // ID isn't known yet.  These are appended to the top of the
         // list, so they are more visible.
-        row_for_stream_id(sub.stream_id).click();
+        exports.row_for_stream_id(sub.stream_id).click();
         stream_create.reset_created_stream();
     }
 };
@@ -259,7 +259,7 @@ exports.is_sub_already_present = function (sub) {
 exports.remove_stream = function (stream_id) {
     // It is possible that row is empty when we deactivate a
     // stream, but we let jQuery silently handle that.
-    var row = row_for_stream_id(stream_id);
+    var row = exports.row_for_stream_id(stream_id);
     row.remove();
     var sub = stream_data.get_sub_by_id(stream_id);
     if (stream_edit.is_sub_settings_active(sub)) {
@@ -293,7 +293,7 @@ exports.show_active_stream_in_left_panel = function () {
     var selected_row = get_hash_safe().split(/\//)[1];
 
     if (parseFloat(selected_row)) {
-        var sub_row = row_for_stream_id(selected_row);
+        var sub_row = exports.row_for_stream_id(selected_row);
         sub_row.addClass("active");
     }
 };
@@ -367,10 +367,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
     }
 
     // Remove private streams from subscribed streams list.
-    if (exports.is_subscribed_stream_tab_active() && sub.invite_only) {
-        var sub_row = row_for_stream_id(sub.stream_id);
-        sub_row.addClass("notdisplayed");
-    }
+    stream_ui_updates.update_stream_row_in_settings_tab(sub);
 };
 
 function triage_stream(query, sub) {
@@ -617,7 +614,7 @@ exports.setup_page = function (callback) {
 };
 
 exports.switch_to_stream_row = function (stream_id) {
-    var stream_row = row_for_stream_id(stream_id);
+    var stream_row = exports.row_for_stream_id(stream_id);
 
     exports.get_active_data().row.removeClass("active");
     stream_row.addClass("active");
