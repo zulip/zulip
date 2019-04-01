@@ -49,7 +49,7 @@ if ! pg_isready -U "$POSTGRES_USER" -q; then
     exit 1
 fi
 
-"${ROOT_POSTGRES[@]}" "$DEFAULT_DB" << EOF
+"${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DEFAULT_DB" << EOF
 DO \$\$BEGIN
     CREATE USER $USERNAME;
 EXCEPTION WHEN duplicate_object THEN
@@ -80,23 +80,23 @@ chmod go-rw ~/.pgpass
 
 "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" "$USERNAME" "$DBNAME" "$DBNAME_BASE"
 
-psql -h localhost postgres "$USERNAME" <<EOF
+psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF
 DROP DATABASE IF EXISTS $DBNAME;
 DROP DATABASE IF EXISTS $DBNAME_BASE;
 CREATE DATABASE $DBNAME_BASE
 EOF
 
-psql -h localhost "$DBNAME_BASE" "$USERNAME" <<EOF
+psql -v ON_ERROR_STOP=1 -e -h localhost "$DBNAME_BASE" "$USERNAME" <<EOF
 CREATE SCHEMA zulip;
 EOF
 
-"${ROOT_POSTGRES[@]}" "$DBNAME_BASE" << EOF
+"${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DBNAME_BASE" << EOF
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
 CREATE EXTENSION pgroonga;
 GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
 EOF
 
-psql -h localhost postgres "$USERNAME" <<EOF
+psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF
 CREATE DATABASE $DBNAME TEMPLATE $DBNAME_BASE;
 EOF
 

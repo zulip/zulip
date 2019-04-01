@@ -32,7 +32,7 @@ def run(args, dry_run=False):
         sys.exit(1)
     return stdout.decode()
 
-recovery_val = run(['psql', '-t', '-c', 'select pg_is_in_recovery()']).strip()
+recovery_val = run(['psql', '-v', 'ON_ERROR_STOP=1', '-t', '-c', 'SELECT pg_is_in_recovery()']).strip()
 # Assertion to check that we're extracting the value correctly.
 assert recovery_val in ['t', 'f']
 if recovery_val == 't':
