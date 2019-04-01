@@ -114,6 +114,15 @@ exports.maybe_update_realm_default_stream_name  = function (stream_id, new_name)
     page_params.realm_default_streams[idx].name = new_name;
 };
 
+exports.is_subscribed_stream_tab_active = function () {
+    // Returns true if "Subscribed" tab in stream settings is open
+    // otherwise false.
+    if ($("#subscriptions_table .search-container .tab-switcher .first").hasClass("selected")) {
+        return true;
+    }
+    return false;
+};
+
 exports.update_stream_name = function (sub, new_name) {
     // Rename the stream internally.
     stream_data.rename_sub(sub, new_name);
@@ -358,8 +367,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
     }
 
     // Remove private streams from subscribed streams list.
-    if ($("#subscriptions_table .search-container .tab-switcher .first").hasClass("selected")
-        && sub.invite_only) {
+    if (exports.is_subscribed_stream_tab_active() && sub.invite_only) {
         var sub_row = row_for_stream_id(sub.stream_id);
         sub_row.addClass("notdisplayed");
     }
