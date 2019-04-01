@@ -22,7 +22,7 @@ class Bitbucket3HookTests(WebhookTestCase):
                                           expected_message)
 
     def test_commit_comment_deleted(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted their comment on [508d1b6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907)\n~~~ quote\nJust an arbitrary comment on a commit. Nothing to see here...\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted their comment on [508d1b6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907)\n~~~ quote\n~~Just an arbitrary comment on a commit. Nothing to see here...~~\n~~~"""
         self.send_and_test_stream_message("commit_comment_deleted",
                                           self.EXPECTED_TOPIC,
                                           expected_message)
@@ -264,7 +264,7 @@ class Bitbucket3HookTests(WebhookTestCase):
                                           expected_message)
 
     def test_pull_request_comment_deleted(self) -> None:
-        expected_message = """[zura](http://139.59.64.214:7990/users/zura) deleted their comment on [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6)\n\n~~~ quote\nThis seems like a pretty good idea. @shimura what do you think?\n~~~"""
+        expected_message = """[zura](http://139.59.64.214:7990/users/zura) deleted their comment on [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6)\n\n~~~ quote\n~~This seems like a pretty good idea. @shimura what do you think?~~\n~~~"""
         expected_topic = "sandbox / PR #6 sample_file: Add sample_file.txt."
         self.send_and_test_stream_message("pull_request_comment_deleted",
                                           expected_topic,
