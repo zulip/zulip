@@ -48,12 +48,15 @@ def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str,
     sha = payload["commit"]
     commit_url = payload["repository"]["links"]["self"][0]["href"][:-6]  # remove the "browse" at the end
     commit_url += "commits/%s" % (sha,)
+    message = payload["comment"]["text"]
+    if action == "deleted their comment":
+        message = "~~{message}~~".format(message=message)
     body = get_commits_comment_action_message(
         user_name=get_user_name(payload),
         action=action,
         commit_url=commit_url,
         sha=sha,
-        message=payload["comment"]["text"]
+        message=message
     )
     return [{"subject": subject, "body": body}]
 
@@ -275,6 +278,8 @@ def pr_comment_handler(payload: Dict[str, Any], action: str,
     subject = get_pr_subject(pr["toRef"]["repository"]["name"], type="PR", id=pr["id"],
                              title=pr["title"])
     message = payload["comment"]["text"]
+    if action == "deleted their comment on":
+        message = "~~{message}~~".format(message=message)
     body = get_pull_request_event_message(
         user_name=get_user_name(payload),
         action=action,
