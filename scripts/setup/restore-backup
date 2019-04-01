@@ -82,7 +82,7 @@ if __name__ == "__main__":
         )
         as_postgres = ["su", "-s", "/usr/bin/env", "--", POSTGRES_USER]
         run(as_postgres + ["dropdb", "--if-exists", "--", db_name])
-        run(as_postgres + ["createdb", "-T", "template0", "--", db_name])
+        run(as_postgres + ["createdb", "-O", "zulip", "-T", "template0", "--", db_name])
         run(as_postgres + ["pg_restore", "-d", db_name, "--", db_dir])
         run(["chown", "-R", str(uid), "--", tmp])
         os.setresuid(uid, uid, 0)
