@@ -54,6 +54,22 @@ exports.update_change_stream_privacy_settings = function (sub) {
     }
 };
 
+exports.update_stream_row_in_settings_tab = function (sub) {
+    // This function display/hide stream row in stream settings tab,
+    // used to display immediate effect of add/removal subscription event.
+    // If user is subscribed to stream, it will show sub row under
+    // "Subscribed" tab, otherwise if stream is not public hide
+    // stream row under tab.
+    if (subs.is_subscribed_stream_tab_active()) {
+        var sub_row = subs.row_for_stream_id(sub.stream_id);
+        if (sub.subscribed) {
+            sub_row.removeClass("notdisplayed");
+        } else if (sub.invite_only) {
+            sub_row.addClass("notdisplayed");
+        }
+    }
+};
+
 return exports;
 }());
 
