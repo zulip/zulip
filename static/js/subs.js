@@ -218,10 +218,12 @@ function add_email_hint_handler() {
 exports.add_sub_to_table = function (sub) {
     if (exports.is_sub_already_present(sub)) {
         // If a stream is already listed/added in subscription modal,
-        // return.  This can happen in some corner cases (which might
+        // display stream in `Subscribed` tab and return.
+        // This can happen in some corner cases (which might
         // be backend bugs) where a realm adminsitrator is subscribed
         // to a private stream, in which case they might get two
         // stream-create events.
+        stream_ui_updates.update_stream_row_in_settings_tab(sub);
         return;
     }
 
@@ -272,6 +274,7 @@ exports.update_settings_for_subscribed = function (sub) {
     $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #preview-stream-button").show();
 
     if (exports.is_sub_already_present(sub)) {
+        stream_ui_updates.update_stream_row_in_settings_tab(sub);
         exports.rerender_subscribers_count(sub, true);
         stream_ui_updates.update_check_button_for_sub(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
