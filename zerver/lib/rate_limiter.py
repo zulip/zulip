@@ -1,6 +1,6 @@
 import os
 
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -18,7 +18,7 @@ import time
 # http://blog.domaintools.com/2013/04/rate-limiting-with-redis/
 
 client = get_redis_client()
-rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
+rules = settings.RATE_LIMITING_RULES  # type: Dict[str, List[Tuple[int, int]]]
 
 KEY_PREFIX = ''
 
@@ -54,13 +54,14 @@ class RateLimitedUser(RateLimitedObject):
         return "{}:{}:{}".format(type(self.user), self.user.id, self.domain)
 
     def rules(self) -> List[Tuple[int, int]]:
-        if self.user.rate_limits != "":
+        # user.rate_limits are general limits, applicable to the domain 'all'
+        if self.user.rate_limits != "" and self.domain == 'all':
             result = []  # type: List[Tuple[int, int]]
             for limit in self.user.rate_limits.split(','):
                 (seconds, requests) = limit.split(':', 2)
                 result.append((int(seconds), int(requests)))
             return result
-        return rules
+        return rules[self.domain]
 
 def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
     global KEY_PREFIX
@@ -74,16 +75,21 @@ def max_api_window(entity: RateLimitedObject) -> int:
     "Returns the API time window for the highest limit"
     return entity.rules()[-1][0]
 
-def add_ratelimit_rule(range_seconds: int, num_requests: int) -> None:
+def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='all') -> None:
     "Add a rate-limiting rule to the ratelimiter"
     global rules
 
-    rules.append((range_seconds, num_requests))
-    rules.sort(key=lambda x: x[0])
+    if domain not in rules:
+        # If we don't have any rules for domain yet, the domain key needs to be
+        # added to the rules dictionary.
+        rules[domain] = []
 
-def remove_ratelimit_rule(range_seconds: int, num_requests: int) -> None:
+    rules[domain].append((range_seconds, num_requests))
+    rules[domain].sort(key=lambda x: x[0])
+
+def remove_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='all') -> None:
     global rules
-    rules = [x for x in rules if x[0] != range_seconds and x[1] != num_requests]
+    rules[domain] = [x for x in rules[domain] if x[0] != range_seconds and x[1] != num_requests]
 
 def block_access(entity: RateLimitedObject, seconds: int) -> None:
     "Manually blocks an entity for the desired number of seconds"

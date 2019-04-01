@@ -345,9 +345,11 @@ CACHES = {
 # REDIS-BASED RATE LIMITING CONFIGURATION
 ########################################################################
 
-RATE_LIMITING_RULES = [
-    (60, 200),  # 200 requests max every minute
-]
+RATE_LIMITING_RULES = {
+    'all': [
+        (60, 200),  # 200 requests max every minute
+    ],
+}
 
 RATE_LIMITING_MIRROR_REALM_RULES = [
     (60, 50),  # 50 emails per minute
