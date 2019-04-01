@@ -140,7 +140,7 @@ exports.update_subscribers_count = function (sub, just_subscribed) {
         return;
     }
     var stream_row = subs.row_for_stream_id(sub.stream_id);
-    if (!sub.can_access_subscribers || just_subscribed && sub.invite_only) {
+    if (!sub.can_access_subscribers || just_subscribed && sub.invite_only || page_params.is_guest) {
         var rendered_sub_count = templates.render("subscription_count", sub);
         stream_row.find('.subscriber-count').expectOne().html(rendered_sub_count);
     } else {
