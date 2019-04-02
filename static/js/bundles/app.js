@@ -203,6 +203,7 @@ import "js/panels.js";
 import 'js/settings_ui.js';
 import 'js/search_pill.js';
 import 'js/search_pill_widget.js';
+import 'js/stream_ui_updates.js';
 
 // Import Styles
 
