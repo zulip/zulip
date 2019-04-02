@@ -25,6 +25,25 @@ exports.update_settings_button_for_sub = function (sub) {
     }
 };
 
+exports.update_regular_sub_settings = function (sub) {
+    if (!stream_edit.is_sub_settings_active(sub)) {
+        return;
+    }
+    var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
+    if (sub.subscribed) {
+        if ($settings.find(".email-address").val().length === 0) {
+            // Rerender stream email address, if not.
+            $settings.find(".email-address").text(sub.email_address);
+            $settings.find(".stream-email-box").show();
+        }
+        $settings.find(".regular_subscription_settings").addClass('in');
+    } else {
+        $settings.find(".regular_subscription_settings").removeClass('in');
+        // Clear email address widget
+        $settings.find(".email-address").html("");
+    }
+};
+
 return exports;
 }());
 

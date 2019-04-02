@@ -279,7 +279,7 @@ exports.update_settings_for_subscribed = function (sub) {
     }
 
     // Display the swatch and subscription stream_settings
-    stream_edit.show_sub_settings(sub);
+    stream_ui_updates.update_regular_sub_settings(sub);
 };
 
 exports.show_active_stream_in_left_panel = function () {
@@ -344,10 +344,10 @@ exports.update_add_subscriptions_elements = function (allow_user_to_add_subs) {
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
-    stream_edit.hide_sub_settings(sub);
     exports.rerender_subscriptions_settings(sub);
     stream_ui_updates.update_check_button_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
+    stream_ui_updates.update_regular_sub_settings(sub);
     if (!sub.can_change_stream_permissions) {
         $(".change-stream-privacy").hide();
     }
