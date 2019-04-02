@@ -11,17 +11,23 @@ a single website.
 
 ## Desktop
 
+{start_tabs}
+
+{tab|system-proxy-settings}
+
 1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the lower left corner.
 
 2. Select the **Network** tab.
-
-### System proxy settings
 
 3. Click **Use system proxy settings**.
 
 4. Restart the Zulip desktop app.
 
-### Custom proxy settings
+{tab|custom-proxy-settings}
+
+1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the lower left corner.
+
+2. Select the **Network** tab.
 
 3. Click **Manual proxy configuration**.
 
@@ -29,6 +35,10 @@ a single website.
   **Proxy bypass rules**.
 
 5. Click **Save changes**.
+
+{end_tabs}
+
+## Additional tips for custom proxy settings
 
 In most corporate environments, your network administrator will provide a
 URL for the **PAC script**.
