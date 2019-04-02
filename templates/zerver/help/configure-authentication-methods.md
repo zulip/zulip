@@ -15,11 +15,17 @@ blocker.
 first. Server configuration is needed for several of the authentication
 methods listed above.
 
+### Configure authentication methods
+
+{start_tabs}
+
 {settings_tab|auth-methods}
 
 2. Toggle the checkboxes next to the available login options.
 
 {!save-changes.md!}
+
+{end_tabs}
 
 ## Related articles
 

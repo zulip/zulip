@@ -11,11 +11,17 @@ users may still be able to edit the topic of messages with **(no topic)**; see
 the full article on [message and topic editing](/help/configure-message-editing-and-deletion)
 for details.
 
+### Change who can edit topics
+
+{start_tabs}
+
 {settings_tab|organization-settings}
 
 2. Under **Message editing**, uncheck **Users can edit the topic of any message**.
 
 {!save-changes.md!}
+
+{end_tabs}
 
 ## Related articles
 
