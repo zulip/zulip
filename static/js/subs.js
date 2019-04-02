@@ -266,10 +266,8 @@ exports.update_settings_for_subscribed = function (sub) {
         exports.rerender_subscribers_count(sub, true);
         stream_ui_updates.update_check_button_for_sub(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
+        stream_ui_updates.update_change_stream_privacy_settings(sub);
 
-        if (sub.can_change_stream_permissions) {
-            $(".change-stream-privacy").show();
-        }
     } else {
         exports.add_sub_to_table(sub);
     }
@@ -348,9 +346,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
     stream_ui_updates.update_check_button_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
-    if (!sub.can_change_stream_permissions) {
-        $(".change-stream-privacy").hide();
-    }
+    stream_ui_updates.update_change_stream_privacy_settings(sub);
 
     stream_data.update_stream_email_address(sub, "");
     if (stream_edit.is_sub_settings_active(sub)) {
