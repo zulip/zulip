@@ -134,25 +134,23 @@ root domain. Replace the last line above with the following, after replacing
 
 ## Caveats
 
-- While the import tool will correctly import the subscribers of
-private rooms precisely, HipChat does not store the subscribers of
-public rooms when those users don't have an active client.  As a
-result, HipChat's data exports don't include subscribers for public
+While the import tool will correctly import the subscribers of private
+rooms, HipChat does not store or export the list of subscribers for public
 rooms.  You can pick one of the following options for handling this:
-    1. Subscribe all users to all public streams (the default, which is
-    good for small organizations),
-    2. Subscribe only HipChat room owners to public streams (and plan
-    for users to subscribe to the imported Zulip streams manually
-    after the import completes) using the `--slim-mode` option to `manage.py
-    convert_hipchat_data`, or
-    3. Use the [HipChat API][hipchat-api-tokens] to fetch each room's
-    current room subscribers as of the moment the import is run.
-    Because HipChat doesn't store subscribers to a room when clients
-    are not connected, these subscriptons will be incomplete for users
-    who don't have an actively connected client at the time of the
-    import.  You need to pass the token via `--token=abcd1234` in
-    `manage.py convert_hipchat_data` (or include it in your request,
-    if importing into Zulip Cloud).
+
+* Subscribe all users to all public streams (the default, which is good for small organizations).
+
+* Subscribe only HipChat room owners to public streams (and plan for users
+  to subscribe to the imported Zulip streams manually after the import
+  completes) using the `--slim-mode` option to `manage.py convert_hipchat_data`.
+
+* Use the [HipChat API][hipchat-api-tokens] to fetch each room's current
+  room subscribers as of the moment the import is run.  Because HipChat
+  doesn't store subscribers to a room when clients are not connected, these
+  subscriptons will be incomplete for users who don't have an actively
+  connected client at the time of the import.  You need to pass a HipChat
+  access token via `--token=abcd1234` in `manage.py convert_hipchat_data`
+  (or include it in your request, if importing into Zulip Cloud).
 
 [upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
 [hipchat-api-tokens]: https://developer.atlassian.com/server/hipchat/hipchat-rest-api-access-tokens/
