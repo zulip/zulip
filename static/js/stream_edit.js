@@ -384,9 +384,7 @@ function change_stream_privacy(e) {
 
             // For auto update, without rendering whole template
             stream_data.update_calculated_fields(sub);
-            if (!sub.can_change_stream_permissions) {
-                $(".change-stream-privacy").hide();
-            }
+            stream_ui_updates.update_change_stream_privacy_settings(sub);
         },
         error: function () {
             $("#change-stream-privacy-button").text(i18n.t("Try again"));

@@ -44,6 +44,16 @@ exports.update_regular_sub_settings = function (sub) {
     }
 };
 
+exports.update_change_stream_privacy_settings = function (sub) {
+    var stream_privacy_btn = $(".change-stream-privacy");
+
+    if (sub.can_change_stream_permissions) {
+        stream_privacy_btn.show();
+    } else {
+        stream_privacy_btn.hide();
+    }
+};
+
 return exports;
 }());
 
