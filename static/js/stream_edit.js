@@ -63,26 +63,6 @@ exports.rerender_subscribers_list = function (sub) {
     }
 };
 
-exports.hide_sub_settings = function (sub) {
-    var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
-    $settings.find(".regular_subscription_settings").removeClass('in');
-    // Clear email address widget
-    $settings.find(".email-address").html("");
-};
-
-exports.show_sub_settings = function (sub) {
-    if (!exports.is_sub_settings_active(sub)) {
-        return;
-    }
-    var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
-    if ($settings.find(".email-address").val().length === 0) {
-        // Rerender stream email address, if not.
-        $settings.find(".email-address").text(sub.email_address);
-        $settings.find(".stream-email-box").show();
-    }
-    $settings.find(".regular_subscription_settings").addClass('in');
-};
-
 function clear_edit_panel() {
     $(".display-type #add_new_stream_title").hide();
     $(".display-type #stream_settings_title, .right .settings").show();
@@ -658,14 +638,10 @@ exports.initialize = function () {
         var sub = get_sub_for_target(e.target);
         var stream_row = $(this).parent();
         subs.sub_or_unsub(sub);
-        var sub_settings = settings_for_sub(sub);
-        var regular_sub_settings = sub_settings.find(".regular_subscription_settings");
         if (!sub.subscribed) {
-            regular_sub_settings.addClass("in");
             exports.open_edit_panel_for_row(stream_row);
-        } else {
-            regular_sub_settings.removeClass("in");
         }
+        stream_ui_updates.update_regular_sub_settings(sub);
 
         e.preventDefault();
         e.stopPropagation();
