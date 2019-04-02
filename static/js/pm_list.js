@@ -4,11 +4,6 @@ var exports = {};
 
 var private_messages_open = false;
 
-// You can click on "more conversations" to zoom in.  There's no
-// way to zoom back out other than re-narrowing out and in of the
-// PM list.
-var zoomed_in = false;
-
 // This module manages the "Private Messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
 
@@ -66,45 +61,27 @@ function remove_expanded_private_messages() {
     resize.resize_stream_filters_container();
 }
 
-function zoom_in() {
-    zoomed_in = true;
-    var list_widget = $("ul.expanded_private_messages").expectOne();
-    list_widget.removeClass("zoomed-out").addClass("zoomed-in");
-    ui.update_scrollbar($("#private-container"));
-}
-
 exports.close = function () {
     private_messages_open = false;
-    zoomed_in = false;
     remove_expanded_private_messages();
 };
 
-exports._build_private_messages_list = function (active_conversation, max_private_messages) {
+exports._build_private_messages_list = function (active_conversation) {
 
     var private_messages = pm_conversations.recent.get();
     var display_messages = [];
-    var hiding_messages = false;
 
     // SHIM
     if (active_conversation) {
         active_conversation = people.emails_strings_to_user_ids_string(active_conversation);
     }
 
-    _.each(private_messages, function (private_message_obj, idx) {
+    _.each(private_messages, function (private_message_obj) {
         var user_ids_string = private_message_obj.user_ids_string;
         var reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         var recipients_string = people.get_recipients(user_ids_string);
 
         var num_unread = unread.num_unread_for_person(user_ids_string);
-
-        var always_visible = idx < max_private_messages || num_unread > 0
-            || user_ids_string === active_conversation;
-
-        if (!always_visible) {
-            if (!zoomed_in) {
-                hiding_messages = true;
-            }
-        }
 
         var is_group = user_ids_string.indexOf(',') >= 0;
 
@@ -121,7 +98,6 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             user_ids_string: user_ids_string,
             unread: num_unread,
             is_zero: num_unread === 0,
-            zoom_out_hide: !always_visible,
             url: hash_util.pm_with_uri(reply_to),
             user_circle_class: user_circle_class,
             fraction_present: fraction_present,
@@ -130,18 +106,8 @@ exports._build_private_messages_list = function (active_conversation, max_privat
         display_messages.push(display_message);
     });
 
-    var zoom_class;
-
-    if (zoomed_in) {
-        zoom_class = "zoomed-in";
-    } else {
-        zoom_class = "zoomed-out";
-    }
-
     var recipients_dom = templates.render('sidebar_private_message_list',
-                                          {messages: display_messages,
-                                           zoom_class: zoom_class,
-                                           want_show_more_messages_links: hiding_messages});
+                                          {messages: display_messages});
     return recipients_dom;
 };
 
@@ -150,10 +116,9 @@ exports.rebuild_recent = function (active_conversation) {
     $("#private-container").remove();
 
     if (private_messages_open) {
-        var max_private_messages = 5;
         var private_li = get_filter_li();
         var private_messages_dom = exports._build_private_messages_list(
-            active_conversation, max_private_messages);
+            active_conversation);
 
         private_li.append(private_messages_dom);
     }
@@ -200,15 +165,6 @@ exports.update_private_messages = function () {
     }
 };
 
-exports.set_click_handlers = function () {
-    $('.top_left_private_messages').on('click', '.show-more-private-messages', function (e) {
-        popovers.hide_all();
-        zoom_in();
-        e.preventDefault();
-        e.stopPropagation();
-    });
-};
-
 exports.expand = function (op_pm) {
     private_messages_open = true;
     if (op_pm.length === 1) {
@@ -235,7 +191,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
 
 exports.initialize = function () {
-    pm_list.set_click_handlers();
+    // will add back soon
 };
 
 return exports;

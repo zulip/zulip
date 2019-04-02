@@ -1183,7 +1183,6 @@ run_test('sidebar_private_message_list', () => {
 
     var conversations = $(html).find('a').text().trim().split('\n');
     assert.equal(conversations[0], 'alice,bob');
-    assert.equal(conversations[1].trim(), '(translated: more conversations)');
 });
 
 run_test('stream_member_list_entry', () => {

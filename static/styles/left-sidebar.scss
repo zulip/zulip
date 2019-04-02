@@ -37,8 +37,7 @@ $topic_indent: $far_left_gutter_size + $left_col_size + 4px;
     font-size: 14px;
 }
 
-li.show-more-topics a,
-li.show-more-private-messages a {
+li.show-more-topics a {
     font-size: 12px;
 }
 
@@ -179,10 +178,6 @@ li.top_left_starred_messages {
 .top_left_row {
     padding-left: $far_left_gutter_size;
     padding-right: 10px;
-}
-
-li.show-more-private-messages {
-    padding-left: $far_left_gutter_size + $left_col_size;
 }
 
 .top_left_row,
@@ -422,7 +417,6 @@ li.topic-list-item {
     padding-right: 5px;
 }
 
-li.show-more-private-messages,
 li.expanded_private_message {
     position: relative;
     padding-top: 1px;
@@ -533,18 +527,6 @@ li.show-more-topics a {
 }
 
 .zoom-in .show-more-topics {
-    display: none;
-}
-
-.zoomed-in .show-more-private-messages {
-    display: none;
-}
-
-.zoomed-out .zoom-out-hide {
-    display: none;
-}
-
-.zoom-out .zoom-out-hide {
     display: none;
 }
 

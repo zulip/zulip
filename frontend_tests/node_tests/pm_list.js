@@ -91,15 +91,12 @@ run_test('build_private_messages_list', () => {
                 user_ids_string: '101,102',
                 unread: 1,
                 is_zero: false,
-                zoom_out_hide: false,
                 url: '#narrow/pm-with/101,102-group',
                 user_circle_class: 'user_circle_fraction',
                 fraction_present: false,
                 is_group: true,
             },
         ],
-        zoom_class: 'zoomed-out',
-        want_show_more_messages_links: false,
     };
 
     assert.deepEqual(template_data, expected_data);
@@ -111,17 +108,9 @@ run_test('build_private_messages_list', () => {
     pm_list._build_private_messages_list(active_conversation_2, max_conversations);
     expected_data.messages[0].unread = 0;
     expected_data.messages[0].is_zero = true;
-    expected_data.messages[0].zoom_out_hide = true;
-    expected_data.want_show_more_messages_links = true;
     assert.deepEqual(template_data, expected_data);
 
-    $('.top_left_private_messages').on = function (action, selector, f) {
-        var e = { preventDefault: function () {}, stopPropagation: function () {}};
-        f(e);
-    };
     pm_list.initialize();
-    expected_data.zoom_class = "zoomed-in";
-    expected_data.want_show_more_messages_links = false;
     pm_list._build_private_messages_list(active_conversation_2, max_conversations);
     assert.deepEqual(template_data, expected_data);
 });
