@@ -2,6 +2,8 @@
 
 {!admin-only.md!}
 
+{start_tabs}
+
 {relative|stream|all}
 
 1. Select a stream.
@@ -10,3 +12,5 @@
    next to the stream name. Enter a new name.
 
 1. Click the **checkmark** to save.
+
+{end_tabs}

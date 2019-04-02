@@ -13,6 +13,10 @@ messages and topics in the stream may or may not continue to work.
 In most cases, we recommend [renaming streams](/help/rename-a-stream) rather
 than deleting them.
 
+### Delete a stream
+
+{start_tabs}
+
 {relative|stream|all}
 
 1. Select a stream.
@@ -20,6 +24,8 @@ than deleting them.
 1. On the right, click **Delete**.
 
 1. Click **Yes, delete this stream**.
+
+{end_tabs}
 
 !!! warn ""
     Deleting a stream is irreversible.
