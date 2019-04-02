@@ -64,6 +64,9 @@ TAB_DISPLAY_NAMES = {
     'chrome': 'Chrome',
     'firefox': 'Firefox',
     'desktop-app': 'Desktop app',
+
+    'system-proxy-settings': 'System proxy settings',
+    'custom-proxy-settings': 'Custom proxy settings',
 }
 
 class TabbedSectionsGenerator(Extension):

@@ -1,6 +1,10 @@
 # Manage your uploaded files
 
+{start_tabs}
+
 {settings_tab|uploaded-files}
+
+{end_tabs}
 
 From there, you can
 

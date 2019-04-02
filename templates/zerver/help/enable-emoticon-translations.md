@@ -15,10 +15,16 @@ or
 />
 automatically by Zulip.
 
+### Enable emoticon translations
+
+{start_tabs}
+
 {settings_tab|display-settings}
 
 2. Under **Emoji settings**, select **Convert emoticons before sending**.
 
-## Current emoticon conversions
+{end_tabs}
+
+## Current emoticon translations
 
 {emoticon_translations}

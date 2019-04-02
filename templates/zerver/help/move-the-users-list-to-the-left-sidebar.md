@@ -7,8 +7,14 @@ smaller) the right sidebar is hidden to save space.
 You can choose to move the **User list** to the left hand side, under the
 **Stream list**, in narrower windows.
 
+### Move the users list
+
+{start_tabs}
+
 {settings_tab|display-settings}
 
 2. Under **Display settings**, select **User list on left sidebar in narrow windows**.
 
 3. Reload the page.
+
+{end_tabs}
