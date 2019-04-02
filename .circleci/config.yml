@@ -3,7 +3,7 @@
 # See CircleCI upstream's docs on this config format:
 #   https://circleci.com/docs/2.0/language-python/
 #
-version: 2
+version: 2.1
 aliases:
   - &create_cache_directories
     run:
@@ -82,9 +82,10 @@ aliases:
          || echo "Error in uploading coverage reports to codecov.io."
 
 jobs:
-  "trusty-python-3.4":
+  "trusty-backend-frontend-py34":
     docker:
       # This is built from tools/circleci/images/trusty/Dockerfile .
+      # Trusty ships with Python 3.4.
       - image: gregprice/circleci:trusty-python-5.test
 
     working_directory: ~/zulip
@@ -107,9 +108,10 @@ jobs:
       #     # also /tmp/zulip-test-event-log/
       #     destination: test-reports
 
-  "xenial-python-3.5":
+  "xenial-backend-py35":
     docker:
       # This is built from tools/circleci/images/xenial/Dockerfile .
+      # Xenial ships with Python 3.5.
       - image: gregprice/circleci:xenial-python-4.test
 
     working_directory: ~/zulip
@@ -125,9 +127,10 @@ jobs:
       - *run_backend_tests
       - *upload_coverage_report
 
-  "bionic-python-3.6":
+  "bionic-backend-py36":
     docker:
       # This is built from tools/circleci/images/bionic/Dockerfile .
+      # Bionic ships with Python 3.6.
       - image: gregprice/circleci:bionic-python-1.test
 
     working_directory: ~/zulip
@@ -156,6 +159,6 @@ workflows:
   version: 2
   build:
     jobs:
-      - "trusty-python-3.4"
-      - "xenial-python-3.5"
-      - "bionic-python-3.6"
+      - "trusty-backend-frontend-py34"
+      - "xenial-backend-py35"
+      - "bionic-backend-py36"
