@@ -1790,7 +1790,7 @@ msgstr "Organisation: %(organization_url)s Zeit: %(login_time)s Email: %(user_em
 #: templates/zerver/emails/notify_new_login.source.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
 msgid "We noticed a recent login for the following Zulip account."
-msgstr "Wir haben einen kürlichen Login für den folgenden Zulip Account detektiert."
+msgstr "Wir haben einen kürzlichen Login für den folgenden Zulip Account detektiert."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:18
 #, python-format
