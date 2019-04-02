@@ -10,12 +10,16 @@ email system, since the user’s API key and bot API keys will still be
 active. Instead, you need to deactivate the user’s account using the Zulip
 administrative interface.
 
+{start_tabs}
+
 {settings_tab|user-list-admin}
 
  4. Click the **Deactivate** button to the right of the user account that you
 want to deactivate.
 
 4. Click **Deactivate now** to confirm.
+
+{end_tabs}
 
 The user will be logged out immediately and not be able to log back in. The
 user's bots will also be deactivated. Lastly, the user will be unable to
@@ -29,7 +33,11 @@ have the same API key and bot API keys, but the bots will be deactivated
 until the user manually [reactivates](deactivate-or-reactivate-a-bot) them
 again.
 
+{start_tabs}
+
 {settings_tab|deactivated-users-admin}
 
 4. Click the **Reactivate** button to the right of the user account that you
 want to reactivate.
+
+{end_tabs}
