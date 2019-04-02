@@ -137,6 +137,7 @@ declare var stream_list: any;
 declare var stream_muting: any;
 declare var stream_popover: any;
 declare var stream_sort: any;
+declare var stream_ui_updates: any;
 declare var submessage: any;
 declare var subs: any;
 declare var tab_bar: any;
