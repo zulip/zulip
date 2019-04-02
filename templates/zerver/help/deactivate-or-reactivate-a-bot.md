@@ -9,10 +9,16 @@ add. Organization admins can prevent users from reactivating bots by
 Organization administrators can also deactivate or reactivate any existing
 bot, regardless of who owns them.
 
+### Deactivate or reactivate a bot
+
+{start_tabs}
+
 {settings_tab|bot-list-admin}
 
 4. Find the bot that you would like to manage and click
 **Deactivate** or **Reactivate** to its right.
+
+{end_tabs}
 
 ## Related articles
 
