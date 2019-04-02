@@ -17,6 +17,10 @@ into an existing Zulip organization.
 
 First, export your data from Slack.
 
+### Export your Slack data
+
+{start_tabs}
+
 1. [Export your Slack data](https://my.slack.com/services/export). You will
    receive a zip file `slack_data.zip`.
 
@@ -27,6 +31,8 @@ First, export your data from Slack.
         for more information.
 
 2. [Generate a Slack API token](https://api.slack.com/custom-integrations/legacy-tokens).
+
+{end_tabs}
 
 ### Import into zulipchat.com
 

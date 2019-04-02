@@ -11,6 +11,10 @@ existing Zulip organization.
 
 First, export your data from Gitter.
 
+### Export your Gitter data
+
+{start_tabs}
+
 1. [Export your Gitter data](https://github.com/minrk/archive-gitter). You will
    receive json files of the public rooms that you are a part of.
    Select the `gitter_data.json` file of the room which you want to import into
@@ -20,6 +24,8 @@ First, export your data from Gitter.
         **Note:** You'll need a gitter API token to export data. You can get this
         token by following the instructions in the "**Getting Started**" section of the
         [gitter documentation](https://developer.gitter.im/docs/).
+
+{end_tabs}
 
 ### Import into zulipchat.com
 
