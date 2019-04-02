@@ -11,22 +11,30 @@ administrators can always [change anyone's name](/help/change-a-users-name).
 This setting is especially useful if user names are managed via an external
 source, and synced into Zulip via the [Zulip API](/api) or another method.
 
+{start_tabs}
+
 {settings_tab|organization-permissions}
 
 2. Under the **User identity**, select **Prevent users from changing their name**.
 
 {!save-changes.md!}
 
+{end_tabs}
+
 ## Prevent all email changes
 
 By default, any user can
 [change their email address](/help/change-your-email-address). However, you
 can instead prevent all email changes. This is especially useful for
-organizations that are self-hosting and using LDAP or another a Single
+organizations that are using LDAP or another a Single
 Sign-On solution to manage user emails.
+
+{start_tabs}
 
 {settings_tab|organization-permissions}
 
 2. Under **User identity**, select **Prevent users from changing their email address**.
 
 {!save-changes.md!}
+
+{end_tabs}

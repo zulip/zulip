@@ -16,8 +16,14 @@ For large Zulips where anyone can join, we recommend restricting stream
 creation to those with accounts at least a few days old (we suggest starting
 with `N = 3`), to make it easier to cope with spammers and confused users.
 
+### Manage who can create streams
+
+{start_tabs}
+
 {settings_tab|organization-permissions}
 
 2. Under **Other permissions**, configure **Who can create streams**.
 
 {!save-changes.md!}
+
+{end_tabs}

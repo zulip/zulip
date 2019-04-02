@@ -12,8 +12,14 @@ even if [community topic editing](/help/community-topic-edits) is otherwise off.
 
 You can instead choose to require a topic for new stream messages.
 
+### Require topics in stream messages
+
+{start_tabs}
+
 {settings_tab|organization-settings}
 
 2. Under **Message feed**, select **Require topics in messages to streams**.
 
 {!save-changes.md!}
+
+{end_tabs}

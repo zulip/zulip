@@ -9,6 +9,8 @@ profiles until they fill them out.
 
 ## Add a custom profile field
 
+{start_tabs}
+
 {settings_tab|profile-field-settings}
 
 1. Under **Add a new profile field**, enter a **Label**, **Hint**, and **Type**.
@@ -16,6 +18,8 @@ profiles until they fill them out.
 1. Click **Add profile field**.
 
 1. Click and drag the vertical dots on the left to order the fields.
+
+{end_tabs}
 
 ## Profile field types
 

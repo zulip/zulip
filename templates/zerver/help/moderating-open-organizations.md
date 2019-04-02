@@ -27,7 +27,7 @@ Moderation is a big part of making an open community work.
 * [Rename topics](/help/rename-a-topic).
 * [Change users' names](/help/change-a-users-name) (e.g. to "Spammer")
 * [Deactivate bots](/help/deactivate-or-reactivate-a-bot) or
-  [delete custom emoji](/help/add-custom-emoji#delete-a-custom-emoji).
+  [delete custom emoji](/help/add-custom-emoji#delete-custom-emoji).
 * Instruct users to [collapse](/help/collapse-a-message) messages that they don't
   want to see.
 

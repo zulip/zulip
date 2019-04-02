@@ -9,11 +9,17 @@ To remove the edit history of a single message, it is usually best to
 [delete the message](edit-or-delete-a-message) entirely. However, you can
 also disable viewing of message edit history more generally.
 
+### Disable message edit history
+
+{start_tabs}
+
 {settings_tab|organization-settings}
 
 2. Under **Message editing**, uncheck **Enable message edit history**.
 
 {!save-changes.md!}
+
+{end_tabs}
 
 ## Related articles
 
