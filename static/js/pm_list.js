@@ -171,17 +171,29 @@ exports.update_private_messages = function () {
         return;
     }
 
-    var is_pm_filter = _.contains(narrow_state.filter().operands('is'), "private");
-    var conversation = narrow_state.filter().operands('pm-with');
-    if (conversation.length === 1) {
-        exports.rebuild_recent(conversation[0]);
-    } else if (conversation.length !== 0) {
-        // TODO: This should be the reply-to of the thread.
-        exports.rebuild_recent("");
-    } else if (is_pm_filter) {
-        exports.rebuild_recent("");
+    var is_pm_filter = false;
+    var pm_with = '';
+    var filter = narrow_state.filter();
+
+    if (filter) {
+        var conversation = filter.operands('pm-with');
+        if (conversation.length === 1) {
+            pm_with = conversation[0];
+        }
+        if (conversation.length === 0) {
+            is_pm_filter = _.contains(filter.operands('is'), "private");
+        }
+        // We don't support having two pm-with: operands in a search
+        // (Group PMs are represented as a single pm-with operand
+        // containing a list).
+    }
+
+    exports.rebuild_recent(pm_with);
+
+    if (is_pm_filter) {
         $(".top_left_private_messages").addClass('active-filter');
     }
+
     if ($("#private-container").length !== 0) {
         ui.set_up_scrollbar($("#private-container"));
     }
