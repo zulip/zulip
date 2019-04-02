@@ -1,4 +1,4 @@
-# Change the default language
+# Set the default language for new users
 
 {!admin-only.md!}
 
@@ -11,11 +11,17 @@ a default language for new users. This setting will not affect existing
 users, and new users can still
 [manage their individual language setting](change-your-language).
 
+### Set the default language for new users
+
+{start_tabs}
+
 {settings_tab|organization-settings}
 
 2. Under **Default user settings**, change the **Default language**.
 
 {!save-changes.md!}
 
-!!! tip ""
-    You can always send and read messages in any language.
+{end_tabs}
+
+Note that users can always send and read messages in any language, regardless
+of their language setting.

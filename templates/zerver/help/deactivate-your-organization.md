@@ -2,14 +2,18 @@
 
 {!admin-only.md!}
 
+{start_tabs}
+
 {settings_tab|organization-profile}
 
 1. Under **Deactivate organization**, click **Deactivate organization**.
 
 1. Confirm by clicking **Deactivate organization**.
 
-!!! tip ""
-    This action cannot be undone by anyone in the organization. If you
+{end_tabs}
+
+!!! warn ""
+    **Note**: This action cannot be undone by anyone in the organization. If you
     deactivated your organization by accident, please contact your server
     administrator ({{ support_email }}) as soon as possible, before the
     deactivated organization is permanently deleted.

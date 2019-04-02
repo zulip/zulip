@@ -1,4 +1,4 @@
-# "Join Zulip" chat badge
+# Link to Zulip from the web
 
 You can link to your Zulip from the web with a Zulip
 [shields.io](https://github.com/badges/shields) badge:

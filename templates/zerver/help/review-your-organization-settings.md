@@ -8,6 +8,12 @@ scale may be applicable now.
 Note that most organization settings are visible to all users, though
 generally only organization administrators can interact with them.
 
+### Review your organization settings
+
+{start_tabs}
+
 {relative|gear|manage-organization}
 
 1. Click on each tab on the left.
+
+{end_tabs}
