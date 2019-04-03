@@ -16,6 +16,7 @@
 * [Change your language](/help/change-your-language)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
+* [Switching between organizations](/help/switching-between-organizations)
 * [Logging in](/help/logging-in)
 * [Logging out](/help/logging-out)
 * [Keyboard shortcuts](/help/keyboard-shortcuts)

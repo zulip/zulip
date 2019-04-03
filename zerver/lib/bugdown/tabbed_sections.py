@@ -48,6 +48,10 @@ TAB_DISPLAY_NAMES = {
     'curl': 'curl',
     'zulip-send': 'zulip-send',
 
+    'web': 'Web',
+    'desktop': 'Desktop',
+    'mobile': 'Mobile',
+
     'cloud': 'HipChat Cloud',
     'server': 'HipChat Server or Data Center',
     'stride': 'Stride',
