@@ -122,13 +122,13 @@
 * [Community topic edits](/help/community-topic-edits)
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)
-* [Add custom profile fields](/help/add-custom-profile-fields)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
 
 ## Users & bots
 * [Invite new users](/help/invite-new-users)
 * [Allow anyone to join](/help/allow-anyone-to-join-without-an-invitation)
+* [Add custom profile fields](/help/add-custom-profile-fields)
 * [User groups](/help/user-groups)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
