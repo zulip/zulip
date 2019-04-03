@@ -56,9 +56,9 @@ class Invoice:
     billing_reason: str
     default_source: Source
     due_date: int
-    finalized_at: int
     lines: List[InvoiceLineItem]
     status: str
+    status_transitions: Any
     total: int
 
     @staticmethod

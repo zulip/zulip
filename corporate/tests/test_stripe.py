@@ -125,9 +125,9 @@ def normalize_fixture_data(decorated_function: CallableT,
     }
     # We'll replace "invoice_prefix": "A35BC4Q" with something like "invoice_prefix": "NORMA01"
     pattern_translations.update({
-        '"invoice_prefix": "([A-Za-z0-9]{7})"': 'NORMA%02d',
+        '"invoice_prefix": "([A-Za-z0-9]{7,8})"': 'NORMA%02d',
         '"fingerprint": "([A-Za-z0-9]{16})"': 'NORMALIZED%06d',
-        '"number": "([A-Za-z0-9]{7}-[A-Za-z0-9]{4})"': 'NORMALI-%04d',
+        '"number": "([A-Za-z0-9]{7,8}-[A-Za-z0-9]{4})"': 'NORMALI-%04d',
         '"address": "([A-Za-z0-9]{9}-test_[A-Za-z0-9]{12})"': '000000000-test_NORMALIZED%02d',
         # Don't use (..) notation, since the matched strings may be small integers that will also match
         # elsewhere in the file
@@ -355,7 +355,7 @@ class StripeTest(StripeTestCase):
         # Check Invoices in Stripe
         stripe_invoices = [invoice for invoice in stripe.Invoice.list(customer=stripe_customer.id)]
         self.assertEqual(len(stripe_invoices), 1)
-        self.assertIsNotNone(stripe_invoices[0].finalized_at)
+        self.assertIsNotNone(stripe_invoices[0].status_transitions.finalized_at)
         invoice_params = {
             # auto_advance is False because the invoice has been paid
             'amount_due': 0, 'amount_paid': 0, 'auto_advance': False, 'billing': 'charge_automatically',
@@ -449,7 +449,7 @@ class StripeTest(StripeTestCase):
         stripe_invoices = [invoice for invoice in stripe.Invoice.list(customer=stripe_customer.id)]
         self.assertEqual(len(stripe_invoices), 1)
         self.assertIsNotNone(stripe_invoices[0].due_date)
-        self.assertIsNotNone(stripe_invoices[0].finalized_at)
+        self.assertIsNotNone(stripe_invoices[0].status_transitions.finalized_at)
         invoice_params = {
             'amount_due': 8000 * 123, 'amount_paid': 0, 'attempt_count': 0,
             'auto_advance': True, 'billing': 'send_invoice', 'statement_descriptor': 'Zulip Standard',
@@ -1104,7 +1104,7 @@ class InvoiceTest(StripeTestCase):
         stripe_invoices = [invoice for invoice in stripe.Invoice.list(
             customer=plan.customer.stripe_customer_id)]
         self.assertEqual(len(stripe_invoices), 2)
-        self.assertIsNotNone(stripe_invoices[0].finalized_at)
+        self.assertIsNotNone(stripe_invoices[0].status_transitions.finalized_at)
         stripe_line_items = [item for item in stripe_invoices[0].lines]
         self.assertEqual(len(stripe_line_items), 3)
         line_item_params = {
