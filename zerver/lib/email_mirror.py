@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional, Tuple, List
 
 import logging
 import re
+import datetime
 
 from email.header import decode_header, make_header
 from email.utils import getaddresses
@@ -25,7 +26,8 @@ from zerver.lib.rate_limiter import RateLimitedObject, RateLimiterLockingExcepti
 from zerver.lib.exceptions import RateLimited
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
-    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
+    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm, \
+    get_stream_recipient
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +202,19 @@ class ZulipEmailForwardUserError(ZulipEmailForwardError):
     pass
 
 def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
+    if len(truncate_topic(topic)) < len(topic):
+        if not (
+            Message
+            .objects
+            .filter(
+                subject=truncate_topic(topic),
+                recipient=get_stream_recipient(stream.id),
+                pub_date__lte=datetime.datetime.today(),
+                pub_date__gt=datetime.datetime.today() - datetime.timedelta(days=7))
+            .exists()
+        ):
+            content = "Subject: {}\n\n{}".format(topic, content)
+
     internal_send_message(
         stream.realm,
         sender,
