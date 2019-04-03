@@ -121,6 +121,7 @@
 * [Manage editing of old messages](/help/configure-message-editing-and-deletion)
 * [Hide message content in emails](/help/hide-message-content-in-emails)
 * [Community topic edits](/help/community-topic-edits)
+* [Disable welcome emails](/help/disable-welcome-emails)
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
