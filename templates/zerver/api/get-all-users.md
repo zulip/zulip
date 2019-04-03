@@ -72,6 +72,7 @@ curl {{ api_url }}/v1/users?client_gravatar=true \
       is the email address of the user who created the bot.
     * `is_active`: A boolean specifying whether the user is active or not.
     * `is_guest`: A boolean specifying whether the user is a guest user or not.
+    * `timezone`: The time zone of the user.
 
 #### Example response
 

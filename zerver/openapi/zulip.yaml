@@ -926,7 +926,8 @@ paths:
                                 "is_admin": false,
                                 "is_bot": false,
                                 "is_guest": false,
-                                "user_id": 1
+                                "user_id": 1,
+                                "timezone" : "Africa/Bujumbura"
                             },
                             {
                                 "avatar_url": "https://secure.gravatar.com/avatar/77c3871a68c8d70356156029fd0a4999?d=identicon&version=1",
@@ -937,7 +938,8 @@ paths:
                                 "is_admin": false,
                                 "is_bot": false,
                                 "is_guest": false,
-                                "user_id": 3
+                                "user_id": 3,
+                                "timezone" : "Asia/Calcutta"
                             },
                             {
                                 "avatar_url": "https://secure.gravatar.com/avatar/0cbf08f3a355995fa2ec542246e35123?d=identicon&version=1",
@@ -948,7 +950,8 @@ paths:
                                 "is_admin": false,
                                 "is_bot": false,
                                 "is_guest": true,
-                                "user_id": 24
+                                "user_id": 24,
+                                "timezone" : "Asia/Calcutta"
                             }
                         ],
                         "msg": "",
