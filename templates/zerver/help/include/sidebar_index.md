@@ -122,6 +122,7 @@
 * [Hide message content in emails](/help/hide-message-content-in-emails)
 * [Community topic edits](/help/community-topic-edits)
 * [Disable welcome emails](/help/disable-welcome-emails)
+* [Configure notification bot](/help/configure-notification-bot)
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
