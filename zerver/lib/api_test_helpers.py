@@ -515,6 +515,19 @@ def add_reaction(client, message_id):
 
     assert result['result'] == 'success'
 
+def remove_reaction(client, message_id):
+    # type: (Client, int) -> None
+    request = {
+        'message_id': message_id,
+        'emoji_name': 'joy',
+        'emoji_code': '1f602',
+        'reaction_type': 'unicode_emoji'
+    }
+
+    result = client.remove_reaction(request)
+
+    assert result['result'] == 'success'
+
 def test_nonexistent_stream_error(client):
     # type: (Client) -> None
     request = {
@@ -835,6 +848,7 @@ TEST_FUNCTIONS = {
     '/users/me/{stream_id}/topics:get': get_stream_topics,
     '/typing:post': set_typing_status,
     '/user_groups:get': get_user_groups,
+    '/messages/{message_id}/reactions:delete': remove_reaction
 }
 
 # SETUP METHODS FOLLOW
@@ -890,6 +904,7 @@ def test_messages(client, nonadmin_client):
     render_message(client)
     message_id = send_message(client)
     add_reaction(client, message_id)
+    remove_reaction(client, message_id)
     update_message(client, message_id)
     get_raw_message(client, message_id)
     get_messages(client)
