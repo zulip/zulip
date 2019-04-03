@@ -492,6 +492,11 @@ li.expanded_private_message a {
     opacity: .5;
 }
 
+#global_filters .global_filters_link {
+    display: block;
+    width: 100%;
+}
+
 .zero_count {
     visibility: hidden;
 }
