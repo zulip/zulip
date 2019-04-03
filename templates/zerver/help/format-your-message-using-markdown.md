@@ -209,6 +209,14 @@ Under the line
 
 A summary of the formatting syntax is available in-app.
 
+{start_tabs}
+
 {!start-composing.md!}
 
 1. Click the A (<i class="fa fa-font"></i>) icon at the bottom of the compose box.
+
+{end_tabs}
+
+## Related articles
+
+* [Create a poll](/help/create-a-poll)
