@@ -415,6 +415,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
         'avatar_source',
         'avatar_version',
         'bot_owner__email',
+        'timezone',
     )
 
     def get_member(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -430,6 +431,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
             is_admin=row['is_realm_admin'],
             bot_type=row['bot_type'],
             is_guest=row['is_guest'],
+            timezone=row['timezone'],
         )
 
         result['avatar_url'] = get_avatar_field(
