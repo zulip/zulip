@@ -46,7 +46,7 @@ EMOJI_NAME_MAPS = {
     '1f913': {'canonical_name': 'nerd', 'aliases': ['geek']},
     # several sites suggested this was used for "cool", but cool is taken by
     # Symbols/137
-    '1f60e': {'canonical_name': 'sunglasses', 'aliases': []},
+    '1f60e': {'canonical_name': 'sunglasses', 'aliases': ['cool']},
     '1f921': {'canonical_name': 'clown', 'aliases': []},
     '1f920': {'canonical_name': 'cowboy', 'aliases': []},
     # https://emojipedia.org/smirking-face/
@@ -458,7 +458,7 @@ EMOJI_NAME_MAPS = {
     '1f384': {'canonical_name': 'holiday_tree', 'aliases': []},
     '1f332': {'canonical_name': 'evergreen_tree', 'aliases': []},
     '1f333': {'canonical_name': 'tree', 'aliases': ['deciduous_tree']},
-    '1f334': {'canonical_name': 'palm_tree', 'aliases': []},
+    '1f334': {'canonical_name': 'palm_tree', 'aliases': ['vacation']},
     # sprout seemed like a reasonable addition
     '1f331': {'canonical_name': 'seedling', 'aliases': ['sprout']},
     # seemed like the best emoji for plant
@@ -1378,7 +1378,7 @@ EMOJI_NAME_MAPS = {
     '1f197': {'canonical_name': 'squared_ok', 'aliases': []},
     # from unicode, and to parallel Symbols/135. Saving up for Symbols/171
     '1f199': {'canonical_name': 'squared_up', 'aliases': []},
-    '1f192': {'canonical_name': 'cool', 'aliases': []},
+    '1f192': {'canonical_name': 'squared_cool', 'aliases': []},
     '1f195': {'canonical_name': 'new', 'aliases': []},
     '1f193': {'canonical_name': 'free', 'aliases': []},
     '0030-20e3': {'canonical_name': 'zero', 'aliases': []},
