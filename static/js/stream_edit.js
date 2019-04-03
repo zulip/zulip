@@ -82,11 +82,36 @@ function clear_edit_panel() {
     $(".stream-row.active").removeClass("active");
 }
 
+function get_stream_id(target) {
+    if (target.constructor !== jQuery) {
+        target = $(target);
+    }
+    return target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
+}
+
+function get_sub_for_target(target) {
+    var stream_id = get_stream_id(target);
+    if (!stream_id) {
+        blueslip.error('Cannot find stream id for target');
+        return;
+    }
+
+    var sub = stream_data.get_sub_by_id(stream_id);
+    if (!sub) {
+        blueslip.error('get_sub_for_target() failed id lookup: ' + stream_id);
+        return;
+    }
+    return sub;
+}
+
 exports.open_edit_panel_for_row = function (stream_row) {
+    var sub = get_sub_for_target(stream_row);
+
     clear_edit_panel();
     subs.show_subs_pane.settings();
     $(stream_row).addClass("active");
     stream_edit.show_settings_for(stream_row);
+    setup_subscriptions_stream_hash(sub);
 };
 
 exports.open_edit_panel_empty = function () {
@@ -141,29 +166,6 @@ exports.remove_user_from_stream = function (user_email, sub, success, failure) {
         error: failure,
     });
 };
-
-function get_stream_id(target) {
-    if (target.constructor !== jQuery) {
-        target = $(target);
-    }
-    return target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
-}
-
-
-function get_sub_for_target(target) {
-    var stream_id = get_stream_id(target);
-    if (!stream_id) {
-        blueslip.error('Cannot find stream id for target');
-        return;
-    }
-
-    var sub = stream_data.get_sub_by_id(stream_id);
-    if (!sub) {
-        blueslip.error('get_sub_for_target() failed id lookup: ' + stream_id);
-        return;
-    }
-    return sub;
-}
 
 exports.sort_but_pin_current_user_on_top = function (emails) {
     if (emails === undefined) {
@@ -656,7 +658,6 @@ exports.initialize = function () {
             regular_sub_settings.removeClass("in");
         }
 
-        setup_subscriptions_stream_hash(sub);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -695,9 +696,6 @@ exports.initialize = function () {
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             exports.open_edit_panel_for_row(this);
-            var stream_id = $(this).attr("data-stream-id");
-            var sub = stream_data.get_sub_by_id(stream_id);
-            setup_subscriptions_stream_hash(sub);
         }
     });
 
