@@ -374,3 +374,18 @@ class TestSendToEmailMirror(ZulipTestCase):
         stream_id = get_stream("Denmark2", message.sender.realm).id
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertEqual(message.recipient.type_id, stream_id)
+
+class TestConvertMattermostData(ZulipTestCase):
+    COMMAND_NAME = 'convert_mattermost_data'
+
+    def test_check_if_command_calls_do_convert_data(self) -> None:
+        with patch('zerver.management.commands.convert_mattermost_data.do_convert_data') as m:
+            mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
+            output_dir = self.make_import_output_dir("mattermost")
+            call_command(self.COMMAND_NAME, mm_fixtures, "--output={}".format(output_dir))
+
+        m.assert_called_with(
+            masking_content=False,
+            mattermost_data_dir=os.path.realpath(mm_fixtures),
+            output_dir=os.path.realpath(output_dir),
+        )

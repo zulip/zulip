@@ -105,6 +105,7 @@
 * [Create your organization profile](/help/create-your-organization-profile)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import from HipChat/Stride](/help/import-from-hipchat)
+* [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
 * [Roles and permissions](/help/roles-and-permissions)
