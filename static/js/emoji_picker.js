@@ -693,6 +693,26 @@ exports.register_click_handlers = function () {
         emoji_picker.toggle_emoji_popover(this, message_id);
     });
 
+    $("#main_div").on("mouseenter", ".reaction_button", function (e) {
+        e.stopPropagation();
+
+        var elem = $(this);
+        var title = i18n.t("Add emoji reaction");
+        elem.tooltip({
+            title: title + " (:)",
+            trigger: 'hover',
+            placement: 'bottom',
+            animation: false,
+        });
+        elem.tooltip('show');
+        $(".tooltip-arrow").remove();
+    });
+
+    $('#main_div').on('mouseleave', '.reaction_button', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('hide');
+    });
+
     $("body").on("click", ".actions_popover .reaction_button", function (e) {
         var msgid = $(e.currentTarget).data('message-id');
         e.preventDefault();
