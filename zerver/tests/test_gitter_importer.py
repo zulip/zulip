@@ -5,9 +5,6 @@ from zerver.lib.import_realm import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.tests.test_import_export import (
-    rm_tree,
-)
 from zerver.models import (
     get_realm,
     UserProfile,
@@ -31,7 +28,7 @@ class GitterImporter(ZulipTestCase):
 
     def _make_output_dir(self) -> str:
         output_dir = 'var/test-gitter-import'
-        rm_tree(output_dir)
+        self.rm_tree(output_dir)
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 

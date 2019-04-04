@@ -3,7 +3,6 @@
 from django.conf import settings
 
 import os
-import shutil
 import ujson
 
 from mock import patch
@@ -85,10 +84,6 @@ from zerver.models import (
 from zerver.lib.test_helpers import (
     get_test_image_file,
 )
-
-def rm_tree(path: str) -> None:
-    if os.path.exists(path):
-        shutil.rmtree(path)
 
 class QueryUtilTest(ZulipTestCase):
     def _create_messages(self) -> None:
@@ -221,11 +216,11 @@ class QueryUtilTest(ZulipTestCase):
 class ImportExportTest(ZulipTestCase):
 
     def setUp(self) -> None:
-        rm_tree(settings.LOCAL_UPLOADS_DIR)
+        self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
     def _make_output_dir(self) -> str:
         output_dir = 'var/test-export'
-        rm_tree(output_dir)
+        self.rm_tree(output_dir)
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 

@@ -3,7 +3,6 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.slack import (
-    rm_tree,
     get_slack_api_data,
     get_admin,
     get_user_timezone,
@@ -547,9 +546,9 @@ class SlackImporter(ZulipTestCase):
         # If the test fails, the 'output_dir' would not be deleted and hence it would give an
         # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'
         # hence we remove it before running 'do_convert_data'
-        rm_tree(output_dir)
+        self.rm_tree(output_dir)
         # Also the unzipped data file should be removed if the test fails at 'do_convert_data'
-        rm_tree(test_slack_unzipped_file)
+        self.rm_tree(test_slack_unzipped_file)
 
         user_data_fixture = ujson.loads(self.fixture_data('user_data.json', type='slack_fixtures'))
         mock_get_slack_api_data.side_effect = [user_data_fixture['members'], {}]

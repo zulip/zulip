@@ -62,6 +62,7 @@ import os
 import re
 import ujson
 import urllib
+import shutil
 
 API_KEYS = {}  # type: Dict[str, str]
 
@@ -685,6 +686,10 @@ class ZulipTestCase(TestCase):
                                    confirmed=True, number=number,
                                    key='abcd', method='sms')
         phone_device.save()
+
+    def rm_tree(self, path: str) -> None:
+        if os.path.exists(path):
+            shutil.rmtree(path)
 
 class WebhookTestCase(ZulipTestCase):
     """
