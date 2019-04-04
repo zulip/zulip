@@ -161,7 +161,7 @@ run_test('basics', () => {
             local_id: 'unicode_emoji,frown,1f626',
             count: 1,
             user_ids: [7],
-            title: 'Cali reacted with :frown:',
+            label: 'Cali reacted with :frown:',
             emoji_alt_code: false,
             class: 'message_reaction',
         },
@@ -172,7 +172,7 @@ run_test('basics', () => {
             local_id: 'realm_emoji,inactive_realm_emoji,992',
             count: 1,
             user_ids: [5],
-            title: 'You (click to remove) reacted with :inactive_realm_emoji:',
+            label: 'You (click to remove) reacted with :inactive_realm_emoji:',
             emoji_alt_code: false,
             is_realm_emoji: true,
             url: 'TBD',
@@ -185,7 +185,7 @@ run_test('basics', () => {
             local_id: 'unicode_emoji,smile,1f604',
             count: 2,
             user_ids: [5, 6],
-            title: 'You (click to remove) and Bob van Roberts reacted with :smile:',
+            label: 'You (click to remove) and Bob van Roberts reacted with :smile:',
             emoji_alt_code: false,
             class: 'message_reaction reacted',
         },
@@ -299,6 +299,14 @@ run_test('get_reaction_section', () => {
     assert.equal(section, message_reactions);
 });
 
+run_test('emoji_reaction_title', () => {
+    var message_id = 1001;
+    var local_id = 'unicode_emoji,smile,1f604';
+
+    assert.equal(reactions.get_reaction_title_data(message_id, local_id),
+                 "You (click to remove) and Bob van Roberts reacted with :smile:");
+});
+
 run_test('add_and_remove_reaction', () => {
     // Insert 8ball for Alice.
     var alice_event = {
@@ -330,7 +338,7 @@ run_test('add_and_remove_reaction', () => {
         assert.equal(data.class, 'message_reaction reacted');
         assert(!data.is_realm_emoji);
         assert.equal(data.message_id, 1001);
-        assert.equal(data.title, 'You (click to remove) reacted with :8ball:');
+        assert.equal(data.label, 'You (click to remove) reacted with :8ball:');
         return '<new reaction html>';
     });
 
@@ -343,6 +351,11 @@ run_test('add_and_remove_reaction', () => {
     reactions.add_reaction(alice_event);
     assert(template_called);
     assert(insert_called);
+
+    // Testing tooltip title data for added reaction.
+    var local_id = 'unicode_emoji,8ball,1f3b1';
+    assert.equal(reactions.get_reaction_title_data(alice_event.message_id, local_id),
+                 "You (click to remove) reacted with :8ball:");
 
     // Running add_reaction again should not result in any changes
     template_called = false;
@@ -367,36 +380,15 @@ run_test('add_and_remove_reaction', () => {
     var reaction_element = $.create('reaction-element');
     reaction_element.set_find_results('.message_reaction_count', count_element);
 
-    var title_set;
-    reaction_element.prop = function (prop_name, value) {
-        assert.equal(prop_name, 'title');
-        var expected_msg = 'You (click to remove)' +
-            ' and Bob van Roberts reacted with :8ball:';
-        assert.equal(value, expected_msg);
-        title_set = true;
-    };
-
     message_reactions.find = function (selector) {
         assert.equal(selector, "[data-reaction-id='unicode_emoji,8ball,1f3b1']");
         return reaction_element;
     };
 
     reactions.add_reaction(bob_event);
-    assert(title_set);
     assert.equal(count_element.text(), '2');
 
-    // Now, remove Bob's 8ball emoji.  The event has the same exact
-    // structure as the add event.
-    title_set = false;
-    reaction_element.prop = function (prop_name, value) {
-        assert.equal(prop_name, 'title');
-        var expected_msg = 'You (click to remove) reacted with :8ball:';
-        assert.equal(value, expected_msg);
-        title_set = true;
-    };
-
     reactions.remove_reaction(bob_event);
-    assert(title_set);
     assert.equal(count_element.text(), '1');
 
     var current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);

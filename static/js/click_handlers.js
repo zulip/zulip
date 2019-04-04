@@ -189,6 +189,40 @@ exports.initialize = function () {
         var local_id = $(this).attr('data-reaction-id');
         var message_id = rows.get_message_id(this);
         reactions.process_reaction_click(message_id, local_id);
+        $(".tooltip").remove();
+    });
+
+    // TOOLTIP FOR MESSAGE REACTIONS
+
+    $('#main_div').on('mouseenter', '.message_reaction', function (e) {
+        e.stopPropagation();
+        var elem = $(e.currentTarget);
+        var local_id = elem.attr('data-reaction-id');
+        var message_id = rows.get_message_id(e.currentTarget);
+        var title = reactions.get_reaction_title_data(message_id, local_id);
+
+        elem.tooltip({
+            title: title,
+            trigger: 'hover',
+            placement: 'bottom',
+            animation: false,
+        });
+        elem.tooltip('show');
+        $(".tooltip, .tooltip-inner").css('max-width', "600px");
+        // Remove the arrow from the tooltip.
+        $(".tooltip-arrow").remove();
+    });
+
+    $('#main_div').on('mouseleave', '.message_reaction', function (e) {
+        e.stopPropagation();
+        $(e.currentTarget).tooltip('destroy');
+    });
+
+    // DESTROY PERSISTING TOOLTIPS ON HOVER
+
+    $("body").on('mouseenter', '.tooltip', function (e) {
+        e.stopPropagation();
+        $(e.currentTarget).remove();
     });
 
     $("#main_div").on("click", "a.stream", function (e) {

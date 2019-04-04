@@ -696,7 +696,7 @@ exports.register_click_handlers = function () {
     $("#main_div").on("mouseenter", ".reaction_button", function (e) {
         e.stopPropagation();
 
-        var elem = $(this);
+        var elem = $(e.currentTarget);
         var title = i18n.t("Add emoji reaction");
         elem.tooltip({
             title: title + " (:)",
@@ -710,7 +710,7 @@ exports.register_click_handlers = function () {
 
     $('#main_div').on('mouseleave', '.reaction_button', function (e) {
         e.stopPropagation();
-        $(this).tooltip('hide');
+        $(e.currentTarget).tooltip('hide');
     });
 
     $("body").on("click", ".actions_popover .reaction_button", function (e) {

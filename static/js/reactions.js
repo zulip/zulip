@@ -172,6 +172,16 @@ function generate_title(emoji_name, user_ids) {
     return _.initial(user_names).join(', ') + ' and ' + _.last(user_names) + reacted_with_string;
 }
 
+// Add a tooltip showing who reacted to a message.
+exports.get_reaction_title_data = function (message_id, local_id) {
+    var message = get_message(message_id);
+    var user_list = get_user_list_for_message_reaction(message, local_id);
+    var emoji_name = exports.get_reaction_info(local_id).emoji_name;
+    var title = generate_title(emoji_name, user_list);
+
+    return title;
+};
+
 exports.get_reaction_section = function (message_id) {
     var message_element = $('.message_table').find("[zid='" + message_id + "']");
     var section = message_element.find('.message_reactions');
@@ -249,8 +259,8 @@ exports.view.update_existing_reaction = function (opts) {
 
     exports.set_reaction_count(reaction, user_list.length);
 
-    var new_title = generate_title(emoji_name, user_list);
-    reaction.prop('title', new_title);
+    var new_label = generate_title(emoji_name, user_list);
+    reaction.attr('aria-label', new_label);
 
     if (user_id === page_params.user_id) {
         reaction.addClass("reacted");
@@ -275,7 +285,7 @@ exports.view.insert_new_reaction = function (opts) {
         emoji_code: emoji_code,
     };
 
-    var new_title = generate_title(emoji_name, user_list);
+    var new_label = generate_title(emoji_name, user_list);
 
     if (opts.reaction_type !== 'unicode_emoji') {
         context.is_realm_emoji = true;
@@ -283,7 +293,7 @@ exports.view.insert_new_reaction = function (opts) {
     }
 
     context.count = 1;
-    context.title = new_title;
+    context.label = new_label;
     context.local_id = exports.get_local_reaction_id(opts);
     context.emoji_alt_code = page_params.emojiset === 'text';
 
@@ -369,8 +379,10 @@ exports.view.remove_reaction = function (opts) {
     // the title/count and, if the user is the current user, turn off the
     // "reacted" class.
 
-    var new_title = generate_title(emoji_name, user_list);
-    reaction.prop('title', new_title);
+    var new_label = generate_title(emoji_name, user_list);
+    reaction.attr('aria-label', new_label);
+
+    // If the user is the current user, turn off the "reacted" class.
 
     exports.set_reaction_count(reaction, user_list.length);
 
@@ -414,7 +426,7 @@ exports.get_message_reactions = function (message) {
         reaction.emoji_name = reaction.emoji_name;
         reaction.emoji_code = reaction.emoji_code;
         reaction.count = reaction.user_ids.length;
-        reaction.title = generate_title(reaction.emoji_name, reaction.user_ids);
+        reaction.label = generate_title(reaction.emoji_name, reaction.user_ids);
         reaction.emoji_alt_code = page_params.emojiset === 'text';
 
         if (reaction.reaction_type !== 'unicode_emoji') {
