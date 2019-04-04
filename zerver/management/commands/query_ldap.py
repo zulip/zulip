@@ -12,6 +12,7 @@ class Command(BaseCommand):
                             help="email of user to query")
 
     def handle(self, *args: Any, **options: str) -> None:
-        values = query_ldap(**options)
+        email = options['email']
+        values = query_ldap(email)
         for value in values:
             print(value)
