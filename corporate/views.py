@@ -218,7 +218,7 @@ def downgrade(request: HttpRequest, user: UserProfile) -> HttpResponse:  # nocov
 def replace_payment_source(request: HttpRequest, user: UserProfile,
                            stripe_token: str=REQ("stripe_token", validator=check_string)) -> HttpResponse:
     try:
-        do_replace_payment_source(user, stripe_token)
+        do_replace_payment_source(user, stripe_token, pay_invoices=True)
     except BillingError as e:
         return json_error(e.message, data={'error_description': e.description})
     return json_success()

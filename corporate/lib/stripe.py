@@ -194,16 +194,23 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=Non
     return customer
 
 @catch_stripe_errors
-def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Customer:
+def do_replace_payment_source(user: UserProfile, stripe_token: str,
+                              pay_invoices: bool=False) -> stripe.Customer:
     stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
     stripe_customer.source = stripe_token
     # Deletes existing card: https://stripe.com/docs/api#update_customer-source
-    # This can also have other side effects, e.g. it will try to pay certain past-due
-    # invoices: https://stripe.com/docs/api#update_customer
     updated_stripe_customer = stripe.Customer.save(stripe_customer)
     RealmAuditLog.objects.create(
         realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
         event_time=timezone_now())
+    if pay_invoices:
+        for stripe_invoice in stripe.Invoice.list(
+                billing='charge_automatically', customer=stripe_customer.id, status='open'):
+            # The user will get either a receipt or a "failed payment" email, but the in-app
+            # messaging could be clearer here (e.g. it could explictly tell the user that there
+            # were payment(s) and that they succeeded or failed).
+            # Worth fixing if we notice that a lot of cards end up failing at this step.
+            stripe.Invoice.pay(stripe_invoice)
     return updated_stripe_customer
 
 # event_time should roughly be timezone_now(). Not designed to handle

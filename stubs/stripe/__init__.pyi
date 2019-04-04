@@ -67,7 +67,8 @@ class Invoice:
         ...
 
     @staticmethod
-    def list(customer: str=..., limit: Optional[int]=...) -> List[Invoice]:
+    def list(billing: str=..., customer: str=..., limit: Optional[int]=...,
+             status: str=...) -> List[Invoice]:
         ...
 
     @staticmethod
@@ -77,6 +78,10 @@ class Invoice:
 
     @staticmethod
     def finalize_invoice(invoice: Invoice) -> Invoice:
+        ...
+
+    @staticmethod
+    def pay(invoice: Invoice) -> Invoice:
         ...
 
     def get(self, key: str) -> Any:

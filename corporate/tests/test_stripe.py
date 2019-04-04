@@ -153,6 +153,8 @@ def normalize_fixture_data(decorated_function: CallableT,
                 file_content = file_content.replace(match, normalized_values[pattern][match])
         file_content = re.sub(r'(?<="risk_score": )(\d+)', '00', file_content)
         file_content = re.sub(r'(?<="times_redeemed": )(\d+)', '00', file_content)
+        file_content = re.sub(r'(?<="idempotency-key": )"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f-]*)"',
+                              '"00000000-0000-0000-0000-000000000000"', file_content)
         # Dates
         file_content = re.sub(r'(?<="Date": )"(.* GMT)"', '"NORMALIZED DATETIME"', file_content)
         file_content = re.sub(r'[0-3]\d [A-Z][a-z]{2} 20[1-2]\d', 'NORMALIZED DATE', file_content)
@@ -168,7 +170,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = ["stripe.{}".format(name) for name in [
     "Charge.create", "Charge.list",
     "Coupon.create",
     "Customer.create", "Customer.retrieve", "Customer.save",
-    "Invoice.create", "Invoice.finalize_invoice", "Invoice.list", "Invoice.upcoming",
+    "Invoice.create", "Invoice.finalize_invoice", "Invoice.list", "Invoice.pay", "Invoice.upcoming",
     "InvoiceItem.create", "InvoiceItem.list",
     "Plan.create",
     "Product.create",
@@ -819,35 +821,57 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login(user.email)
         self.upgrade()
-        # Try replacing with a valid card
-        stripe_token = stripe_create_token(card_number='5555555555554444').id
-        response = self.client_post("/json/billing/sources/change",
-                                    {'stripe_token': ujson.dumps(stripe_token)})
-        self.assert_json_success(response)
-        number_of_sources = 0
-        for stripe_source in stripe_get_customer(Customer.objects.first().stripe_customer_id).sources:
-            self.assertEqual(cast(stripe.Card, stripe_source).last4, '4444')
-            number_of_sources += 1
-        self.assertEqual(number_of_sources, 1)
-        audit_log_entry = RealmAuditLog.objects.order_by('-id') \
-                                               .values_list('acting_user', 'event_type').first()
-        self.assertEqual(audit_log_entry, (user.id, RealmAuditLog.STRIPE_CARD_CHANGED))
-        RealmAuditLog.objects.filter(acting_user=user).delete()
+        # Create an open invoice
+        stripe_customer_id = Customer.objects.first().stripe_customer_id
+        stripe.InvoiceItem.create(amount=5000, currency='usd', customer=stripe_customer_id)
+        stripe_invoice = stripe.Invoice.create(customer=stripe_customer_id)
+        stripe.Invoice.finalize_invoice(stripe_invoice)
+        RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).delete()
 
-        # Try replacing with an invalid card
+        # Replace with an invalid card
         stripe_token = stripe_create_token(card_number='4000000000009987').id
+        with patch("corporate.lib.stripe.billing_logger.error") as mock_billing_logger:
+            with patch("stripe.Invoice.list") as mock_invoice_list:
+                response = self.client_post("/json/billing/sources/change",
+                                            {'stripe_token': ujson.dumps(stripe_token)})
+        mock_billing_logger.assert_called()
+        mock_invoice_list.assert_not_called()
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'card error')
+        self.assert_json_error_contains(response, 'Your card was declined')
+        for stripe_source in stripe_get_customer(stripe_customer_id).sources:
+            self.assertEqual(cast(stripe.Card, stripe_source).last4, '4242')
+        self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
+
+        # Replace with a card that's valid, but charging the card fails
+        stripe_token = stripe_create_token(card_number='4000000000000341').id
         with patch("corporate.lib.stripe.billing_logger.error") as mock_billing_logger:
             response = self.client_post("/json/billing/sources/change",
                                         {'stripe_token': ujson.dumps(stripe_token)})
         mock_billing_logger.assert_called()
         self.assertEqual(ujson.loads(response.content)['error_description'], 'card error')
         self.assert_json_error_contains(response, 'Your card was declined')
+        for stripe_source in stripe_get_customer(stripe_customer_id).sources:
+            self.assertEqual(cast(stripe.Card, stripe_source).last4, '0341')
+        self.assertEqual(len(list(stripe.Invoice.list(customer=stripe_customer_id, status='open'))), 1)
+        self.assertEqual(1, RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STRIPE_CARD_CHANGED).count())
+
+        # Replace with a valid card
+        stripe_token = stripe_create_token(card_number='5555555555554444').id
+        response = self.client_post("/json/billing/sources/change",
+                                    {'stripe_token': ujson.dumps(stripe_token)})
+        self.assert_json_success(response)
         number_of_sources = 0
-        for stripe_source in stripe_get_customer(Customer.objects.first().stripe_customer_id).sources:
+        for stripe_source in stripe_get_customer(stripe_customer_id).sources:
             self.assertEqual(cast(stripe.Card, stripe_source).last4, '4444')
             number_of_sources += 1
+        # Verify that we replaced the previous card, rather than adding a new one
         self.assertEqual(number_of_sources, 1)
-        self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
+        # Ideally we'd also test that we don't pay invoices with billing=='send_invoice'
+        for stripe_invoice in stripe.Invoice.list(customer=stripe_customer_id):
+            self.assertEqual(stripe_invoice.status, 'paid')
+        self.assertEqual(2, RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STRIPE_CARD_CHANGED).count())
 
 class RequiresBillingAccessTest(ZulipTestCase):
     def setUp(self) -> None:
