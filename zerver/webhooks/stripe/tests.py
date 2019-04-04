@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import mock
+from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -127,3 +128,12 @@ Billing method: send invoice"""
             expected_message,
             content_type="application/x-www-form-urlencoded"
         )
+
+    @patch('zerver.webhooks.stripe.view.check_send_webhook_message')
+    def test_account_updated_without_previous_attributes_ignore(
+            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self.url = self.build_webhook_url()
+        payload = self.get_body('account_updated_without_previous_attributes')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)

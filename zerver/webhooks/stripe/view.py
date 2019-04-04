@@ -70,6 +70,8 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
     if category == 'account':  # nocoverage
         if resource == 'account':
             if event == 'updated':
+                if 'previous_attributes' not in payload['data']:
+                    raise SuppressedEvent()
                 topic = "account updates"
                 body = update_string()
         else:
