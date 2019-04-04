@@ -9,7 +9,7 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
                     <label for="realm_user_invite_restriction" class="dropdown-title">{{t "Are invitations required for joining the organization?" }}</label>
-                    <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction">
+                    <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction" class="prop-element">
                         <option value="no_invite_required">{{t "No" }}</option>
                         <option value="by_anyone">{{t "Yes. Members and admins can send invitations." }}</option>
                         <option value="by_admins_only">{{t "Yes. Only admins can send invitations." }}</option>
@@ -18,7 +18,7 @@
 
                 <div class="input-group">
                     <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Restrict email domains of new users?" }}</label>
-                    <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions">
+                    <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element">
                         <option value="no_restriction">{{t "No restrictions" }}</option>
                         <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
                         <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
@@ -61,7 +61,7 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
                     <label for="realm_create_stream_permission" class="dropdown-title">{{t "Who can create streams" }}</label>
-                    <select name="realm_create_stream_permission" id="id_realm_create_stream_permission">
+                    <select name="realm_create_stream_permission" id="id_realm_create_stream_permission" class="prop-element">
                         <option value="by_anyone">{{t "Members and admins" }}</option>
                         <option value="by_admins_only">{{t "Admins only" }}</option>
                         <option value="by_admin_user_with_three_days_old">{{t "All admins, and members with accounts at least 3 days old." }}</option>
@@ -72,13 +72,13 @@
                     <label for="aitin" class="inline-block">{{t "Minimum account age (N)" }}:</label>
                     <input type="text" id="id_realm_waiting_period_threshold"
                       name="realm_waiting_period_threshold"
-                      class="admin-realm-time-limit-input"
+                      class="admin-realm-time-limit-input prop-element"
                       value="{{ realm_waiting_period_threshold }}"/>
                 </div>
 
                 <div class="input-group">
                     <label for="realm_bot_creation_policy">{{t "Who can add bots" }}</label>
-                    <select name="realm_bot_creation_policy" class="setting-widget" id="id_realm_bot_creation_policy" data-setting-widget-type="integer">
+                    <select name="realm_bot_creation_policy" class="setting-widget prop-element" id="id_realm_bot_creation_policy" data-setting-widget-type="integer">
                         {{#each bot_creation_policy_values}}
                         <option value='{{this.code}}'>{{this.description}}</option>
                         {{/each}}
@@ -87,7 +87,7 @@
 
                 <div class="input-group">
                     <label for="realm_add_emoji_by_admins_only" class="dropdown-title">{{t "Who can add custom emoji" }}</label>
-                    <select name="realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only">
+                    <select name="realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only" class="prop-element">
                         <option value="by_anyone">{{t "Members and admins" }}</option>
                         <option value="by_admins_only">{{t "Admins only" }}</option>
                     </select>
@@ -95,7 +95,7 @@
 
                 <div class="input-group" {{#if development}}{{else}}style="display: none"{{/if}}>
                     <label for="realm_email_address_visibility">{{t "Who can see users email addresses" }}</label>
-                    <select name="realm_email_address_visibility" class="setting-widget" id="id_realm_email_address_visibility" data-setting-widget-type="integer">
+                    <select name="realm_email_address_visibility" class="setting-widget prop-element" id="id_realm_email_address_visibility" data-setting-widget-type="integer">
                         {{#each email_address_visibility_values}}
                         <option value='{{this.code}}'>{{this.description}}</option>
                         {{/each}}

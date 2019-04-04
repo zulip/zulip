@@ -11,7 +11,7 @@
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
                     <label for="realm_msg_edit_limit_setting" class="dropdown-title">{{t "Allow message editing" }}</label>
-                    <select name="realm_msg_edit_limit_setting" id="id_realm_msg_edit_limit_setting">
+                    <select name="realm_msg_edit_limit_setting" id="id_realm_msg_edit_limit_setting" class="prop-element">
                         {{#each msg_edit_limit_dropdown_values}}
                         <option value="{{@key}}">{{this.text}}</option>
                         {{/each}}
@@ -22,7 +22,7 @@
                         </label>
                         <input type="text" id="id_realm_message_content_edit_limit_minutes"
                           name="realm_message_content_edit_limit_minutes"
-                          class="admin-realm-time-limit-input"
+                          class="admin-realm-time-limit-input prop-element"
                           autocomplete="off"
                           value="{{ realm_message_content_edit_limit_minutes }}"/>
                     </div>
@@ -46,7 +46,7 @@
                         <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
                           aria-hidden="true" title="{{t 'Administrators can always delete any message.' }}"/>
                     </label>
-                    <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting">
+                    <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
                         {{#each msg_delete_limit_dropdown_values}}
                         <option value="{{@key}}">{{this.text}}</option>
                         {{/each}}
@@ -57,7 +57,7 @@
                         </label>
                         <input type="text" id="id_realm_message_content_delete_limit_minutes"
                           name="realm_message_content_delete_limit_minutes"
-                          class="admin-realm-time-limit-input"
+                          class="admin-realm-time-limit-input prop-element"
                           autocomplete="off"
                           value="{{ realm_message_content_delete_limit_minutes }}"/>
                     </div>
@@ -132,7 +132,7 @@
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
                     <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}:</label>
-                    <select name="realm_default_language" class ="setting-widget" id="id_realm_default_language" data-setting-widget-type="text">
+                    <select name="realm_default_language" class ="setting-widget prop-element" id="id_realm_default_language" data-setting-widget-type="text">
                         {{#each language_list}}
                         <option value='{{this.code}}'>{{this.name}}</option>
                         {{/each}}
@@ -156,7 +156,7 @@
                     <label for="realm_video_chat_provider" class="dropdown-title">
                         {{t 'Video chat provider' }}
                     </label>
-                    <select name="realm_video_chat_provider" class ="setting-widget" id="id_realm_video_chat_provider" data-setting-widget-type="text">
+                    <select name="realm_video_chat_provider" class ="setting-widget prop-element" id="id_realm_video_chat_provider" data-setting-widget-type="text">
                         {{#each realm_available_video_chat_providers}}
                         <option value='{{this}}'>{{this}}</option>
                         {{/each}}
@@ -166,7 +166,7 @@
                         <input type="text" id="id_realm_google_hangouts_domain"
                           name="realm_google_hangouts_domain"
                           autocomplete="off"
-                          class="admin-realm-google-hangouts-domain setting-widget"
+                          class="admin-realm-google-hangouts-domain setting-widget prop-element"
                           data-setting-widget-type="text"/>
                     </div>
                     <div id="zoom_help_text" class="zoom_credentials">
@@ -180,7 +180,7 @@
                         <input type="text" id="id_realm_zoom_user_id"
                           name="realm_zoom_user_id"
                           autocomplete="off"
-                          class="admin-realm-zoom-field setting-widget"
+                          class="admin-realm-zoom-field setting-widget prop-element"
                           data-setting-widget-type="text"/>
                     </div>
                     <div id="zoom_api_key" class="zoom_credentials">
@@ -188,7 +188,7 @@
                         <input type="text" id="id_realm_zoom_api_key"
                           name="realm_zoom_api_key"
                           autocomplete="off"
-                          class="admin-realm-zoom-field setting-widget"
+                          class="admin-realm-zoom-field setting-widget prop-element"
                           data-setting-widget-type="text"/>
                     </div>
                     <div id="zoom_api_secret" class="zoom_credentials">
@@ -196,7 +196,7 @@
                         <input type="text" id="id_realm_zoom_api_secret"
                           name="realm_zoom_api_secret"
                           autocomplete="off"
-                          class="admin-realm-zoom-field setting-widget"
+                          class="admin-realm-zoom-field setting-widget prop-element"
                           data-setting-widget-type="text"/>
                     </div>
                 </div>
@@ -215,7 +215,7 @@
                     </label>
                     <input type="text" id="id_realm_message_retention_days"
                       name="realm_message_retention_days"
-                      class="admin-realm-message-retention-days"
+                      class="admin-realm-message-retention-days prop-element"
                       value="{{ realm_message_retention_days }}"/>
                 </div>
                 {{/if}}

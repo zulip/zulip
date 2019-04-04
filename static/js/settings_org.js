@@ -585,7 +585,7 @@ exports.build_page = function () {
 
     function get_subsection_property_elements(element) {
         var subsection = $(element).closest('.org-subsection-parent');
-        return subsection.find("input[id^='id_realm_'], select[id^='id_realm_'], textarea[id^='id_realm_']");
+        return subsection.find('.prop-element');
     }
 
     $('.admin-realm-form').on('change input', 'input, select, textarea', function (e) {
