@@ -691,6 +691,12 @@ class ZulipTestCase(TestCase):
         if os.path.exists(path):
             shutil.rmtree(path)
 
+    def make_import_output_dir(self, exported_from: str) -> str:
+        output_dir = "var/test-{}-import".format(exported_from)
+        self.rm_tree(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
+        return output_dir
+
 class WebhookTestCase(ZulipTestCase):
     """
     Common for all webhooks tests

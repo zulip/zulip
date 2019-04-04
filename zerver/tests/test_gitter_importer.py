@@ -26,15 +26,9 @@ class GitterImporter(ZulipTestCase):
     # set logger to a higher level to suppress 'logger.INFO' outputs
     logger.setLevel(logging.WARNING)
 
-    def _make_output_dir(self) -> str:
-        output_dir = 'var/test-gitter-import'
-        self.rm_tree(output_dir)
-        os.makedirs(output_dir, exist_ok=True)
-        return output_dir
-
     @mock.patch('zerver.data_import.gitter.process_avatars', return_value=[])
     def test_gitter_import_data_conversion(self, mock_process_avatars: mock.Mock) -> None:
-        output_dir = self._make_output_dir()
+        output_dir = self.make_import_output_dir("gitter")
         gitter_file = os.path.join(os.path.dirname(__file__), 'fixtures/gitter_data.json')
         do_convert_data(gitter_file, output_dir)
 
@@ -100,7 +94,7 @@ class GitterImporter(ZulipTestCase):
 
     @mock.patch('zerver.data_import.gitter.process_avatars', return_value=[])
     def test_gitter_import_to_existing_database(self, mock_process_avatars: mock.Mock) -> None:
-        output_dir = self._make_output_dir()
+        output_dir = self.make_import_output_dir("gitter")
         gitter_file = os.path.join(os.path.dirname(__file__), 'fixtures/gitter_data.json')
         do_convert_data(gitter_file, output_dir)
 
