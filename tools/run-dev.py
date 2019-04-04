@@ -148,7 +148,7 @@ cmds = [['./manage.py', 'runserver'] +
         manage_args + runserver_args + ['127.0.0.1:%d' % (django_port,)],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
-        ['./tools/run-dev-queue-processors'] + manage_args,
+        ['./manage.py', 'process_queue', '--all'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates'],
         ['./manage.py', 'deliver_scheduled_messages'],
