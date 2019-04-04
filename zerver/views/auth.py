@@ -803,16 +803,16 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
                           data={"reason": "unregistered"}, status=403)
     do_login(request, user_profile)
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.email})
+    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
 
 @csrf_exempt
 def api_dev_list_users(request: HttpRequest) -> HttpResponse:
     if not dev_auth_enabled() or settings.PRODUCTION:
         return json_error(_("Dev environment not enabled."))
     users = get_dev_users()
-    return json_success(dict(direct_admins=[dict(email=u.email, realm_uri=u.realm.uri)
+    return json_success(dict(direct_admins=[dict(email=u.delivery_email, realm_uri=u.realm.uri)
                                             for u in users if u.is_realm_admin],
-                             direct_users=[dict(email=u.email, realm_uri=u.realm.uri)
+                             direct_users=[dict(email=u.delivery_email, realm_uri=u.realm.uri)
                                            for u in users if not u.is_realm_admin]))
 
 @csrf_exempt
@@ -867,7 +867,7 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
     request._email = user_profile.email
 
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.email})
+    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
 
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
     """Returns which authentication methods are enabled on the server"""
