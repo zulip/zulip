@@ -1484,7 +1484,7 @@ def get_link_re() -> str:
 
     # [text](url) or [text](<url>) or [text](url "title")
     LINK_RE = NOIMG + BRK + \
-        r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\12\s*)?\)'''
+        r'''\(\s*(<(?:[^<>\\]|\\.)*>|(\([^()]*\)|[^()])*?)\s*(('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\s*)?\)'''
     return normal_compile(LINK_RE)
 
 def prepare_realm_pattern(source: str) -> str:
