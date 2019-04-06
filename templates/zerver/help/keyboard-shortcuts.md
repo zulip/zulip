@@ -121,7 +121,7 @@ below, and add more to your repertoire as needed.
 
 * **View image**: `v`
 
-* **Edit message**: `i` then `Enter`
+* **Edit message**: `e`
 
 * **Star message**: `Ctrl + s`
 
