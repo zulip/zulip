@@ -25,7 +25,7 @@ strongly recommend using either a fresh machine instance in a cloud
 provider, a fresh VM, or a dedicated machine.  If you decide to
 disregard our advice and use a server that hosts other services, we
 can't support you, but
-[we do have some notes on issues you'll encounter](install-existing-server.md).
+[we do have some notes on issues you'll encounter](install-existing-server.html).
 
 #### Operating System
 
@@ -61,7 +61,7 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
   for organizations with a hundreds of users (active or no).
 
   See our
-  [documentation on scalability](../production/maintain-secure-upgrade.md#scalability)
+  [documentation on scalability](../production/maintain-secure-upgrade.html#scalability)
   for advice on hardware requirements for larger organizations.
 
 * Disk space: You'll need at least 10GB of free disk space for a
@@ -72,7 +72,7 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
   messages sent.  We recommend using an SSD and avoiding cloud storage
   backends that limit the IOPS per second, since the disk is primarily
   used for the database (assuming you're using the
-  [S3 file uploads backend](../production/upload-backends.md)).
+  [S3 file uploads backend](../production/upload-backends.html)).
 
 #### Network and Security Specifications
 
@@ -114,10 +114,10 @@ available: [the `--self-signed-cert` option][doc-self-signed] in the
 installer.
 
 If you'd rather acquire an SSL certificate another way, see our [SSL
-certificate documentation](ssl-certificates.md).
+certificate documentation](ssl-certificates.html).
 
-[doc-certbot]: ssl-certificates.md#certbot-recommended
-[doc-self-signed]: ssl-certificates.md#self-signed-certificate
+[doc-certbot]: ssl-certificates.html#certbot-recommended
+[doc-self-signed]: ssl-certificates.html#self-signed-certificate
 
 #### Outgoing email
 
@@ -126,9 +126,9 @@ certificate documentation](ssl-certificates.md).
   during the signup process, missed message notifications, password
   reset, etc.).  If you don't have an existing outgoing SMTP solution,
   read about
-  [free outgoing SMTP options and options for prototyping](email.md#free-outgoing-email-services).
+  [free outgoing SMTP options and options for prototyping](email.html#free-outgoing-email-services).
 
 Once you have met these requirements, see [full instructions for installing
-Zulip in production](../production/install.md).
+Zulip in production](../production/install.html).
 
 [trusty-eol]: https://wiki.ubuntu.com/Releases

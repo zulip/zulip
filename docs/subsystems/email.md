@@ -2,7 +2,7 @@
 
 This page has developer documentation on the Zulip email system. If you're
 trying to configure your server to send email, you might be looking for our
-guide to [sending outgoing email](../production/email.md). If you're trying to
+guide to [sending outgoing email](../production/email.html). If you're trying to
 configure an email integration to receive incoming email (e.g. so that users
 can reply to missed message emails via email), you might be interested in
 our instructions for
@@ -43,7 +43,7 @@ Email takes about a quarter second per email to process and send. Generally
 speaking, if you're sending just one email, doing it in the current process
 is fine. If you're sending emails in a loop, you probably want to send it
 from a queue. Documentation on our queueing system is available
-[here](../subsystems/queuing.md).
+[here](../subsystems/queuing.html).
 
 ## Development and testing
 
@@ -69,7 +69,7 @@ you have to first configure the following SMTP settings.
 * The username `EMAIL_HOST_USER` in `zproject/dev_settings.py`.
 * The password `email_password` in `zproject/dev-secrets.conf`.
 
-See [this](../production/email.md#free-outgoing-email-services)
+See [this](../production/email.html#free-outgoing-email-services)
 section for instructions on obtaining SMTP details.
 
 **Note: The base_image_uri of the images in forwarded emails would be replaced
@@ -117,7 +117,7 @@ behavior, or other developers will get test failures until they
 provision.
 
 While this model is great for the markup side, it isn't ideal for
-[translations](../translating/translating.md).  The Django
+[translations](../translating/translating.html).  The Django
 translation system works with exact strings, and having different new
 markup can require translators to re-translate strings, which can
 result in problems like needing 2 copies of each string (one for

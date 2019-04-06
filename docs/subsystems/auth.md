@@ -6,7 +6,7 @@ environment.
 
 ## Testing OAuth in development
 
-Among the many [authentication methods](../production/authentication-methods.md)
+Among the many [authentication methods](../production/authentication-methods.html)
 we support, a server can be configured to allow users to sign in with
 their Google accounts or GitHub accounts, using the OAuth protocol.
 
@@ -56,9 +56,9 @@ The steps to do this are a variation of the steps documented in
 Some OAuth providers (such as Facebook) require HTTPS on the callback
 URL they post back to, which isn't supported directly by the Zulip
 development environment.  If you run a
-[remote Zulip development server](../development/remote.md), we have
+[remote Zulip development server](../development/remote.html), we have
 instructions for
-[an nginx reverse proxy with SSL](../development/remote.md#using-an-nginx-reverse-proxy)
+[an nginx reverse proxy with SSL](../development/remote.html#using-an-nginx-reverse-proxy)
 that you can use for your development efforts.
 
 ## Testing LDAP in development
@@ -77,7 +77,7 @@ actual flows for LDAP configuration.
 - To enable fakeldap, set `FAKE_LDAP_MODE` in
 `zproject/dev_settings.py` to one of the following options.  For more
 information on these modes, refer to
-[our production docs](../production/authentication-methods.md#ldap-including-active-directory):
+[our production docs](../production/authentication-methods.html#ldap-including-active-directory):
   - `a`: If users' email addresses are in LDAP and used as username.
   - `b`: If LDAP only has usernames but email addresses are of the form
   username@example.com

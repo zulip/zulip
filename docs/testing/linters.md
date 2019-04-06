@@ -11,7 +11,7 @@ but for other files, we are quite thorough about checking semantic
 correctness.
 
 Obviously, a large reason for linting code is to enforce the [Zulip
-coding standards](../contributing/code-style.md).  But we also use the linters to
+coding standards](../contributing/code-style.html).  But we also use the linters to
 prevent common coding errors.
 
 We borrow some open source tools for much of our linting, and the links
@@ -63,7 +63,7 @@ the other lint checks.
 
 ## General considerations
 
-Once you have read the [Zulip coding guidelines](../contributing/code-style.md), you can
+Once you have read the [Zulip coding guidelines](../contributing/code-style.html), you can
 be pretty confident that 99% of the code that you write will pass through
 the linters fine, as long as you are thorough about keeping your code clean.
 And, of course, for minor oversights, `lint` is your friend, not your foe.
@@ -75,7 +75,7 @@ extreme cases, but often it can be a simple matter of writing your code
 in a slightly different style to appease the linter.  If you have
 problems getting something to lint, you can submit an unfinished PR
 and ask the reviewer to help you work through the lint problem, or you
-can find other people in the [Zulip Community](../contributing/chat-zulip-org.md)
+can find other people in the [Zulip Community](../contributing/chat-zulip-org.html)
 to help you.
 
 Also, bear in mind that 100% of the lint code is open source, so if you
@@ -83,7 +83,7 @@ find limitations in either the Zulip home-grown stuff or our third party
 tools, feedback will be highly appreciated.
 
 Finally, one way to clean up your code is to thoroughly exercise it
-with tests.  The [Zulip test documentation](../testing/testing.md)
+with tests.  The [Zulip test documentation](../testing/testing.html)
 describes our test system in detail.
 
 ## Lint checks
@@ -100,7 +100,7 @@ following checks:
 - Check CSS for parsability and formatting.
 - Check JavaScript code for addClass calls.
 - Running `mypy` to check static types in Python code.  Our
-  [documentation on using mypy](../testing/mypy.md) covers mypy in
+  [documentation on using mypy](../testing/mypy.html) covers mypy in
   more detail.
 
 The rest of this document pertains to the checks that occur in `./tools/lint`.

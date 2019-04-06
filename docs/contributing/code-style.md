@@ -163,7 +163,7 @@ Don't use it:
 ### Translation tags
 
 Remember to
-[tag all user-facing strings for translation](../translating/translating.md), whether
+[tag all user-facing strings for translation](../translating/translating.html), whether
 they are in HTML templates or JavaScript editing the HTML (e.g. error
 messages).
 
@@ -292,5 +292,5 @@ All significant new features should come with tests. See testing.
 
 ### Third party code
 
-See [our docs on dependencies](../subsystems/dependencies.md) for discussion of
+See [our docs on dependencies](../subsystems/dependencies.html) for discussion of
 rules about integrating third-party projects.

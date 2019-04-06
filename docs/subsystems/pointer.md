@@ -80,7 +80,7 @@ browser), Zulip will preserve the state -- what (if any) narrow the
 user was in, the selected message, and even exact scroll position!
 
 For more on the user experience philosophy guiding these decisions,
-see [the architectural overview](../overview/architecture-overview.md).
+see [the architectural overview](../overview/architecture-overview.html).
 
 ## Unread count logic
 

@@ -2,13 +2,13 @@
 
 Make sure you want to install a Zulip production server. If you'd
 instead like to test or develop a new feature, we recommend the
-[Zulip development server](../development/overview.md#requirements) instead.
+[Zulip development server](../development/overview.html#requirements) instead.
 If you just want to play around with Zulip and see what it looks like, you
 can create a test organization at <https://zulipchat.com>.
 
 You'll need an Ubuntu or Debian system that satisfies
-[the installation requirements](../production/requirements.md), or
-you can use Zulip's [experimental Docker image](../production/deployment.md#zulip-in-docker).
+[the installation requirements](../production/requirements.html), or
+you can use Zulip's [experimental Docker image](../production/deployment.html#zulip-in-docker).
 
 ## Step 1: Download the latest release
 
@@ -25,7 +25,7 @@ tar -xf zulip-server-latest.tar.gz
 * If you'd like to verify the download, we
 [publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
 * You can also
-[install a pre-release version of Zulip](../production/deployment.md#installing-zulip-from-git)
+[install a pre-release version of Zulip](../production/deployment.html#installing-zulip-from-git)
 using code from our [repository on GitHub](https://github.com/zulip/zulip/).
 
 ## Step 2: Install Zulip
@@ -76,9 +76,9 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
   If you'd prefer to acquire an SSL certificate yourself in any other
   way, it's easy to [provide it to Zulip][doc-ssl-manual].
 
-[doc-settings]: ../production/settings.md
-[doc-certbot]: ../production/ssl-certificates.md#certbot-recommended
-[doc-ssl-manual]: ../production/ssl-certificates.md#manual-install
+[doc-settings]: ../production/settings.html
+[doc-certbot]: ../production/ssl-certificates.html#certbot-recommended
+[doc-ssl-manual]: ../production/ssl-certificates.html#manual-install
 
 ## Step 3: Create a Zulip organization, and log in
 
@@ -89,7 +89,7 @@ and return to the the import instructions.
 
 [hipchat-import]: https://zulipchat.com/help/import-from-hipchat
 [slack-import]: https://zulipchat.com/help/import-from-slack
-[zulip-backups]: ../production/maintain-secure-upgrade.md#backups
+[zulip-backups]: ../production/maintain-secure-upgrade.html#backups
 
 Otherwise, open the link in a browser.  Follow the prompts to set up
 your organization, and your own user account as an administrator.
@@ -98,14 +98,14 @@ Then, log in!
 The link is a secure one-time-use link.  If you need another
 later, you can generate a new one by running `manage.py
 generate_realm_creation_link` on the server.  See also our doc on
-running [multiple organizations on the same server](multiple-organizations.md)
+running [multiple organizations on the same server](multiple-organizations.html)
 if that's what you're planning to do.
 
 ## Step 4: Configure and use
 
 To really see Zulip in action, you'll need to get the people you work
 together with using it with you.
-* [Set up outgoing email](email.md) so Zulip can confirm new users'
+* [Set up outgoing email](email.html) so Zulip can confirm new users'
   email addresses and send notifications.
 * Learn how to [get your organization started][realm-admin-docs] using
   Zulip at its best.
@@ -117,8 +117,8 @@ Learning more:
 for server administrators.  This extremely low-traffic list is for
 important announcements, including new releases and security issues.
 * Follow [Zulip on Twitter](https://twitter.com/zulip).
-* Learn how to [configure your Zulip server settings](settings.md).
-* Learn about [maintaining a production Zulip server](maintain-secure-upgrade.md).
+* Learn how to [configure your Zulip server settings](settings.html).
+* Learn about [maintaining a production Zulip server](maintain-secure-upgrade.html).
 
 [realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
 
@@ -141,7 +141,7 @@ Postgres, RabbitMQ, Memcached and Redis.
 * Initializes Zulip's database.
 
 If you'd like to deploy Zulip with these services on different
-machines, check out our [deployment options documentation](deployment.md).
+machines, check out our [deployment options documentation](deployment.html).
 
 ## Troubleshooting
 
@@ -167,13 +167,13 @@ and can just skip that step.
 **After the install script.**
 If you get an error after `scripts/setup/install` completes, check
 the bottom of `/var/log/zulip/errors.log` for a traceback, and consult
-the [troubleshooting section](troubleshooting.md) for advice on
+the [troubleshooting section](troubleshooting.html) for advice on
 how to debug.
 
 **Community.**
 If the tips above don't help, please visit
 [#production help](https://chat.zulip.org/#narrow/stream/31-production-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.md) for
+in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full
 traceback, and we'll try to help you out!  Please provide details like
 the full traceback from the bottom of `/var/log/zulip/errors.log` in

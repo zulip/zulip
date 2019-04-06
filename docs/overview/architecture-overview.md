@@ -9,7 +9,7 @@ The core Zulip application is at
 is a web application written in Python 3.x and using the Django framework. That
 codebase includes server-side code and the web client, as well as Python API
 bindings and most of our integrations with other services and applications (see
-[the directory structure guide](../overview/directory-structure.md)).
+[the directory structure guide](../overview/directory-structure.html)).
 
 [Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official
 mobile Zulip client supporting both iOS and Android, written in
@@ -56,12 +56,12 @@ choose whether to allow anyone to register an account and join, or
 only allow people who have been invited, or restrict registrations to
 members of particular groups (using email domain names or corporate
 single-sign-on login for verification). For more on security
-considerations, see [the security model section](../production/security-model.md).
+considerations, see [the security model section](../production/security-model.html).
 
 The Zulip "All messages" screen is like a chronologically ordered inbox;
 it displays messages, starting at the oldest message that the user
 hasn't viewed yet (for more on that logic, see [the guide to the
-pointer and unread counts](../subsystems/pointer.md)). The "All messages" screen displays
+pointer and unread counts](../subsystems/pointer.html)). The "All messages" screen displays
 the most recent messages in all the streams a user has joined (except
 for the streams they've muted), as well as private messages from other
 users, in strict chronological order. A user can *narrow* to view only
@@ -116,7 +116,7 @@ exception to this is that Zulip uses websockets through Tornado to
 minimize latency on the code path for **sending** messages.
 
 There is detailed documentation on the
-[real-time push and event queue system](../subsystems/events-system.md); most of
+[real-time push and event queue system](../subsystems/events-system.html); most of
 the code is in `zerver/tornado`.
 
 #### HTML templates, JavaScript, etc.
@@ -129,10 +129,10 @@ live-rendering HTML from JavaScript for things like the main message
 feed.
 
 For more details on the frontend, see our documentation on
-[translation](../translating/translating.md),
-[templates](../subsystems/html-templates.md),
-[directory structure](../overview/directory-structure.md), and
-[the static asset pipeline](../subsystems/front-end-build-process.md).
+[translation](../translating/translating.html),
+[templates](../subsystems/html-templates.html),
+[directory structure](../overview/directory-structure.html), and
+[the static asset pipeline](../subsystems/front-end-build-process.html).
 
 [Jinja2]: http://jinja.pocoo.org/
 [Handlebars]: http://handlebarsjs.com/
@@ -183,7 +183,7 @@ processes that process event queues. We use event queues for the kinds
 of tasks that are best run in the background because they are
 expensive (in terms of performance) and don't have to be synchronous
 --- e.g., sending emails or updating analytics. Also see [the queuing
-guide](../subsystems/queuing.md).
+guide](../subsystems/queuing.html).
 
 ### memcached
 
@@ -192,7 +192,7 @@ objects. `zerver/lib/cache.py` and `zerver/lib/cache_helpers.py`
 manage putting things into memcached, and invalidating the cache when
 values change. The memcached configuration is in
 `puppet/zulip/files/memcached.conf`.  See our
-[caching guide](../subsystems/caching.md) to learn how this works in
+[caching guide](../subsystems/caching.html) to learn how this works in
 detail.
 
 ### Redis
@@ -250,7 +250,7 @@ processes started by Supervisor are queue processors that continually
 pull things out of a RabbitMQ queue and handle them; they are defined
 in `zerver/worker/queue_processors.py`.
 
-Also see [the queuing guide](../subsystems/queuing.md).
+Also see [the queuing guide](../subsystems/queuing.html).
 
 ### PostgreSQL
 
@@ -275,7 +275,7 @@ to create the actual database with its schema.
 
 We use Thumbor, a popular open source thumbnailing server, to serve
 images (both for inline URL previews and serving uploaded image
-files).  See [our thumbnailing docs](../subsystems/thumbnailing.md)
+files).  See [our thumbnailing docs](../subsystems/thumbnailing.html)
 for more details on how this works.
 
 ### Nagios

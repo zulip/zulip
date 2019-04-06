@@ -59,7 +59,7 @@ is using the [Mobile Push Notification Service][mpns-statistics-docs],
 and is enabled by default in that case. To disable it, set
 `SUBMIT_USAGE_STATISTICS = False` in `/etc/zulip/settings.py`.
 
-[mpns-statistics-docs]: ../production/mobile-push-notifications.md#submitting-statistics
+[mpns-statistics-docs]: ../production/mobile-push-notifications.html#submitting-statistics
 
 **Full feature changelog:**
 - Added support for CentOS 7 in the development environment
@@ -202,9 +202,9 @@ Zulip installations; it has minimal changes for existing servers.
   disruption by running this migration first, before beginning the
   user-facing downtime.  However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](../production/expensive-migrations.md)
+  [running them first manually](../production/expensive-migrations.html)
   and as well as the usual trick of
-  [doing an apt upgrade first](../production/maintain-secure-upgrade.md#applying-system-updates).
+  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
 
 **Full feature changelog:**
 - Added an organization setting for message deletion time limits.
@@ -214,7 +214,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Renamed the hotkey for starring a message to Ctrl+S.
 - Added the new `SOCIAL_AUTH_SUBDOMAIN` setting, which all servers using
   both GitHub authentication and hosting multiple Zulip organizations
-  should set (see [the docs for details](../production/multiple-organizations.md#social-authentication)).
+  should set (see [the docs for details](../production/multiple-organizations.html#social-authentication)).
 - Added automatic thumbnailing of images, powered by thumbor.  The new
   THUMBOR_URL setting controls this feature; it is disabled by default
   in this release, because the mobile apps don't support it yet.
@@ -285,7 +285,7 @@ Zulip installations; it has minimal changes for existing servers.
 ### 1.8.1 -- 2018-05-07
 
 - Added an automated tool (`manage.py register_server`) to sign up for
-  the [mobile push notifications service](../production/mobile-push-notifications.md).
+  the [mobile push notifications service](../production/mobile-push-notifications.html).
 - Improved rendering of block quotes in mobile push notifications.
 - Improved some installer error messages.
 - Fixed several minor bugs with the new Slack import feature.
@@ -580,9 +580,9 @@ Backend and scaling
   minimizes disruption by running these first, before beginning the
   user-facing downtime.  However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](../production/expensive-migrations.md) and as well
+  [running them first manually](../production/expensive-migrations.html) and as well
   as the usual trick of
-  [doing an apt upgrade first](../production/maintain-secure-upgrade.md#applying-system-updates).
+  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
 
 * We've removed support for an uncommon legacy deployment model where
   a Zulip server served multiple organizations on the same domain.
@@ -592,7 +592,7 @@ Backend and scaling
   This change should have no effect for the vast majority of Zulip
   servers that only have one organization.  If you manage a server
   that hosts multiple organizations, you'll want to read [our guide on
-  multiple organizations](../production/multiple-organizations.md).
+  multiple organizations](../production/multiple-organizations.html).
 
 * We simplified the configuration for our password strength checker to
   be much more intuitive.  If you were using the
@@ -740,7 +740,7 @@ Zulip apps.
   Hungarian, Polish, Dutch, Russian, Bulgarian, Portuguese,
   Serbian, Malayalam, Korean, and Italian).
 
-[mobile-push]: ../production/mobile-push-notifications.md
+[mobile-push]: ../production/mobile-push-notifications.html
 [electron-app]: https://github.com/zulip/zulip-electron/releases
 [ios-app]: https://itunes.apple.com/us/app/zulip/id1203036395
 

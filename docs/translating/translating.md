@@ -8,7 +8,7 @@ translating Zulip would be greatly appreciated!
 
 If you're interested in contributing translations to Zulip, please
 join [#translation](https://chat.zulip.org/#narrow/stream/58-translation)
-in the [Zulip development community server](../contributing/chat-zulip-org.md), and
+in the [Zulip development community server](../contributing/chat-zulip-org.html), and
 say hello. And please join the
 [Zulip project on Transifex](https://www.transifex.com/zulip/zulip/)
 and ask to join any languages you'd like to contribute to (or add new
@@ -27,13 +27,13 @@ We are building a collection of translation style guides for Zulip,
 giving guidance on how Zulip should be translated into specific
 languages (e.g. what word to translate words like "home" to):
 
-* [Chinese](chinese.md)
-* [French](french.md)
-* [German](german.md)
-* [Hindi](hindi.md)
-* [Polish](polish.md)
-* [Russian](russian.md)
-* [Spanish](spanish.md)
+* [Chinese](chinese.html)
+* [French](french.html)
+* [German](german.html)
+* [Hindi](hindi.html)
+* [Polish](polish.html)
+* [Russian](russian.html)
+* [Spanish](spanish.html)
 
 A great first step when getting started translating Zulip into a new
 language is to write a style guide, since it greatly increases the
@@ -133,7 +133,7 @@ Some useful tips for your translating journey:
 
 - When in doubt, ask for context in
   [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
-  the [Zulip development community server](../contributing/chat-zulip-org.md).
+  the [Zulip development community server](../contributing/chat-zulip-org.html).
 
 - If there are multiple possible translations for a term, search for it in
   the *Concordance* tool (the button with a magnet in the top right corner).
@@ -150,7 +150,7 @@ Some useful tips for your translating journey:
 ## Testing translations
 
 This section assumes you have a
-[Zulip development environment](../development/overview.md) set up.
+[Zulip development environment](../development/overview.html) set up.
 
 First of all, download the updated resource files from Transifex using the
 `tx pull -a --mode=developer` command (it will require some
@@ -394,4 +394,4 @@ organizations from the command line.
 [resource]: https://www.i18next.com/add-or-load-translations.html
 [Transifex]: https://transifex.com
 [transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
-[html-templates]: ../subsystems/html-templates.md
+[html-templates]: ../subsystems/html-templates.html
