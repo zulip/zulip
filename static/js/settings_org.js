@@ -304,7 +304,6 @@ exports.populate_realm_domains = function (realm_domains) {
         realm_domains_table_body.append(templates.render("admin-realm-domains-list", {realm_domain: realm_domain}));
     });
 };
-
 function sort_object_by_key(obj) {
     var keys = _.keys(obj).sort();
     var new_obj = {};
@@ -313,24 +312,21 @@ function sort_object_by_key(obj) {
     });
     return new_obj;
 }
-
 exports.populate_auth_methods = function (auth_methods) {
     if (!meta.loaded) {
         return;
     }
-
-    var auth_methods_table = $("#admin_auth_methods_table").expectOne();
-    auth_methods_table.find('tr.method_row').remove();
+    var auth_methods_table = $("#id_realm_authentication_methods").expectOne();
     auth_methods = sort_object_by_key(auth_methods);
+    var rendered_auth_method_rows = "";
     _.each(auth_methods, function (value, auth_method) {
-        auth_methods_table.append(templates.render('admin_auth_methods_list', {
-            method: {
-                method: auth_method,
-                enabled: value,
-                is_admin: page_params.is_admin,
-            },
-        }));
+        rendered_auth_method_rows += templates.render('admin_auth_methods_list', {
+            method: auth_method,
+            enabled: value,
+            is_admin: page_params.is_admin,
+        });
     });
+    auth_methods_table.html(rendered_auth_method_rows);
 };
 
 function insert_tip_box() {
@@ -343,7 +339,6 @@ function insert_tip_box() {
         .not("#user-groups-admin")
         .prepend(tip_box);
 }
-
 
 exports.render_notifications_stream_ui = function (stream_id, elem) {
 
@@ -453,6 +448,9 @@ function discard_property_element_changes(elem) {
         elem.prop('checked', property_value);
     } else if (typeof property_value === 'string' || typeof property_value === 'number') {
         elem.val(property_value);
+    } else if (typeof property_value === 'object' &&
+              property_name === 'realm_authentication_methods') {
+        exports.populate_auth_methods(property_value);
     } else {
         blueslip.error('Element refers to unknown property ' + property_name);
     }
@@ -605,12 +603,20 @@ exports.build_page = function () {
     set_message_content_in_email_notifications_visiblity();
     set_digest_emails_weekday_visibility();
 
+    function get_auth_method_table_data() {
+        var new_auth_methods = {};
+        var auth_method_rows = $("#id_realm_authentication_methods").find('tr.method_row');
+        _.each(auth_method_rows, function (method_row) {
+            new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
+        });
+        return new_auth_methods;
+    }
+
     function check_property_changed(elem) {
         elem = $(elem);
         var property_name = exports.extract_property_name(elem);
         var changed_val;
         var current_val = get_property_value(property_name);
-
         if (typeof current_val === 'boolean') {
             changed_val = elem.prop('checked');
         } else if (typeof current_val === 'string') {
@@ -618,6 +624,12 @@ exports.build_page = function () {
         } else if (typeof current_val === 'number') {
             current_val = current_val.toString();
             changed_val = elem.val().trim();
+        } else if (typeof current_val === 'object') {
+            // Currently we only deal with realm_authentication_methods object
+            current_val = sort_object_by_key(current_val);
+            current_val = JSON.stringify(current_val);
+            changed_val = get_auth_method_table_data();
+            changed_val = JSON.stringify(changed_val);
         } else {
             blueslip.error('Element refers to unknown property ' + property_name);
         }
@@ -775,6 +787,9 @@ exports.build_page = function () {
                 data.invite_required = true;
                 data.invite_by_admins_only = false;
             }
+        } else if (subsection === 'auth_settings') {
+            data = {};
+            data.authentication_methods = JSON.stringify(get_auth_method_table_data());
         }
         return data;
     }
@@ -863,19 +878,6 @@ exports.build_page = function () {
         // no allowed domains otherwise it gets closed due to
         // the click event handler attached to `#settings_overlay_container`
         e.stopPropagation();
-    });
-
-
-    $('#admin_auth_methods_table').change(function () {
-        var new_auth_methods = {};
-        _.each($("#admin_auth_methods_table").find('tr.method_row'), function (method_row) {
-            new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
-        });
-
-        settings_ui.do_settings_change(channel.patch, '/json/realm',
-                                       {authentication_methods: JSON.stringify(new_auth_methods)},
-                                       $('#admin-realm-authentication-methods-status').expectOne()
-        );
     });
 
     function fade_status_element(elem) {

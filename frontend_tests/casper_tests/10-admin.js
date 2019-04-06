@@ -387,6 +387,8 @@ casper.then(function () {
     casper.click("li[data-section='auth-methods']");
     casper.waitUntilVisible(".method_row[data-method='Google'] input[type='checkbox'] + span", function () {
         casper.click(".method_row[data-method='Google'] input[type='checkbox'] + span");
+        casper.test.assertSelectorHasText('#org-submit-auth_settings', "Save");
+        casper.click('#org-submit-auth_settings');
     });
 });
 

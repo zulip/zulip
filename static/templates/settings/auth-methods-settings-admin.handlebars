@@ -1,16 +1,23 @@
-<div id="admin-auth-settings" class="settings-section" data-name="auth-methods">
+<div id="organization-auth-settings" class="settings-section" data-name="auth-methods">
     <form class="form-horizontal admin-realm-form org-authentications-form">
-        <div class="admin-table-wrapper">
-            <h3 class="inline-block">{{t "Authentication methods" }}</h3>
-            <div class="alert-notification" id="admin-realm-authentication-methods-status"></div>
-            <p>{{#tr this}}Configure the authentication methods for your organization.{{/tr}}</p>
-            <table class="table table-condensed table-striped">
-                <thead>
-                    <th>{{t "Method" }}</th>
-                    <th>{{t "Enabled" }}</th>
-                </thead>
-                <tbody id="admin_auth_methods_table" class=" admin_auth_methods_table"></tbody>
-            </table>
+        <div id="org-auth_settings" class="admin-table-wrapper org-subsection-parent">
+            <div class ="subsection-header">
+                <h3>{{t "Authentication methods" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "auth_settings" }}
+            </div>
+
+            <div>
+                <p>{{t "Configure the authentication methods for your organization."}}</p>
+                <table id="id_realm_authentication_methods"
+                  class="table table-condensed table-striped prop-element">
+                    <thead>
+                        <th>{{t "Method" }}</th>
+                        <th>{{t "Enabled" }}</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </form>
 </div>
