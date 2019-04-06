@@ -40,7 +40,7 @@ function get_row_data(row) {
     }
 }
 
-function get_active_data() {
+exports.get_active_data = function () {
     var active_row = $('div.stream-row.active');
     var valid_active_id = active_row.attr('data-stream-id');
     var active_tab = $('.subscriptions-container').find('div.ind-tab.selected');
@@ -49,7 +49,7 @@ function get_active_data() {
         id: valid_active_id,
         tab: active_tab,
     };
-}
+};
 
 function get_hash_safe() {
     if (typeof window !== "undefined" && typeof window.location.hash === "string") {
@@ -612,14 +612,14 @@ exports.setup_page = function (callback) {
 exports.switch_to_stream_row = function (stream_id) {
     var stream_row = row_for_stream_id(stream_id);
 
-    get_active_data().row.removeClass("active");
+    exports.get_active_data().row.removeClass("active");
     stream_row.addClass("active");
 
     scroll_util.scroll_element_into_container(stream_row, stream_row.parent());
 
     // It's dubious that we need this timeout any more.
     setTimeout(function () {
-        if (stream_id === get_active_data().id) {
+        if (stream_id === exports.get_active_data().id) {
             stream_row.click();
         }
     }, 100);
@@ -666,7 +666,7 @@ exports.launch = function (section) {
         ui.set_up_scrollbar($("#subscription_overlay .settings"));
 
     });
-    if (!get_active_data().id) {
+    if (!exports.get_active_data().id) {
         $('#search_stream_name').focus();
     }
 };
@@ -676,7 +676,7 @@ exports.close = function () {
 };
 
 exports.switch_rows = function (event) {
-    var active_data = get_active_data();
+    var active_data = exports.get_active_data();
     var switch_row;
     if (window.location.hash === '#streams/new') {
         // Prevent switching stream rows when creating a new stream
@@ -710,7 +710,7 @@ exports.switch_rows = function (event) {
 };
 
 exports.keyboard_sub = function () {
-    var active_data = get_active_data();
+    var active_data = exports.get_active_data();
     var row_data = get_row_data(active_data.row);
     if (row_data) {
         subs.sub_or_unsub(row_data.object);
@@ -722,7 +722,7 @@ exports.keyboard_sub = function () {
 };
 
 exports.toggle_view = function (event) {
-    var active_data = get_active_data();
+    var active_data = exports.get_active_data();
 
     if (event === 'right_arrow' && active_data.tab.text() === 'Subscribed') {
         exports.toggler.goto('all-streams');
@@ -732,7 +732,7 @@ exports.toggle_view = function (event) {
 };
 
 exports.view_stream = function () {
-    var active_data = get_active_data();
+    var active_data = exports.get_active_data();
     var row_data = get_row_data(active_data.row);
     if (row_data) {
         var stream_narrow_hash = '#narrow/stream/' + hash_util.encode_stream_name(row_data.object.name);
