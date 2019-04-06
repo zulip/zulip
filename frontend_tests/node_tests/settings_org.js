@@ -85,24 +85,7 @@ run_test('unloaded', () => {
     settings_org.populate_auth_methods();
 });
 
-function simulate_auth_methods() {
-    $('#admin_auth_methods_table').set_find_results(
-        'tr.method_row',
-        $.create('admin-tr-stub')
-    );
-
-    var controls = $.create('auth-methods-controls-stub');
-
-    $(".organization-box [data-name='auth-methods']").set_find_results(
-        'input, button, select, checked',
-        controls
-    );
-
-    controls.attr = function (name, val) {
-        assert.equal(name, 'disabled');
-        assert.equal(val, true);
-    };
-
+function simulate_tip_box() {
     var non_editables = $.create('auth-methods-not-edit-stub');
     $('.organization-box').set_find_results(
         '.settings-section:not(.can-edit)',
@@ -720,13 +703,12 @@ run_test('set_up', () => {
     };
 
     const verify_realm_domains = simulate_realm_domains_table();
-    simulate_auth_methods();
+    simulate_tip_box();
 
     $('#id_realm_create_stream_permission').change = set_callback('realm_create_stream_permission');
     $('#id_realm_video_chat_provider').change = set_callback('realm_video_chat_provider');
     $("#id_realm_org_join_restrictions").change = set_callback('change_org_join_restrictions');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
-    $('#admin_auth_methods_table').change = set_callback('admin_auth_methods_table');
     $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');
     $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
 
