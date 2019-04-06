@@ -376,11 +376,11 @@ def mark_topic_as_read(client):
     # type: (Client) -> None
 
     # Grab an existing topic name
-    topìc_name = client.get_stream_topics(1)['topics'][0]['name']
+    topic_name = client.get_stream_topics(1)['topics'][0]['name']
 
     # {code_example|start}
     # Mark the unread messages in stream 1's topic "topic_name" as read
-    result = client.mark_topic_as_read(1, topìc_name)
+    result = client.mark_topic_as_read(1, topic_name)
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/mark_stream_as_read', 'post', '200')
