@@ -1475,6 +1475,14 @@ blockquote p {
     font-size: inherit;
 }
 
+.message_content p + ul {
+    margin-top: -7px;
+}
+
+.message_content p + blockquote {
+    margin-top: -4px;
+}
+
 .messagebox {
     word-wrap: break-word;
     cursor: pointer;
