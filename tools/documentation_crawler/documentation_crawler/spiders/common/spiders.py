@@ -121,5 +121,6 @@ class BaseDocumentationSpider(scrapy.Spider):
         elif isinstance(failure.type, IOError):
             self._set_error_state()
         else:
+            self._set_error_state()
             raise Exception(failure.value)
         return None
