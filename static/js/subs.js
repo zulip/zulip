@@ -534,12 +534,7 @@ exports.switch_stream_tab = function (tab_name) {
     }
 
     exports.actually_filter_streams();
-
-    if (tab_name === "all-streams") {
-        hashchange.update_browser_history('#streams/all');
-    } else if (tab_name === "subscribed") {
-        hashchange.update_browser_history('#streams/subscribed');
-    }
+    stream_edit.setup_subscriptions_tab_hash(tab_name);
 };
 
 exports.setup_page = function (callback) {

@@ -7,6 +7,16 @@ function setup_subscriptions_stream_hash(sub) {
     hashchange.update_browser_history(hash);
 }
 
+exports.setup_subscriptions_tab_hash = function (tab_key_value) {
+    if (tab_key_value === "all-streams") {
+        hashchange.update_browser_history('#streams/all');
+    } else if (tab_key_value === "subscribed") {
+        hashchange.update_browser_history('#streams/subscribed');
+    } else {
+        blueslip.debug("Unknown tab_key_value: " + tab_key_value);
+    }
+};
+
 function settings_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
     return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
