@@ -348,6 +348,9 @@ exports.update_settings_for_unsubscribed = function (sub) {
     exports.rerender_subscriptions_settings(sub);
     stream_ui_updates.update_check_button_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
+    if (!sub.can_change_stream_permissions) {
+        $(".change-stream-privacy").hide();
+    }
 
     stream_data.update_stream_email_address(sub, "");
     if (stream_edit.is_sub_settings_active(sub)) {
