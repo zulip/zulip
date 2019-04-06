@@ -202,6 +202,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_uri'] = realm.uri
         state['realm_available_video_chat_providers'] = realm.VIDEO_CHAT_PROVIDERS
         state['realm_presence_disabled'] = realm.presence_disabled
+        state['settings_send_digest_emails'] = settings.SEND_DIGEST_EMAILS
         state['realm_digest_emails_enabled'] = realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
         state['realm_email_auth_enabled'] = email_auth_enabled(realm)

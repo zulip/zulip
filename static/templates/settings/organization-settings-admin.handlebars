@@ -76,6 +76,13 @@
                   "prefix" "id_"
                   "is_checked" realm_send_welcome_emails
                   "label" admin_settings_label.realm_send_welcome_emails}}
+                {{#if settings_send_digest_emails }}
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_digest_emails_enabled"
+                  "prefix" "id_"
+                  "is_checked" realm_digest_emails_enabled
+                  "label" admin_settings_label.realm_digest_emails_enabled}}
+                {{/if}}
             </div>
 
             <div class="input-group">
