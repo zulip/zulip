@@ -292,6 +292,7 @@ class Realm(models.Model):
         default_language=str,
         default_twenty_four_hour_time = bool,
         description=str,
+        digest_emails_enabled=bool,
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
         email_changes_disabled=bool,

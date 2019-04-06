@@ -1618,7 +1618,8 @@ class EventsRegisterTest(ZulipTestCase):
     @slow("Actually runs several full-stack fetching tests")
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
-            self.do_set_realm_property_test(prop)
+            with self.settings(SEND_DIGEST_EMAILS=True):
+                self.do_set_realm_property_test(prop)
 
     @slow("Runs a large matrix of tests")
     def test_change_realm_authentication_methods(self) -> None:

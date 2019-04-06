@@ -13,6 +13,7 @@ var admin_settings_label = {
     realm_send_welcome_emails: i18n.t("Send emails introducing Zulip to new users"),
     realm_message_content_allowed_in_email_notifications:
         i18n.t("Allow message content in missed message emails"),
+    realm_digest_emails_enabled: i18n.t("Send weekly digest emails to inactive users"),
 
     // Organization permissions
     realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
@@ -60,6 +61,8 @@ exports.build_page = function () {
         realm_message_content_allowed_in_email_notifications:
             page_params.realm_message_content_allowed_in_email_notifications,
         realm_default_twenty_four_hour_time: page_params.realm_default_twenty_four_hour_time,
+        settings_send_digest_emails: page_params.settings_send_digest_emails,
+        realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
         development: page_params.development_environment,
     };
 
