@@ -352,7 +352,7 @@ CSS](https://github.com/zulip/zulip/).
   subsystem by working on some of
   [our open settings/admin issues](https://github.com/zulip/zulip/labels/area%3A%20admin).
   **Skills recommended**: JavaScript, HTML, CSS, and an eye for visual
-  design.  Export: Shubham Dhama.
+  design.  Expert: Shubham Dhama.
 
 - Optimize web frontend performance and scalability.  Zulip is already
   one of the faster webapps out there, but there are a bunch of ideas
