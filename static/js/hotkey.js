@@ -97,6 +97,7 @@ var keypress_mappings = {
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: true}, // 'd'
+    101: {name: 'edit_message', message_view_only: true}, // 'e'
     103: {name: 'gear_menu', message_view_only: true}, // 'g'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
@@ -761,6 +762,10 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'compose_quote_reply': // > : respond to selected message with quote
         compose_actions.quote_and_reply({trigger: 'hotkey'});
+        return true;
+    case 'edit_message':
+        var row = current_msg_list.get_row(msg.id);
+        message_edit.start(row);
         return true;
     }
 
