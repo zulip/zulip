@@ -293,7 +293,6 @@ exports.populate_auth_methods = function (auth_methods) {
             },
         }));
     });
-    loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
 };
 
 function insert_tip_box() {
