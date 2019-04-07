@@ -924,13 +924,21 @@ HTTPS_PROXY http://proxy_host:port
 NO_PROXY localhost,127.0.0.1,.example.com
 ```
 
+You'll want to **double-check** your work for mistakes (a common one
+is using `https://` when your proxy expects `http://`).  Invalid proxy
+configuration can cause confusing/weird exceptions; if you're using a
+proxy and get an error, the first thing you should investigate is
+whether you entered your proxy configuration correctly.
+
 Now run `vagrant up` in your terminal to install the development
 server. If you ran `vagrant up` before and failed, you'll need to run
 `vagrant destroy` first to clean up the failed installation.
 
-**If you no longer want to use proxy with Vagrant, set values of HTTP_PROXY
-and HTTPS_PROXY to `""` in `~/.zulip-vagrant-config` file and
-restart Vagrant.**
+If you no longer want to use proxy with Vagrant, you can remove the
+`HTTP_PROXY` and `HTTPS_PROXY` lines in `~/.zulip-vagrant-config` and
+then do a `vagrant reload`.
+
+### Using a different port for Vagrant
 
 You can also change the port on the host machine that Vagrant uses by
 adding to your `~/.zulip-vagrant-config` file.  E.g. if you set:
