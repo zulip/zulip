@@ -1265,6 +1265,7 @@ class Stream(models.Model):
             description=self.description,
             rendered_description=self.rendered_description,
             invite_only=self.invite_only,
+            is_web_public=self.is_web_public,
             is_announcement_only=self.is_announcement_only,
             history_public_to_subscribers=self.history_public_to_subscribers,
             first_message_id=self.first_message_id,

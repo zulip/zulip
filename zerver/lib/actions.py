@@ -2670,6 +2670,7 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     in_home_view=not subscription.is_muted,
                     is_muted=subscription.is_muted,
                     invite_only=stream.invite_only,
+                    is_web_public=stream.is_web_public,
                     is_announcement_only=stream.is_announcement_only,
                     color=subscription.color,
                     email_address=encode_email_address(stream),
@@ -4595,7 +4596,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "is_announcement_only", "realm_id",
                         "email_token", "description", "rendered_description", "date_created",
-                        "history_public_to_subscribers", "first_message_id")
+                        "history_public_to_subscribers", "first_message_id", "is_web_public")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
@@ -4651,6 +4652,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                        'in_home_view': not sub["is_muted"],
                        'is_muted': sub["is_muted"],
                        'invite_only': stream["invite_only"],
+                       'is_web_public': stream["is_web_public"],
                        'is_announcement_only': stream["is_announcement_only"],
                        'color': sub["color"],
                        'desktop_notifications': sub["desktop_notifications"],
@@ -4689,6 +4691,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         if is_public or user_profile.is_realm_admin:
             stream_dict = {'name': stream['name'],
                            'invite_only': stream['invite_only'],
+                           'is_web_public': stream['is_web_public'],
                            'is_announcement_only': stream['is_announcement_only'],
                            'stream_id': stream['id'],
                            'first_message_id': stream["first_message_id"],

@@ -911,6 +911,13 @@ form#add_new_subscription {
     font-weight: 600;
 }
 
+#subscription_overlay .hash::after {
+    position: relative;
+    content: "#";
+    font-size: 1.09em;
+    font-weight: 800;
+}
+
 #subscription_overlay .stream-header .large-icon.hash::after {
     position: relative;
     top: 1px;
