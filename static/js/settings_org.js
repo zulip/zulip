@@ -289,13 +289,12 @@ exports.populate_auth_methods = function (auth_methods) {
             method: {
                 method: key,
                 enabled: auth_methods[key],
+                is_admin: page_params.is_admin,
             },
         }));
     });
     loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
     if (!page_params.is_admin) {
-        $(".organization-box [data-name='auth-methods']")
-            .find("input, button, select, checked").attr("disabled", true);
         var tip_box = $("<div class='tip'></div>")
             .text(i18n.t("Only organization administrators can edit these settings."));
         // Don't prepend a tip to custom emoji settings page. We handle it separately.

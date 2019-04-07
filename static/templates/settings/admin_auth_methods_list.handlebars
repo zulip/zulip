@@ -5,7 +5,7 @@
     </td>
     <td>
         <label class="checkbox">
-            <input type="checkbox" {{#if enabled}}checked="checked"{{/if}} />
+            <input type="checkbox" {{#if enabled}}checked="checked"{{/if}} {{#unless is_admin}}disabled{{/unless}}/>
             <span></span>
         </label>
     </td>
