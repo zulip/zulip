@@ -3,8 +3,10 @@
     {{#if history_public_to_subscribers}}{{t 'New members can view complete message history.' }}
     {{else}}{{t 'New members can only see messages sent after they join.' }}
     {{/if}}
+    {{else if is_web_public}}
+    {{t 'This is a <i class="fa fa-globe" aria-hidden="true"></i> <b>web public stream</b>. Any member of the organization can join without an invitation and anyone on the internet can read the content published.'}}
 {{else}}
-    {{t 'This is a <span class="fa fa-globe" aria-hidden="true"></span> <b>public stream</b>. Any member of the organization can join without an invitation.' }}
+    {{t 'This is a <i class="hash" aria-hidden="true"></i> <b>public stream</b>. Any member of the organization can join without an invitation.' }}
 {{/if}}
 {{#if is_announcement_only}}
 {{t 'Only organization administrators can post.'}}

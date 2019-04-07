@@ -643,6 +643,7 @@ run_test('rename_stream', () => {
             uri: '#narrow/stream/1000-Development',
             not_in_home_view: false,
             invite_only: undefined,
+            is_web_public: undefined,
             color: payload.color,
             pin_to_top: true,
             dark_background: payload.dark_background,
