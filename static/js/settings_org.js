@@ -302,6 +302,15 @@ exports.populate_realm_domains = function (realm_domains) {
     });
 };
 
+function sort_object_by_key(obj) {
+    var keys = _.keys(obj).sort();
+    var new_obj = {};
+    _.each(keys, function (key) {
+        new_obj[key] = obj[key];
+    });
+    return new_obj;
+}
+
 exports.populate_auth_methods = function (auth_methods) {
     if (!meta.loaded) {
         return;
@@ -309,11 +318,12 @@ exports.populate_auth_methods = function (auth_methods) {
 
     var auth_methods_table = $("#admin_auth_methods_table").expectOne();
     auth_methods_table.find('tr.method_row').remove();
-    _.each(_.keys(auth_methods).sort(), function (key) {
+    auth_methods = sort_object_by_key(auth_methods);
+    _.each(auth_methods, function (value, auth_method) {
         auth_methods_table.append(templates.render('admin_auth_methods_list', {
             method: {
-                method: key,
-                enabled: auth_methods[key],
+                method: auth_method,
+                enabled: value,
                 is_admin: page_params.is_admin,
             },
         }));
