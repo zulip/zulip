@@ -65,6 +65,60 @@ Try narrowing from the message view:
     - narrow to a topic
     - click on the Zulip logo (and verify you're in the All messages view)
 
+### Messagebox ###
+
+With messagebox we want to test mainly the functioning of all
+all the keyboard shortcuts and click handlers.
+
+Apart from that there are three views of a message box, we want
+to test their appearance too:
+- Message that includes sender
+- Message without the sender
+- "/me" message
+
+Here's how we're going to test the message appearances:
+- narrow to a new topic and send a message (this message will include sender)
+    - edit the message ("(EDITED)" label should appear beside sender name)
+- send another message (will not include sender)
+    - edit the message ("(EDITED)" label should appear in the left column, where the avatar is)
+- send a "/me" message (`/me test message`)
+    - message should appear alongside sender name
+    - edit the message ("(EDITED)" label should appear beside the message)
+
+For all the three cases, we need to test the click handlers and
+the hotkeys too:
+- Sender popover:
+    - click on the avatar and sender name for messages which include sender
+    - press 'u' to open the sender popover for all messages
+- Message reply:
+    - click on message to reply
+    - use 'r' or Return hotkey to reply
+    - use '>' to quote and reply
+    - use '@' to mention and reply
+- Reactions:
+    - click on the reactions button to open menu
+    - use ':' to open the reactions menu
+    - react to a message
+- Chevron
+    - click on chevron to open menu
+    - use 'i' to open chevron menu
+- Message edit
+    - click on message edit/view source button
+    - use 'i' + Return to edit/view source message
+    - click on the 'copy and close' option in view source and verify positioning of 'Copied!' label.
+- Star a message:
+    - click on the star button in the right column
+    - use 'Ctrl + S' to star a message
+- Message length
+    - send a long message and see if '[More]' appears
+    - click on the 'more' or 'collapse' link
+    - use i to collapse/expand a message irrespective of message length
+- use 'v' to show all images in the thread
+- use 'M' to mute the thread
+
+Play with the screen size to check if the messagebox appears
+fine in different screens too.
+
 ### Message editing ###
 
 With message editing we mainly want to exercise topic changes.
