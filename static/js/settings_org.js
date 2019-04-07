@@ -294,16 +294,18 @@ exports.populate_auth_methods = function (auth_methods) {
         }));
     });
     loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
-    if (!page_params.is_admin) {
-        var tip_box = $("<div class='tip'></div>")
-            .text(i18n.t("Only organization administrators can edit these settings."));
-        // Don't prepend a tip to custom emoji settings page. We handle it separately.
-        $(".organization-box").find(".settings-section:not(.can-edit)")
-            .not("#emoji-settings")
-            .not("#user-groups-admin")
-            .prepend(tip_box);
-    }
 };
+
+function insert_tip_box() {
+    if (page_params.is_admin) {
+        return;
+    }
+    var tip_box = templates.render("organization-settings-tip", {is_admin: page_params.is_admin});
+    $(".organization-box").find(".settings-section:not(.can-edit)")
+        .not("#emoji-settings")
+        .not("#user-groups-admin")
+        .prepend(tip_box);
+}
 
 
 exports.render_notifications_stream_ui = function (stream_id, elem) {
@@ -529,6 +531,7 @@ exports.build_page = function () {
 
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
+    insert_tip_box();
 
     function populate_data_for_request(subsection) {
         var data = {};
