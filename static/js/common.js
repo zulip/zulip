@@ -78,8 +78,7 @@ exports.phrase_match = function (query, phrase) {
     if (phrase.indexOf(query) === 0) {
         return true;
     }
-
-    var parts = phrase.split(' ');
+    var parts = phrase.split(/-| /);
     for (i = 0; i < parts.length; i += 1) {
         if (parts[i].indexOf(query) === 0) {
             return true;

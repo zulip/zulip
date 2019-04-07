@@ -819,7 +819,7 @@ run_test('topic_suggestions', () => {
         topic_name: 'REXX',
     });
 
-    _.each(['team', 'ignore', 'test'], function (topic_name) {
+    _.each(['team', 'ignore', 'test', 'three-four'], function (topic_name) {
         topic_data.add_message({
             stream_id: office_id,
             topic_name: topic_name,
@@ -839,6 +839,13 @@ run_test('topic_suggestions', () => {
     }
     assert.equal(describe('te'), "Search for te");
     assert.equal(describe('stream:office topic:team'), "Stream office &gt; team");
+
+    suggestions = search.get_suggestions('', 'four');
+    expected = [
+        "four",
+        "stream:office topic:three-four",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 
     suggestions = search.get_suggestions('topic:staplers',  'stream:office');
     expected = [
@@ -912,7 +919,7 @@ run_test('whitespace_glitch', () => {
 
 run_test('stream_completion', () => {
     global.stream_data.subscribed_streams = function () {
-        return ['office', 'dev help'];
+        return ['office', 'dev help', 'fhir-infrastructure'];
     };
 
     global.narrow_state.stream = function () {
@@ -942,6 +949,15 @@ run_test('stream_completion', () => {
     expected = [
         "hel",
         "stream:dev+help",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Test suggestion based on a part of hyphenated word
+    query = 'infra';
+    suggestions = search.get_suggestions('', query);
+    expected = [
+        "infra",
+        "stream:fhir-infrastructure",
     ];
     assert.deepEqual(suggestions.strings, expected);
 });
@@ -1062,6 +1078,24 @@ run_test('operator_suggestions', () => {
         'st',
         'is:starred',
         'stream:',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'pm';
+    suggestions = search.get_suggestions('', query);
+    expected = [
+        'pm',
+        'pm-with:',
+        'group-pm-with:',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'with';
+    suggestions = search.get_suggestions('', query);
+    expected = [
+        'with',
+        'pm-with:',
+        'group-pm-with:',
     ];
     assert.deepEqual(suggestions.strings, expected);
 

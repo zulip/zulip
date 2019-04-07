@@ -12,7 +12,9 @@ run_test('phrase_match', () => {
     assert(common.phrase_match('Tes', 'test'));
     assert(common.phrase_match('Tes', 'Test'));
     assert(common.phrase_match('tes', 'Stream Test'));
+    assert(common.phrase_match('Tes', 'Stream-Test'));
 
     assert(!common.phrase_match('tests', 'test'));
     assert(!common.phrase_match('tes', 'hostess'));
+    assert(!common.phrase_match('Tes', 'StreamTest'));
 });
