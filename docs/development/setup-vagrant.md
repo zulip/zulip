@@ -1062,6 +1062,10 @@ HTTPS_PROXY http://proxy_host:port
 NO_PROXY localhost,127.0.0.1,.example.com
 ```
 
+**Please be extra careful and double check for mistakes (eg `https://` instead of `http://`)
+while setting up these values.
+Unknowingly setting incorrect values is known to cause hard to trace errors.**
+
 Now run `vagrant up` in your terminal to install the development
 server. If you ran `vagrant up` before and failed, you'll need to run
 `vagrant destroy` first to clean up the failed installation.
