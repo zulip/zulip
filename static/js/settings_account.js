@@ -64,6 +64,10 @@ function update_user_custom_profile_fields(fields, method) {
 }
 
 exports.append_custom_profile_fields = function (element_id, user_id) {
+    var person = people.get_person_from_user_id(user_id);
+    if (person.is_bot) {
+        return;
+    }
     var all_custom_fields = page_params.custom_profile_fields;
     var field_types = page_params.custom_profile_field_types;
 
@@ -129,6 +133,11 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
     var field_types = page_params.custom_profile_field_types;
     var user_pills = {};
 
+    var person = people.get_person_from_user_id(user_id);
+    if (person.is_bot) {
+        return [];
+    }
+
     page_params.custom_profile_fields.forEach(function (field) {
         var field_value_raw = people.get_custom_profile_data(user_id, field.id);
 
@@ -179,6 +188,7 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
             user_pills[field.id] = pills;
         }
     });
+
     return user_pills;
 };
 
