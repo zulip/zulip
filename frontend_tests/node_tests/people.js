@@ -145,6 +145,20 @@ run_test('my_custom_profile_data', () => {
     assert.equal(people.my_custom_profile_data(undefined), undefined);
 });
 
+run_test('bot_custom_profile_data', () => {
+    // If this test fails, then try opening organization settings > bots
+    // http://localhost:9991/#organization/bot-list-admin
+    // and then try to edit any of the bots.
+    var bot = {
+        email: 'bot@example.com',
+        user_id: 31,
+        full_name: 'Bot',
+        is_bot: true,
+    };
+    people.add_in_realm(bot);
+    assert.equal(people.get_custom_profile_data(31, 3), null);
+});
+
 run_test('user_timezone', () => {
     var expected_pref = {
         timezone: 'US/Pacific',
