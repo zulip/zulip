@@ -158,7 +158,7 @@ class TopicHistoryTest(ZulipTestCase):
                 sender=hamlet,
                 recipient=recipient,
                 content='whatever',
-                pub_date=timezone_now(),
+                timestamp=timezone_now(),
                 sending_client=get_client('whatever'),
             )
             message.set_topic_name(topic)
@@ -900,7 +900,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sender=sender,
                 recipient=recipient,
                 content=message_content,
-                pub_date=timezone_now(),
+                timestamp=timezone_now(),
                 sending_client=sending_client,
             )
             message.set_topic_name(topic_name)
@@ -1183,7 +1183,7 @@ class MessageDictTest(ZulipTestCase):
                     content='whatever %d' % (i,),
                     rendered_content='DOES NOT MATTER',
                     rendered_content_version=bugdown.version,
-                    pub_date=timezone_now(),
+                    timestamp=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
                     edit_history='[]'
@@ -1228,7 +1228,7 @@ class MessageDictTest(ZulipTestCase):
             sender=sender,
             recipient=recipient,
             content='hello **world**',
-            pub_date=timezone_now(),
+            timestamp=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
             edit_history='[]'
@@ -1258,7 +1258,7 @@ class MessageDictTest(ZulipTestCase):
             sender=sender,
             recipient=recipient,
             content='hello **world**',
-            pub_date=timezone_now(),
+            timestamp=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
             edit_history='[]'
@@ -1282,7 +1282,7 @@ class MessageDictTest(ZulipTestCase):
             sender=sender,
             recipient=recipient,
             content='hello **world**',
-            pub_date=timezone_now(),
+            timestamp=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
             edit_history='[]'
@@ -1329,7 +1329,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
                     sender=sender,
                     recipient=recipient,
                     content='whatever %d' % (i,),
-                    pub_date=timezone_now(),
+                    timestamp=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
                     edit_history='[]'
@@ -1953,8 +1953,8 @@ class MessagePOSTTest(ZulipTestCase):
         self.subscribe(user, "IRCland")
 
         # Simulate a mirrored message with a slightly old timestamp.
-        fake_pub_date = timezone_now() - datetime.timedelta(minutes=37)
-        fake_pub_time = datetime_to_timestamp(fake_pub_date)
+        fake_timestamp = timezone_now() - datetime.timedelta(minutes=37)
+        fake_pub_time = datetime_to_timestamp(fake_timestamp)
 
         result = self.api_post(email, "/api/v1/messages", {"type": "stream",
                                                            "forged": "true",
@@ -1967,7 +1967,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_success(result)
 
         msg = self.get_last_message()
-        self.assertEqual(int(datetime_to_timestamp(msg.pub_date)), int(fake_pub_time))
+        self.assertEqual(int(datetime_to_timestamp(msg.timestamp)), int(fake_pub_time))
 
     def test_unsubscribed_api_super_user(self) -> None:
         cordelia = self.example_user('cordelia')
@@ -2704,7 +2704,7 @@ class EditMessageTest(ZulipTestCase):
         id_ = self.send_stream_message(self.example_email("iago"), "Scotland",
                                        content="content", topic_name="topic")
         message = Message.objects.get(id=id_)
-        message.pub_date = message.pub_date - datetime.timedelta(seconds=180)
+        message.timestamp = message.timestamp - datetime.timedelta(seconds=180)
         message.save()
 
         # test the various possible message editing settings
@@ -2766,7 +2766,7 @@ class EditMessageTest(ZulipTestCase):
         id_ = self.send_stream_message(self.example_email("hamlet"), "Scotland",
                                        content="content", topic_name="topic")
         message = Message.objects.get(id=id_)
-        message.pub_date = message.pub_date - datetime.timedelta(seconds=180)
+        message.timestamp = message.timestamp - datetime.timedelta(seconds=180)
         message.save()
 
         # any user can edit the topic of a message
@@ -2789,7 +2789,7 @@ class EditMessageTest(ZulipTestCase):
         do_edit_message_assert_error(id_, 'D', "Your organization has turned off message editing")
 
         # non-admin users cannot edit topics sent > 24 hrs ago
-        message.pub_date = message.pub_date - datetime.timedelta(seconds=90000)
+        message.timestamp = message.timestamp - datetime.timedelta(seconds=90000)
         message.save()
         self.login(self.example_email("iago"))
         set_message_editing_params(True, 0, True)
@@ -3695,7 +3695,7 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(True, 0)
         msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
         message = Message.objects.get(id=msg_id)
-        message.pub_date = message.pub_date - datetime.timedelta(seconds=600)
+        message.timestamp = message.timestamp - datetime.timedelta(seconds=600)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id)
@@ -3708,12 +3708,12 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(True, 240)
         msg_id_1 = self.send_stream_message("hamlet@zulip.com", "Scotland")
         message = Message.objects.get(id=msg_id_1)
-        message.pub_date = message.pub_date - datetime.timedelta(seconds=120)
+        message.timestamp = message.timestamp - datetime.timedelta(seconds=120)
         message.save()
 
         msg_id_2 = self.send_stream_message("hamlet@zulip.com", "Scotland")
         message = Message.objects.get(id=msg_id_2)
-        message.pub_date = message.pub_date - datetime.timedelta(seconds=360)
+        message.timestamp = message.timestamp - datetime.timedelta(seconds=360)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id_1)
@@ -3804,7 +3804,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             message = Message(sender = sender,
                               recipient = recipient,
                               content = message_content,
-                              pub_date = timezone_now(),
+                              timestamp = timezone_now(),
                               sending_client = sending_client)
             message.set_topic_name(topic_name)
             message.save()

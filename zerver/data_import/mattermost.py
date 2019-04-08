@@ -301,7 +301,7 @@ def process_raw_message_batch(realm_id: int,
             logging.info('skipping too-long message of length %s' % (len(content),))
             continue
 
-        pub_date = raw_message['pub_date']
+        timestamp = raw_message['timestamp']
         try:
             recipient_id = get_recipient_id(raw_message)
         except KeyError:
@@ -316,7 +316,7 @@ def process_raw_message_batch(realm_id: int,
         message = build_message(
             content=content,
             message_id=message_id,
-            pub_date=pub_date,
+            timestamp=timestamp,
             recipient_id=recipient_id,
             rendered_content=rendered_content,
             topic_name=topic_name,
@@ -380,7 +380,7 @@ def process_posts(team_name: str,
             sender_id=sender_id,
             receiver_id=post_dict["channel"],
             content=content,
-            pub_date=int(post_dict['create_at'] / 1000),
+            timestamp=int(post_dict['create_at'] / 1000),
             reactions=reactions
         )
 

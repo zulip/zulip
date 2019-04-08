@@ -1050,7 +1050,7 @@ def get_incoming_message_ids(import_dir: Path,
     ids, which can be millions of integers for some installations.
     And then we sort the list.  This is necessary to ensure
     that the sort order of incoming ids matches the sort order
-    of pub_date, which isn't always guaranteed by our
+    of timestamp, which isn't always guaranteed by our
     utilities that convert third party chat data.  We also
     need to move our ids to a new range if we're dealing
     with a server that has data for other realms.
@@ -1074,7 +1074,7 @@ def get_incoming_message_ids(import_dir: Path,
         del data['zerver_usermessage']
 
         for row in data['zerver_message']:
-            # We truncate pub_date to int to theoretically
+            # We truncate timestamp to int to theoretically
             # save memory and speed up the sort.  For
             # Zulip-to-Zulip imports, the
             # message_id will generally be a good tiebreaker.
@@ -1087,8 +1087,8 @@ def get_incoming_message_ids(import_dir: Path,
             message_id = row['id']
 
             if sort_by_date:
-                pub_date = int(row['pub_date'])
-                tup = (pub_date, message_id)
+                timestamp = int(row['timestamp'])
+                tup = (timestamp, message_id)
                 tups.append(tup)
             else:
                 message_ids.append(message_id)

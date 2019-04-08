@@ -88,7 +88,7 @@ class AnalyticsTestCase(TestCase):
             'recipient': recipient,
             DB_TOPIC_NAME: 'subject',
             'content': 'hi',
-            'pub_date': self.TIME_LAST_HOUR,
+            'timestamp': self.TIME_LAST_HOUR,
             'sending_client': get_client("website")}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
@@ -318,7 +318,7 @@ class TestCountStats(AnalyticsTestCase):
             recipient = self.create_stream_with_recipient(
                 name='stream %s' % (minutes_ago,), realm=self.second_realm,
                 date_created=creation_time)[1]
-            self.create_message(user, recipient, pub_date=creation_time)
+            self.create_message(user, recipient, timestamp=creation_time)
         self.hourly_user = get_user('user-1@second.analytics', self.second_realm)
         self.daily_user = get_user('user-61@second.analytics', self.second_realm)
 

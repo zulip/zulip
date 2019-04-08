@@ -21,7 +21,7 @@ class TestRetentionLib(ZulipTestCase):
         super().setUp()
         self.zulip_realm = self._set_realm_message_retention_value('zulip', 30)
         self.mit_realm = self._set_realm_message_retention_value('zephyr', 100)
-        Message.objects.all().update(pub_date=timezone_now())
+        Message.objects.all().update(timestamp=timezone_now())
 
     @staticmethod
     def _set_realm_message_retention_value(realm_str: str, retention_period: int) -> Realm:
@@ -31,19 +31,19 @@ class TestRetentionLib(ZulipTestCase):
         return realm
 
     @staticmethod
-    def _change_messages_pub_date(msgs_ids: List[int], pub_date: datetime) -> Any:
+    def _change_messages_timestamp(msgs_ids: List[int], timestamp: datetime) -> Any:
         messages = Message.objects.filter(id__in=msgs_ids).order_by('id')
-        messages.update(pub_date=pub_date)
+        messages.update(timestamp=timestamp)
         return messages
 
-    def _make_mit_messages(self, message_quantity: int, pub_date: datetime) -> Any:
+    def _make_mit_messages(self, message_quantity: int, timestamp: datetime) -> Any:
         # send messages from mit.edu realm and change messages pub date
         sender = self.mit_user('espuser')
         recipient = self.mit_user('starnine')
         msgs_ids = [self.send_personal_message(sender.email, recipient.email,
                                                sender_realm='zephyr') for i in
                     range(message_quantity)]
-        mit_messages = self._change_messages_pub_date(msgs_ids, pub_date)
+        mit_messages = self._change_messages_timestamp(msgs_ids, timestamp)
         return mit_messages
 
     def test_expired_messages_result_type(self) -> None:
@@ -62,8 +62,8 @@ class TestRetentionLib(ZulipTestCase):
         self._make_mit_messages(4, timezone_now() - timedelta(days=50))
         zulip_messages_ids = Message.objects.order_by('id').filter(
             sender__realm=self.zulip_realm).values_list('id', flat=True)[3:10]
-        expired_zulip_messages = self._change_messages_pub_date(zulip_messages_ids,
-                                                                timezone_now() - timedelta(days=31))
+        expired_zulip_messages = self._change_messages_timestamp(zulip_messages_ids,
+                                                                 timezone_now() - timedelta(days=31))
         # Iterate by result
         expired_messages_result = [messages_list for messages_list in get_expired_messages()]
         self.assertEqual(len(expired_messages_result), 2)

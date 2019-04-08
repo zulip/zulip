@@ -61,7 +61,7 @@ def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[
         return None
     # We have USE_TZ = True, so our datetime objects are timezone-aware.
     # Return the epoch seconds in UTC.
-    return calendar.timegm(user_message.message.pub_date.utctimetuple())
+    return calendar.timegm(user_message.message.timestamp.utctimetuple())
 
 def get_bot_types(user_profile: UserProfile) -> List[Dict[str, object]]:
     bot_types = []

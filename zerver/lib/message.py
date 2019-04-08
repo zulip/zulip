@@ -229,7 +229,7 @@ class MessageDict:
             edit_history = message.edit_history,
             content = message.content,
             topic_name = message.topic_name(),
-            pub_date = message.pub_date,
+            timestamp = message.timestamp,
             rendered_content = message.rendered_content,
             rendered_content_version = message.rendered_content_version,
             sender_id = message.sender.id,
@@ -249,7 +249,7 @@ class MessageDict:
         fields = [
             'id',
             DB_TOPIC_NAME,
-            'pub_date',
+            'timestamp',
             'last_edit_time',
             'edit_history',
             'content',
@@ -283,7 +283,7 @@ class MessageDict:
             edit_history = row['edit_history'],
             content = row['content'],
             topic_name = row[DB_TOPIC_NAME],
-            pub_date = row['pub_date'],
+            timestamp = row['timestamp'],
             rendered_content = row['rendered_content'],
             rendered_content_version = row['rendered_content_version'],
             sender_id = row['sender_id'],
@@ -304,7 +304,7 @@ class MessageDict:
             edit_history: Optional[str],
             content: str,
             topic_name: str,
-            pub_date: datetime.datetime,
+            timestamp: datetime.datetime,
             rendered_content: Optional[str],
             rendered_content_version: Optional[int],
             sender_id: int,
@@ -324,7 +324,7 @@ class MessageDict:
             recipient_type_id = recipient_type_id,
             recipient_type    = recipient_type,
             recipient_id      = recipient_id,
-            timestamp         = datetime_to_timestamp(pub_date),
+            timestamp         = datetime_to_timestamp(timestamp),
             client            = sending_client_name)
 
         obj[TOPIC_NAME] = topic_name

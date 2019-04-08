@@ -199,8 +199,8 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
 
     all_messages = UserMessage.objects.filter(
         user_profile=user_profile,
-        message__pub_date__gt=cutoff_date
-    ).select_related('message').order_by("message__pub_date")
+        message__timestamp__gt=cutoff_date
+    ).select_related('message').order_by("message__timestamp")
 
     context = common_context(user_profile)
 

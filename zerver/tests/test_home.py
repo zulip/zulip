@@ -785,9 +785,9 @@ class HomeTest(ZulipTestCase):
 
     def test_message_sent_time(self) -> None:
         epoch_seconds = 1490472096
-        pub_date = datetime.datetime.fromtimestamp(epoch_seconds)
+        timestamp = datetime.datetime.fromtimestamp(epoch_seconds)
         user_message = MagicMock()
-        user_message.message.pub_date = pub_date
+        user_message.message.timestamp = timestamp
         self.assertEqual(sent_time_in_epoch_seconds(user_message), epoch_seconds)
 
     def test_handlebars_compile_error(self) -> None:

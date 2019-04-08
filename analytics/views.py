@@ -403,7 +403,7 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
     query = '''
         select
             r.string_id,
-            (now()::date - pub_date::date) age,
+            (now()::date - timestamp::date) age,
             count(*) cnt
         from zerver_message m
         join zerver_userprofile up on up.id = m.sender_id
@@ -412,7 +412,7 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
         where
             (not up.is_bot)
         and
-            pub_date > now()::date - interval '8 day'
+            timestamp > now()::date - interval '8 day'
         and
             c.name not in ('zephyr_mirror', 'ZulipMonitoring')
         group by
@@ -736,7 +736,7 @@ def sent_messages_report(realm: str) -> str:
         ) as series
         left join (
             select
-                pub_date::date pub_date,
+                timestamp::date,
                 count(*) cnt
             from zerver_message m
             join zerver_userprofile up on up.id = m.sender_id
@@ -746,16 +746,16 @@ def sent_messages_report(realm: str) -> str:
             and
                 (not up.is_bot)
             and
-                pub_date > now() - interval '2 week'
+                timestamp > now() - interval '2 week'
             group by
-                pub_date::date
+                timestamp::date
             order by
-                pub_date::date
+                timestamp::date
         ) humans on
-            series.day = humans.pub_date
+            series.day = humans.timestamp
         left join (
             select
-                pub_date::date pub_date,
+                timestamp::date,
                 count(*) cnt
             from zerver_message m
             join zerver_userprofile up on up.id = m.sender_id
@@ -765,13 +765,13 @@ def sent_messages_report(realm: str) -> str:
             and
                 up.is_bot
             and
-                pub_date > now() - interval '2 week'
+                timestamp > now() - interval '2 week'
             group by
-                pub_date::date
+                timestamp::date
             order by
-                pub_date::date
+                timestamp::date
         ) bots on
-            series.day = bots.pub_date
+            series.day = bots.timestamp
     '''
     cursor = connection.cursor()
     cursor.execute(query, [realm, realm])

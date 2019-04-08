@@ -625,7 +625,7 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
 
         # Spoofing time not supported with threading
         if options['threads'] != 1:
-            message.pub_date = timezone_now()
+            message.timestamp = timezone_now()
         else:
             # Distrubutes 80% of messages starting from 5 days ago, over a period
             # of 3 days. Then, distributes remaining messages over past 24 hours.
@@ -640,7 +640,7 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
 
             spoofed_minute = random.randint(time_ahead * num_messages, time_ahead * (num_messages + 1))
             spoofed_date += timezone_timedelta(minutes = spoofed_minute)
-            message.pub_date = spoofed_date
+            message.timestamp = spoofed_date
 
         # We disable USING_RABBITMQ here, so that deferred work is
         # executed in do_send_message_messages, rather than being

@@ -220,7 +220,7 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     #    },
     # ]
 
-    messages.sort(key=lambda message: message.pub_date)
+    messages.sort(key=lambda message: message.timestamp)
 
     for message in messages:
         header = message_header(user_profile, message)
@@ -428,7 +428,7 @@ def handle_missedmessage_emails(user_profile_id: int,
     }
 
     for msg_list in messages_by_bucket.values():
-        msg = min(msg_list, key=lambda msg: msg.pub_date)
+        msg = min(msg_list, key=lambda msg: msg.timestamp)
         if msg.is_stream_message():
             context_messages = get_context_for_message(msg)
             filtered_context_messages = bulk_access_messages(user_profile, context_messages)

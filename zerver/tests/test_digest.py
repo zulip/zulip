@@ -97,7 +97,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.subscribe(othello, 'Verona')
 
         one_day_ago = timezone_now() - datetime.timedelta(days=1)
-        Message.objects.all().update(pub_date=one_day_ago)
+        Message.objects.all().update(timestamp=one_day_ago)
         one_sec_ago = timezone_now() - datetime.timedelta(seconds=1)
 
         cutoff = time.mktime(one_sec_ago.timetuple())

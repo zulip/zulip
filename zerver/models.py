@@ -1437,7 +1437,7 @@ class AbstractMessage(models.Model):
     rendered_content = models.TextField(null=True)  # type: Optional[str]
     rendered_content_version = models.IntegerField(null=True)  # type: Optional[int]
 
-    pub_date = models.DateTimeField('date published', db_index=True)  # type: datetime.datetime
+    timestamp = models.DateTimeField('date published', db_index=True)  # type: datetime.datetime
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
 
     last_edit_time = models.DateTimeField(null=True)  # type: Optional[datetime.datetime]
@@ -1516,7 +1516,7 @@ class Message(AbstractMessage):
             recipient         = get_display_recipient(self.recipient),
             subject           = self.topic_name(),
             content           = self.content,
-            timestamp         = datetime_to_timestamp(self.pub_date))
+            timestamp         = datetime_to_timestamp(self.timestamp))
 
     def sent_by_human(self) -> bool:
         """Used to determine whether a message was sent by a full Zulip UI
@@ -1580,7 +1580,7 @@ def get_context_for_message(message: Message) -> Sequence[Message]:
         recipient_id=message.recipient_id,
         subject=message.subject,
         id__lt=message.id,
-        pub_date__gt=message.pub_date - timedelta(minutes=15),
+        timestamp__gt=message.timestamp - timedelta(minutes=15),
     ).order_by('-id')[:10]
 
 post_save.connect(flush_message, sender=Message)
@@ -1803,7 +1803,7 @@ class Attachment(AbstractAttachment):
             'create_time': time.mktime(self.create_time.timetuple()) * 1000,
             'messages': [{
                 'id': m.id,
-                'name': time.mktime(m.pub_date.timetuple()) * 1000
+                'name': time.mktime(m.timestamp.timetuple()) * 1000
             } for m in self.messages.all()]
         }
 

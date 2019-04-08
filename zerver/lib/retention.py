@@ -12,7 +12,7 @@ from typing import Any, Dict, Optional, Generator, List
 def get_realm_expired_messages(realm: Any) -> Optional[Dict[str, Any]]:
     expired_date = timezone_now() - timedelta(days=realm.message_retention_days)
     expired_messages = Message.objects.order_by('id').filter(sender__realm=realm,
-                                                             pub_date__lt=expired_date)
+                                                             timestamp__lt=expired_date)
     if not expired_messages.exists():
         return None
     return {'realm_id': realm.id, 'expired_messages': expired_messages}
