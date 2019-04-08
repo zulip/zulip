@@ -234,6 +234,12 @@ function test_submit_settings_form(submit_form) {
     };
     $("#id_realm_create_stream_permission").val("by_anyone");
     $("#id_realm_add_emoji_by_admins_only").val("by_anyone");
+    const invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
+    invite_to_stream_policy_elem.val("1");
+    invite_to_stream_policy_elem.attr('id', 'id_realm_invite_to_stream_policy');
+    invite_to_stream_policy_elem.data = () => {
+        return "integer";
+    };
     const bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
     bot_creation_policy_elem.val("1");
     bot_creation_policy_elem.attr('id', 'id_realm_bot_creation_policy');
@@ -250,6 +256,7 @@ function test_submit_settings_form(submit_form) {
     let subsection_elem = $(`#org-${subsection}`);
     subsection_elem.set_find_results('.setting-widget', [
         bot_creation_policy_elem,
+        invite_to_stream_policy_elem,
         email_address_visibility_elem,
     ]);
 
@@ -259,6 +266,7 @@ function test_submit_settings_form(submit_form) {
 
     let expected_value = {
         bot_creation_policy: '1',
+        invite_to_stream_policy: '1',
         email_address_visibility: '1',
         add_emoji_by_admins_only: false,
         create_stream_by_admins_only: false,
@@ -533,6 +541,18 @@ function test_sync_realm_settings() {
     }
 
     {
+        /* Test invite to stream policy settings sync */
+        const property_elem = $('#id_realm_invite_to_stream_policy');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_invite_to_stream_policy');
+
+        page_params.realm_invite_to_stream_policy = 3;
+
+        settings_org.sync_realm_settings('invite_to_stream_policy');
+        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_members_with_waiting_period");
+    }
+
+    {
         /* Test message content edit limit minutes sync */
         const property_elem = $('#id_realm_message_content_edit_limit_minutes');
         property_elem.length = 1;
@@ -743,8 +763,8 @@ run_test('set_up', () => {
     $("#enable_digest_emails_label").set_parent($.create('<stub digest setting checkbox>'));
     $("#id_realm_msg_edit_limit_setting").change = noop;
     $('#id_realm_msg_delete_limit_setting').change = noop;
-    const parent_elem = $.create('waiting-period-parent-stub');
-    $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
+    const waiting_period_parent_elem = $.create('waiting-period-parent-stub');
+    $('#id_realm_waiting_period_threshold').set_parent(waiting_period_parent_elem);
     $("#allowed_domains_label").set_parent($.create('<stub-allowed-domain-label-parent>'));
 
     const allow_topic_edit_label_parent = $.create('allow-topic-edit-label-parent');

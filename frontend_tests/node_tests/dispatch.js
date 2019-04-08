@@ -200,11 +200,11 @@ var event_fixtures = {
         value: false,
     },
 
-    realm__update__invite_by_admins_only: {
+    realm__update__invite_to_stream_policy: {
         type: 'realm',
         op: 'update',
-        property: 'invite_by_admins_only',
-        value: false,
+        property: 'invite_to_stream_policy',
+        value: 2,
     },
 
     realm__update__invite_required: {
@@ -875,8 +875,8 @@ with_overrides(function (override) {
     var event = event_fixtures.realm__update__create_stream_by_admins_only;
     test_realm_boolean(event, 'realm_create_stream_by_admins_only');
 
-    event = event_fixtures.realm__update__invite_by_admins_only;
-    test_realm_boolean(event, 'realm_invite_by_admins_only');
+    event = event_fixtures.realm__update__invite_to_stream_policy;
+    test_realm_boolean(event, 'realm_invite_to_stream_policy');
 
     event = event_fixtures.realm__update__invite_required;
     test_realm_boolean(event, 'realm_invite_required');

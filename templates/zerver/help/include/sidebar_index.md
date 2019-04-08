@@ -116,6 +116,7 @@
 
 ## Organization settings
 * [Restrict stream creation](/help/configure-who-can-create-streams)
+* [Restrict stream invitation](/help/configure-who-can-invite-to-streams)
 * [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
 * [Block image and link previews](/help/allow-image-link-previews)
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
