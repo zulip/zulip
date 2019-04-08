@@ -55,7 +55,7 @@ function set_pm_conversation_count(user_ids_string, count) {
 
 exports._build_private_messages_list = function (active_conversation) {
 
-    var private_messages = pm_conversations.recent.get();
+    var private_messages = left_sidebar.get_pm_conversations();
     var display_messages = [];
 
     // SHIM

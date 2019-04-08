@@ -3,6 +3,7 @@ var left_sidebar = (function () {
 var exports = {};
 
 var using_unread_view_for_streams = false;
+var using_unread_view_for_pms = true;
 
 exports.keep_topics_open = function () {
     return using_unread_view_for_streams;
@@ -22,6 +23,14 @@ exports.sub_in_unread_view = function (sub) {
     var num_topics = exports.get_topic_names(stream_id).length;
 
     return num_topics >= 1;
+};
+
+exports.get_pm_conversations = function () {
+    var private_messages = pm_conversations.recent.get();
+    private_messages.push('FRED');
+    console.info(private_messages);
+
+    return private_messages;
 };
 
 exports.get_stream_names = function () {
