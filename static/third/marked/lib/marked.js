@@ -135,7 +135,6 @@ Lexer.prototype.lex = function(src) {
     .replace(/\t/g, '    ')
     .replace(/\u00a0/g, ' ')
     .replace(/\u2424/g, '\n');
-
   return this.token(src, true);
 };
 
@@ -170,6 +169,13 @@ Lexer.prototype.token = function(src, top, bq) {
     , l;
 
   while (src) {
+
+    if ((this.rules.nptable.test(src)) || (this.rules.table.test(src))) {
+      this.rules = block.tables;
+    } else if (this.rules.list !== block.list) {
+      this.rules.list = block.list;
+    }
+
     // newline
     if (cap = this.rules.newline.exec(src)) {
       src = src.substring(cap[0].length);

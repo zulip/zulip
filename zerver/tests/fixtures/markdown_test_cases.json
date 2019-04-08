@@ -137,6 +137,13 @@
       "text_content": "Some text with a list:\n\nOne item\nTwo items\nThree items\n"
     },
     {
+      "name": "ulist_with_different_indicators",
+      "input": "Some text with a list:\n\n* First list\n- Second list\n+ Third list",
+      "expected_output": "<p>Some text with a list:</p>\n<ul>\n<li>First list</li>\n<li>Second list</li>\n<li>Third list</li>\n</ul>",
+      "marked_expected_output": "<p>Some text with a list:</p>\n<ul>\n<li>First list</li>\n</ul>\n<ul>\n<li>Second list</li>\n</ul>\n<ul>\n<li>Third list</li>\n</ul>",
+      "text_content": "Some text with a list:\n\nFirst list\nSecond list\nThird list\n"
+    },
+    {
       "name": "ulist_hanging",
       "input": "Some text with a hanging list:\n* One item\n* Two items\n* Three items",
       "expected_output": "<p>Some text with a hanging list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
