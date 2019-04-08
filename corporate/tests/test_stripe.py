@@ -873,6 +873,88 @@ class StripeTest(StripeTestCase):
         self.assertEqual(2, RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.STRIPE_CARD_CHANGED).count())
 
+    @patch("corporate.lib.stripe.billing_logger.info")
+    def test_downgrade(self, mock_: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login(user.email)
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        response = self.client_post("/json/billing/plan/change",
+                                    {'status': CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE})
+        self.assert_json_success(response)
+
+        # Verify that we still write LicenseLedger rows during the remaining
+        # part of the cycle
+        with patch("corporate.lib.stripe.get_seat_count", return_value=20):
+            update_license_ledger_if_needed(user.realm, self.now)
+        self.assertEqual(LicenseLedger.objects.order_by('-id').values_list(
+            'licenses', 'licenses_at_next_renewal').first(), (20, 20))
+
+        # Verify that we invoice them for the additional users
+        from stripe import Invoice
+        Invoice.create = lambda **args: None  # type: ignore # cleaner than mocking
+        Invoice.finalize_invoice = lambda *args: None  # type: ignore # cleaner than mocking
+        with patch("stripe.InvoiceItem.create") as mocked:
+            invoice_plans_as_needed(self.next_month)
+        mocked.assert_called_once()
+        mocked.reset_mock()
+
+        # Check that we downgrade properly if the cycle is over
+        with patch("corporate.lib.stripe.get_seat_count", return_value=30):
+            update_license_ledger_if_needed(user.realm, self.next_year)
+        self.assertEqual(get_realm('zulip').plan_type, Realm.LIMITED)
+        self.assertEqual(CustomerPlan.objects.first().status, CustomerPlan.ENDED)
+        self.assertEqual(LicenseLedger.objects.order_by('-id').values_list(
+            'licenses', 'licenses_at_next_renewal').first(), (20, 20))
+
+        # Verify that we don't write LicenseLedger rows once we've downgraded
+        with patch("corporate.lib.stripe.get_seat_count", return_value=40):
+            update_license_ledger_if_needed(user.realm, self.next_year)
+        self.assertEqual(LicenseLedger.objects.order_by('-id').values_list(
+            'licenses', 'licenses_at_next_renewal').first(), (20, 20))
+
+        # Verify that we call invoice_plan once more after cycle end but
+        # don't invoice them for users added after the cycle end
+        self.assertIsNotNone(CustomerPlan.objects.first().next_invoice_date)
+        with patch("stripe.InvoiceItem.create") as mocked:
+            invoice_plans_as_needed(self.next_year + timedelta(days=32))
+        mocked.assert_not_called()
+        mocked.reset_mock()
+        # Check that we updated next_invoice_date in invoice_plan
+        self.assertIsNone(CustomerPlan.objects.first().next_invoice_date)
+
+        # Check that we don't call invoice_plan after that final call
+        with patch("corporate.lib.stripe.get_seat_count", return_value=50):
+            update_license_ledger_if_needed(user.realm, self.next_year + timedelta(days=80))
+        with patch("corporate.lib.stripe.invoice_plan") as mocked:
+            invoice_plans_as_needed(self.next_year + timedelta(days=400))
+        mocked.assert_not_called()
+
+    @patch("corporate.lib.stripe.billing_logger.info")
+    @patch("stripe.Invoice.create")
+    @patch("stripe.Invoice.finalize_invoice")
+    @patch("stripe.InvoiceItem.create")
+    def test_downgrade_during_invoicing(self, *mocks: Mock) -> None:
+        # The difference between this test and test_downgrade is that
+        # CustomerPlan.status is DOWNGRADE_AT_END_OF_CYCLE rather than ENDED
+        # when we call invoice_plans_as_needed
+        # This test is essentially checking that we call make_end_of_cycle_updates_if_needed
+        # during the invoicing process.
+        user = self.example_user("hamlet")
+        self.login(user.email)
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        self.client_post("/json/billing/plan/change",
+                         {'status': CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE})
+
+        plan = CustomerPlan.objects.first()
+        self.assertIsNotNone(plan.next_invoice_date)
+        self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+        invoice_plans_as_needed(self.next_year)
+        plan = CustomerPlan.objects.first()
+        self.assertIsNone(plan.next_invoice_date)
+        self.assertEqual(plan.status, CustomerPlan.ENDED)
+
 class RequiresBillingAccessTest(ZulipTestCase):
     def setUp(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -888,7 +970,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
     def test_non_admins_blocked_from_json_endpoints(self) -> None:
         params = [
             ("/json/billing/sources/change", {'stripe_token': ujson.dumps('token')}),
-            ("/json/billing/downgrade", {}),
+            ("/json/billing/plan/change", {'status': ujson.dumps(1)}),
         ]  # type: List[Tuple[str, Dict[str, Any]]]
 
         for (url, data) in params:

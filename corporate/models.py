@@ -35,7 +35,7 @@ class CustomerPlan(models.Model):
     MONTHLY = 2
     billing_schedule = models.SmallIntegerField()  # type: int
 
-    next_invoice_date = models.DateTimeField(db_index=True)  # type: datetime.datetime
+    next_invoice_date = models.DateTimeField(db_index=True, null=True)  # type: Optional[datetime.datetime]
     invoiced_through = models.ForeignKey(
         'LicenseLedger', null=True, on_delete=CASCADE, related_name='+')  # type: Optional[LicenseLedger]
     DONE = 1
@@ -69,6 +69,5 @@ class LicenseLedger(models.Model):
     event_time = models.DateTimeField()  # type: datetime.datetime
     licenses = models.IntegerField()  # type: int
     # None means the plan does not automatically renew.
-    # 0 means the plan has been explicitly downgraded.
     # This cannot be None if plan.automanage_licenses.
     licenses_at_next_renewal = models.IntegerField(null=True)  # type: Optional[int]
