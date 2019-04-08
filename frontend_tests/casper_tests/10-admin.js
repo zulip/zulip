@@ -123,14 +123,13 @@ casper.then(function () {
 });
 
 casper.waitUntilVisible('#id_realm_create_stream_permission', function () {
-    // Test Setting was saved
+    // Test setting was saved
     casper.test.assertEval(function () {
         return $('input[type="text"][id="id_realm_waiting_period_threshold"]').val() === '6';
     }, 'Waiting period threshold set to 6 days');
 
 
     // Deactivate setting
-
     casper.evaluate(function () {
         $("#id_realm_create_stream_permission").val("by_admins_only").change();
     });

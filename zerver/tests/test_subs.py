@@ -52,7 +52,7 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, bulk_get_subscriber_user_ids,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    do_get_streams,
+    do_get_streams, do_change_is_guest,
     create_stream_if_needed, create_streams_if_needed,
     ensure_stream,
     do_deactivate_stream,
@@ -1012,6 +1012,60 @@ class StreamAdminTest(ZulipTestCase):
             email,
             stream_name
         )
+        self.assert_json_success(result)
+
+    def test_invite_to_stream_by_invite_period_threshold(self) -> None:
+        """
+        Non admin users with account age greater or equal to the invite
+        to stream threshold should be able to invite others to a stream.
+        """
+        hamlet_user = self.example_user('hamlet')
+        hamlet_user.date_joined = timezone_now()
+        hamlet_user.save()
+
+        cordelia_user = self.example_user('cordelia')
+        cordelia_user.date_joined = timezone_now()
+        cordelia_user.save()
+
+        do_set_realm_property(hamlet_user.realm, 'invite_to_stream_policy',
+                              Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD)
+        hamlet_email = hamlet_user.email
+        cordelia_email = cordelia_user.email
+
+        self.login(hamlet_email)
+        do_change_is_admin(hamlet_user, True)
+
+        # Hamlet creates a stream as an admin..
+        stream_name = ['waitingperiodtest']
+        result = self.common_subscribe_to_streams(hamlet_email, stream_name)
+        self.assert_json_success(result)
+
+        # Can only invite users to stream if their account is ten days old..
+        do_change_is_admin(hamlet_user, False)
+        do_set_realm_property(hamlet_user.realm, 'waiting_period_threshold', 10)
+
+        # Attempt and fail to invite Cordelia to the stream..
+        result = self.common_subscribe_to_streams(hamlet_email, stream_name, {"principals": ujson.dumps([cordelia_email])})
+        self.assert_json_error(result,
+                               "Your account is too new to modify other users' subscriptions.")
+
+        # Anyone can invite users..
+        do_set_realm_property(hamlet_user.realm, 'waiting_period_threshold', 0)
+
+        # Attempt and succeed to invite Cordelia to the stream..
+        result = self.common_subscribe_to_streams(hamlet_email, stream_name, {"principals": ujson.dumps([cordelia_email])})
+        self.assert_json_success(result)
+
+        # Set threshold to 20 days..
+        do_set_realm_property(hamlet_user.realm, 'waiting_period_threshold', 20)
+        # Make Hamlet's account 21 days old..
+        hamlet_user.date_joined = timezone_now() - timedelta(days=21)
+        hamlet_user.save()
+        # Unsubscribe Cordelia..
+        self.unsubscribe(cordelia_user, stream_name[0])
+
+        # Attempt and succeed to invite Aaron to the stream..
+        result = self.common_subscribe_to_streams(hamlet_email, stream_name, {"principals": ujson.dumps([cordelia_email])})
         self.assert_json_success(result)
 
     def test_remove_already_not_subbed(self) -> None:
@@ -2090,31 +2144,59 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_user_settings_for_subscribing_other_users(self) -> None:
         """
-        You can't subscribe other people to streams if you are a guest or your waiting period is not over.
+        You can't subscribe other people to streams if you are a guest or your account is not old
+        enough.
         """
-        invitee_email = self.example_email("cordelia")
-        with mock.patch('zerver.models.UserProfile.can_subscribe_other_users', return_value=False):
-            result = self.common_subscribe_to_streams(self.test_email, ['stream1'], {"principals": ujson.dumps([invitee_email])})
-            self.assert_json_error(result, "Your account is too new to modify other users' subscriptions.")
+        user_profile = self.example_user("cordelia")
+        invitee_email = user_profile.email
+        realm = user_profile.realm
 
-        with mock.patch('zerver.models.UserProfile.can_subscribe_other_users', return_value=True):
-            result = self.common_subscribe_to_streams(self.test_email, ['stream2'],  {"principals": ujson.dumps([invitee_email])})
-            self.assert_json_success(result)
+        do_set_realm_property(realm, "create_stream_by_admins_only", False)
+        do_set_realm_property(realm, "invite_to_stream_policy",
+                              Realm.INVITE_TO_STREAM_POLICY_ADMINS)
+        result = self.common_subscribe_to_streams(
+            self.test_email, ['stream1'], {"principals": ujson.dumps([invitee_email])})
+        self.assert_json_error(
+            result, "Only administrators can modify other users' subscriptions.")
+
+        do_set_realm_property(realm, "invite_to_stream_policy",
+                              Realm.INVITE_TO_STREAM_POLICY_MEMBERS)
+        result = self.common_subscribe_to_streams(
+            self.test_email, ['stream2'],  {"principals": ujson.dumps([
+                self.test_email, invitee_email])})
+        self.assert_json_success(result)
+        self.unsubscribe(user_profile, "stream2")
+
+        do_set_realm_property(realm, "invite_to_stream_policy",
+                              Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD)
+        do_set_realm_property(realm, "waiting_period_threshold", 100000)
+        result = self.common_subscribe_to_streams(
+            self.test_email, ['stream2'], {"principals": ujson.dumps([invitee_email])})
+        self.assert_json_error(
+            result, "Your account is too new to modify other users' subscriptions.")
+
+        do_set_realm_property(realm, "waiting_period_threshold", 0)
+        result = self.common_subscribe_to_streams(
+            self.test_email, ['stream2'], {"principals": ujson.dumps([invitee_email])})
+        self.assert_json_success(result)
 
     def test_can_subscribe_other_users(self) -> None:
         """
-        You can't subscribe other people to streams if you are a guest or your waiting period is not over.
+        You can't subscribe other people to streams if you are a guest or your account is not old
+        enough.
         """
         othello = self.example_user('othello')
-        othello.is_realm_admin = True
+        do_change_is_admin(othello, True)
         self.assertTrue(othello.can_subscribe_other_users())
 
-        othello.is_realm_admin = False
-        othello.is_guest = True
+        do_change_is_admin(othello, False)
+        do_change_is_guest(othello, True)
         self.assertFalse(othello.can_subscribe_other_users())
 
-        othello.is_guest = False
-        othello.realm.waiting_period_threshold = 1000
+        do_change_is_guest(othello, False)
+        do_set_realm_property(othello.realm, "waiting_period_threshold", 1000)
+        do_set_realm_property(othello.realm, "invite_to_stream_policy",
+                              Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD)
         othello.date_joined = timezone_now() - timedelta(days=(othello.realm.waiting_period_threshold - 1))
         self.assertFalse(othello.can_subscribe_other_users())
 

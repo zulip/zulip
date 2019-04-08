@@ -61,6 +61,7 @@ def update_realm(
         message_content_allowed_in_email_notifications:
         Optional[bool]=REQ(validator=check_bool, default=None),
         bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
+        invite_to_stream_policy: Optional[int]=REQ(validator=check_int, default=None),
         email_address_visibility: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
         video_chat_provider: Optional[str]=REQ(validator=check_string, default=None),

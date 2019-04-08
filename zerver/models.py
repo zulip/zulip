@@ -201,6 +201,13 @@ class Realm(models.Model):
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
 
+    # Who in the organization is allowed to invite other users to streams.
+    INVITE_TO_STREAM_POLICY_MEMBERS = 1
+    INVITE_TO_STREAM_POLICY_ADMINS = 2
+    INVITE_TO_STREAM_POLICY_WAITING_PERIOD = 3
+    invite_to_stream_policy = models.PositiveSmallIntegerField(
+        default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: bool
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is the
     # same as UserProfile.delivery_email, or is instead garbage.
@@ -291,6 +298,7 @@ class Realm(models.Model):
         allow_message_deleting=bool,
         bot_creation_policy=int,
         create_stream_by_admins_only=bool,
+        invite_to_stream_policy=int,
         default_language=str,
         default_twenty_four_hour_time = bool,
         description=str,
@@ -1004,9 +1012,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def can_subscribe_other_users(self) -> bool:
         if self.is_realm_admin:
             return True
+        if self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_ADMINS:
+            return False
         if self.is_guest:
             return False
 
+        if self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_MEMBERS:
+            return True
+
+        assert self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD
         diff = (timezone_now() - self.date_joined).days
         if diff >= self.realm.waiting_period_threshold:
             return True

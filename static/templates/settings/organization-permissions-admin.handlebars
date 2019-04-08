@@ -64,8 +64,8 @@
                     <select name="realm_create_stream_permission" id="id_realm_create_stream_permission" class="prop-element">
                         <option value="by_anyone">{{t "Members and admins" }}</option>
                         <option value="by_admins_only">{{t "Admins only" }}</option>
-                        <option value="by_admin_user_with_three_days_old">{{t "All admins, and members with accounts at least 3 days old." }}</option>
-                        <option value="by_admin_user_with_custom_time">{{t "All admins, and members with accounts at least N days old." }}</option>
+                        <option value="by_admin_user_with_three_days_old">{{t "All admins, and members with accounts at least 3 days old" }}</option>
+                        <option value="by_admin_user_with_custom_time">{{t "All admins, and members with accounts at least N days old" }}</option>
                     </select>
                 </div>
                 <div class="dependent-block">
@@ -74,6 +74,18 @@
                       name="realm_waiting_period_threshold"
                       class="admin-realm-time-limit-input prop-element"
                       value="{{ realm_waiting_period_threshold }}"/>
+                </div>
+
+                <div class="input-group">
+                    <label for="realm_invite_to_stream_policy" class="dropdown-title">{{t "Who can invite other users to streams" }}
+                        <i class="fa fa-info-circle settings-info-icon realm_invite_to_stream_tooltip" data-toggle="tooltip"
+                          aria-hidden="true" title="{{t 'The number of days is the value from who can create streams.' }}"/>
+                    </label>
+                    <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element">
+                        <option value="by_members">{{t "Members and admins" }}</option>
+                        <option value="by_admins_only">{{t "Admins only" }}</option>
+                        <option value="by_members">{{t "All admins, and members with accounts at least N days old" }}</option>
+                    </select>
                 </div>
 
                 <div class="input-group">

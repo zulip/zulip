@@ -30,8 +30,7 @@ from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type, check_capped_string, check_color, check_dict_only
-from zerver.models import UserProfile, Stream, \
-    UserMessage, \
+from zerver.models import UserProfile, Stream, Realm, UserMessage, \
     get_system_bot, get_active_user
 
 from collections import defaultdict
@@ -332,6 +331,12 @@ def add_subscriptions_backend(
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
             return json_error(_("You can only invite other Zephyr mirroring users to private streams."))
         if not user_profile.can_subscribe_other_users():
+            if user_profile.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_ADMINS:
+                return json_error(_("Only administrators can modify other users' subscriptions."))
+            # Realm.INVITE_TO_STREAM_POLICY_MEMBERS only fails if the
+            # user is a guest, which happens in the decorator above.
+            assert user_profile.realm.invite_to_stream_policy == \
+                Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD
             return json_error(_("Your account is too new to modify other users' subscriptions."))
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
