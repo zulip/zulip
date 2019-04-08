@@ -25,10 +25,16 @@ exports.sub_in_unread_view = function (sub) {
     return num_topics >= 1;
 };
 
-exports.get_pm_conversations = function () {
-    var private_messages = pm_conversations.recent.get();
-    private_messages.push('FRED');
-    console.info(private_messages);
+exports.get_pm_conversations = function (active_conversation) {
+    var pm_objs = pm_conversations.recent.get();
+
+    var private_messages = _.pluck(pm_objs, 'user_ids_string');
+
+    if (active_conversation) {
+        if (private_messages.indexOf(active_conversation) < 0) {
+            private_messages.unshift(active_conversation);
+        }
+    }
 
     return private_messages;
 };

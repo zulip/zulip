@@ -55,7 +55,6 @@ function set_pm_conversation_count(user_ids_string, count) {
 
 exports._build_private_messages_list = function (active_conversation) {
 
-    var private_messages = left_sidebar.get_pm_conversations();
     var display_messages = [];
 
     // SHIM
@@ -63,8 +62,9 @@ exports._build_private_messages_list = function (active_conversation) {
         active_conversation = people.emails_strings_to_user_ids_string(active_conversation);
     }
 
-    _.each(private_messages, function (private_message_obj) {
-        var user_ids_string = private_message_obj.user_ids_string;
+    var private_messages = left_sidebar.get_pm_conversations(active_conversation);
+
+    _.each(private_messages, function (user_ids_string) {
         var reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         var recipients_string = people.get_recipients(user_ids_string);
 
