@@ -1910,6 +1910,37 @@ paths:
                         "msg": "User not authorized for this query",
                         "result": "error"
                     }
+  /streams/{stream_id}:
+    delete:
+      description: Delete the stream with the given ID.
+      parameters:
+      - name: stream_id
+        in: path
+        description: The ID of the stream to be deleted.
+        schema:
+          type: integer
+          required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream id",
+                        "result": "error"
+                    }
   /typing:
     post:
       description: Send an event indicating that the user has started or
