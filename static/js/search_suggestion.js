@@ -171,7 +171,7 @@ function get_group_suggestions(all_persons, last, operators) {
 
 // Possible args for autocomplete_operator: pm-with, sender, from
 function get_person_suggestions(all_persons, last, operators, autocomplete_operator) {
-    if (last.operator === "search" && last.operand.split(" ")[0] === "sender" && autocomplete_operator === "sender") {
+    if (last.operator === "search" && last.operand.split(" ")[0] === "sender" || common.phrase_match(last.operand, 'sent by') && last.operand !== "" && autocomplete_operator === "sender") {
         // Interpret 'sender' as equivalent with 'sender:'
         if (last.operand.split(" ").length > 1) {
             last = {operator: "sender", operand: last.operand.split(" ").slice(1).join(" "), negated: false};
@@ -186,7 +186,6 @@ function get_person_suggestions(all_persons, last, operators, autocomplete_opera
     }
 
     var query = last.operand;
-
     // Be especially strict about the less common "from" operator.
     if (autocomplete_operator === 'from' && last.operator !== 'from') {
         return [];
@@ -531,6 +530,10 @@ function get_operator_suggestions(last) {
     choices = _.filter(choices, function (choice) {
         return common.phrase_match(last_operand, choice);
     });
+
+    if (common.phrase_match(last_operand, 'sent by')) {
+        choices.push('sender');
+    }
 
     return _.map(choices, function (choice) {
         var op = [{operator: choice, operand: '', negated: negated}];

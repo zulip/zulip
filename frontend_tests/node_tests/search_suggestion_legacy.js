@@ -720,6 +720,7 @@ run_test('sent_by_me_suggestions', () => {
     expected = [
         "sent",
         "sender:bob@zulip.com",
+        "sender:",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -728,6 +729,7 @@ run_test('sent_by_me_suggestions', () => {
     expected = [
         "-sent",
         "-sender:bob@zulip.com",
+        "-sender:",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -736,6 +738,7 @@ run_test('sent_by_me_suggestions', () => {
     expected = [
         "stream:Denmark topic:Denmark1 sent",
         "stream:Denmark topic:Denmark1 sender:bob@zulip.com",
+        "stream:Denmark topic:Denmark1 sender:",
         "stream:Denmark topic:Denmark1",
         "stream:Denmark",
     ];
