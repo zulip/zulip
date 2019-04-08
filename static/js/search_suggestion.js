@@ -171,6 +171,15 @@ function get_group_suggestions(all_persons, last, operators) {
 
 // Possible args for autocomplete_operator: pm-with, sender, from
 function get_person_suggestions(all_persons, last, operators, autocomplete_operator) {
+    if (last.operator === "search" && last.operand.split(" ")[0] === "sender" && autocomplete_operator === "sender") {
+        // Interpret 'sender' as equivalent with 'sender:'
+        if (last.operand.split(" ").length > 1) {
+            last = {operator: "sender", operand: last.operand.split(" ").slice(1).join(" "), negated: false};
+        } else {
+            last = {operator: "sender", operand: "", negated: false};
+        }
+    }
+
     if (last.operator === "is" && last.operand === "private") {
         // Interpret 'is:private' as equivalent to 'pm-with:'
         last = {operator: "pm-with", operand: "", negated: false};
