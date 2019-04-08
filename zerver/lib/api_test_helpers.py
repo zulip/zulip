@@ -202,7 +202,7 @@ def get_profile(client):
                          check_if_exists=check_if_exists)
 
 def get_stream_id(client):
-    # type: (Client) -> None
+    # type: (Client) -> int
 
     # {code_example|start}
     # Get the ID of a given stream
@@ -211,6 +211,17 @@ def get_stream_id(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/get_stream_id', 'get', '200')
+
+    return result['stream_id']
+
+def delete_stream(client, stream_id):
+    # type: (Client, int) -> None
+
+    result = client.delete_stream(stream_id)
+
+    validate_against_openapi_schema(result, '/streams/{stream_id}', 'delete', '200')
+
+    assert result['result'] == 'success'
 
 def get_streams(client):
     # type: (Client) -> None
@@ -826,6 +837,7 @@ TEST_FUNCTIONS = {
     '/messages/{message_id}/history:get': get_message_history,
     '/messages/flags:post': update_message_flags,
     '/get_stream_id:get': get_stream_id,
+    '/streams/{stream_id}:delete': delete_stream,
     'get-subscribed-streams': list_subscriptions,
     '/streams:get': get_streams,
     '/users:post': create_user,
@@ -937,13 +949,14 @@ def test_streams(client, nonadmin_client):
     add_subscriptions(client)
     test_add_subscriptions_already_subscribed(client)
     list_subscriptions(client)
-    get_stream_id(client)
+    stream_id = get_stream_id(client)
     get_streams(client)
     get_subscribers(client)
     remove_subscriptions(client)
     toggle_mute_topic(client)
     update_subscription_settings(client)
     get_stream_topics(client, 1)
+    delete_stream(client, stream_id)
 
     test_user_not_authorized_error(nonadmin_client)
     test_authorization_errors_fatal(client, nonadmin_client)
