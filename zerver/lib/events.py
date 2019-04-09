@@ -32,6 +32,7 @@ from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import realm_logo_url
 from zerver.lib.request import JsonableError
+from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.actions import (
@@ -804,6 +805,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
                        queue_lifespan_secs: int = 0,
                        all_public_streams: bool = False,
                        include_subscribers: bool = True,
+                       notification_settings_null: bool = False,
                        narrow: Iterable[Sequence[str]] = [],
                        fetch_event_types: Optional[Iterable[str]] = None) -> Dict[str, Any]:
     # Technically we don't need to check this here because
@@ -840,7 +842,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
                  client_gravatar=client_gravatar,
                  fetch_event_types=fetch_event_types)
 
-    post_process_state(ret)
+    post_process_state(user_profile, ret, notification_settings_null)
 
     if len(events) > 0:
         ret['last_event_id'] = events[-1]['id']
@@ -848,7 +850,8 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
         ret['last_event_id'] = -1
     return ret
 
-def post_process_state(ret: Dict[str, Any]) -> None:
+def post_process_state(user_profile: UserProfile, ret: Dict[str, Any],
+                       notification_settings_null: bool) -> None:
     '''
     NOTE:
 
@@ -897,3 +900,8 @@ def post_process_state(ret: Dict[str, Any]) -> None:
             ) for (recipient_id, value) in ret['raw_recent_private_conversations'].items()
         ], key = lambda x: -x["max_message_id"])
         del ret['raw_recent_private_conversations']
+
+    if not notification_settings_null and 'subscriptions' in ret:
+        for stream_dict in ret['subscriptions'] + ret['unsubscribed']:
+            handle_stream_notifications_compatibility(user_profile, stream_dict,
+                                                      notification_settings_null)

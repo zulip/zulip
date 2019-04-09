@@ -478,6 +478,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def do_test(self, action: Callable[[], Any], event_types: Optional[List[str]]=None,
                 include_subscribers: bool=True, state_change_expected: bool=True,
+                notification_settings_null: bool=False,
                 client_gravatar: bool=False, num_events: int=1) -> List[Dict[str, Any]]:
         '''
         Make sure we have a clean slate of client descriptors for these tests.
@@ -514,11 +515,11 @@ class EventsRegisterTest(ZulipTestCase):
         self.assertEqual(len(events), num_events)
 
         initial_state = copy.deepcopy(hybrid_state)
-        post_process_state(initial_state)
+        post_process_state(self.user_profile, initial_state, notification_settings_null)
         before = ujson.dumps(initial_state)
         apply_events(hybrid_state, events, self.user_profile,
                      client_gravatar=True, include_subscribers=include_subscribers)
-        post_process_state(hybrid_state)
+        post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = ujson.dumps(hybrid_state)
 
         if state_change_expected:
@@ -536,7 +537,7 @@ class EventsRegisterTest(ZulipTestCase):
             client_gravatar=True,
             include_subscribers=include_subscribers,
         )
-        post_process_state(normal_state)
+        post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
         return events
 
@@ -1676,6 +1677,34 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
+    def test_change_stream_notification_settings(self) -> None:
+        for setting_name in ['email_notifications']:
+            schema_checker = self.check_events_dict([
+                ('type', equals('subscription')),
+                ('op', equals('update')),
+                ('property', equals(setting_name)),
+                ('stream_id', check_int),
+                ('value', check_bool),
+                ('name', check_string),
+                ('email', check_string),
+            ])
+        stream = get_stream("Denmark", self.user_profile.realm)
+        sub = get_subscription(stream.name, self.user_profile)
+
+        # First test with notification_settings_null enabled
+        for value in (True, False):
+            events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream,
+                                                                          setting_name, value),
+                                  notification_settings_null=True)
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+        for value in (True, False):
+            events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream,
+                                                                          setting_name, value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
     @slow("Runs a matrix of 6 queries to the /home view")
     def test_change_realm_message_edit_settings(self) -> None:
         schema_checker = self.check_events_dict([
@@ -1839,6 +1868,13 @@ class EventsRegisterTest(ZulipTestCase):
             for setting_value in [True, False]:
                 events = self.do_test(lambda: do_change_notification_settings(
                     self.user_profile, notification_setting, setting_value, log=False))
+                error = schema_checker('events[0]', events[0])
+                self.assert_on_error(error)
+
+                # Also test with notification_settings_null=True
+                events = self.do_test(lambda: do_change_notification_settings(
+                    self.user_profile, notification_setting, setting_value, log=False),
+                    notification_settings_null=True)
                 error = schema_checker('events[0]', events[0])
                 self.assert_on_error(error)
 

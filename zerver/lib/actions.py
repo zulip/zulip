@@ -4628,6 +4628,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                                                                                   recent_traffic),
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"]),
                        'history_public_to_subscribers': stream['history_public_to_subscribers']}
+
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
         if sub["active"]:
