@@ -838,6 +838,10 @@ run_test('set_up', () => {
     const allow_topic_edit_label_parent = $.create('allow-topic-edit-label-parent');
     $('#id_realm_allow_community_topic_editing_label').set_parent(allow_topic_edit_label_parent);
 
+    channel.get = function (opts) {
+        assert.equal(opts.url, '/json/export/realm');
+    };
+
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
     settings_org.maybe_disable_widgets = noop;

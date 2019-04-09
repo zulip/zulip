@@ -111,6 +111,7 @@ declare var settings_account: any;
 declare var settings_bots: any;
 declare var settings_display: any;
 declare var settings_emoji: any;
+declare var settings_exports: any;
 declare var settings_invites: any;
 declare var settings: any;
 declare var settings_linkifiers: any;

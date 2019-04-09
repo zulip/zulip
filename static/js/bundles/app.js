@@ -174,6 +174,7 @@ import "../settings_bots.js";
 import "../settings_muting.js";
 import "../settings_sections.js";
 import "../settings_emoji.js";
+import "../settings_exports.js";
 import "../settings_org.js";
 import "../settings_users.js";
 import "../settings_streams.js";
