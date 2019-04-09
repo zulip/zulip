@@ -42,6 +42,7 @@ exports.populate_user_groups = function () {
                 name: data.name,
                 id: data.id,
                 description: data.description,
+                can_edit: exports.can_edit(data.id),
             },
         }));
         var pill_container = $('.pill-container[data-group-pills="' + data.id + '"]');
@@ -61,8 +62,6 @@ exports.populate_user_groups = function () {
             if (exports.can_edit(group_id)) {
                 return;
             }
-            userg.find('.name').attr('contenteditable', 'false');
-            userg.find('.description').attr('contenteditable', 'false');
             userg.addClass('ntm');
             pill_container.find('.input').attr('contenteditable', 'false');
             pill_container.find('.input').css('display', 'none');
@@ -152,44 +151,13 @@ exports.populate_user_groups = function () {
             });
         }
 
-        function save_name_desc() {
-            var user_group_status = $('#user-groups #' + data.id + ' .user-group-status');
-            var group_data = user_groups.get_user_group_from_id(data.id);
-            var description = $('#user-groups #' + data.id + ' .description').text().trim();
-            var name = $('#user-groups #' + data.id + ' .name').text().trim();
-
-            if (group_data.description === description && group_data.name === name) {
-                return;
-            }
-
-            channel.patch({
-                url: "/json/user_groups/" + data.id,
-                data: {
-                    name: name,
-                    description: description,
-                },
-                success: function () {
-                    user_group_status.hide();
-                    setTimeout(show_saved_button, 200);
-                },
-                error: function (xhr) {
-                    var errors = JSON.parse(xhr.responseText).msg;
-                    xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error(i18n.t("Failed"), xhr, user_group_status);
-                    update_cancel_button();
-                    $('#user-groups #' + data.id + ' .name').text(group_data.name);
-                    $('#user-groups #' + data.id + ' .description').text(group_data.description);
-                },
-            });
-        }
-
         function do_not_blur(except_class, event) {
             // Event generated from or inside the typeahead.
             if ($(event.relatedTarget).closest(".typeahead").length) {
                 return true;
             }
 
-            var blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
+            var blur_exceptions = _.without([".pill-container", ".input", ".delete"],
                                             except_class);
             if ($(event.relatedTarget).closest('#user-groups #' + data.id).length) {
                 return _.some(blur_exceptions, function (class_name) {
@@ -212,26 +180,11 @@ exports.populate_user_groups = function () {
                 settings_user_groups.reload();
                 return;
             }
-            save_name_desc();
             save_members();
         }
 
         $('#user-groups #' + data.id).on('blur', '.input', function (event) {
             auto_save('.input', event);
-        });
-
-        $('#user-groups #' + data.id).on('blur', '.name', function (event) {
-            auto_save('.name', event);
-        });
-        $('#user-groups #' + data.id).on('input', '.name', function () {
-            update_cancel_button();
-        });
-
-        $('#user-groups #' + data.id).on('blur', '.description', function (event) {
-            auto_save('.description', event);
-        });
-        $('#user-groups #' + data.id).on('input', '.description', function () {
-            update_cancel_button();
         });
 
         var input = pill_container.children('.input');
@@ -253,6 +206,59 @@ exports.populate_user_groups = function () {
             });
         }());
     });
+};
+
+exports.set_raw_description = function (target_user_group, group_description_element) {
+    var group_id = $(target_user_group).closest('.user-group').attr("id");
+    var group_data = user_groups.get_user_group_from_id(group_id);
+    group_description_element.text(group_data.description);
+};
+
+function change_name_desc(e, name_or_desc) {
+    e.preventDefault();
+    var group_id = $(e.target).closest(".user-group").attr("id");
+    var user_group_status = $('#user-groups #' + group_id + ' .user-group-status');
+    var group_data = user_groups.get_user_group_from_id(group_id);
+    var changed_val = $('#user-groups #' + group_id + name_or_desc).text().trim();
+
+    if (group_data.name === changed_val && name_or_desc === ' .name') {
+        return;
+    }
+
+    if (group_data.description === changed_val && name_or_desc === ' .description') {
+        return;
+    }
+
+    var data = [group_data.name, group_data.description];
+    if (name_or_desc === ' .name') {
+        data[0] = changed_val;
+    } else {
+        data[1] = changed_val;
+    }
+    channel.patch({
+        url: "/json/user_groups/" + group_id,
+        data: {
+            name: data[0],
+            description: data[1],
+        },
+        success: function () {
+            user_group_status.hide();
+        },
+        error: function (xhr) {
+            var errors = JSON.parse(xhr.responseText).msg;
+            xhr.responseText = JSON.stringify({msg: errors});
+            ui_report.error(i18n.t("Failed"), xhr, user_group_status);
+            $('#user-groups #' + group_id + name_or_desc).text(group_data.name);
+        },
+    });
+
+}
+
+exports.change_group_description = function (e) {
+    change_name_desc(e, ' .description');
+};
+exports.change_group_name = function (e) {
+    change_name_desc(e, ' .name');
 };
 
 exports.set_up = function () {
