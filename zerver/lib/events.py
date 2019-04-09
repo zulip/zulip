@@ -869,6 +869,7 @@ def post_process_state(ret: Dict[str, Any]) -> None:
     '''
     if 'raw_users' in ret:
         user_dicts = list(ret['raw_users'].values())
+        user_dicts = sorted(user_dicts, key=lambda x: x['user_id'])
 
         ret['realm_users'] = [d for d in user_dicts if d['is_active']]
         ret['realm_non_active_users'] = [d for d in user_dicts if not d['is_active']]

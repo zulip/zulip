@@ -2,6 +2,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+import copy
 import os
 import shutil
 import sys
@@ -103,6 +104,7 @@ from zerver.lib.actions import (
 from zerver.lib.events import (
     apply_events,
     fetch_initial_state_data,
+    post_process_state,
 )
 from zerver.lib.message import (
     aggregate_unread_data,
@@ -511,9 +513,12 @@ class EventsRegisterTest(ZulipTestCase):
         events = client.event_queue.contents()
         self.assertEqual(len(events), num_events)
 
-        before = ujson.dumps(hybrid_state)
+        initial_state = copy.deepcopy(hybrid_state)
+        post_process_state(initial_state)
+        before = ujson.dumps(initial_state)
         apply_events(hybrid_state, events, self.user_profile,
                      client_gravatar=True, include_subscribers=include_subscribers)
+        post_process_state(hybrid_state)
         after = ujson.dumps(hybrid_state)
 
         if state_change_expected:
@@ -521,14 +526,17 @@ class EventsRegisterTest(ZulipTestCase):
                 print(events)  # nocoverage
                 raise AssertionError('Test does not exercise enough code -- events do not change state.')
         else:
-            if before != after:
+            try:
+                self.match_states(initial_state, copy.deepcopy(hybrid_state), events)
+            except AssertionError:  # nocoverage
                 raise AssertionError('Test is invalid--state actually does change here.')
 
         normal_state = fetch_initial_state_data(
             self.user_profile, event_types, "",
             client_gravatar=True,
-            include_subscribers=include_subscribers
+            include_subscribers=include_subscribers,
         )
+        post_process_state(normal_state)
         self.match_states(hybrid_state, normal_state, events)
         return events
 
