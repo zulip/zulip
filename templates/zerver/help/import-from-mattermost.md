@@ -11,26 +11,44 @@ into an existing Zulip organization.
 ## Import from Mattermost
 
 First, export your data.  The following instructions assume you're
-running Mattermost inside a Docker container:
+running Mattermost inside a Docker container. Replace `<username>` and
+`<server_ip>` with appropriate values accordingly.
 
-1. SSH into your Mattermost app server
+1. SSH into your Mattermost server running the docker containers.
 
-2. Run the following command to export the data.
-  `docker exec -it mattermost-docker_app_1 mattermost export bulk export.json --all-teams`
+    ```
+    ssh <username>@><server_ip>
+    ```
 
-3. This will generate `export.json` and possibly an `exported_emoji`
-   directory inside the **mattermost-docker_app_1** container.  The
-   `exported_emoji` folder will only be created if your users had
-   uploaded custom emoji to the Mattermost server.
+2. Navigate to the the Mattermost docker directory. On most installs the
+   directory should be `mattermost-docker`.
 
-4. SSH into to **mattermost-docker_app_1** container by running the following command.
-  `docker exec -it mattermost-docker_app_1 sh`
+    ```
+    cd mattermost-docker/
+    ```
 
-4. Tar the exported files by running the following command.
-  `tar --transform 's|^|mattermost/|' -czf export.tar.gz exported_emoji/ export.json`
+3. Run the following commands to export the data from all teams on your server as a tar file.
 
-5. Now download the `export.tar.gz` file from the Docker container to your local computer.
+    ```
+    docker exec -it mattermost-docker_app_1 mattermost \
+        export bulk data/export.json --all-teams
+    cd volumes/app/mattermost/data/
+    mkdir -p exported_emoji
+    tar --transform 's|^|mattermost/|' -czf export.tar.gz \
+        exported_emoji/ export.json
+    ```
 
+4. Now exit out of the Mattermost server.
+
+    `exit`
+
+5. Finally copy the exported tar file from the server to your local computer. Make sure to replace
+   `mattermost-docker` with the correct directory if it is different in your case.
+
+    ```
+    scp <username>@<server_ip>:mattermost-docker/volumes/app/mattermost/data/export.tar.gz .
+    ```
+  
 ### Import into zulipchat.com
 
 Email support@zulipchat.com with your exported archive and your desired Zulip
