@@ -1162,35 +1162,13 @@ input[type=checkbox].inline-block {
     margin: 0;
 }
 
-#user-groups .spacer {
-    margin: 0 2px;
-}
-
 #user-groups .subscribers,
 #user-groups .user-group h4 > .name {
     font-weight: bold;
 }
 
-#user-groups .user-group span[contenteditable] {
-    display: inline-block;
-    word-break: break-all;
-}
-
 #user-groups .ntm {
     cursor: not-allowed;
-}
-
-#user-groups .user-group span[contenteditable]:empty::before {
-    opacity: 0.5;
-    display: inline-block;
-    content: attr(data-placeholder);
-}
-
-#user-groups .user-group span[contenteditable]:focus,
-#user-groups .user-group span[contenteditable="true"]:hover {
-    border-bottom: 1px solid hsl(0, 0%, 80%);
-    margin-bottom: -1px;
-    outline: none;
 }
 
 #user-groups .user-group .pill-container .input[contenteditable]:empty::after {
@@ -1205,6 +1183,66 @@ input[type=checkbox].inline-block {
 
 #user-groups .ntm h4 > .button:hover {
     border-color: hsl(4, 56%, 82%);
+}
+
+.editable-section {
+    position: relative;
+    display: inline;
+    min-width: 10px;
+    max-width: 100%;
+}
+
+.editable-section[contenteditable=true] {
+    display: inline-block;
+    color: hsl(170, 48%, 54%);
+}
+
+.editable-section[contenteditable=true]:focus {
+    outline: none;
+}
+
+#user-groups .editable {
+    position: relative;
+    top: -1px;
+    margin-left: 5px;
+    color: hsl(0, 0%, 67%);
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 300;
+
+    transition: all 0.3s ease;
+}
+
+#user-groups .editable:empty::before {
+    content: "\f040";
+    font-family: "FontAwesome";
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+#user-groups .group-description .group-description-editable:empty::after {
+    content: attr(data-no-description);
+    font-style: italic;
+    color: hsl(0, 0%, 67%);
+}
+
+#user-groups .editable:not(:empty) {
+    position: relative;
+    top: 2px;
+}
+
+#user-groups .editable:hover {
+    color: hsl(0, 0%, 27%);
+}
+
+#user-groups .checkmark {
+    display: none;
+    margin-left: 5px;
+    margin-bottom: 2px;
+    font-size: 0.9rem;
+    color: hsl(0, 0%, 67%);
+
+    cursor: pointer;
 }
 
 #user-groups .save-status {
@@ -1231,6 +1269,10 @@ input[type=checkbox].inline-block {
     opacity: 0;
     color: hsl(0, 0%, 20%);
     font-size: 0.9em;
+}
+
+.group-description {
+    font-size: 12px;
 }
 
 /* -- new settings overlay -- */
