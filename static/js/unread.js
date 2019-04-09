@@ -322,14 +322,12 @@ exports.unread_topic_counter = (function () {
         }
 
         var topic_names = per_stream_bucketer.keys();
-
         topic_names = _.reject(topic_names, function (topic_name) {
             return topic_dict.has(topic_name);
         });
 
         var result = _.map(topic_names, function (topic_name) {
             var msgs = per_stream_bucketer.get_bucket(topic_name);
-
             return {
                 pretty_name: topic_name,
                 message_id: msgs.max(),

@@ -53,7 +53,6 @@ exports.topic_history = function (stream_id) {
 
     self.maybe_remove = function (topic_name) {
         var existing = topics.get(topic_name);
-
         if (!existing) {
             return;
         }
@@ -112,8 +111,11 @@ exports.topic_history = function (stream_id) {
             topic_dict: topics,
         });
 
-        var recents = my_recents.concat(missing_topics);
+        var missing_topic = _.reject(missing_topics, function (miss_topics) {
+            return miss_topics.message_id === -Infinity;
+        });
 
+        var recents = my_recents.concat(missing_topic);
         recents.sort(function (a, b) {
             return b.message_id - a.message_id;
         });
@@ -135,7 +137,6 @@ exports.remove_message = function (opts) {
 
     // This is the special case of "removing" a message from
     // a topic, which happens when we edit topics.
-
     if (!history) {
         return;
     }

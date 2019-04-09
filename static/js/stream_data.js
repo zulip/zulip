@@ -43,7 +43,6 @@ exports.is_active = function (sub) {
 
 exports.rename_sub = function (sub, new_name) {
     var old_name = sub.name;
-
     stream_ids_by_name.set(old_name, sub.stream_id);
 
     sub.name = new_name;
