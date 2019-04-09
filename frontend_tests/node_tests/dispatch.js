@@ -56,6 +56,12 @@ set_global('settings_bots', {
     update_bot_permissions_ui: noop,
 });
 
+set_global('settings_exports', {
+    populate_exports_table: function (exports) {
+        return exports;
+    },
+});
+
 // page_params is highly coupled to dispatching now
 set_global('page_params', {test_suite: false});
 var page_params = global.page_params;
@@ -711,6 +717,14 @@ var event_fixtures = {
         type: 'user_status',
         user_id: test_user.user_id,
         status_text: 'out to lunch',
+    },
+    realm_export: {
+        type: 'realm_export',
+        exports: {
+            acting_user_id: 55,
+            event_time: 'noon',
+            path: 'some_path',
+        },
     },
 };
 
@@ -1510,5 +1524,20 @@ with_overrides(function (override) {
         assert_same(args.user_id, test_user.user_id);
         var status_text = user_status.get_status_text(test_user.user_id);
         assert.equal(status_text, 'out to lunch');
+    });
+});
+
+with_overrides(function (override) {
+    var event = event_fixtures.realm_export;
+    override('settings_exports.populate_exports_table', noop);
+    dispatch(event);
+    global.with_stub(function (stub) {
+        override('settings_exports.populate_exports_table', stub.f);
+        dispatch(event);
+
+        var args = stub.get_args('exports');
+        assert.equal(args.exports.acting_user_id, 55);
+        assert.equal(args.exports.event_time, 'noon');
+        assert.equal(args.exports.path, 'some_path');
     });
 });

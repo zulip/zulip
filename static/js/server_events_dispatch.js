@@ -510,6 +510,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             activity.redraw_user(event.user_id);
         }
         break;
+    case 'realm_export':
+        settings_exports.populate_exports_table(event.exports);
+        break;
     }
 
 };

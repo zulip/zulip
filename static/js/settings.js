@@ -24,6 +24,7 @@ var header_map = {
     "invites-list-admin": i18n.t("Invitations"),
     "user-groups-admin": i18n.t("User groups"),
     "profile-field-settings": i18n.t("Profile field settings"),
+    "data-exports-admin": i18n.t("Data exports"),
 };
 
 $("body").ready(function () {
