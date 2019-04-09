@@ -616,6 +616,14 @@ exports.initialize = function () {
 
     (function () {
         var map = {
+            ".group-description-editable": {
+                on_start: settings_user_groups.set_raw_description,
+                on_save: settings_user_groups.change_group_description,
+            },
+            ".group-name-editable": {
+                on_start: null,
+                on_save: settings_user_groups.change_group_name,
+            },
             ".stream-description-editable": {
                 on_start: stream_edit.set_raw_description,
                 on_save: stream_edit.change_stream_description,
@@ -630,7 +638,11 @@ exports.initialize = function () {
             e.stopPropagation();
             // Cancel editing description if Escape key is pressed.
             if (e.which === 27) {
-                $("[data-finish-editing='.stream-description-editable']").hide();
+                if (this.parentElement.className === "group-description") {
+                    $("[data-finish-editing='.group-description-editable']").hide();
+                } else {
+                    $("[data-finish-editing='.stream-description-editable']").hide();
+                }
                 $(this).attr("contenteditable", false);
                 $(this).text($(this).attr("data-prev-text"));
                 $("[data-make-editable]").html("");
@@ -654,18 +666,33 @@ exports.initialize = function () {
                 }
             }
         });
-
+        function group_or_stream(clicked_target, selector, editable_or_checkmark) {
+            var group_id = $(clicked_target).closest('.user-group').attr("id");
+            if (group_id) {
+                if (selector === '.group-name-editable') {
+                    return "#user-groups #" + group_id + " .group-name ." + editable_or_checkmark;
+                } else if (selector === '.group-description-editable') {
+                    return "#user-groups #" + group_id + " .group-description ." + editable_or_checkmark;
+                }
+            } else {
+                if (editable_or_checkmark === "checkmark") {
+                    return "[data-finish-editing='" + selector + "']";
+                } else if (editable_or_checkmark === "editable") {
+                    return "[data-make-editable='" + selector + "']";
+                }
+            }
+        }
         $("body").on("click", "[data-make-editable]", function () {
             var selector = $(this).attr("data-make-editable");
+            var target = group_or_stream(this, selector, "checkmark");
             var edit_area = $(this).parent().find(selector);
             if (edit_area.attr("contenteditable") === "true") {
-                $("[data-finish-editing='" + selector + "']").hide();
+                $(target).hide();
                 edit_area.attr("contenteditable", false);
                 edit_area.text(edit_area.attr("data-prev-text"));
                 $(this).html("");
             } else {
-                $("[data-finish-editing='" + selector + "']").show();
-
+                $(target).show();
                 edit_area.attr("data-prev-text", edit_area.text().trim())
                     .attr("contenteditable", true);
 
@@ -681,11 +708,12 @@ exports.initialize = function () {
 
         $("body").on("click", "[data-finish-editing]", function (e) {
             var selector = $(this).attr("data-finish-editing");
+            var target = group_or_stream(this, selector, "editable");
             if (map[selector].on_save) {
                 map[selector].on_save(e);
-                $(this).hide();
+                $(group_or_stream(this, selector, "checkmark")).hide();
                 $(this).parent().find(selector).attr("contenteditable", false);
-                $("[data-make-editable='" + selector + "']").html("");
+                $(target).html("");
             }
         });
     }());
