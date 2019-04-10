@@ -1,4 +1,5 @@
 import re
+import string
 from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
@@ -77,26 +78,34 @@ def get_verb(event: str, prefix: str) -> str:
         return "changed {} of".format(matched.group('subject'))
     return verb
 
+def add_punctuation_if_necessary(body: str, title: str) -> str:
+    if title[-1] not in string.punctuation:
+        body = '{}.'.format(body)
+    return body
+
 def get_document_body(event: str, payload: Dict[str, Any]) -> str:
     return get_generic_body(event, payload, 'document_', DOCUMENT_TEMPLATE)
 
 def get_questions_answer_body(event: str, payload: Dict[str, Any]) -> str:
     verb = get_verb(event, 'question_answer_')
     question = payload['recording']['parent']
+    title = question['title']
+    template = add_punctuation_if_necessary(QUESTIONS_ANSWER_TEMPLATE, title)
 
-    return QUESTIONS_ANSWER_TEMPLATE.format(
+    return template.format(
         user_name=get_event_creator(payload),
         verb=verb,
         answer_url=get_subject_url(payload),
-        question_title=question['title'],
+        question_title=title,
         question_url=question['app_url']
     )
 
 def get_comment_body(event: str, payload: Dict[str, Any]) -> str:
     verb = get_verb(event, 'comment_')
     task = payload['recording']['parent']
+    template = add_punctuation_if_necessary(COMMENT_TEMPLATE, task['title'])
 
-    return COMMENT_TEMPLATE.format(
+    return template.format(
         user_name=get_event_creator(payload),
         verb=verb,
         answer_url=get_subject_url(payload),
@@ -118,6 +127,8 @@ def get_todo_body(event: str, payload: Dict[str, Any]) -> str:
 
 def get_generic_body(event: str, payload: Dict[str, Any], prefix: str, template: str) -> str:
     verb = get_verb(event, prefix)
+    title = get_subject_title(payload)
+    template = add_punctuation_if_necessary(template, title)
 
     return template.format(
         user_name=get_event_creator(payload),
