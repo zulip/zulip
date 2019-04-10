@@ -174,9 +174,6 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         # Should do this in javascript, using the user's timezone
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=start_of_next_billing_cycle(plan, now))
         renewal_cents = renewal_amount(plan, now)
-        # TODO: this is the case where the plan doesn't automatically renew
-        if renewal_cents is None:  # nocoverage
-            renewal_cents = 0
         charge_automatically = plan.charge_automatically
         if charge_automatically:
             payment_method = payment_method_string(stripe_customer)
