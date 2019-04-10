@@ -12,7 +12,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         """
         expected_topic = "AWX - Project Update"
         expected_message = ("Project Update: [#2677 AWX - Project Update]"
-                            "(http://awx.example.co.uk/#/jobs/project/2677) was successful")
+                            "(http://awx.example.co.uk/#/jobs/project/2677) was successful.")
 
         self.send_and_test_stream_message('project_update_successful', expected_topic, expected_message)
 
@@ -22,7 +22,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         """
         expected_topic = "AWX - Project Update"
         expected_message = ("Project Update: [#2678 AWX - Project Update]"
-                            "(http://awx.example.co.uk/#/jobs/project/2678) failed")
+                            "(http://awx.example.co.uk/#/jobs/project/2678) failed.")
 
         self.send_and_test_stream_message('project_update_failed', expected_topic, expected_message)
 
@@ -31,13 +31,14 @@ class AnsibletowerHookTests(WebhookTestCase):
         Tests if ansibletower job successful multiple hosts notification is handled correctly
         """
         expected_topic = "System - Deploy - Zabbix Agent"
-        expected_message = ("Job: [#2674 System - Deploy - Zabbix Agent]"
-                            "(http://awx.example.co.uk/#/jobs/playbook/2674) was successful\n"
-                            "* chat.example.co.uk: Success\n"
-                            "* devops.example.co.uk: Success\n"
-                            "* gitlab.example.co.uk: Success\n"
-                            "* ipa.example.co.uk: Success\n"
-                            "* mail.example.co.uk: Success")
+        expected_message = """
+Job: [#2674 System - Deploy - Zabbix Agent](http://awx.example.co.uk/#/jobs/playbook/2674) was successful:
+* chat.example.co.uk: Success
+* devops.example.co.uk: Success
+* gitlab.example.co.uk: Success
+* ipa.example.co.uk: Success
+* mail.example.co.uk: Success
+""".strip()
 
         self.send_and_test_stream_message('job_successful_multiple_hosts', expected_topic, expected_message)
 
@@ -46,9 +47,10 @@ class AnsibletowerHookTests(WebhookTestCase):
         Tests if ansibletower job successful notification is handled correctly
         """
         expected_topic = "System - Deploy - Zabbix Agent"
-        expected_message = ("Job: [#2674 System - Deploy - Zabbix Agent]"
-                            "(http://awx.example.co.uk/#/jobs/playbook/2674) was successful\n"
-                            "* chat.example.co.uk: Success")
+        expected_message = """
+Job: [#2674 System - Deploy - Zabbix Agent](http://awx.example.co.uk/#/jobs/playbook/2674) was successful:
+* chat.example.co.uk: Success
+""".strip()
 
         self.send_and_test_stream_message('job_successful', expected_topic, expected_message)
 
@@ -57,9 +59,10 @@ class AnsibletowerHookTests(WebhookTestCase):
         Tests if ansibletower job failed notification is handled correctly
         """
         expected_topic = "System - Updates - Ubuntu"
-        expected_message = ("Job: [#2722 System - Updates - Ubuntu]"
-                            "(http://awx.example.co.uk/#/jobs/playbook/2722) failed\n"
-                            "* chat.example.co.uk: Failed")
+        expected_message = """
+Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/2722) failed:
+* chat.example.co.uk: Failed
+""".strip()
 
         self.send_and_test_stream_message('job_failed', expected_topic, expected_message)
 
@@ -68,13 +71,14 @@ class AnsibletowerHookTests(WebhookTestCase):
         Tests if ansibletower job failed notification is handled correctly
         """
         expected_topic = "System - Updates - Ubuntu"
-        expected_message = ("Job: [#2722 System - Updates - Ubuntu]"
-                            "(http://awx.example.co.uk/#/jobs/playbook/2722) failed\n"
-                            "* chat.example.co.uk: Failed\n"
-                            "* devops.example.co.uk: Failed\n"
-                            "* gitlab.example.co.uk: Failed\n"
-                            "* ipa.example.co.uk: Failed\n"
-                            "* mail.example.co.uk: Failed")
+        expected_message = """
+Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/2722) failed:
+* chat.example.co.uk: Failed
+* devops.example.co.uk: Failed
+* gitlab.example.co.uk: Failed
+* ipa.example.co.uk: Failed
+* mail.example.co.uk: Failed
+""".strip()
 
         self.send_and_test_stream_message('job_failed_multiple_hosts', expected_topic, expected_message)
 
@@ -84,7 +88,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         """
         expected_topic = "AWX - Inventory Update"
         expected_message = ("Inventory Update: [#2724 AWX - Inventory Update]"
-                            "(http://awx.example.co.uk/#/jobs/inventory/2724) was successful")
+                            "(http://awx.example.co.uk/#/jobs/inventory/2724) was successful.")
 
         self.send_and_test_stream_message('inventory_update_successful', expected_topic, expected_message)
 
@@ -94,7 +98,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         """
         expected_topic = "AWX - Inventory Update"
         expected_message = ("Inventory Update: [#2724 AWX - Inventory Update]"
-                            "(http://awx.example.co.uk/#/jobs/inventory/2724) failed")
+                            "(http://awx.example.co.uk/#/jobs/inventory/2724) failed.")
 
         self.send_and_test_stream_message('inventory_update_failed', expected_topic, expected_message)
 
@@ -104,7 +108,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         """
         expected_topic = "shell: uname -r"
         expected_message = ("AdHoc Command: [#2726 shell: uname -r]"
-                            "(http://awx.example.co.uk/#/jobs/command/2726) was successful")
+                            "(http://awx.example.co.uk/#/jobs/command/2726) was successful.")
 
         self.send_and_test_stream_message('adhoc_command_successful', expected_topic, expected_message)
 
@@ -114,7 +118,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         """
         expected_topic = "shell: uname -r"
         expected_message = ("AdHoc Command: [#2726 shell: uname -r]"
-                            "(http://awx.example.co.uk/#/jobs/command/2726) failed")
+                            "(http://awx.example.co.uk/#/jobs/command/2726) failed.")
 
         self.send_and_test_stream_message('adhoc_command_failed', expected_topic, expected_message)
 
@@ -124,7 +128,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         """
         expected_topic = "Cleanup Job Details"
         expected_message = ("System Job: [#2721 Cleanup Job Details]"
-                            "(http://awx.example.co.uk/#/jobs/system/2721) was successful")
+                            "(http://awx.example.co.uk/#/jobs/system/2721) was successful.")
 
         self.send_and_test_stream_message('system_job_successful', expected_topic, expected_message)
 
@@ -134,7 +138,7 @@ class AnsibletowerHookTests(WebhookTestCase):
         """
         expected_topic = "Cleanup Job Details"
         expected_message = ("System Job: [#2721 Cleanup Job Details]"
-                            "(http://awx.example.co.uk/#/jobs/system/2721) failed")
+                            "(http://awx.example.co.uk/#/jobs/system/2721) failed.")
 
         self.send_and_test_stream_message('system_job_failed', expected_topic, expected_message)
 

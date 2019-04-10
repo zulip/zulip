@@ -9,11 +9,13 @@ from zerver.models import UserProfile
 
 import operator
 
-ANSIBLETOWER_DEFAULT_MESSAGE_TEMPLATE = "{friendly_name}: [#{id} {name}]({url}) {status}\n"
+ANSIBLETOWER_DEFAULT_MESSAGE_TEMPLATE = "{friendly_name}: [#{id} {name}]({url}) {status}."
 
 
-ANSIBLETOWER_JOB_MESSAGE_TEMPLATE = ("{friendly_name}: [#{id} {name}]({url}) {status}\n"
-                                     "{hosts_final_data}")
+ANSIBLETOWER_JOB_MESSAGE_TEMPLATE = """
+{friendly_name}: [#{id} {name}]({url}) {status}:
+{hosts_final_data}
+""".strip()
 
 ANSIBLETOWER_JOB_HOST_ROW_TEMPLATE = '* {hostname}: {status}\n'
 
