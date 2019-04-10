@@ -113,7 +113,7 @@ def next_invoice_date(plan: CustomerPlan) -> datetime:
 def renewal_amount(plan: CustomerPlan, event_time: datetime) -> int:  # nocoverage: TODO
     if plan.fixed_price is not None:
         return plan.fixed_price
-    last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, event_time)
+    last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, event_time)
     if last_ledger_entry.licenses_at_next_renewal is None:
         return 0
     assert(plan.price_per_license is not None)  # for mypy
@@ -216,7 +216,7 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str,
 # event_time should roughly be timezone_now(). Not designed to handle
 # event_times in the past or future
 # TODO handle downgrade
-def add_plan_renewal_to_license_ledger_if_needed(plan: CustomerPlan, event_time: datetime) -> LicenseLedger:
+def make_end_of_cycle_updates_if_needed(plan: CustomerPlan, event_time: datetime) -> LicenseLedger:
     last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by('-id').first()
     last_renewal = LicenseLedger.objects.filter(plan=plan, is_renewal=True) \
                                         .order_by('-id').first().event_time
@@ -361,7 +361,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
 
 def update_license_ledger_for_automanaged_plan(realm: Realm, plan: CustomerPlan,
                                                event_time: datetime) -> None:
-    last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, event_time)
+    last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, event_time)
     # todo: handle downgrade, where licenses_at_next_renewal should be 0
     licenses_at_next_renewal = get_seat_count(realm)
     licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
@@ -383,7 +383,7 @@ def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
 def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.invoicing_status == CustomerPlan.STARTED:
         raise NotImplementedError('Plan with invoicing_status==STARTED needs manual resolution.')
-    add_plan_renewal_to_license_ledger_if_needed(plan, event_time)
+    make_end_of_cycle_updates_if_needed(plan, event_time)
     assert(plan.invoiced_through is not None)
     licenses_base = plan.invoiced_through.licenses
     invoice_item_created = False

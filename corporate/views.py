@@ -22,7 +22,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
     MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
     start_of_next_billing_cycle, renewal_amount, \
-    add_plan_renewal_to_license_ledger_if_needed
+    make_end_of_cycle_updates_if_needed
 from corporate.models import Customer, CustomerPlan, \
     get_current_plan
 
@@ -168,7 +168,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             CustomerPlan.PLUS: 'Zulip Plus',
         }[plan.tier]
         now = timezone_now()
-        last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, now)
+        last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, now)
         licenses = last_ledger_entry.licenses
         licenses_used = get_seat_count(user.realm)
         # Should do this in javascript, using the user's timezone

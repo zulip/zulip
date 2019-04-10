@@ -28,7 +28,7 @@ from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, 
     MIN_INVOICED_LICENSES, \
     add_months, next_month, \
     compute_plan_parameters, update_or_create_stripe_customer, \
-    process_initial_upgrade, add_plan_renewal_to_license_ledger_if_needed, \
+    process_initial_upgrade, make_end_of_cycle_updates_if_needed, \
     update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan, \
     invoice_plan, invoice_plans_as_needed, get_discount_for_realm
 from corporate.models import Customer, CustomerPlan, LicenseLedger
@@ -1010,11 +1010,11 @@ class LicenseLedgerTest(StripeTestCase):
         self.assertEqual(LicenseLedger.objects.count(), 1)
         plan = CustomerPlan.objects.get()
         # Plan hasn't renewed yet
-        add_plan_renewal_to_license_ledger_if_needed(plan, self.next_year - timedelta(days=1))
+        make_end_of_cycle_updates_if_needed(plan, self.next_year - timedelta(days=1))
         self.assertEqual(LicenseLedger.objects.count(), 1)
         # Plan needs to renew
         # TODO: do_deactivate_user for a user, so that licenses_at_next_renewal != licenses
-        ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, self.next_year)
+        ledger_entry = make_end_of_cycle_updates_if_needed(plan, self.next_year)
         self.assertEqual(LicenseLedger.objects.count(), 2)
         ledger_params = {
             'plan': plan, 'is_renewal': True, 'event_time': self.next_year,
@@ -1022,7 +1022,7 @@ class LicenseLedgerTest(StripeTestCase):
         for key, value in ledger_params.items():
             self.assertEqual(getattr(ledger_entry, key), value)
         # Plan needs to renew, but we already added the plan_renewal ledger entry
-        add_plan_renewal_to_license_ledger_if_needed(plan, self.next_year + timedelta(days=1))
+        make_end_of_cycle_updates_if_needed(plan, self.next_year + timedelta(days=1))
         self.assertEqual(LicenseLedger.objects.count(), 2)
 
     def test_update_license_ledger_if_needed(self) -> None:
