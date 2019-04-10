@@ -24,7 +24,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     start_of_next_billing_cycle, renewal_amount, \
     add_plan_renewal_to_license_ledger_if_needed
 from corporate.models import Customer, CustomerPlan, \
-    get_active_plan
+    get_current_plan
 
 billing_logger = logging.getLogger('corporate.stripe')
 
@@ -161,7 +161,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     context = {'admin_access': True}
 
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-    plan = get_active_plan(customer)
+    plan = get_current_plan(customer)
     if plan is not None:
         plan_name = {
             CustomerPlan.STANDARD: 'Zulip Standard',

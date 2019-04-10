@@ -19,7 +19,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import Realm, UserProfile, RealmAuditLog
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_active_plan
+    get_current_plan
 from zproject.settings import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -269,7 +269,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
                             billing_schedule: int, stripe_token: Optional[str]) -> None:
     realm = user.realm
     customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
-    if CustomerPlan.objects.filter(customer=customer, status=CustomerPlan.ACTIVE).exists():
+    if get_current_plan(customer) is not None:
         # Unlikely race condition from two people upgrading (clicking "Make payment")
         # at exactly the same time. Doesn't fully resolve the race condition, but having
         # a check here reduces the likelihood.
@@ -373,7 +373,7 @@ def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
     customer = Customer.objects.filter(realm=realm).first()
     if customer is None:
         return
-    plan = get_active_plan(customer)
+    plan = get_current_plan(customer)
     if plan is None:
         return
     if not plan.automanage_licenses:

@@ -48,15 +48,19 @@ class CustomerPlan(models.Model):
     tier = models.SmallIntegerField()  # type: int
 
     ACTIVE = 1
-    ENDED = 2
-    NEVER_STARTED = 3
-    # You can only have 1 active subscription at a time
+    DOWNGRADE_AT_END_OF_CYCLE = 2
+    # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
+    # There should be at most one live plan per customer.
+    LIVE_STATUS_THRESHOLD = 10
+    ENDED = 11
+    NEVER_STARTED = 12
     status = models.SmallIntegerField(default=ACTIVE)  # type: int
 
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc are immutable
 
-def get_active_plan(customer: Customer) -> Optional[CustomerPlan]:
-    return CustomerPlan.objects.filter(customer=customer, status=CustomerPlan.ACTIVE).first()
+def get_current_plan(customer: Customer) -> Optional[CustomerPlan]:
+    return CustomerPlan.objects.filter(
+        customer=customer, status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD).first()
 
 class LicenseLedger(models.Model):
     plan = models.ForeignKey(CustomerPlan, on_delete=CASCADE)  # type: CustomerPlan
