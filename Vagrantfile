@@ -76,6 +76,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   http_proxy = https_proxy = no_proxy = nil
   host_ip_addr = "127.0.0.1"
 
+  # System settings for the virtual machine.
+  vm_num_cpus = "2"
+  vm_memory = "2048"
+
   config.vm.synced_folder ".", "/vagrant", disabled: true
   if (/darwin/ =~ RUBY_PLATFORM) != nil
     config.vm.synced_folder ".", "/srv/zulip", type: "nfs",
@@ -97,6 +101,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "NO_PROXY"; no_proxy = value
       when "HOST_PORT"; host_port = value.to_i
       when "HOST_IP_ADDR"; host_ip_addr = value
+      when "GUEST_CPUS"; vm_num_cpus = value
+      when "GUEST_MEMORY_MB"; vm_memory = value
       end
     end
   end
@@ -143,14 +149,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider "virtualbox" do |vb, override|
     override.vm.box = "ubuntu/trusty64"
     # It's possible we can get away with just 1.5GB; more testing needed
-    vb.memory = 2048
-    vb.cpus = 2
+    vb.memory = vm_memory
+    vb.cpus = vm_num_cpus
   end
 
   config.vm.provider "vmware_fusion" do |vb, override|
     override.vm.box = "puphpet/ubuntu1404-x64"
-    vb.vmx["memsize"] = "2048"
-    vb.vmx["numvcpus"] = "2"
+    vb.vmx["memsize"] = vm_memory
+    vb.vmx["numvcpus"] = vm_num_cpus
   end
 
 $provision_script = <<SCRIPT

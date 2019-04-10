@@ -18,6 +18,7 @@ Contents:
 * [Step 4: Developing](#step-4-developing)
 * [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
 * [Specifying a proxy](#specifying-a-proxy)
+* [Customize the virtual system settings](#customizing-the-virtual-system-settings)
 
 **If you encounter errors installing the Zulip development
 environment,** check
@@ -1091,6 +1092,41 @@ HOST_IP_ADDR 0.0.0.0
 (and restart the Vagrant guest), your host IP would be 0.0.0.0, a special value
 for the IP address that means any IP address can connect to your development server.
 
+### Customizing the virtual system settings
+
+When running Vagrant using a VM-based provider such as VirtualBox or VMWare Fusion,
+configuration determines what resources are allocated to the guest system.
+
+*With LXC (or another container setup), one just inherits the host system values.*
+
+The default system settings allocate two cpus with two GiB of memory for the guest, which is sufficient
+to run everything in the development environment.  If your host machine has the means to
+augment these defaults, you can change the system settings by adding lines in the
+`~/.zulip-vagrant-config` file just like the technique for assigning values described above
+in *Specifying a proxy*.
+
+If you have not already, create a '~/.zulip-vagrant-config' file, then add the
+following lines:
+
+```
+GUEST_CPUS <number of cpus>
+GUEST_MEMORY_MB <system memory (in MB)>
+```
+
+For example, adding the lines:
+
+```
+GUEST_CPUS 4
+GUEST_MEMORY_MB 8192
+```
+
+would result in an allocation of 4 cpus and 8 GiB of memory for the VM.
+
+Run the command `vagrant reload` (the same as running halt and then up). Your VM is
+now configured with your specified system settings.
+
+If at any time you wish to revert back to the default settings, simply remove
+the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from the '~/.zulip-vagrant-config' file.
 
 [cygwin-dl]: http://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
