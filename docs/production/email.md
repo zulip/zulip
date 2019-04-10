@@ -1,6 +1,6 @@
 # Outgoing email
 
-Zulip needs to be able to send email so it can confirm new users'
+Zulip needs to be able to send email so it can confirm new user's
 email addresses and send notifications.
 
 ## How to configure
