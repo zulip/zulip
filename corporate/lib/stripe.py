@@ -83,7 +83,7 @@ def next_month(billing_cycle_anchor: datetime, dt: datetime) -> datetime:
                          'billing_cycle_anchor: %s, dt: %s' % (billing_cycle_anchor, dt))
 
 # TODO take downgrade into account
-def next_renewal_date(plan: CustomerPlan, event_time: datetime) -> datetime:
+def start_of_next_billing_cycle(plan: CustomerPlan, event_time: datetime) -> datetime:
     months_per_period = {
         CustomerPlan.ANNUAL: 12,
         CustomerPlan.MONTHLY: 1,
@@ -220,7 +220,7 @@ def add_plan_renewal_to_license_ledger_if_needed(plan: CustomerPlan, event_time:
     last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by('-id').first()
     last_renewal = LicenseLedger.objects.filter(plan=plan, is_renewal=True) \
                                         .order_by('-id').first().event_time
-    plan_renewal_date = next_renewal_date(plan, last_renewal)
+    plan_renewal_date = start_of_next_billing_cycle(plan, last_renewal)
     if plan_renewal_date <= event_time:
         return LicenseLedger.objects.create(
             plan=plan, is_renewal=True, event_time=plan_renewal_date,
@@ -403,7 +403,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
             last_renewal = LicenseLedger.objects.filter(
                 plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time) \
                 .order_by('-id').first().event_time
-            period_end = next_renewal_date(plan, ledger_entry.event_time)
+            period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
             proration_fraction = (period_end - ledger_entry.event_time) / (period_end - last_renewal)
             price_args = {'unit_amount': int(plan.price_per_license * proration_fraction + .5),
                           'quantity': ledger_entry.licenses - licenses_base}
@@ -423,7 +423,8 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
                 description=description,
                 discountable=False,
                 period = {'start': datetime_to_timestamp(ledger_entry.event_time),
-                          'end': datetime_to_timestamp(next_renewal_date(plan, ledger_entry.event_time))},
+                          'end': datetime_to_timestamp(
+                              start_of_next_billing_cycle(plan, ledger_entry.event_time))},
                 idempotency_key=idempotency_key,
                 **price_args)
             invoice_item_created = True

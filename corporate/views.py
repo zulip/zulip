@@ -21,7 +21,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     process_initial_upgrade, sign_string, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
     MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
-    next_renewal_date, renewal_amount, \
+    start_of_next_billing_cycle, renewal_amount, \
     add_plan_renewal_to_license_ledger_if_needed
 from corporate.models import Customer, CustomerPlan, \
     get_active_plan
@@ -172,7 +172,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         licenses = last_ledger_entry.licenses
         licenses_used = get_seat_count(user.realm)
         # Should do this in javascript, using the user's timezone
-        renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=next_renewal_date(plan, now))
+        renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=start_of_next_billing_cycle(plan, now))
         renewal_cents = renewal_amount(plan, now)
         # TODO: this is the case where the plan doesn't automatically renew
         if renewal_cents is None:  # nocoverage
