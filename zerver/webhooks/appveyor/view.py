@@ -8,11 +8,12 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import UserProfile
 
 APPVEYOR_TOPIC_TEMPLATE = '{project_name}'
-APPVEYOR_MESSAGE_TEMPLATE = ('[Build {project_name} {build_version} {status}]({build_url})\n'
-                             'Commit [{commit_id}]({commit_url}) by {committer_name}'
-                             ' on {commit_date}: {commit_message}\n'
-                             'Build Started: {started}\n'
-                             'Build Finished: {finished}')
+APPVEYOR_MESSAGE_TEMPLATE = """
+[Build {project_name} {build_version} {status}]({build_url}):
+* **Commit**: [{commit_id}: {commit_message}]({commit_url}) by {committer_name}
+* **Started**: {started}
+* **Finished**: {finished}
+""".strip()
 
 @api_key_only_webhook_view('Appveyor')
 @has_request_variables
