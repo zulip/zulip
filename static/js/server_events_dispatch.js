@@ -434,6 +434,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         notifications.handle_global_notification_updates(event.notification_name,
                                                          event.setting);
         settings_notifications.update_page();
+        // TODO: This should also do a refresh of the stream_edit UI
+        // if it's currently displayed, possibly reusing some code
+        // from stream_events.js
+        // (E.g. update_stream_push_notifications).
         break;
 
     case 'update_message_flags':

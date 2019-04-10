@@ -288,6 +288,28 @@ exports.update_calculated_fields = function (sub) {
         sub.rendered_description = sub.rendered_description.replace('<p>', '').replace('</p>', '');
     }
     exports.update_subscribers_count(sub);
+
+    // Apply the defaults for our notification settings for rendering.
+    if (sub.email_notifications === null) {
+        sub.email_notifications_display = page_params.enable_stream_email_notifications;
+    } else {
+        sub.email_notifications_display = sub.email_notifications;
+    }
+    if (sub.push_notifications === null) {
+        sub.push_notifications_display = page_params.enable_stream_push_notifications;
+    } else {
+        sub.push_notifications_display = sub.push_notifications;
+    }
+    if (sub.desktop_notifications === null) {
+        sub.desktop_notifications_display = page_params.enable_stream_desktop_notifications;
+    } else {
+        sub.desktop_notifications_display = sub.desktop_notifications;
+    }
+    if (sub.audible_notifications === null) {
+        sub.audible_notifications_display = page_params.enable_stream_sounds;
+    } else {
+        sub.audible_notifications_display = sub.audible_notifications;
+    }
 };
 
 exports.all_subscribed_streams_are_in_home_view = function () {

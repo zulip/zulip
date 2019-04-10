@@ -2,6 +2,10 @@ var stream_events = (function () {
 
 var exports = {};
 
+// In theory, this group of functions should apply the account-level
+// defaults, however, they are only called after a manual override, so
+// doing so is unnecessary with the current code.  Ideally, we'd do a
+// refactor to address that, however.
 function update_stream_desktop_notifications(sub, value) {
     var desktop_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
     desktop_notifications_checkbox.prop('checked', value);
