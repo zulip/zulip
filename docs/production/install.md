@@ -85,7 +85,7 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 On success, the install script prints a link.  If you're [restoring a
 backup][zulip-backups] or importing your data from [HipChat][hipchat-import],
 [Slack][slack-import], or another Zulip server, you should stop here
-and return to the the import instructions.
+and return to the import instructions.
 
 [hipchat-import]: https://zulipchat.com/help/import-from-hipchat
 [slack-import]: https://zulipchat.com/help/import-from-slack
@@ -133,7 +133,7 @@ The install script does several things:
 deployment (and future deployments when you upgrade) goes into.  At the
 very end of the install process, the script moves the Zulip code tree
 it's running from (which you unpacked from a tarball above) to a
-directory there, and makes `/home/zulip/deployments/current` as a
+directory there and makes `/home/zulip/deployments/current` as a
 symbolic link to it.
 * Installs Zulip's various dependencies.
 * Configures the various third-party services Zulip uses, including
