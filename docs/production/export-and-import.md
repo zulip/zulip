@@ -47,7 +47,7 @@ accounts in the from logging in or accessing the API.  This is
 preferred for environments like Zulip Cloud where you might want to
 export a single organization without disrupting any other users, and
 the intent is to move hosting of the organization (and forcing users
-to re-login would be required as part of the hosting migrateion
+to re-login would be required as part of the hosting migrations
 anyway).
 
 We include both options in the instructions below, commented out so
