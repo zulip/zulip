@@ -1,4 +1,4 @@
-# Secure, maintain, and upgrade
+# Secure, Maintain and Upgrade
 
 This page covers topics that will help you maintain a healthy, up-to-date, and
 secure Zulip installation, including:
@@ -196,7 +196,7 @@ command:
 ```
 
 and Zulip will automatically fetch the relevant Git commit and upgrade
-to the that version of Zulip.
+to that version of Zulip.
 
 By default, this uses the main upstream Zulip server repository
 (example below), but you can configure any other Git repository by
@@ -353,7 +353,7 @@ the `manage.py backup` system over the export/import process is that
 it's structurally very unlikely for the `postgres` process to ever
 develop bugs, whereas the import/export tool requires some work for
 every new feature we add to Zulip, and thus may occasionally have bugs
-aroun corner cases.  The export tool's advantage is that the export is
+around corner cases.  The export tool's advantage is that the export is
 more human-readable and easier to parse, and doesn't have the
 requirement that the same set of Zulip organizations exist on the two
 servers (which is critical for migrations to and from Zulip Cloud).
