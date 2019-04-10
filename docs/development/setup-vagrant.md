@@ -18,6 +18,7 @@ Contents:
 * [Step 4: Developing](#step-4-developing)
 * [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
 * [Specifying a proxy](#specifying-a-proxy)
+* [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
 
 **If you encounter errors installing the Zulip development
 environment,** check
@@ -1091,6 +1092,45 @@ HOST_IP_ADDR 0.0.0.0
 (and restart the Vagrant guest), your host IP would be 0.0.0.0, a special value
 for the IP address that means any IP address can connect to your development server.
 
+### Customizing CPU and RAM allocation
+
+When running Vagrant using a VM-based provider such as VirtualBox or
+VMWare Fusion, CPU and RAM resources must be explicitly allocated to
+the guest system (with LXC and other container-based Vagrant
+providers, explicit allocation is unnecessary and the settings
+described here are ignored).
+
+Our default Vagrant settings allocate 2 cpus with 2GiB of memory for
+the guest, which is sufficient to run everything in the development
+environment.  If your host system has more CPUs, or you have enough
+RAM that you'd like to allocate more than 2GiB to the guest, you can
+improve performance of the Zulip development environment by allocating
+more resources.
+
+To do so, create a `~/.zulip-vagrant-config` file containing the
+following lines:
+
+```
+GUEST_CPUS <number of cpus>
+GUEST_MEMORY_MB <system memory (in MB)>
+```
+
+For example:
+
+```
+GUEST_CPUS 4
+GUEST_MEMORY_MB 8192
+```
+
+would result in an allocation of 4 cpus and 8 GiB of memory to the
+guest VM.
+
+After changing the configuration, run `vagrant reload` to reboot the
+guest VM with your new configuration.
+
+If at any time you wish to revert back to the default settings, simply
+remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
+`~/.zulip-vagrant-config`.
 
 [cygwin-dl]: http://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
