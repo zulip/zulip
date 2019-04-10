@@ -14,6 +14,45 @@ First, export your data.  The following instructions assume you're
 running Mattermost inside a Docker container. Replace `<username>` and
 `<server_ip>` with appropriate values accordingly.
 
+{start_tabs}
+
+{tab|mm-default}
+
+1. SSH into your Mattermost production server.
+
+    ```
+    ssh <username>@><server_ip>
+    ```
+
+2. Navigate to the directory which contains the Mattermost executable.
+   On a default install of Mattermost, the directory is `/opt/mattermost/bin`.
+
+    ```
+    cd /opt/mattermost/bin
+    ```
+
+3. Run the following commands to export the data from all teams on your server as a tar file.
+
+    ```
+    sudo ./mattermost export bulk export.json --all-teams
+    mkdir -p exported_emoji
+    tar --transform 's|^|mattermost/|' -czf export.tar.gz \
+        exported_emoji/ export.json
+    ```
+
+4. Now exit out of the Mattermost server.
+
+    `exit`
+
+5. Finally copy the exported tar file from the server to your local computer. Make sure to
+   replace `/opt/mattermost/bin/` with the correct directory if it is different in your case.
+
+    ```
+    scp <username>@<server_ip>:/opt/mattermost/bin/export.tar.gz .
+    ```
+
+{tab|mm-docker}
+
 1. SSH into your Mattermost server running the docker containers.
 
     ```
@@ -48,7 +87,9 @@ running Mattermost inside a Docker container. Replace `<username>` and
     ```
     scp <username>@<server_ip>:mattermost-docker/volumes/app/mattermost/data/export.tar.gz .
     ```
-  
+
+{end_tabs}
+
 ### Import into zulipchat.com
 
 Email support@zulipchat.com with your exported archive and your desired Zulip

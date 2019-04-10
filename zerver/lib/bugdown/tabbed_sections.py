@@ -56,6 +56,9 @@ TAB_DISPLAY_NAMES = {
     'server': 'HipChat Server or Data Center',
     'stride': 'Stride',
 
+    'mm-default': 'Default installation',
+    'mm-docker': 'Docker installation',
+
     'send-email-invitations': 'Send email invitations',
     'share-an-invite-link': 'Share an invite link',
     'allow-anyone-to-join': 'Allow anyone to join',
