@@ -64,12 +64,26 @@ Conceptually, the `zjquery` library provides minimal versions of most
 letting you setup return values for more complex functions.  For
 example, if the code you'd like to test calls `$obj.find()`, you can
 use `$obj.set_find_results(selector, $value)` to setup `zjquery` so
-that calls to `$obj.find(selector)` will return `$value`.  See the
-unit test file for details.
+that calls to `$obj.find(selector)` will return `$value`. See the unit
+test file for details.
+
+This process of substituting `jQuery` functions with our own code for
+testing purposes is known as "stubbing". `zjquery` does not stub all
+possible interactions with the dom, as such, you may need to write out
+the stub for a function you're calling in your patch. Typically the stub
+is just placed in the test file, to prevent bloating of `zjquery`
+with functions that are only used in a single test.
+
+A good sign that you need to stub something out is getting an error of
+the type:
+`TypeError: <component>.<method> is not a function`
 
 The `zjquery` library itself is only about 500 lines of code, and can
 also be a useful resource if you're having trouble debugging DOM
 access in the unit tests.
+
+It is typically a good idea to figure out how to stub a given function
+based on how other functions have been stubbed in the same file.
 
 ## Handling dependencies in unit tests
 
