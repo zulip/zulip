@@ -231,7 +231,7 @@ function build_stream_sidebar_row(sub) {
     var list_item = build_stream_sidebar_li(sub);
 
     self.update_whether_active = function () {
-        if (stream_data.is_active(sub)) {
+        if (stream_data.is_active(sub) || sub.pin_to_top === true) {
             list_item.removeClass('inactive_stream');
         } else {
             list_item.addClass('inactive_stream');
