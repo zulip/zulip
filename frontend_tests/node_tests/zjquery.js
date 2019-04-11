@@ -2,7 +2,8 @@
 
 This test module actually tests our test code, particularly zjquery, and
 it is intended to demonstrate how to use zjquery (as well as, of course, verify
-that it works as advertised).
+that it works as advertised). This test module is a good place to learn how to
+stub out functions from jQuery.
 
 What is zjquery?
 
@@ -11,7 +12,9 @@ What is zjquery?
     complexity of jQuery.  It also allows you to mostly simulate DOM for the
     purposes of unit testing, so that your tests focus on component interactions
     that aren't super tightly coupled to building the DOM.  The tests also run
-    faster!
+    faster! Inorder to keep zjquery light, it only has stubs for the most commonly
+    used functions of jQuery. This means that it is possible that you may need to
+    stub out additional functions manually in the relevant test module.
 
 The code we are testing lives here:
 
