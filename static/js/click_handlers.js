@@ -788,7 +788,9 @@ exports.initialize = function () {
                 // of overlays or selecting text (for copy+paste) trigger cancelling.
                 // Check if the click is within the body to prevent extensions from
                 // interfering with the compose box.
-                compose_actions.cancel();
+                if ($('#search_query_box').is(':focus') || !$('#search_query').is(':focus')) {
+                    compose_actions.cancel();
+                }
             }
         }
     });

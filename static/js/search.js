@@ -37,6 +37,7 @@ function narrow_or_search_for_term(search_string) {
     // Narrowing will have already put some operators in the search box,
     // so leave the current text in.
     search_query_box.blur();
+    compose_actions.cancel();
     return search_query_box.val();
 }
 
@@ -153,6 +154,7 @@ exports.initialize = function () {
             // indicate that they've done what they need to do)
             narrow.activate(Filter.parse(search_query_box.val()), {trigger: 'search'});
             search_query_box.blur();
+            compose_actions.cancel();
             update_buttons_with_focus(false);
         }
     });
