@@ -147,3 +147,48 @@ and then once you're ready, you can email them to everyone using e.g.
 ```
 
 (replace `''` with your subdomain if you're using one).
+
+## Deleting and re-importing
+
+If you did a test import of a Zulip organization, you may want to
+delete the test import data from your Zulip server before doing a
+final import.  You can **permanently delete** all data from a Zulip
+organization using the following procedure:
+
+* Start a [Zulip management shell](../production/maintain-secure-upgrade.html#manage-py-shell)
+* In the management shell, run the following commands, substituting
+  the subdomain for `<subdomain>`:
+
+```
+realm = Realm.objects.get(stream_id="<subdomain>")
+realm.delete()
+```
+
+The output contains details on the objects deleted from the database.
+
+Now, exit the management shell and run this to clear Zulip's cache:
+```
+/home/zulip/deployments/current/scripts/setup/flush-memcached
+```
+
+Assuming you're using the
+[local file uploads backend](../production/upload-backends.html), you
+can additionally delete all file uploads, avatars, and custom emoji on
+a Zulip server (across **all organizations**) with the following
+command:
+
+```
+rm -rf /home/zulip/uploads/*/*
+```
+
+If you're hosting multiple organizations and would like to remove
+uploads from a single organization, you'll need to access `realm.id`
+in the management shell before deleting the organization from the
+database (this will be `2` for the first organization created on a
+Zulip server, shown in the example below), e.g.:
+
+```
+rm -rf /home/zulip/uploads/*/2/
+```
+
+Once that's done, you can simply re-run the import process.
