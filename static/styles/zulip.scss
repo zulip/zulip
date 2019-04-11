@@ -1483,6 +1483,14 @@ blockquote p {
     margin-top: -4px;
 }
 
+.rendered_markdown p:last-of-type + ul {
+    margin-top: 2px;
+}
+
+.rendered_markdown p:last-of-type + blockquote {
+    margin-top: 6px;
+}
+
 .messagebox {
     word-wrap: break-word;
     cursor: pointer;
