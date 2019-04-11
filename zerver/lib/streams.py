@@ -79,6 +79,10 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
     # an error.
     raise JsonableError(error)
 
+def bulk_get_streams_by_ids(stream_ids: Set[int], realm_id: int) -> List[Stream]:
+    streams = Stream.objects.select_related("realm").filter(id__in=stream_ids, realm_id=realm_id)
+    return streams
+
 def access_stream_by_id(user_profile: UserProfile,
                         stream_id: int,
                         require_active: bool=True,
