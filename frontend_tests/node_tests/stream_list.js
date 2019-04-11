@@ -157,6 +157,59 @@ run_test('create_sidebar_row', () => {
     assert(removed);
 });
 
+run_test('pinned_streams_never_inactive', () => {
+    // Ensure that pinned streams are never treated as dormant ie never given "inactive" class
+    stream_data.clear_subscriptions();
+
+    var devel = {
+        name: 'devel',
+        stream_id: 100,
+        color: 'blue',
+        subscribed: true,
+        pin_to_top: true,
+    };
+    global.stream_data.add_sub('devel', devel);
+
+    var social = {
+        name: 'social',
+        stream_id: 200,
+        color: 'green',
+        subscribed: true,
+    };
+    global.stream_data.add_sub('social', social);
+
+    // we use social and devel created in create_social_sidebar_row() and create_devel_sidebar_row()
+
+    // non-pinned streams can be made inactive
+    var social_sidebar = $('<social sidebar row>');
+    var stream_id = social.stream_id;
+    var row = stream_list.stream_sidebar.get_row(stream_id);
+    stream_data.is_active = return_false;
+
+    stream_list.build_stream_list();
+    assert(social_sidebar.hasClass('inactive_stream'));
+
+    stream_data.is_active = return_true;
+    row.update_whether_active();
+    assert(!social_sidebar.hasClass('inactive_stream'));
+
+    stream_data.is_active = return_false;
+    row.update_whether_active();
+    assert(social_sidebar.hasClass('inactive_stream'));
+
+    // pinned streams can never be made inactive
+    var devel_sidebar = $('<devel sidebar row>');
+    stream_id = devel.stream_id;
+    row = stream_list.stream_sidebar.get_row(stream_id);
+    stream_data.is_active = return_false;
+
+    stream_list.build_stream_list();
+    assert(!devel_sidebar.hasClass('inactive_stream'));
+
+    row.update_whether_active();
+    assert(!devel_sidebar.hasClass('inactive_stream'));
+});
+
 set_global('$', global.make_zjquery());
 
 function add_row(sub) {
@@ -550,6 +603,7 @@ run_test('separators_only_pinned', () => {
     assert.deepEqual(appended_elems, expected_elems);
 
 });
+
 run_test('update_count_in_dom', () => {
     function make_elem(elem, count_selector, value_selector) {
         var count = $(count_selector);
