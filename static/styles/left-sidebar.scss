@@ -21,6 +21,11 @@ $topic_indent: $far_left_gutter_size + $left_col_size + 4px;
     font-size: 15px;
     font-weight: 800;
     min-width: $left_col_size;
+    text-align: center;
+    span.hashtag,
+    i.fa-lock {
+        padding-right: 3px;
+    }
 }
 
 .pm_left_col {
@@ -193,12 +198,16 @@ li.show-more-private-messages {
 .top_left_all_messages i.fa-home {
     position: relative;
     top: 1px;
-    left: -1px;
-    font-size: 17px;
+    font-size: 15px;
 }
 
 .top_left_private_messages i.fa-envelope {
-    font-size: 12px;
+    font-size: 10px;
+}
+
+.top_left_mentions i.fa-at,
+.top_left_starred_messages i.fa-star {
+    font-size: 13px;
 }
 
 /* We are mostly consistent in how we style
@@ -273,7 +282,10 @@ li.show-more-private-messages {
     line-height: 1.1;
 }
 
-.filter-icon i,
+.filter-icon i {
+    padding-right: 3px;
+}
+
 .all-messages-arrow i,
 .stream-sidebar-arrow i,
 .starred-messages-sidebar-arrow i,
