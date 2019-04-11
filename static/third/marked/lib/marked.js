@@ -272,6 +272,10 @@ Lexer.prototype.token = function(src, top, bq) {
       src = src.substring(cap[0].length);
       bull = cap[2];
 
+      // Reduces the odd number of spaces
+      // to even.
+      cap[0] = cap[0].replace(/^((  )*) ?/gm, "$1");
+
       this.tokens.push({
         type: 'list_start',
         ordered: bull.length > 1

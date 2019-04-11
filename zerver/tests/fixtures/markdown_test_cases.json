@@ -169,6 +169,12 @@
       "text_content": "\nI am outer list\n  I am something inside\n"
     },
     {
+      "name": "ulist_nested_ulist_with_odd_even_space_indent",
+      "input": "Nested list\n* I am outer list first item\n * I am outer list second item\n   * I am inner nested list first item",
+      "expected_output": "<p>Nested list</p>\n<ul>\n<li>I am outer list first item</li>\n<li>I am outer list second item<ul>\n<li>I am inner nested list first item</li>\n</ul>\n</li>\n</ul>",
+      "text_content": "Nested list\n\nI am outer list first item\nI am outer list second item\nI am inner nested list first item\n\n\n"
+    },
+    {
       "name": "ulist_codeblock",
       "input": "~~~\nint x = 3\n* 4;\n~~~",
       "expected_output": "<div class=\"codehilite\"><pre><span></span>int x = 3\n* 4;\n</pre></div>",
