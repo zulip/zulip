@@ -72,7 +72,7 @@ number of purposes:
   interaction for sending messages.
 * Following our standard naming convention, input validation is done
   inside the `check_message` function, which is responsible for
-  validating the user can send to the recipient (etc.),
+  validating the user can send to the recipient,
   [rendering the markdown](../subsystems/markdown.html), etc. --
   basically everything that can fail due to bad user input.
 * The core `do_send_messages` function (which handles actually sending
