@@ -21,7 +21,8 @@ from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
@@ -636,6 +637,11 @@ class DevAuthBackend(ZulipAuthMixin):
             return None
         return common_get_active_user(dev_auth_username, realm, return_data=return_data)
 
+def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
+    login_url = reverse('django.contrib.auth.views.login')
+    redirect_url = login_url + '?is_deactivated=true'
+    return HttpResponseRedirect(redirect_url)
+
 def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
                                  *args: Any, **kwargs: Any) -> Optional[UserProfile]:
     """Responsible for doing the Zulip-account lookup and validation parts
@@ -751,7 +757,11 @@ def social_auth_finish(backend: Any,
     if invalid_realm:
         from zerver.views.auth import redirect_to_subdomain_login_url
         return redirect_to_subdomain_login_url()
-    if auth_backend_disabled or inactive_user or inactive_realm or no_verified_email:
+
+    if inactive_user:
+        return redirect_deactivated_user_to_login()
+
+    if auth_backend_disabled or inactive_realm or no_verified_email:
         # Redirect to login page. We can't send to registration
         # workflow with these errors. We will redirect to login page.
         return None

@@ -23,7 +23,8 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import zulip_default_context, get_realm_from_request, \
     login_context
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
-    WRONG_SUBDOMAIN_ERROR, ZulipPasswordResetForm, AuthenticationTokenForm
+    WRONG_SUBDOMAIN_ERROR, DEACTIVATED_ACCOUNT_ERROR, ZulipPasswordResetForm, \
+    AuthenticationTokenForm
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.request import REQ, has_request_variables, JsonableError
@@ -613,12 +614,13 @@ def add_dev_login_context(realm: Realm, context: Dict[str, Any]) -> None:
     context['direct_users'] = [u for u in users if not (u.is_realm_admin or u.is_guest)]
 
 def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
-    for key in ('email', 'subdomain', 'already_registered'):
+    for key in ('email', 'subdomain', 'already_registered', 'is_deactivated'):
         try:
             context[key] = request.GET[key]
         except KeyError:
             pass
 
+    context['deactivated_account_error'] = DEACTIVATED_ACCOUNT_ERROR
     context['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
 
 class TwoFactorLoginView(BaseTwoFactorLoginView):

@@ -94,7 +94,11 @@ class AuthBackendTest(ZulipTestCase):
 
         # Verify auth fails with a deactivated user
         do_deactivate_user(user_profile)
-        self.assertIsNone(backend.authenticate(**good_kwargs))
+        if not isinstance(backend, GitHubAuthBackend):
+            # Returns a redirect to login page with an error.
+            # SocialAuthBase.test_social_auth_deactivated_user already covers this use case
+            # for GithubAuthBackend
+            self.assertIsNone(backend.authenticate(**good_kwargs))
 
         # Reactivate the user and verify auth works again
         do_reactivate_user(user_profile)
@@ -571,7 +575,7 @@ class SocialAuthBase(ZulipTestCase):
         result = self.social_auth_test(account_data_dict,
                                        subdomain='zulip')
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/")
+        self.assertEqual(result.url, "/accounts/login/?is_deactivated=true")
         # TODO: verify whether we provide a clear error message
 
     def test_social_auth_invalid_realm(self) -> None:
