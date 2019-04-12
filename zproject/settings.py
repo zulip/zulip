@@ -160,6 +160,9 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_SUBDOMAIN': None,
     'SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET': get_secret('azure_oauth2_secret'),
 
+    # Other auth
+    'SSO_APPEND_DOMAIN': None,
+
     # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',
     'EMAIL_GATEWAY_LOGIN': None,
