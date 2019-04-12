@@ -1501,81 +1501,111 @@ a:hover code {
         border: 1px solid hsl(0, 0%, 80%);
         padding: 4px;
     }
-}
 
-/* embedded link previews */
-.rendered_markdown .message_embed {
-    display: block;
-    position: relative;
-    margin: 5px 0px;
-    border: none;
-    border-left: 3px solid hsl(0, 0%, 93%);
-    height: 80px;
-    padding: 5px;
-    z-index: 1;
-    text-shadow: rgba(0, 0, 0, .01) 0 0 1px;
-
-    .message_embed_title {
-        padding-top: 0px;
-        /* to remove the spacing that the font has from the top of the container. */
-        margin-top: -5px;
-
-        font-size: 1.2em;
-        line-height: normal;
+    /* CSS for message content widgets */
+    table.tictactoe {
+        width: 80px;
+        margin-left: 0px;
     }
 
-    .message_embed_description {
-        position: relative;
-        max-width: 500px;
-        margin-top: 3px;
-
-        /* to put it below the container gradient. */
-        z-index: -1;
+    td.tictactoe {
+        width: 15px;
+        border: none;
+        padding: 2px;
     }
 
-    .message_embed_image {
-        display: inline-block;
-        width: 70px;
-        height: 70px;
-        background-size: cover;
-        background-position: center;
+    button.tictactoe-square {
+        background-color: hsl(156, 30%, 62%);
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 3px;
+        font-size: 25px;
+        color: hsl(0, 0%, 100%);
     }
 
-    .data-container {
-        position: relative;
-        padding: 0px 5px;
-        display: inline-block;
-        vertical-align: top;
-        max-width: calc(100% - 115px);
-        max-height: 80px;
-        overflow: hidden;
+    button.tictactoe-square:hover {
+        background-color: hsl(155, 5%, 53%);
     }
 
-    .data-container div {
+    button.tictactoe-square:disabled {
+        background-color: hsl(156, 33%, 81%);
+    }
+
+    /* embedded link previews */
+    .message_embed {
         display: block;
+        position: relative;
+        margin: 5px 0px;
+        border: none;
+        border-left: 3px solid hsl(0, 0%, 93%);
+        height: 80px;
+        padding: 5px;
+        z-index: 1;
+        text-shadow: rgba(0, 0, 0, .01) 0 0 1px;
+
+        .message_embed_title {
+            padding-top: 0px;
+            /* to remove the spacing that the font has from the top of the container. */
+            margin-top: -5px;
+
+            font-size: 1.2em;
+            line-height: normal;
+        }
+
+        .message_embed_description {
+            position: relative;
+            max-width: 500px;
+            margin-top: 3px;
+
+            /* to put it below the container gradient. */
+            z-index: -1;
+        }
+
+        .message_embed_image {
+            display: inline-block;
+            width: 70px;
+            height: 70px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .data-container {
+            position: relative;
+            padding: 0px 5px;
+            display: inline-block;
+            vertical-align: top;
+            max-width: calc(100% - 115px);
+            max-height: 80px;
+            overflow: hidden;
+        }
+
+        .data-container div {
+            display: block;
+            border: none;
+        }
+
+        .data-container::after {
+            content: " ";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+
+            background: linear-gradient(0deg, hsl(0, 0%, 100%), transparent 10%);
+        }
+    }
+
+    &.rtl .message_embed {
+        border-left: unset;
+        border-right: 3px solid hsl(0, 0%, 93%);
+    }
+
+    .message_embed > * {
+        display: inherit;
+        padding: 5px;
         border: none;
     }
-
-    .data-container::after {
-        content: " ";
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-
-        background: linear-gradient(0deg, hsl(0, 0%, 100%), transparent 10%);
-    }
-}
-
-.rtl.rendered_markdown .message_embed {
-    border-left: unset;
-    border-right: 3px solid hsl(0, 0%, 93%);
-}
-
-.rendered_markdown .message_embed > * {
-    display: inherit;
-    padding: 5px;
-    border: none;
 }
 
 @media (max-width: 600px) {
@@ -1595,35 +1625,6 @@ a:hover code {
     }
 }
 
-/* CSS for message content widgets */
-div.rendered_markdown table.tictactoe {
-    width: 80px;
-    margin-left: 0px;
-}
-
-div.rendered_markdown td.tictactoe {
-    width: 15px;
-    border: none;
-    padding: 2px;
-}
-
-div.rendered_markdown button.tictactoe-square {
-    background-color: hsl(156, 30%, 62%);
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 3px;
-    font-size: 25px;
-    color: hsl(0, 0%, 100%);
-}
-
-div.rendered_markdown button.tictactoe-square:hover {
-    background-color: hsl(155, 5%, 53%);
-}
-
-div.rendered_markdown button.tictactoe-square:disabled {
-    background-color: hsl(156, 33%, 81%);
-}
 
 /* CSS for the message box */
 .messagebox {
