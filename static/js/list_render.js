@@ -295,10 +295,14 @@ var list_render = (function () {
         // add built-in generic sort functions.
         prototype.add_generic_sort_function("alphabetic", function (prop) {
             return function (a, b) {
-                if (a[prop] > b[prop]) {
-                    return 1;
-                } else if (a[prop] === b[prop]) {
+                // The conversion to uppercase helps make the sorting case insensitive.
+                var str1 = a[prop].toUpperCase();
+                var str2 = b[prop].toUpperCase();
+
+                if (str1 === str2) {
                     return 0;
+                } else if (str1 > str2) {
+                    return 1;
                 }
 
                 return -1;
