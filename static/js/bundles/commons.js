@@ -10,7 +10,6 @@ import "js/common.js";
 import "node_modules/moment/min/moment.min.js";
 import "node_modules/moment-timezone/builds/moment-timezone-with-data.min.js";
 import "node_modules/sortablejs/Sortable.js";
-import "node_modules/lazysizes/lazysizes.js";
 import "third/bootstrap/css/bootstrap.css";
 import "third/bootstrap/css/bootstrap-btn.css";
 import "third/bootstrap/css/bootstrap-responsive.css";
