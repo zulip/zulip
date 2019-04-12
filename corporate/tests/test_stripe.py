@@ -879,40 +879,20 @@ class RequiresBillingAccessTest(ZulipTestCase):
         hamlet.is_billing_admin = True
         hamlet.save(update_fields=["is_billing_admin"])
 
-    # mocked_function_name will typically be something imported from
-    # stripe.py. In theory we could have endpoints that need to mock
-    # multiple functions, but we'll cross that bridge when we get there.
-    def _test_endpoint(self, url: str, mocked_function_name: str,
-                       request_data: Optional[Dict[str, Any]]={}) -> None:
-        # Normal users do not have access
+    def verify_non_admins_blocked_from_endpoint(
+            self, url: str, request_data: Optional[Dict[str, Any]]={}) -> None:
         self.login(self.example_email('cordelia'))
         response = self.client_post(url, request_data)
         self.assert_json_error_contains(response, "Must be a billing administrator or an organization")
 
-        # Billing admins have access
-        self.login(self.example_email('hamlet'))
-        with patch("corporate.views.{}".format(mocked_function_name)) as mocked1:
-            response = self.client_post(url, request_data)
-        self.assert_json_success(response)
-        mocked1.assert_called()
-
-        # Realm admins have access, even if they are not billing admins
-        self.login(self.example_email('iago'))
-        with patch("corporate.views.{}".format(mocked_function_name)) as mocked2:
-            response = self.client_post(url, request_data)
-        self.assert_json_success(response)
-        mocked2.assert_called()
-
-    def test_json_endpoints(self) -> None:
+    def test_non_admins_blocked_from_json_endpoints(self) -> None:
         params = [
-            ("/json/billing/sources/change", "do_replace_payment_source",
-             {'stripe_token': ujson.dumps('token')}),
-            # TODO: second argument should be something like "process_downgrade"
-            ("/json/billing/downgrade", "process_downgrade", {}),
-        ]  # type: List[Tuple[str, str, Dict[str, Any]]]
+            ("/json/billing/sources/change", {'stripe_token': ujson.dumps('token')}),
+            ("/json/billing/downgrade", {}),
+        ]  # type: List[Tuple[str, Dict[str, Any]]]
 
-        for (url, mocked_function_name, data) in params:
-            self._test_endpoint(url, mocked_function_name, data)
+        for (url, data) in params:
+            self.verify_non_admins_blocked_from_endpoint(url, data)
 
         # Make sure that we are testing all the JSON endpoints
         # Quite a hack, but probably fine for now
@@ -923,6 +903,23 @@ class RequiresBillingAccessTest(ZulipTestCase):
         json_endpoints.remove("json/billing/upgrade")
 
         self.assertEqual(len(json_endpoints), len(params))
+
+    def test_admins_and_billing_admins_can_access(self) -> None:
+        # Billing admins have access
+        self.login(self.example_email('hamlet'))
+        with patch("corporate.views.do_replace_payment_source") as mocked1:
+            response = self.client_post("/json/billing/sources/change",
+                                        {'stripe_token': ujson.dumps('token')})
+        self.assert_json_success(response)
+        mocked1.assert_called()
+
+        # Realm admins have access, even if they are not billing admins
+        self.login(self.example_email('iago'))
+        with patch("corporate.views.do_replace_payment_source") as mocked2:
+            response = self.client_post("/json/billing/sources/change",
+                                        {'stripe_token': ujson.dumps('token')})
+        self.assert_json_success(response)
+        mocked2.assert_called()
 
 class BillingHelpersTest(ZulipTestCase):
     def test_next_month(self) -> None:
