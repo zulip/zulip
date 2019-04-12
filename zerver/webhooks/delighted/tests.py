@@ -9,9 +9,13 @@ class DelightedHookTests(WebhookTestCase):
 
     def test_feedback_message_promoter(self) -> None:
         expected_topic = "Survey Response"
-        expected_message = ("Kudos! You have a new promoter.\n"
-                            ">Score of 9/10 from charlie_gravis@example.com"
-                            "\n>Your service is fast and flawless!")
+        expected_message = """
+Kudos! You have a new promoter. Score of 9/10 from charlie_gravis@example.com:
+
+``` quote
+Your service is fast and flawless!
+```
+""".strip()
 
         self.send_and_test_stream_message('survey_response_updated_promoter',
                                           expected_topic,
@@ -24,6 +28,13 @@ class DelightedHookTests(WebhookTestCase):
                             ">Score of 5/10 from paul_gravis@example.com"
                             "\n>Your service is slow, but nearly flawless! "
                             "Keep up the good work!")
+        expected_message = """
+Great! You have new feedback. Score of 5/10 from paul_gravis@example.com:
+
+``` quote
+Your service is slow, but nearly flawless! Keep up the good work!
+```
+""".strip()
 
         self.send_and_test_stream_message('survey_response_updated_non_promoter',
                                           expected_topic,
