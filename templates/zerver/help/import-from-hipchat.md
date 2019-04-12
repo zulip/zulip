@@ -138,13 +138,13 @@ While the import tool will correctly import the subscribers of private
 rooms, HipChat does not store or export the list of subscribers for public
 rooms.  You can pick one of the following options for handling this:
 
-* Subscribe all users to all public streams (the default, which is good for small organizations).
+1. Subscribe all users to all public streams (the default, which is good for small organizations).
 
-* Subscribe only HipChat room owners to public streams (and plan for users
+1. Subscribe only HipChat room owners to public streams (and plan for users
   to subscribe to the imported Zulip streams manually after the import
   completes) using the `--slim-mode` option to `manage.py convert_hipchat_data`.
 
-* Use the [HipChat API][hipchat-api-tokens] to fetch each room's current
+1. Use the [HipChat API][hipchat-api-tokens] to fetch each room's current
   room subscribers as of the moment the import is run.  Because HipChat
   doesn't store subscribers to a room when clients are not connected, these
   subscriptons will be incomplete for users who don't have an actively
