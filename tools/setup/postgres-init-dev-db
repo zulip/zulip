@@ -2,12 +2,12 @@
 set -x
 set -e
 
-DEFAULT_USER="postgres"
+POSTGRES_USER="postgres"
 if [ "$(uname)" = "OpenBSD" ]; then
-  DEFAULT_USER="_postgresql"
+  POSTGRES_USER="_postgresql"
 fi
 
-ROOT_POSTGRES=(sudo -i -u "$DEFAULT_USER" psql)
+ROOT_POSTGRES=(sudo -i -u "$POSTGRES_USER" psql)
 DEFAULT_DB=""
 if [ "$(uname)" = "Darwin" ]; then
    ROOT_POSTGRES=(psql)
@@ -39,13 +39,13 @@ fi
 
 DBNAME_BASE=${DBNAME}_base
 
-if ! pg_isready -U "$DEFAULT_USER" -q; then
+if ! pg_isready -U "$POSTGRES_USER" -q; then
     set +x
     echo
     echo 'ERROR: PostgreSQL Server is not running! Ensure the service is enabled.'
     # shellcheck disable=SC2016
     echo 'ERROR: Try `sudo service postgresql start`?'
-    echo "ERROR: You can easily test if you fixed it using: pg_isready -U \$DEFAULT_USER"
+    echo "ERROR: You can easily test if you fixed it using: pg_isready -U \$POSTGRES_USER"
     exit 1
 fi
 
