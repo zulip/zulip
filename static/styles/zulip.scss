@@ -1447,7 +1447,7 @@ a:hover code {
 
     /* Ensure bulleted lists are nicely centered in 1-line messages */
     ul {
-        margin: 5px 0 5px 20px;
+        margin: 2px 0 5px 20px;
     }
 
     /* Swap the left and right margins of bullets for Right-To-Left languages */
@@ -1456,10 +1456,15 @@ a:hover code {
         margin-left: 0;
     }
 
+    p + ul {
+        margin-top: -2px;
+    }
+
     /* Formatting for blockquotes */
     blockquote {
         padding-left: 5px;
         margin-left: 10px;
+        margin-top: 5px;
         margin-bottom: 6px;
         border-left-color: hsl(0, 0%, 87%);
 
