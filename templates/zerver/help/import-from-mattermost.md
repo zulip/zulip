@@ -88,6 +88,32 @@ running Mattermost inside a Docker container. Replace `<username>` and
     scp <username>@<server_ip>:mattermost-docker/volumes/app/mattermost/data/export.tar.gz .
     ```
 
+{tab|mm-gitlab-omnibus}
+
+1. SSH into your GitLab Omnibus server.
+
+2. Run the following commands to export the data from all teams on your server as a tar file.
+
+    ```
+    cd /opt/gitlab/embedded/service/mattermost
+    sudo -u \
+        mattermost /opt/gitlab/embedded/bin/mattermost \
+        --config=/var/opt/gitlab/mattermost/config.json \
+        export bulk export.json --all-teams
+    mkdir -p exported_emoji
+    tar --transform 's|^|mattermost/|' -czf export.tar.gz \
+        exported_emoji/ export.json
+    ```
+
+3. Now exit out of the server.
+
+    `exit`
+
+4. Finally copy the exported tar file from GitLab Omnibus to your local computer.
+
+    ```
+    scp <username>@<server_ip>:/opt/gitlab/embedded/bin/mattermost/export.tar.gz .
+    ```
 {end_tabs}
 
 ### Import into zulipchat.com
