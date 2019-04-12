@@ -1431,17 +1431,54 @@ a:hover code {
     border-color: hsl(200, 100%, 25%);
 }
 
-/* This ensures bulleted lists are nicely centered in 1-line messages */
-.rendered_markdown ul {
-    margin: 5px 0 5px 20px;
-}
-
-.rtl.rendered_markdown ul {
-    margin: 5px 20px 5px 0;
-}
-
-/* Formatting for markdown tables */
 .rendered_markdown {
+    p {
+        margin: 3px 0px 10px 0px;
+    }
+
+    p + ul {
+        margin-top: -7px;
+    }
+
+    p + blockquote {
+        margin-top: -4px;
+    }
+
+    p:last-of-type {
+        margin-bottom: 3px;
+    }
+
+    /* This ensures bulleted lists are nicely centered in 1-line messages */
+    ul {
+        margin: 5px 0 5px 20px;
+    }
+    &.rtl ul {
+        margin: 5px 20px 5px 0;
+    }
+
+    /* Formatting for blockquotes */
+    blockquote {
+        padding-left: 5px;
+        margin-left: 10px;
+        margin-bottom: 6px;
+        border-left-color: hsl(0, 0%, 87%);
+
+        p {
+            line-height: inherit;
+            font-size: inherit;
+        }
+    }
+
+    &.rtl blockquote {
+        padding-left: unset;
+        padding-right: 5px;
+        margin-left: unset;
+        margin-right: 10px;
+        border-left: unset;
+        border-right: 5px solid hsl(0, 0%, 87%);
+    }
+
+    /* Formatting for markdown tables */
     table {
         padding-right: 10px;
         margin: 5px 5px 5px 5px;
@@ -1467,44 +1504,6 @@ a:hover code {
         border: 1px solid hsl(0, 0%, 80%);
         padding: 4px;
     }
-}
-
-.rendered_markdown p + ul {
-    margin-top: -7px;
-}
-
-.rendered_markdown p + blockquote {
-    margin-top: -4px;
-}
-
-.rendered_markdown p {
-    margin: 3px 0px 10px 0px;
-}
-
-.rendered_markdown p:last-of-type {
-    margin-bottom: 3px;
-}
-
-/* Formatting for blockquotes */
-.rendered_markdown blockquote {
-    padding-left: 5px;
-    margin-left: 10px;
-    margin-bottom: 6px;
-    border-left-color: hsl(0, 0%, 87%);
-
-    p {
-        line-height: inherit;
-        font-size: inherit;
-    }
-}
-
-.rendered_markdown .rtl blockquote {
-    padding-left: unset;
-    padding-right: 5px;
-    margin-left: unset;
-    margin-right: 10px;
-    border-left: unset;
-    border-right: 5px solid hsl(0, 0%, 87%);
 }
 
 /* embedded link previews */
