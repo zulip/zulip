@@ -1502,21 +1502,21 @@ blockquote p {
     padding-bottom: 1px;
 }
 
-.messagebox p {
+.rendered_markdown p {
     margin: 3px 0px 10px 0px;
 }
 
-.messagebox p:last-of-type {
+.rendered_markdown p:last-of-type {
     margin-bottom: 3px;
 }
 
-.messagebox blockquote {
+.rendered_markdown blockquote {
     padding-left: 5px;
     margin-left: 10px;
     border-left-color: hsl(0, 0%, 87%);
 }
 
-.messagebox .rtl blockquote {
+.rendered_markdown .rtl blockquote {
     padding-left: unset;
     padding-right: 5px;
     margin-left: unset;
