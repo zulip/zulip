@@ -609,6 +609,11 @@ exports.initialize = function () {
     });
     // End Webathena code
 
+    // disable the draggability for left-sidebar components
+    $('#stream_filters, #global_filters').on('dragstart', function () {
+        return false;
+    });
+
     (function () {
         var map = {
             ".stream-description-editable": {
