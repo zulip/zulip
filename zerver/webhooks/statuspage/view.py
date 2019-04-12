@@ -6,8 +6,14 @@ from zerver.models import UserProfile
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, Any
 
-INCIDENT_TEMPLATE = u'**{name}** \n * State: **{state}** \n * Description: {content}'
-COMPONENT_TEMPLATE = u'**{name}** has changed status from **{old_status}** to **{new_status}**'
+INCIDENT_TEMPLATE = """
+**{name}**:
+* State: **{state}**
+* Description: {content}
+""".strip()
+
+COMPONENT_TEMPLATE = "**{name}** has changed status from **{old_status}** to **{new_status}**."
+
 TOPIC_TEMPLATE = u'{name}: {description}'
 
 def get_incident_events_body(payload: Dict[str, Any]) -> str:
