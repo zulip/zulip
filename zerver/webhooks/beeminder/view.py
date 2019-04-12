@@ -8,6 +8,10 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 import time
 
+MESSAGE_TEMPLATE = ("You are going to derail from goal **{goal_name}** in **{time:0.1f} hours**. "
+                    "You need **{limsum}** to avoid derailing.\n"
+                    "* Pledge: **{pledge}$** {expression}\n")
+
 def get_time(payload: Dict[str, Any]) -> Any:
     losedate = payload["goal"]["losedate"]
     time_remaining = (losedate - time.time())/3600
@@ -29,8 +33,12 @@ def api_beeminder_webhook(request: HttpRequest, user_profile: UserProfile,
         expression = ':relieved:'
 
     topic = u'beekeeper'
-    body = u"You are going to derail from goal **{}** in **{:0.1f} hours**\n \
-You need **{}** to avoid derailing\n * Pledge: **{}$** {}"
-    body = body.format(goal_name, time_remain, limsum, pledge, expression)
+    body = MESSAGE_TEMPLATE.format(
+        goal_name=goal_name,
+        time=time_remain,
+        limsum=limsum,
+        pledge=pledge,
+        expression=expression
+    )
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
