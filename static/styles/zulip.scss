@@ -1432,23 +1432,20 @@ a:hover code {
 }
 
 .rendered_markdown {
+    /* The default top/bottom margins for paragraphs are small, to make sure
+       they look nice next to blockquotes, lists, etc. */
     p {
-        margin: 3px 0px 10px 0px;
+        margin: 3px 0px 3px 0px;
     }
 
-    p + ul {
-        margin-top: -7px;
+    /* The spacing between two paragraphs is significantly larger.  We
+       arrange things so that this spacing matches the spacing between
+       paragraphs in two consecutive 1-line messages. */
+    p + p {
+        margin-top: 10px;
     }
 
-    p + blockquote {
-        margin-top: -4px;
-    }
-
-    p:last-of-type {
-        margin-bottom: 3px;
-    }
-
-    /* This ensures bulleted lists are nicely centered in 1-line messages */
+    /* Ensure bulleted lists are nicely centered in 1-line messages */
     ul {
         margin: 5px 0 5px 20px;
     }
