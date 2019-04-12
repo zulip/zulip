@@ -124,8 +124,8 @@ exports.initialize_custom_date_type_fields = function (element_id) {
         altFormat: "F j, Y"});
 };
 
-exports.intialize_custom_user_type_fields = function (element_id, user_id, is_editable,
-                                                      set_handler_on_update) {
+exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
+                                                       set_handler_on_update) {
     var field_types = page_params.custom_profile_field_types;
     var user_pills = {};
 
@@ -196,7 +196,7 @@ exports.add_custom_profile_fields_to_settings = function () {
     }
 
     exports.append_custom_profile_fields(element_id, people.my_current_user_id());
-    exports.intialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
+    exports.initialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
     exports.initialize_custom_date_type_fields(element_id);
 };
 
