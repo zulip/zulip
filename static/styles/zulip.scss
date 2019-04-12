@@ -439,18 +439,18 @@ code {
     direction: ltr;
 }
 
-.message_content code {
+.rendered_markdown code {
     white-space: pre-wrap;
     padding: 0px 4px;
     background-color: hsl(0, 0%, 100%);
 }
 
 /* This ensures bulleted lists are nicely centered in 1-line messages */
-.message_content ul {
+.rendered_markdown ul {
     margin: 5px 0 5px 20px;
 }
 
-.rtl.message_content ul {
+.rtl.rendered_markdown ul {
     margin: 5px 20px 5px 0;
 }
 
@@ -1440,28 +1440,28 @@ div.focused_table {
     text-decoration: underline;
 }
 
-div.message_content table {
+div.rendered_markdown table {
     padding-right: 10px;
     margin: 5px 5px 5px 5px;
     width: 99%;
 }
 
-div.message_content thead {
+div.rendered_markdown thead {
     background-color: hsl(0, 0%, 93%);
 }
 
-div.message_content tr {
+div.rendered_markdown tr {
     display: table-row;
     vertical-align: inherit;
 }
 
-div.message_content tr th {
+div.rendered_markdown tr th {
     border: 1px solid hsl(0, 0%, 80%);
     padding: 4px;
     text-align: left;
 }
 
-div.message_content tr td {
+div.rendered_markdown tr td {
     border: 1px solid hsl(0, 0%, 80%);
     padding: 4px;
 }
@@ -2821,7 +2821,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 /* embed */
-.message_content .message_embed {
+.rendered_markdown .message_embed {
     display: block;
     position: relative;
     margin: 5px 0px;
@@ -2833,12 +2833,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
     text-shadow: rgba(0, 0, 0, .01) 0 0 1px;
 }
 
-.rtl.message_content .message_embed {
+.rtl.rendered_markdown .message_embed {
     border-left: unset;
     border-right: 3px solid hsl(0, 0%, 93%);
 }
 
-.message_content .message_embed > * {
+.rendered_markdown .message_embed > * {
     display: inherit;
     padding: 5px;
     border: none;
@@ -2896,7 +2896,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 @media (max-width: 600px) {
-    .message_content .message_embed {
+    .rendered_markdown .message_embed {
         height: auto;
     }
 
@@ -2989,18 +2989,18 @@ div.topic_edit_spinner .loading_indicator_spinner {
     opacity: 0.75;
 }
 
-div.message_content table.tictactoe {
+div.rendered_markdown table.tictactoe {
     width: 80px;
     margin-left: 0px;
 }
 
-div.message_content td.tictactoe {
+div.rendered_markdown td.tictactoe {
     width: 15px;
     border: none;
     padding: 2px;
 }
 
-div.message_content button.tictactoe-square {
+div.rendered_markdown button.tictactoe-square {
     background-color: hsl(156, 30%, 62%);
     width: 40px;
     height: 40px;
@@ -3010,11 +3010,11 @@ div.message_content button.tictactoe-square {
     color: hsl(0, 0%, 100%);
 }
 
-div.message_content button.tictactoe-square:hover {
+div.rendered_markdown button.tictactoe-square:hover {
     background-color: hsl(155, 5%, 53%);
 }
 
-div.message_content button.tictactoe-square:disabled {
+div.rendered_markdown button.tictactoe-square:disabled {
     background-color: hsl(156, 33%, 81%);
 }
 
