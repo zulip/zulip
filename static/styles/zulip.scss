@@ -1441,40 +1441,32 @@ a:hover code {
 }
 
 /* Formatting for markdown tables */
-div.rendered_markdown table {
-    padding-right: 10px;
-    margin: 5px 5px 5px 5px;
-    width: 99%;
-}
+.rendered_markdown {
+    table {
+        padding-right: 10px;
+        margin: 5px 5px 5px 5px;
+        width: 99%;
+    }
 
-div.rendered_markdown thead {
-    background-color: hsl(0, 0%, 93%);
-}
+    thead {
+        background-color: hsl(0, 0%, 93%);
+    }
 
-div.rendered_markdown tr {
-    display: table-row;
-    vertical-align: inherit;
-}
+    tr {
+        display: table-row;
+        vertical-align: inherit;
+    }
 
-div.rendered_markdown tr th {
-    border: 1px solid hsl(0, 0%, 80%);
-    padding: 4px;
-    text-align: left;
-}
+    tr th {
+        border: 1px solid hsl(0, 0%, 80%);
+        padding: 4px;
+        text-align: left;
+    }
 
-div.rendered_markdown tr td {
-    border: 1px solid hsl(0, 0%, 80%);
-    padding: 4px;
-}
-
-/* Formatting for block quotes */
-blockquote {
-    margin-bottom: 6px;
-}
-
-blockquote p {
-    line-height: inherit;
-    font-size: inherit;
+    tr td {
+        border: 1px solid hsl(0, 0%, 80%);
+        padding: 4px;
+    }
 }
 
 .rendered_markdown p + ul {
@@ -1493,10 +1485,17 @@ blockquote p {
     margin-bottom: 3px;
 }
 
+/* Formatting for blockquotes */
 .rendered_markdown blockquote {
     padding-left: 5px;
     margin-left: 10px;
+    margin-bottom: 6px;
     border-left-color: hsl(0, 0%, 87%);
+
+    p {
+        line-height: inherit;
+        font-size: inherit;
+    }
 }
 
 .rendered_markdown .rtl blockquote {
