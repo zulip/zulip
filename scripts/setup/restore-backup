@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -56,13 +57,16 @@ if __name__ == "__main__":
             os.chown(path, uid, gid)
         os.setresuid(uid, uid, 0)
 
-        # We create symlinks so that we can do a single `tar -x`
-        # command to unpack the uploads, settings, etc. to their
-        # appropriate places.
+        assert not any("|" in name or "|" in path for name, path in paths)
+        transform_args = [
+            r"--transform=s|^zulip-backup/{}(/.*)?$|{}\1|x".format(
+                re.escape(name), path.replace("\\", r"\\")
+            )
+            for name, path in paths
+        ]
+
         os.mkdir(os.path.join(tmp, "zulip-backup"))
-        for name, path in paths:
-            os.symlink(path, os.path.join(tmp, "zulip-backup", name))
-        run(["tar", "-C", tmp, "--keep-directory-symlink", "-xzf", args.tarball])
+        run(["tar", "-C", tmp] + transform_args + ["-xPzf", args.tarball])
 
         # Now, restore the the database backup using pg_restore.
         db_name = settings.DATABASES["default"]["NAME"]
