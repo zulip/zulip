@@ -116,6 +116,12 @@
                                     </div>
                                     {% endif %}
 
+                                    {% if is_deactivated %}
+                                    <div class="alert">
+                                        {{ deactivated_account_error }}
+                                    </div>
+                                    {% endif %}
+
                                     {% if subdomain %}
                                     <div class="alert">
                                         {{ wrong_subdomain_error }}

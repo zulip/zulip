@@ -55,7 +55,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
     require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain, \
-    ZulipLDAPException, query_ldap, sync_user_from_ldap
+    ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
@@ -94,7 +94,17 @@ class AuthBackendTest(ZulipTestCase):
 
         # Verify auth fails with a deactivated user
         do_deactivate_user(user_profile)
-        self.assertIsNone(backend.authenticate(**good_kwargs))
+        result = backend.authenticate(**good_kwargs)
+        if isinstance(backend, SocialAuthMixin):
+            # Returns a redirect to login page with an error.
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/accounts/login/?is_deactivated=true")
+        else:
+            # Just takes you back to the login page treating as
+            # invalid auth; this is correct because the form will
+            # provide the appropriate validation error for deactivated
+            # account.
+            self.assertIsNone(result)
 
         # Reactivate the user and verify auth works again
         do_reactivate_user(user_profile)
@@ -571,7 +581,7 @@ class SocialAuthBase(ZulipTestCase):
         result = self.social_auth_test(account_data_dict,
                                        subdomain='zulip')
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/")
+        self.assertEqual(result.url, "/accounts/login/?is_deactivated=true")
         # TODO: verify whether we provide a clear error message
 
     def test_social_auth_invalid_realm(self) -> None:
