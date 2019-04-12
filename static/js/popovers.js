@@ -279,7 +279,7 @@ exports.show_user_profile = function (user) {
     ui.set_up_scrollbar($("#user-profile-modal #body"));
     $("#user-profile-modal").modal("show");
 
-    settings_account.intialize_custom_user_type_fields("#user-profile-modal #content", user.user_id, false, false);
+    settings_account.initialize_custom_user_type_fields("#user-profile-modal #content", user.user_id, false, false);
 };
 
 function get_user_info_popover_items() {

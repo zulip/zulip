@@ -367,8 +367,9 @@ exports.on_load_success = function (realm_people_data) {
         $(element).html("");
         settings_account.append_custom_profile_fields(element, user_id);
         settings_account.initialize_custom_date_type_fields(element);
-        var fields_user_pills = settings_account.intialize_custom_user_type_fields(element, user_id,
-                                                                                   true, false);
+        var fields_user_pills = settings_account.initialize_custom_user_type_fields(element,
+                                                                                    user_id,
+                                                                                    true, false);
 
         var url;
         var data;
