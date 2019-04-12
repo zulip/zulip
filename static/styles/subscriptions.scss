@@ -843,6 +843,7 @@ form#add_new_subscription {
 
 .editable-section[contenteditable=true] {
     display: inline-block;
+    vertical-align: top;
     color: hsl(170, 48%, 54%);
 }
 
