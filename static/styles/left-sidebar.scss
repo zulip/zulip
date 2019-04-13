@@ -192,11 +192,12 @@ li.top_left_starred_messages {
 
 .top_left_all_messages i.fa-home {
     position: relative;
-    top: 1px;
     font-size: 15px;
 }
 
 .top_left_private_messages i.fa-envelope {
+    position: relative;
+    top: -1px;
     font-size: 11px;
 }
 
