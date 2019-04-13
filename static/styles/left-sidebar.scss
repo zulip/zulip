@@ -24,9 +24,9 @@ $topic_indent: $far_left_gutter_size + $left_col_size + 4px;
     text-align: center;
 }
 
+/* Ideally we'd handle hashtags using an <i> and just have a single rule here. */
 .stream-privacy span.hashtag,
-.stream-privacy i.fa-lock,
-.filter-icon i {
+#left-sidebar .filter-icon i {
     padding-right: 3px;
 }
 
