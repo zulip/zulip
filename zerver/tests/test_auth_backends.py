@@ -216,6 +216,31 @@ class AuthBackendTest(ZulipTestCase):
                                                               password,
                                                               realm=get_realm("zulip")))
 
+    def test_login_preview(self) -> None:
+        # Test preview=true displays organization login page
+        # instead of redirecting to app
+        self.login(self.example_email("iago"))
+        realm = get_realm("zulip")
+        result = self.client_get('/login/?preview=true')
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response(realm.description, result)
+        self.assert_in_response(realm.name, result)
+        self.assert_in_response("Log in to Zulip", result)
+
+        data = dict(description=ujson.dumps("New realm description"),
+                    name=ujson.dumps("New Zulip"))
+        result = self.client_patch('/json/realm', data)
+        self.assert_json_success(result)
+
+        result = self.client_get('/login/?preview=true')
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("New realm description", result)
+        self.assert_in_response("New Zulip", result)
+
+        result = self.client_get('/login/')
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, 'http://zulip.testserver')
+
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipDummyBackend',))
     def test_no_backend_enabled(self) -> None:
         result = self.client_get('/login/')

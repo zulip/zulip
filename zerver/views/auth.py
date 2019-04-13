@@ -689,10 +689,16 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
             return super().done(form_list, **kwargs)
 
 def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
+    # To support previewing the Zulip login pages, we have a special option
+    # that disables the default behavior of redirecting logged-in users to the
+    # logged-in app.
+    is_preview = False
+    if request.method == "GET" and request.GET and request.GET.get('preview'):
+        is_preview = True
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         if request.user and request.user.is_verified():
             return HttpResponseRedirect(request.user.realm.uri)
-    elif request.user.is_authenticated:
+    elif request.user.is_authenticated and not is_preview:
         return HttpResponseRedirect(request.user.realm.uri)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse('zerver.views.registration.realm_redirect')
