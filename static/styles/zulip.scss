@@ -1456,7 +1456,20 @@ a:hover code {
         margin-left: 0;
     }
 
-    p + ul {
+    /* Ensure ordered lists are nicely centered in 1-line messages */
+    ol {
+        margin: 2px 0 5px 6px;
+    }
+
+    /* Swap the left and right margins of ordered list for Right-To-Left languages */
+    &.rtl ol {
+        margin-right: 8px;
+        margin-left: 0;
+    }
+
+    /* Reduce top-margin when a paragraph is followed by an ordered or bulleted list */
+    p + ul,
+    p + ol {
         margin-top: -2px;
     }
 
