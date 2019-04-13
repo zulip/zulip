@@ -1449,8 +1449,11 @@ a:hover code {
     ul {
         margin: 5px 0 5px 20px;
     }
+
+    /* Swap the left and right margins of bullets for Right-To-Left languages */
     &.rtl ul {
-        margin: 5px 20px 5px 0;
+        margin-right: 20px;
+        margin-left: 0;
     }
 
     /* Formatting for blockquotes */
