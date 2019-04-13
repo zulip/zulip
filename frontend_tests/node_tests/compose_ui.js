@@ -144,4 +144,8 @@ run_test('replace_syntax', () => {
 
     compose_ui.replace_syntax(/b/g, 'B');
     assert.equal($('#compose-textarea').val(), 'ABcaBc');
+
+    // Verify we correctly handle `$`s in the replacement syntax
+    compose_ui.replace_syntax('Bca', '$$\pi$$');
+    assert.equal($('#compose-textarea').val(), 'A$$\pi$$Bc');
 });
