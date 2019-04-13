@@ -11,5 +11,6 @@ Code Testing
    testing-with-node
    testing-with-casper
    mypy
+   typescript
    continuous-integration
    manual-testing
