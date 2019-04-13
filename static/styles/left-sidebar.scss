@@ -22,10 +22,12 @@ $topic_indent: $far_left_gutter_size + $left_col_size + 4px;
     font-weight: 800;
     min-width: $left_col_size;
     text-align: center;
-    span.hashtag,
-    i.fa-lock {
-        padding-right: 3px;
-    }
+}
+
+.stream-privacy span.hashtag,
+.stream-privacy i.fa-lock,
+.filter-icon i {
+    padding-right: 3px;
 }
 
 .pm_left_col {
@@ -276,10 +278,6 @@ li.top_left_starred_messages {
 .topic-name {
     /* TODO: We should figure out how to remove this without changing the spacing */
     line-height: 1.1;
-}
-
-.filter-icon i {
-    padding-right: 3px;
 }
 
 .all-messages-arrow i,
