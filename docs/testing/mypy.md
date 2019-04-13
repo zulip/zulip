@@ -3,13 +3,9 @@
 [mypy](http://mypy-lang.org/) is a compile-time static type checker
 for Python, allowing optional, gradual typing of Python code.  Zulip
 was fully annotated with mypy's Python 2 syntax in 2016, before our
-migration to Python 3 in late 2017.
-
-As a result, Zulip is in the process of migrating from using mypy's
-Python 2 compatible syntax for type annotations (in which type
-annotations are written inside comments that start with `# type: `) to
-the Python 3 syntax.  Here's a brief example of the mypy syntax we're
-using in Zulip:
+migration to Python 3 in late 2017.  In 2018, we migrated essentially
+the entire codebase to the nice PEP-484 (Python 3 only) syntax for
+static types:
 
 ```
 user_dict = {} # type: Dict[str, UserProfile]
@@ -23,7 +19,10 @@ You can learn more about it at:
 * The
   [mypy cheat sheet for Python 3](http://mypy.readthedocs.io/en/latest/cheat_sheet_py3.html)
   is the best resource for quickly understanding how to write the PEP
-  484 type annotations used by mypy correctly.
+  484 type annotations used by mypy correctly.  The
+  [Python 2 cheat sheet](http://mypy.readthedocs.io/en/latest/cheat_sheet.html)
+  is useful for understanding the type comment syntax needed for our
+  few modules that need to support both Python 2 and 3.
 
 * The
   [Python type annotation spec in PEP 484](https://www.python.org/dev/peps/pep-0484/)
