@@ -190,9 +190,15 @@ li.top_left_starred_messages {
     line-height: 1.25;
 }
 
+.top_left_private_messages i.fa-envelope,
+.top_left_mentions i.fa-at,
+.top_left_starred_messages i.fa-star {
+    position: relative;
+    top: -1px;
+}
+
 .top_left_all_messages i.fa-home {
     position: relative;
-    top: 1px;
     font-size: 15px;
 }
 
