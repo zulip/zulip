@@ -1,0 +1,90 @@
+{% extends "zerver/base.html" %}
+
+{% block customhead %}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ render_bundle('integrations-dev-panel') }}
+
+{% endblock %}
+
+
+{% block content %}
+
+<input id="csrftoken" type="hidden" value="{{ csrf_token }}">
+
+<div id="panel_div">
+
+    <h1 class="center-text"> Integrations Developer Panel </h1>
+
+    <table>
+
+        <tr>
+            <td>
+                <label><b>Stream</b></label>
+                <input id="stream_name" type="text" />
+            </td>
+            <td>
+                <label><b>Topic</b></label>
+                <input id="topic_name" type="text" />
+            </td>
+        </tr>
+
+        <tr>
+            <td class="pad-top"><b>Bot</b></td>
+            <td class="pad-top">
+                <select id="bot_name">
+                    <option value=""></option>
+                    {% for bot in bots %}
+                    <option value="{{ bot.api_key }}"> {{ bot.full_name }} </option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+
+        <tr>
+            <td><b>Integration</b></td>
+            <td>
+                <select id="integration_name">
+                    <option value=""></option>
+                    {% for integration in integrations %}
+                    <option value="{{ integration }}"> {{ integration }} </option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+
+        <tr>
+            <td><b>Fixture</b></td>
+            <td><select id="fixture_name"></select></td>
+        </tr>
+
+        <tr>
+            <td colspan="2" class="pad-top">
+                <label for="URL"><b>URL</b></label>
+                <input id="URL" type="text" />
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2" class="center-text pad-top"><b>JSON Body</b></td>
+        </tr>
+        <tr>
+            <td colspan="2" class="form-group">
+                <textarea id="fixture_body" class="form-control"></textarea>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2">
+                <p id="message"></p>
+                <button id="send_fixture_button" class="btn-success">Send!</button>
+            </td>
+        </tr>
+
+    </table>
+
+</div>
+
+<br> <br> <br>
+
+{% endblock %}

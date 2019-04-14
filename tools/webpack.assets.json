@@ -87,6 +87,11 @@
         "./static/styles/app_components.scss"
     ],
     "dev-login": "./static/js/portico/dev-login.js",
+    "integrations-dev-panel": [
+        "./static/js/integrations_dev_panel.js",
+        "./static/styles/integrations_dev_panel.css",
+        "./static/js/channel.js"
+      ],
     "email-log": "./static/js/portico/email_log.js",
     "stats": [
         "./static/styles/stats.scss",
