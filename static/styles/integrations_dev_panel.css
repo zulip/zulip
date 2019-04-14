@@ -1,0 +1,29 @@
+#panel_div {
+    margin: auto;
+    width: 720px;
+    margin-top: 50px;
+    border: 3px solid;
+    border-color: rgb(0, 128, 0);
+    padding: 10px;
+}
+
+#fixture_body {
+    height: 500px;
+    width: 700px;
+}
+
+#send_fixture_button {
+    float: right;
+}
+
+#URL {
+    width: 90%;
+}
+
+.center-text {
+    text-align: center;
+}
+
+.pad-top {
+    padding-top: 30px;
+}

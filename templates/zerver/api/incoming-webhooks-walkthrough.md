@@ -40,7 +40,7 @@ When writing your own incoming webhook integration, you'll want to write a test 
 for each distinct message condition your integration supports. You'll also need a
 corresponding fixture for each of these tests. Depending on the type of data
 the 3rd party service sends, your fixture may contain JSON, URL encoded text, or
-some other kind of data. See [Step 4: Create tests](#step-4-create-tests) or
+some other kind of data. See [Step 5: Create automated tests](#step-5-create-automated-tests) or
 [Testing](https://zulip.readthedocs.io/en/latest/testing/testing.html) for further details.
 
 ## Step 1: Initialize your webhook python package
@@ -127,7 +127,7 @@ from the body of the http request, `stream` with a default of `test`
 (available by default in the Zulip development environment), and
 `topic` with a default of `Hello World`. If your webhook uses a custom stream,
 it must exist before a message can be created in it. (See
-[Step 4: Create tests](#step-4-create-tests) for how to handle this in tests.)
+[Step 4: Create automated tests](#step-5-create-automated-tests) for how to handle this in tests.)
 
 The line that begins `# type` is a mypy type annotation. See [this
 page](https://zulip.readthedocs.io/en/latest/testing/mypy.html) for details about
@@ -179,14 +179,31 @@ icon. The second positional argument defines a list of categories for the
 integration.
 
 At this point, if you're following along and/or writing your own Hello World
-webhook, you have written enough code to test your integration.
+webhook, you have written enough code to test your integration. There are three
+tools which you can use to test your webhook - 2 command line tools and a GUI.
 
-First, get an API key from the Your bots section of your Zulip user's Settings
-page. If you haven't created a bot already, you can do that there. Then copy
-its API key and replace the placeholder `<api_key>` in the examples with
-your real key. This is how Zulip knows the request is from an authorized user.
+## Step 4: Manually testing the webhook
 
-Now you can test using Zulip itself, or curl on the command line.
+For either one of the command line tools, first, you'll need to get an API key
+from the **Your bots** section of your Zulip user's Settings page. To test the webhook,
+you'll need to [create a bot](https://zulipchat.com/help/add-a-bot-or-integration) with
+the **Incoming Webhook** type. Replace `<api_key>` with your bot's API key in the examples
+presented below! This is how Zulip knows that the request was made by an authorized user.
+
+### Curl
+
+Using curl:
+```
+curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key>
+```
+
+After running the above command, you should see something similar to:
+
+```
+{"msg":"","result":"success"}
+```
+
+### Management Command: send_webhook_fixture_message
 
 Using `manage.py` from within the Zulip development environment:
 
@@ -196,26 +213,12 @@ Using `manage.py` from within the Zulip development environment:
     --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
     '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'
 ```
-After which you should see something similar to:
+
+After running the above command, you should see something similar to:
 
 ```
 2016-07-07 15:06:59,187 INFO     127.0.0.1       POST    200 143ms (mem: 6ms/13) (md: 43ms/1) (db: 20ms/9q) (+start: 147ms) /api/v1/external/helloworld (helloworld-bot@zulip.com via ZulipHelloWorldWebhook)
 ```
-
-Using curl:
-
-```
-curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key>
-```
-
-After which you should see:
-```
-{"msg":"","result":"success"}
-```
-
-Using either method will create a message in Zulip:
-
-<img class="screenshot" alt="screenshot" src="/static/images/api/helloworld-webhook.png" />
 
 Some webhooks require custom HTTP headers, which can be passed using
 `./manage.py send_webhook_fixture_message --custom-headers`.  For
@@ -227,7 +230,32 @@ The format is a JSON dictionary, so make sure that the header names do
 not contain any spaces in them and that you use the precise quoting
 approach shown above.
 
-## Step 4: Create tests
+### Integrations Dev Panel
+This is the GUI tool.
+
+<img class="screenshot" src="/static/images/integrations/integrations_dev_panel.png" />
+
+1. Run `./tools/run-dev.py` then go to http://localhost:9991/devtools/integrations/.
+
+2. Set the following mandatory fields:
+- **Bot** - Any incoming webhook bot.
+- **Integration** - One of the integrations.
+- **Fixture** - Though not mandatory, it's recommended that you select one and then tweak it if necessary.
+The remaining fields are optional, and the URL will automatically be generated.
+
+3. Click **Send**!
+
+By opening Zulip in one tab and this tool in another, you can quickly tweak
+your code and send sample messages for many different test fixtures.
+
+
+Your sample notification may look like:
+
+<img class="screenshot" src="/static/images/api/helloworld-webhook.png" />
+
+
+
+## Step 5: Create automated tests
 
 Every webhook integration should have a corresponding test file:
 `zerver/webhooks/mywebhook/tests.py`.
@@ -329,7 +357,7 @@ Running zerver.webhooks.helloworld.tests.HelloWorldHookTests.test_hello_message
 DONE!
 ```
 
-## Step 5: Create documentation
+## Step 6: Create documentation
 
 Next, we add end-user documentation for our integration.  You
 can see the existing examples at <https://zulipchat.com/integrations>
@@ -389,7 +417,7 @@ screenshot. Mostly you should plan on templating off an existing guide, like
 
 [integration-docs-guide]: https://zulip.readthedocs.io/en/latest/subsystems/integration-docs.html
 
-## Step 5: Preparing a pull request to zulip/zulip
+## Step 7: Preparing a pull request to zulip/zulip
 
 When you have finished your webhook integration and are ready for it to be
 available in the Zulip product, follow these steps to prepare your pull
