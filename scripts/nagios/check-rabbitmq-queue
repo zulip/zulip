@@ -5,13 +5,16 @@ import time
 import os
 import subprocess
 
+# The WARN_THRESHOLD/CRIT_THRESHOLD settings makes it possible to
+# configure specific queues to have a higher or lower limit then the
+# default.
 WARN_THRESHOLD_DEFAULT = 10
 WARN_THRESHOLD = {
-    'missedmessage_emails': 45,
+    'missedmessage_emails': WARN_THRESHOLD_DEFAULT,
 }
 CRIT_THRESHOLD_DEFAULT = 50
 CRIT_THRESHOLD = {
-    'missedmessage_emails': 70,
+    'missedmessage_emails': CRIT_THRESHOLD_DEFAULT,
 }
 
 states = {
@@ -56,7 +59,7 @@ now_struct = time.gmtime(now)
 # queues can get backed up; don't alert on those. Additionally, certain workers
 # (slow_queries and digest_emails) have a polling algorithm that means it's
 # normal for them to accumulate items.
-if not set(warn_queues) - set(("missedmessage_emails", "digest_emails", "slow_queries")) and \
+if not set(warn_queues) - set(("digest_emails", "slow_queries")) and \
         now_struct.tm_hour == 18 and now_struct.tm_min < 25:
     status = 0
     print("%s|%s|%s|processing digests, not alerting on elevated mail queues" % (
