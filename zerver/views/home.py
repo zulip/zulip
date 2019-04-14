@@ -27,6 +27,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd, generate_random_token
+from zproject.backends import only_auth_enabled
 from two_factor.utils import default_device
 
 import calendar
@@ -251,6 +252,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         show_invites = False
     if user_profile.is_guest:
+        show_invites = False
+    if only_auth_enabled(['LDAP'], user_profile.realm) and not user_profile.realm.invite_required:
         show_invites = False
 
     show_billing = False
