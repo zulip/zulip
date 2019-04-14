@@ -91,7 +91,7 @@ def run():
     linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'])
     linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'])
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
-                                             '--quiet', '--cache', '--ext .js,.ts'], ['js', 'ts'])
+                                             '--quiet', '--cache', '--ext', '.js,.ts'], ['js', 'ts'])
     linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
     linter_config.external_linter('puppet-lint',
                                   ['puppet-lint'] + PUPPET_CHECK_RULES_TO_EXCLUDE, ['pp'])
