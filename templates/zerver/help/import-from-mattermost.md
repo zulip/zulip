@@ -10,9 +10,9 @@ into an existing Zulip organization.
 
 ## Import from Mattermost
 
-First, export your data.  The following instructions assume you're
-running Mattermost inside a Docker container. Replace `<username>` and
-`<server_ip>` with appropriate values accordingly.
+First, export your data from Mattermost.  The instructions below have
+the commands for the various common ways to run Mattermost.  Replace
+`<username>` and `<server_ip>` with appropriate values accordingly.
 
 {start_tabs}
 
@@ -31,7 +31,7 @@ running Mattermost inside a Docker container. Replace `<username>` and
     cd /opt/mattermost/bin
     ```
 
-3. Run the following commands to export the data from all teams on your server as a tar file.
+3. Run the following commands to export the data:
 
     ```
     sudo ./mattermost export bulk export.json --all-teams
@@ -40,12 +40,13 @@ running Mattermost inside a Docker container. Replace `<username>` and
         exported_emoji/ export.json
     ```
 
-4. Now exit out of the Mattermost server.
+4. Exit your shell on the Mattermost server.
 
     `exit`
 
-5. Finally copy the exported tar file from the server to your local computer. Make sure to
-   replace `/opt/mattermost/bin/` with the correct directory if it is different in your case.
+5. Finally, copy the exported tar file from the server to your local
+   computer.  You may need to replace `/opt/mattermost/bin/` with the
+   path to your Mattermost installation.
 
     ```
     scp <username>@<server_ip>:/opt/mattermost/bin/export.tar.gz .
@@ -53,7 +54,7 @@ running Mattermost inside a Docker container. Replace `<username>` and
 
 {tab|mm-docker}
 
-1. SSH into your Mattermost server running the docker containers.
+1. SSH into the server hosting your Mattermost docker container.
 
     ```
     ssh <username>@><server_ip>
@@ -77,12 +78,13 @@ running Mattermost inside a Docker container. Replace `<username>` and
         exported_emoji/ export.json
     ```
 
-4. Now exit out of the Mattermost server.
+4. Exit your shell on the Mattermost server.
 
     `exit`
 
-5. Finally copy the exported tar file from the server to your local computer. Make sure to replace
-   `mattermost-docker` with the correct directory if it is different in your case.
+5. Finally, copy the exported tar file from the server to your local
+   computer. You may need to replace `mattermost-docker` with the
+   appropriate path for your installation.
 
     ```
     scp <username>@<server_ip>:mattermost-docker/volumes/app/mattermost/data/export.tar.gz .
