@@ -171,7 +171,7 @@ EMOJI_NAME_MAPS = {
     # welcome and thank_you from
     # https://emojipedia.org/person-with-folded-hands/, namaste from indian
     # culture
-    '1f64f': {'canonical_name': 'pray', 'aliases': ['welcome', 'thank_you', 'namaste']},
+    '1f64f': {'canonical_name': 'pray', 'aliases': ['welcome', 'thank_you', 'namaste', 'please']},
     # done_deal seems like a natural addition
     '1f91d': {'canonical_name': 'handshake', 'aliases': ['done_deal']},
     '1f44d': {'canonical_name': '+1', 'aliases': ['thumbs_up']},
@@ -1448,7 +1448,7 @@ EMOJI_NAME_MAPS = {
     '1f51b': {'canonical_name': 'on', 'aliases': []},
     '1f51d': {'canonical_name': 'top', 'aliases': []},
     '1f51c': {'canonical_name': 'soon', 'aliases': []},
-    '2714': {'canonical_name': 'check_mark', 'aliases': []},
+    '2714': {'canonical_name': 'check_mark', 'aliases': ['check']},
     '2611': {'canonical_name': 'checkbox', 'aliases': []},
     '1f518': {'canonical_name': 'radio_button', 'aliases': []},
     '26aa': {'canonical_name': 'white_circle', 'aliases': []},
