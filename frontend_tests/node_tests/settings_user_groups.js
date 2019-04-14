@@ -107,6 +107,7 @@ run_test('populate_user_groups', () => {
         assert.equal(args.user_group.id, 1);
         assert.equal(args.user_group.name, 'Mobile');
         assert.equal(args.user_group.description, 'All mobile people');
+        assert.equal(args.user_group.can_edit, true);
         templates_render_called = true;
         return fake_rendered_temp;
     };
@@ -349,22 +350,11 @@ run_test('with_external_user', () => {
     // Reset zjquery to test stuff with user who cannot edit
     set_global('$', global.make_zjquery());
 
-    var user_group_find_called = 0;
-    var user_group_stub = $('div.user-group[id="1"]');
-    var name_field_stub = $.create('fake-name-field');
-    var description_field_stub = $.create('fake-description-field');
+    // var user_group_find_called = 0;
+    // var user_group_stub = $('div.user-group[id="1"]');
+    // var name_field_stub = $.create('fake-name-field');
+    // var description_field_stub = $.create('fake-description-field');
     var input_stub = $.create('fake-input');
-    user_group_stub.find = function (elem) {
-        if (elem === '.name') {
-            user_group_find_called += 1;
-            return name_field_stub;
-        }
-        if (elem === '.description') {
-            user_group_find_called += 1;
-            return description_field_stub;
-        }
-    };
-
     var pill_container_stub = $('.pill-container[data-group-pills="1"]');
     var pill_stub = $.create('fake-pill');
     var pill_container_find_called = 0;
@@ -437,15 +427,7 @@ run_test('with_external_user', () => {
     $('.user-group').attr('id', '1');
     set_attributes_called += 1;
 
-    var name_update_handler = $(user_group_selector).get_on_handler("input", ".name");
-
-    var des_update_handler = $(user_group_selector).get_on_handler("input", ".description");
-
     var member_change_handler = $(user_group_selector).get_on_handler("blur", ".input");
-
-    var name_change_handler = $(user_group_selector).get_on_handler("blur", ".name");
-
-    var des_change_handler = $(user_group_selector).get_on_handler("blur", ".description");
 
     var event = {
         stopPropagation: noop,
@@ -460,18 +442,13 @@ run_test('with_external_user', () => {
     empty_fn();
     pill_click_handler(event);
     assert.equal(delete_handler.call(fake_delete), undefined);
-    assert.equal(name_update_handler(), undefined);
-    assert.equal(des_update_handler(), undefined);
     assert.equal(member_change_handler(), undefined);
-    assert.equal(name_change_handler(), undefined);
-    assert.equal(des_change_handler(), undefined);
     assert.equal(set_parents_result_called, 1);
     assert.equal(set_attributes_called, 1);
-    assert.equal(can_edit_called, 9);
+    assert.equal(can_edit_called, 6);
     assert(exit_button_called);
     assert(pill_click_called);
     assert(pill_hover_called);
-    assert.equal(user_group_find_called, 2);
     assert.equal(pill_container_find_called, 4);
     assert.equal(turned_off['keydown/.pill'], true);
     assert.equal(turned_off['keydown/.input'], true);
@@ -500,6 +477,37 @@ run_test('on_events', () => {
     settings_user_groups.can_edit = function () {
         return true;
     };
+
+    (function pencil_icon_triggered() {
+        var select_checkmark = $("#user-group #1 .name .checkmark");
+        var select_editable = $("#user-group #1 .name .editable");
+        select_editable.attr("data", "#fake-pencil-button");
+        function set_up_click_handlers() {
+            select_editable.click(function () {
+                if (select_checkmark.visible()) {
+                    select_editable.attr('content', '#fake-pencil-button');
+                    select_editable.attr('contenteditable', false);
+                    select_checkmark.hide();
+                } else {
+                    select_checkmark.show();
+                    select_editable.attr("content", "#fake-cross-button");
+                    select_editable.attr("contenteditable", true);
+                }
+            });
+        }
+        set_up_click_handlers();
+        // First time when we click the checkmark shoud become visible alog with
+        // the cross replacing the pencil button
+        select_editable.click();
+        assert(select_checkmark.visible());
+        assert.equal(select_editable.attr("content"), "#fake-cross-button");
+        assert.equal(select_editable.attr('contenteditable'), true);
+        // Second time we don't have the checkmark so clicking on cross should hide it
+        select_editable.click();
+        assert(!select_checkmark.visible());
+        assert.equal(select_editable.attr("content"), "#fake-pencil-button");
+        assert.equal(select_editable.attr('contenteditable'), false);
+    }());
 
     (function test_admin_user_group_form_submit_triggered() {
         var handler = $('.organization form.admin-user-group-form').get_on_handler("submit");
@@ -608,7 +616,7 @@ run_test('on_events', () => {
     }());
 
     (function test_do_not_blur() {
-        var blur_event_classes = [".name", ".description", ".input"];
+        var blur_event_classes = [".input"];
         var api_endpoint_called = false;
         channel.post = function () {
             api_endpoint_called = true;
@@ -622,7 +630,7 @@ run_test('on_events', () => {
         // Any of the blur_exceptions trigger blur event.
         _.each(blur_event_classes, function (class_name) {
             var handler = $(user_group_selector).get_on_handler("blur", class_name);
-            var blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
+            var blur_exceptions = _.without([".pill-container", ".input", ".delete"],
                                             class_name);
             _.each(blur_exceptions, function (blur_exception) {
                 api_endpoint_called = false;
@@ -663,150 +671,7 @@ run_test('on_events', () => {
             assert(settings_user_groups_reload_called);
         });
 
-    }());
 
-    (function test_update_cancel_button() {
-        var handler_name = $(user_group_selector).get_on_handler("input", ".name");
-        var handler_desc = $(user_group_selector).get_on_handler("input", ".description");
-        var sib_des = $(description_selector);
-        var sib_name = $(name_selector);
-        sib_name.text(i18n.t('mobile'));
-        sib_des.text(i18n.t('All mobile members'));
-
-        var group_data = {
-            name: 'translated: mobile',
-            description: 'translated: All mobile members',
-            members: Dict.from_array([2, 31])};
-        user_groups.get_user_group_from_id = function () {
-            return group_data;
-        };
-
-        var cancel_fade_out_called = false;
-        var instructions_fade_out_called = false;
-        $(cancel_selector).show();
-        $(cancel_selector).fadeOut = function () {
-            cancel_fade_out_called = true;
-        };
-        $(instructions_selector).fadeOut = function () {
-            instructions_fade_out_called = true;
-        };
-
-        // Cancel button removed if user group if user group has no changes.
-        var fake_this = $.create('fake-#update_cancel_button');
-        handler_name.call(fake_this);
-        assert(cancel_fade_out_called);
-        assert(instructions_fade_out_called);
-
-        // Check if cancel button removed if user group error is showing.
-        $(user_group_selector + ' .user-group-status').show();
-        cancel_fade_out_called = false;
-        instructions_fade_out_called = false;
-        handler_name.call(fake_this);
-        assert(cancel_fade_out_called);
-        assert(instructions_fade_out_called);
-
-        // Check for handler_desc to achieve 100% coverage.
-        cancel_fade_out_called = false;
-        instructions_fade_out_called = false;
-        handler_desc.call(fake_this);
-        assert(cancel_fade_out_called);
-        assert(instructions_fade_out_called);
-    }());
-
-    (function test_user_groups_save_group_changes_triggered() {
-        var handler_name = $(user_group_selector).get_on_handler("blur", ".name");
-        var handler_desc = $(user_group_selector).get_on_handler("blur", ".description");
-        var sib_des = $(description_selector);
-        var sib_name = $(name_selector);
-        sib_name.text(i18n.t('mobile'));
-        sib_des.text(i18n.t('All mobile members'));
-
-        var group_data = {members: Dict.from_array([2, 31])};
-        user_groups.get_user_group_from_id = function () {
-            return group_data;
-        };
-        var api_endpoint_called = false;
-        var cancel_fade_out_called = false;
-        var saved_fade_to_called = false;
-        var instructions_fade_out_called = false;
-        $(instructions_selector).fadeOut = function () {
-            instructions_fade_out_called = true;
-        };
-        $(cancel_selector).fadeOut = function () {
-            cancel_fade_out_called = true;
-        };
-        $(saved_selector).css = function (data) {
-            if (typeof data === 'string') {
-                assert.equal(data, 'display');
-            }
-            assert.equal(typeof data, 'object');
-            assert.equal(data.display, 'inline-block');
-            assert.equal(data.opacity, '0');
-            return $(saved_selector);
-        };
-        $(saved_selector).fadeTo = function () {
-            saved_fade_to_called = true;
-            return $(saved_selector);
-        };
-
-        channel.patch = function (opts) {
-            assert.equal(opts.url, "/json/user_groups/1");
-            assert.equal(opts.data.name, 'translated: mobile');
-            assert.equal(opts.data.description, 'translated: All mobile members');
-            api_endpoint_called = true;
-            (function test_post_success() {
-                global.patch_builtin('setTimeout', function (func) {
-                    func();
-                });
-                opts.success();
-                assert(cancel_fade_out_called);
-                assert(instructions_fade_out_called);
-                assert(saved_fade_to_called);
-            }());
-            (function test_post_error() {
-                var user_group_error = $(user_group_selector + ' .user-group-status');
-                user_group_error.show();
-                ui_report.error = function (error_msg, error_obj, ele) {
-                    var xhr = {
-                        responseText: '{"msg":"fake-msg"}',
-                    };
-                    assert.equal(error_msg, 'translated: Failed');
-                    assert.deepEqual(error_obj, xhr);
-                    assert.equal(ele, user_group_error);
-                };
-                var xhr = {
-                    responseText: '{"msg":"fake-msg", "attrib":"val"}',
-                };
-                opts.error(xhr);
-
-                assert(user_group_error.visible());
-            }());
-        };
-
-        var fake_this = $.create('fake-#user-groups_blur_name');
-        fake_this.closest = function () {
-            return [];
-        };
-        fake_this.set_parents_result(user_group_selector, $(user_group_selector));
-        var event = {
-            relatedTarget: fake_this,
-        };
-
-        api_endpoint_called = false;
-        handler_name.call(fake_this, event);
-        assert(api_endpoint_called);
-
-        // Check API endpoint isn't called if name and desc haven't changed.
-        group_data.name = "translated: mobile";
-        group_data.description = "translated: All mobile members";
-        api_endpoint_called = false;
-        handler_name.call(fake_this, event);
-        assert(!api_endpoint_called);
-
-        // Check for handler_desc to achieve 100% coverage.
-        api_endpoint_called = false;
-        handler_desc.call(fake_this, event);
-        assert(!api_endpoint_called);
     }());
 
     (function test_user_groups_save_member_changes_triggered() {
@@ -868,4 +733,126 @@ run_test('on_events', () => {
         handler.call(fake_this, event);
         assert(api_endpoint_called);
     }());
+});
+
+run_test('change_group_description', (e) => {
+    var fake_target = $('<span class="checkmark" data-finish-editing=".group-description-editable">');
+    fake_target.closest = function () {
+        var fake_closest_element = $('.user-group');
+        fake_closest_element.attr('id', 1);
+        return $('.user-group');
+    };
+    e = {
+        preventDefault: function () {},
+        target: fake_target,
+    };
+    assert.equal(settings_user_groups.change_group_description(e), undefined);
+    function initialize_handler() {
+        $(user_group_selector).on('click', '.description', function () {
+            // Don't know what kind of definition should I giver here to make it work
+            return noop;
+        });
+    }
+    initialize_handler();
+    var handler_description = $(user_group_selector).get_on_handler('click', '.description');
+    handler_description();
+    var sib_des = $(description_selector);
+    var sib_name = $(name_selector);
+    sib_name.text(i18n.t('mobile'));
+    sib_des.text(i18n.t('All mobile members'));
+
+    var group_data = {members: Dict.from_array([2, 31])};
+    user_groups.get_user_group_from_id = function () {
+        return group_data;
+    };
+    var api_endpoint_called = false;
+
+    channel.patch = function (opts) {
+        assert.equal(opts.url, "/json/user_groups/1");
+        assert.equal(opts.data.name, 'translated: mobile');
+        assert.equal(opts.data.description, 'translated: All mobile members');
+        api_endpoint_called = true;
+        (function test_post_success() {
+            global.patch_builtin('setTimeout', function (func) {
+                func();
+            });
+            opts.success();
+        }());
+        (function test_post_error() {
+            var user_group_error = $(user_group_selector + ' .user-group-status');
+            user_group_error.show();
+            ui_report.error = function (error_msg, error_obj, ele) {
+                var xhr = {
+                    responseText: '{"msg":"fake-msg"}',
+                };
+                assert.equal(error_msg, 'translated: Failed');
+                assert.deepEqual(error_obj, xhr);
+                assert.equal(ele, user_group_error);
+            };
+            var xhr = {
+                responseText: '{"msg":"fake-msg", "attrib":"val"}',
+            };
+            opts.error(xhr);
+
+            assert(user_group_error.visible());
+        }());
+    };
+
+    var fake_this = $.create('fake-#user-groups_blur_desc');
+    fake_this.closest = function () {
+        return [];
+    };
+
+    fake_this.set_parents_result(user_group_selector, $(user_group_selector));
+    var event = {
+        stopPropagation: function () {},
+        relatedTarget: fake_this,
+    };
+
+    api_endpoint_called = false;
+    handler_description.call(fake_this, event);
+    assert(api_endpoint_called);
+
+    // Check API endpoint isn't called if name and desc haven't changed.
+    group_data.name = "translated: mobile";
+    group_data.description = "translated: All mobile members";
+    api_endpoint_called = false;
+    handler_description.call(fake_this, event);
+    assert(!api_endpoint_called);
+
+    var fake_change_name_desc_called = false;
+    function test_change_name_desc(e, name_or_desc) {
+        assert.equal(name_or_desc, ' .description');
+        fake_change_name_desc_called = true;
+        return noop;
+    }
+
+    settings_user_groups.change_group_description = function (e) {
+        test_change_name_desc(e, ' .description');
+        assert(fake_change_name_desc_called);
+    };
+});
+
+run_test('change_group_name', (e) => {
+    var fake_target = $('<span class="checkmark" data-finish-editing=".group-name-editable">');
+    fake_target.closest = function () {
+        var fake_closest_element = $('.user-group');
+        fake_closest_element.attr('id', 1);
+        return $('.user-group');
+    };
+    e = {
+        preventDefault: function () {},
+        target: fake_target,
+    };
+    assert.equal(settings_user_groups.change_group_name(e), undefined);
+    var fake_change_name_desc_called = false;
+    function test_change_name_desc(e, name_or_desc) {
+        assert.equal(name_or_desc, ' .name');
+        fake_change_name_desc_called = true;
+        return noop;
+    }
+    settings_user_groups.change_name_description = function (e) {
+        test_change_name_desc(e, ' .name');
+        assert(fake_change_name_desc_called);
+    };
 });
