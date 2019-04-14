@@ -22,7 +22,7 @@ support@zulipchat.com.
 
 Allow anyone to
 [join without an invitation](/help/allow-anyone-to-join-without-an-invitation).
-You can also link to your Zulip with a [badge](/help/join-zulip-chat-badge)
+You can also link to your Zulip with a [badge](/help/linking-to-zulip)
 in your readme document.
 
 ### Moderate your community

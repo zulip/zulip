@@ -119,7 +119,7 @@ expert teaching other users how to use Zulip.
   [set a default language for your organization](/help/change-the-default-language-for-your-organization).
 - [Add custom emoji](/help/add-custom-emoji), at the very least for
   your organization's logo.
-- Link to your Zulip instance with a [nice badge](/help/join-zulip-chat-badge).
+- Link to your Zulip instance with a [nice badge](/help/linking-to-zulip).
 - Send feedback to the Zulip development community!  We love hearing
   about problems (however minor) and feature ideas that could make
   Zulip even better.
