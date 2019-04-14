@@ -91,6 +91,7 @@
 * [Change your timezone](/help/change-your-timezone)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
+* [Linking to Zulip](/help/linking-to-zulip)
 * [Connect through a proxy](/help/connect-through-a-proxy)
 * [Add a custom certificate](/help/custom-certificates)
 
@@ -103,7 +104,6 @@
 ## Organization basics
 * [Review your organization's settings](/help/review-your-organization-settings)
 * [Create your organization profile](/help/create-your-organization-profile)
-* [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import from HipChat/Stride](/help/import-from-hipchat)
 * [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
