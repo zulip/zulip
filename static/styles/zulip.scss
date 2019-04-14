@@ -22,7 +22,7 @@ body {
 body,
 #tab_bar_underpadding {
     background-color: hsl(0, 0%, 100%);
-    @include prefixed-transition(background-color, 200ms, linear);
+    transition: background-color 200ms linear;
 }
 
 input,
@@ -537,7 +537,7 @@ td.pointer {
 
 .new_messages,
 .new_messages_fadeout {
-    @include prefixed-transition(all, 3s, ease-in-out);
+    transition: all 3s ease-in-out;
 }
 
 .include-sender .message_edit_notice {
@@ -581,7 +581,7 @@ td.pointer {
     right: -105px;
     line-height: 20px;
     text-align: right;
-    @include prefixed-transition(background-color, 1.5s, ease-in, color 1.5s ease-in);
+    transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
 
 #message-edit-history .message_time {
@@ -1038,7 +1038,7 @@ td.pointer {
     opacity: 0;
     z-index: 1;
     bottom: 1px;
-    @include prefixed-transition(all, 0.3s, ease-out);
+    transition: all 0.3s ease-out;
 }
 
 .unread-marker-fill {
@@ -1052,16 +1052,16 @@ td.pointer {
 }
 
 .unread .unread_marker {
-    @include prefixed-transition(all, 0.3s, ease-out);
+    transition: all 0.3s ease-out;
     opacity: 1;
 }
 
 .unread_marker.slow_fade {
-    @include prefixed-transition(all, 2s, ease-out);
+    transition: all 2s ease-out;
 }
 
 .unread_marker.fast_fade {
-    @include prefixed-transition(all, 0.3s, ease-out);
+    transition: all 0.3s ease-out;
 }
 
 .selected_message .messagebox {
