@@ -31,7 +31,7 @@ zulip(config).then((client) => {
 {tab|curl}
 
 ```
-curl {{ api_url }}/v1/get_stream_id?stream=Denmark \
+curl -G {{ api_url }}/v1/get_stream_id?stream=Denmark \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
 

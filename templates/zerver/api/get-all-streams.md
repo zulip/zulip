@@ -32,14 +32,14 @@ zulip(config).then((client) => {
 {tab|curl}
 
 ```
-curl {{ api_url }}/v1/streams -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+curl -G {{ api_url }}/v1/streams -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
 
 You may pass in one or more of the parameters mentioned above
 as URL query parameters, like so:
 
 ```
-curl {{ api_url }}/v1/streams?include_public=false \
+curl -G {{ api_url }}/v1/streams?include_public=false \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
 

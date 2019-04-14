@@ -19,7 +19,7 @@ UI).
 {tab|curl}
 
 ```
-curl {{ api_url }}/v1/messages/<msg_id> \
+curl -G {{ api_url }}/v1/messages/<msg_id> \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
 ```
 

@@ -16,7 +16,7 @@ Fetches all of the user groups in the organization.
 <div data-language="curl" markdown="1">
 
 ```
-curl {{ api_url }}/v1/user_groups \
+curl -G {{ api_url }}/v1/user_groups \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
 
