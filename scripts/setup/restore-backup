@@ -84,7 +84,7 @@ if __name__ == "__main__":
                 "zulip_base",
             ]
         )
-        as_postgres = ["su", "-s", "/usr/bin/env", "--", POSTGRES_USER]
+        as_postgres = ["su", "-s", "/usr/bin/env", "-", "--", POSTGRES_USER]
         run(as_postgres + ["dropdb", "--if-exists", "--", db_name])
         run(as_postgres + ["createdb", "-O", "zulip", "-T", "template0", "--", db_name])
         run(as_postgres + ["pg_restore", "-d", db_name, "--", db_dir])
