@@ -638,7 +638,9 @@ class DevAuthBackend(ZulipAuthMixin):
         return common_get_active_user(dev_auth_username, realm, return_data=return_data)
 
 def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
-    login_url = reverse('django.contrib.auth.views.login')
+    # Specifying the template name makes sure that the user is not redirected to dev_login in case of
+    # a deactivated account on a test server.
+    login_url = reverse('zerver.views.auth.login_page', kwargs = {'template_name': 'zerver/login.html'})
     redirect_url = login_url + '?is_deactivated=true'
     return HttpResponseRedirect(redirect_url)
 
