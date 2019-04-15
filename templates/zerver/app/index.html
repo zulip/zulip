@@ -152,10 +152,19 @@
     </div>
     <div class="user_status_overlay overlay new-style" data-overlay="user_status_overlay" aria-hidden="true">
         <div class="overlay-content modal-bg">
-            <div class="user_status_change_title">Set a status message</div>
-            <div>
-                <input type="text" class="user_status" maxlength="60"/>
-                <button class="sea-green rounded button set_user_status">
+            <div class="user-status-header">
+                <h1>Set a status</h1>
+                <div class="exit">
+                    <span class="exit-sign">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <label for="user_status">Status message</label>
+                <input type="text" class="user_status" maxlength="60" />
+            </div>
+            <div class="modal-footer">
+                <button class="button exit small rounded">Cancel</button>
+                <button class="sea-green small rounded button set_user_status">
                     Save
                 </button>
             </div>
