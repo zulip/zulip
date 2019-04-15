@@ -24,7 +24,7 @@ for details on the data model for presence in Zulip.
 {tab|curl}
 
 ```
-curl {{ api_url }}/v1/users/<email>/presence \
+curl -X GET {{ api_url }}/v1/users/<email>/presence \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
 
