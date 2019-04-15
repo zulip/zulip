@@ -5,6 +5,7 @@ secure Zulip installation, including:
 
 - [Upgrading](#upgrading)
 - [Upgrading from a git repository](#upgrading-from-a-git-repository)
+- [Upgrading the operating system](#upgrading-the-operating-system)
 - [Backups](#backups)
 - [Monitoring](#monitoring)
 - [Scalability](#scalability)
@@ -43,14 +44,6 @@ have tested the upgrade in advance, we recommend doing upgrades at off hours.
 [separate instructions for upgrading Zulip if you're using Docker][docker-upgrade].)
 
 [docker-upgrade]: https://github.com/zulip/docker-zulip#upgrading-the-zulip-container
-
-### Upgrading the distro
-
-Note that upgrading an existing Zulip production server from Ubuntu
-14.04 Trusty to Ubuntu 16.04 Xenial (or 16.04 Xenial to 18.04 Bionic)
-will require significant manual intervention on your part to migrate
-the data in the database from Postgres 9.3 to Postgres 9.5.
-Contributions on testing and documenting this process are welcome!
 
 ### Preserving local changes to configuration files
 
@@ -236,6 +229,109 @@ After you've upgraded to Zulip 1.7 or above, you can safely remove
 `zulip::static_asset_compiler` from `puppet_classes`; in Zulip 1.7 and
 above, it is a dependency of `zulip::voyager` and thus these
 dependencies are installed by default.
+
+## Upgrading the operating system
+
+When you upgrade the operating system on which Zulip is installed
+(E.g. Ubuntu 14.04 Trusty to Ubuntu 16.04 Xenial), you need to take
+some additional steps to update your Zulip installation, documented
+below.
+
+The steps are largely the same for the various OS upgrades aside from
+the versions of postgres, so you should be able to adapt these
+instructions for other supported platforms.
+
+### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
+
+1. First, as the Zulip user, stop the Zulip server and run the following
+to back up the system:
+
+    ```
+    supervisorctl stop all
+    /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
+    ```
+
+2. Upgrade the operating system using the OS's standard tooling.
+E.g. for Ubuntu, this means running `do-release-upgrade` and following
+the prompts until it completes successfully:
+
+    ```
+    do-release-upgrade
+    ```
+
+3. Run the following commands to upgrade the database installation and
+OS configuration to match the new OS version:
+
+    ```
+    /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    pg_dropcluster 9.5 main --stop
+    systemctl stop postgresql
+    pg_upgradecluster -m upgrade 9.3 main
+    pg_dropcluster 9.3 main
+    apt remove postgresql-9.3
+    service memcached restart
+    ```
+
+4. At this point, you are now running the version of postgres that
+comes with the new Ubuntu version.  Finally, we need to reinstall the
+current version of Zulip, which among other things will recompile
+Zulip's Python module dependencies for your new version of Python:
+
+    ```
+    rm -rf /srv/zulip-venv-cache/*
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 /home/zulip/deployments/current/ --from-git
+    ```
+
+That last command will finish by restarting your Zulip server; you
+should now be able to navigate to its URL and confirm everything is
+working correctly.
+
+### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
+
+1. First, as the Zulip user, stop the Zulip server and run the following
+to back up the system:
+
+    ```
+    supervisorctl stop all
+    /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
+    ```
+
+2. Now, switch to the root user and upgrade the operating system using
+the OS's standard tooling.  E.g. for Ubuntu, this means running
+`do-release-upgrade` and following the prompts until it completes
+successfully:
+
+    ```
+    sudo -i
+    do-release-upgrade
+    ```
+
+3. Run the following commands to upgrade the database installation and
+OS configuration to match the new OS version:
+
+    ```
+    /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    pg_dropcluster 10 main --stop
+    systemctl stop postgresql
+    pg_upgradecluster -m upgrade 9.5 main
+    pg_dropcluster 9.5 main
+    apt remove postgresql-9.5
+    service memcached restart
+    ```
+
+4. At this point, you are now running the version of postgres that
+comes with the new Ubuntu version.  Finally, we need to reinstall the
+current version of Zulip, which among other things will recompile
+Zulip's Python module dependencies for your new version of Python:
+
+    ```
+    rm -rf /srv/zulip-venv-cache/*
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 /home/zulip/deployments/current/ --from-git
+    ```
+
+That last command will finish by restarting your Zulip server; you
+should now be able to navigate to its URL and confirm everything is
+working correctly.
 
 ## Backups
 
