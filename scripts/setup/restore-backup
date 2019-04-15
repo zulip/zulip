@@ -7,6 +7,9 @@ import subprocess
 import sys
 import tempfile
 
+if False:
+    from typing import IO
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
 from scripts.lib.zulip_tools import su_to_zulip, run
@@ -16,8 +19,10 @@ POSTGRES_USER = "postgres"
 parser = argparse.ArgumentParser()
 parser.add_argument("tarball", help="Filename of input tarball")
 
-if __name__ == "__main__":
-    args = parser.parse_args()
+
+def restore_backup(tarball_file):
+    # type: (IO[bytes]) -> None
+
     su_to_zulip(save_suid=True)
 
     import scripts.lib.setup_path_on_import
@@ -27,16 +32,17 @@ if __name__ == "__main__":
     # /etc/zulip/settings.py via `from zproject import settings`,
     # next).  Ignore errors if zulip-backup/settings is not present
     # (E.g. because this is a development backup).
+    tarball_file.seek(0, 0)
     subprocess.call(
         [
             "tar",
             "-C",
             "/etc/zulip",
             "--strip-components=2",
-            "-xzf",
-            args.tarball,
+            "-xz",
             "zulip-backup/settings",
-        ]
+        ],
+        stdin=tarball_file,
     )
 
     from zproject import settings
@@ -66,7 +72,8 @@ if __name__ == "__main__":
         ]
 
         os.mkdir(os.path.join(tmp, "zulip-backup"))
-        run(["tar", "-C", tmp] + transform_args + ["-xPzf", args.tarball])
+        tarball_file.seek(0, 0)
+        run(["tar", "-C", tmp] + transform_args + ["-xPz"], stdin=tarball_file)
 
         # Now, restore the the database backup using pg_restore.
         db_name = settings.DATABASES["default"]["NAME"]
@@ -106,3 +113,10 @@ if __name__ == "__main__":
             run(["supervisorctl", "restart", "all"])
 
         run([os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "flush-memcached")])
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+
+    with open(args.tarball, "rb") as tarball_file:
+        restore_backup(tarball_file)
