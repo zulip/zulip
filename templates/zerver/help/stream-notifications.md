@@ -1,34 +1,7 @@
 # Stream notifications
 
 You can configure desktop, mobile, and email notifications on a stream by
-stream basis. You can also set default notification preferences for streams
-you join in the future.
-
-## Set a default for new streams
-
-{start_tabs}
-
-{settings_tab|notifications}
-
-1. Toggle the notification settings under **Stream messages**.
-
-1. Under **Apply this change to all current stream subscriptions**, click
-   **No**.
-
-{end_tabs}
-
-## Change settings for current and future streams
-
-{start_tabs}
-
-{settings_tab|notifications}
-
-1. Toggle the notification settings under **Stream messages**.
-
-1. Under **Apply this change to all current stream subscriptions**, click
-   **Yes**.
-
-{end_tabs}
+stream basis.
 
 ## Set notifications for a single stream
 
@@ -44,6 +17,21 @@ you join in the future.
 4. Toggle the notifications settings on the right.
 
 {end_tabs}
+
+These settings will override any default stream notification settings.
+
+## Set default notifications for all streams
+
+{start_tabs}
+
+{settings_tab|notifications}
+
+1. Toggle the notification settings under **Stream messages**.
+
+{end_tabs}
+
+These settings only apply to streams where you have not
+explicitly set a notification preference.
 
 ## Related articles
 
