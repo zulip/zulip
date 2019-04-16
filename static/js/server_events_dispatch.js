@@ -385,6 +385,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'twenty_four_hour_time',
             'translate_emoticons',
             'starred_message_counts',
+            'fluid_layout_width',
         ];
         if (_.contains(user_display_settings, event.setting_name)) {
             page_params[event.setting_name] = event.setting;
@@ -422,6 +423,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         if (event.setting_name === 'starred_message_counts') {
             starred_messages.rerender_ui();
+        }
+        if (event.setting_name === 'fluid_layout_width') {
+            scroll_bar.set_layout_width();
         }
         if (event.setting_name === 'left_side_userlist') {
             // TODO: Make this change the view immediately rather
