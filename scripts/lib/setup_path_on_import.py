@@ -13,6 +13,6 @@ if sys.prefix != venv:
     # this file will exist in production
     if os.path.exists(activate_this):
         activate_locals = dict(__file__=activate_this)
-        exec(open(activate_this).read(), {}, activate_locals)
+        exec(open(activate_this).read(), activate_locals)
         if not os.path.exists(activate_locals["site_packages"]):
             raise RuntimeError(venv + " was not set up for this Python version")
