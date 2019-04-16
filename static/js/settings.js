@@ -94,9 +94,9 @@ function setup_settings_label() {
 
         // pm_mention_notification_settings
         enable_desktop_notifications: i18n.t("Visual desktop notifications"),
-        enable_offline_email_notifications: i18n.t("Email notifications when offline"),
-        enable_offline_push_notifications: i18n.t("Mobile notifications when offline"),
-        enable_online_push_notifications: i18n.t("Mobile notifications always (even when online)"),
+        enable_offline_email_notifications: i18n.t("Email notifications"),
+        enable_offline_push_notifications: i18n.t("Mobile notifications"),
+        enable_online_push_notifications: i18n.t("Send mobile notifications even if I'm online (useful for testing)"),
         enable_sounds: i18n.t("Audible desktop notifications"),
         pm_content_in_desktop_notifications: i18n.t("Include content of private messages"),
 
