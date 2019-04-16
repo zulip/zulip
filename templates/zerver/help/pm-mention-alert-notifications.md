@@ -8,7 +8,7 @@ You can configure desktop, mobile, and email notifications for
 
 {settings_tab|notifications}
 
-1. Toggle the notification settings under **Private messages and @-mentions**.
+1. Toggle the notification settings under **Private messages, @-mentions, and alert words**.
 
 {end_tabs}
 
