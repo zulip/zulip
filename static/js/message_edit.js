@@ -217,6 +217,15 @@ function handle_edit_keydown(from_topic_edited_only, e) {
         // Pressing enter to save edits is coupled with enter to send
         if (composebox_typeahead.should_enter_send(e)) {
             row = $(".message_edit_content").filter(":focus").closest(".message_row");
+            var message_edit_save_button = row.find(".message_edit_save");
+            if (message_edit_save_button.attr('disabled') === "disabled") {
+                // In cases when the save button is disabled
+                // we need to disable save on pressing enter
+                // Prevent default to avoid new-line on pressing
+                // enter inside the textarea in this case
+                e.preventDefault();
+                return;
+            }
         } else {
             composebox_typeahead.handle_enter($(e.target), e);
             return;
