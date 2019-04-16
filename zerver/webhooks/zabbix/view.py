@@ -20,7 +20,11 @@ need further help!
 """
 
 ZABBIX_TOPIC_TEMPLATE = '{hostname}'
-ZABBIX_MESSAGE_TEMPLATE = '{status} ({severity}) alert on [{hostname}]({link}).\n{trigger}\n{item}'
+ZABBIX_MESSAGE_TEMPLATE = """
+{status} ({severity}) alert on [{hostname}]({link}):
+* {trigger}
+* {item}
+""".strip()
 
 @api_key_only_webhook_view('Zabbix')
 @has_request_variables
