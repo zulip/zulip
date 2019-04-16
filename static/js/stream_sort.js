@@ -25,13 +25,8 @@ function filter_streams_by_search(streams, search_term) {
 
     var filtered_streams = _.filter(streams, function (stream) {
         return _.any(search_terms, function (search_term) {
-            var lower_stream_name = stream.toLowerCase();
-            // This regex allows us to split at " " and "-"
-            var cands = lower_stream_name.split(/-| /);
-            cands.push(lower_stream_name);
-            return _.any(cands, function (name) {
-                return name.indexOf(search_term) === 0;
-            });
+            // return common.phrase_match(search_term, stream);
+            return common.KMP_substring_match(stream, search_term);
         });
     });
 
