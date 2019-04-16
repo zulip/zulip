@@ -10,9 +10,11 @@ into an existing Zulip organization.
 
 ## Import from Mattermost
 
-First, export your data from Mattermost.  The instructions below have
-the commands for the various common ways to run Mattermost.  Replace
-`<username>` and `<server_ip>` with appropriate values accordingly.
+First, export your data from Mattermost.
+The instructions below correspond to various common ways Mattermost is installed; if
+yours isn't covered contact support@zulipchat.com and we'll help you out.
+
+Replace `<username>` and `<server_ip>` with the appropriate values below.
 
 {start_tabs}
 
@@ -21,7 +23,7 @@ the commands for the various common ways to run Mattermost.  Replace
 1. SSH into your Mattermost production server.
 
     ```
-    ssh <username>@><server_ip>
+    ssh <username>@<server_ip>
     ```
 
 2. Navigate to the directory which contains the Mattermost executable.
@@ -31,7 +33,7 @@ the commands for the various common ways to run Mattermost.  Replace
     cd /opt/mattermost/bin
     ```
 
-3. Run the following commands to export the data:
+3. Create an export of all your Mattermost teams, as a tar file.
 
     ```
     sudo ./mattermost export bulk export.json --all-teams
@@ -57,7 +59,7 @@ the commands for the various common ways to run Mattermost.  Replace
 1. SSH into the server hosting your Mattermost docker container.
 
     ```
-    ssh <username>@><server_ip>
+    ssh <username>@<server_ip>
     ```
 
 2. Navigate to the the Mattermost docker directory. On most installs the
@@ -67,7 +69,7 @@ the commands for the various common ways to run Mattermost.  Replace
     cd mattermost-docker/
     ```
 
-3. Run the following commands to export the data from all teams on your server as a tar file.
+3. Create an export of all your Mattermost teams, as a tar file.
 
     ```
     docker exec -it mattermost-docker_app_1 mattermost \
@@ -94,7 +96,7 @@ the commands for the various common ways to run Mattermost.  Replace
 
 1. SSH into your GitLab Omnibus server.
 
-2. Run the following commands to export the data from all teams on your server as a tar file.
+2. Create an export of all your Mattermost teams, as a tar file.
 
     ```
     cd /opt/gitlab/embedded/service/mattermost
@@ -107,11 +109,11 @@ the commands for the various common ways to run Mattermost.  Replace
         exported_emoji/ export.json
     ```
 
-3. Now exit out of the server.
+3. Exit your shell on the Gitlab Omnibus server.
 
     `exit`
 
-4. Finally copy the exported tar file from GitLab Omnibus to your local computer.
+4. Finally, copy the exported tar file from GitLab Omnibus to your local computer.
 
     ```
     scp <username>@<server_ip>:/opt/gitlab/embedded/bin/mattermost/export.tar.gz .
@@ -120,7 +122,8 @@ the commands for the various common ways to run Mattermost.  Replace
 
 ### Import into zulipchat.com
 
-Email support@zulipchat.com with your exported archive and your desired Zulip
+Email support@zulipchat.com with your exported archive,
+the name of the Mattermost team you want to import, and your desired Zulip
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.
 
@@ -138,20 +141,13 @@ create your Zulip organization via the data import tool instead).
 Use [upgrade-zulip-from-git][upgrade-zulip-from-git] to
 upgrade your Zulip server to the latest `master` branch.
 
-Log in to a shell on your Zulip server as the `zulip` user.
+Log in to a shell on your Zulip server as the `zulip` user. To import with
+the most common configuration, run the following commands, replacing
+`<team-name>` with the name of the Mattermost team you want to import.
 
-Extract the `export.tar.gz` to `/home/zulip/mattermost` as follows.
-
-```bash
+```
 cd /home/zulip
 tar -xzvf export.tar.gz
-```
-
-To import with the most common configuration, run the following commands
-replacing `<team-name>` with the name of the team you want to import from
-Mattermost export.
-
-```
 cd /home/zulip/deployments/current
 ./manage.py convert_mattermost_data /home/zulip/mattermost --output /home/zulip/converted_mattermost_data
 ./manage.py import "" /home/zulip/converted_mattermost_data/<team-name>
@@ -176,7 +172,7 @@ root domain. Replace the last line above with the following, after replacing
 
 [upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
 
-## Limitations
+## Caveats
 
 Mattermost's export tool is incomplete and does not support exporting
 the following data:

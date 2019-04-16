@@ -57,7 +57,7 @@ TAB_DISPLAY_NAMES = {
     'stride': 'Stride',
 
     'mm-default': 'Default installation',
-    'mm-docker': 'Docker installation',
+    'mm-docker': 'Docker',
     'mm-gitlab-omnibus': 'Gitlab Omnibus',
 
     'send-email-invitations': 'Send email invitations',
