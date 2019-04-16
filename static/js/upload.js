@@ -38,7 +38,7 @@ exports.options = function (config) {
         break;
     case 'edit':
         textarea = $('#message_edit_content_' + config.row);
-        send_button = textarea.closest('.message_edit_save');
+        send_button = textarea.closest('#message_edit_form').find('.message_edit_save');
         send_status = $('#message-edit-send-status-' + config.row);
         send_status_close = send_status.find('.send-status-close');
         error_msg = send_status.find('.error-msg');
