@@ -13,7 +13,6 @@
               "label" settings_label.enable_stream_desktop_notifications
               "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
 
-
             {{partial "settings_checkbox"
               "setting_name" "enable_stream_sounds"
               "is_checked" page_params.enable_stream_sounds
@@ -60,11 +59,6 @@
               "label" settings_label.enable_sounds}}
 
             {{partial "settings_checkbox"
-              "setting_name" "enable_offline_email_notifications"
-              "is_checked" page_params.enable_offline_email_notifications
-              "label" settings_label.enable_offline_email_notifications}}
-
-            {{partial "settings_checkbox"
               "setting_name" "enable_offline_push_notifications"
               "is_checked" page_params.enable_offline_push_notifications
               "label" settings_label.enable_offline_push_notifications
@@ -77,6 +71,11 @@
               "is_nested" true
               "label" settings_label.enable_online_push_notifications
               "push_notifications_tooltip" true}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_offline_email_notifications"
+              "is_checked" page_params.enable_offline_email_notifications
+              "label" settings_label.enable_offline_email_notifications}}
         </div>
 
         <div id="other_notifications">
