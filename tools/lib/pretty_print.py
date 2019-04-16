@@ -39,7 +39,9 @@ def pretty_print_html(html, num_spaces=4):
     for token in tokens:
 
         if token.kind in ('html_start', 'handlebars_start', 'handlebars_singleton',
-                          'html_singleton', 'django_start') and stack[-1]['tag'] != 'pre':
+                          'html_singleton', 'django_start',
+                          'jinja2_whitespace_stripped_type2_start',
+                          'jinja2_whitespace_stripped_start') and stack[-1]['tag'] != 'pre':
             # An HTML start tag should only cause a new indent if we
             # are on a new line.
             if (token.tag not in ('extends', 'include', 'else', 'elif') and
@@ -50,8 +52,12 @@ def pretty_print_html(html, num_spaces=4):
                 if is_block:
                     if (((token.kind == 'handlebars_start' and
                             stack[-1]['token_kind'] == 'handlebars_start') or
-                            (token.kind == 'django_start' and
-                             stack[-1]['token_kind'] == 'django_start')) and
+                            (token.kind in {'django_start',
+                                            'jinja2_whitespace_stripped_type2_start',
+                                            'jinja2_whitespace_stripped_start'} and
+                             stack[-1]['token_kind'] in {'django_start',
+                                                         'jinja2_whitespace_stripped_type2_start',
+                                                         'jinja2_whitespace_stripped_start'})) and
                             not stack[-1]['indenting']):
                         info = stack.pop()
                         info['depth'] = info['depth'] + 1
@@ -94,7 +100,8 @@ def pretty_print_html(html, num_spaces=4):
                     )
                 stack.append(info)
         elif (token.kind in ('html_end', 'handlebars_end', 'html_singleton_end',
-                             'django_end', 'handlebars_singleton_end') and
+                             'django_end', 'handlebars_singleton_end',
+                             'jinja2_whitespace_stripped_end') and
               (stack[-1]['tag'] != 'pre' or token.tag == 'pre')):
             info = stack.pop()
             if info['block']:

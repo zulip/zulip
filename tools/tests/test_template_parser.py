@@ -191,6 +191,54 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
+    def test_validate_jinja2_whitespace_markers(self) -> None:
+        my_html = '''
+        {% if foo -%}
+        this is foo
+        {%- endif %}
+        '''
+        validate(text=my_html)
+
+    def test_validate_mismatch_jinja2_whitespace_markers_1(self) -> None:
+        my_html = '''
+        {% if foo %}
+        this is foo
+        {%- endif %}
+        '''
+        self._assert_validate_error('Missing end tag', text=my_html)
+
+    def test_validate_mismatch_jinja2_whitespace_markers_2(self) -> None:
+        my_html = '''
+        {% if foo -%}
+        this is foo
+        {% endif %}
+        '''
+        self._assert_validate_error('No start tag', text=my_html)
+
+    def test_validate_jinja2_whitespace_type2_markers(self) -> None:
+        my_html = '''
+        {%- if foo -%}
+        this is foo
+        {% endif %}
+        '''
+        validate(text=my_html)
+
+    def test_validate_mismatch_jinja2_whitespace_type2_markers(self) -> None:
+        my_html = '''
+        {%- if foo -%}
+        this is foo
+        {%- endif %}
+        '''
+        self._assert_validate_error('Missing end tag', text=my_html)
+
+    def test_validate_incomplete_jinja2_whitespace_type2_markers(self) -> None:
+        my_html = '''
+        {%- if foo %}
+        this is foo
+        {% endif %}
+        '''
+        self._assert_validate_error('Tag missing "-%}" at Line 2 Col 9:"{%- if foo %}"', text=my_html)
+
     def test_tokenize(self) -> None:
         tag = '<meta whatever>bla'
         token = tokenize(tag)[0]
@@ -239,4 +287,19 @@ class ParserTest(unittest.TestCase):
         tag = '{% endif %}bla'
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, 'django_end')
+        self.assertEqual(token.tag, 'if')
+
+        tag = '{% if foo -%}bla'
+        token = tokenize(tag)[0]
+        self.assertEqual(token.kind, 'jinja2_whitespace_stripped_start')
+        self.assertEqual(token.tag, 'if')
+
+        tag = '{%- endif %}bla'
+        token = tokenize(tag)[0]
+        self.assertEqual(token.kind, 'jinja2_whitespace_stripped_end')
+        self.assertEqual(token.tag, 'if')
+
+        tag = '{%- if foo -%}bla'
+        token = tokenize(tag)[0]
+        self.assertEqual(token.kind, 'jinja2_whitespace_stripped_type2_start')
         self.assertEqual(token.tag, 'if')
