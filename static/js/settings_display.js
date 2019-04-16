@@ -45,10 +45,9 @@ exports.set_up = function () {
         e.stopPropagation();
         overlays.close_modal('default_language_modal');
 
-        var data = {};
         var $link = $(e.target).closest("a[data-code]");
         var setting_value = $link.attr('data-code');
-        data.default_language = JSON.stringify(setting_value);
+        var data = {default_language: JSON.stringify(setting_value)};
 
         var new_language = $link.attr('data-name');
         $('#default_language_name').text(new_language);
@@ -65,23 +64,17 @@ exports.set_up = function () {
     });
 
     $("#high_contrast_mode").change(function () {
-        var high_contrast_mode = this.checked;
-        var data = {};
-        data.high_contrast_mode = JSON.stringify(high_contrast_mode);
+        var data = {high_contrast_mode: JSON.stringify(this.checked)};
         change_display_setting(data, '#display-settings-status');
     });
 
     $("#dense_mode").change(function () {
-        var dense_mode = this.checked;
-        var data = {};
-        data.dense_mode = JSON.stringify(dense_mode);
+        var data = {dense_mode: JSON.stringify(this.checked)};
         change_display_setting(data, '#display-settings-status');
     });
 
     $('#starred_message_counts').change(function () {
-        var starred_message_counts = this.checked;
-        var data = {};
-        data.starred_message_counts = JSON.stringify(starred_message_counts);
+        var data = {starred_message_counts: JSON.stringify(this.checked)};
         change_display_setting(data, '#display-settings-status');
     });
 
@@ -94,30 +87,22 @@ exports.set_up = function () {
     });
 
     $("#left_side_userlist").change(function () {
-        var left_side_userlist = this.checked;
-        var data = {};
-        data.left_side_userlist = JSON.stringify(left_side_userlist);
+        var data = {left_side_userlist: JSON.stringify(this.checked)};
         change_display_setting(data, '#display-settings-status',
                                i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."), true);
     });
 
     $("#twenty_four_hour_time").change(function () {
-        var data = {};
-        var setting_value = $("#twenty_four_hour_time").is(":checked");
-        data.twenty_four_hour_time = JSON.stringify(setting_value);
+        var data = {twenty_four_hour_time: JSON.stringify(this.checked)};
         change_display_setting(data, '#time-settings-status');
     });
 
     $("#user_timezone").change(function () {
-        var data = {};
-        var timezone = this.value;
-        data.timezone = JSON.stringify(timezone);
+        var data = {timezone: JSON.stringify(this.value)};
         change_display_setting(data, '#time-settings-status');
     });
     $(".emojiset_choice").click(function () {
-        var emojiset = $(this).val();
-        var data = {};
-        data.emojiset = JSON.stringify(emojiset);
+        var data = {emojiset: JSON.stringify($(this).val())};
         var spinner = $("#emoji-settings-status").expectOne();
         loading.make_indicator(spinner, {text: settings_ui.strings.saving });
 
@@ -133,9 +118,7 @@ exports.set_up = function () {
     });
 
     $("#translate_emoticons").change(function () {
-        var data = {};
-        var setting_value = $("#translate_emoticons").is(":checked");
-        data.translate_emoticons = JSON.stringify(setting_value);
+        var data = {translate_emoticons: JSON.stringify(this.checked)};
         change_display_setting(data, '#emoji-settings-status');
     });
 };
