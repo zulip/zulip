@@ -664,7 +664,6 @@ def build_custom_checkers(by_lang):
          'include_only': set(['scripts/']),
          'exclude': set([
              'scripts/lib/install',
-             'scripts/setup/terminate-psql-sessions',
              'scripts/setup/configure-rabbitmq'
          ]), },
     ]) + whitespace_rules[0:1]
