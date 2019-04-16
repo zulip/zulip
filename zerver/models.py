@@ -35,8 +35,8 @@ from zerver.lib.validator import check_int, \
     check_url, check_list
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator, ExtendedValidator, \
-    ProfileDataElement, ProfileData, FieldTypeData, \
-    RealmUserValidator
+    ProfileDataElement, ProfileData, RealmUserValidator, \
+    ExtendedFieldElement, UserFieldElement, FieldElement
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -2627,10 +2627,10 @@ class CustomProfileField(models.Model):
     # realm as argument.
     CHOICE_FIELD_TYPE_DATA = [
         (CHOICE, str(_('List of options')), validate_choice_field, str, "CHOICE"),
-    ]  # type: FieldTypeData
+    ]  # type: List[ExtendedFieldElement]
     USER_FIELD_TYPE_DATA = [
         (USER, str(_('Person picker')), check_valid_user_ids, eval, "USER"),
-    ]  # type: FieldTypeData
+    ]  # type: List[UserFieldElement]
 
     CHOICE_FIELD_VALIDATORS = {
         item[0]: item[2] for item in CHOICE_FIELD_TYPE_DATA
@@ -2646,9 +2646,9 @@ class CustomProfileField(models.Model):
         (DATE, str(_('Date picker')), check_date, str, "DATE"),
         (URL, str(_('Link')), check_url, str, "URL"),
         (EXTERNAL_ACCOUNT, str(_('External account')), check_short_string, str, "EXTERNAL_ACCOUNT"),
-    ]  # type: FieldTypeData
+    ]  # type: List[FieldElement]
 
-    ALL_FIELD_TYPES = FIELD_TYPE_DATA + CHOICE_FIELD_TYPE_DATA + USER_FIELD_TYPE_DATA
+    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *CHOICE_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
 
     FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Validator]
     FIELD_CONVERTERS = {item[0]: item[3] for item in ALL_FIELD_TYPES}  # type: Dict[int, Callable[[Any], Any]]

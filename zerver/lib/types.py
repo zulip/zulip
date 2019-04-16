@@ -22,6 +22,4 @@ FieldElement = Tuple[int, str, Validator, Callable[[Any], Any], str]
 ExtendedFieldElement = Tuple[int, str, ExtendedValidator, Callable[[Any], Any], str]
 UserFieldElement = Tuple[int, str, RealmUserValidator, Callable[[Any], Any], str]
 
-FieldTypeData = List[Union[FieldElement, ExtendedFieldElement, UserFieldElement]]
-
 ProfileFieldData = Dict[str, Union[Dict[str, str], str]]
