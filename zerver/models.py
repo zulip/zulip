@@ -1,5 +1,5 @@
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
-    Union, Optional, Sequence, AbstractSet, Callable, Iterable
+    Union, Optional, Sequence, AbstractSet, Callable, Iterable, cast
 from typing.re import Match
 
 from django.db import models
@@ -36,7 +36,7 @@ from zerver.lib.validator import check_int, \
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator, ExtendedValidator, \
     ProfileDataElement, ProfileData, FieldTypeData, \
-    RealmUserValidator
+    RealmUserValidator, ExtendedFieldElement, UserFieldElement, FieldElement
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -2480,10 +2480,10 @@ class CustomProfileField(models.Model):
     # realm as argument.
     CHOICE_FIELD_TYPE_DATA = [
         (CHOICE, str(_('List of options')), validate_choice_field, str, "CHOICE"),
-    ]  # type: FieldTypeData
+    ]  # type: List[ExtendedFieldElement]
     USER_FIELD_TYPE_DATA = [
         (USER, str(_('Person picker')), check_valid_user_ids, eval, "USER"),
-    ]  # type: FieldTypeData
+    ]  # type: List[UserFieldElement]
 
     CHOICE_FIELD_VALIDATORS = {
         item[0]: item[2] for item in CHOICE_FIELD_TYPE_DATA
@@ -2498,9 +2498,11 @@ class CustomProfileField(models.Model):
         (LONG_TEXT, str(_('Long text')), check_long_string, str, "LONG_TEXT"),
         (DATE, str(_('Date picker')), check_date, str, "DATE"),
         (URL, str(_('Link')), check_url, str, "URL"),
-    ]  # type: FieldTypeData
+    ]  # type: List[FieldElement]
 
-    ALL_FIELD_TYPES = FIELD_TYPE_DATA + CHOICE_FIELD_TYPE_DATA + USER_FIELD_TYPE_DATA
+    ALL_FIELD_TYPES = (cast(FieldTypeData, FIELD_TYPE_DATA) +
+                       cast(FieldTypeData, CHOICE_FIELD_TYPE_DATA) +
+                       cast(FieldTypeData, USER_FIELD_TYPE_DATA))
 
     FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Validator]
     FIELD_CONVERTERS = {item[0]: item[3] for item in ALL_FIELD_TYPES}  # type: Dict[int, Callable[[Any], Any]]
