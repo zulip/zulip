@@ -601,6 +601,12 @@ var event_fixtures = {
         setting: true,
     },
 
+    update_display_settings__fluid_layout_width: {
+        type: 'update_display_settings',
+        setting_name: 'fluid_layout_width',
+        setting: true,
+    },
+
     update_display_settings__translate_emoticons: {
         type: 'update_display_settings',
         setting_name: 'translate_emoticons',
@@ -1380,6 +1386,12 @@ with_overrides(function (override) {
     page_params.starred_message_counts = false;
     dispatch(event);
     assert_same(page_params.starred_message_counts, true);
+
+    override('scroll_bar.set_layout_width', noop);
+    event = event_fixtures.update_display_settings__fluid_layout_width;
+    page_params.fluid_layout_width = false;
+    dispatch(event);
+    assert_same(page_params.fluid_layout_width, true);
 });
 
 with_overrides(function (override) {

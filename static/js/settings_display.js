@@ -78,6 +78,11 @@ exports.set_up = function () {
         change_display_setting(data, '#display-settings-status');
     });
 
+    $('#fluid_layout_width').change(function () {
+        var data = {fluid_layout_width: JSON.stringify(this.checked)};
+        change_display_setting(data, '#display-settings-status');
+    });
+
     $("#night_mode").change(function () {
         exports.set_night_mode(this.checked);
     });

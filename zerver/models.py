@@ -838,6 +838,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     translate_emoticons = models.BooleanField(default=False)  # type: bool
     dense_mode = models.BooleanField(default=True)  # type: bool
     starred_message_counts = models.BooleanField(default=False)  # type: bool
+    fluid_layout_width = models.BooleanField(default=False)  # type: bool
 
     # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
     #
@@ -897,6 +898,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         night_mode=bool,
         translate_emoticons=bool,
         starred_message_counts=bool,
+        fluid_layout_width=bool,
     )
 
     notification_setting_types = dict(
