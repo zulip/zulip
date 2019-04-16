@@ -421,7 +421,7 @@ def main(options):
     setup_venvs.main()
 
     activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
-    exec(open(activate_this).read(), {}, dict(__file__=activate_this))
+    exec(open(activate_this).read(), dict(__file__=activate_this))
 
     setup_shell_profile('~/.bash_profile')
     setup_shell_profile('~/.zprofile')
