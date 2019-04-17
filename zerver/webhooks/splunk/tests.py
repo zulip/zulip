@@ -13,7 +13,13 @@ class SplunkHookTests(WebhookTestCase):
 
         # define the expected message contents
         expected_topic = u"New Search Alert"
-        expected_message = u"Splunk alert from saved search\n[sudo](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)\nhost: myserver\nsource: /var/log/auth.log\n\nraw: Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root"
+        expected_message = """
+Splunk alert from saved search:
+* **Search**: [sudo](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)
+* **Host**: myserver
+* **Source**: `/var/log/auth.log`
+* **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
+""".strip()
 
         # using fixture named splunk_search_one_result, execute this test
         self.send_and_test_stream_message('search_one_result',
@@ -25,7 +31,13 @@ class SplunkHookTests(WebhookTestCase):
 
         # don't provide a topic so the search name is used instead
         expected_topic = u"This search's name isn't that long"
-        expected_message = u"Splunk alert from saved search\n[This search's name isn't that long](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)\nhost: myserver\nsource: /var/log/auth.log\n\nraw: Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root"
+        expected_message = """
+Splunk alert from saved search:
+* **Search**: [This search's name isn't that long](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)
+* **Host**: myserver
+* **Source**: `/var/log/auth.log`
+* **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
+""".strip()
 
         self.send_and_test_stream_message('short_search_name',
                                           expected_topic,
@@ -36,7 +48,13 @@ class SplunkHookTests(WebhookTestCase):
 
         # don't provide a topic so the search name is used instead
         expected_topic = u"this-search's-got-47-words-37-sentences-58-words-we-wanna..."
-        expected_message = u"Splunk alert from saved search\n[this-search's-got-47-words-37-sentences-58-words-we-wanna-know-details-of-the-search-time-of-the-search-and-any-other-kind-of-thing-you-gotta-say-pertaining-to-and-about-the-search-I-want-to-know-authenticated-user's-name-and-any-other-kind-of-thing-you-gotta-say](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)\nhost: myserver\nsource: /var/log/auth.log\n\nraw: Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root"
+        expected_message = """
+Splunk alert from saved search:
+* **Search**: [this-search's-got-47-words-37-sentences-58-words-we-wanna-know-details-of-the-search-time-of-the-search-and-any-other-kind-of-thing-you-gotta-say-pertaining-to-and-about-the-search-I-want-to-know-authenticated-user's-name-and-any-other-kind-of-thing-you-gotta-say](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)
+* **Host**: myserver
+* **Source**: `/var/log/auth.log`
+* **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
+""".strip()
 
         self.send_and_test_stream_message('long_search_name',
                                           expected_topic,
@@ -48,7 +66,13 @@ class SplunkHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
         expected_topic = u"New Search Alert"
-        expected_message = u"Splunk alert from saved search\n[sudo](Missing results_link)\nhost: myserver\nsource: /var/log/auth.log\n\nraw: Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root"
+        expected_message = """
+Splunk alert from saved search:
+* **Search**: [sudo](Missing results_link)
+* **Host**: myserver
+* **Source**: `/var/log/auth.log`
+* **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
+""".strip()
 
         self.send_and_test_stream_message('missing_results_link',
                                           expected_topic,
@@ -60,7 +84,13 @@ class SplunkHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
         expected_topic = u"New Search Alert"
-        expected_message = u"Splunk alert from saved search\n[Missing search_name](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)\nhost: myserver\nsource: /var/log/auth.log\n\nraw: Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root"
+        expected_message = """
+Splunk alert from saved search:
+* **Search**: [Missing search_name](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)
+* **Host**: myserver
+* **Source**: `/var/log/auth.log`
+* **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
+""".strip()
 
         self.send_and_test_stream_message('missing_search_name',
                                           expected_topic,
@@ -72,7 +102,13 @@ class SplunkHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
         expected_topic = u"New Search Alert"
-        expected_message = u"Splunk alert from saved search\n[sudo](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)\nhost: Missing host\nsource: /var/log/auth.log\n\nraw: Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root"
+        expected_message = """
+Splunk alert from saved search:
+* **Search**: [sudo](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)
+* **Host**: Missing host
+* **Source**: `/var/log/auth.log`
+* **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
+""".strip()
 
         self.send_and_test_stream_message('missing_host',
                                           expected_topic,
@@ -84,7 +120,13 @@ class SplunkHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
         expected_topic = u"New Search Alert"
-        expected_message = u"Splunk alert from saved search\n[sudo](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)\nhost: myserver\nsource: Missing source\n\nraw: Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root"
+        expected_message = """
+Splunk alert from saved search:
+* **Search**: [sudo](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)
+* **Host**: myserver
+* **Source**: `Missing source`
+* **Raw**: `Jan  4 11:14:32 myserver sudo: pam_unix(sudo:session): session closed for user root`
+""".strip()
 
         self.send_and_test_stream_message('missing_source',
                                           expected_topic,
@@ -96,7 +138,13 @@ class SplunkHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
         expected_topic = u"New Search Alert"
-        expected_message = u"Splunk alert from saved search\n[sudo](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)\nhost: myserver\nsource: /var/log/auth.log\n\nraw: Missing _raw"
+        expected_message = """
+Splunk alert from saved search:
+* **Search**: [sudo](http://example.com:8000/app/search/search?q=%7Cloadjob%20rt_scheduler__admin__search__sudo_at_1483557185_2.2%20%7C%20head%201%20%7C%20tail%201&earliest=0&latest=now)
+* **Host**: myserver
+* **Source**: `/var/log/auth.log`
+* **Raw**: `Missing _raw`
+""".strip()
 
         self.send_and_test_stream_message('missing_raw',
                                           expected_topic,
