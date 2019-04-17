@@ -346,6 +346,7 @@ su zulip -c '/home/zulip/deployments/current/manage.py backup'
 
 The backup tool provides the following options:
 - `--skip-db`: If set, the tool will skip the backup of your database.
+- `--skip-uploads`: If set, the tool will skip the backup of the uploads.
 
 This will generate a `.tar.gz` archive containing all the data stored
 on your Zulip server that would be needed to restore your Zulip

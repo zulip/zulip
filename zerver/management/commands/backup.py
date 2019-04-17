@@ -26,6 +26,7 @@ class Command(ZulipBaseCommand):
             "output", default=None, nargs="?", help="Filename of output tarball"
         )
         parser.add_argument("--skip-db", action='store_true', help="Skip database backup")
+        parser.add_argument("--skip-uploads", action='store_true', help="Skip uploads backup")
 
     def handle(self, *args: Any, **options: Any) -> None:
         timestamp = timezone_now().strftime(TIMESTAMP_FORMAT)
@@ -74,7 +75,7 @@ class Command(ZulipBaseCommand):
                 )
                 members.append("zulip-backup/database")
 
-            if settings.LOCAL_UPLOADS_DIR is not None and os.path.exists(
+            if not options['skip_uploads'] and settings.LOCAL_UPLOADS_DIR is not None and os.path.exists(
                 os.path.join(settings.DEPLOY_ROOT, settings.LOCAL_UPLOADS_DIR)
             ):
                 members.append(
