@@ -236,9 +236,10 @@ exports.set_up = function () {
 
 
     var create_avatar_widget = avatar.build_bot_create_widget();
-    var OUTGOING_WEBHOOK_BOT_TYPE = '3';
-    var GENERIC_BOT_TYPE = '1';
-    var EMBEDDED_BOT_TYPE = '4';
+    var BOT_TYPES = Object.freeze({GENERIC: '1',
+                               INCOMING_WEBHOOK: '2',
+                               OUTGOING_WEBHOOK: '3',
+                               EMBEDDED: '4'});
 
     var GENERIC_INTERFACE = '1';
 
@@ -248,7 +249,7 @@ exports.set_up = function () {
             exports.hide_errors();
         },
         submitHandler: function () {
-            var bot_type = $('#create_bot_type :selected').val();
+            var bot_type = $('input[type=radio][name=bot_type]:checked').val();
             var full_name = $('#create_bot_name').val();
             var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
             var payload_url = $('#create_payload_url').val();
@@ -263,10 +264,10 @@ exports.set_up = function () {
             formData.append('short_name', short_name);
 
             // If the selected bot_type is Outgoing webhook
-            if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+            if (bot_type === BOT_TYPES.OUTGOING_WEBHOOK) {
                 formData.append('payload_url', JSON.stringify(payload_url));
                 formData.append('interface_type', interface_type);
-            } else if (bot_type === EMBEDDED_BOT_TYPE) {
+            } else if (bot_type === BOT_TYPES.EMBEDDED) {
                 formData.append('service_name', service_name);
                 var config_data = {};
                 $("#config_inputbox [name*='" + service_name + "'] input").each(function () {
@@ -294,7 +295,7 @@ exports.set_up = function () {
                     $("[name*='" + service_name + "'] input").each(function () {
                         $(this).val('');
                     });
-                    $('#create_bot_type').val(GENERIC_BOT_TYPE);
+                    $('#create_bot_type').val(BOT_TYPES.GENERIC);
                     $('#select_service_name').val('converter'); // TODO: Later we can change this to hello bot or similar
                     $('#service_name_list').hide();
                     $('#create_bot_button').show();
@@ -322,11 +323,11 @@ exports.set_up = function () {
 
         $('#payload_url_inputbox').hide();
         $('#create_payload_url').removeClass('required');
-        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+        if (bot_type === BOT_TYPES.OUTGOING_WEBHOOK) {
             $('#payload_url_inputbox').show();
             $('#create_payload_url').addClass('required');
 
-        } else if (bot_type === EMBEDDED_BOT_TYPE) {
+        } else if (bot_type === BOT_TYPES.EMBEDDED) {
             $('#service_name_list').show();
             $('#select_service_name').addClass('required');
             $("#select_service_name").trigger('change');
@@ -400,12 +401,12 @@ exports.set_up = function () {
 
         $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
         var service = bot_data.get_services(bot_id)[0];
-        if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
+        if (bot.bot_type.toString() === BOT_TYPES.OUTGOING_WEBHOOK) {
             $("#service_data").append(templates.render("edit-outgoing-webhook-service",
                                                        {service: service}));
             $("#edit_service_interface").val(service.interface);
         }
-        if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
+        if (bot.bot_type.toString() === BOT_TYPES.EMBEDDED) {
             $("#service_data").append(templates.render("edit-embedded-bot-service",
                                                        {service: service}));
         }
@@ -432,12 +433,12 @@ exports.set_up = function () {
                 formData.append('full_name', full_name);
                 formData.append('bot_owner_id', people.get_by_email(bot_owner).user_id);
 
-                if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
+                if (type === BOT_TYPES.OUTGOING_WEBHOOK) {
                     var service_payload_url = $("#edit_service_base_url").val();
                     var service_interface = $("#edit_service_interface :selected").val();
                     formData.append('service_payload_url', JSON.stringify(service_payload_url));
                     formData.append('service_interface', service_interface);
-                } else if (type === EMBEDDED_BOT_TYPE) {
+                } else if (type === BOT_TYPES.EMBEDDED) {
                     var config_data = {};
                     $("#config_edit_inputbox input").each(function () {
                         config_data[$(this).attr('name')] = $(this).val();

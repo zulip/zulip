@@ -35,16 +35,18 @@
                     <div class="input-group">
                         <label for="bot_type">
                             {{t "Bot type" }}
-                            <i class="fa fa-question-circle settings-info-icon bot_type_tooltip" aria-hidden="true" data-toggle="tooltip"
-                              title='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
-                        <select name="bot_type" id="create_bot_type">
+                        <div class="input-group">
                             {{#each page_params.bot_types}}
                                 {{#if this.allowed}}
-                                <option value="{{this.type_id}}">{{this.name}}</option>
+                                    <label class="checkbox">
+                                        <input type="checkbox" class="inline-block setting-widget" name="bot_type" data-setting-widget-type="bool" id="bot_type_{{this.name}}" />
+                                        {{this.name}}
+                                    </label>
+                                    <span></span>
                                 {{/if}}
                             {{/each}}
-                        </select>
+                        </div>
                     </div>
                     <div class="input-group" id="service_name_list">
                         <label for="select_service_name">{{t "Bot"}}</label>
