@@ -287,7 +287,8 @@ Zulip's Python module dependencies for your new version of Python:
 
     ```
     rm -rf /srv/zulip-venv-cache/*
-    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 /home/zulip/deployments/current/ --from-git
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+        /home/zulip/deployments/current/ --ignore-static-assets
     ```
 
 That last command will finish by restarting your Zulip server; you
@@ -340,7 +341,8 @@ Zulip's Python module dependencies for your new version of Python:
 
     ```
     rm -rf /srv/zulip-venv-cache/*
-    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 /home/zulip/deployments/current/ --from-git
+    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+        /home/zulip/deployments/current/ --ignore-static-assets
     ```
 
 That last command will finish by restarting your Zulip server; you
