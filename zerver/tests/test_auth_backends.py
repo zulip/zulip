@@ -98,7 +98,7 @@ class AuthBackendTest(ZulipTestCase):
         if isinstance(backend, SocialAuthMixin):
             # Returns a redirect to login page with an error.
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/login/?is_deactivated=true")
+            self.assertEqual(result.url, "/login/?is_deactivated=true")
         else:
             # Just takes you back to the login page treating as
             # invalid auth; this is correct because the form will
@@ -581,7 +581,7 @@ class SocialAuthBase(ZulipTestCase):
         result = self.social_auth_test(account_data_dict,
                                        subdomain='zulip')
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/login/?is_deactivated=true")
+        self.assertEqual(result.url, "/login/?is_deactivated=true")
         # TODO: verify whether we provide a clear error message
 
     def test_social_auth_invalid_realm(self) -> None:
