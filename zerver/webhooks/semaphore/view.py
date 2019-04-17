@@ -10,6 +10,21 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+BUILD_TEMPLATE = """
+[Build {build_number}]({build_url}) {status}:
+* **Commit**: [{commit_hash}: {commit_message}]({commit_url})
+* **Author**: {email}
+""".strip()
+
+DEPLOY_TEMPLATE = """
+[Deploy {deploy_number}]({deploy_url}) of [build {build_number}]({build_url}) {status}:
+* **Commit**: [{commit_hash}: {commit_message}]({commit_url})
+* **Author**: {email}
+* **Server**: {server_name}
+""".strip()
+
+TOPIC_TEMPLATE = "{project}/{branch}"
+
 @api_key_only_webhook_view('Semaphore')
 @has_request_variables
 def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -29,7 +44,15 @@ def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
     if event == "build":
         build_url = payload["build_url"]
         build_number = payload["build_number"]
-        content = u"[build %s](%s): %s\n" % (build_number, build_url, result)
+        content = BUILD_TEMPLATE.format(
+            build_number=build_number,
+            build_url=build_url,
+            status=result,
+            commit_hash=commit_id[:7],
+            commit_message=message,
+            commit_url=commit_url,
+            email=author_email
+        )
 
     elif event == "deploy":
         build_url = payload["build_html_url"]
@@ -37,15 +60,27 @@ def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
         deploy_url = payload["html_url"]
         deploy_number = payload["number"]
         server_name = payload["server_name"]
-        content = u"[deploy %s](%s) of [build %s](%s) on server %s: %s\n" % \
-                  (deploy_number, deploy_url, build_number, build_url, server_name, result)
+        content = DEPLOY_TEMPLATE.format(
+            deploy_number=deploy_number,
+            deploy_url=deploy_url,
+            build_number=build_number,
+            build_url=build_url,
+            status=result,
+            commit_hash=commit_id[:7],
+            commit_message=message,
+            commit_url=commit_url,
+            email=author_email,
+            server_name=server_name
+        )
 
     else:  # should never get here
-        content = u"%s: %s\n" % (event, result)
+        content = "{event}: {result}".format(
+            event=event, result=result)
 
-    content += "!avatar(%s) [`%s`](%s): %s" % (author_email, commit_id[:7],
-                                               commit_url, message)
-    subject = u"%s/%s" % (project_name, branch_name)
+    subject = TOPIC_TEMPLATE.format(
+        project=project_name,
+        branch=branch_name
+    )
 
     check_send_webhook_message(request, user_profile, subject, content)
     return json_success()
