@@ -874,6 +874,18 @@ run_test('initialize', () => {
     };
 
     activity.initialize();
+
+    var event_sent = false;
+    window.electron_bridge = {
+        send_event: (param) => {
+            assert.equal(param, 'electron_presence_update');
+            event_sent = true;
+        },
+    };
+    activity.initialize();
+    assert(event_sent);
+    // reset window.electron_bridge back to undefined
+    window.electron_bridge = undefined;
 });
 
 run_test('away_status', () => {
