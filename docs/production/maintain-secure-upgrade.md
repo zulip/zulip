@@ -251,16 +251,24 @@ to back up the system:
     /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
     ```
 
-2. Upgrade the operating system using the OS's standard tooling.
-E.g. for Ubuntu, this means running `do-release-upgrade` and following
-the prompts until it completes successfully:
+2. Switch to the root user and upgrade the operating system using the
+OS's standard tooling.  E.g. for Ubuntu, this means running
+`do-release-upgrade` and following the prompts until it completes
+successfully:
 
     ```
+    sudo -i # Or otherwise get a root shell
     do-release-upgrade
     ```
 
-3. Run the following commands to upgrade the database installation and
-OS configuration to match the new OS version:
+    When `do-release-upgrade` asks you how to upgrade configuration
+    files for services that Zulip manages like `redis`, `postgres`,
+    `nginx`, and `memcached`, the best choice is `N` to keep the
+    currently installed version.  But it's not important; the next
+    step will re-install Zulip's configuration in any case.
+
+3. As root, upgrade the database installation and OS configuration to
+match the new OS version:
 
     ```
     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
@@ -296,18 +304,24 @@ to back up the system:
     /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
     ```
 
-2. Now, switch to the root user and upgrade the operating system using
-the OS's standard tooling.  E.g. for Ubuntu, this means running
+2. Switch to the root user and upgrade the operating system using the
+OS's standard tooling.  E.g. for Ubuntu, this means running
 `do-release-upgrade` and following the prompts until it completes
 successfully:
 
     ```
-    sudo -i
+    sudo -i # Or otherwise get a root shell
     do-release-upgrade
     ```
 
-3. Run the following commands to upgrade the database installation and
-OS configuration to match the new OS version:
+    When `do-release-upgrade` asks you how to upgrade configuration
+    files for services that Zulip manages like `redis`, `postgres`,
+    `nginx`, and `memcached`, the best choice is `N` to keep the
+    currently installed version.  But it's not important; the next
+    step will re-install Zulip's configuration in any case.
+
+3. As root, upgrade the database installation and OS configuration to
+match the new OS version:
 
     ```
     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
