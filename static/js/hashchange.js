@@ -67,7 +67,7 @@ var state = {
 
 function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
-    var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
+    var overlay_list = ["streams", "drafts", "scheduled_messages", "settings", "organization", "invite"];
     var main_hash = hash_util.get_hash_category(hash);
 
     return overlay_list.indexOf(main_hash) > -1;
@@ -121,6 +121,7 @@ function do_hashchange_normal(from_reload) {
         info_overlay.show("search-operators");
         break;
     case "#drafts":
+    case "#scheduled_messages":
     case "#invite":
     case "#streams":
     case "#organization":
@@ -199,6 +200,11 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "drafts") {
         drafts.launch();
+        return;
+    }
+
+    if (base === "scheduled_messages") {
+        scheduled_messages.launch();
         return;
     }
 

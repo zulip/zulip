@@ -39,6 +39,9 @@ exports.lightbox_open = function () {
 exports.drafts_open = function () {
     return open_overlay_name === 'drafts';
 };
+exports.scheduled_messages_open = function () {
+    return open_overlay_name === 'scheduled_messages';
+};
 
 exports.active_modal = function () {
     if (!exports.is_modal_open()) {

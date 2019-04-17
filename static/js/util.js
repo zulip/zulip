@@ -303,6 +303,10 @@ exports.get_draft_topic = function (obj) {
     return obj.topic || obj.subject || '';
 };
 
+exports.get_scheduled_message_topic = function (obj) {
+    return obj.topic || obj.subject || '';
+};
+
 exports.get_reload_topic = function (obj) {
     // When we first upgrade to releases that have
     // topic=foo in the code, the user's reload URL

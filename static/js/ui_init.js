@@ -328,6 +328,7 @@ exports.initialize_everything = function () {
     topic_list.initialize();
     topic_zoom.initialize();
     drafts.initialize();
+    scheduled_messages.initialize();
     sent_messages.initialize();
     hotspots.initialize();
     ui.initialize();

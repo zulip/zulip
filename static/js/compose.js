@@ -344,8 +344,15 @@ exports.finish = function () {
     }
 
     if (reminder.is_deferred_delivery(message_content)) {
+        scheduled_messages.update_scheduled_message();
         reminder.schedule_message();
     } else {
+        // If the user was editing one of the scheduled messages, and removes '/schedule'
+        // command, we need to remove that message from the table of scheduled messages.
+        var scheduled_message_id = scheduled_messages.get_curr_scheduled_message_id();
+        if (scheduled_message_id) {
+            scheduled_messages.scheduled_message_model.deleteScheduledMessage(scheduled_message_id);
+        }
         exports.send_message();
     }
     exports.do_post_send_tasks();
