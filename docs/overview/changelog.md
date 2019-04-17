@@ -7,6 +7,19 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.0.3 -- 2019-04-23
+
+- Added documentation for upgrading the underlying OS version.
+- Made uwsgi buffer size configurable (relevant for sites putting
+  Zulip behind a proxy that adds many HTTP headers).
+- Fixed loss of LaTeX syntax inside quote-and-reply.
+- Fixed virtualenv-related bug when upgrading Zulip when the system
+  virtualenv package is 16.0.0 or newer (no supported platform has
+  such a version by default, but one can install it manually).
+- Fixed `manage.py query_ldap` test tool (broken in 2.0.2).
+- Fixed several bugs in new backup and restore tools.
+- Fixed minor bugs with Youtube previews.
+
 ### 2.0.2 -- 2019-03-15
 
 - Fixed a regression in the puppet configuration for S3 upload backend
