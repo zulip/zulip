@@ -1,5 +1,6 @@
 
-.drafts-container {
+.drafts-container,
+.scheduled-messages-container {
     position: relative;
     height: 95%;
     background-color: hsl(0, 0%, 100%);
@@ -11,7 +12,8 @@
     max-height: 1000px;
 }
 
-.drafts-header {
+.drafts-header,
+.scheduled-messages-header {
     padding: {
         top: 4px;
         bottom: 8px;
@@ -20,13 +22,15 @@
     border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
-.drafts-header h1 {
+.drafts-header h1,
+.scheduled-messages-header h1 {
     margin: 0;
     font-size: 1.1em;
     text-transform: uppercase;
 }
 
-.drafts-container .exit {
+.drafts-container .exit,
+.scheduled-messages-container .exit {
     font-weight: 400;
     position: absolute;
     top: 10px;
@@ -35,7 +39,8 @@
     cursor: pointer;
 }
 
-.drafts-container .exit-sign {
+.drafts-container .exit-sign,
+.scheduled-messages-container .exit-sign {
     position: relative;
     top: 3px;
     margin-left: 3px;
@@ -44,14 +49,16 @@
     cursor: pointer;
 }
 
-.drafts-list {
+.drafts-list,
+.scheduled-messages-list {
     overflow: auto;
     height: calc(100% - 55px);
     width: 100%;
     margin-top: 15px;
 }
 
-.drafts-list .no-drafts {
+.drafts-list .no-drafts,
+.scheduled-messages-list .no-scheduled-messages {
     display: block;
     margin-top: calc(45vh - 30px - 1.5em);
     text-align: center;
@@ -60,7 +67,8 @@
     pointer-events: none;
 }
 
-.drafts-list .removed-drafts {
+.drafts-list .removed-drafts,
+.scheduled-messages-list .removed-scheduled-messages {
     display: block;
     text-align: center;
     font-size: 1em;
@@ -68,41 +76,49 @@
     pointer-events: none;
 }
 
-.draft-row {
+.draft-row,
+.scheduled-message-row {
     padding: 5px 25px;
 }
 
-.draft-info-box.active {
+.draft-info-box.active,
+.scheduled-message-info-box.active {
     outline: 2px solid hsl(215, 47%, 50%);
 }
 
-.draft-row > div {
+.draft-row > div,
+.scheduled-message-row > div {
     display: inline-block;
     vertical-align: top;
 }
 
-.draft-row .draft-info-box {
+.draft-row .draft-info-box,
+.scheduled-message-row .scheduled-message-info-box {
     width: 100%;
     border: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
 }
 
-.draft-info-box .message_row {
+.draft-info-box .message_row,
+.scheduled-message-info-box .message_row {
     border: 0;
 }
 
-.draft-info-box .messagebox {
+.draft-info-box .messagebox,
+.scheduled-message-info-box .messagebox {
     cursor: auto;
 }
 
-.draft-info-box .message_content {
+.draft-info-box .message_content,
+.scheduled-message-info-box .message_content {
     line-height: 1;
     padding-top: 10px;
     padding-bottom: 10px;
     margin-left: 0px;
 }
 
-.draft-row .draft-info-box .draft_controls {
+.draft-row .draft-info-box .draft_controls,
+.scheduled-message-row .scheduled-message-info-box .scheduled_message_controls {
     display: inline-block;
     position: absolute;
     top: 9px;
@@ -110,42 +126,49 @@
     font-size: 0.9em;
 }
 
-.draft_controls .restore-draft {
+.draft_controls .restore-draft,
+.scheduled_message_controls .restore-scheduled-message {
     cursor: pointer;
     margin-right: 5px;
     color: hsl(170, 48%, 54%);
     opacity: 0.7;
 }
 
-.draft_controls .restore-draft:hover {
+.draft_controls .restore-draft:hover,
+.scheduled_message_controls .restore-scheduled-message:hover {
     opacity: 1;
 }
 
-.draft_controls .delete-draft {
+.draft_controls .delete-draft,
+.scheduled_message_controls .delete-scheduled-message {
     cursor: pointer;
     margin-left: 5px;
     color: hsl(357, 52%, 57%);
     opacity: 0.7;
 }
 
-.draft_controls .delete-draft:hover {
+.draft_controls .delete-draft:hover,
+.scheduled_message_controls .delete-scheduled-message:hover {
     opacity: 1;
 }
 
 @media (max-width: 1130px) {
-    .drafts-container {
+    .drafts-container,
+    .scheduled-messages-container {
         max-width: 60%;
     }
 }
 
 @media (max-width: 500px) {
-    .draft-row .draft-info-box .draft_controls {
+    .draft-row .draft-info-box .draft_controls,
+    .scheduled-message-row .scheduled-message-info-box .scheduled_message_controls {
         right: 0px;
     }
 }
 
 @media (max-width: 700px) {
-    #draft_overlay .drafts-container {
+    #draft_overlay .drafts-container,
+    #scheduled_message_overlay .scheduled-messages-container {
         height: 95%;
         max-width: none;
         width: 90%;
