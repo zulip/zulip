@@ -11,6 +11,22 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
 from zerver.lib.validator import check_dict
 from zerver.models import UserProfile
 
+ALERT_TEMPLATE = "{long_description} ([view alert]({alert_url}))."
+
+DEPLOY_TEMPLATE = """
+**{revision}** deployed by **{deployed_by}**:
+
+``` quote
+{description}
+```
+
+Changelog:
+
+``` quote
+{changelog}
+```
+""".strip()
+
 @api_key_only_webhook_view("NewRelic")
 @has_request_variables
 def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -22,13 +38,10 @@ def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
         # "opened", "acknowledged", and "closed" messages that should be
         # grouped.
         subject = alert['message']
-        content = "%(long_description)s\n[View alert](%(alert_url)s)" % (alert)
+        content = ALERT_TEMPLATE.format(**alert)
     elif deployment:
         subject = "%s deploy" % (deployment['application_name'])
-        content = """`%(revision)s` deployed by **%(deployed_by)s**
-%(description)s
-
-%(changelog)s""" % (deployment)
+        content = DEPLOY_TEMPLATE.format(**deployment)
     else:
         raise UnexpectedWebhookEventType('New Relic', 'Unknown Event Type')
 
