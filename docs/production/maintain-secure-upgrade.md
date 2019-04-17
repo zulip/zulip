@@ -278,6 +278,7 @@ match the new OS version:
     pg_upgradecluster -m upgrade 9.3 main
     pg_dropcluster 9.3 main
     apt remove postgresql-9.3
+    systemctl start postgresql
     service memcached restart
     ```
 
@@ -332,6 +333,7 @@ match the new OS version:
     pg_upgradecluster -m upgrade 9.5 main
     pg_dropcluster 9.5 main
     apt remove postgresql-9.5
+    systemctl start postgresql
     service memcached restart
     ```
 
