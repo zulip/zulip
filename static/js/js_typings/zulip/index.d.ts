@@ -96,6 +96,7 @@ declare var reminder: any;
 declare var resize: any;
 declare var rows: any;
 declare var rtl: any;
+declare var scheduled_messages: any;
 declare var schema: any;
 declare var scroll_bar: any;
 declare var scroll_util: any;
