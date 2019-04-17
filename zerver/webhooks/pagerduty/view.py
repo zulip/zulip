@@ -32,11 +32,11 @@ ASSIGNEE_TEMPLATE = '[{username}]({url})'
 
 INCIDENT_WITH_SERVICE_AND_ASSIGNEE = (
     'Incident [{incident_num}]({incident_url}) {action} by [{service_name}]'
-    '({service_url}) (assigned to {assignee_info})\n\n``` quote\n{trigger_message}\n```'
+    '({service_url}) (assigned to {assignee_info}):\n\n``` quote\n{trigger_message}\n```'
 )
 
 INCIDENT_WITH_ASSIGNEE = """
-Incident [{incident_num}]({incident_url}) {action} by {assignee_info}
+Incident [{incident_num}]({incident_url}) {action} by {assignee_info}:
 
 ``` quote
 {trigger_message}
@@ -44,7 +44,7 @@ Incident [{incident_num}]({incident_url}) {action} by {assignee_info}
 """.strip()
 
 INCIDENT_ASSIGNED = """
-Incident [{incident_num}]({incident_url}) {action} to {assignee_info}
+Incident [{incident_num}]({incident_url}) {action} to {assignee_info}:
 
 ``` quote
 {trigger_message}
@@ -52,7 +52,7 @@ Incident [{incident_num}]({incident_url}) {action} to {assignee_info}
 """.strip()
 
 INCIDENT_RESOLVED_WITH_AGENT = """
-Incident [{incident_num}]({incident_url}) resolved by {resolving_agent_info}
+Incident [{incident_num}]({incident_url}) resolved by {resolving_agent_info}:
 
 ``` quote
 {trigger_message}
@@ -60,7 +60,7 @@ Incident [{incident_num}]({incident_url}) resolved by {resolving_agent_info}
 """.strip()
 
 INCIDENT_RESOLVED = """
-Incident [{incident_num}]({incident_url}) resolved
+Incident [{incident_num}]({incident_url}) resolved:
 
 ``` quote
 {trigger_message}
