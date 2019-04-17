@@ -9,6 +9,14 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import MAX_TOPIC_NAME_LENGTH, UserProfile
 
+MESSAGE_TEMPLATE = """
+Splunk alert from saved search:
+* **Search**: [{search}]({link})
+* **Host**: {host}
+* **Source**: `{source}`
+* **Raw**: `{raw}`
+""".strip()
+
 @api_key_only_webhook_view('Splunk')
 @has_request_variables
 def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -28,11 +36,10 @@ def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
         topic = search_name
 
     # construct the message body
-    body = "Splunk alert from saved search"
-    body_template = ('\n[{search}]({link})\nhost: {host}'
-                     '\nsource: {source}\n\nraw: {raw}')
-    body += body_template.format(search = search_name, link = results_link,
-                                 host = host, source = source, raw = raw)
+    body = MESSAGE_TEMPLATE.format(
+        search=search_name, link=results_link,
+        host=host, source=source, raw=raw
+    )
 
     # send the message
     check_send_webhook_message(request, user_profile, topic, body)
