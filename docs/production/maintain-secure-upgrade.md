@@ -271,6 +271,7 @@ successfully:
 match the new OS version:
 
     ```
+    apt remove upstart -y
     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
     pg_dropcluster 9.5 main --stop
     systemctl stop postgresql
