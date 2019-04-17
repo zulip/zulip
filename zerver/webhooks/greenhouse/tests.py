@@ -12,10 +12,12 @@ class GreenhouseHookTests(WebhookTestCase):
 
     def test_message_candidate_hired(self) -> None:
         expected_topic = "Hire Candidate - 19"
-        expected_message = ("Hire Candidate\n>Johnny Smith\nID: 19"
-                            "\nApplying for role:\nDeveloper\n**Emails:**"
-                            "\nPersonal\npersonal@example.com\nWork\nwork@example.com\n\n\n>"
-                            "**Attachments:**\n[Resume](https://prod-heroku.s3.amazonaws.com/...)")
+        expected_message = """
+Hire Candidate Johnny Smith (ID: 19), applying for:
+* **Role**: Developer
+* **Emails**: personal@example.com (Personal), work@example.com (Work)
+* **Attachments**: [Resume](https://prod-heroku.s3.amazonaws.com/...)
+""".strip()
 
         self.send_and_test_stream_message('candidate_hired',
                                           expected_topic,
@@ -24,11 +26,12 @@ class GreenhouseHookTests(WebhookTestCase):
 
     def test_message_candidate_rejected(self) -> None:
         expected_topic = "Reject Candidate - 265788"
-        expected_message = ("Reject Candidate\n>Hector Porter\nID: "
-                            "265788\nApplying for role:\nDesigner"
-                            "\n**Emails:**\nPersonal\n"
-                            "hector.porter.265788@example.com\n\n\n>"
-                            "**Attachments:**\n[Resume](https://prod-heroku.s3.amazonaws.com/...)")
+        expected_message = """
+Reject Candidate Hector Porter (ID: 265788), applying for:
+* **Role**: Designer
+* **Emails**: hector.porter.265788@example.com (Personal)
+* **Attachments**: [Resume](https://prod-heroku.s3.amazonaws.com/...)
+""".strip()
 
         self.send_and_test_stream_message('candidate_rejected',
                                           expected_topic,
@@ -37,13 +40,12 @@ class GreenhouseHookTests(WebhookTestCase):
 
     def test_message_candidate_stage_change(self) -> None:
         expected_topic = "Candidate Stage Change - 265772"
-        expected_message = ("Candidate Stage Change\n>Giuseppe Hurley"
-                            "\nID: 265772\nApplying for role:\n"
-                            "Designer\n**Emails:**\nPersonal"
-                            "\ngiuseppe.hurley@example.com\n\n\n>"
-                            "**Attachments:**\n[Resume](https://prod-heroku.s3.amazonaws.com/...)"
-                            "\n[Cover_Letter](https://prod-heroku.s3.amazonaws.com/...)"
-                            "\n[Attachment](https://prod-heroku.s3.amazonaws.com/...)")
+        expected_message = """
+Candidate Stage Change Giuseppe Hurley (ID: 265772), applying for:
+* **Role**: Designer
+* **Emails**: giuseppe.hurley@example.com (Personal)
+* **Attachments**: [Resume](https://prod-heroku.s3.amazonaws.com/...), [Cover_Letter](https://prod-heroku.s3.amazonaws.com/...), [Attachment](https://prod-heroku.s3.amazonaws.com/...)
+""".strip()
 
         self.send_and_test_stream_message('candidate_stage_change',
                                           expected_topic,
@@ -52,11 +54,12 @@ class GreenhouseHookTests(WebhookTestCase):
 
     def test_message_prospect_created(self) -> None:
         expected_topic = "New Prospect Application - 968190"
-        expected_message = ("New Prospect Application\n>Trisha Troy"
-                            "\nID: 968190\nApplying for role:\n"
-                            "Designer\n**Emails:**\nPersonal"
-                            "\nt.troy@example.com\n\n\n>**Attachments:**"
-                            "\n[Resume](https://prod-heroku.s3.amazonaws.com/...)")
+        expected_message = """
+New Prospect Application Trisha Troy (ID: 968190), applying for:
+* **Role**: Designer
+* **Emails**: t.troy@example.com (Personal)
+* **Attachments**: [Resume](https://prod-heroku.s3.amazonaws.com/...)
+""".strip()
 
         self.send_and_test_stream_message('prospect_created',
                                           expected_topic,
