@@ -10,6 +10,12 @@ from typing import Dict, Any
 
 import time
 
+MESSAGE_TEMPLATE = """
+State changed to **{state}**:
+* **URL**: {url}
+* **Response time**: {response_time} ms
+* **Timestamp**: {timestamp}
+""".strip()
 
 @api_key_only_webhook_view('Insping')
 @has_request_variables
@@ -28,11 +34,11 @@ def api_insping_webhook(
     time_formatted = time.strftime("%c", time.strptime(timestamp,
                                    "%Y-%m-%dT%H:%M:%S.%f+00:00"))
 
-    body = """State changed: {}
-URL: {}
-Response time: {} ms
-Timestamp: {}
-""".format(state_name, url_tested, response_time, time_formatted)
+    body = MESSAGE_TEMPLATE.format(
+        state=state_name, url=url_tested,
+        response_time=response_time, timestamp=time_formatted
+    )
+
     topic = 'insping'
 
     check_send_webhook_message(request, user_profile, topic, body)

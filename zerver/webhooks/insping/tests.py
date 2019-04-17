@@ -10,10 +10,12 @@ class InspingHookTests(WebhookTestCase):
 
     def test_website_state_available_message(self) -> None:
         expected_topic = u"insping"
-        expected_message = u"State changed: Available\n" \
-                           u"URL: http://privisus.zulipdev.org:9991\n" \
-                           u"Response time: 223 ms\n" \
-                           u"Timestamp: Fri Dec 29 17:23:46 2017"
+        expected_message = """
+State changed to **Available**:
+* **URL**: http://privisus.zulipdev.org:9991
+* **Response time**: 223 ms
+* **Timestamp**: Fri Dec 29 17:23:46 2017
+""".strip()
 
         self.send_and_test_stream_message('website_state_available',
                                           expected_topic, expected_message,
@@ -21,10 +23,12 @@ class InspingHookTests(WebhookTestCase):
 
     def test_website_state_not_responding_message(self) -> None:
         expected_topic = u"insping"
-        expected_message = u"State changed: Not Responding\n" \
-                           u"URL: http://privisus.zulipdev.org:9991\n" \
-                           u"Response time: 942 ms\n" \
-                           u"Timestamp: Fri Dec 29 17:13:46 2017"
+        expected_message = """
+State changed to **Not Responding**:
+* **URL**: http://privisus.zulipdev.org:9991
+* **Response time**: 942 ms
+* **Timestamp**: Fri Dec 29 17:13:46 2017
+""".strip()
 
         self.send_and_test_stream_message('website_state_not_responding',
                                           expected_topic, expected_message,
