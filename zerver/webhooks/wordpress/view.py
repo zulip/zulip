@@ -8,8 +8,15 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-PUBLISH_POST_OR_PAGE_TEMPLATE = 'New {type} published.\n[{title}]({url})'
-USER_REGISTER_TEMPLATE = 'New blog user registered.\nName: {name}\nemail: {email}'
+PUBLISH_POST_OR_PAGE_TEMPLATE = """
+New {type} published:
+* [{title}]({url})
+""".strip()
+USER_REGISTER_TEMPLATE = """
+New blog user registered:
+* **Name**: {name}
+* **Email**: {email}
+""".strip()
 WP_LOGIN_TEMPLATE = 'User {name} logged in.'
 
 @api_key_only_webhook_view("Wordpress", notify_bot_owner_on_invalid_json=False)
