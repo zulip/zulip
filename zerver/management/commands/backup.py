@@ -25,10 +25,10 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "output", default=None, nargs="?", help="Filename of output tarball"
         )
+        parser.add_argument("--skip-db", action='store_true', help="Skip database backup")
 
     def handle(self, *args: Any, **options: Any) -> None:
         timestamp = timezone_now().strftime(TIMESTAMP_FORMAT)
-
         with tempfile.TemporaryDirectory(
             prefix="zulip-backup-%s-" % (timestamp,)
         ) as tmp:
@@ -65,13 +65,14 @@ class Command(ZulipBaseCommand):
                 members.append("/etc/zulip")
                 paths.append(("settings", "/etc/zulip"))
 
-            db_name = settings.DATABASES["default"]["NAME"]
-            db_dir = os.path.join(tmp, "zulip-backup", "database")
-            run(
-                ["pg_dump", "--format=directory", "--file", db_dir, "--", db_name],
-                cwd=tmp,
-            )
-            members.append("zulip-backup/database")
+            if not options['skip_db']:
+                db_name = settings.DATABASES["default"]["NAME"]
+                db_dir = os.path.join(tmp, "zulip-backup", "database")
+                run(
+                    ["pg_dump", "--format=directory", "--file", db_dir, "--", db_name],
+                    cwd=tmp,
+                )
+                members.append("zulip-backup/database")
 
             if settings.LOCAL_UPLOADS_DIR is not None and os.path.exists(
                 os.path.join(settings.DEPLOY_ROOT, settings.LOCAL_UPLOADS_DIR)
