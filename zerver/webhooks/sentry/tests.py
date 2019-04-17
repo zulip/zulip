@@ -8,7 +8,14 @@ class SentryHookTests(WebhookTestCase):
 
     def test_error_issue_message(self) -> None:
         expected_topic = u"zulip"
-        expected_message = u"New ERROR [issue](https://sentry.io/zulip/zulip/issues/156699934/): This is an example python exception."
+        expected_message = """
+New [issue](https://sentry.io/zulip/zulip/issues/156699934/) (level: ERROR):
+
+``` quote
+This is an example python exception
+```
+""".strip()
+
         self.send_and_test_stream_message(
             'exception_message',
             expected_topic,
