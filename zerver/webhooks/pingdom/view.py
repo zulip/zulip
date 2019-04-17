@@ -11,10 +11,17 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
 from zerver.models import UserProfile
 
 PINGDOM_TOPIC_TEMPLATE = '{name} status.'
-PINGDOM_MESSAGE_TEMPLATE = ('Service {service_url} changed its {type} status'
-                            ' from {previous_state} to {current_state}.')
-PINGDOM_MESSAGE_DESCRIPTION_TEMPLATE = 'Description: {description}.'
 
+MESSAGE_TEMPLATE = """
+Service {service_url} changed its {type} status from {previous_state} to {current_state}:
+""".strip()
+
+DESC_TEMPLATE = """
+
+``` quote
+{description}
+```
+""".rstrip()
 
 SUPPORTED_CHECK_TYPES = (
     'HTTP',
@@ -60,10 +67,13 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
         'current_state': current_state,
         'type': get_check_type(payload)
     }
-    body = PINGDOM_MESSAGE_TEMPLATE.format(**data)
+    body = MESSAGE_TEMPLATE.format(**data)
     if current_state == 'DOWN' and previous_state == 'UP':
-        description = PINGDOM_MESSAGE_DESCRIPTION_TEMPLATE.format(description=payload['long_description'])
-        body += '\n{description}'.format(description=description)
+        description = DESC_TEMPLATE.format(description=payload['long_description'])
+        body += description
+    else:
+        body = '{}.'.format(body[:-1])
+
     return body
 
 
