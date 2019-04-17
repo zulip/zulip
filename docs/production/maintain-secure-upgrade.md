@@ -345,6 +345,8 @@ su zulip -c '/home/zulip/deployments/current/manage.py backup'
 ```
 
 The backup tool provides the following options:
+- `--output`: Path where the output file should be stored. If no path is
+ provided, the output file would be saved to a temporary directory.
 - `--skip-db`: If set, the tool will skip the backup of your database.
 - `--skip-uploads`: If set, the tool will skip the backup of the uploads.
 
