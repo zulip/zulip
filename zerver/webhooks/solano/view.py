@@ -10,6 +10,13 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+MESSAGE_TEMPLATE = """
+Build update (see [build log]({build_log_url})):
+* **Author**: {author}
+* **Commit**: [{commit_id}]({commit_url})
+* **Status**: {status} {emoji}
+""".strip()
+
 @api_key_only_webhook_view('SolanoLabs')
 @has_request_variables
 def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -37,14 +44,6 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
         emoji = ':thumbs_down:'
     elif status in neutral_status:
         emoji = ':arrows_counterclockwise:'
-    else:
-        emoji = "(No emoji specified for status '%s'.)" % (status,)
-
-    template = (
-        u'Author: {}\n'
-        u'Commit: [{}]({})\n'
-        u'Build status: {} {}\n'
-        u'[Build Log]({})')
 
     # If the service is not one of the following, the url is of the repository home, not the individual
     # commit itself.
@@ -56,13 +55,17 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
     elif 'gitlab' in repository:
         commit_url += '/pipelines/{}'.format(commit_id)
 
-    body = template.format(author, commit_id, commit_url, status, emoji, build_log)
+    body = MESSAGE_TEMPLATE.format(
+        author=author, build_log_url=build_log,
+        commit_id=commit_id[:7], commit_url=commit_url,
+        status=status, emoji=emoji
+    )
 
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
 
 def handle_test_event(request: HttpRequest, user_profile: UserProfile,
                       topic: str) -> HttpResponse:
-    body = 'Solano webhook set up correctly'
+    body = 'Solano webhook set up correctly.'
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
