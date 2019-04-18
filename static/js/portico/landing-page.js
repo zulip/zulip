@@ -285,7 +285,3 @@ $(function () {
 $(window).on('unload', function () {
     $(window).unbind('unload');
 });
-
-$(window).on('load',()=>{
-  console.log($("#other-features .feature-block h3"));
-})
