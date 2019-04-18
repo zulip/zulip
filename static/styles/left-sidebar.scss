@@ -12,6 +12,10 @@ $topic_indent: $far_left_gutter_size + $left_col_size + 4px;
     display: none;
 }
 
+.left_sidebar_stream_preference {
+    width: auto;
+}
+
 .hashtag:empty::after {
     font-size: 18px;
     font-weight: 800;
@@ -28,6 +32,14 @@ $topic_indent: $far_left_gutter_size + $left_col_size + 4px;
 .stream-privacy span.hashtag,
 #left-sidebar .filter-icon i {
     padding-right: 3px;
+}
+
+.stream_list_toggle {
+    opacity: 0.50;
+    display: inline-block;
+    min-width: $left_col_size;
+    text-align: center;
+    font-size: 11px;
 }
 
 .pm_left_col {
@@ -57,6 +69,8 @@ li.show-more-topics a {
     margin-left: 10px;
 }
 
+.stream_list_toggle:hover,
+.stream_sidebar_title:hover,
 #streams_inline_cog:hover,
 #streams_filter_icon:hover {
     opacity: 1;
@@ -489,8 +503,7 @@ li.expanded_private_message a {
 
 #streams_header {
     margin-right: 0px;
-    padding-left: $far_left_gutter_size;
-    cursor: pointer;
+    margin-left: $far_left_gutter_size;
 }
 
 #stream_filters .inactive_stream {

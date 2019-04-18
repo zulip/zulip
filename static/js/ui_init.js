@@ -286,6 +286,7 @@ exports.initialize_everything = function () {
     stream_data.initialize();
     muting.initialize();
     subs.initialize();
+    left_sidebar.initialize();
     stream_list.initialize();
     condense.initialize();
     lightbox.initialize();

@@ -7,6 +7,7 @@ zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
 zrequire('util');
 zrequire('topic_data');
+zrequire('left_sidebar');
 zrequire('stream_sort');
 zrequire('colorspace');
 zrequire('stream_color');
@@ -396,9 +397,6 @@ run_test('focus_user_filter', () => {
 
 run_test('sort_streams', () => {
     stream_data.clear_subscriptions();
-
-    // Get coverage on early-exit.
-    stream_list.build_stream_list();
 
     initialize_stream_data();
 

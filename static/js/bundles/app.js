@@ -98,6 +98,7 @@ import "js/compose.js";
 import "js/upload.js";
 import "js/color_data.js";
 import "js/stream_color.js";
+import "js/left_sidebar.js";
 import "js/stream_data.js";
 import "js/topic_data.js";
 import "js/stream_muting.js";

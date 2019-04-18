@@ -308,7 +308,7 @@ un_narrow();
 casper.then(function () {
     casper.test.info('Search streams using left sidebar');
     casper.test.assertExists('.input-append.notdisplayed', 'Stream filter box not visible initially');
-    casper.click('#streams_header .sidebar-title');
+    casper.click('#streams_header');
 });
 
 casper.waitWhileSelector('#streams_list .input-append.notdisplayed', function () {
@@ -421,7 +421,7 @@ casper.waitUntilVisible('#stream_filters [data-stream-name="Verona"]', function 
 });
 
 
-casper.thenClick('#streams_header .sidebar-title');
+casper.thenClick('#streams_header');
 
 casper.waitForSelector('.input-append.notdisplayed', function () {
     casper.test.assertExists('.input-append.notdisplayed',

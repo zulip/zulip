@@ -110,6 +110,7 @@ zrequire('pm_list');
 zrequire('list_cursor');
 zrequire('keydown_util');
 zrequire('stream_sort');
+zrequire('left_sidebar');
 zrequire('stream_list');
 zrequire('topic_list');
 zrequire('topic_zoom');
@@ -152,6 +153,7 @@ $("#stream_message_recipient_topic").typeahead = () => {};
 $("#private_message_recipient").typeahead = () => {};
 $("#compose-textarea").typeahead = () => {};
 $("#search_query").typeahead = () => {};
+$('#stream_filters').append = () => {};
 
 
 const value_stub = $.create('value');

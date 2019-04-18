@@ -38,10 +38,7 @@ function filter_streams_by_search(streams, search_term) {
 }
 
 exports.sort_groups = function (search_term) {
-    var streams = stream_data.subscribed_streams();
-    if (streams.length === 0) {
-        return;
-    }
+    var streams = left_sidebar.get_stream_names();
 
     streams = filter_streams_by_search(streams, search_term);
 

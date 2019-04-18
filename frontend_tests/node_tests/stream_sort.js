@@ -1,10 +1,18 @@
 zrequire('util');
+zrequire('left_sidebar');
 zrequire('stream_data');
 zrequire('stream_sort');
 var with_overrides = global.with_overrides;
 
 run_test('no_subscribed_streams', () => {
-    assert.equal(stream_sort.sort_groups(''), undefined);
+    const empty_result = {
+        same_as_before: false,
+        pinned_streams: [],
+        normal_streams: [],
+        dormant_streams: [],
+    };
+
+    assert.deepEqual(stream_sort.sort_groups(''), empty_result);
     assert.equal(stream_sort.first_stream_id(), undefined);
 });
 

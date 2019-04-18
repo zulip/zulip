@@ -90,6 +90,7 @@ var keypress_mappings = {
     71: {name: 'G_end', message_view_only: true}, // 'G'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
+    76: {name: 'toggle_stream_view', message_view_only: true}, // 'L'
     77: {name: 'toggle_mute', message_view_only: true}, // 'M'
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
@@ -646,6 +647,9 @@ exports.process_hotkey = function (e, hotkey) {
         });
     case 'query_streams':
         stream_list.initiate_search();
+        return true;
+    case 'toggle_stream_view':
+        left_sidebar.toggle_stream_view();
         return true;
     case 'query_users':
         activity.initiate_search();

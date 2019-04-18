@@ -572,6 +572,7 @@ run_test('unread_ops', () => {
 
 set_global('topic_list', {});
 
+zrequire('left_sidebar');
 zrequire('stream_sort');
 zrequire('stream_list');
 

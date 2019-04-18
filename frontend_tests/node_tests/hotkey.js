@@ -123,6 +123,7 @@ run_test('mappings', () => {
     assert.equal(map_down(88, false, true), undefined); // ctrl + x
     assert.equal(map_down(78, false, true), undefined); // ctrl + n
     assert.equal(map_down(77, false, true), undefined); // ctrl + m
+    assert.equal(map_down(76, false, true), undefined); // ctrl + m
     assert.equal(map_down(75, false, false, true), undefined); // cmd + k
     assert.equal(map_down(83, false, false, true), undefined); // cmd + s
     assert.equal(map_down(75, true, true), undefined); // shift + ctrl + k
@@ -174,7 +175,7 @@ run_test('basic_chars', () => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped('abfhlmotyz');
-    assert_unmapped('BEFHILNOQTUWXYZ');
+    assert_unmapped('BEFHINOQTUWXYZ');
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.

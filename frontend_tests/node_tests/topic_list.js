@@ -8,6 +8,7 @@ set_global('stream_popover', {});
 set_global('templates', {});
 set_global('message_list', {});
 
+zrequire('left_sidebar');
 zrequire('hash_util');
 zrequire('stream_data');
 zrequire('unread');

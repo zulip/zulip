@@ -37,6 +37,10 @@ exports.stream_sidebar = (function () {
         self.rows.set(stream_id, widget);
     };
 
+    self.get_stream_ids = function () {
+        return self.rows.keys();
+    };
+
     self.get_row = function (stream_id) {
         return self.rows.get(stream_id);
     };
@@ -86,14 +90,18 @@ exports.build_stream_list = function () {
     // sidebar rows.  Our job here is to build the bigger widget,
     // which largely is a matter of arranging the individual rows in
     // the right order.
-    var streams = stream_data.subscribed_streams();
+    var streams = left_sidebar.get_stream_names();
     if (streams.length === 0) {
-        return;
+        // TODO: show "no streams"
     }
 
     // The main logic to build the list is in stream_sort.js, and
     // we get three lists of streams (pinned/normal/dormant).
     var stream_groups = stream_sort.sort_groups(get_search_term());
+
+    if (stream_groups === undefined) {
+        return;
+    }
 
     if (stream_groups.same_as_before) {
         return;
@@ -104,9 +112,15 @@ exports.build_stream_list = function () {
 
     function add_sidebar_li(stream) {
         var sub = stream_data.get_sub(stream);
-        var sidebar_row = exports.stream_sidebar.get_row(sub.stream_id);
+        var stream_id = sub.stream_id;
+        var sidebar_row = exports.stream_sidebar.get_row(stream_id);
         sidebar_row.update_whether_active();
-        elems.push(sidebar_row.get_li());
+        var stream_li = sidebar_row.get_li();
+        elems.push(stream_li);
+
+        if (left_sidebar.show_topics(stream_id)) {
+            topic_list.rebuild(stream_li, stream_id);
+        }
     }
 
     parent.empty();
@@ -254,6 +268,8 @@ function build_stream_sidebar_row(sub) {
     self.update_unread_count();
 
     exports.stream_sidebar.set_row(sub.stream_id, self);
+
+    return self;
 }
 
 exports.create_sidebar_row = function (sub) {
@@ -301,6 +317,11 @@ exports.update_streams_sidebar = function () {
     exports.build_stream_list();
     exports.stream_cursor.redraw();
 
+    if (left_sidebar.keep_topics_open()) {
+        exports.update_all_topic_lists();
+        return;
+    }
+
     if (!narrow_state.active()) {
         return;
     }
@@ -308,6 +329,16 @@ exports.update_streams_sidebar = function () {
     var filter = narrow_state.filter();
 
     exports.update_stream_sidebar_for_narrow(filter);
+};
+
+exports.update_all_topic_lists = function () {
+    var stream_ids = exports.stream_sidebar.get_stream_ids();
+
+    _.each(stream_ids, function (stream_id) {
+        var sidebar_row = exports.stream_sidebar.get_row(stream_id);
+        var stream_li = sidebar_row.get_li();
+        topic_list.rebuild(stream_li, stream_id);
+    });
 };
 
 exports.update_dom_with_unread_counts = function (counts) {
@@ -412,8 +443,10 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
         stream_li.addClass('active-filter');
     }
 
-    if (stream_id !== topic_list.active_stream_id()) {
-        topic_zoom.clear_topics();
+    if (!left_sidebar.keep_topics_open()) {
+        if (stream_id !== topic_list.active_stream_id()) {
+            topic_zoom.clear_topics();
+        }
     }
 
     topic_list.rebuild(stream_li, stream_id);
@@ -504,10 +537,6 @@ exports.set_event_handlers = function () {
     });
 
     $('#clear_search_stream_button').on('click', exports.clear_search);
-
-    $("#streams_header").expectOne().click(function (e) {
-        exports.toggle_filter_displayed(e);
-    });
 
     // check for user scrolls on streams list for first time
     $('#stream-filters-container').on('scroll', function () {

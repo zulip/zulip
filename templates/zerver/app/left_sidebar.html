@@ -56,15 +56,25 @@
             </li>
         </ul>
         <div id="streams_list" class="zoom-out">
-            <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="{{ _('Filter streams') }}">{{ _('STREAMS') }}</h4>
+            <div id="streams_header" class="zoom-in-hide">
+
+                <span class="stream_list_toggle">
+                    <i class='fa fa-reorder'></i>
+                </span>
+                {#- squash whitespace -#}
+
+                <span class="stream_sidebar_title">{{ _('ALL STREAMS') }}</span>
+
                 <i id="streams_inline_cog" class='fa fa-cog' aria-hidden="true" data-toggle="tooltip" title="{{ _('Subscribe, add, or configure streams') }}"></i>
                 <i id="streams_filter_icon" class='fa fa-search' aria-hidden="true" data-toggle="tooltip" title="{{ _('Filter streams') }} (q)"></i>
+
                 <div class="input-append notdisplayed stream_search_section">
                     <input class="stream-list-filter" type="text" autocomplete="off" placeholder="{{ _('Search streams') }}" />
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
                 </div>
+
             </div>
             <div id="topics_header">
                 <a href="" class="show-all-streams"> <i class="fa fa-chevron-left" aria-hidden="true"></i>{{ _('All streams') }}</a>

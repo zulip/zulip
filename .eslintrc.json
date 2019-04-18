@@ -78,6 +78,7 @@
         "jQuery": false,
         "katex": false,
         "keydown_util": false,
+        "left_sidebar": false,
         "lightbox": false,
         "list_cursor": false,
         "list_render": false,

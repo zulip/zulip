@@ -18,6 +18,10 @@ var active_widgets = new Dict();
 var zoomed = false;
 
 exports.remove_expanded_topics = function () {
+    if (left_sidebar.keep_topics_open()) {
+        return;
+    }
+
     stream_popover.hide_topic_popover();
 
     _.each(active_widgets.values(), function (widget) {
@@ -89,7 +93,7 @@ exports.widget = function (parent_elem, my_stream_id) {
         self.topic_items = new Dict({fold_case: true});
 
         var max_topics = 5;
-        var topic_names = topic_data.get_recent_names(my_stream_id);
+        var topic_names = left_sidebar.get_topic_names(my_stream_id);
 
         var ul = $('<ul class="topic-list">');
 
@@ -122,11 +126,13 @@ exports.widget = function (parent_elem, my_stream_id) {
         // widget.  We need it if there are at least 5 topics in the
         // frontend's cache, or if we (possibly) don't have all
         // historical topics in the browser's cache.
-        var show_more = self.build_more_topics_section();
         var sub = stream_data.get_sub_by_id(my_stream_id);
 
         if (topic_names.length > max_topics || !stream_data.all_topics_in_cache(sub)) {
-            ul.append(show_more);
+            if (!left_sidebar.keep_topics_open()) {
+                var show_more = self.build_more_topics_section();
+                ul.append(show_more);
+            }
         }
         return ul;
     };
@@ -260,6 +266,11 @@ exports.rebuild = function (stream_li, stream_id) {
     var no_more_topics = exports.need_to_show_no_more_topics(stream_id);
 
     exports.remove_expanded_topics();
+
+    if (active_widgets.has(stream_id)) {
+        active_widgets.get(stream_id).remove();
+    }
+
     var widget = exports.widget(stream_li, stream_id);
     widget.build(active_topic, no_more_topics);
 
