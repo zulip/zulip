@@ -1,19 +1,16 @@
 # Test mobile notifications
 
-Normally, mobile notifications are only sent if you're idle, which isn't
-ideal for testing.
+Normally, mobile notifications are only sent after you've been idle for a
+few minutes, which isn't ideal for testing.
 
-You can instead have mobile notifications sent for all [private messages](/help/private-messages),
-regardless of whether you're online.
+You can instead have mobile notifications sent regardless of how recently
+you've been online.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. Under **Private messages and @-mentions**, enable
-   **Mobile notifications**.
-
-1. Under **Private messages, @-mentions, and alert words**, enable
+1. Under **Other notification settings**, enable
    **Send mobile notifications even if I'm online**.
 
 {end_tabs}

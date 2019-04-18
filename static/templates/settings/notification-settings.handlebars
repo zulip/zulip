@@ -65,14 +65,6 @@
               "push_notifications_tooltip" true}}
 
             {{partial "settings_checkbox"
-              "setting_name" "enable_online_push_notifications"
-              "is_checked" page_params.enable_online_push_notifications
-              "is_parent_setting_enabled" page_params.enable_offline_push_notifications
-              "is_nested" true
-              "label" settings_label.enable_online_push_notifications
-              "push_notifications_tooltip" true}}
-
-            {{partial "settings_checkbox"
               "setting_name" "enable_offline_email_notifications"
               "is_checked" page_params.enable_offline_email_notifications
               "label" settings_label.enable_offline_email_notifications}}
@@ -82,6 +74,12 @@
 
             <h3 class="inline-block">{{t "Other notification settings" }}</h3>
             <div class="alert-notification" id="other-notify-settings-status"></div>
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_online_push_notifications"
+              "is_checked" page_params.enable_online_push_notifications
+              "label" settings_label.enable_online_push_notifications
+              "push_notifications_tooltip" true}}
 
             {{partial "settings_checkbox"
               "setting_name" "enable_digest_emails"
