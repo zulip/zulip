@@ -14,7 +14,7 @@ i18n.init({
         fr: {
             translation: {
                 "Quote and reply": "French translation",
-                "Notifications are triggered when a message arrives and Zulip isn't in focus or the message is offscreen.": "Some French text with Zulip",
+                "Desktop notifications are triggered for messages that are offscreen when they arrive. Mobile and email notifications are triggered once you have been away from Zulip for a few minutes.": "Some French text",
             },
         },
     },
@@ -60,5 +60,5 @@ run_test('tr_tag', () => {
     };
 
     var html = global.render_template('settings_tab', args);
-    assert(html.indexOf('Some French text with Zulip') > 0);
+    assert(html.indexOf('Some French text') > 0);
 });
