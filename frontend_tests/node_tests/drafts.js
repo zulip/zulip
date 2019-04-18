@@ -327,6 +327,8 @@ run_test('format_drafts', () => {
 
     drafts.open_modal = noop;
     drafts.set_initial_element = noop;
+    $("#drafts_table .draft-row").length = 0;
+
     drafts.launch();
     timerender.render_now = stub_render_now;
 });

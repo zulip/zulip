@@ -169,6 +169,7 @@ run_test('expand_and_update_private_messages', () => {
 
     collapsed = false;
 
+    $("#private-container").length = 1;
     pm_list.update_private_messages();
 
     assert(collapsed);
@@ -230,6 +231,9 @@ run_test('update_dom_with_unread_counts', () => {
     private_li.set_find_results("li[data-user-ids-string='101,102']", child_li);
     child_li.set_find_results('.private_message_count', child_count);
     child_count.set_find_results('.value', child_value);
+
+    child_value.length = 1;
+    child_count.length = 1;
 
     var pm_count = new Dict();
     var user_ids_string = '101,102';

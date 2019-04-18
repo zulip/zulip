@@ -118,6 +118,8 @@ run_test('create_sidebar_row', () => {
     var social_li = $('<social sidebar row>');
     var stream_id = social.stream_id;
 
+    social_li.length = 0;
+
     var privacy_elem = $.create('privacy-stub');
     social_li.set_find_results('.stream-privacy', privacy_elem);
 
@@ -574,6 +576,7 @@ run_test('update_count_in_dom', () => {
         '<stream-value>'
     );
 
+    $('<stream li>').length = 0;
     stream_li.addClass('subscription_block');
     stream_li.addClass('stream-with-count');
     assert(stream_li.hasClass('stream-with-count'));
@@ -635,6 +638,8 @@ run_test('rename_stream', () => {
     stream_data.rename_sub(sub, new_name);
 
     const li_stub = $.create('li stub');
+    li_stub.length = 0;
+
     templates.render = (name, payload) => {
         assert.equal(name, 'stream_sidebar_row');
         assert.deepEqual(payload, {
@@ -679,6 +684,8 @@ run_test('refresh_pin', () => {
     });
 
     const li_stub = $.create('li stub');
+    li_stub.length = 0;
+
     templates.render = () => {
         return {to_$: () => li_stub};
     };
