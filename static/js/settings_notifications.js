@@ -13,12 +13,12 @@ var pm_mention_notification_settings = [
     "enable_desktop_notifications",
     "enable_offline_email_notifications",
     "enable_offline_push_notifications",
-    "enable_online_push_notifications",
     "enable_sounds",
     "pm_content_in_desktop_notifications",
 ];
 
 var other_notification_settings = [
+    "enable_online_push_notifications",
     "notification_sound",
     "enable_digest_emails",
     "enable_login_emails",
@@ -112,10 +112,6 @@ exports.set_up = function () {
 
     $("#enable_desktop_notifications").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "pm_content_in_desktop_notifications", true);
-    });
-
-    $("#enable_offline_push_notifications").change(function () {
-        settings_ui.disable_sub_setting_onchange(this.checked, "enable_online_push_notifications", true);
     });
 };
 
