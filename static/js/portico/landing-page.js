@@ -248,20 +248,11 @@ var load = function () {
     });
 
     // features click event
-    $("#other-features .feature-block h3").click( function () {
+    $("#other-features .feature-block h3").click(function () {
         $(this).next().slideToggle();
-
         $(this).parent().toggleClass("open");
-
     });
 
-    $("#other-features .feature-block h3").hover(
-      function() {
-        // on mouse over
-      }, function() {
-        // on mouse leave
-      }
-    );
     // Set up events / categories / search
     events();
 };
@@ -285,7 +276,3 @@ $(function () {
 $(window).on('unload', function () {
     $(window).unbind('unload');
 });
-
-$(window).on('load',()=>{
-  console.log($("#other-features .feature-block h3"));
-})
