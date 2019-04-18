@@ -525,10 +525,10 @@ nav ul li.active::after {
 }
 
 .portico-landing.features-app section#features-box .feature-block:nth-of-type(-n+4):hover {
-    -webkit-box-shadow: 6.5px 8.5px 15px 0px rgba(0,0,0,0.1);
-    -moz-box-shadow: 6.5px 8.5px 15px 0px rgba(0,0,0,0.1);
-    box-shadow: 6.5px 8.5px 15px 0px rgba(0,0,0,0.1);
-    background-color: white;
+    -webkit-box-shadow: 6.5px 8.5px 15px 0px rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: 6.5px 8.5px 15px 0px rgba(0, 0, 0, 0.1);
+    box-shadow: 6.5px 8.5px 15px 0px rgba(0, 0, 0, 0.1);
+    background-color: rgb(255, 255, 255);
 }
 
 .portico-landing.features-app section#features-box .feature-block p {
@@ -554,8 +554,8 @@ nav ul li.active::after {
     top: 10px;
     left: 0;
     transform: rotate(-45deg) translateY(-50%);
-    border-right: 1px solid #000000;
-    border-bottom: 1px solid #000000;
+    border-right: 1px solid rgb(0, 0, 0);
+    border-bottom: 1px solid rgb(0, 0, 0);
     height: 6px;
     width: 6px;
     display: inline-block;
@@ -567,8 +567,8 @@ nav ul li.active::after {
     top: 10px;
     left: 0;
     transform: rotate(45deg) translateY(-50%);
-    border-right: 1px solid #000000;
-    border-bottom: 1px solid #000000;
+    border-right: 1px solid rgb(0, 0, 0);
+    border-bottom: 1px solid rgb(0, 0, 0);
     height: 6px;
     width: 6px;
     display: inline-block;
