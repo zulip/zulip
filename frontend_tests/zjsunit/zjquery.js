@@ -34,91 +34,94 @@ exports.make_event_store = (selector) => {
         generic_event: generic_event,
 
         get_on_handler: function (name, child_selector) {
-            var funcs = self.get_on_handlers(name, child_selector);
-            var handler_name = name + ' with ' + child_selector;
-            if (funcs.length === 0) {
-                throw Error('Could not find handler for ' + handler_name);
-            }
-            if (funcs.length > 1) {
-                var remedy = "\nMaybe clear zjquery between tests?";
-                throw Error('Found too many handlers for ' + handler_name + remedy);
-            }
-            return funcs[0];
-        },
+            var handler;
 
-        get_on_handlers: function (name, child_selector) {
             if (child_selector === undefined) {
-                return on_functions.get(name) || [];
+                handler = on_functions.get(name);
+                if (!handler) {
+                    throw Error('no ' + name + ' handler for ' + selector);
+                }
+                return handler;
             }
 
-            var child_on = child_on_functions.get(child_selector) || {};
-            if (!child_on) {
-                return [];
+            var child_on = child_on_functions.get(child_selector);
+            if (child_on) {
+                handler = child_on.get(name);
             }
 
-            return child_on.get(name) || [];
+            if (!handler) {
+                throw Error('no ' + name + ' handler for ' + selector + ' ' + child_selector);
+            }
+
+            return handler;
         },
 
         off: function () {
-            var event_name;
+            var event_name = arguments[0];
 
-            if (arguments.length === 2) {
-                event_name = arguments[0];
-                on_functions[event_name] = [];
-            } else if (arguments.length === 3) {
-                event_name = arguments[0];
-                var sel = arguments[1];
-                var child_on = child_on_functions.setdefault(sel, new Dict());
-                child_on[event_name] = [];
+            if (arguments.length === 1) {
+                on_functions.del(event_name);
+                return;
             }
+
+            // In the Zulip codebase we never use this form of
+            // .off in code that we test: $(...).off('click', child_sel);
+            //
+            // So we don't support this for now.
+            throw Error('zjquery does not support this call sequence');
         },
 
         on: function () {
             // parameters will either be
             //    (event_name, handler) or
             //    (event_name, sel, handler)
-            var event_name;
+            var event_name = arguments[0];
             var sel;
             var handler;
 
-            // For each event_name (or event_name/sel combo), we will store an
-            // array of functions that are mapped to the event (or event/selector).
-            //
-            // Usually funcs is an array of just one element, but not always.
-            var funcs;
-
             if (arguments.length === 2) {
-                event_name = arguments[0];
                 handler = arguments[1];
-                funcs = on_functions.setdefault(event_name, []);
-                funcs.push(handler);
-            } else if (arguments.length === 3) {
-                event_name = arguments[0];
-                sel = arguments[1];
-                handler = arguments[2];
-                assert.equal(typeof sel, 'string', 'String selectors expected here.');
-                assert.equal(typeof handler, 'function', 'An handler function expected here.');
-                var child_on = child_on_functions.setdefault(sel, new Dict());
-                funcs = child_on.setdefault(event_name, []);
-                funcs.push(handler);
+                if (on_functions.has(event_name)) {
+                    console.info('\nEither the app or the test can be at fault here..');
+                    console.info('(sometimes you just want to call $.clear_all_elements();)\n');
+                    throw Error('dup ' + event_name + ' handler for ' + selector);
+                }
+
+                on_functions.set(event_name, handler);
+                return;
             }
+
+            if (arguments.length !== 3) {
+                throw Error('wrong number of arguments passed in');
+            }
+
+            sel = arguments[1];
+            handler = arguments[2];
+            assert.equal(typeof sel, 'string', 'String selectors expected here.');
+            assert.equal(typeof handler, 'function', 'An handler function expected here.');
+            var child_on = child_on_functions.setdefault(sel, new Dict());
+
+            if (child_on.has(event_name)) {
+                throw Error('dup ' + event_name + ' handler for ' + selector + ' ' + sel);
+            }
+
+            child_on.set(event_name, handler);
         },
 
         trigger: function (ev) {
             var ev_name = typeof ev === 'string' ? ev : ev.name;
-            var funcs = on_functions.get(ev_name) || [];
-            // The following assertion is temporary.  It can be
-            // legitimate for code to trigger multiple handlers.
-            // But up until now, we haven't needed this, and if
-            // you come across this assertion, it's possible that
-            // you can simplify your tests by just doing your own
-            // mocking of trigger().  If you really know what you
-            // are doing, you can remove this limitation.
-            assert(funcs.length <= 1, 'multiple functions set up');
+            var func = on_functions.get(ev_name);
 
-            _.each(funcs, function (f) {
-                f(ev.data);
-            });
+            if (!func) {
+                // It's possible that test code will trigger events
+                // that haven't been set up yet, but we are trying to
+                // eventually deprecate trigger in our codebase, so for
+                // now we just let calls to trigger silently do nothing.
+                // (And I think actual jQuery would do the same thing.)
+                return;
+            }
+
+            func(ev.data);
         },
     };
 
@@ -219,9 +222,6 @@ exports.make_new_elem = function (selector, opts) {
         },
         get_on_handler: function (name, child_selector) {
             return event_store.get_on_handler(name, child_selector);
-        },
-        get_on_handlers: function (name, child_selector) {
-            return event_store.get_on_handlers(name, child_selector);
         },
         hasClass: function (class_name) {
             return classes.has(class_name);
