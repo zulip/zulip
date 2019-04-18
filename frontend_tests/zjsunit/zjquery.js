@@ -144,11 +144,6 @@ exports.make_new_elem = function (selector, opts) {
     var event_store = exports.make_event_store(selector);
 
     var self = {
-        add_child: function () {
-            // TODO: Remove this once some in-flight PRs
-            //       get merged.
-            assert(false, 'Use set_find_results instead.');
-        },
         addClass: function (class_name) {
             classes.set(class_name, true);
             return self;
