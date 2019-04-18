@@ -29,20 +29,13 @@ exports.new_user_input = true;
 var huddle_timestamps = new Dict();
 
 exports.update_scrollbar = (function () {
-    var $buddy_list_wrapper = $("#buddy_list_wrapper");
-    var $group_pms = $("#group-pms");
-
     return {
         users: function () {
-            if (!$buddy_list_wrapper.length) {
-                $buddy_list_wrapper = $("#buddy_list_wrapper");
-            }
+            var $buddy_list_wrapper = $("#buddy_list_wrapper");
             ui.update_scrollbar($buddy_list_wrapper);
         },
         group_pms: function () {
-            if (!$group_pms.length) {
-                $group_pms = $("#group-pms");
-            }
+            var $group_pms = $("#group-pms");
             ui.update_scrollbar($group_pms);
         },
     };
