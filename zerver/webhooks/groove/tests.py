@@ -8,11 +8,14 @@ class GrooveHookTests(WebhookTestCase):
     # This test simulates the condition when a new ticket comes.
     def test_groove_ticket_started(self) -> None:
         expected_topic = u"notifications"
-        expected_message = (u"New ticket from Test Name\n"
-                            u"```quote\n"
-                            u"**[Ticket #9: Test Subject](https://ghostfox.groovehq.com/groove_client/tickets/68659446)**\n"
-                            u"The content of the body goes here.\n"
-                            u"```")
+        expected_message = """
+Test Name submitted new ticket [#9: Test Subject](https://ghostfox.groovehq.com/groove_client/tickets/68659446):
+
+``` quote
+The content of the body goes here.
+```
+""".strip()
+
         self.send_and_test_stream_message('ticket_started', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded",
                                           HTTP_X_GROOVE_EVENT="ticket_started")
@@ -21,10 +24,7 @@ class GrooveHookTests(WebhookTestCase):
     # is assigned to an agent.
     def test_groove_ticket_assigned_agent_only(self) -> None:
         expected_topic = u"notifications"
-        expected_message = (u"An open ticket has been assigned to agent@example.com\n"
-                            u"```quote\n"
-                            u"**[Ticket #9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446)**\n"
-                            u"```")
+        expected_message = "[#9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446) (open) assigned to agent@example.com."
         self.send_and_test_stream_message('ticket_assigned_agent_only', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded",
                                           HTTP_X_GROOVE_EVENT="ticket_assigned")
@@ -33,10 +33,8 @@ class GrooveHookTests(WebhookTestCase):
     # is assigned to an agent in a group.
     def test_groove_ticket_assigned_agent_and_group(self) -> None:
         expected_topic = u"notifications"
-        expected_message = (u"An open ticket has been assigned to agent@example.com from group2\n"
-                            u"```quote\n"
-                            u"**[Ticket #9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446)**\n"
-                            u"```")
+        expected_message = "[#9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446) (open) assigned to agent@example.com from group2."
+
         self.send_and_test_stream_message('ticket_assigned_agent_and_group', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded",
                                           HTTP_X_GROOVE_EVENT="ticket_assigned")
@@ -45,10 +43,7 @@ class GrooveHookTests(WebhookTestCase):
     # is assigned to a group.
     def test_groove_ticket_assigned_group_only(self) -> None:
         expected_topic = u"notifications"
-        expected_message = (u"A pending ticket has been assigned to group2\n"
-                            u"```quote\n"
-                            u"**[Ticket #9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446)**\n"
-                            u"```")
+        expected_message = "[#9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446) (pending) assigned to group2."
         self.send_and_test_stream_message('ticket_assigned_group_only', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded",
                                           HTTP_X_GROOVE_EVENT="ticket_assigned")
@@ -65,11 +60,14 @@ class GrooveHookTests(WebhookTestCase):
     # This simulates the notification when an agent replied to a ticket.
     def test_groove_agent_replied(self) -> None:
         expected_topic = u"notifications"
-        expected_message = (u"agent@example.com has just replied to a ticket\n"
-                            u"```quote\n"
-                            u"**[Ticket #776](https://ghostfox.groovehq.com/groove_client/tickets/68667295)**\n"
-                            u"Hello , This is a reply from an agent to a ticket\n"
-                            u"```")
+        expected_message = """
+agent@example.com replied to [ticket #776](https://ghostfox.groovehq.com/groove_client/tickets/68667295):
+
+``` quote
+Hello , This is a reply from an agent to a ticket
+```
+""".strip()
+
         self.send_and_test_stream_message('agent_replied', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded",
                                           HTTP_X_GROOVE_EVENT="agent_replied")
@@ -77,11 +75,14 @@ class GrooveHookTests(WebhookTestCase):
     # This simulates the condition when a customer replied to a ticket.
     def test_groove_customer_replied(self) -> None:
         expected_topic = u"notifications"
-        expected_message = (u"rambo@example.com has just replied to a ticket\n"
-                            u"```quote\n"
-                            u"**[Ticket #440](https://ghostfox.groovehq.com/groove_client/tickets/68666538)**\n"
-                            u"Hello agent, thanks for getting back. This is how a reply from customer looks like.\n"
-                            u"```")
+        expected_message = """
+rambo@example.com replied to [ticket #440](https://ghostfox.groovehq.com/groove_client/tickets/68666538):
+
+``` quote
+Hello agent, thanks for getting back. This is how a reply from customer looks like.
+```
+""".strip()
+
         self.send_and_test_stream_message('customer_replied', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded",
                                           HTTP_X_GROOVE_EVENT="customer_replied")
@@ -89,29 +90,17 @@ class GrooveHookTests(WebhookTestCase):
     # This simulates the condition when an agent left a note.
     def test_groove_note_added(self) -> None:
         expected_topic = u"notifications"
-        expected_message = (u"anotheragent@example.com has left a note\n"
-                            u"```quote\n"
-                            u"**[Ticket #776](https://ghostfox.groovehq.com/groove_client/tickets/68667295)**\n"
-                            u"This is a note added to  a ticket\n"
-                            u"```")
+        expected_message = """
+anotheragent@example.com left a note on [ticket #776](https://ghostfox.groovehq.com/groove_client/tickets/68667295):
+
+``` quote
+This is a note added to  a ticket
+```
+""".strip()
+
         self.send_and_test_stream_message('note_added', expected_topic, expected_message,
                                           content_type="application/x-ww-form-urlencoded",
                                           HTTP_X_GROOVE_EVENT="note_added")
-
-    # This is for other events than specified.
-    def test_groove_ticket_state_changed(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
-        result = self.client_post(self.url, self.get_body('ticket_state_changed'),
-                                  content_type="application/x-www-form-urlencoded",
-                                  HTTP_X_GROOVE_EVENT='ticket_state_changed')
-        self.assert_json_success(result)
-
-    def test_groove_malformed_payload(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
-        result = self.client_post(self.url, self.get_body('malformed_payload'),
-                                  content_type="application/x-www-form-urlencoded",
-                                  HTTP_X_GROOVE_EVENT='ticket_started')
-        self.assert_json_error(result, 'Missing required data')
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("groove", fixture_name, file_type="json")

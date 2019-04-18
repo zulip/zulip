@@ -1,105 +1,103 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Optional
+from functools import partial
+from typing import Any, Dict, Optional, Callable
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
-
-import logging
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header
+    validate_extract_webhook_http_header, UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
+TICKET_STARTED_TEMPLATE = """
+{customer_name} submitted new ticket [#{number}: {title}]({app_url}):
+
+``` quote
+{summary}
+```
+""".strip()
+
+TICKET_ASSIGNED_TEMPLATE = "[#{number}: {title}]({app_url}) ({state}) assigned to {assignee_info}."
+
+AGENT_REPLIED_TEMPLATE = """
+{actor} {action} [ticket #{number}]({app_ticket_url}):
+
+``` quote
+{plain_text_body}
+```
+""".strip()
+
 def ticket_started_body(payload: Dict[str, Any]) -> str:
-    body = u'New ticket from {customer_name}'
-    body += u"\n```quote\n**[Ticket #{number}: {title}]({app_url})**\n{summary}\n```"
-    return body.format(**payload)
+    return TICKET_STARTED_TEMPLATE.format(**payload)
 
 def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[str]:
-    # Take the state, assignee, and assigned group from the payload.
     state = payload['state']
+    kwargs = {
+        'state': 'open' if state == 'opened' else state,
+        'number': payload['number'],
+        'title': payload['title'],
+        'app_url': payload['app_url']
+    }
+
     assignee = payload['assignee']
     assigned_group = payload['assigned_group']
 
-    # There are three states on a ticket: opened,
-    # pending, and closed. This creates the message
-    # based on the state of the ticket.
-    if state == "opened":
-        body = u"An open ticket has been assigned to"
-    else:
-        body = u"A {state} ticket has been assigned to"
-
-    # If there is a person and/or a group assigned,
-    # make a notification message. Otherwise, ignore it.
     if assignee or assigned_group:
         if assignee and assigned_group:
-            body += u" {assignee} from {assigned_group}"
+            kwargs['assignee_info'] = '{assignee} from {assigned_group}'.format(**payload)
         elif assignee:
-            body += u" {assignee}"
+            kwargs['assignee_info'] = '{assignee}'.format(**payload)
         elif assigned_group:
-            body += u" {assigned_group}"
-        body += u"\n```quote\n**[Ticket #{number}: {title}]({app_url})**\n```"
-        return body.format(**payload)
+            kwargs['assignee_info'] = '{assigned_group}'.format(**payload)
+
+        return TICKET_ASSIGNED_TEMPLATE.format(**kwargs)
     else:
         return None
 
-def agent_replied_body(payload: Dict[str, Any]) -> str:
-    # Take the agent's email and the ticket number from the payload.
-    agent = payload['links']['author']['href'].split("http://api.groovehq.com/v1/agents/")[1]
+def replied_body(payload: Dict[str, Any], actor: str, action: str) -> str:
+    actor_url = "http://api.groovehq.com/v1/{}/".format(actor + 's')
+    actor = payload['links']['author']['href'].split(actor_url)[1]
     number = payload['links']['ticket']['href'].split("http://api.groovehq.com/v1/tickets/")[1]
 
-    # Create the notification message.
-    body = u"%s has just replied to a ticket\n```quote\n**[Ticket #%s]" % (agent, number)
-    body += u"({app_ticket_url})**\n{plain_text_body}\n```"
-    return body.format(**payload)
+    body = AGENT_REPLIED_TEMPLATE.format(
+        actor=actor,
+        action=action,
+        number=number,
+        app_ticket_url=payload['app_ticket_url'],
+        plain_text_body=payload['plain_text_body']
+    )
 
-def customer_replied_body(payload: Dict[str, Any]) -> str:
-    # Take the customer's email and the ticket number from the payload.
-    customer = payload['links']['author']['href'].split("http://api.groovehq.com/v1/customers/")[1]
-    number = payload['links']['ticket']['href'].split("http://api.groovehq.com/v1/tickets/")[1]
+    return body
 
-    # Create the notification message.
-    body = u"%s has just replied to a ticket\n```quote\n**[Ticket #%s]" % (customer, number)
-    body += u"({app_ticket_url})**\n{plain_text_body}\n```"
-    return body.format(**payload)
-
-def note_added_body(payload: Dict[str, Any]) -> str:
-    # Take the agent's email and the ticket number from the payload.
-    agent = payload['links']['author']['href'].split("http://api.groovehq.com/v1/agents/")[1]
-    number = payload['links']['ticket']['href'].split("http://api.groovehq.com/v1/tickets/")[1]
-
-    # Create the notification message.
-    body = u"%s has left a note\n```quote\n**[Ticket #%s]" % (agent, number)
-    body += u"({app_ticket_url})**\n{plain_text_body}\n```"
-    return body.format(**payload)
+def get_event_handler(event: str) -> Callable[..., str]:
+    # The main reason for this function existance is because of mypy
+    handler = EVENTS_FUNCTION_MAPPER.get(event)  # type: Any
+    if handler is None:
+        raise UnexpectedWebhookEventType("Groove", event)
+    return handler
 
 @api_key_only_webhook_view('Groove')
 @has_request_variables
 def api_groove_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     event = validate_extract_webhook_http_header(request, 'X_GROOVE_EVENT', 'Groove')
+    assert event is not None
+    handler = get_event_handler(event)
 
-    # We listen to several events that are used for notifications.
-    # Other events are ignored.
-    if event in EVENTS_FUNCTION_MAPPER:
-        try:
-            body = EVENTS_FUNCTION_MAPPER[event](payload)
-        except KeyError as e:
-            logging.error('Required key not found : ' + e.args[0])
-            return json_error(_('Missing required data'))
-        if body is not None:
-            topic = 'notifications'
-            check_send_webhook_message(request, user_profile, topic, body)
+    body = handler(payload)
+    topic = 'notifications'
+
+    if body is not None:
+        check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()
 
 EVENTS_FUNCTION_MAPPER = {
     'ticket_started': ticket_started_body,
     'ticket_assigned': ticket_assigned_body,
-    'agent_replied': agent_replied_body,
-    'customer_replied': customer_replied_body,
-    'note_added': note_added_body
+    'agent_replied': partial(replied_body, actor='agent', action='replied to'),
+    'customer_replied': partial(replied_body, actor='customer', action='replied to'),
+    'note_added': partial(replied_body, actor='agent', action='left a note on')
 }
