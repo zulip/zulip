@@ -324,7 +324,7 @@ function clear_buddy_list() {
 }
 
 function reset_setup() {
-    set_global('$', global.make_zjquery());
+    $.clear_all_elements();
     activity.set_cursor_and_filter();
 
     buddy_list.container = $('#user_presences');
@@ -826,6 +826,15 @@ run_test('update_presence_info', () => {
 });
 
 run_test('initialize', () => {
+    function clear() {
+        $.clear_all_elements();
+        buddy_list.container = $('#user_presences');
+        buddy_list.container.append = () => {};
+        clear_buddy_list();
+    }
+
+    clear();
+
     $.stub_selector('html', {
         on: function (name, func) {
             func();
@@ -847,7 +856,10 @@ run_test('initialize', () => {
     };
 
     activity.has_focus = false;
+
     activity.initialize();
+    clear();
+
     assert(scroll_handler_started);
     assert(!activity.new_user_input);
     assert(!$('#zephyr-mirror-error').hasClass('show'));
@@ -864,9 +876,12 @@ run_test('initialize', () => {
     global.setInterval = (func) => func();
 
     activity.initialize();
+
     assert($('#zephyr-mirror-error').hasClass('show'));
     assert(!activity.new_user_input);
     assert(!activity.has_focus);
+
+    clear();
 
     // Now execute the reload-in-progress code path
     _reload_state.is_in_progress = function () {
@@ -874,6 +889,7 @@ run_test('initialize', () => {
     };
 
     activity.initialize();
+    clear();
 });
 
 run_test('away_status', () => {
