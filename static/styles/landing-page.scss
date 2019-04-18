@@ -516,6 +516,117 @@ nav ul li.active::after {
     margin-left: 100px;
 }
 
+.portico-landing.features-app section#features-box .feature-block
+// .portico-landing.features-app section#other-features .feature-block
+{
+    // border: 1px solid grey;
+    border-radius: 5px;
+    padding: 20px 40px;
+    transition: box-shadow 0.25s ease-in-out;
+    position: relative;
+}
+
+.portico-landing.features-app section#features-box .feature-block:nth-of-type(-n+4):hover{
+  -webkit-box-shadow: 6.5px 8.5px 15px 0px rgba(0,0,0,0.1);
+  -moz-box-shadow: 6.5px 8.5px 15px 0px rgba(0,0,0,0.1);
+  box-shadow: 6.5px 8.5px 15px 0px rgba(0,0,0,0.1);
+  background-color: white;
+}
+
+.portico-landing.features-app section#features-box .feature-block p
+// , .portico-landing.features-app section#other-features .feature-block p  {
+{
+    padding-bottom: 20px;
+}
+
+.portico-landing.features-app section#other-features .feature-block{
+  position: relative;
+  padding: 0px 20px;
+}
+
+.portico-landing.features-app section#other-features .feature-block p a.cta{
+  font-weight: 600;
+   display: inline-block;
+   padding-top: 16px;
+}
+
+.portico-landing.features-app section#other-features .feature-block h3{
+  cursor: pointer;
+}
+.portico-landing.features-app section#other-features .feature-block h3::before{
+  content: "";
+      // position: absolute;
+      top: 10px;
+      left: 0;
+      transform: rotate(-45deg) translateY(-50%);
+      border-right: 1px solid #000;
+      border-bottom: 1px solid #000;
+      height: 6px;
+      width: 6px;
+      display: inline-block;
+      margin-right: 15px;
+}
+
+.portico-landing.features-app section#other-features .feature-block.open h3::before{
+  content: "";
+      // position: absolute;
+      top: 10px;
+      left: 0;
+      transform: rotate(45deg) translateY(-50%);
+      border-right: 1px solid #000;
+      border-bottom: 1px solid #000;
+      height: 6px;
+      width: 6px;
+      display: inline-block;
+      margin-right: 15px;
+}
+.portico-landing.features-app section#other-features .feature-block p {
+  display: none;
+  padding: 0px 20px;
+}
+.portico-landing.features-app section#other-features .feature-block.open p {
+  display: block;
+}
+
+
+
+
+// .portico-landing.features-app section#other-features .feature-block:hover{
+//   -webkit-box-shadow: 6.5px 8.5px 15px 0px rgba(0,0,0,0.1);
+//   -moz-box-shadow: 6.5px 8.5px 15px 0px rgba(0,0,0,0.1);
+//   box-shadow: 6.5px 8.5px 15px 0px rgba(0,0,0,0.1);
+//   background-color: white;
+// }
+
+
+.help-link {
+  position: absolute;
+  bottom: 10px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.help-link a {
+  font-weight: 600 !important;
+  font-size: 19px;
+}
+
+.help-link a::after{
+  content: "\2192";
+    margin-left: 5px;
+    transform: scaleX(2);
+    transition: all 0.3s ease;
+}
+
+.help-link a:hover{
+  // text-decoration: underline;
+  cursor: pointer;
+}
+
+.portico-landing.features-app section#features-box .feature-block h3{
+    // text-align: center;
+}
+
 .portico-landing.features-app section.messages {
     display: flex;
     justify-content: center;
@@ -667,6 +778,7 @@ nav ul li.active::after {
     margin: 10px 20px;
     flex: 1 1 320px;
 }
+
 
 .portico-landing.features-app .feature-block h3 {
     font-size: 1.2em;
