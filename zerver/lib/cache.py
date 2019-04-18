@@ -534,3 +534,33 @@ def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATO
         return wrapper
 
     return decorator
+
+def dict_to_items_tuple(user_function: Callable[..., Any]) -> Callable[..., Any]:
+    """Wrapper that converts any dict args to dict item tuples."""
+    def dict_to_tuple(arg: Any) -> Any:
+        if isinstance(arg, dict):
+            return tuple(sorted(arg.items()))
+        return arg
+
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        new_args = (dict_to_tuple(arg) for arg in args)
+        return user_function(*new_args, **kwargs)
+
+    return wrapper
+
+def items_tuple_to_dict(user_function: Callable[..., Any]) -> Callable[..., Any]:
+    """Wrapper that converts any dict items tuple args to dicts."""
+    def dict_items_to_dict(arg: Any) -> Any:
+        if isinstance(arg, tuple):
+            try:
+                return dict(arg)
+            except TypeError:
+                pass
+        return arg
+
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        new_args = (dict_items_to_dict(arg) for arg in args)
+        new_kwargs = {key: dict_items_to_dict(val) for key, val in kwargs.items()}
+        return user_function(*new_args, **new_kwargs)
+
+    return wrapper

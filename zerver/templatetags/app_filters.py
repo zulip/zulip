@@ -19,7 +19,7 @@ import zerver.lib.bugdown.help_settings_links
 import zerver.lib.bugdown.help_relative_links
 import zerver.lib.bugdown.help_emoticon_translations_table
 import zerver.lib.bugdown.include
-from zerver.lib.cache import ignore_unhashable_lru_cache
+from zerver.lib.cache import ignore_unhashable_lru_cache, dict_to_items_tuple, items_tuple_to_dict
 
 register = Library()
 
@@ -67,10 +67,12 @@ docs_without_macros = [
     "incoming-webhooks-walkthrough.md",
 ]
 
-# Much of the time, render_markdown_path is called with hashable
-# arguments, so this decorator is effective even though it only caches
-# the results when called if none of the arguments are unhashable.
+# render_markdown_path is passed a context dictionary (unhashable), which
+# results in the calls not being cached. To work around this, we convert the
+# dict to a tuple of dict items to cache the results.
+@dict_to_items_tuple
 @ignore_unhashable_lru_cache(512)
+@items_tuple_to_dict
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path: str,
                          context: Optional[Dict[Any, Any]]=None,

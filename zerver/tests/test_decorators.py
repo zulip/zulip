@@ -40,7 +40,7 @@ from zerver.decorator import (
     return_success_on_head_request, to_not_negative_int_or_none,
     zulip_login_required
 )
-from zerver.lib.cache import ignore_unhashable_lru_cache
+from zerver.lib.cache import ignore_unhashable_lru_cache, dict_to_items_tuple, items_tuple_to_dict
 from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or, check_url, check_short_string,
@@ -1759,13 +1759,74 @@ class TestIgnoreUnhashableLRUCache(ZulipTestCase):
         self.assertEqual(result, 1)
 
         # Check unhashable argument.
-        result = f([1])
+        result = f({1: 2})
         hits, misses, currsize = get_cache_info()
         # Cache should not be used.
         self.assertEqual(hits, 1)
         self.assertEqual(misses, 1)
         self.assertEqual(currsize, 1)
-        self.assertEqual(result, [1])
+        self.assertEqual(result, {1: 2})
+
+        # Clear cache.
+        clear_cache()
+        hits, misses, currsize = get_cache_info()
+        self.assertEqual(hits, 0)
+        self.assertEqual(misses, 0)
+        self.assertEqual(currsize, 0)
+
+    def test_cache_hit_dict_args(self) -> None:
+        @ignore_unhashable_lru_cache()
+        @items_tuple_to_dict
+        def g(arg: Any) -> Any:
+            return arg
+
+        def get_cache_info() -> Tuple[int, int, int]:
+            info = getattr(g, 'cache_info')()
+            hits = getattr(info, 'hits')
+            misses = getattr(info, 'misses')
+            currsize = getattr(info, 'currsize')
+            return hits, misses, currsize
+
+        def clear_cache() -> None:
+            getattr(g, 'cache_clear')()
+
+        # Not used as a decorator on the definition to allow defining
+        # get_cache_info and clear_cache
+        f = dict_to_items_tuple(g)
+
+        # Check hashable argument.
+        result = f(1)
+        hits, misses, currsize = get_cache_info()
+        # First one should be a miss.
+        self.assertEqual(hits, 0)
+        self.assertEqual(misses, 1)
+        self.assertEqual(currsize, 1)
+        self.assertEqual(result, 1)
+
+        result = f(1)
+        hits, misses, currsize = get_cache_info()
+        # Second one should be a hit.
+        self.assertEqual(hits, 1)
+        self.assertEqual(misses, 1)
+        self.assertEqual(currsize, 1)
+        self.assertEqual(result, 1)
+
+        # Check dict argument.
+        result = f({1: 2})
+        hits, misses, currsize = get_cache_info()
+        # First one is a miss
+        self.assertEqual(hits, 1)
+        self.assertEqual(misses, 2)
+        self.assertEqual(currsize, 2)
+        self.assertEqual(result, {1: 2})
+
+        result = f({1: 2})
+        hits, misses, currsize = get_cache_info()
+        # Second one should be a hit.
+        self.assertEqual(hits, 2)
+        self.assertEqual(misses, 2)
+        self.assertEqual(currsize, 2)
+        self.assertEqual(result, {1: 2})
 
         # Clear cache.
         clear_cache()
