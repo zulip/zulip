@@ -160,6 +160,7 @@ const count_stub = $.create('count');
 count_stub.set_find_results('.value', value_stub);
 $(".top_left_starred_messages").set_find_results('.count', count_stub);
 
+$("#tab_list .stream").length = 0;
 
 run_test('initialize_everything', () => {
     ui_init.initialize_everything();

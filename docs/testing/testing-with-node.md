@@ -74,9 +74,8 @@ the stub for a function you're calling in your patch. Typically the stub
 is just placed in the test file, to prevent bloating of `zjquery`
 with functions that are only used in a single test.
 
-A good sign that you need to stub something out is getting an error of
-the type:
-`TypeError: <component>.<method> is not a function`
+If you need to stub, you will see an error of this form:
+`Error: You must create a stub for $("#foo").bar`
 
 The `zjquery` library itself is only about 500 lines of code, and can
 also be a useful resource if you're having trouble debugging DOM

@@ -213,6 +213,9 @@ run_test('update_dom_with_unread_counts', () => {
     child_li.set_find_results('.private_message_count', child_count);
     child_count.set_find_results('.value', child_value);
 
+    child_value.length = 1;
+    child_count.length = 1;
+
     var pm_count = new Dict();
     var user_ids_string = '101,102';
     pm_count.set(user_ids_string, 7);

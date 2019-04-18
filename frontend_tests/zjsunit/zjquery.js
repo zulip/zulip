@@ -377,7 +377,46 @@ exports.make_zjquery = function (opts) {
             silent: opts.silent,
         });
         add_extensions(elem);
-        return elem;
+
+        // Create a proxy handler to detect missing stubs.
+        //
+        // For context, zjquery doesn't implement every method/attribute
+        // that you'd find on a "real" jQuery object.  Sometimes we
+        // expects devs to create their own stubs.
+        var handler = {
+            get: (target, key) => {
+                // Handle the special case of equality checks, which
+                // we can infer by assert.equal trying to access the
+                // "stack" key.
+                if (key === 'stack') {
+                    var error = '\nInstead of doing equality checks on a full object, ' +
+                        'do `assert_equal(foo.selector, ".some_class")\n';
+                    throw Error(error);
+                }
+
+                const val = target[key];
+
+                if (val === undefined) {
+                    // For undefined values, we'll throw errors to devs saying
+                    // they need to create stubs.  We ignore certain keys that
+                    // are used for simply printing out the object.
+                    if (typeof key === 'symbol') {
+                        return;
+                    }
+                    if (key === 'inspect') {
+                        return;
+                    }
+
+                    throw Error('You must create a stub for $("' + selector + '").' + key);
+                }
+
+                return val;
+            },
+        };
+
+        var proxy = new Proxy(elem, handler);
+
+        return proxy;
     }
 
     var zjquery = function (arg, arg2) {

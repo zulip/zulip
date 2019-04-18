@@ -1579,7 +1579,7 @@ run_test('on_events', () => {
         setup_mock_markdown_contains_backend_only_syntax('```foobarfoobar```', true);
         setup_mock_markdown_is_status_message('```foobarfoobar```', 'Server: foobarfoobar', false);
         loading.make_indicator = function (spinner) {
-            assert.equal(spinner, $("#markdown_preview_spinner"));
+            assert.equal(spinner.selector, "#markdown_preview_spinner");
             make_indicator_called = true;
         };
         mock_channel_post('```foobarfoobar```');
