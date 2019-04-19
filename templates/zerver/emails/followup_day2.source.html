@@ -1,7 +1,7 @@
 {% extends "zerver/emails/compiled/email_base_default.html" %}
 
 {% block illustration %}
-<img src="{{ email_images_base_uri }}/day2_1.png"/>
+<img src="{{ email_images_base_uri }}/day2_1.png" alt="{{ _('Octopus box with heart') }}"/>
 {% endblock %}
 
 {% block content %}
@@ -9,7 +9,7 @@
 
 <p>{{ _("I wanted to share one last thing with you: a few tips about topics, since mastering topics is a key part of being a Zulip power user.") }}</p>
 
-<img src="{{ email_images_base_uri }}/day2_2.png"/>
+<img src="{{ email_images_base_uri }}/day2_2.png" alt="{{ _('Examples of short topics') }}"/>
 
 <p>{{ _("Topics are like email subject lines. The big difference, though, is that they're really short and lightweight. Two or three words will do it. Don't overthink 'em&mdash;you can always edit the message later!") }}</p>
 
@@ -18,7 +18,7 @@
     <li>{% trans %}Not recommended: "What do people think of this new design mockup?", "I'm looking at Bug 345", "Is Acme Burgers open for lunch?"{% endtrans %}</li>
 </ul>
 
-<img src="{{ email_images_base_uri }}/day2_3.png"/>
+<img src="{{ email_images_base_uri }}/day2_3.png" alt="{{ _('Example of a topic that is too long') }}"/>
 
 <p>{{ _("Why bother with topics? Well, two reasons: it makes conversations clearer (imagine if email didn't have them!), and it lets you more efficiently catch up on what's happened while you're away&mdash;read the topics that are relevant to you, and ignore the ones that aren't!") }}</p>
 
