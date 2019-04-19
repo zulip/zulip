@@ -40,7 +40,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.views.invite import get_invitee_emails_set
 from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.actions import do_change_plan_type, do_deactivate_realm, \
-    do_reactivate_realm
+    do_reactivate_realm, do_scrub_realm
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
@@ -1059,6 +1059,12 @@ def support(request: HttpRequest) -> HttpResponse:
             elif status == "deactive":
                 do_deactivate_realm(realm)
                 context["message"] = "{} deactivated.".format(realm.name)
+
+        scrub_realm = request.POST.get("scrub_realm", None)
+        if scrub_realm is not None:
+            if scrub_realm == "scrub_realm":
+                do_scrub_realm(realm)
+                context["message"] = "{} scrubbed.".format(realm.name)
 
     query = request.GET.get("q", None)
     if query:

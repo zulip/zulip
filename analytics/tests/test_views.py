@@ -341,7 +341,9 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<option value="2" >Limited</option>',
                                              'input type="number" name="discount" value="None"',
                                              '<option value="active" selected>Active</option>',
-                                             '<option value="deactive" >Deactive</option>'], result)
+                                             '<option value="deactive" >Deactive</option>',
+                                             'scrub-realm-button">',
+                                             'data-string-id="zulip"'], result)
 
         def check_lear_realm_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<input type="hidden" name="realm_id" value="3"', 'Lear &amp; Co.</h3>',
@@ -349,7 +351,9 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<option value="2" >Limited</option>',
                                              'input type="number" name="discount" value="None"',
                                              '<option value="active" selected>Active</option>',
-                                             '<option value="deactive" >Deactive</option>'], result)
+                                             '<option value="deactive" >Deactive</option>',
+                                             'scrub-realm-button">',
+                                             'data-string-id="lear"'], result)
 
         cordelia_email = self.example_email("cordelia")
         self.login(cordelia_email)
@@ -440,6 +444,26 @@ class TestSupportEndpoint(ZulipTestCase):
             result = self.client_post("/activity/support", {"realm_id": "3", "status": "active"})
             m.assert_called_once_with(get_realm("lear"))
             self.assert_in_success_response(["Lear &amp; Co. reactivated."], result)
+
+    def test_scrub_realm(self) -> None:
+        cordelia_email = self.example_email("cordelia")
+        self.login(cordelia_email)
+
+        result = self.client_post("/activity/support", {"realm_id": "3", "discount": "25"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago_email = self.example_email("iago")
+        self.login(iago_email)
+
+        with mock.patch("analytics.views.do_scrub_realm") as m:
+            result = self.client_post("/activity/support", {"realm_id": "3", "scrub_realm": "scrub_realm"})
+            m.assert_called_once_with(get_realm("lear"))
+            self.assert_in_success_response(["Lear &amp; Co. scrubbed"], result)
+
+        with mock.patch("analytics.views.do_scrub_realm") as m:
+            result = self.client_post("/activity/support", {"realm_id": "3"})
+            m.assert_not_called()
 
 class TestGetChartDataHelpers(ZulipTestCase):
     # last_successful_fill is in analytics/models.py, but get_chart_data is
