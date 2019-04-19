@@ -22,18 +22,10 @@
         </center>
     </form>
 
-    {% if plan_type_msg %}
+    {% if message %}
     <div class="alert alert-success">
         <center>
-            {{ plan_type_msg }}
-        </center>
-    </div>
-    {% endif %}
-
-    {% if discount_msg %}
-    <div class="alert alert-success">
-        <center>
-            {{ discount_msg }}
+            {{ message }}
         </center>
     </div>
     {% endif %}
@@ -53,9 +45,18 @@
                 <h3><img src="{{ user.realm.realm_icon_url }}" class="support-realm-icon"> {{ user.realm.name }}</h3>
                 <b>URL</b>: <a target="_blank" href="{{ user.realm.uri }}">{{ user.realm.uri }}</a><br>
                 <b>Date created</b>: {{ user.realm.date_created|timesince }} ago<br>
-                <b>Is active</b>: {{ not user.realm.deactivated }}<br>
                 <b>Admins</b>: {% for admin in user.realm.admins %}{{ admin.email }} {% endfor %}<br>
                 <form method="POST">
+                    <b>Status</b>:<br>
+                    {{ csrf_input }}
+                    <input type="hidden" name="realm_id" value="{{ user.realm.id }}" />
+                    <select name="status">
+                        <option value="active" {% if not user.realm.deactivated %}selected{% endif %}>Active</option>
+                        <option value="deactive" {% if user.realm.deactivated %}selected{% endif %}>Deactive</option>
+                    </select>
+                    <button type="submit" class="btn btn-small support-submit-button">Update</button>
+                </form>
+                <form method="POST" class="support-plan-type-form">
                     {{ csrf_input }}
                     <input type="hidden" name="realm_id" value="{{ user.realm.id }}" />
                     <b>Plan type</b>:<br>
@@ -85,10 +86,19 @@
             <h3><img src="{{ realm.realm_icon_url }}" class="support-realm-icon"> {{ realm.name }}</h3>
             <b>URL</b>: <a target="_blank" href="{{ realm.uri }}">{{ realm.uri }}</a><br>
             <b>Date created</b>: {{ realm.date_created|timesince }} ago<br>
-            <b>Is active</b>: {{ not realm.deactivated }}<br>
             <b>Admins</b>: {% for admin in realm.admins %}{{ admin.email }} {% endfor %}<br>
-            <b>Plan type</b>:
             <form method="POST">
+                <b>Status</b>:<br>
+                {{ csrf_input }}
+                <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+                <select name="status">
+                    <option value="active" {% if not realm.deactivated %}selected{% endif %}>Active</option>
+                    <option value="deactive" {% if realm.deactivated %}selected{% endif %}>Deactive</option>
+                </select>
+                <button type="submit" class="btn btn-small support-submit-button">Update</button>
+            </form>
+            <form method="POST" class="support-plan-type-form">
+                <b>Plan type</b>:<br>
                 {{ csrf_input }}
                 <input type="hidden" name="realm_id" value="{{ realm.id }}" />
                 <select name="plan_type">
