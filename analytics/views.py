@@ -39,7 +39,8 @@ from zerver.lib.timestamp import convert_to_UTC, timestamp_to_datetime
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.views.invite import get_invitee_emails_set
 from zerver.lib.subdomains import get_subdomain_from_hostname
-from zerver.lib.actions import do_change_plan_type
+from zerver.lib.actions import do_change_plan_type, do_deactivate_realm, \
+    do_reactivate_realm
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
@@ -1040,7 +1041,7 @@ def support(request: HttpRequest) -> HttpResponse:
             do_change_plan_type(realm, new_plan_type)
             msg = "Plan type of {} changed to {} from {} ".format(realm.name, get_plan_name(new_plan_type),
                                                                   get_plan_name(current_plan_type))
-            context["plan_type_msg"] = msg
+            context["message"] = msg
 
         new_discount = request.POST.get("discount", None)
         if new_discount is not None:
@@ -1048,7 +1049,16 @@ def support(request: HttpRequest) -> HttpResponse:
             current_discount = get_discount_for_realm(realm)
             attach_discount_to_realm(realm, new_discount)
             msg = "Discount of {} changed to {} from {} ".format(realm.name, new_discount, current_discount)
-            context["discount_msg"] = msg
+            context["message"] = msg
+
+        status = request.POST.get("status", None)
+        if status is not None:
+            if status == "active":
+                do_reactivate_realm(realm)
+                context["message"] = "{} reactivated.".format(realm.name)
+            elif status == "deactive":
+                do_deactivate_realm(realm)
+                context["message"] = "{} deactivated.".format(realm.name)
 
     query = request.GET.get("q", None)
     if query:
