@@ -284,8 +284,6 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
 def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Optional[str]]:
 
     uploaded_file_name = user_file.name
-    assert isinstance(uploaded_file_name, str)
-
     content_type = request.GET.get('mimetype')
     if content_type is None:
         guessed_type = guess_type(uploaded_file_name)[0]
