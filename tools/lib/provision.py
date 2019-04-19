@@ -575,6 +575,14 @@ def main(options):
 
     run(["scripts/lib/clean-unused-caches"])
 
+    # Keeping this cache file around can cause eslint to throw
+    # random TypeErrors when new/updated dependencies are added
+    if os.path.isfile('.eslintcache'):
+        # Remove this block when
+        # https://github.com/eslint/eslint/issues/11639 is fixed
+        # upstream.
+        os.remove('.eslintcache')
+
     version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
     print('writing to %s\n' % (version_file,))
     open(version_file, 'w').write(PROVISION_VERSION + '\n')
