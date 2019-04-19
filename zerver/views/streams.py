@@ -391,10 +391,10 @@ def add_subscriptions_backend(
         notifications_stream = user_profile.realm.get_notifications_stream()
         if notifications_stream is not None:
             if len(created_streams) > 1:
-                stream_strs = ", ".join('#**%s**' % s.name for s in created_streams)
+                stream_strs = ", ".join('#**%s**' % (s.name,) for s in created_streams)
                 stream_msg = "the following streams: %s" % (stream_strs,)
             else:
-                stream_msg = "a new stream #**%s**." % created_streams[0].name
+                stream_msg = "a new stream #**%s**." % (created_streams[0].name,)
             msg = ("@_**%s|%d** just created %s" % (user_profile.full_name, user_profile.id, stream_msg))
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)

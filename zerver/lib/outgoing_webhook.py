@@ -277,7 +277,7 @@ def do_rest_call(base_url: str,
                             % {'message_url': get_message_url(event),
                                'status_code': response.status_code,
                                'response': response.content})
-            failure_message = "Third party responded with %d" % (response.status_code)
+            failure_message = "Third party responded with %d" % (response.status_code,)
             fail_with_message(event, failure_message)
             notify_bot_owner(event, request_data, response.status_code, response.content)
 

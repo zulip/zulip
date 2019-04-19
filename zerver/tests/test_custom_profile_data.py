@@ -351,7 +351,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             'data': ujson.dumps([invalid_field_id])
         })
         self.assert_json_error(result,
-                               u'Field id %d not found.' % (invalid_field_id))
+                               u'Field id %d not found.' % (invalid_field_id,))
 
         field = CustomProfileField.objects.get(name="Mentor", realm=realm)
         data = [{'id': field.id,
@@ -395,7 +395,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         invalid_user_id = 1000
         self.assert_error_update_invalid_value(field_name, [invalid_user_id],
                                                u"Invalid user ID: %d"
-                                               % (invalid_user_id))
+                                               % (invalid_user_id,))
 
     def test_create_field_of_type_user(self) -> None:
         self.login(self.example_email("iago"))

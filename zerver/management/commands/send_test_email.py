@@ -38,7 +38,7 @@ class Command(sendtestemail.Command):
         print("  * %s" % (noreply_sender,))
         send_mail("Zulip noreply email test", message, noreply_sender, kwargs['email'])
         print()
-        print("Successfully sent 2 emails to %s!" % (", ".join(kwargs['email'])))
+        print("Successfully sent 2 emails to %s!" % (", ".join(kwargs['email']),))
 
         if kwargs['managers']:
             mail_managers("Zulip manager email test", "This email was sent to the site managers.")

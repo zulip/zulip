@@ -57,11 +57,11 @@ approach shown above.
             custom_headers_dict = ujson.loads(custom_headers)
             for header in custom_headers_dict:
                 if len(header.split(" ")) > 1:
-                    raise ValueError("custom header '%s' contains a space." % (header))
+                    raise ValueError("custom header '%s' contains a space." % (header,))
                 headers["HTTP_" + header.upper().replace("-", "_")] = str(custom_headers_dict[header])
             return headers
         except ValueError as ve:
-            print('Encountered an error while attempting to parse custom headers: %s' % (ve))
+            print('Encountered an error while attempting to parse custom headers: %s' % (ve,))
             print('Note: all strings must be enclosed within "" instead of \'\'')
             exit(1)
 

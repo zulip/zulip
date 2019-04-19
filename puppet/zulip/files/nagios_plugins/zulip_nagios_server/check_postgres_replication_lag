@@ -71,7 +71,7 @@ if recv_diff > 5 * 16 * 1024**2:
     report('CRITICAL', 'secondary is %d bytes behind on receiving xlog' % (recv_diff,))
 
 if replay_diff > 5 * 16 * 1024**2:
-    report('CRITICAL', 'secondary is %d bytes behind on applying received xlog' % (replay_diff))
+    report('CRITICAL', 'secondary is %d bytes behind on applying received xlog' % (replay_diff,))
 
 if recv_diff < 0:
     report('CRITICAL', 'secondary is %d bytes ahead on receiving xlog' % (recv_diff,))
@@ -83,7 +83,7 @@ if recv_diff > 16 * 1024**2:
     report('WARNING', 'secondary is %d bytes behind on receiving xlog' % (recv_diff,))
 
 if replay_diff > 16 * 1024**2:
-    report('WARNING', 'secondary is %d bytes behind on applying received xlog' % (replay_diff))
+    report('WARNING', 'secondary is %d bytes behind on applying received xlog' % (replay_diff,))
 
 report('OK', ('secondary is %d bytes behind on receiving and %d bytes behind on applying xlog'
               % (recv_diff, replay_diff)))

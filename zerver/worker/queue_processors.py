@@ -256,7 +256,7 @@ class UserActivityIntervalWorker(QueueProcessingWorker):
 @assign_queue('user_presence')
 class UserPresenceWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
-        logging.debug("Received presence event: %s" % (event),)
+        logging.debug("Received presence event: %s" % (event,),)
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         client = get_client(event["client"])
         log_time = timestamp_to_datetime(event["time"])
@@ -392,7 +392,7 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
     # creates conflicts with other users in the file.
     def consume_batch(self, slow_queries: List[Any]) -> None:
         for query in slow_queries:
-            logging.info("Slow query: %s" % (query))
+            logging.info("Slow query: %s" % (query,))
 
         if settings.SLOW_QUERY_LOGS_STREAM is None:
             return

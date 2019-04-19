@@ -122,7 +122,7 @@ def stats_for_installation(request: HttpRequest) -> HttpResponse:
 def stats_for_remote_installation(request: HttpRequest, remote_server_id: str) -> HttpResponse:
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return render_stats(request, '/remote/%s/installation' % (server.id,),
-                        'remote Installation %s' % (server.hostname), True, True)
+                        'remote Installation %s' % (server.hostname,), True, True)
 
 @require_server_admin_api
 @has_request_variables

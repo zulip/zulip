@@ -95,7 +95,7 @@ def build_userprofile(timestamp: Any, domain_name: str,
 
 def get_user_email(user_data: ZerverFieldsT, domain_name: str) -> str:
     # TODO Get user email from github
-    email = ("%s@users.noreply.github.com" % user_data['username'])
+    email = ("%s@users.noreply.github.com" % (user_data['username'],))
     return email
 
 def build_stream_and_defaultstream(timestamp: Any) -> Tuple[List[ZerverFieldsT],
@@ -213,10 +213,10 @@ def get_usermentions(message: Dict[str, Any], user_map: Dict[str, int],
     if 'mentions' in message:
         for mention in message['mentions']:
             if mention.get('userId') in user_map:
-                gitter_mention = '@%s' % (mention['screenName'])
+                gitter_mention = '@%s' % (mention['screenName'],)
                 if mention['screenName'] not in user_short_name_to_full_name:
                     logging.info("Mentioned user %s never sent any messages, so has no full name data" %
-                                 mention['screenName'])
+                                 (mention['screenName'],))
                     full_name = mention['screenName']
                 else:
                     full_name = user_short_name_to_full_name[mention['screenName']]
@@ -277,7 +277,7 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
     subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
-    logging.info("Zulip data dump created at %s" % (output_dir))
+    logging.info("Zulip data dump created at %s" % (output_dir,))
 
 def write_data_to_file(output_file: str, data: Any) -> None:
     with open(output_file, "w") as f:

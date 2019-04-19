@@ -1180,7 +1180,7 @@ class MessageDictTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
-                    content='whatever %d' % i,
+                    content='whatever %d' % (i,),
                     rendered_content='DOES NOT MATTER',
                     rendered_content_version=bugdown.version,
                     pub_date=timezone_now(),
@@ -1328,7 +1328,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
-                    content='whatever %d' % i,
+                    content='whatever %d' % (i,),
                     pub_date=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),

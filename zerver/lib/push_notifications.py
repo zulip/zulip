@@ -643,7 +643,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
             def failure_processor(event: Dict[str, Any]) -> None:
                 logger.warning(
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
-                        event['user_profile_id']))
+                        event['user_profile_id'],))
     else:
         android_devices = list(PushDeviceToken.objects.filter(
             user=user_profile, kind=PushDeviceToken.GCM))
@@ -721,7 +721,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             def failure_processor(event: Dict[str, Any]) -> None:
                 logger.warning(
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
-                        event['user_profile_id']))
+                        event['user_profile_id'],))
             retry_event('missedmessage_mobile_notifications', missed_message,
                         failure_processor)
         return

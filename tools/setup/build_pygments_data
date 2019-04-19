@@ -28,7 +28,7 @@ return exports;
 }());
 if (typeof module !== 'undefined') {
     module.exports = pygments_data;
-}''' % json.dumps(langs)
+}''' % (json.dumps(langs),)
 
 with open(JS_PATH, 'w') as f:
     f.write(template)

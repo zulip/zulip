@@ -248,7 +248,7 @@ def extract_body(message: message.Message, remove_quotations: bool=True) -> str:
     if plaintext_content is not None or html_content is not None:
         raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
 
-    logging.warning("Content types: %s" % ([part.get_content_type() for part in message.walk()]))
+    logging.warning("Content types: %s" % ([part.get_content_type() for part in message.walk()],))
     raise ZulipEmailForwardUserError("Unable to find plaintext or HTML message body")
 
 def filter_footer(text: str) -> str:

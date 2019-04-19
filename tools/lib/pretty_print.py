@@ -197,7 +197,7 @@ def validate_indent_html(fn):
     file.close()
     if not html.split('\n') == phtml.split('\n'):
         print('Invalid Indentation detected in file: '
-              '%s\nDiff for the file against expected indented file:' % (fn), flush=True)
+              '%s\nDiff for the file against expected indented file:' % (fn,), flush=True)
         with subprocess.Popen(
                 ['diff', fn, '-'],
                 stdin=subprocess.PIPE,

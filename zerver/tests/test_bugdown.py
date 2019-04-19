@@ -618,25 +618,25 @@ class BugdownTest(ZulipTestCase):
 
         msg = 'http://www.twitter.com'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com'))
+        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com'),))
 
         msg = 'http://www.twitter.com/wdaher/'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/'))
+        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com/wdaher/'),))
 
         msg = 'http://www.twitter.com/wdaher/status/3'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/3'))
+        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com/wdaher/status/3'),))
 
         # id too long
         msg = 'http://www.twitter.com/wdaher/status/2879779692873154569'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/2879779692873154569'))
+        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com/wdaher/status/2879779692873154569'),))
 
         # id too large (i.e. tweet doesn't exist)
         msg = 'http://www.twitter.com/wdaher/status/999999999999999999'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/999999999999999999'))
+        self.assertEqual(converted, '<p>%s</p>' % (make_link('http://www.twitter.com/wdaher/status/999999999999999999'),))
 
         msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
@@ -726,7 +726,7 @@ class BugdownTest(ZulipTestCase):
         realm_emoji = RealmEmoji.objects.filter(realm=realm,
                                                 name='green_tick',
                                                 deactivated=False).get()
-        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', realm_emoji.file_name, realm.id)))
+        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', realm_emoji.file_name, realm.id),))
 
         # Deactivate realm emoji.
         do_remove_realm_emoji(realm, 'green_tick')
@@ -1238,7 +1238,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" '
                          'data-user-id="%s">'
-                         '@King Hamlet</span></p>' % (user_id))
+                         '@King Hamlet</span></p>' % (user_id,))
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
     def test_mention_silent(self) -> None:
@@ -1251,7 +1251,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention silent" '
                          'data-user-id="%s">'
-                         'King Hamlet</span></p>' % (user_id))
+                         'King Hamlet</span></p>' % (user_id,))
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_possible_mentions(self) -> None:
@@ -1308,7 +1308,7 @@ class BugdownTest(ZulipTestCase):
         # Both fenced quote and > quote should be identical for both silent and regular syntax.
         expected = ('<blockquote>\n<p>'
                     '<span class="user-mention silent" data-user-id="%s">King Hamlet</span>'
-                    '</p>\n</blockquote>' % (hamlet.id))
+                    '</p>\n</blockquote>' % (hamlet.id,))
         content = "```quote\n@**King Hamlet**\n```"
         self.assertEqual(render_markdown(msg, content), expected)
         self.assertEqual(msg.mentions_user_ids, set())

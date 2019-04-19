@@ -89,9 +89,9 @@ if config_file.has_option('machine', 'pgroonga'):
 if remote_postgres_host != '':
     postgres_password = ''
     if settings.DATABASES['default']['PASSWORD'] is not None:
-        postgres_password = "password='%s'" % settings.DATABASES['default']['PASSWORD']
-    postgres_user = "user='%s'" % settings.DATABASES['default']['USER']
-    postgres_dbname = "dbname='%s'" % settings.DATABASES['default']['NAME']
+        postgres_password = "password='%s'" % (settings.DATABASES['default']['PASSWORD'],)
+    postgres_user = "user='%s'" % (settings.DATABASES['default']['USER'],)
+    postgres_dbname = "dbname='%s'" % (settings.DATABASES['default']['NAME'],)
     if settings.REMOTE_POSTGRES_SSLMODE != '':
         postgres_sslmode = settings.REMOTE_POSTGRES_SSLMODE
     else:

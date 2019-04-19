@@ -700,7 +700,7 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'description': ujson.dumps('a' * 1025)})
         self.assert_json_error(result, "description is too long (limit: %s characters)"
-                               % (Stream.MAX_DESCRIPTION_LENGTH))
+                               % (Stream.MAX_DESCRIPTION_LENGTH,))
 
         result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'description': ujson.dumps('a\nmulti\nline\ndescription')})
@@ -1115,7 +1115,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.make_stream(stream_name, invite_only=True)
         self.subscribe(self.example_user('iago'), stream_name)
         result = self.client_post('/json/default_streams', dict(stream_name=stream_name))
-        self.assert_json_error(result, "Invalid stream name '%s'" % (stream_name))
+        self.assert_json_error(result, "Invalid stream name '%s'" % (stream_name,))
 
         self.subscribe(user_profile, stream_name)
         result = self.client_post('/json/default_streams', dict(stream_name=stream_name))
@@ -1638,7 +1638,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
         self.login(test_email)
         subs = gather_subscriptions(test_user)[0]
-        result = self.api_patch(test_email, "/api/v1/users/me/subscriptions/%d" % subs[0]["stream_id"],
+        result = self.api_patch(test_email, "/api/v1/users/me/subscriptions/%d" % (subs[0]["stream_id"],),
                                 {'property': 'color', 'value': '#c2c2c2'})
         self.assert_json_success(result)
 
@@ -1653,7 +1653,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         self.login(test_email)
         subs = gather_subscriptions(test_user)[0]
 
-        result = self.api_patch(test_email, "/api/v1/users/me/subscriptions/%d" % subs[0]["stream_id"],
+        result = self.api_patch(test_email, "/api/v1/users/me/subscriptions/%d" % (subs[0]["stream_id"],),
                                 {'property': 'invalid', 'value': 'somevalue'})
         self.assert_json_error(result,
                                "Unknown subscription property: invalid")
@@ -1750,7 +1750,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         }
         result = self.api_patch(email, "/api/v1/users/me/subscriptions", request)
         self.assert_json_error(result,
-                               "Stream name '%s' contains NULL (0x00) characters." % (stream_name))
+                               "Stream name '%s' contains NULL (0x00) characters." % (stream_name,))
 
     def test_compose_views_rollback(self) -> None:
         '''
@@ -2051,7 +2051,7 @@ class SubscriptionAPITest(ZulipTestCase):
         stream_name = "abc\000"
         result = self.common_subscribe_to_streams(self.test_email, [stream_name])
         self.assert_json_error(result,
-                               "Stream name '%s' contains NULL (0x00) characters." % (stream_name))
+                               "Stream name '%s' contains NULL (0x00) characters." % (stream_name,))
 
     def test_user_settings_for_adding_streams(self) -> None:
         with mock.patch('zerver.models.UserProfile.can_create_streams', return_value=False):
@@ -2478,7 +2478,7 @@ class SubscriptionAPITest(ZulipTestCase):
         mit_user = self.mit_user('starnine')
 
         realm = get_realm("zephyr")
-        stream_names = ["stream_%s" % i for i in range(40)]
+        stream_names = ["stream_%s" % (i,) for i in range(40)]
         streams = [
             self.make_stream(stream_name, realm=realm)
             for stream_name in stream_names]
@@ -2514,7 +2514,7 @@ class SubscriptionAPITest(ZulipTestCase):
     def test_bulk_subscribe_many(self) -> None:
 
         # Create a whole bunch of streams
-        streams = ["stream_%s" % i for i in range(20)]
+        streams = ["stream_%s" % (i,) for i in range(20)]
         for stream_name in streams:
             self.make_stream(stream_name)
 
@@ -3256,7 +3256,7 @@ class GetSubscribersTest(ZulipTestCase):
         (We also use this test to verify subscription notifications to
         folks who get subscribed to streams.)
         """
-        streams = ["stream_%s" % i for i in range(10)]
+        streams = ["stream_%s" % (i,) for i in range(10)]
         for stream_name in streams:
             self.make_stream(stream_name)
 

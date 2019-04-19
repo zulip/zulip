@@ -20,11 +20,11 @@ def format_email_subject(email_subject: str) -> str:
 
 def logger_repr(report: Dict[str, Any]) -> str:
     return ("Logger %(logger_name)s, from module %(log_module)s line %(log_lineno)d:"
-            % report)
+            % dict(report))
 
 def user_info_str(report: Dict[str, Any]) -> str:
     if report['user_full_name'] and report['user_email']:
-        user_info = "%(user_full_name)s (%(user_email)s)" % (report)
+        user_info = "%(user_full_name)s (%(user_email)s)" % dict(report)
     else:
         user_info = "Anonymous user (not logged in)"
 
@@ -48,7 +48,7 @@ def notify_browser_error(report: Dict[str, Any]) -> None:
     email_browser_error(report)
 
 def email_browser_error(report: Dict[str, Any]) -> None:
-    email_subject = "Browser error for %s" % (user_info_str(report))
+    email_subject = "Browser error for %s" % (user_info_str(report),)
 
     body = ("User: %(user_full_name)s <%(user_email)s> on %(deployment)s\n\n"
             "Message:\n%(message)s\n\nStacktrace:\n%(stacktrace)s\n\n"
@@ -57,7 +57,7 @@ def email_browser_error(report: Dict[str, Any]) -> None:
             "href: %(href)s\n"
             "Server path: %(server_path)s\n"
             "Deployed version: %(version)s\n"
-            % (report))
+            % dict(report))
 
     more_info = report['more_info']
     if more_info is not None:
@@ -76,7 +76,7 @@ def zulip_browser_error(report: Dict[str, Any]) -> None:
 
     body = "User: %s\n" % (user_info,)
     body += ("Message: %(message)s\n"
-             % (report))
+             % dict(report))
 
     realm = get_system_bot(settings.ERROR_BOT).realm
     internal_send_message(realm, settings.ERROR_BOT,
@@ -89,7 +89,7 @@ def notify_server_error(report: Dict[str, Any], skip_error_zulip: Optional[bool]
         zulip_server_error(report)
 
 def zulip_server_error(report: Dict[str, Any]) -> None:
-    email_subject = '%(node)s: %(message)s' % (report)
+    email_subject = '%(node)s: %(message)s' % dict(report)
 
     logger_str = logger_repr(report)
     user_info = user_info_str(report)
@@ -99,7 +99,7 @@ def zulip_server_error(report: Dict[str, Any]) -> None:
         request_repr = (
             "Request info:\n~~~~\n"
             "- path: %(path)s\n"
-            "- %(method)s: %(data)s\n") % (report)
+            "- %(method)s: %(data)s\n") % dict(report)
         for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
             val = report.get(field.lower())
             if field == "QUERY_STRING":
@@ -117,7 +117,7 @@ def zulip_server_error(report: Dict[str, Any]) -> None:
                           format_email_subject(email_subject), message)
 
 def email_server_error(report: Dict[str, Any]) -> None:
-    email_subject = '%(node)s: %(message)s' % (report)
+    email_subject = '%(node)s: %(message)s' % dict(report)
 
     logger_str = logger_repr(report)
     user_info = user_info_str(report)
@@ -127,7 +127,7 @@ def email_server_error(report: Dict[str, Any]) -> None:
         request_repr = (
             "Request info:\n"
             "- path: %(path)s\n"
-            "- %(method)s: %(data)s\n") % (report)
+            "- %(method)s: %(data)s\n") % dict(report)
         for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
             val = report.get(field.lower())
             if field == "QUERY_STRING":

@@ -484,7 +484,7 @@ class SocialAuthBase(ZulipTestCase):
         params['next'] = next
         params['multiuse_object_key'] = multiuse_object_key
         if len(params) > 0:
-            url += "?%s" % (urllib.parse.urlencode(params))
+            url += "?%s" % (urllib.parse.urlencode(params),)
 
         result = self.client_get(url, **headers)
 
@@ -983,7 +983,7 @@ class GoogleOAuthTest(ZulipTestCase):
         params['next'] = next
         params['multiuse_object_key'] = multiuse_object_key
         if len(params) > 0:
-            url += "?%s" % (urllib.parse.urlencode(params))
+            url += "?%s" % (urllib.parse.urlencode(params),)
 
         result = self.client_get(url, **headers)
         if result.status_code != 302 or '/accounts/login/google/send/' not in result.url:

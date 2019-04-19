@@ -831,7 +831,7 @@ def rate_limit(domain: str='all') -> Callable[[ViewFuncT], ViewFuncT]:
 
             if not user:  # nocoverage # See comments below
                 logging.error("Requested rate-limiting on %s but user is not authenticated!" %
-                              func.__name__)
+                              (func.__name__,))
                 return func(request, *args, **kwargs)
 
             if isinstance(user, AnonymousUser):  # nocoverage
