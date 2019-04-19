@@ -98,7 +98,7 @@ function setup_settings_label() {
         enable_offline_push_notifications: i18n.t("Mobile notifications"),
         enable_online_push_notifications: i18n.t("Send mobile notifications even if I'm online (useful for testing)"),
         enable_sounds: i18n.t("Audible desktop notifications"),
-        pm_content_in_desktop_notifications: i18n.t("Include content of private messages"),
+        pm_content_in_desktop_notifications: i18n.t("Include content of private messages in desktop notifications"),
 
         // other_notification_settings
         enable_digest_emails: i18n.t("Send digest emails when I'm away"),

@@ -18,8 +18,8 @@ send email notifications for `@all` or `@everyone` mentions.
 
 You can also hide the content of private messages (and group private
 messages) from desktop notifications.
-Under **Visual desktop notifications**, uncheck
-**Include content of private messages**.
+Under **Other notification settings**, uncheck
+**Include content of private messages in desktop notifications**.
 
 ## Related articles
 
