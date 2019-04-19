@@ -10,6 +10,7 @@
 {% block customhead %}
 {{ super() }}
 {{ render_bundle('activity') }}
+{{ render_bundle('support') }}
 {% endblock %}
 
 {% block content %}
@@ -32,7 +33,7 @@
 
     <div id="query-results">
         {% for user in users %}
-        <div class="support-query-result">
+        <div class="support-query-result new-style">
             <span class="label">user</span>
             <h3>{{ user.full_name }}</h3>
             <b>Email</b>: {{ user.email }}<br>
@@ -75,13 +76,19 @@
                     <input type="number" name="discount" value="{{user.realm.default_discount}}" required>
                     <button type="submit" class="btn btn-small support-submit-button">Update</button>
                 </form>
+                <form method="POST" class="scrub-realm-form">
+                    {{ csrf_input }}
+                    <input type="hidden" name="realm_id" value="{{ user.realm.id }}" />
+                    <input type="hidden" name="scrub_realm" value="scrub_realm" />
+                    <button data-string-id="{{user.realm.string_id}}" class="button rounded btn-danger small scrub-realm-button">Scrub realm</button>
+                </form>
             </div>
             <hr>
         </div>
         {% endfor %}
 
         {% for realm in realms %}
-        <div class="support-query-result">
+        <div class="support-query-result new-style">
             <span class="label">realm</span>
             <h3><img src="{{ realm.realm_icon_url }}" class="support-realm-icon"> {{ realm.name }}</h3>
             <b>URL</b>: <a target="_blank" href="{{ realm.uri }}">{{ realm.uri }}</a><br>
@@ -115,6 +122,12 @@
                 <input type="hidden" name="realm_id" value="{{ realm.id }}" />
                 <input type="number" name="discount" value="{{ realm.default_discount}}" required>
                 <button type="submit" class="btn btn-small support-submit-button">Update</button>
+            </form>
+            <form method="POST" class="scrub-realm-form">
+                {{ csrf_input }}
+                <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+                <input type="hidden" name="scrub_realm" value="scrub_realm" />
+                <button data-string-id="{{realm.string_id}}" class="button rounded btn-danger small scrub-realm-button">Scrub realm</button>
             </form>
             <hr>
         </div>
