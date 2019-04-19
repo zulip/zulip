@@ -68,16 +68,40 @@
             <h3 class="inline-block">{{t "Other notification settings" }}</h3>
             <div class="alert-notification" id="other-notify-settings-status"></div>
 
+            <h5>{{t "Desktop" }}</h5>
+
             {{partial "settings_checkbox"
               "setting_name" "pm_content_in_desktop_notifications"
               "is_checked" page_params.pm_content_in_desktop_notifications
               "label" settings_label.pm_content_in_desktop_notifications}}
+
+            <label for="notification_sound">
+                {{t "Notification sound:" }}
+            </label>
+
+            <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
+                <select name="notification_sound" id="notification_sound"
+                  {{#unless enable_sound_select}}
+                  disabled
+                  {{/unless}}>
+                    {{#each page_params.available_notification_sounds}}
+                    <option value="{{ this }}">{{ this }}</option>
+                    {{/each}}
+                </select>
+                <a id="play_notification_sound">
+                    {{t "Play sound" }}
+                </a>
+            </div>
+
+            <h5>{{t "Mobile" }}</h5>
 
             {{partial "settings_checkbox"
               "setting_name" "enable_online_push_notifications"
               "is_checked" page_params.enable_online_push_notifications
               "label" settings_label.enable_online_push_notifications
               "push_notifications_tooltip" true}}
+
+            <h5>{{t "Email" }}</h5>
 
             {{partial "settings_checkbox"
               "setting_name" "enable_digest_emails"
@@ -98,24 +122,6 @@
               "setting_name" "realm_name_in_notifications"
               "is_checked" page_params.realm_name_in_notifications
               "label" settings_label.realm_name_in_notifications}}
-        </div>
-
-        <label for="notification_sound">
-            {{t "Notification sound:" }}
-        </label>
-
-        <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
-            <select name="notification_sound" id="notification_sound"
-              {{#unless enable_sound_select}}
-              disabled
-              {{/unless}}>
-                {{#each page_params.available_notification_sounds}}
-                <option value="{{ this }}">{{ this }}</option>
-                {{/each}}
-            </select>
-            <a id="play_notification_sound">
-                {{t "Play sound" }}
-            </a>
         </div>
     </form>
 </div>
