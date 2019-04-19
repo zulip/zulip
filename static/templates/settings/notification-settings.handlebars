@@ -47,13 +47,6 @@
               "label" settings_label.enable_desktop_notifications}}
 
             {{partial "settings_checkbox"
-              "setting_name" "pm_content_in_desktop_notifications"
-              "is_checked" page_params.pm_content_in_desktop_notifications
-              "is_parent_setting_enabled" page_params.enable_desktop_notifications
-              "is_nested" true
-              "label" settings_label.pm_content_in_desktop_notifications}}
-
-            {{partial "settings_checkbox"
               "setting_name" "enable_sounds"
               "is_checked" page_params.enable_sounds
               "label" settings_label.enable_sounds}}
@@ -74,6 +67,11 @@
 
             <h3 class="inline-block">{{t "Other notification settings" }}</h3>
             <div class="alert-notification" id="other-notify-settings-status"></div>
+
+            {{partial "settings_checkbox"
+              "setting_name" "pm_content_in_desktop_notifications"
+              "is_checked" page_params.pm_content_in_desktop_notifications
+              "label" settings_label.pm_content_in_desktop_notifications}}
 
             {{partial "settings_checkbox"
               "setting_name" "enable_online_push_notifications"
