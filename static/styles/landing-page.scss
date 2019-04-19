@@ -2111,13 +2111,11 @@ nav ul li.active::after {
     width: 50%;
 }
 
+.portico-landing.apps .hero .image img[src="/static/images/app-screenshots/zulip-android.png"],
 .portico-landing.apps .hero .image img[src="/static/images/app-screenshots/zulip-iphone-rough.png"] {
     height: 85%;
 }
 
-.portico-landing.apps .hero .image img[src="/static/images/app-screenshots/zulip-android.png"] {
-    height: 100%;
-}
 .portico-landing.apps .hero .info .flex,
 .portico-landing.apps .hero .image .flex {
     height: 500px;
