@@ -561,7 +561,7 @@ class RealmAPITest(ZulipTestCase):
         if Realm.property_types[name] is bool:
             vals = bool_tests
         if vals is None:
-            raise AssertionError('No test created for %s' % (name))
+            raise AssertionError('No test created for %s' % (name,))
 
         self.set_up_db(name, vals[0])
         realm = self.update_with_api(name, vals[1])

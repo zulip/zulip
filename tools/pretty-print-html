@@ -6,7 +6,7 @@ import sys
 def clean_html(filenames):
     # type: (List[str]) -> None
     for fn in filenames:
-        print('Prettifying: %s' % (fn))
+        print('Prettifying: %s' % (fn,))
         file = open(fn)
         html = file.read()
         phtml = pretty_print_html(html)

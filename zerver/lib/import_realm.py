@@ -279,7 +279,7 @@ def fix_message_rendered_content(realm: Realm,
             # * rendering markdown failing with the exception being
             #   caught in bugdown (which then returns None, causing the the
             #   rendered_content assert above to fire).
-            logging.warning("Error in markdown rendering for message ID %s; continuing" % (message['id']))
+            logging.warning("Error in markdown rendering for message ID %s; continuing" % (message['id'],))
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
@@ -662,7 +662,7 @@ def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=Fa
                         upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
                 except BadImageError:
                     logging.warning("Could not thumbnail avatar image for user %s; ignoring" % (
-                        user_profile.id))
+                        user_profile.id,))
                     # Delete the record of the avatar to avoid 404s.
                     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
             return 0

@@ -84,7 +84,7 @@ class Command(BaseCommand):
 
             print("Validating Django models.py...")
             self.check(display_num_errors=True)
-            print("\nDjango version %s" % (django.get_version()))
+            print("\nDjango version %s" % (django.get_version(),))
             print("Tornado server is running at http://%s:%s/" % (addr, port))
             print("Quit the server with %s." % (quit_command,))
 

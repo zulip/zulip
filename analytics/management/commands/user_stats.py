@@ -38,5 +38,5 @@ class Command(BaseCommand):
             for user_profile in user_profiles:
                 print("%35s" % (user_profile.email,), end=' ')
                 for week in range(10):
-                    print("%5d" % (self.messages_sent_by(user_profile, week)), end=' ')
+                    print("%5d" % (self.messages_sent_by(user_profile, week),), end=' ')
                 print("")

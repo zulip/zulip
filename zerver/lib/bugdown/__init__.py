@@ -92,13 +92,13 @@ EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
 
 def verbose_compile(pattern: str) -> Any:
     return re.compile(
-        "^(.*?)%s(.*?)$" % pattern,
+        "^(.*?)%s(.*?)$" % (pattern,),
         re.DOTALL | re.UNICODE | re.VERBOSE
     )
 
 def normal_compile(pattern: str) -> Any:
     return re.compile(
-        r"^(.*?)%s(.*)$" % pattern,
+        r"^(.*?)%s(.*)$" % (pattern,),
         re.DOTALL | re.UNICODE
     )
 
@@ -1869,7 +1869,7 @@ class Bugdown(markdown.Markdown):
     def register_realm_filters(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
         for (pattern, format_string, id) in self.getConfig("realm_filters"):
             inlinePatterns.register(RealmFilterPattern(pattern, format_string, self),
-                                    'realm_filters/%s' % (pattern), 45)
+                                    'realm_filters/%s' % (pattern,), 45)
         return inlinePatterns
 
     def build_treeprocessors(self) -> markdown.util.Registry:

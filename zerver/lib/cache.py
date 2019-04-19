@@ -295,7 +295,7 @@ def cache(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
     return cache_with_key(keyfunc)(func)
 
 def preview_url_cache_key(url: str) -> str:
-    return "preview_url:%s" % (make_safe_digest(url))
+    return "preview_url:%s" % (make_safe_digest(url),)
 
 def display_recipient_cache_key(recipient_id: int) -> str:
     return "display_recipient_dict:%d" % (recipient_id,)
@@ -313,7 +313,7 @@ def user_profile_cache_key(email: str, realm: 'Realm') -> str:
     return user_profile_cache_key_id(email, realm.id)
 
 def bot_profile_cache_key(email: str) -> str:
-    return "bot_profile:%s" % (make_safe_digest(email.strip()))
+    return "bot_profile:%s" % (make_safe_digest(email.strip()),)
 
 def user_profile_by_id_cache_key(user_profile_id: int) -> str:
     return "user_profile_by_id:%s" % (user_profile_id,)
@@ -474,7 +474,7 @@ def to_dict_cache_key(message: 'Message') -> str:
     return to_dict_cache_key_id(message.id)
 
 def open_graph_description_cache_key(content: Any, request: HttpRequest) -> str:
-    return 'open_graph_description_path:%s' % (make_safe_digest(request.META['PATH_INFO']))
+    return 'open_graph_description_path:%s' % (make_safe_digest(request.META['PATH_INFO']),)
 
 def flush_message(sender: Any, **kwargs: Any) -> None:
     message = kwargs['instance']

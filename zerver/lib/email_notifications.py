@@ -274,7 +274,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     if len(recipients) != 1:
         raise ValueError(
             'All missed_messages must have the same recipient and topic %r' %
-            recipients
+            (recipients,)
         )
 
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
@@ -324,7 +324,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                             if r['id'] != user_profile.id]
         context.update({'group_pm': True})
         if len(other_recipients) == 2:
-            huddle_display_name = "%s" % (" and ".join(other_recipients))
+            huddle_display_name = " and ".join(other_recipients)
             context.update({'huddle_display_name': huddle_display_name})
         elif len(other_recipients) == 3:
             huddle_display_name = "%s, %s, and %s" % (

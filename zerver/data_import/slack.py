@@ -226,7 +226,7 @@ def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: 
             if field in slack_custom_fields:
                 field_name = field
             else:
-                field_name = ("slack custom field %s" % str(customprofilefield_id + 1))
+                field_name = "slack custom field %s" % (str(customprofilefield_id + 1),)
             customprofilefield = CustomProfileField(
                 id=customprofilefield_id,
                 name=field_name,
@@ -539,7 +539,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
             zerver_usermessage=zerver_usermessage)
 
         message_file = "/messages-%06d.json" % (dump_file_id,)
-        logging.info("Writing Messages to %s\n" % (output_dir + message_file))
+        logging.info("Writing Messages to %s\n" % (output_dir + message_file,))
         create_converted_data_files(message_json, output_dir, message_file)
 
         total_reactions += reactions
@@ -658,7 +658,7 @@ def channel_message_to_zerver_message(realm_id: int,
         # For example "sh_room_created" has the message 'started a call'
         # which should be displayed as '/me started a call'
         if subtype in ["bot_add", "sh_room_created", "me_message"]:
-            content = ('/me %s' % (content))
+            content = '/me %s' % (content,)
         if subtype == 'file_comment':
             # The file_comment message type only indicates the
             # responsible user in a subfield.
@@ -789,7 +789,7 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
         random_name(18),
         sanitize_name(fileinfo['name'])
     ])
-    attachment_path = ('/user_uploads/%s' % (s3_path))
+    attachment_path = '/user_uploads/%s' % (s3_path,)
     content = '[%s](%s)' % (fileinfo['title'], attachment_path)
 
     return s3_path, content
@@ -919,7 +919,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
-    logging.info("Zulip data dump created at %s" % (output_dir))
+    logging.info("Zulip data dump created at %s" % (output_dir,))
 
 def get_data_file(path: str) -> Any:
     with open(path, "r") as fp:

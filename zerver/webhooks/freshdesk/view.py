@@ -82,7 +82,9 @@ def format_freshdesk_property_change_message(ticket: TicketDict, event_info: Lis
     """
     content = "%s <%s> updated [ticket #%s](%s):\n\n" % (
         ticket.requester_name, ticket.requester_email, ticket.id, ticket.url)
-    # Why not `"%s %s %s" % event_info`? Because the linter doesn't like it.
+    # Why not `"%s %s %s" % event_info`? Because the linter doesn't like it?
+    # No, because it doesn't work: `event_info` is a list, not a tuple. But you
+    # could write `"%s %s %s" % (*event_info,)`.
     content += "%s: **%s** => **%s**" % (
         event_info[0].capitalize(), event_info[1], event_info[2])
 

@@ -267,7 +267,7 @@ class ChangeSettingsTest(ZulipTestCase):
         test_value = test_changes.get(setting_name)
         # Error if a setting in UserProfile.property_types does not have test values
         if test_value is None:
-            raise AssertionError('No test created for %s' % (setting_name))
+            raise AssertionError('No test created for %s' % (setting_name,))
         invalid_value = 'invalid_' + setting_name
 
         data = {setting_name: ujson.dumps(test_value)}
@@ -307,7 +307,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         for emojiset in banned_emojisets:
             result = self.do_change_emojiset(emojiset)
-            self.assert_json_error(result, "Invalid emojiset '%s'" % (emojiset))
+            self.assert_json_error(result, "Invalid emojiset '%s'" % (emojiset,))
 
         for emojiset in valid_emojisets:
             result = self.do_change_emojiset(emojiset)

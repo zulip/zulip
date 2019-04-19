@@ -215,7 +215,7 @@ def _replacement_destroy_test_db(self: DatabaseCreation,
     unnecessary sleep(1)."""
     with self.connection._nodb_connection.cursor() as cursor:
         cursor.execute("DROP DATABASE %s"
-                       % self.connection.ops.quote_name(test_database_name))
+                       % (self.connection.ops.quote_name(test_database_name),))
 DatabaseCreation._destroy_test_db = _replacement_destroy_test_db
 
 def destroy_test_databases(database_id: Optional[int]=None) -> None:

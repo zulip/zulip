@@ -38,11 +38,11 @@ def run_db_migrations(platform: str) -> None:
     # what the database is as runtime.
     # Also we export DB_NAME which is ignored by dev platform but
     # recognised by test platform and used to migrate correct db.
-    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % settings), db_name,
+    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % (settings,)), db_name,
          './manage.py', 'migrate', '--no-input'])
-    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % settings), db_name,
+    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % (settings,)), db_name,
          './manage.py', 'get_migration_status',
-         '--output=%s' % (migration_status_file)])
+         '--output=%s' % (migration_status_file,)])
 
 def run_generate_fixtures_if_required(use_force: bool=False) -> None:
     generate_fixtures_command = ['tools/setup/generate-fixtures']

@@ -1164,7 +1164,7 @@ def _save_s3_object_to_file(
     else:
         fields = key.name.split('/')
         if len(fields) != 3:
-            raise AssertionError("Suspicious key with invalid format %s" % (key.name))
+            raise AssertionError("Suspicious key with invalid format %s" % (key.name,))
         filename = os.path.join(output_dir, key.name)
 
     dirname = os.path.dirname(filename)
@@ -1179,7 +1179,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
     bucket = conn.get_bucket(bucket_name, validate=True)
     records = []
 
-    logging.info("Downloading uploaded files from %s" % (bucket_name))
+    logging.info("Downloading uploaded files from %s" % (bucket_name,))
 
     avatar_hash_values = set()
     user_ids = set()
@@ -1351,7 +1351,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             f.write(fn+'\n')
             payload = open(fn).read()
             data = ujson.loads(payload)
-            f.write('%5d records\n' % len(data))
+            f.write('%5d records\n' % (len(data),))
             f.write('\n')
 
 def do_export_realm(realm: Realm, output_dir: Path, threads: int,
@@ -1391,7 +1391,7 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     logging.info("Exporting .partial files messages")
     message_ids = export_partial_message_files(realm, response, output_dir=output_dir,
                                                public_only=public_only)
-    logging.info('%d messages were exported' % (len(message_ids)))
+    logging.info('%d messages were exported' % (len(message_ids),))
 
     # zerver_reaction
     zerver_reaction = {}  # type: TableData
@@ -1412,7 +1412,7 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
 
-    logging.info("Finished exporting %s" % (realm.string_id))
+    logging.info("Finished exporting %s" % (realm.string_id,))
     create_soft_link(source=output_dir, in_progress=False)
 
 def export_attachment_table(realm: Realm, output_dir: Path, message_ids: Set[int]) -> None:

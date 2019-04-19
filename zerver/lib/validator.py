@@ -174,7 +174,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
             optional_keys_set = set(x[0] for x in optional_keys)
             delta_keys = set(val.keys()) - required_keys_set - optional_keys_set
             if len(delta_keys) != 0:
-                return _("Unexpected arguments: %s" % (", ".join(list(delta_keys))))
+                return _("Unexpected arguments: %s" % (", ".join(list(delta_keys)),))
 
         return None
 

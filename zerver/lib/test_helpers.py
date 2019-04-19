@@ -162,7 +162,7 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
             if include_savepoints or ('SAVEPOINT' not in sql):
                 queries.append({
                     'sql': self.mogrify(sql, params).decode('utf-8'),
-                    'time': "%.3f" % duration,
+                    'time': "%.3f" % (duration,),
                 })
 
     old_execute = TimeTrackingCursor.execute

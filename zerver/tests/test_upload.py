@@ -876,7 +876,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
-        response = self.client_get("/avatar/%s?foo=bar" % (cordelia.id))
+        response = self.client_get("/avatar/%s?foo=bar" % (cordelia.id,))
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
@@ -890,7 +890,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
-        response = self.api_get(hamlet, "/avatar/%s?foo=bar" % (cordelia.id))
+        response = self.api_get(hamlet, "/avatar/%s?foo=bar" % (cordelia.id,))
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
@@ -900,7 +900,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + '&foo=bar'))
 
         # Test cross_realm_bot avatar access using id.
-        response = self.api_get(hamlet, "/avatar/%s?foo=bar" % (cross_realm_bot.id))
+        response = self.api_get(hamlet, "/avatar/%s?foo=bar" % (cross_realm_bot.id,))
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + '&foo=bar'))
 
@@ -1307,7 +1307,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
         self.assertEqual(redirect_url, realm_logo_url(realm, self.night) +
-                         '&night=%s' % (str(self.night).lower()))
+                         '&night=%s' % (str(self.night).lower(),))
 
     def test_get_realm_logo(self) -> None:
         self.login(self.example_email("hamlet"))
@@ -1316,7 +1316,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(realm_logo_url(realm, self.night) +
-                                              '&night=%s' % (str(self.night).lower())))
+                                              '&night=%s' % (str(self.night).lower(),)))
 
     def test_valid_logos(self) -> None:
         """
@@ -1680,12 +1680,12 @@ class S3Test(ZulipTestCase):
         image_file = get_test_image_file("img.png")
         zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile, night)
 
-        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.original" % (file_name))
+        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.original" % (file_name,))
         original_key = bucket.get_key(original_path_id)
         image_file.seek(0)
         self.assertEqual(image_file.read(), original_key.get_contents_as_string())
 
-        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.png" % (file_name))
+        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.png" % (file_name,))
         resized_data = bucket.get_key(resized_path_id).read()
         resized_image = Image.open(io.BytesIO(resized_data)).size
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))

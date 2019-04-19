@@ -12,8 +12,8 @@
 {% endblock %}
 
 {% block commonjs %}
-{{ render_bundle('app', attrs='nonce="%s"' % (csp_nonce)) }}
-{{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
+{{ render_bundle('app', attrs='nonce="%s"' % (csp_nonce,)) }}
+{{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce,)) }}
 {% endblock %}
 
 {% block customhead %}

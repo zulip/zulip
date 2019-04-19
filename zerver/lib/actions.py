@@ -290,7 +290,7 @@ def notify_invites_changed(user_profile: UserProfile) -> None:
 def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
     if settings.NOTIFICATION_BOT is not None:
         send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)
-    statsd.gauge("users.signups.%s" % (user_profile.realm.string_id), 1, delta=True)
+    statsd.gauge("users.signups.%s" % (user_profile.realm.string_id,), 1, delta=True)
 
     # We also clear any scheduled invitation emails to prevent them
     # from being sent after the user is created.
@@ -2050,23 +2050,23 @@ def check_schedule_message(sender: UserProfile, client: Client,
 
 def check_stream_name(stream_name: str) -> None:
     if stream_name.strip() == "":
-        raise JsonableError(_("Invalid stream name '%s'" % (stream_name)))
+        raise JsonableError(_("Invalid stream name '%s'" % (stream_name,)))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
-        raise JsonableError(_("Stream name too long (limit: %s characters)." % (Stream.MAX_NAME_LENGTH)))
+        raise JsonableError(_("Stream name too long (limit: %s characters)." % (Stream.MAX_NAME_LENGTH,)))
     for i in stream_name:
         if ord(i) == 0:
-            raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
+            raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name,)))
 
 def check_default_stream_group_name(group_name: str) -> None:
     if group_name.strip() == "":
-        raise JsonableError(_("Invalid default stream group name '%s'" % (group_name)))
+        raise JsonableError(_("Invalid default stream group name '%s'" % (group_name,)))
     if len(group_name) > DefaultStreamGroup.MAX_NAME_LENGTH:
         raise JsonableError(_("Default stream group name too long (limit: %s characters)"
-                            % (DefaultStreamGroup.MAX_NAME_LENGTH)))
+                            % (DefaultStreamGroup.MAX_NAME_LENGTH,)))
     for i in group_name:
         if ord(i) == 0:
             raise JsonableError(_("Default stream group name '%s' contains NULL (0x00) characters."
-                                % (group_name)))
+                                % (group_name,)))
 
 def send_rate_limited_pm_notification_to_bot_owner(sender: UserProfile,
                                                    realm: Realm,

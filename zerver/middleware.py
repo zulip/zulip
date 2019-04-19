@@ -80,7 +80,7 @@ def timedelta_ms(timedelta: float) -> float:
 
 def format_timedelta(timedelta: float) -> str:
     if (timedelta >= 1):
-        return "%.1fs" % (timedelta)
+        return "%.1fs" % (timedelta,)
     return "%.0fms" % (timedelta_ms(timedelta),)
 
 def is_slow_query(time_delta: float, path: str) -> bool:
@@ -160,7 +160,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
 
     startup_output = ""
     if 'startup_time_delta' in log_data and log_data["startup_time_delta"] > 0.005:
-        startup_output = " (+start: %s)" % (format_timedelta(log_data["startup_time_delta"]))
+        startup_output = " (+start: %s)" % (format_timedelta(log_data["startup_time_delta"]),)
 
     bugdown_output = ""
     if 'bugdown_time_start' in log_data:
