@@ -68,7 +68,7 @@
                     <button type="submit" class="btn btn-small support-submit-button">Update</button>
                 </form>
                 <form method="POST" class="support-discount-form">
-                    <b>Discount</b>:<br>
+                    <b>Discount (use 85 for nonprofits)</b>:<br>
                     {{ csrf_input }}
                     <input type="hidden" name="realm_id" value="{{ user.realm.id }}" />
                     <input type="number" name="discount" value="{{user.realm.default_discount}}" required>
@@ -100,7 +100,7 @@
                 <button type="submit" class="btn btn-small support-submit-button">Update</button>
             </form>
             <form method="POST" class="support-discount-form">
-                <b>Discount</b>:<br>
+                <b>Discount (use 85 for nonprofits)</b>:<br>
                 {{ csrf_input }}
                 <input type="hidden" name="realm_id" value="{{ realm.id }}" />
                 <input type="number" name="discount" value="{{ realm.default_discount}}" required>
