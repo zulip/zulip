@@ -86,7 +86,7 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('push_50_commits', self.EXPECTED_TOPIC_BRANCH_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='push')
 
     def test_commit_comment_msg(self) -> None:
-        expected_message = u"baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b#commitcomment-11056394) on [9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b)\n~~~ quote\nThis is a really good change! :+1:\n~~~"
+        expected_message = u"baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b#commitcomment-11056394) on [9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b):\n~~~ quote\nThis is a really good change! :+1:\n~~~"
         self.send_and_test_stream_message('commit_comment', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='commit_comment')
 
     def test_create_msg(self) -> None:
@@ -110,12 +110,12 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('fork', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='fork')
 
     def test_issue_comment_msg(self) -> None:
-        expected_message = u"baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2)\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
+        expected_message = u"baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
         self.send_and_test_stream_message('issue_comment', self.EXPECTED_TOPIC_ISSUE_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='issue_comment')
 
     def test_issue_comment_deleted_msg(self) -> None:
         expected_topic = u"Scheduler / Issue #5 This is a new issue"
-        expected_message = u"eeshangarg deleted a [comment](https://github.com/eeshangarg/Scheduler/issues/5#issuecomment-425164194) on [Issue #5](https://github.com/eeshangarg/Scheduler/issues/5)\n\n~~~ quote\nThis is a comment on this new issue.\n~~~"
+        expected_message = u"eeshangarg deleted a [comment](https://github.com/eeshangarg/Scheduler/issues/5#issuecomment-425164194) on [Issue #5](https://github.com/eeshangarg/Scheduler/issues/5):\n\n~~~ quote\nThis is a comment on this new issue.\n~~~"
         self.send_and_test_stream_message(
             'issue_comment_deleted',
             expected_topic,
@@ -126,17 +126,17 @@ class GithubWebhookTest(WebhookTestCase):
     def test_issue_comment_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [Issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2)\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
+        expected_message = u"baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [Issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
         self.send_and_test_stream_message('issue_comment', expected_topic, expected_message, HTTP_X_GITHUB_EVENT='issue_comment')
 
     def test_issue_msg(self) -> None:
-        expected_message = u"baxterthehacker opened [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2)\n\n~~~ quote\nIt looks like you accidently spelled 'commit' with two 't's.\n~~~"
+        expected_message = u"baxterthehacker opened [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidently spelled 'commit' with two 't's.\n~~~"
         self.send_and_test_stream_message('issue', self.EXPECTED_TOPIC_ISSUE_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='issues')
 
     def test_issue_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"baxterthehacker opened [Issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2)\n\n~~~ quote\nIt looks like you accidently spelled 'commit' with two 't's.\n~~~"
+        expected_message = u"baxterthehacker opened [Issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidently spelled 'commit' with two 't's.\n~~~"
         self.send_and_test_stream_message('issue', expected_topic, expected_message, HTTP_X_GITHUB_EVENT='issues')
 
     def test_membership_msg(self) -> None:
@@ -158,12 +158,12 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('member', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='member')
 
     def test_pull_request_opened_msg(self) -> None:
-        expected_message = u"baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+        expected_message = u"baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.send_and_test_stream_message('opened_pull_request', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_pull_request_opened_with_preassigned_assignee_msg(self) -> None:
         expected_topic = u"Scheduler / PR #4 Improve README"
-        expected_message = u"eeshangarg opened [PR #4](https://github.com/eeshangarg/Scheduler/pull/4)(assigned to eeshangarg)\nfrom `improve-readme-2` to `master`"
+        expected_message = u"eeshangarg opened [PR #4](https://github.com/eeshangarg/Scheduler/pull/4) (assigned to eeshangarg) from `improve-readme-2` to `master`."
         self.send_and_test_stream_message('opened_pull_request_with_preassigned_assignee',
                                           expected_topic, expected_message,
                                           HTTP_X_GITHUB_EVENT='pull_request')
@@ -171,25 +171,25 @@ class GithubWebhookTest(WebhookTestCase):
     def test_pull_request_opened_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"baxterthehacker opened [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+        expected_message = u"baxterthehacker opened [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.send_and_test_stream_message('opened_pull_request', expected_topic, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_pull_request_synchronized_msg(self) -> None:
-        expected_message = u"baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`"
+        expected_message = u"baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
         self.send_and_test_stream_message('synchronized_pull_request', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_pull_request_closed_msg(self) -> None:
-        expected_message = u"baxterthehacker closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)"
+        expected_message = u"baxterthehacker closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.send_and_test_stream_message('closed_pull_request', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_pull_request_closed_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"baxterthehacker closed without merge [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)"
+        expected_message = u"baxterthehacker closed without merge [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.send_and_test_stream_message('closed_pull_request', expected_topic, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_pull_request_merged_msg(self) -> None:
-        expected_message = u"baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)"
+        expected_message = u"baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.send_and_test_stream_message('merged_pull_request', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_public_msg(self) -> None:
@@ -234,48 +234,48 @@ class GithubWebhookTest(WebhookTestCase):
         )
 
     def test_pull_request_review_msg(self) -> None:
-        expected_message = u"baxterthehacker submitted [PR Review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884)"
+        expected_message = u"baxterthehacker submitted [PR Review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884)."
         self.send_and_test_stream_message('pull_request_review', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request_review')
 
     def test_pull_request_review_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"baxterthehacker submitted [PR Review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884)"
+        expected_message = u"baxterthehacker submitted [PR Review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884)."
         self.send_and_test_stream_message('pull_request_review', expected_topic, expected_message, HTTP_X_GITHUB_EVENT='pull_request_review')
 
     def test_pull_request_review_comment_msg(self) -> None:
-        expected_message = u"baxterthehacker created [PR Review Comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692)\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
+        expected_message = u"baxterthehacker created [PR Review Comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
         self.send_and_test_stream_message('pull_request_review_comment', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request_review_comment')
 
     def test_pull_request_review_comment_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"baxterthehacker created [PR Review Comment on #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692)\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
+        expected_message = u"baxterthehacker created [PR Review Comment on #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
         self.send_and_test_stream_message('pull_request_review_comment', expected_topic, expected_message, HTTP_X_GITHUB_EVENT='pull_request_review_comment')
 
     def test_push_tag_msg(self) -> None:
-        expected_message = u"baxterthehacker pushed tag abc"
+        expected_message = u"baxterthehacker pushed tag abc."
         self.send_and_test_stream_message('push_tag', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='push')
 
     def test_pull_request_edited_msg(self) -> None:
-        expected_message = u"baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`"
+        expected_message = u"baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
         self.send_and_test_stream_message('edited_pull_request', self.EXPECTED_TOPIC_PR_EVENTS, expected_message,
                                           HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_pull_request_assigned_msg(self) -> None:
-        expected_message = u"baxterthehacker assigned [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker"
+        expected_message = u"baxterthehacker assigned [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker."
         self.send_and_test_stream_message('assigned_pull_request', self.EXPECTED_TOPIC_PR_EVENTS, expected_message,
                                           HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_pull_request_assigned_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"baxterthehacker assigned [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker"
+        expected_message = u"baxterthehacker assigned [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker."
         self.send_and_test_stream_message('assigned_pull_request', expected_topic, expected_message,
                                           HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_pull_request_unassigned_msg(self) -> None:
-        expected_message = u"eeshangarg unassigned [PR #1](https://github.com/zulip-test-org/helloworld/pull/1)"
+        expected_message = u"eeshangarg unassigned [PR #1](https://github.com/zulip-test-org/helloworld/pull/1)."
         self.send_and_test_stream_message(
             'unassigned_pull_request',
             'helloworld / PR #1 Mention that Zulip rocks!',

@@ -57,7 +57,7 @@ def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any],
         title=pull_request['title'] if include_title else None
     )
     if assignee is not None:
-        return "{} to {}".format(base_message, assignee)
+        return "{} to {}.".format(base_message[:-1], assignee)
     return base_message
 
 def get_closed_pull_request_body(payload: Dict[str, Any],

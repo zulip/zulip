@@ -63,27 +63,23 @@ class GogsHookTests(WebhookTestCase):
 
     def test_pull_request_opened(self) -> None:
         expected_topic = u"try-git / PR #1 Title Text for Pull Request"
-        expected_message = u"""john opened [PR #1](http://localhost:3000/john/try-git/pulls/1)
-from `feature` to `master`"""
+        expected_message = u"""john opened [PR #1](http://localhost:3000/john/try-git/pulls/1) from `feature` to `master`."""
         self.send_and_test_stream_message('pull_request_opened', expected_topic, expected_message, HTTP_X_GOGS_EVENT='pull_request')
 
     def test_pull_request_opened_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"""john opened [PR #1 Title Text for Pull Request](http://localhost:3000/john/try-git/pulls/1)
-from `feature` to `master`"""
+        expected_message = u"""john opened [PR #1 Title Text for Pull Request](http://localhost:3000/john/try-git/pulls/1) from `feature` to `master`."""
         self.send_and_test_stream_message('pull_request_opened', expected_topic, expected_message, HTTP_X_GOGS_EVENT='pull_request')
 
     def test_pull_request_closed(self) -> None:
         expected_topic = u"try-git / PR #1 Title Text for Pull Request"
-        expected_message = u"""john closed [PR #1](http://localhost:3000/john/try-git/pulls/1)
-from `feature` to `master`"""
+        expected_message = u"""john closed [PR #1](http://localhost:3000/john/try-git/pulls/1) from `feature` to `master`."""
         self.send_and_test_stream_message('pull_request_closed', expected_topic, expected_message, HTTP_X_GOGS_EVENT='pull_request')
 
     def test_pull_request_merged(self) -> None:
         expected_topic = u"try-git / PR #2 Title Text for Pull Request"
-        expected_message = u"""john merged [PR #2](http://localhost:3000/john/try-git/pulls/2)
-from `feature` to `master`"""
+        expected_message = u"""john merged [PR #2](http://localhost:3000/john/try-git/pulls/2) from `feature` to `master`."""
         self.send_and_test_stream_message('pull_request_merged', expected_topic, expected_message, HTTP_X_GOGS_EVENT='pull_request')
 
     @patch('zerver.webhooks.gogs.view.check_send_webhook_message')

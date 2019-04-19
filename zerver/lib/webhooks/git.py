@@ -1,3 +1,4 @@
+import string
 from typing import Optional, Any, Dict, List, Tuple
 from collections import defaultdict
 TOPIC_WITH_BRANCH_TEMPLATE = '{repo} / {branch}'
@@ -29,15 +30,15 @@ PUSH_COMMITS_MESSAGE_EXTENSION = "Commits by {}"
 PUSH_COMMITTERS_LIMIT_INFO = 3
 
 FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = ("{user_name} [force pushed]({url}) "
-                                       "to branch {branch_name}. Head is now {head}")
+                                       "to branch {branch_name}. Head is now {head}.")
 CREATE_BRANCH_MESSAGE_TEMPLATE = "{user_name} created [{branch_name}]({url}) branch"
 CREATE_BRANCH_WITHOUT_URL_MESSAGE_TEMPLATE = "{user_name} created {branch_name} branch"
-REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}"
+REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}."
 
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action} [{type}{id}]({url})"
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE = "{user_name} {action} [{type}{id} {title}]({url})"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
-PULL_REQUEST_BRANCH_INFO_TEMPLATE = "\nfrom `{target}` to `{base}`"
+PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
 
 SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
 SETUP_MESSAGE_USER_PART = " by {user_name}"
@@ -157,16 +158,33 @@ def get_pull_request_event_message(user_name: str, action: str, url: str, number
 
             assignees_string = ", ".join(usernames[:-1]) + " and " + usernames[-1]
 
-        main_message += PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignees_string)
+        assignee_info = PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(
+            assignee=assignees_string)
+        main_message = "{} {}".format(main_message, assignee_info)
 
     elif assignee:
-        main_message += PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
+        assignee_info = PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(
+            assignee=assignee)
+        main_message = "{} {}".format(main_message, assignee_info)
 
     if target_branch and base_branch:
-        main_message += PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
+        branch_info = PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
             target=target_branch,
             base=base_branch
         )
+        main_message = "{} {}".format(main_message, branch_info)
+
+    punctuation = ':' if message else '.'
+    if (assignees or assignee or (target_branch and base_branch) or (title is None)):
+        main_message = '{message}{punctuation}'.format(
+            message=main_message, punctuation=punctuation)
+    elif title is not None:
+        # Once we get here, we know that the message ends with a title
+        # which could already have punctuation at the end
+        if title[-1] not in string.punctuation:
+            main_message = '{message}{punctuation}'.format(
+                message=main_message, punctuation=punctuation)
+
     if message:
         main_message += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=message)
     return main_message.rstrip()
@@ -205,11 +223,17 @@ def get_push_tag_event_message(user_name: str,
         tag_part = TAG_WITH_URL_TEMPLATE.format(tag_name=tag_name, tag_url=tag_url)
     else:
         tag_part = TAG_WITHOUT_URL_TEMPLATE.format(tag_name=tag_name)
-    return PUSH_TAGS_MESSAGE_TEMPLATE.format(
+
+    message = PUSH_TAGS_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         action=action,
         tag=tag_part
     )
+
+    if tag_name[-1] not in string.punctuation:
+        message = '{}.'.format(message)
+
+    return message
 
 def get_commits_comment_action_message(user_name: str,
                                        action: str,
@@ -222,10 +246,13 @@ def get_commits_comment_action_message(user_name: str,
         sha=get_short_sha(sha),
         url=commit_url
     )
-    if message is not None:
+    punctuation = ':' if message else '.'
+    content = '{}{}'.format(content, punctuation)
+    if message:
         content += CONTENT_MESSAGE_TEMPLATE.format(
             message=message
         )
+
     return content
 
 def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: Optional[bool]=False) -> str:
