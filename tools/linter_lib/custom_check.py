@@ -216,6 +216,17 @@ def check_file_for_long_lines(fn: str,
             ok = False
     return ok
 
+PYDELIMS = r'''"'()\[\]{}#\\'''
+PYREG = r"[^{}]".format(PYDELIMS)
+PYSQ = r'"(?:[^"\\]|\\.)*"'
+PYDQ = r"'(?:[^'\\]|\\.)*'"
+PYLEFT = r"[(\[{]"
+PYRIGHT = r"[)\]}]"
+PYCODE = PYREG
+for depth in range(5):
+    PYGROUP = r"""(?:{}|{}|{}{}*{})""".format(PYSQ, PYDQ, PYLEFT, PYCODE, PYRIGHT)
+    PYCODE = r"""(?:{}|{})""".format(PYREG, PYGROUP)
+
 def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
 
@@ -465,15 +476,14 @@ def build_custom_checkers(by_lang):
         # This next check could have false positives, but it seems pretty
         # rare; if we find any, they can be added to the exclude list for
         # this rule.
-        {'pattern': r''' % [a-zA-Z0-9_."']*\)?$''',
-         'exclude_line': set([
-             ('tools/tests/test_template_parser.py', '{% foo'),
-         ]),
-         'description': 'Used % comprehension without a tuple',
+        {'pattern': r"""^(?:[^'"#\\]|{}|{})*(?:{}|{})\s*%\s*(?![\s({{\\]|dict\(|tuple\()(?:[^,{}]|{})+(?:$|[,#\\]|{})""".format(
+            PYSQ, PYDQ, PYSQ, PYDQ, PYDELIMS, PYGROUP, PYRIGHT),
+         'description': 'Used % formatting without a tuple',
          'good_lines': ['"foo %s bar" % ("baz",)'],
          'bad_lines': ['"foo %s bar" % "baz"']},
-        {'pattern': r'''.*%s.* % \([a-zA-Z0-9_."']*\)$''',
-         'description': 'Used % comprehension without a tuple',
+        {'pattern': r"""^(?:[^'"#\\]|{}|{})*(?:{}|{})\s*%\s*\((?:[^,{}]|{})*\)""".format(
+            PYSQ, PYDQ, PYSQ, PYDQ, PYDELIMS, PYGROUP),
+         'description': 'Used % formatting with parentheses that do not form a tuple',
          'good_lines': ['"foo %s bar" % ("baz",)"'],
          'bad_lines': ['"foo %s bar" % ("baz")']},
         {'pattern': 'sudo',
