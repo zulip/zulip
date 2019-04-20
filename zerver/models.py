@@ -608,8 +608,8 @@ post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 def filter_pattern_validator(value: str) -> None:
     regex = re.compile(r'^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$')
-    error_msg = _('Invalid filter pattern.  Valid characters are %s.' % (
-        '[ a-zA-Z_#=/:+!-]',))
+    error_msg = _('Invalid filter pattern.  Valid characters are %s.') % (
+        '[ a-zA-Z_#=/:+!-]',)
 
     if not regex.match(str(value)):
         raise ValidationError(error_msg)

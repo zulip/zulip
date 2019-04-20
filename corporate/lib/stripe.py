@@ -124,7 +124,7 @@ def renewal_amount(plan: CustomerPlan, event_time: datetime) -> int:  # nocovera
 
 class BillingError(Exception):
     # error messages
-    CONTACT_SUPPORT = _("Something went wrong. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))
+    CONTACT_SUPPORT = _("Something went wrong. Please contact %s.") % (settings.ZULIP_ADMINISTRATOR,)
     TRY_RELOADING = _("Something went wrong. Please reload the page.")
 
     # description is used only for tests

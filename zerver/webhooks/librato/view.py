@@ -159,7 +159,7 @@ def api_librato_webhook(request: HttpRequest, user_profile: UserProfile,
     try:
         content = message_handler.handle()
     except Exception as e:
-        return json_error(_(str(e)))
+        return json_error(str(e))
 
     check_send_webhook_message(request, user_profile, topic, content)
     return json_success()

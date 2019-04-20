@@ -148,12 +148,12 @@ def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
     found_user_ids = user_profiles_by_id.keys()
     missed_user_ids = [user_id for user_id in user_ids if user_id not in found_user_ids]
     if missed_user_ids:
-        raise JsonableError(_("Invalid user ID: %s" % (missed_user_ids[0],)))
+        raise JsonableError(_("Invalid user ID: %s") % (missed_user_ids[0],))
 
     user_profiles = list(user_profiles_by_id.values())
     for user_profile in user_profiles:
         if user_profile.realm != realm:
-            raise JsonableError(_("Invalid user ID: %s" % (user_profile.id,)))
+            raise JsonableError(_("Invalid user ID: %s") % (user_profile.id,))
     return user_profiles
 
 def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:

@@ -155,7 +155,7 @@ def validate_count_stats(server: RemoteZulipServer, model: Any,
     last_id = get_last_id_from_server(server, model)
     for item in counts:
         if item['property'] not in COUNT_STATS:
-            raise JsonableError(_("Invalid property %s" % (item['property'],)))
+            raise JsonableError(_("Invalid property %s") % (item['property'],))
         if item['id'] <= last_id:
             raise JsonableError(_("Data is out of order."))
         last_id = item['id']

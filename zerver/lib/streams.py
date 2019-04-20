@@ -110,7 +110,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
 def access_stream_by_name(user_profile: UserProfile,
                           stream_name: str,
                           allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Optional[Subscription]]:
-    error = _("Invalid stream name '%s'" % (stream_name,))
+    error = _("Invalid stream name '%s'") % (stream_name,)
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
     except Stream.DoesNotExist:
@@ -177,7 +177,7 @@ def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: st
 
     if stream.is_history_public_to_subscribers():
         # In this case, we check if the user is subscribed.
-        error = _("Invalid stream name '%s'" % (stream_name,))
+        error = _("Invalid stream name '%s'") % (stream_name,)
         try:
             (recipient, sub) = access_stream_common(user_profile, stream, error)
         except JsonableError:
@@ -282,4 +282,4 @@ def access_default_stream_group_by_id(realm: Realm, group_id: int) -> DefaultStr
     try:
         return DefaultStreamGroup.objects.get(realm=realm, id=group_id)
     except DefaultStreamGroup.DoesNotExist:
-        raise JsonableError(_("Default stream group with id '%s' does not exist." % (group_id,)))
+        raise JsonableError(_("Default stream group with id '%s' does not exist.") % (group_id,))
