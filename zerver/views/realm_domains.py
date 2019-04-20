@@ -40,7 +40,7 @@ def patch_realm_domain(request: HttpRequest, user_profile: UserProfile, domain: 
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_change_realm_domain(realm_domain, allow_subdomains)
     except RealmDomain.DoesNotExist:
-        return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
+        return json_error(_('No entry found for domain %(domain)s.') % {'domain': domain})
     return json_success()
 
 @require_realm_admin
@@ -51,5 +51,5 @@ def delete_realm_domain(request: HttpRequest, user_profile: UserProfile,
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_remove_realm_domain(realm_domain)
     except RealmDomain.DoesNotExist:
-        return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
+        return json_error(_('No entry found for domain %(domain)s.') % {'domain': domain})
     return json_success()

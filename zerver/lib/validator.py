@@ -60,8 +60,8 @@ def check_capped_string(max_length: int) -> Validator:
         if not isinstance(val, str):
             return _('%s is not a string') % (var_name,)
         if len(val) > max_length:
-            return _("{var_name} is too long (limit: {max_length} characters)".format(
-                var_name=var_name, max_length=max_length))
+            return _("{var_name} is too long (limit: {max_length} characters)").format(
+                var_name=var_name, max_length=max_length)
         return None
     return validator
 
@@ -70,8 +70,8 @@ def check_string_fixed_length(length: int) -> Validator:
         if not isinstance(val, str):
             return _('%s is not a string') % (var_name,)
         if len(val) != length:
-            return _("{var_name} has incorrect length {length}; should be {target_length}".format(
-                var_name=var_name, target_length=length, length=len(val)))
+            return _("{var_name} has incorrect length {length}; should be {target_length}").format(
+                var_name=var_name, target_length=length, length=len(val))
         return None
     return validator
 
@@ -174,7 +174,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
             optional_keys_set = set(x[0] for x in optional_keys)
             delta_keys = set(val.keys()) - required_keys_set - optional_keys_set
             if len(delta_keys) != 0:
-                return _("Unexpected arguments: %s" % (", ".join(list(delta_keys)),))
+                return _("Unexpected arguments: %s") % (", ".join(list(delta_keys)),)
 
         return None
 

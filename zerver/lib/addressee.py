@@ -37,7 +37,7 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
         try:
             user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user ID {}".format(user_id)))
+            raise JsonableError(_("Invalid user ID {}").format(user_id))
         user_profiles.append(user_profile)
     return user_profiles
 

@@ -717,8 +717,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if anchor is None and not use_first_unread_anchor:
         return json_error(_("Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."))
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
-        return json_error(_("Too many messages requested (maximum %s)."
-                            % (MAX_MESSAGES_PER_FETCH,)))
+        return json_error(_("Too many messages requested (maximum %s).")
+                          % (MAX_MESSAGES_PER_FETCH,))
     include_history = ok_to_include_history(narrow, user_profile)
 
     if include_history:

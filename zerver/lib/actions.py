@@ -1887,7 +1887,7 @@ def recipient_for_user_ids(user_ids: Iterable[int], sender: UserProfile) -> Reci
             user_profile = get_user_by_id_in_realm_including_cross_realm(
                 user_id, sender.realm)
         except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid user ID {}".format(user_id)))
+            raise ValidationError(_("Invalid user ID {}").format(user_id))
         user_profiles.append(user_profile)
 
     return recipient_for_user_profiles(
@@ -2050,23 +2050,23 @@ def check_schedule_message(sender: UserProfile, client: Client,
 
 def check_stream_name(stream_name: str) -> None:
     if stream_name.strip() == "":
-        raise JsonableError(_("Invalid stream name '%s'" % (stream_name,)))
+        raise JsonableError(_("Invalid stream name '%s'") % (stream_name,))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
-        raise JsonableError(_("Stream name too long (limit: %s characters)." % (Stream.MAX_NAME_LENGTH,)))
+        raise JsonableError(_("Stream name too long (limit: %s characters).") % (Stream.MAX_NAME_LENGTH,))
     for i in stream_name:
         if ord(i) == 0:
-            raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name,)))
+            raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters.") % (stream_name,))
 
 def check_default_stream_group_name(group_name: str) -> None:
     if group_name.strip() == "":
-        raise JsonableError(_("Invalid default stream group name '%s'" % (group_name,)))
+        raise JsonableError(_("Invalid default stream group name '%s'") % (group_name,))
     if len(group_name) > DefaultStreamGroup.MAX_NAME_LENGTH:
-        raise JsonableError(_("Default stream group name too long (limit: %s characters)"
-                            % (DefaultStreamGroup.MAX_NAME_LENGTH,)))
+        raise JsonableError(_("Default stream group name too long (limit: %s characters)")
+                            % (DefaultStreamGroup.MAX_NAME_LENGTH,))
     for i in group_name:
         if ord(i) == 0:
-            raise JsonableError(_("Default stream group name '%s' contains NULL (0x00) characters."
-                                % (group_name,)))
+            raise JsonableError(_("Default stream group name '%s' contains NULL (0x00) characters.")
+                                % (group_name,))
 
 def send_rate_limited_pm_notification_to_bot_owner(sender: UserProfile,
                                                    realm: Realm,
@@ -3643,7 +3643,7 @@ def lookup_default_stream_groups(default_stream_group_names: List[str],
             default_stream_group = DefaultStreamGroup.objects.get(
                 name=group_name, realm=realm)
         except DefaultStreamGroup.DoesNotExist:
-            raise JsonableError(_('Invalid default stream group %s' % (group_name,)))
+            raise JsonableError(_('Invalid default stream group %s') % (group_name,))
         default_stream_groups.append(default_stream_group)
     return default_stream_groups
 
@@ -4053,7 +4053,7 @@ def do_update_message_flags(user_profile: UserProfile,
                             messages: List[int]) -> int:
     valid_flags = [item for item in UserMessage.flags if item not in UserMessage.NON_API_FLAGS]
     if flag not in valid_flags:
-        raise JsonableError(_("Invalid flag: '%s'" % (flag,)))
+        raise JsonableError(_("Invalid flag: '%s'") % (flag,))
     flagattr = getattr(UserMessage.flags, flag)
 
     assert messages is not None
@@ -5394,7 +5394,7 @@ def check_add_user_group(realm: Realm, name: str, initial_members: List[UserProf
         user_group = create_user_group(name, initial_members, realm, description=description)
         do_send_create_user_group_event(user_group, initial_members)
     except django.db.utils.IntegrityError:
-        raise JsonableError(_("User group '%s' already exists." % (name,)))
+        raise JsonableError(_("User group '%s' already exists.") % (name,))
 
 def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, Any]) -> None:
     event = dict(type="user_group", op='update', group_id=user_group.id, data=data)
@@ -5405,7 +5405,7 @@ def do_update_user_group_name(user_group: UserGroup, name: str) -> None:
         user_group.name = name
         user_group.save(update_fields=['name'])
     except django.db.utils.IntegrityError:
-        raise JsonableError(_("User group '%s' already exists." % (name,)))
+        raise JsonableError(_("User group '%s' already exists.") % (name,))
     do_send_user_group_update_event(user_group, dict(name=name))
 
 def do_update_user_group_description(user_group: UserGroup, description: str) -> None:

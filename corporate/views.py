@@ -53,7 +53,7 @@ def check_upgrade_parameters(
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
     if licenses is None or licenses < min_licenses:
         raise BillingError('not enough licenses',
-                           _("You must invoice for at least {} users.".format(min_licenses)))
+                           _("You must invoice for at least {} users.").format(min_licenses))
 
 # Should only be called if the customer is being charged automatically
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
@@ -62,14 +62,14 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     if stripe_source is None:  # nocoverage
         return _("No payment method on file")
     if stripe_source.object == "card":
-        return _("%(brand)s ending in %(last4)s" % {
+        return _("%(brand)s ending in %(last4)s") % {
             'brand': cast(stripe.Card, stripe_source).brand,
-            'last4': cast(stripe.Card, stripe_source).last4})
+            'last4': cast(stripe.Card, stripe_source).last4}
     # There might be one-off stuff we do for a particular customer that
     # would land them here. E.g. by default we don't support ACH for
     # automatic payments, but in theory we could add it for a customer via
     # the Stripe dashboard.
-    return _("Unknown payment method. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))  # nocoverage
+    return _("Unknown payment method. Please contact %s.") % (settings.ZULIP_ADMINISTRATOR,)  # nocoverage
 
 @has_request_variables
 def upgrade(request: HttpRequest, user: UserProfile,

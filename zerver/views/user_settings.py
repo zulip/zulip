@@ -127,15 +127,15 @@ def update_display_settings_backend(
 
     if (default_language is not None and
             default_language not in get_available_language_codes()):
-        raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+        raise JsonableError(_("Invalid language '%s'") % (default_language,))
 
     if (timezone is not None and
             timezone not in get_all_timezones()):
-        raise JsonableError(_("Invalid timezone '%s'" % (timezone,)))
+        raise JsonableError(_("Invalid timezone '%s'") % (timezone,))
 
     if (emojiset is not None and
             emojiset not in UserProfile.emojiset_choices()):
-        raise JsonableError(_("Invalid emojiset '%s'" % (emojiset,)))
+        raise JsonableError(_("Invalid emojiset '%s'") % (emojiset,))
 
     request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
     result = {}  # type: Dict[str, Any]
