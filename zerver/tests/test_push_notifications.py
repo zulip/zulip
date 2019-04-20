@@ -979,6 +979,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
                     'realm_uri': message.sender.realm.uri,
+                    "user_id": user_profile.id,
                 }
             }
         }
@@ -1014,6 +1015,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
                     'realm_uri': message.sender.realm.uri,
+                    "user_id": user_profile.id,
                 }
             }
         }
@@ -1047,6 +1049,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
                     'realm_uri': message.sender.realm.uri,
+                    "user_id": user_profile.id,
                 }
             }
         }
@@ -1079,6 +1082,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
                     'realm_uri': message.sender.realm.uri,
+                    "user_id": user_profile.id,
                 }
             }
         }
@@ -1114,6 +1118,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
                     'realm_uri': message.sender.realm.uri,
+                    "user_id": user_profile.id,
                 }
             }
         }
@@ -1132,6 +1137,7 @@ class TestGetGCMPayload(PushNotificationTest):
         payload, gcm_options = get_message_payload_gcm(user_profile, message)
         self.assertDictEqual(payload, {
             "user": user_profile.email,
+            "user_id": user_profile.id,
             "event": "message",
             "alert": "New mention from King Hamlet",
             "zulip_message_id": message.id,
@@ -1160,6 +1166,7 @@ class TestGetGCMPayload(PushNotificationTest):
         payload, gcm_options = get_message_payload_gcm(user_profile, message)
         self.assertDictEqual(payload, {
             "user": user_profile.email,
+            "user_id": user_profile.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
             "zulip_message_id": message.id,
@@ -1187,6 +1194,7 @@ class TestGetGCMPayload(PushNotificationTest):
         payload, gcm_options = get_message_payload_gcm(user_profile, message)
         self.assertDictEqual(payload, {
             "user": user_profile.email,
+            "user_id": user_profile.id,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
             "zulip_message_id": message.id,
@@ -1217,6 +1225,7 @@ class TestGetGCMPayload(PushNotificationTest):
         payload, gcm_options = get_message_payload_gcm(user_profile, message)
         self.assertDictEqual(payload, {
             "user": user_profile.email,
+            "user_id": user_profile.id,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
             "zulip_message_id": message.id,

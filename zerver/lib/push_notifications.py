@@ -26,7 +26,7 @@ from zerver.lib.message import access_message, \
 from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import send_to_push_bouncer, send_json_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import PushDeviceToken, Message, Realm, Recipient, \
+from zerver.models import PushDeviceToken, Message, Recipient, \
     UserMessage, UserProfile, \
     get_display_recipient, receives_offline_push_notifications, \
     receives_online_notifications, get_user_profile_by_id, \
@@ -513,20 +513,21 @@ def truncate_content(content: str) -> Tuple[str, bool]:
         return content, False
     return content[:200] + "…", True
 
-def get_base_payload(realm: Realm) -> Dict[str, Any]:
+def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     '''Common fields for all notification payloads.'''
     data = {}  # type: Dict[str, Any]
 
     # These will let the app support logging into multiple realms and servers.
     data['server'] = settings.EXTERNAL_HOST
-    data['realm_id'] = realm.id
-    data['realm_uri'] = realm.uri
+    data['realm_id'] = user_profile.realm.id
+    data['realm_uri'] = user_profile.realm.uri
+    data['user_id'] = user_profile.id
 
     return data
 
-def get_message_payload(message: Message) -> Dict[str, Any]:
+def get_message_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     '''Common fields for `message` payloads, for all platforms.'''
-    data = get_base_payload(message.sender.realm)
+    data = get_base_payload(user_profile)
 
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data['sender_id'] = message.sender.id
@@ -569,7 +570,7 @@ def get_apns_alert_subtitle(message: Message) -> str:
 
 def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     '''A `message` payload for iOS, via APNs.'''
-    zulip_data = get_message_payload(message)
+    zulip_data = get_message_payload(user_profile, message)
     zulip_data.update({
         'message_ids': [message.id],
     })
@@ -591,7 +592,7 @@ def get_message_payload_gcm(
         user_profile: UserProfile, message: Message,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     '''A `message` payload + options, for Android via GCM/FCM.'''
-    data = get_message_payload(message)
+    data = get_message_payload(user_profile, message)
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
     data.update({
         'user': user_profile.email,
@@ -611,7 +612,7 @@ def get_remove_payload_gcm(
         user_profile: UserProfile, message_ids: List[int],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     '''A `remove` payload + options, for Android via GCM/FCM.'''
-    gcm_payload = get_base_payload(user_profile.realm)
+    gcm_payload = get_base_payload(user_profile)
     gcm_payload.update({
         'event': 'remove',
         'zulip_message_ids': ','.join(str(id) for id in message_ids),
