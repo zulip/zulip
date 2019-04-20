@@ -1136,7 +1136,6 @@ class TestGetGCMPayload(PushNotificationTest):
         user_profile = self.example_user('hamlet')
         payload, gcm_options = get_message_payload_gcm(user_profile, message)
         self.assertDictEqual(payload, {
-            "user": user_profile.email,
             "user_id": user_profile.id,
             "event": "message",
             "alert": "New mention from King Hamlet",
@@ -1165,7 +1164,6 @@ class TestGetGCMPayload(PushNotificationTest):
         user_profile = self.example_user('hamlet')
         payload, gcm_options = get_message_payload_gcm(user_profile, message)
         self.assertDictEqual(payload, {
-            "user": user_profile.email,
             "user_id": user_profile.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
@@ -1193,7 +1191,6 @@ class TestGetGCMPayload(PushNotificationTest):
         user_profile = self.example_user('hamlet')
         payload, gcm_options = get_message_payload_gcm(user_profile, message)
         self.assertDictEqual(payload, {
-            "user": user_profile.email,
             "user_id": user_profile.id,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
@@ -1224,7 +1221,6 @@ class TestGetGCMPayload(PushNotificationTest):
         user_profile = self.example_user('hamlet')
         payload, gcm_options = get_message_payload_gcm(user_profile, message)
         self.assertDictEqual(payload, {
-            "user": user_profile.email,
             "user_id": user_profile.id,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
