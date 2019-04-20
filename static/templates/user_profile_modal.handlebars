@@ -15,10 +15,12 @@
                 {{/if}}
             </div>
             <br>
+            {{#if show_email}}
             <div id="email" class="default-field">
                 <span class="name">{{#tr this}}Email{{/tr}}</span>
                 <span class="value">{{email}}</span>
             </div>
+            {{/if}}
             <div id="date-joined" class="default-field">
                 <span class="name">{{#tr this}}Joined{{/tr}}</span>
                 <span class="value">{{date_joined}}</span>

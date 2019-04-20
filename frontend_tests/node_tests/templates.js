@@ -1600,11 +1600,26 @@ run_test('user_profile_modal', () => {
             author: "Shakespeare",
             book: "Othello",
         },
+        show_email: true,
     };
 
-    var html = render('user_profile_modal', args);
-    var div = $(html).find("#email .value");
+    let html = render('user_profile_modal', args);
+    let div = $(html).find("#email .value");
     assert.equal(div.text().trim(), 'iago@zulip.com');
+
+    args = {
+        full_name: "Hamlet",
+        email: "hamlet@zulip.com",
+        profile_data: {
+            author: "Hamlet",
+            book: "Othello",
+        },
+        show_email: false,
+    };
+
+    html = render('user_profile_modal', args);
+    div = $(html).find("#email .value");
+    assert.equal(div.text().trim(), '');
 });
 
 run_test('muted_topic_ui_row', () => {

@@ -90,6 +90,7 @@ function calculate_info_popover_placement(size, elt) {
     }
 }
 
+
 function render_user_info_popover(user, popover_element, is_sender_popover, private_msg_class,
                                   template_class, popover_placement) {
     var is_me = people.is_my_user_id(user.user_id);
@@ -116,6 +117,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_uri(user.email),
+        show_email: settings_org.show_email(),
         show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
         user_email: user.email,
         user_full_name: user.full_name,
@@ -270,6 +272,7 @@ exports.show_user_profile = function (user) {
         is_me: people.is_current_user(user.email),
         date_joined: moment(user.date_joined).format(localFormat),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
+        show_email: settings_org.show_email(),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,

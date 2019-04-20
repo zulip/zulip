@@ -8,6 +8,7 @@ zrequire('people');
 zrequire('presence');
 zrequire('buddy_data');
 zrequire('user_status');
+zrequire('settings_org');
 
 var noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code
@@ -48,6 +49,7 @@ var alice = {
     full_name: 'Alice Smith',
     user_id: 42,
     is_guest: false,
+    is_admin: false,
 };
 
 var me = {
@@ -164,6 +166,7 @@ run_test('sender_hover', () => {
                 pm_with_uri: '#narrow/pm-with/42-alice',
                 sent_by_uri: '#narrow/sender/42-alice',
                 private_message_class: 'respond_personal_button',
+                show_email: false,
                 show_user_profile: false,
                 is_me: false,
                 is_active: true,

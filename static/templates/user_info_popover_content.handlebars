@@ -12,17 +12,21 @@
             {{/if}}
         </li>
 
+
         {{#if is_active }}
-        <li class="user_popover_email">
-            <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
-            {{ user_email }}
-            <div class="tooltip_holder">
-                <span class="email_tooltip">{{ user_email }}</span>
-            </div>
-        </li>
+            {{#if show_email}}
+            <li class="user_popover_email">
+                <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
+                {{ user_email }}
+                <div class="tooltip_holder">
+                    <span class="email_tooltip">{{ user_email }}</span>
+                </div>
+            </li>
+            {{/if}}
         {{else}}
-        <li class="user_popover_email half-opacity italic">{{#tr this}}(This user has been deactivated){{/tr}}</li>
+            <li class="user_popover_email half-opacity italic">{{#tr this}}(This user has been deactivated){{/tr}}</li>
         {{/if}}
+
 
         {{#if user_time}}
         <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
