@@ -540,6 +540,13 @@ def build_custom_checkers(by_lang):
         {'pattern': r'''\WJsonableError\(["'].+\)''',
          'exclude': set(['zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
+        {'pattern': r"""\b_\((?:\s|{}|{})*[^\s'")]""".format(PYSQ, PYDQ),
+         'description': 'Called _() on a computed string',
+         'exclude_line': set([
+             ('zerver/lib/i18n.py', 'result = _(string)'),
+         ]),
+         'good_lines': ["return json_error(_('No presence data for %s') % (target.email,))"],
+         'bad_lines': ["return json_error(_('No presence data for %s' % (target.email,)))"]},
         {'pattern': r'''([a-zA-Z0-9_]+)=REQ\(['"]\1['"]''',
          'description': 'REQ\'s first argument already defaults to parameter name'},
         {'pattern': r'self\.client\.(get|post|patch|put|delete)',
