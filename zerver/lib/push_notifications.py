@@ -595,7 +595,6 @@ def get_message_payload_gcm(
     data = get_message_payload(user_profile, message)
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
     data.update({
-        'user': user_profile.email,
         'event': 'message',
         'alert': get_gcm_alert(message),
         'zulip_message_id': message.id,  # message_id is reserved for CCS
