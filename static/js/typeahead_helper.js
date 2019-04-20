@@ -91,15 +91,17 @@ exports.render_person = function (person) {
     if (html === undefined) {
         var avatar_url = people.small_avatar_url_for_person(person);
 
-        html = exports.render_typeahead_item({
+        var typeahead_arguments = {
             primary: person.full_name,
-            secondary: person.email,
             img_src: avatar_url,
             is_person: true,
-        });
+        };
+        if (settings_org.show_email()) {
+            typeahead_arguments.secondary = person.email;
+        }
+        html = exports.render_typeahead_item(typeahead_arguments);
         rendered.persons.set(person.user_id, html);
     }
-
     return html;
 };
 

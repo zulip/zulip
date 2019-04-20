@@ -14,6 +14,7 @@ zrequire('user_pill');
 zrequire('compose_pm_pill');
 zrequire('composebox_typeahead');
 zrequire('recent_senders');
+zrequire('settings_org');
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
@@ -613,17 +614,17 @@ run_test('initialize', () => {
         // corresponding parts in bold.
         options.query = 'oth';
         actual_value = options.highlighter(othello);
-        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-othello@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>\n';
+        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-othello@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>';
         assert.equal(actual_value, expected_value);
 
         options.query = 'Lear';
         actual_value = options.highlighter(cordelia);
-        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-cordelia@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>\n';
+        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-cordelia@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>';
         assert.equal(actual_value, expected_value);
 
         options.query = 'othello@zulip.com, co';
         actual_value = options.highlighter(cordelia);
-        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-cordelia@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>\n';
+        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-cordelia@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>';
         assert.equal(actual_value, expected_value);
 
         // options.matcher()
@@ -776,7 +777,7 @@ run_test('initialize', () => {
         // content_highlighter.
         fake_this = { completing: 'mention', token: 'othello' };
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-othello@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>\n';
+        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-othello@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>';
         assert.equal(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'hamletcharacters' };

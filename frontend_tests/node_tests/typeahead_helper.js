@@ -1,3 +1,4 @@
+set_global('i18n', global.stub_i18n);
 set_global('page_params', {realm_is_zephyr_mirror_realm: false});
 set_global('templates', {});
 set_global('md5', function (s) {
@@ -14,6 +15,7 @@ zrequire('stream_data');
 zrequire('narrow');
 zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
+zrequire('settings_org');
 var th = zrequire('typeahead_helper');
 
 stream_data.create_streams([
@@ -399,7 +401,23 @@ run_test('highlight_with_escaping', () => {
     assert.equal(result, expected);
 });
 
+run_test('render_person when emails hidden', () => {
+    // Test render_person with regular person, under hidden email visiblity case
+    settings_org.show_email = () => false;
+    var rendered = false;
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.equal(args.primary, matches[2].full_name);
+        assert.equal(args.secondary, undefined);
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_person(matches[2]), 'typeahead-item-stub');
+    assert(rendered);
+});
+
 run_test('render_person', () => {
+    settings_org.show_email = () => true;
     // Test render_person with regular person
     var rendered = false;
     global.templates.render = function (template_name, args) {
