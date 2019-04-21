@@ -34,6 +34,10 @@ os.chdir(settings.DEPLOY_ROOT)
 os.makedirs("var/log", exist_ok=True)
 fp = open('var/log/update-prod-static.log', 'w')
 
+# Store number of commits behind master to a new file.
+getNumCommits = "git log --pretty=oneline 2.0.2..HEAD | wc > num-commits.txt"
+os.system(getNumCommits)
+
 # Install node packages
 setup_node_modules(production=True, stdout=fp, stderr=fp)
 

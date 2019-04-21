@@ -1,4 +1,15 @@
-ZULIP_VERSION = "2.0.2+git"
+# Includes information about how many commits the Zulip version is
+# behind master.
+
+parts = []
+
+with open("num-commits.txt") as input_file:
+    for line in input_file:
+        parts = line.split()
+
+ZULIP_VERSION = "2.0.2+git - "
+ZULIP_VERSION += parts[0]
+ZULIP_VERSION += " commits to master since this release"
 LATEST_MAJOR_VERSION = "2.0"
 LATEST_RELEASE_VERSION = "2.0.2"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2019/03/01/zulip-2-0-released/"
