@@ -6,7 +6,6 @@ import subprocess
 command = "git log --pretty=oneline 2.0.2..HEAD | wc"
 output = subprocess.getoutput("git log --pretty=oneline 2.0.2..HEAD | wc")
 
-parts = [] # type: List[str]
 parts = output.split()
 
 ZULIP_VERSION = "2.0.2+git - "
