@@ -62,6 +62,11 @@ cd "$BASEDIR"
 
 # Check out a temporary full copy of the index to generate static files
 git checkout-index -f -a --prefix "$TMPDIR/$prefix/"
+
+# Add the git version information file
+./tools/cache-zulip-git-version
+mv zulip-git-version "$TMPDIR/$prefix/"
+
 cd "$TMPDIR/$prefix"
 
 # create var/log directory in the new temporary checkout
@@ -109,7 +114,7 @@ echo "$version" > version
 
 cd "$TMPDIR"
 
-tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/zulip-git-version" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
 
 rm -rf "$prefix"
 
