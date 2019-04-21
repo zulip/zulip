@@ -3,7 +3,7 @@
 
 parts = []
 
-with open("num-commits.txt") as input_file:
+with open("var/log/num-commits.log") as input_file:
     for line in input_file:
         parts = line.split()
 
