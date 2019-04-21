@@ -1,11 +1,13 @@
 # Includes information about how many commits the Zulip version is
 # behind master.
 
-parts = []
+import subprocess
 
-with open("var/log/num-commits.log") as input_file:
-    for line in input_file:
-        parts = line.split()
+command = "git log --pretty=oneline 2.0.2..HEAD | wc"
+output = subprocess.getoutput("git log --pretty=oneline 2.0.2..HEAD | wc")
+
+parts = []
+parts = output.split()
 
 ZULIP_VERSION = "2.0.2+git - "
 ZULIP_VERSION += parts[0]
