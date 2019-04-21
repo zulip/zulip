@@ -120,6 +120,8 @@ elif args.from_git:
     subprocess.check_call(["./tools/update-prod-static", "--authors-not-required", "--prev-deploy",
                            os.path.join(DEPLOYMENTS_DIR, 'current')],
                           preexec_fn=su_to_zulip)
+    logging.info("Caching zulip git version...")
+    subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 else:
     # Since this doesn't do any actual work, it's likely safe to have
     # this run before we apply puppet changes (saving a bit of downtime).

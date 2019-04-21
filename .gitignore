@@ -42,6 +42,7 @@ npm-debug.log
 /staticfiles.json
 /webpack-stats-production.json
 /yarn-error.log
+zulip-git-version
 
 # Test / analysis tools
 .coverage
