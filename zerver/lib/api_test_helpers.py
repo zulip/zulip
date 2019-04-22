@@ -805,6 +805,12 @@ def upload_custom_emoji(client):
                                     '/realm/emoji/<emoji_name>',
                                     'post', '200')
 
+def get_alert_words(client):
+    # type: (Client) -> None
+    result = client.get_alert_words()
+
+    assert result['result'] == 'success'
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -860,6 +866,7 @@ TEST_FUNCTIONS = {
     '/users/me/{stream_id}/topics:get': get_stream_topics,
     '/typing:post': set_typing_status,
     '/user_groups:get': get_user_groups,
+    '/users/me/alert_words:get': get_alert_words,
     '/messages/{message_id}/reactions:delete': remove_reaction
 }
 
@@ -942,6 +949,7 @@ def test_users(client):
     set_typing_status(client)
     get_user_presence(client)
     get_user_groups(client)
+    get_alert_words(client)
 
 def test_streams(client, nonadmin_client):
     # type: (Client, Client) -> None
