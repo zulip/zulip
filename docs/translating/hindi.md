@@ -54,7 +54,7 @@ Zulip friendly and usable.
 * Deactivate/Reactivate - **निष्क्रिय करें / पुन: सक्रिय करें**
 * Search - **खोज करें/ढूंढे**
 * Pin - **ठीक करना**
-* Mention/@mention - **ज़िक्र करना / @ ज़िक्र करना**
+* Mention/@mention - **ज़िक्र करना / @ ज़िक्र करना**
 * Invalid - **अमान्य**
 * Customization - **अनुकूलन**
 * I want - **मुझे चाहिए**

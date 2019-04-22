@@ -293,7 +293,7 @@ Zulip realm).
 
 ### Calling from the web application
 
-You should always use channel.<method> to make an `HTTP <method>` call
+You should always use `channel.<method>` to make an `HTTP <method>` call
 to the Zulip JSON API. As an example, in
 [static/js/admin.js](https://github.com/zulip/zulip/blob/master/static/js/admin.js)
 
