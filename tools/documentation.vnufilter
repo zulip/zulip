@@ -1,0 +1,10 @@
+# Real errors that should be fixed.
+
+Bad value “” for attribute “id” on element “div”: Bad id: An ID must not be the empty string\.
+Duplicate ID “[^”]*”\.
+The first occurrence of ID “[^”]*” was here\.
+
+# Warnings that are probably less important.
+
+The “type” attribute is unnecessary for JavaScript resources\.
+Section lacks heading\. Consider using “h2”-“h6” elements to add identifying headings to all sections\.
