@@ -93,7 +93,7 @@ export default (env?: string): webpack.Configuration => {
         resolve: {
             modules: [
                 resolve(__dirname, "../static"),
-                resolve(__dirname, "../node_modules"),
+                "node_modules",
                 resolve(__dirname, "../"),
             ],
             extensions: [".tsx", ".ts", ".js", ".json", ".scss", ".css"],
