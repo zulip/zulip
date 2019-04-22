@@ -2,9 +2,11 @@
 
 import argparse
 import os
-import subprocess
 import sys
 import json
+
+if False:
+    from typing import NoReturn
 
 # check for the venv
 from lib import sanity_check
@@ -19,7 +21,7 @@ STATIC_PATH = 'static/'
 
 
 def build_for_prod_or_casper(quiet):
-    # type: (bool) -> None
+    # type: (bool) -> NoReturn
     """Builds for production, writing the output to disk"""
 
     webpack_args = ['node', 'node_modules/.bin/webpack-cli',
@@ -28,10 +30,10 @@ def build_for_prod_or_casper(quiet):
     if quiet:
         webpack_args += ['--display', 'errors-only']
         print('Starting webpack compilation')
-    subprocess.check_call(webpack_args)
+    os.execvp(webpack_args[0], webpack_args)
 
 def build_for_dev_server(host, port, minify, disable_host_check):
-    # type: (str, str, bool, bool) -> None
+    # type: (str, str, bool, bool) -> NoReturn
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
 
     # This is our most dynamic configuration, which we use for our
@@ -53,7 +55,7 @@ def build_for_dev_server(host, port, minify, disable_host_check):
         webpack_args.append('--optimize-minimize')
     if disable_host_check:
         webpack_args.append('--disable-host-check')
-    subprocess.Popen(webpack_args)
+    os.execvp(webpack_args[0], webpack_args)
 
 def build_for_most_tests():
     # type: () -> None
