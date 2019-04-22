@@ -110,6 +110,9 @@ exports.update_messages = function update_messages(events) {
         if (msg === undefined) {
             return;
         }
+
+        delete msg.local_edit_timestamp;
+
         msgs_to_rerender.push(msg);
 
         message_store.update_booleans(msg, event.flags);

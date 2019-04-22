@@ -135,6 +135,14 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
 };
 
 exports.edit_locally = function edit_locally(message, request) {
+    // Responsible for doing the rendering work of locally editing the
+    // content ofa message.  This is used in several code paths:
+    // * Editing a message where a message was locally echoed but
+    //   it got an error back from the server
+    // * Locally echoing any content-only edits to fully sent messages
+    // * Restoring the original content should the server return an
+    //   error after having locally echoed content-only messages.
+    // The details of what should be changed are encoded in the request.
     const raw_content = request.raw_content;
     const message_content_edited = raw_content !== undefined && message.raw_content !== raw_content;
 
@@ -156,10 +164,37 @@ exports.edit_locally = function edit_locally(message, request) {
 
     if (message_content_edited) {
         message.raw_content = raw_content;
-        markdown.apply_markdown(message);
+        if (request.content !== undefined) {
+            // This happens in the code path where message editing
+            // failed and we're trying to undo the local echo.  We use
+            // the saved content and flags rather than rendering; this
+            // is important in case
+            // markdown.contains_backend_only_syntax(message) is true.
+            message.content = request.content;
+            message.mentioned = request.mentioned;
+            message.mentioned_me_directly = request.mentioned_me_directly;
+            message.alerted = request.alerted;
+        } else {
+            // Otherwise, we markdown-render the message; this resets
+            // all flags, so we need to restore those flags that are
+            // properties of how the user has interacted with the
+            // message, and not its rendering.
+            markdown.apply_markdown(message);
+            if (request.starred !== undefined) {
+                message.starred = request.starred;
+            }
+            if (request.historical !== undefined) {
+                message.historical = request.historical;
+            }
+            if (request.collapsed !== undefined) {
+                message.collapsed = request.collapsed;
+            }
+        }
     }
 
-    // We don't handle unread counts since local messages must be sent by us
+    // We don't have logic to adjust unread counts, because message
+    // reaching this code path must either have been sent by us or the
+    // topic isn't being edited, so unread counts can't have changed.
 
     home_msg_list.view.rerender_messages([message]);
     if (current_msg_list === message_list.narrowed) {
