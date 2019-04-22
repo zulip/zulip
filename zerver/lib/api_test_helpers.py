@@ -108,6 +108,18 @@ def get_user_presence(client):
 
     validate_against_openapi_schema(result, '/users/{email}/presence', 'get', '200')
 
+def update_presence(client):
+    # type: (Client) -> None
+    request = {
+        'status': 'active',
+        'ping_only': False,
+        'new_user_input': False
+    }
+
+    result = client.update_presence(request)
+
+    assert result['result'] == 'success'
+
 def create_user(client):
     # type: (Client) -> None
 
@@ -922,6 +934,7 @@ TEST_FUNCTIONS = {
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
     '/users/{email}/presence:get': get_user_presence,
+    '/users/me/presence:post': update_presence,
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
     '/users/me/subscriptions/properties:post': update_subscription_settings,
@@ -1027,6 +1040,7 @@ def test_users(client):
     upload_file(client)
     set_typing_status(client)
     get_user_presence(client)
+    update_presence(client)
     group_id = get_user_groups(client)
     create_user_group(client)
     update_user_group(client, group_id)
