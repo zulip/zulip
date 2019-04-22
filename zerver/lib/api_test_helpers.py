@@ -245,7 +245,7 @@ def get_streams(client):
     assert len(result['streams']) == 4
 
 def get_user_groups(client):
-    # type: (Client) -> None
+    # type: (Client) -> int
 
     # {code_example|start}
     # Get all user groups of the realm
@@ -255,6 +255,9 @@ def get_user_groups(client):
     validate_against_openapi_schema(result, '/user_groups', 'get', '200')
     user_groups = [u for u in result['user_groups'] if u['name'] == "hamletcharacters"]
     assert user_groups[0]['description'] == 'Characters of Hamlet'
+
+    result = result['user_groups'][0]
+    return result['id']
 
 def test_user_not_authorized_error(nonadmin_client):
     # type: (Client) -> None
@@ -839,6 +842,18 @@ def create_user_group(client):
 
     assert result['result'] == 'success'
 
+def update_user_group(client, group_id):
+    # type: (Client, int) -> None
+    request = {
+        'group_id': group_id,
+        'name': 'MUFC',
+        'description': "Greatest of English football."
+    }
+
+    result = client.update_user_group(request)
+
+    assert result['result'] == 'success'
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -895,6 +910,7 @@ TEST_FUNCTIONS = {
     '/typing:post': set_typing_status,
     '/user_groups:get': get_user_groups,
     '/user_groups/create:post': create_user_group,
+    '/user_groups/{group_id}:patch': update_user_group,
     '/users/me/alert_words:get': get_alert_words,
     '/users/me/alert_words:post': add_alert_words,
     '/users/me/alert_words:delete': remove_alert_words,
@@ -979,8 +995,9 @@ def test_users(client):
     upload_file(client)
     set_typing_status(client)
     get_user_presence(client)
-    get_user_groups(client)
+    group_id = get_user_groups(client)
     create_user_group(client)
+    update_user_group(client, group_id)
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)
