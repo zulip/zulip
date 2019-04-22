@@ -256,6 +256,18 @@ def get_streams(client):
     validate_against_openapi_schema(result, '/streams', 'get', '200')
     assert len(result['streams']) == 4
 
+def update_stream(client, stream_id):
+    # type: (Client, int) -> None
+    request = {
+        'stream_id': stream_id,
+        'content': 'Venice is the capital of Italy',
+        'subject': 'Italy'
+    }
+
+    result = client.update_stream(request)
+
+    assert result['result'] == 'success'
+
 def get_user_groups(client):
     # type: (Client) -> int
 
@@ -928,6 +940,7 @@ TEST_FUNCTIONS = {
     '/messages/flags:post': update_message_flags,
     '/get_stream_id:get': get_stream_id,
     '/streams/{stream_id}:delete': delete_stream,
+    '/streams/{stream_id}:patch': update_stream,
     'get-subscribed-streams': list_subscriptions,
     '/streams:get': get_streams,
     '/users:post': create_user,
@@ -1057,6 +1070,7 @@ def test_streams(client, nonadmin_client):
     test_add_subscriptions_already_subscribed(client)
     list_subscriptions(client)
     stream_id = get_stream_id(client)
+    update_stream(client, stream_id)
     get_streams(client)
     get_subscribers(client)
     remove_subscriptions(client)
