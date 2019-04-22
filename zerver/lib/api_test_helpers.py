@@ -854,6 +854,12 @@ def update_user_group(client, group_id):
 
     assert result['result'] == 'success'
 
+def remove_user_group(client, group_id):
+    # type: (Client, int) -> None
+    result = client.remove_user_group(group_id)
+
+    assert result['result'] == 'success'
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -911,6 +917,7 @@ TEST_FUNCTIONS = {
     '/user_groups:get': get_user_groups,
     '/user_groups/create:post': create_user_group,
     '/user_groups/{group_id}:patch': update_user_group,
+    '/user_groups/{group_id}:delete': remove_user_group,
     '/users/me/alert_words:get': get_alert_words,
     '/users/me/alert_words:post': add_alert_words,
     '/users/me/alert_words:delete': remove_alert_words,
@@ -998,6 +1005,7 @@ def test_users(client):
     group_id = get_user_groups(client)
     create_user_group(client)
     update_user_group(client, group_id)
+    remove_user_group(client, group_id)
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)
