@@ -827,6 +827,18 @@ def remove_alert_words(client):
 
     assert result['result'] == 'success'
 
+def create_user_group(client):
+    # type: (Client) -> None
+    request = {
+        'name': 'Manchester United',
+        'description': "Ole's at the Wheel.",
+        'members': [1, 2, 3, 4]
+    }
+
+    result = client.create_user_group(request)
+
+    assert result['result'] == 'success'
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -882,6 +894,7 @@ TEST_FUNCTIONS = {
     '/users/me/{stream_id}/topics:get': get_stream_topics,
     '/typing:post': set_typing_status,
     '/user_groups:get': get_user_groups,
+    '/user_groups/create:post': create_user_group,
     '/users/me/alert_words:get': get_alert_words,
     '/users/me/alert_words:post': add_alert_words,
     '/users/me/alert_words:delete': remove_alert_words,
@@ -967,6 +980,7 @@ def test_users(client):
     set_typing_status(client)
     get_user_presence(client)
     get_user_groups(client)
+    create_user_group(client)
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)
