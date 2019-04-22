@@ -11220,6 +11220,11 @@ vm-browserify@0.0.4:
   dependencies:
     indexof "0.0.1"
 
+vnu-jar@^19.6.7:
+  version "19.6.7"
+  resolved "https://registry.yarnpkg.com/vnu-jar/-/vnu-jar-19.6.7.tgz#b93bf99c11b64b2405d298dae3f511debece7db9"
+  integrity sha512-uBI4pvolFIbhVQuYempGKsV86kNV5bCH1wVsHPbPCuEtAMk4IovdksO2bdPERUiPRGWgHmJ9A9O/N8FydP4JOg==
+
 void-elements@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/void-elements/-/void-elements-2.0.1.tgz#c066afb582bb1cb4128d60ea92392e94d5e9dbec"
