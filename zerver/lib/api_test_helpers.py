@@ -872,6 +872,17 @@ def update_user_group_members(client, group_id):
 
     assert result['result'] == 'success'
 
+def update_notification_settings(client):
+    # type: (Client) -> None
+    request = {
+        'enable_stream_push_notifications': True,
+        'enable_offline_push_notifications': False
+    }
+
+    result = client.update_notification_settings(request)
+
+    assert result['result'] == 'success'
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -914,6 +925,7 @@ TEST_FUNCTIONS = {
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
     '/users/me/subscriptions/properties:post': update_subscription_settings,
+    '/settings/notifications:patch': update_notification_settings,
     '/users:get': get_members,
     '/realm/emoji:get': get_realm_emoji,
     '/realm/emoji/<emoji_name>:post': upload_custom_emoji,
@@ -1036,6 +1048,7 @@ def test_streams(client, nonadmin_client):
     remove_subscriptions(client)
     toggle_mute_topic(client)
     update_subscription_settings(client)
+    update_notification_settings(client)
     get_stream_topics(client, 1)
     delete_stream(client, stream_id)
 
