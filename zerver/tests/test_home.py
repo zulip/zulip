@@ -11,8 +11,9 @@ import urllib
 from typing import Any, Dict
 
 from zproject.backends import ZulipLDAPAuthBackend
-from zerver.lib.actions import do_create_user
-from zerver.lib.actions import do_change_logo_source
+from zerver.lib.actions import (
+    do_create_user, do_change_logo_source, do_set_realm_property
+)
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -667,8 +668,7 @@ class HomeTest(ZulipTestCase):
         }
 
         realm = user_profile.realm
-        realm.invite_required = True
-        realm.save()
+        do_set_realm_property(realm, 'invite_required', True)
 
         with self.settings(
                 LDAP_APPEND_DOMAIN='zulip.com',
@@ -680,8 +680,7 @@ class HomeTest(ZulipTestCase):
             html = result.content.decode('utf-8')
             self.assertIn('Invite more users', html)
 
-            realm.invite_required = False
-            realm.save()
+            do_set_realm_property(realm, 'invite_required', False)
 
             result = self._get_home_page()
             html = result.content.decode('utf-8')
