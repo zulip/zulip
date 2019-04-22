@@ -819,6 +819,14 @@ def add_alert_words(client):
 
     assert result['result'] == 'success'
 
+def remove_alert_words(client):
+    # type: (Client) -> None
+    word = ['foo']
+
+    result = client.remove_alert_words(word)
+
+    assert result['result'] == 'success'
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -876,6 +884,7 @@ TEST_FUNCTIONS = {
     '/user_groups:get': get_user_groups,
     '/users/me/alert_words:get': get_alert_words,
     '/users/me/alert_words:post': add_alert_words,
+    '/users/me/alert_words:delete': remove_alert_words,
     '/messages/{message_id}/reactions:delete': remove_reaction
 }
 
@@ -960,6 +969,7 @@ def test_users(client):
     get_user_groups(client)
     get_alert_words(client)
     add_alert_words(client)
+    remove_alert_words(client)
 
 def test_streams(client, nonadmin_client):
     # type: (Client, Client) -> None
