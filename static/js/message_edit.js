@@ -4,6 +4,7 @@ var render_topic_edit_form = require('../templates/topic_edit_form.hbs');
 
 var currently_editing_messages = {};
 var currently_deleting_messages = [];
+var currently_echoing_messages = {};
 
 var editability_types = {
     NO: 1,
@@ -75,6 +76,10 @@ function get_editability(message, edit_limit_seconds_buffer) {
 
     if (page_params.realm_message_content_edit_limit_seconds === 0 && message.sent_by_me) {
         return editability_types.FULL;
+    }
+
+    if (currently_echoing_messages[message.id]) {
+        return editability_types.NO;
     }
 
     var now = new XDate();
@@ -461,6 +466,7 @@ exports.save = function (row, from_topic_edited_only) {
     }
     var message = current_msg_list.get(message_id);
     var changed = false;
+    var edit_locally_echoed = false;
 
     var new_content = row.find(".message_edit_content").val();
     var topic_changed = false;
@@ -508,15 +514,83 @@ exports.save = function (row, from_topic_edited_only) {
         exports.end(row);
         return;
     }
+
+    if (changed && !topic_changed &&
+            !markdown.contains_backend_only_syntax(new_content)) {
+        // If the topic isn't changed, and the new message content
+        // could have been locally echoed, than we can locally echo
+        // the edit.
+        currently_echoing_messages[message_id] = {
+            raw_content: new_content,
+            orig_content: message.content,
+            orig_raw_content: message.raw_content,
+
+            // Store flags that are about user interaction with the
+            // message so that echo.edit_locally() can restore these
+            // flags.
+            starred: message.starred,
+            historical: message.historical,
+            collapsed: message.collapsed,
+
+            // These flags are rendering artifacts we'll want if the
+            // edit fails and we need to revert to the original
+            // rendering of the message.
+            alerted: message.alerted,
+            mentioned: message.mentioned,
+            mentioned_me_directly: message.mentioned,
+        };
+        edit_locally_echoed = true;
+
+        // Settings these attributes causes a "SAVING" notice to
+        // briefly appear where "EDITED" would normally appear until
+        // the message is acknowledged by the server.
+        message.local_edit_timestamp = Math.round(new Date().getTime() / 1000);
+
+        echo.edit_locally(message, currently_echoing_messages[message_id]);
+
+        row = current_msg_list.get_row(message_id);
+        message_edit.end(row);
+    }
+
     channel.patch({
         url: '/json/messages/' + message.id,
         data: request,
         success: function () {
             var spinner = row.find(".topic_edit_spinner");
             loading.destroy_indicator(spinner);
+
+            if (edit_locally_echoed) {
+                delete message.local_edit_timestamp;
+                delete currently_echoing_messages[message_id];
+            }
         },
         error: function (xhr) {
             if (msg_list === current_msg_list) {
+                message_id = rows.id(row);
+
+                if (edit_locally_echoed) {
+                    var echoed_message = message_store.get(message_id);
+                    var echo_data = currently_echoing_messages[message_id];
+
+                    delete echoed_message.local_edit_timestamp;
+                    delete currently_echoing_messages[message_id];
+
+                    // Restore the original content.
+                    echo.edit_locally(echoed_message, {
+                        content: echo_data.orig_content,
+                        raw_content: echo_data.orig_raw_content,
+                        mentioned: echo_data.mentioned,
+                        mentioned_me_directly: echo_data.mentioned_me_directly,
+                        alerted: echo_data.alerted,
+                    });
+
+                    row = current_msg_list.get_row(message_id);
+                    if (!message_edit.is_editing(message_id)) {
+                        // Return to the message editing open UI state.
+                        start_edit_maintaining_scroll(row, echo_data.orig_raw_content);
+                    }
+                }
+
                 var message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
                 row.find(".edit_error").text(message).show();
             }

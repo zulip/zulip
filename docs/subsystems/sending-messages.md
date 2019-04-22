@@ -190,6 +190,15 @@ messages.
   primarily done in `exports.process_from_server` in
   `static/js/echo.js`.
 
+### Local echo in message editing
+
+Zulip also supports local echo in the message editing code path for
+edits to just the content of a message.  The approach is analogous
+(using `markdown.contains_backend_only_syntax`, etc.)), except we
+don't need any of the `local_id` tracking logic, because the message
+already has a permanent message id; as a result, the whole
+implementation was under 150 lines of code.
+
 ## Putting it all together
 
 This section just has a brief review of the sequence of steps all in

@@ -195,8 +195,14 @@ MessageListView.prototype = {
     _RENDER_THRESHOLD: 50,
 
     _get_msg_timestring: function (message_container) {
-        if (message_container.msg.last_edit_timestamp !== undefined) {
-            const last_edit_time = new XDate(message_container.msg.last_edit_timestamp * 1000);
+        let last_edit_timestamp;
+        if (message_container.msg.local_edit_timestamp !== undefined) {
+            last_edit_timestamp = message_container.msg.local_edit_timestamp;
+        } else {
+            last_edit_timestamp = message_container.msg.last_edit_timestamp;
+        }
+        if (last_edit_timestamp !== undefined) {
+            const last_edit_time = new XDate(last_edit_timestamp * 1000);
             const today = new XDate();
             return timerender.render_date(last_edit_time, undefined, today)[0].textContent +
                 " at " + timerender.stringify_time(last_edit_time);
@@ -219,6 +225,11 @@ MessageListView.prototype = {
             message_container.edited_in_left_col = !include_sender;
             message_container.edited_alongside_sender = include_sender && !status_message;
             message_container.edited_status_msg = include_sender && status_message;
+        } else {
+            delete message_container.last_edit_timestr;
+            message_container.edited_in_left_col = false;
+            message_container.edited_alongside_sender = false;
+            message_container.edited_status_msg = false;
         }
     },
 
