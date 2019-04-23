@@ -42,6 +42,9 @@ class RemoteInstallationCount(BaseCount):
 
     class Meta:
         unique_together = ("server", "property", "subgroup", "end_time")
+        index_together = [
+            ["server", "remote_id"],
+        ]
 
     def __str__(self) -> str:
         return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
@@ -55,7 +58,10 @@ class RemoteRealmCount(BaseCount):
 
     class Meta:
         unique_together = ("server", "realm_id", "property", "subgroup", "end_time")
-        index_together = ["property", "end_time"]
+        index_together = [
+            ["property", "end_time"],
+            ["server", "remote_id"],
+        ]
 
     def __str__(self) -> str:
         return "%s %s %s %s %s" % (self.server, self.realm_id, self.property, self.subgroup, self.value)
