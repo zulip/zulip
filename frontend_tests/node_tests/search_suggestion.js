@@ -19,6 +19,7 @@ var bob = {
     user_id: 42,
 };
 
+const noop = () => {};
 
 function init() {
     people.init();
@@ -28,6 +29,9 @@ function init() {
 init();
 
 set_global('narrow', {});
+set_global('settings_org', {
+    show_email: () => true,
+});
 
 topic_data.reset();
 
@@ -946,44 +950,39 @@ run_test('stream_completion', () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test('people_suggestions', () => {
-    var query = 'te';
+function people_suggestion_setup() {
+    global.stream_data.subscribed_streams = noop;
+    global.narrow_state.stream = noop;
 
-    global.stream_data.subscribed_streams = function () {
-        return [];
-    };
-
-    global.narrow_state.stream = function () {
-        return;
-    };
-
-    var ted = {
+    const ted = {
         email: 'ted@zulip.com',
         user_id: 201,
         full_name: 'Ted Smith',
     };
+    people.add(ted);
 
-    var bob = {
+    const bob = {
         email: 'bob@zulip.com',
         user_id: 202,
         full_name: 'Bob Térry',
     };
 
-    var alice = {
+    people.add(bob);
+    const alice = {
         email: 'alice@zulip.com',
         user_id: 203,
         full_name: 'Alice Ignore',
     };
-    people.add(ted);
-    people.add(bob);
     people.add(alice);
 
-
     topic_data.reset();
+}
 
-    var suggestions = search.get_suggestions('', query);
-
-    var expected = [
+run_test('people_suggestions', () => {
+    people_suggestion_setup();
+    let query = 'te';
+    let suggestions = search.get_suggestions('', query);
+    let expected = [
         "te",
         "sender:bob@zulip.com",
         "sender:ted@zulip.com",
@@ -994,16 +993,15 @@ run_test('people_suggestions', () => {
     ];
 
     assert.deepEqual(suggestions.strings, expected);
-    function describe(q) {
-        return suggestions.lookup_table[q].description;
-    }
+
+    const describe = (q) => suggestions.lookup_table[q].description;
+
     assert.equal(describe('pm-with:ted@zulip.com'),
                  "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
     assert.equal(describe('sender:ted@zulip.com'),
                  "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
 
     suggestions = search.get_suggestions('', 'Ted '); // note space
-
     expected = [
         "Ted",
         "sender:ted@zulip.com",
@@ -1014,7 +1012,7 @@ run_test('people_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sender:ted sm';
-    var base_query = '';
+    let base_query = '';
     expected = [
         'sender:ted+sm',
         'sender:ted@zulip.com',
@@ -1045,6 +1043,33 @@ run_test('people_suggestions', () => {
     ];
     suggestions = search.get_suggestions(base_query, query);
     assert.deepEqual(suggestions.strings, expected);
+});
+
+run_test('people_suggestion (Admin only email visibility)', () => {
+    /* Suggestions when realm_email_address_visibility is set to admin
+    only */
+    people_suggestion_setup();
+    const query = 'te';
+    settings_org.show_email = () => false;
+    const suggestions = search.get_suggestions('', query);
+    const expected = [
+        "te",
+        "sender:bob@zulip.com",
+        "sender:ted@zulip.com",
+        "pm-with:bob@zulip.com", // bob térry
+        "pm-with:ted@zulip.com",
+        "group-pm-with:bob@zulip.com",
+        "group-pm-with:ted@zulip.com",
+    ];
+
+    assert.deepEqual(suggestions.strings, expected);
+
+    const describe = (q) => suggestions.lookup_table[q].description;
+
+    assert.equal(describe('pm-with:ted@zulip.com'),
+                 'Private messages with <strong>Te</strong>d Smith');
+    assert.equal(describe('sender:ted@zulip.com'),
+                 'Sent by <strong>Te</strong>d Smith');
 });
 
 run_test('operator_suggestions', () => {
