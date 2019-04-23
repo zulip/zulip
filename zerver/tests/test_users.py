@@ -973,7 +973,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
         )
 
-        self.assertEqual(info['stream_push_user_ids'], set())
+        self.assertEqual(info['stream_push_user_ids'], {hamlet.id})
 
         # Add a service bot.
         service_bot = do_create_user(

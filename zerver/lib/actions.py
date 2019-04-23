@@ -980,21 +980,19 @@ def get_recipient_info(recipient: Recipient,
             for row in subscription_rows
         ]
 
-        user_ids_muting_topic = stream_topic.user_ids_muting_topic()
-
         stream_push_user_ids = {
             row['user_profile_id']
             for row in subscription_rows
             # Note: muting a stream overrides stream_push_notify
             if row['push_notifications'] and row['in_home_view']
-        } - user_ids_muting_topic
+        }
 
         stream_email_user_ids = {
             row['user_profile_id']
             for row in subscription_rows
             # Note: muting a stream overrides stream_email_notify
             if row['email_notifications'] and row['in_home_view']
-        } - user_ids_muting_topic
+        }
 
     elif recipient.type == Recipient.HUDDLE:
         message_to_user_ids = get_huddle_user_ids(recipient)
