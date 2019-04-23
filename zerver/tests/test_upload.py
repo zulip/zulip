@@ -39,7 +39,6 @@ from zerver.lib.actions import (
 from zerver.lib.cache import get_realm_used_upload_space_cache_key, cache_get
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.users import get_api_key
-from zerver.views.upload import upload_file_backend
 
 import urllib
 import ujson
@@ -130,43 +129,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         uri = result.json()["uri"]
         self.assertTrue(uri.endswith("pasted_file.png"))
-
-    def test_filename_encoding(self) -> None:
-        """
-        In Python 2, we need to encode unicode filenames (which converts them to
-        str) before they can be rendered correctly.  However, in Python 3, the
-        separate unicode type does not exist, and we don't need to perform this
-        encoding.  This test ensures that we handle filename encodings properly,
-        and does so in a way that preserves 100% test coverage for Python 3.
-        """
-
-        user_profile = self.example_user('hamlet')
-
-        mock_file = mock.Mock()
-        mock_file._get_size = mock.Mock(return_value=1024)
-
-        mock_files = mock.Mock()
-        mock_files.__len__ = mock.Mock(return_value=1)
-        mock_files.values = mock.Mock(return_value=[mock_file])
-
-        mock_request = mock.Mock()
-        mock_request.FILES = mock_files
-
-        # str filenames should not be encoded.
-        mock_filename = mock.Mock(spec=str)
-        mock_file.name = mock_filename
-        with mock.patch('zerver.views.upload.upload_message_image_from_request'):
-            result = upload_file_backend(mock_request, user_profile)
-        self.assert_json_success(result)
-        mock_filename.encode.assert_not_called()
-
-        # Non-str filenames should be encoded.
-        mock_filename = mock.Mock(spec=None)  # None is not str
-        mock_file.name = mock_filename
-        with mock.patch('zerver.views.upload.upload_message_image_from_request'):
-            result = upload_file_backend(mock_request, user_profile)
-        self.assert_json_success(result)
-        mock_filename.encode.assert_called_once_with('ascii')
 
     def test_file_too_big_failure(self) -> None:
         """

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, \
     HttpResponseNotFound
 from django.shortcuts import redirect
@@ -72,31 +70,6 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
             settings.MAX_FILE_UPLOAD_SIZE))
     check_upload_within_quota(user_profile.realm, file_size)
-
-    if not isinstance(user_file.name, str):
-        # It seems that in Python 2 unicode strings containing bytes are
-        # rendered differently than ascii strings containing same bytes.
-        #
-        # Example:
-        # >>> print('\xd3\x92')
-        # Ӓ
-        # >>> print(u'\xd3\x92')
-        # Ó
-        #
-        # This is the cause of the problem as user_file.name variable
-        # is received as a unicode which is converted into unicode
-        # strings containing bytes and is rendered incorrectly.
-        #
-        # Example:
-        # >>> import urllib.parse
-        # >>> name = u'%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D0%B5%D0%B8%CC%86%D1%82%D0%B5.txt'
-        # >>> print(urllib.parse.unquote(name))
-        # ÐÐ´ÑÐ°Ð²ÐµÐ¸ÌÑÐµ  # This is wrong
-        #
-        # >>> name = '%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D0%B5%D0%B8%CC%86%D1%82%D0%B5.txt'
-        # >>> print(urllib.parse.unquote(name))
-        # Здравейте.txt  # This is correct
-        user_file.name = user_file.name.encode('ascii')
 
     uri = upload_message_image_from_request(request, user_file, user_profile)
     return json_success({'uri': uri})
