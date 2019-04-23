@@ -215,7 +215,7 @@ After which you should see:
 
 Using either method will create a message in Zulip:
 
-<img class="screenshot" src="/static/images/api/helloworld-webhook.png" />
+<img class="screenshot" alt="screenshot" src="/static/images/api/helloworld-webhook.png" />
 
 Some webhooks require custom HTTP headers, which can be passed using
 `./manage.py send_webhook_fixture_message --custom-headers`.  For

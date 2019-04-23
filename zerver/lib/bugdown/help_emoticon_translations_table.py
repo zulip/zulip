@@ -8,12 +8,12 @@ from zerver.lib.emoji import EMOTICON_CONVERSIONS, name_to_codepoint
 
 REGEXP = re.compile(r'\{emoticon_translations\}')
 
-TABLE_HTML = """
+TABLE_HTML = """\
 <table>
     <thead>
         <tr>
-            <th align="center">Emoticon</th>
-            <th align="center">Emoji</th>
+            <th>Emoticon</th>
+            <th>Emoji</th>
         </tr>
     </thead>
     <tbody>
@@ -22,10 +22,10 @@ TABLE_HTML = """
 </table>
 """
 
-ROW_HTML = """
+ROW_HTML = """\
 <tr>
-    <td align="center"><code>{emoticon}</code></td>
-    <td align="center">
+    <td><code>{emoticon}</code></td>
+    <td>
         <img
             src="/static/generated/emoji/images-google-64/{codepoint}.png"
             alt="{name}"
@@ -58,7 +58,7 @@ class EmoticonTranslation(Preprocessor):
                             codepoint=name_to_codepoint[name.strip(':')])
             for emoticon, name in EMOTICON_CONVERSIONS.items()
         ]
-        body = '\n'.join(rows).strip()
+        body = ''.join(rows).strip()
         return TABLE_HTML.format(body=body).strip().splitlines()
 
 def makeExtension(*args: Any, **kwargs: Any) -> EmoticonTranslationsHelpExtension:
