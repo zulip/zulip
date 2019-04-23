@@ -114,7 +114,7 @@ pika==0.13.0
 pillow==5.4.1
 pip-tools==2.0.2
 polib==1.1.0
-premailer==3.3.0
+premailer==3.4.0
 prompt-toolkit==1.0.16    # via ipython
 psycopg2==2.7.7
 ptyprocess==0.6.0         # via pexpect
