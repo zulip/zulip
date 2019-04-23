@@ -155,6 +155,7 @@ NON_EXPORTED_TABLES = {
     # These is used for scheduling future activity; it could make
     # sense to export, but is relatively low value.
     'zerver_scheduledemail',
+    'zerver_scheduledemail_users',
     'zerver_scheduledmessage',
 
     # These tables are related to a user's 2FA authentication
