@@ -104,7 +104,7 @@ class OpenGraphTest(ZulipTestCase):
             '/help/logging-out',
             "Logging out (Zulip Help Center)",
             # Ideally we'd do something better here
-            ["We're here to help! Email us at zulip-admin@example.com with questions, feedback, or " +
+            ["We&#39;re here to help! Email us at zulip-admin@example.com with questions, feedback, or " +
              "feature requests."],
             ["Click on the gear"])
 
@@ -118,7 +118,7 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             '/api/',
             "Zulip API Documentation",
-            [("Zulip's APIs allow you to integrate other services with Zulip. This "
+            [("Zulip&#39;s APIs allow you to integrate other services with Zulip. This "
               "guide should help you find the API you need:")], [])
 
     def test_nonexistent_page(self) -> None:
@@ -129,5 +129,5 @@ class OpenGraphTest(ZulipTestCase):
             # Probably we should make this "Zulip Help Center"
             '<meta property="og:title" content="No such article. (Zulip Help Center)">', response)
         self.assert_in_response('<meta property="og:description" content="No such article. '
-                                'We\'re here to help! Email us at zulip-admin@example.com with questions, '
+                                'We&#39;re here to help! Email us at zulip-admin@example.com with questions, '
                                 'feedback, or feature requests.">', response)
