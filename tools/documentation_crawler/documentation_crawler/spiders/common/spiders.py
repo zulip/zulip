@@ -1,3 +1,4 @@
+import json
 import re
 import scrapy
 
@@ -23,6 +24,17 @@ EXCLUDED_URLS = [
     'https://circleci.com/gh/zulip/zulip/16617',
     'https://www.linkedin.com/company/zulip-project',
 ]
+
+VNU_IGNORE = re.compile(r'|'.join([
+    # Real errors that should be fixed.
+    r'Duplicate ID “[^”]*”\.',
+    r'The first occurrence of ID “[^”]*” was here\.',
+    r'Attribute “markdown” not allowed on element “div” at this point\.',
+    r'No “p” element in scope but a “p” end tag seen\.',
+
+    # Warnings that are probably less important.
+    r'The “type” attribute is unnecessary for JavaScript resources\.',
+]))
 
 
 class BaseDocumentationSpider(scrapy.Spider):
@@ -68,6 +80,24 @@ class BaseDocumentationSpider(scrapy.Spider):
             self.logger.error(
                 "Fragment #%s is not found on page %s", fragment, response.request.url)
 
+    def _vnu_callback(self, url: str) -> Callable[[Response], None]:
+        def callback(response: Response) -> None:
+            vnu_out = json.loads(response.text)
+            for message in vnu_out['messages']:
+                if not VNU_IGNORE.fullmatch(message['message']):
+                    self.logger.error(
+                        '"%s":%d.%d-%d.%d: %s: %s',
+                        url,
+                        message.get('firstLine', message['lastLine']),
+                        message.get('firstColumn', message['lastColumn']),
+                        message['lastLine'],
+                        message['lastColumn'],
+                        message['type'],
+                        message['message'],
+                    )
+
+        return callback
+
     def _make_requests(self, url: str) -> Iterable[Request]:
         callback = self.parse  # type: Callable[[Response], Optional[Iterable[Request]]]
         dont_filter = False
@@ -89,6 +119,17 @@ class BaseDocumentationSpider(scrapy.Spider):
 
     def parse(self, response: Response) -> Iterable[Request]:
         self.log(response)
+
+        if getattr(self, 'validate_html', False):
+            yield Request(
+                'http://localhost:9988/?out=json',
+                method='POST',
+                headers={'Content-Type': response.headers['Content-Type']},
+                body=response.body,
+                callback=self._vnu_callback(response.url),
+                errback=self.error_callback,
+            )
+
         for link in LxmlLinkExtractor(deny_domains=self.deny_domains, deny_extensions=['doc'],
                                       tags=self.tags, attrs=self.attrs, deny=self.deny,
                                       canonicalize=False).extract_links(response):
