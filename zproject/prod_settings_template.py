@@ -86,7 +86,10 @@ EXTERNAL_HOST = 'zulip.example.com'
 # https://zulip.readthedocs.io/en/latest/production/email.html for details.
 #ADD_TOKENS_TO_NOREPLY_ADDRESS = True
 #TOKENIZED_NOREPLY_EMAIL_ADDRESS = "noreply-{token}@example.com"
-# Used for noreply emails only if ADD_TOKENS_TO_NOREPLY_ADDRESS=False
+# NOREPLY_EMAIL_ADDRESS is the sender for noreply emails that don't
+# contain confirmation links (where the security problem fixed by
+# ADD_TOKENS_TO_NOREPLY_ADDRESS does not exist), as well as for
+# confirmation emails when ADD_TOKENS_TO_NOREPLY_ADDRESS=False.
 #NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 
 # Many countries and bulk mailers require certain types of email to display
