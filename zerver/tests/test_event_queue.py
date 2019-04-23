@@ -291,7 +291,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False,
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, True,
                                          False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
 
