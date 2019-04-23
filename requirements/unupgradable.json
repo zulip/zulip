@@ -19,5 +19,8 @@
     },
     "defusedxml": {
         "issue": "https://github.com/zulip/zulip/issues/12191"
+    },
+    "Markdown": {
+        "issue": "https://github.com/zulip/zulip/issues/12192"
     }
 }
