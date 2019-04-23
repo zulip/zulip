@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional, Union, cast
 import datetime
+import logging
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
@@ -201,7 +202,12 @@ def remote_server_post_analytics(request: HttpRequest,
                 end_time=datetime.datetime.fromtimestamp(item['end_time'], tz=timezone_utc),
                 subgroup=item['subgroup'],
                 value=item['value']))
-        RemoteRealmCount.objects.bulk_create(objects_to_create)
+        try:
+            RemoteRealmCount.objects.bulk_create(objects_to_create)
+        except IntegrityError:
+            logging.warning("Invalid data saving RemoteRealmCount for server %s/%s" % (
+                server.hostname, server.uuid))
+            return json_error(_("Invalid data."))
 
     while len(installation_counts) > 0:
         batch = installation_counts[0:BATCH_SIZE]
@@ -216,7 +222,12 @@ def remote_server_post_analytics(request: HttpRequest,
                 end_time=datetime.datetime.fromtimestamp(item['end_time'], tz=timezone_utc),
                 subgroup=item['subgroup'],
                 value=item['value']))
-        RemoteInstallationCount.objects.bulk_create(objects_to_create)
+        try:
+            RemoteInstallationCount.objects.bulk_create(objects_to_create)
+        except IntegrityError:
+            logging.warning("Invalid data saving RemoteInstallationCount for server %s/%s" % (
+                server.hostname, server.uuid))
+            return json_error(_("Invalid data."))
     return json_success()
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:

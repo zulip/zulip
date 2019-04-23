@@ -15,6 +15,7 @@ import uuid
 from django.test import override_settings
 from django.conf import settings
 from django.http import HttpResponse
+from django.db import transaction
 from django.db.models import F
 from django.utils.crypto import get_random_string
 from django.utils.timezone import utc as timezone_utc
@@ -322,7 +323,10 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmCount.objects.create(
             realm=user.realm, property=realm_stat.property, end_time=end_time, value=5)
         InstallationCount.objects.create(
-            property=realm_stat.property, end_time=end_time, value=5)
+            property=realm_stat.property, end_time=end_time, value=5,
+            # We set a subgroup here to work around:
+            # https://github.com/zulip/zulip/issues/12362
+            subgroup="test_subgroup")
 
         self.assertEqual(RealmCount.objects.count(), 1)
         self.assertEqual(InstallationCount.objects.count(), 1)
@@ -367,6 +371,19 @@ class AnalyticsBouncerTest(BouncerTestCase):
                                 'installation_counts': ujson.dumps(installation_count_data)},
                                subdomain="")
         self.assert_json_error(result, "Data is out of order.")
+
+        with mock.patch("zilencer.views.validate_count_stats"):
+            # We need to wrap a transaction here to avoid the
+            # IntegrityError that will be thrown in here from breaking
+            # the unittest transaction.
+            with transaction.atomic():
+                result = self.api_post(
+                    self.server_uuid,
+                    '/api/v1/remotes/server/analytics',
+                    {'realm_counts': ujson.dumps(realm_count_data),
+                     'installation_counts': ujson.dumps(installation_count_data)},
+                    subdomain="")
+            self.assert_json_error(result, "Invalid data.")
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
     @mock.patch('zerver.lib.push_notifications.requests.request')
