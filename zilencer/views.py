@@ -153,6 +153,7 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
 
 def validate_count_stats(server: RemoteZulipServer, model: Any,
                          counts: List[Dict[str, Any]]) -> None:
+    print("HERE")
     last_id = get_last_id_from_server(server, model)
     for item in counts:
         if item['property'] not in COUNT_STATS:
@@ -203,7 +204,10 @@ def remote_server_post_analytics(request: HttpRequest,
                 subgroup=item['subgroup'],
                 value=item['value']))
         try:
+            print(RemoteRealmCount.objects.all())
+            print(objects_to_create)
             RemoteRealmCount.objects.bulk_create(objects_to_create)
+            print("B")
         except IntegrityError:
             logging.warning("Invalid data saving RemoteRealmCount for server %s/%s" % (
                 server.hostname, server.uuid))

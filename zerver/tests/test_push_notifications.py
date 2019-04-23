@@ -368,6 +368,16 @@ class AnalyticsBouncerTest(BouncerTestCase):
                                subdomain="")
         self.assert_json_error(result, "Data is out of order.")
 
+        print(realm_count_data)
+        print(installation_count_data)
+        with mock.patch("zilencer.views.validate_count_stats"):
+            result = self.api_post(self.server_uuid,
+                                   '/api/v1/remotes/server/analytics',
+                                   {'realm_counts': ujson.dumps(realm_count_data),
+                                    'installation_counts': ujson.dumps(installation_count_data)},
+                                   subdomain="")
+            self.assert_json_error(result, "Data is out of order.")
+
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
     @mock.patch('zerver.lib.push_notifications.requests.request')
     def test_analytics_api_invalid(self, mock_request: Any) -> None:

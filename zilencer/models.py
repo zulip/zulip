@@ -64,4 +64,4 @@ class RemoteRealmCount(BaseCount):
         ]
 
     def __str__(self) -> str:
-        return "%s %s %s %s %s" % (self.server, self.realm_id, self.property, self.subgroup, self.value)
+        return "%s %s %s %s %s %s" % (self.server, self.realm_id, self.property, self.subgroup, self.value, self.end_time)
