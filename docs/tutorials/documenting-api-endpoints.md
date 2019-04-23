@@ -118,8 +118,15 @@ The best way to find out what arguments an API endpoint takes is to
 find the corresponding URL pattern in `zprojects/urls.py` and examining
 the backend function that the URL pattern points to.
 
+To understand how arguments are specified in Zulip backend endpoints,
+read our [REST API tutorial][rest-api-tutorial], paying special
+attention to the details of how `REQ` works.
+
+[rest-api-tutorial]: ../tutorials/writing-views.html#writing-api-rest-endpoints
+
 Be careful here!  There's no currently automated testing verifying
-that the arguments match the code.
+that the arguments match the code, so you need to be sure that you
+understand precisely how each argument is formatted.
 
 ## Displaying example payloads/responses
 
