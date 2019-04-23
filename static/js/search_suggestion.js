@@ -8,7 +8,10 @@ function stream_matches_query(stream_name, q) {
 
 function highlight_person(query, person) {
     var hilite = typeahead_helper.highlight_query_in_phrase;
-    return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
+    if (settings_org.show_email()) {
+        return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
+    }
+    return hilite(query, person.full_name);
 }
 
 function match_criteria(operators, criteria) {
