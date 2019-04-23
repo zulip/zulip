@@ -722,6 +722,15 @@ function populate_number_of_users(data) {
     $('#all_time_actives_button').addClass("selected");
 }
 
+function make_fixture_data(data) {
+    for (var key in data.everyone) {
+        if (data.everyone.hasOwnProperty(key)) {
+            data.everyone[key] = Array.from({length: 1000}, () => Math.floor(Math.random() * 10));
+        }
+    }
+    data.end_times = Array.from({length: 1000}, (v, i) => i * 100000 + 1451000000);
+    return data;
+}
 
 function get_chart_data(data, callback) {
     $.get({
@@ -729,6 +738,16 @@ function get_chart_data(data, callback) {
         data: data,
         idempotent: true,
         success: function (data) {
+            // Check if data represents 3 or more days. If not, change to
+            // fixutre data, disable chart buttons, and show overlay text
+            if (data.end_times.length < 3 ||
+                (data.end_times[data.end_times.length - 1] -
+                    data.end_times[0]) / (24 * 60 * 60) < 3) {
+                data = make_fixture_data(data);
+                $('.button').prop('disabled', true);
+                $('.center-charts').css('opacity', '.5');
+                $('#overlay').show();
+            }
             callback(data);
             update_last_full_update(data.end_times);
         },

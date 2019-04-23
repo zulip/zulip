@@ -20,7 +20,14 @@
         <div id="id_stats_errors" class="alert alert-error"></div>
         <div class="center-charts">
             <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ target_name }}{% endtrans %}</h1>
-
+            <div id="overlay">
+                <div id="insufficient_data">
+                    <p>
+                        Not enough data<br />
+                        Please check back in a couple of days
+                    </p>
+                </div>
+            </div>
             <div class="left">
                 <div class="chart-container">
                     <h1>{{ _("Messages sent over time") }}</h1>
