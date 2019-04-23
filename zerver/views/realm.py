@@ -39,6 +39,7 @@ def update_realm(
         invite_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
         name_changes_disabled: Optional[bool]=REQ(validator=check_bool, default=None),
         email_changes_disabled: Optional[bool]=REQ(validator=check_bool, default=None),
+        avatar_changes_disabled: Optional[bool]=REQ(validator=check_bool, default=None),
         inline_image_preview: Optional[bool]=REQ(validator=check_bool, default=None),
         inline_url_embed_preview: Optional[bool]=REQ(validator=check_bool, default=None),
         create_stream_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),

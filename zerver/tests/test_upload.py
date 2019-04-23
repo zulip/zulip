@@ -35,6 +35,7 @@ from zerver.lib.actions import (
     do_change_logo_source,
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
+    do_set_realm_property
 )
 from zerver.lib.cache import get_realm_used_upload_space_cache_key, cache_get
 from zerver.lib.create_user import copy_user_settings
@@ -801,6 +802,17 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/users/me/avatar")
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
+    def test_avatar_changes_disabled_failure(self) -> None:
+        """
+        Attempting to upload avatar on a realm with avatar changes disabled should fail.
+        """
+        self.login(self.example_email("cordelia"))
+        do_set_realm_property(self.example_user("cordelia").realm, "avatar_changes_disabled", True)
+
+        with get_test_image_file('img.png') as fp1:
+            result = self.client_post("/json/users/me/avatar", {'f1': fp1})
+        self.assert_json_error(result, "Avatar changes are disabled in this organization.")
+
     correct_files = [
         ('img.png', 'png_resized.png'),
         ('img.jpg', None),  # jpeg resizing is platform-dependent
@@ -1019,13 +1031,18 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         """
         A DELETE request to /json/users/me/avatar should delete the profile picture and return gravatar URL
         """
-        self.login(self.example_email("hamlet"))
-        hamlet = self.example_user('hamlet')
-        hamlet.avatar_source = UserProfile.AVATAR_FROM_USER
-        hamlet.save()
+        self.login(self.example_email("cordelia"))
+        cordelia = self.example_user("cordelia")
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
+        cordelia.save()
 
+        do_set_realm_property(cordelia.realm, 'avatar_changes_disabled', True)
         result = self.client_delete("/json/users/me/avatar")
-        user_profile = self.example_user('hamlet')
+        self.assert_json_error(result, "Avatar changes are disabled in this organization.", 400)
+
+        do_set_realm_property(cordelia.realm, 'avatar_changes_disabled', False)
+        result = self.client_delete("/json/users/me/avatar")
+        user_profile = self.example_user("cordelia")
 
         self.assert_json_success(result)
         self.assertIn("avatar_url", result.json())

@@ -21,10 +21,12 @@ from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
 from zerver.lib.timezone import get_all_timezones
-from zerver.models import UserProfile, name_changes_disabled
+from zerver.models import UserProfile, name_changes_disabled, avatar_changes_disabled
 from confirmation.models import get_object_from_key, render_confirmation_key_error, \
     ConfirmationKeyException, Confirmation
 from zproject.backends import email_belongs_to_ldap
+
+AVATAR_CHANGES_DISABLED_ERROR = _("Avatar changes are disabled in this organization.")
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
@@ -187,6 +189,9 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one avatar."))
 
+    if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
+        return json_error(AVATAR_CHANGES_DISABLED_ERROR)
+
     user_file = list(request.FILES.values())[0]
     if ((settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size):
         return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
@@ -201,6 +206,9 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     return json_success(json_result)
 
 def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
+        return json_error(AVATAR_CHANGES_DISABLED_ERROR)
+
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
     gravatar_url = avatar_url(user_profile)
 

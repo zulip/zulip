@@ -200,6 +200,7 @@ class Realm(models.Model):
     add_emoji_by_admins_only = models.BooleanField(default=False)  # type: bool
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
+    avatar_changes_disabled = models.BooleanField(default=False)  # type: bool
 
     # Who in the organization is allowed to invite other users to streams.
     INVITE_TO_STREAM_POLICY_MEMBERS = 1
@@ -318,6 +319,7 @@ class Realm(models.Model):
         message_retention_days=(int, type(None)),
         name=str,
         name_changes_disabled=bool,
+        avatar_changes_disabled=bool,
         emails_restricted_to_domains=bool,
         send_welcome_emails=bool,
         message_content_allowed_in_email_notifications=bool,
@@ -487,6 +489,9 @@ def name_changes_disabled(realm: Optional[Realm]) -> bool:
     if realm is None:
         return settings.NAME_CHANGES_DISABLED
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
+
+def avatar_changes_disabled(realm: Realm) -> bool:
+    return realm.avatar_changes_disabled
 
 class RealmDomain(models.Model):
     """For an organization with emails_restricted_to_domains enabled, the list of

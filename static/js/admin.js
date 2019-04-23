@@ -18,6 +18,7 @@ var admin_settings_label = {
     // Organization permissions
     realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
     realm_email_changes_disabled: i18n.t("Prevent users from changing their email address"),
+    realm_avatar_changes_disabled: i18n.t("Prevent users from changing their avatar"),
 };
 
 exports.build_page = function () {
@@ -35,6 +36,7 @@ exports.build_page = function () {
         realm_invite_to_stream_by_admins_only: page_params.realm_invite_to_stream_by_admins_only,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
+        realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         can_add_emojis: settings_emoji.can_add_emoji(),
         realm_allow_community_topic_editing: page_params.realm_allow_community_topic_editing,
