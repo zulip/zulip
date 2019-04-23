@@ -22,5 +22,8 @@
     },
     "Markdown": {
         "issue": "https://github.com/zulip/zulip/issues/12192"
+    },
+    "Pillow": {
+        "issue": "https://github.com/zulip/zulip/issues/12193"
     }
 }
