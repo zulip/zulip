@@ -16,5 +16,8 @@
     },
     "pip-tools": {
         "issue": "https://github.com/zulip/zulip/issues/10802"
+    },
+    "defusedxml": {
+        "issue": "https://github.com/zulip/zulip/issues/12191"
     }
 }
