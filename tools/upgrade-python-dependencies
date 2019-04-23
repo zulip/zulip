@@ -32,7 +32,32 @@ def delete_locked_requirements(locked_requirement_files: List[str]) -> None:
         except OSError:
             pass
 
-def do_upgrade(requirement_files: List[str], locked_requirement_files: List[str]) -> None:
+def prepare_for_commit() -> None:
+    subprocess.check_output(["./tools/update-locked-requirements"], stderr=subprocess.STDOUT)
+    subprocess.check_output(["./tools/provision"], stderr=subprocess.STDOUT)
+    subprocess.check_output(["./tools/test-backend"], stderr=subprocess.STDOUT)
+    subprocess.check_call(["git", "add", "requirements"])
+
+def commit_and_push(commit_msg: str) -> None:
+    subprocess.check_call(["git", "commit", "-m", commit_msg])
+    subprocess.check_call(["git", "push", "origin", "HEAD", "--force"])
+
+def do_upgrade(requirement_file: str, locked_requirement_files: List[str]) -> None:
+    if len(locked_requirement_files) != 0:
+        delete_locked_requirements(locked_requirement_files)
+        try:
+            prepare_for_commit()
+            diff = subprocess.check_output(["git", "diff", "requirements/"])
+            if diff:
+                locked_files_str = ", ".join(locked_requirement_files)
+                commit_msg = "requirements: Upgrade indirect dependencies in {}.".format(locked_files_str)
+                commit_and_push(commit_msg)
+        except subprocess.CalledProcessError as e:
+            print("Upgrading indirect dependencies in {} failed".format(requirement_file))
+            log_file = "{}/{}".format(log_dir, requirement_file)
+            with open(log_file, "w") as f:
+                f.write(e.output.decode("utf-8"))
+
     for package in outdated_packages:
         pkg_name = package["name"]
         version = package["version"]
@@ -48,32 +73,29 @@ def do_upgrade(requirement_files: List[str], locked_requirement_files: List[str]
         files_updated = False
         subprocess.check_call(["git", "stash"])
 
-        for requirement_file in requirement_files:
-            file_path = "requirements/{}".format(requirement_file)
-            subprocess.check_call(["sed", "-i", sed_string, file_path])
+        file_path = "requirements/{}".format(requirement_file)
+        subprocess.check_call(["sed", "-i", sed_string, file_path])
 
-            diff = subprocess.check_output(["git", "diff", file_path])
-            if diff:
-                files_updated = True
+        diff = subprocess.check_output(["git", "diff", file_path])
+        if diff:
+            files_updated = True
 
         if files_updated:
             try:
                 print("Trying to upgrade {}".format(pkg_name))
-                delete_locked_requirements(locked_requirement_files)
-                subprocess.check_output(["./tools/update-locked-requirements"], stderr=subprocess.STDOUT)
-                subprocess.check_output(["./tools/provision"], stderr=subprocess.STDOUT)
-                subprocess.check_output(["./tools/test-backend"], stderr=subprocess.STDOUT)
-                subprocess.check_call(["git", "add", "requirements"])
+                prepare_for_commit()
                 commit_msg = "requirements: Upgrade {} from {} to {}.".format(pkg_name, version,
                                                                               latest_version)
-                subprocess.check_call(["git", "commit", "-m", commit_msg])
-                subprocess.check_call(["git", "push", "origin", "HEAD", "--force"])
+                commit_and_push(commit_msg)
             except subprocess.CalledProcessError as e:
                 print("{} upgrade failed".format(pkg_name))
                 log_file = "{}/{}".format(log_dir, pkg_name)
                 with open(log_file, "w") as f:
                     f.write(e.output.decode("utf-8"))
 
-do_upgrade(["common.in", "dev.in", "docs.in", "prod.in"], ["dev.txt", "docs.txt", "prod.txt"])
-do_upgrade(["thumbor.in"], ["thumbor.txt"])
-do_upgrade(["pip.txt"], [])
+do_upgrade("common.in", ["dev.txt", "prod.txt"])
+do_upgrade("dev.in", [])
+do_upgrade("prod.in", [])
+do_upgrade("docs.in", ["docs.txt"])
+do_upgrade("thumbor.in", ["thumbor.txt"])
+do_upgrade("pip.txt", [])
