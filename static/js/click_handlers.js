@@ -203,6 +203,15 @@ exports.initialize = function () {
         window.location.href = $(this).attr('href');
     });
 
+    // USER STATUS MODAL
+
+    $(".user-status-value").on("click", function (e) {
+        e.stopPropagation();
+        var user_status_value = $(e.currentTarget).attr("data-user-status-value");
+        $("input.user_status").val(user_status_value);
+        user_status_ui.update_button();
+    });
+
     // NOTIFICATION CLICK
 
     $('body').on('click', '.notification', function () {
