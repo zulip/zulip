@@ -28,6 +28,9 @@ function init() {
 init();
 
 set_global('narrow', {});
+set_global('settings_org', {
+    show_email: () => true,
+});
 
 topic_data.reset();
 
