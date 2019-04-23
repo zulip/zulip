@@ -27,7 +27,7 @@ boto==2.49.0
 cachetools==3.1.0         # via google-auth, premailer
 cchardet==2.1.4
 certifi==2019.3.9
-cffi==1.12.2
+cffi==1.12.3
 chardet==3.0.4
 cryptography==2.6.1
 cssselect==1.0.3          # via premailer
