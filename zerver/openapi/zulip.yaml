@@ -1926,7 +1926,7 @@ paths:
           - stop
         example: start
         required: true
-      - name: notification_to
+      - name: to
         in: query
         description: The recipients of the message being typed, in the same format used by the
           send_message API.  Typing notifications are only supported for private messages,
