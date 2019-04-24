@@ -1,4 +1,3 @@
-
 import cProfile
 import logging
 import time
@@ -6,7 +5,6 @@ import traceback
 from typing import Any, AnyStr, Dict, \
     Iterable, List, MutableMapping, Optional
 
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.sessions.backends.base import UpdateError
 from django.contrib.sessions.middleware import SessionMiddleware
@@ -22,11 +20,11 @@ from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 
 from zerver.lib.bugdown import get_bugdown_requests, get_bugdown_time
-from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time, \
-    cache_with_key, open_graph_description_cache_key
+from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.db import reset_queries
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
+from zerver.lib.html_to_text import get_content_description
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
@@ -454,29 +452,6 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
             # For NGINX reverse proxy servers, the client's IP will be the first one.
             real_ip = real_ip.split(",")[0].strip()
             request.META['REMOTE_ADDR'] = real_ip
-
-@cache_with_key(open_graph_description_cache_key, timeout=3600*24)
-def get_content_description(content: bytes, request: HttpRequest) -> str:
-    str_content = content.decode("utf-8")
-    bs = BeautifulSoup(str_content, features='lxml')
-    # Skip any admonition (warning) blocks, since they're
-    # usually something about users needing to be an
-    # organization administrator, and not useful for
-    # describing the page.
-    for tag in bs.find_all('div', class_="admonition"):
-        tag.clear()
-
-    # Skip code-sections, which just contains navigation instructions.
-    for tag in bs.find_all('div', class_="code-section"):
-        tag.clear()
-
-    text = ''
-    for paragraph in bs.find_all('p'):
-        # .text converts it from HTML to text
-        text = text + paragraph.text + ' '
-        if len(text) > 500:
-            return ' '.join(text.split())
-    return ' '.join(text.split())
 
 def alter_content(request: HttpRequest, content: bytes) -> bytes:
     first_paragraph_text = get_content_description(content, request)
