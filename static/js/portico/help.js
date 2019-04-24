@@ -115,7 +115,6 @@ function scrollToHash(simplebar) {
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
             render_code_sections();
-            markdownSB.recalculate();
             scrollToHash(markdownSB);
         } else {
             loading.name = path;
@@ -123,7 +122,6 @@ function scrollToHash(simplebar) {
                 html_map[path] = res;
                 $(".markdown .content").html(html_map[path]);
                 loading.name = null;
-                markdownSB.recalculate();
                 scrollToHash(markdownSB);
             });
         }
@@ -138,9 +136,7 @@ function scrollToHash(simplebar) {
             // Close other article's headings first
             $('.sidebar ul').not($next).hide();
             // Toggle the heading
-            $next.slideToggle("fast", "swing", function () {
-                markdownSB.recalculate();
-            });
+            $next.slideToggle("fast", "swing");
         }
     });
 
@@ -195,10 +191,6 @@ function scrollToHash(simplebar) {
     // Finally, make sure if we loaded a window with a hash, we scroll
     // to the right place.
     scrollToHash(markdownSB);
-
-    window.onresize = function () {
-        markdownSB.recalculate();
-    };
 
     window.addEventListener("popstate", function () {
         var path = window.location.pathname;
