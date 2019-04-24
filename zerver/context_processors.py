@@ -17,7 +17,7 @@ from zerver.decorator import get_client_name
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
-from zerver.lib.realm_description import get_realm_rendered_description
+from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 
 from version import ZULIP_VERSION, LATEST_RELEASE_VERSION, LATEST_MAJOR_VERSION, \
     LATEST_RELEASE_ANNOUNCEMENT
@@ -153,6 +153,10 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
         'two_factor_authentication_enabled': settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
     }  # type: Dict[str, Any]
+
+    if realm is not None and realm.description:
+        context['OPEN_GRAPH_TITLE'] = realm.name
+        context['OPEN_GRAPH_DESCRIPTION'] = get_realm_text_description(realm)
 
     # Add the keys for our standard authentication backends.
     no_auth_enabled = True
