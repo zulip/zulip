@@ -6,6 +6,7 @@ from django.test import override_settings
 from unittest.mock import Mock, patch
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.middleware import is_slow_query, write_log_line
+from zerver.models import get_realm
 
 class SlowQueryTest(ZulipTestCase):
     SLOW_QUERY_TIME = 10
@@ -147,4 +148,22 @@ class OpenGraphTest(ZulipTestCase):
             '/login/',
             name,
             [description],
+            [])
+
+    def test_login_page_markdown_description(self) -> None:
+        realm = get_realm('zulip')
+        description = ("Welcome to **Clojurians Zulip** - the place where the Clojure community meets.\n\n"
+                       "Before you signup/login:\n\n"
+                       "* note-1\n"
+                       "* note-2\n"
+                       "* note-3\n\n"
+                       "Enjoy!")
+        realm.description = description
+        realm.save(update_fields=['description'])
+
+        self.check_title_and_description(
+            '/login/',
+            'Zulip Dev',
+            ['Welcome to Clojurians Zulip - the place where the Clojure community meets',
+             'note-1', 'note-2', 'note-3', 'Enjoy!'],
             [])
