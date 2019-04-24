@@ -14,7 +14,7 @@ Twisted==19.2.0
 Scrapy==1.6.0
 
 # Needed to compute test coverage
-coverage==4.5.2
+coverage==4.5.3
 
 # fake for LDAP testing
 fakeldap==0.6.1
