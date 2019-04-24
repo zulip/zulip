@@ -35,7 +35,7 @@ pyflakes==2.1.1
 tblib==1.3.2
 
 # Needed to lint Git commit messages
-gitlint==0.10.0
+gitlint==0.11.0
 
 # Needed for visualising cprofile reports
 snakeviz==2.0.0
