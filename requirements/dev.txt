@@ -121,7 +121,7 @@ ptyprocess==0.6.0         # via pexpect
 py3dns==3.2.0
 pyahocorasick==1.4.0
 pyaml==19.4.1             # via moto
-pyasn1-modules==0.2.4
+pyasn1-modules==0.2.5
 pyasn1==0.4.5
 pycodestyle==2.5.0
 pycparser==2.19           # via cffi
