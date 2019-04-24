@@ -14,7 +14,6 @@ from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
 from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.html import escape
 from django.utils.http import cookie_date
 from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
@@ -456,7 +455,7 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
 def alter_content(request: HttpRequest, content: bytes) -> bytes:
     first_paragraph_text = get_content_description(content, request)
     return content.replace(request.placeholder_open_graph_description.encode("utf-8"),
-                           escape(first_paragraph_text).encode("utf-8"))
+                           first_paragraph_text.encode("utf-8"))
 
 class FinalizeOpenGraphDescription(MiddlewareMixin):
     def process_response(self, request: HttpRequest,

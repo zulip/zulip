@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from django.http import HttpRequest
+from django.utils.html import escape
 
 from zerver.lib.cache import cache_with_key, open_graph_description_cache_key
 
@@ -21,8 +22,8 @@ def html_to_text(content: str) -> str:
         # .text converts it from HTML to text
         text = text + paragraph.text + ' '
         if len(text) > 500:
-            return ' '.join(text.split())
-    return ' '.join(text.split())
+            break
+    return escape(' '.join(text.split()))
 
 @cache_with_key(open_graph_description_cache_key, timeout=3600*24)
 def get_content_description(content: bytes, request: HttpRequest) -> str:
