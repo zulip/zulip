@@ -55,9 +55,10 @@ class SlowQueryTest(ZulipTestCase):
 class OpenGraphTest(ZulipTestCase):
     def check_title_and_description(self, path: str, title: str,
                                     in_description: List[str],
-                                    not_in_description: List[str]) -> None:
+                                    not_in_description: List[str],
+                                    status_code: int=200) -> None:
         response = self.client_get(path)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status_code)
         decoded = response.content.decode('utf-8')
         bs = BeautifulSoup(decoded, features='lxml')
         open_graph_title = bs.select_one('meta[property="og:title"]').get('content')
@@ -119,12 +120,12 @@ class OpenGraphTest(ZulipTestCase):
               "guide should help you find the API you need:")], [])
 
     def test_nonexistent_page(self) -> None:
-        response = self.client_get('/help/not-a-real-page')
-        # Test that our open graph logic doesn't throw a 500
-        self.assertEqual(response.status_code, 404)
-        self.assert_in_response(
+        self.check_title_and_description(
+            '/help/not-a-real-page',
             # Probably we should make this "Zulip Help Center"
-            '<meta property="og:title" content="No such article. (Zulip Help Center)">', response)
-        self.assert_in_response('<meta property="og:description" content="No such article. '
-                                'We&#39;re here to help! Email us at zulip-admin@example.com with questions, '
-                                'feedback, or feature requests.">', response)
+            "No such article. (Zulip Help Center)",
+            ["No such article. We're here to help!",
+             "Email us at zulip-admin@example.com with questions, feedback, or feature requests."],
+            [],
+            # Test that our open graph logic doesn't throw a 500
+            404)
