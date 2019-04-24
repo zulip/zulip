@@ -1,7 +1,7 @@
-import re
 import time
 from typing import List
 
+from bs4 import BeautifulSoup
 from django.test import override_settings
 from unittest.mock import Mock, patch
 from zerver.lib.test_classes import ZulipTestCase
@@ -59,17 +59,14 @@ class OpenGraphTest(ZulipTestCase):
         response = self.client_get(path)
         self.assertEqual(response.status_code, 200)
         decoded = response.content.decode('utf-8')
-        for title_string in [
-                '<meta property="og:title" content="{}">'.format(title),
-                '<meta property="twitter:title" content="{}">'.format(title)]:
-            self.assertIn(title_string, decoded)
+        bs = BeautifulSoup(decoded, features='lxml')
+        open_graph_title = bs.select_one('meta[property="og:title"]').get('content')
+        self.assertEqual(open_graph_title, title)
+        twitter_title = bs.select_one('meta[property="twitter:title"]').get('content')
+        self.assertEqual(twitter_title, title)
 
-        open_graph_description = re.search(  # type: ignore
-            r'<meta property="og:description" content="(?P<description>[^>]*)">',
-            decoded).group('description')
-        twitter_description = re.search(  # type: ignore
-            r'<meta name="twitter:description" content="(?P<description>[^>]*)">',
-            decoded).group('description')
+        open_graph_description = bs.select_one('meta[property="og:description"]').get('content')
+        twitter_description = bs.select_one('meta[name="twitter:description"]').get('content')
         for substring in in_description:
             self.assertIn(substring, open_graph_description)
             self.assertIn(substring, twitter_description)
@@ -104,7 +101,7 @@ class OpenGraphTest(ZulipTestCase):
             '/help/logging-out',
             "Logging out (Zulip Help Center)",
             # Ideally we'd do something better here
-            ["We&#39;re here to help! Email us at zulip-admin@example.com with questions, feedback, or " +
+            ["We're here to help! Email us at zulip-admin@example.com with questions, feedback, or " +
              "feature requests."],
             ["Click on the gear"])
 
@@ -118,7 +115,7 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             '/api/',
             "Zulip API Documentation",
-            [("Zulip&#39;s APIs allow you to integrate other services with Zulip. This "
+            [("Zulip's APIs allow you to integrate other services with Zulip. This "
               "guide should help you find the API you need:")], [])
 
     def test_nonexistent_page(self) -> None:
