@@ -16,10 +16,10 @@
 {% block content %}
 <div class="container">
     <br>
-    <form>
+    <form class="new-style">
         <center>
             <input type="text" name="q" class="input-xxlarge search-query" placeholder="emails, string_ids, organization urls separated by commas" value="{{ request.GET.get('q', '') }}" autofocus>
-            <button type="submit" class="btn support-search-button">Search</button>
+            <button type="submit" class="button small support-search-button">Search</button>
         </center>
     </form>
 
@@ -55,7 +55,7 @@
                         <option value="active" {% if not user.realm.deactivated %}selected{% endif %}>Active</option>
                         <option value="deactive" {% if user.realm.deactivated %}selected{% endif %}>Deactive</option>
                     </select>
-                    <button type="submit" class="btn btn-small support-submit-button">Update</button>
+                    <button type="submit" class="button rounded small support-submit-button">Update</button>
                 </form>
                 <form method="POST" class="support-plan-type-form">
                     {{ csrf_input }}
@@ -67,14 +67,14 @@
                         <option value="3" {% if user.realm.plan_type == 3 %}selected{% endif %}>Standard</option>
                         <option value="4" {% if user.realm.plan_type == 4 %}selected{% endif %}>Standard Free</option>
                     </select>
-                    <button type="submit" class="btn btn-small support-submit-button">Update</button>
+                    <button type="submit" class="button rounded small support-submit-button">Update</button>
                 </form>
                 <form method="POST" class="support-discount-form">
                     <b>Discount (use 85 for nonprofits)</b>:<br>
                     {{ csrf_input }}
                     <input type="hidden" name="realm_id" value="{{ user.realm.id }}" />
                     <input type="number" name="discount" value="{{user.realm.default_discount}}" required>
-                    <button type="submit" class="btn btn-small support-submit-button">Update</button>
+                    <button type="submit" class="button rounded small support-submit-button">Update</button>
                 </form>
                 <form method="POST" class="scrub-realm-form">
                     {{ csrf_input }}
@@ -102,7 +102,7 @@
                     <option value="active" {% if not realm.deactivated %}selected{% endif %}>Active</option>
                     <option value="deactive" {% if realm.deactivated %}selected{% endif %}>Deactive</option>
                 </select>
-                <button type="submit" class="btn btn-small support-submit-button">Update</button>
+                <button type="submit" class="button rounded small support-submit-button">Update</button>
             </form>
             <form method="POST" class="support-plan-type-form">
                 <b>Plan type</b>:<br>
@@ -114,14 +114,14 @@
                     <option value="3" {% if realm.plan_type == 3 %}selected{% endif %}>Standard</option>
                     <option value="4" {% if realm.plan_type == 4 %}selected{% endif %}>Standard Free</option>
                 </select>
-                <button type="submit" class="btn btn-small support-submit-button">Update</button>
+                <button type="submit" class="button rounded small support-submit-button">Update</button>
             </form>
             <form method="POST" class="support-discount-form">
                 <b>Discount (use 85 for nonprofits)</b>:<br>
                 {{ csrf_input }}
                 <input type="hidden" name="realm_id" value="{{ realm.id }}" />
                 <input type="number" name="discount" value="{{ realm.default_discount}}" required>
-                <button type="submit" class="btn btn-small support-submit-button">Update</button>
+                <button type="submit" class="button rounded small support-submit-button">Update</button>
             </form>
             <form method="POST" class="scrub-realm-form">
                 {{ csrf_input }}
