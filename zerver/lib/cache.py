@@ -446,6 +446,9 @@ def realm_alert_words_automaton_cache_key(realm: 'Realm') -> str:
 def realm_rendered_description_cache_key(realm: 'Realm') -> str:
     return "realm_rendered_description:%s" % (realm.string_id,)
 
+def realm_text_description_cache_key(realm: 'Realm') -> str:
+    return "realm_text_description:%s" % (realm.string_id,)
+
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
 def flush_stream(sender: Any, **kwargs: Any) -> None:

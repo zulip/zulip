@@ -5,8 +5,7 @@ from bs4 import BeautifulSoup
 from django.test import override_settings
 from unittest.mock import Mock, patch
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.middleware import is_slow_query
-from zerver.middleware import write_log_line
+from zerver.middleware import is_slow_query, write_log_line
 
 class SlowQueryTest(ZulipTestCase):
     SLOW_QUERY_TIME = 10
@@ -139,3 +138,13 @@ class OpenGraphTest(ZulipTestCase):
             [],
             # Test that our open graph logic doesn't throw a 500
             404)
+
+    def test_login_page_simple_description(self) -> None:
+        name = 'Zulip Dev'
+        description = "The Zulip development environment default organization. It's great for testing!"
+
+        self.check_title_and_description(
+            '/login/',
+            name,
+            [description],
+            [])
