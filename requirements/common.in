@@ -108,7 +108,7 @@ pika==0.13.0
 psycopg2==2.8.2 --no-binary psycopg2
 
 pyasn1==0.4.5
-pyasn1-modules==0.2.4
+pyasn1-modules==0.2.5
 pycrypto==2.6.1
 
 # Needed for memcached usage
