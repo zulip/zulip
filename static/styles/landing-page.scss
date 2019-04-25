@@ -3865,7 +3865,7 @@ nav ul li.active::after {
         font-size: 1.5rem;
         line-height: 30px;
         text-align: right;
-        color: hsl(0, 0%, 27%);
+        color: hsl(0, 0%, 100%);
 
         background-size: 40px auto;
         background-image: url(/static/images/zulip-logo.svg);
@@ -3888,7 +3888,7 @@ nav ul li.active::after {
         width: 300px;
         padding-left: 30px;
 
-        background-color: hsl(0, 0%, 100%);
+        background: linear-gradient(to right, hsl(171, 43%, 55%), hsl(194, 39%, 44%));
         transform: translate(-350px, 0px);
 
 
@@ -3906,14 +3906,20 @@ nav ul li.active::after {
     }
 
     nav ul .exit {
-        display: block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         position: absolute;
-        top: 10px;
+        top: 20px;
         right: 25px;
+        width: 35px;
+        height: 35px;
 
         font-weight: 100;
         font-size: 3em;
         color: initial;
+        background-color: hsl(0, 0%, 100%);
+        border-radius: 100%;
     }
 
     nav ul li:first-of-type {
@@ -3926,6 +3932,11 @@ nav ul li.active::after {
         font-size: 1.5em;
         font-weight: 300;
         line-height: 1.5;
+    }
+
+    .portico-header > .content > ul > li,
+    .portico-header > .content > ul > li > a {
+        color: hsl(0, 0%, 100%) !important;
     }
 
     nav ul li,
