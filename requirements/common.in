@@ -79,7 +79,7 @@ httplib2==0.12.3
 hypchat==0.21
 
 # For doing highly usable Python profiling
-line_profiler==2.1.2
+-e git+https://github.com/zulip/line_profiler.git#egg=line_profiler==2.1.2.zulip1
 
 # Needed for inlining the CSS in emails
 premailer==3.4.0
