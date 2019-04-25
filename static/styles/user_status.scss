@@ -48,14 +48,17 @@
     }
 
     .user-status-options {
-        padding: 20px;
-        padding-top: 0;
-        padding-bottom: 3px;
-        line-height: 1.0em;
-    }
+        padding: 0 20px 3px;
 
-    .user-status-options p:hover {
-        cursor: pointer;
-        color: hsl(200, 100%, 40%);
+        button.user-status-value:hover {
+            color: hsl(200, 100%, 40%);
+        }
+
+        .user-status-value {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+            line-height: 1.1em;
+        }
     }
 }
