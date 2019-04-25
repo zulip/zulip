@@ -7,8 +7,8 @@
 ## About us
 
 [Zulip](https://zulipchat.com) is a powerful, open source team chat
-application. The core web app is written in Python and uses the Django
-framework. We also make a cross-platform mobile app, an Android app, a
+application. Zulip has a web app,
+a cross-platform mobile app, an Android app, a
 cross-platform desktop app, and over 100 native integrations, all open
 source.
 
@@ -34,13 +34,12 @@ not just how Zulip works, but why Zulip works the way that it does.
 ### Our history with Google Open Source Programs
 
 Zulip has been a GSoC mentoring organization since 2016, and we
-generally have 10-15 GSoC students each summer, depending on how many
-high-quality applications we receive.  We have some of the highest
+generally have 10-15 GSoC students each summer.  We have some of the highest
 standards of any GSoC organization; successful applications generally
 have dozens of commits integrated into Zulip or other open source
 projects by the time we review their application.  See
 [our contributing guide](../overview/contributing.html) for details on
-getting involved.
+getting involved with GSoC.
 
 Zulip participated in GSoC 2016 and mentored three successful students
 officially (plus 4 more who did their proposed projects unofficially).
@@ -65,7 +64,7 @@ We also recommend reviewing
 
 Finally, keep your eye on
 [the GSoD timeline](https://developers.google.com/season-of-docs/docs/timeline). The
-student application deadline is June 28, 2019.
+application deadline is June 28, 2019.
 
 ## Getting started
 
@@ -73,7 +72,7 @@ For many of our project ideas, you'll be working inside a Zulip
 development environment (because the documentation is implemented as
 markdown in the main Zulip repository, and can be previewed using
 tools in the Zulip development environment).  See
-[our documentation on documentation systems](..//subsystems/documentation.html)
+[our documentation on documentation systems](../subsystems/documentation.html)
 for details on our various existing documentation systems.
 
 In part due to past work by a technical writer, Zulip has a
@@ -85,16 +84,6 @@ trouble, please speak up in
 [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
 [the Zulip development community server](../contributing/chat-zulip-org.html)
 (use your name as the topic).
-
-We highly encourage you to take notes on anything you noticed or were
-confused by while gaining familiarity with the project provide that as
-feedback to the community, either via starting threads in the
-chat.zulip.org community or opening a pull request (if you are
-reasonably confident what the solution is).
-
-If you're looking for a next place to contribute, doing the same
-process with some of our other documentation is a great way to help
-while gaining familiarity with Zulip.
 
 ## Application tips, and how to be a strong candidate
 
@@ -110,7 +99,7 @@ like Zulip.
 For GSoC, students who we accept generally have 5 or more pull
 requests merged or nearly merged (usually including at least a couple
 that are significant, e.g. having 100+ lines of changes or that shows
-you have done significant debugging).
+they have done significant debugging).
 
 For GSoD, we hope to get a similar level of confidence about your
 abilities during the application process, through some combination of
@@ -125,29 +114,26 @@ about the organization, make contributions, and make a good proposal.
 
 Your application should include the following:
 
-* Details on any experience you have related to the technologies that
-  Zulip has, or related to our product approach.
 * Links to materials to help us evaluate your level of experience and
-  how you work, such as personal projects of yours, including any
+  how you work, including any technical writing you've done or edited (blog posts, public
+  documentation, etc.),
   existing open source or open culture contributions you've made,
-  technical writing you've done or edited (blog posts, public
-  documentation, etc.) and/or any bug reports you've submitted to open
+  and/or any bug reports you've submitted to open
   source projects.
+* Details on any technical experience you have, if any.
 * Some notes on what you are hoping to get out of your project.
 * A description of the project you'd like to do, and why you're
   excited about it.
 * Some notes on why you're excited about working on Zulip.
-* A link to any contribution(s) to Zulip to make it easy for mentors
-  to remind themselves of your contributions.  Threads in
+* A link to any contribution(s) to Zulip to make it easy for us
+  to remind ourselves of your contributions.  Threads in
   chat.zulip.org talking about Zulip's documentation are considered
   valuable contributions worth mentioning here.
 
 We expect applicants to be fluent in (technical) English writing.  For
-some projects, experience with the technologies relevant to their
-project is a plus, but not essential as long as we're confident you
-can learn (and there are many places where lack of experience makes
-one better able to understand the perspective of a new user trying to
-understand the documentation).  General programming and/or sysadmin
+some projects, a technical background is a plus,
+but not essential as long as we're confident you
+can learn.  General programming and/or sysadmin
 skills are also a plus: for some projects, work on the underlying
 tooling could make the technical writing easier to do, and for others,
 feeling comfortable with testing the instructions can be valuable.
@@ -169,10 +155,10 @@ being good members of the community.
 
 ## Mentors
 
-We have several Zulip contributors who are interested in mentoring
-projects.  We usually decide which contributors are mentoring which
+We have several Zulip community members who are interested in mentoring
+projects.  We usually decide which members are mentoring which
 projects based in part on who is a good fit for the needs of each
-student as well as technical expertise.  You can reach us via
+writer as well as technical expertise.  You can reach us via
 [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
 [the Zulip development community server](../contributing/chat-zulip-org.html),
 (compose a new stream message with your name as the topic).
@@ -184,13 +170,12 @@ an appropriate public stream on chat.zulip.org and someone will help
 you.  Your mentor will of course be paying close attention to these
 conversations, and you will likely exchange many private messages with
 them about what to work on next, but we prefer to review work publicly
-because it lets us ensure you get a response to requests for feedback
+because it lets us ensure you get responses
 quickly.
 
 However, the first and most important thing to do for building a
-strong application is to show your skills by contributing to a large
-open source project like Zulip, to show that you can work effectively
-in a large project (it doesn't matter what part of Zulip, and we're
+strong application is to show that you can work effectively
+in a large project like Zulip (it doesn't matter what part of Zulip, and we're
 happy to consider work in other open source projects, even if it is
 years in the past).  One skill that's particularly important to us is
 separating out your changes into individual git commits that are easy
@@ -204,20 +189,20 @@ quantity; so be sure to check your work before submitting it for
 review, follow our coding guidelines, and make clear which parts of
 your work you're uncertain about (and don't worry if you make mistakes
 in your first few contributions!  Everyone makes mistakes getting
-started.  Just make sure you don't make the same mistakes next time).
+started.).
 
 Once you have several PRs merged (or at least one significant PR
 merged, or the equivalent of this for projects that don't involve
 writing markdown code), you can start discussing with the Zulip
-development community the project you'd like to do, and developing a
+development community the project you'd like to do, and develop a
 specific project plan.  We recommend discussing what you're thinking
 in public streams on chat.zulip.org, so it's easy to get quick
 feedback from whoever is online.
 
 ## Project ideas
 
-These are the seeds of ideas; you will need to do research on the
-Zulip codebase, read issues on GitHub, and talk with developers to put
+These are the seeds of ideas; you will likely need to play with the product
+and talk with developers to put
 together a complete project proposal.  It's also fine for you to come
 up with your own project ideas.
 
@@ -225,7 +210,7 @@ For many of our projects, an important skill to develop is a good
 command of Git; read [our Git Guide](../git/overview.html) in full to
 learn how to use it well.  Of particular importance is mastering using
 Git rebase so that you can construct commits that are readable,
-are clearly correct and explain why they are correct.
+are clearly correct and that explain why they are correct.
 
 **Project name**: REST API Documentation
 
@@ -233,13 +218,13 @@ Fill in the gaps in Zulip's
 [REST API documentation](https://zulipchat.com/api).  Zulip has a
 [nice framework](../tutorials/documenting-api-endpoints.html) for
 writing API documentation built by a student last summer based on the
-OpenAPI standard with built-in automated tests, but there are a dozens
+OpenAPI standard with built-in automated tests, but there are dozens of
 endpoints that are missing, several of which are quite important.  See
 the [API docs area label][api-docs-area] for good starter projects and
 [this issue](https://github.com/zulip/zulip/issues/10044) for a
 relevant TODO list.
 
-Our goals for this system is to have something that is complete,
+Our goal for this system is to have something that is complete,
 accurate, and has automated tests for ensuring that it remains
 accurate as we extend the Zulip API over time.  We have made some
 progress on the automated testing goal (e.g. the Python code examples
@@ -287,10 +272,15 @@ most cases, our documentation explains how to accomplish a task in the
 Zulip webapp, but doesn't cover how to do those tasks in Zulip's
 mobile and beta terminal apps.
 
-We have built a nice markdown-based system for the steps sections
-having a heading section showing different clients that provides a
-nice way to adjust these pages; this project would be to take
-advantage of that system to create .
+We have recently built a nice markdown-based system to make it easy to show
+information for multiple platforms in a single tabbed widget. An example
+article using this widget is
+[logging in](https://zulipchat.com/help/logging-in). This project will
+likely take advantage of that system to build out documentation for our
+other apps.
+
+The first step in this project will likely be working closely with the
+mobile team to name all the screens, icons and widgets.
 
 **Project name**: Video tutorials on using Zulip
 
@@ -301,12 +291,12 @@ rest of their organization on the benefits of Zulip.  We would hope to
 link to these videos prominently in the Zulip tutorial experience
 (both in-app and on zulipchat.com).  The core Zulip team has a pretty
 good idea of how to explain Zulip, but does not have significant
-experience creating videos, and would love to work with someone
+experience creating videos, and we would love to work with someone
 skilled at doing screencast tutorials of software to create something
 great here.
 
 The goal for the summer would be to create ~3-4 videos covering a few
-key topics, like the topic model and catching up on messages
+key areas, like Zulip's topic model and how to catch up on messages
 efficiently with the keyboard.
 
 If there's time, we could also do some lower-polish screencast
