@@ -10,7 +10,6 @@ from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
 from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.webhooks import github_dispatcher
 
 
 from django.contrib.auth.views import (login, password_reset_done,
@@ -623,8 +622,6 @@ urls += url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)',
 for incoming_webhook in WEBHOOK_INTEGRATIONS:
     if incoming_webhook.url_object:
         urls.append(incoming_webhook.url_object)
-
-urls.append(url(r'^api/v1/external/github', github_dispatcher.api_github_webhook_dispatch))
 
 # Desktop-specific authentication URLs
 urls += [

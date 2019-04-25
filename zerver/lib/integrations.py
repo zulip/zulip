@@ -204,36 +204,6 @@ class HubotIntegration(Integration):
             legacy=legacy
         )
 
-class GithubIntegration(WebhookIntegration):
-    """
-    We need this class to don't creating url object for git integrations.
-    We want to have one generic url with dispatch function for github service and github webhook.
-    """
-    def __init__(self, name: str, categories: List[str], client_name: Optional[str]=None,
-                 logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
-                 function: Optional[str]=None, url: Optional[str]=None,
-                 display_name: Optional[str]=None, doc: Optional[str]=None,
-                 stream_name: Optional[str]=None, legacy: Optional[bool]=False) -> None:
-        url = self.DEFAULT_URL.format(name='github')
-
-        super().__init__(
-            name,
-            categories,
-            client_name=client_name,
-            logo=logo,
-            secondary_line_text=secondary_line_text,
-            function=function,
-            url=url,
-            display_name=display_name,
-            doc=doc,
-            stream_name=stream_name,
-            legacy=legacy
-        )
-
-    @property
-    def url_object(self) -> None:
-        return
-
 class EmbeddedBotIntegration(Integration):
     '''
     This class acts as a registry for bots verified as safe
@@ -303,7 +273,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('flock', ['customer-support'], display_name='Flock'),
     WebhookIntegration('freshdesk', ['customer-support']),
     WebhookIntegration('front', ['customer-support'], display_name='Front'),
-    GithubIntegration(
+    WebhookIntegration(
         'github',
         ['version-control'],
         display_name='GitHub',

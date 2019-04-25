@@ -2,7 +2,8 @@
 
 import base64
 from functools import wraps
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List, Tuple
+import re
 
 from django.http import HttpRequest, HttpResponse
 
@@ -11,9 +12,34 @@ from zerver.lib.types import ViewFuncT
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
+    get_push_commits_event_message
 from zerver.lib.validator import check_dict
 from zerver.models import UserProfile
-from zerver.webhooks.github_legacy.view import build_message_from_gitlog
+
+def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
+                              commits: List[Dict[str, str]], before: str, after: str,
+                              url: str, pusher: str, forced: Optional[str]=None,
+                              created: Optional[str]=None, deleted: Optional[bool]=False
+                              ) -> Tuple[str, str]:
+    short_ref = re.sub(r'^refs/heads/', '', ref)
+    subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
+
+    commits = _transform_commits_list_to_common_format(commits)
+    content = get_push_commits_event_message(pusher, url, short_ref, commits, deleted=deleted)
+
+    return subject, content
+
+def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+    new_commits_list = []
+    for commit in commits:
+        new_commits_list.append({
+            'name': commit['author'].get('username'),
+            'sha': commit.get('id'),
+            'url': commit.get('url'),
+            'message': commit.get('message'),
+        })
+    return new_commits_list
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
 # So we ask the user to replace them with %40
