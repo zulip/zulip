@@ -239,11 +239,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
     @mock.patch('zerver.lib.push_notifications.requests.request')
-    def test_push_bouncer_api(self, mock: Any) -> None:
+    def test_push_bouncer_api(self, mock_request: Any) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
         """
-        mock.side_effect = self.bounce_request
+        mock_request.side_effect = self.bounce_request
         user = self.example_user('cordelia')
         email = user.email
         self.login(email)
@@ -310,11 +310,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
     @mock.patch('zerver.lib.push_notifications.requests.request')
-    def test_analytics_api(self, mock: Any) -> None:
+    def test_analytics_api(self, mock_request: Any) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
         """
-        mock.side_effect = self.bounce_request
+        mock_request.side_effect = self.bounce_request
         user = self.example_user('hamlet')
         end_time = self.TIME_ZERO
 
@@ -330,11 +330,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
         self.assertEqual(RemoteInstallationCount.objects.count(), 0)
         send_analytics_to_remote_server()
-        self.assertEqual(mock.call_count, 2)
+        self.assertEqual(mock_request.call_count, 2)
         self.assertEqual(RemoteRealmCount.objects.count(), 1)
         self.assertEqual(RemoteInstallationCount.objects.count(), 1)
         send_analytics_to_remote_server()
-        self.assertEqual(mock.call_count, 3)
+        self.assertEqual(mock_request.call_count, 3)
         self.assertEqual(RemoteRealmCount.objects.count(), 1)
         self.assertEqual(RemoteInstallationCount.objects.count(), 1)
 
@@ -343,9 +343,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         RealmCount.objects.create(
             realm=user.realm, property=realm_stat.property, end_time=end_time + datetime.timedelta(days=2), value=9)
         self.assertEqual(RemoteRealmCount.objects.count(), 1)
-        self.assertEqual(mock.call_count, 3)
+        self.assertEqual(mock_request.call_count, 3)
         send_analytics_to_remote_server()
-        self.assertEqual(mock.call_count, 5)
+        self.assertEqual(mock_request.call_count, 5)
         self.assertEqual(RemoteRealmCount.objects.count(), 3)
         self.assertEqual(RemoteInstallationCount.objects.count(), 1)
 
@@ -354,7 +354,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         InstallationCount.objects.create(
             property=realm_stat.property, end_time=end_time + datetime.timedelta(days=2), value=9)
         send_analytics_to_remote_server()
-        self.assertEqual(mock.call_count, 7)
+        self.assertEqual(mock_request.call_count, 7)
         self.assertEqual(RemoteRealmCount.objects.count(), 3)
         self.assertEqual(RemoteInstallationCount.objects.count(), 3)
 
@@ -370,11 +370,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
     @mock.patch('zerver.lib.push_notifications.requests.request')
-    def test_analytics_api_invalid(self, mock: Any) -> None:
+    def test_analytics_api_invalid(self, mock_request: Any) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
         """
-        mock.side_effect = self.bounce_request
+        mock_request.side_effect = self.bounce_request
         user = self.example_user('hamlet')
         end_time = self.TIME_ZERO
 
