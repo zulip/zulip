@@ -29,7 +29,7 @@ from zerver.lib.validator import to_non_negative_int
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left, RateLimitedUser, RateLimiterLockingException
-from zerver.lib.request import REQ, has_request_variables, RequestVariableMissingError
+from zerver.lib.request import REQ, has_request_variables
 
 from functools import wraps
 import base64
@@ -518,42 +518,6 @@ def require_non_guest_human_user(view_func: ViewFuncT) -> ViewFuncT:
             return json_error(_("This endpoint does not accept bot requests."))
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
-
-# authenticated_api_view will add the authenticated user's
-# user_profile to the view function's arguments list, since we have to
-# look it up anyway.  It is deprecated in favor on the REST API
-# versions.
-def authenticated_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
-    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
-        @csrf_exempt
-        @require_post
-        @has_request_variables
-        @wraps(view_func)
-        def _wrapped_func_arguments(request: HttpRequest, email: str=REQ(),
-                                    api_key: Optional[str]=REQ(default=None),
-                                    api_key_legacy: Optional[str]=REQ('api-key', default=None),
-                                    *args: Any, **kwargs: Any) -> HttpResponse:
-            if api_key is None:
-                api_key = api_key_legacy
-            if api_key is None:  # nocoverage # We're removing this whole decorator soon.
-                raise RequestVariableMissingError("api_key")
-            user_profile = validate_api_key(request, email, api_key, is_webhook)
-            # Apply rate limiting
-            limited_func = rate_limit()(view_func)
-            try:
-                return limited_func(request, user_profile, *args, **kwargs)
-            except Exception as err:
-                if is_webhook:
-                    # In this case, request_body is passed explicitly because the body
-                    # of the request has already been read in has_request_variables and
-                    # can't be read/accessed more than once, so we just access it from
-                    # the request.POST QueryDict.
-                    log_exception_to_webhook_logger(request, user_profile,
-                                                    request_body=request.POST.get('payload'))
-                raise err
-
-        return _wrapped_func_arguments
-    return _wrapped_view_func
 
 # This API endpoint is used only for the mobile apps.  It is part of a
 # workaround for the fact that React Native doesn't support setting

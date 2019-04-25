@@ -129,7 +129,6 @@ not_yet_fully_covered = {path for target in [
     'zerver/data_import/gitter.py',
     'zerver/data_import/import_util.py',
     # Webhook integrations with incomplete coverage
-    'zerver/webhooks/github_legacy/view.py',
     'zerver/webhooks/greenhouse/view.py',
     'zerver/webhooks/jira/view.py',
     'zerver/webhooks/librato/view.py',
