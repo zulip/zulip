@@ -49,14 +49,14 @@ elif [ "$release" = "cosmic" ]; then
 deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 EOF
-elif [ "$release" = "stretch" ]; then
+elif [ "$release" = "stretch" ] || [ "$release" = "buster" ]; then
     apt-get install -y debian-archive-keyring
     apt-key add "$SCRIPTS_PATH"/setup/packagecloud.asc
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
     cat >$SOURCES_FILE <<EOF
-deb https://packagecloud.io/zulip/server/debian/ stretch main
-deb https://packages.groonga.org/debian/ stretch main
-deb-src https://packages.groonga.org/debian/ stretch main
+deb https://packagecloud.io/zulip/server/debian/ $release main
+deb https://packages.groonga.org/debian/ $release main
+deb-src https://packages.groonga.org/debian/ $release main
 EOF
 else
     echo "Unsupported release $release."

@@ -39,6 +39,7 @@ SUPPORTED_PLATFORMS = {
     ],
     "Debian": [
         "stretch",
+        "buster",
     ],
     "CentOS": [
         "centos7",
@@ -128,6 +129,7 @@ if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor
 
 POSTGRES_VERSION_MAP = {
     "stretch": "9.6",
+    "buster": "11",
     "trusty": "9.3",
     "xenial": "9.5",
     "bionic": "10",
@@ -187,6 +189,22 @@ if vendor in ["Ubuntu", "Debian"]:
                 "postgresql-{0}-pgroonga",
                 # Dependency for building tsearch_extras from source
                 "postgresql-server-dev-{0}",
+            ]
+        ]
+    elif codename == "buster":
+        # For platforms without a tsearch-extras package distributed
+        # from our PPA or a pgroonga release, we need to build both
+        # from source.
+        BUILD_PGROONGA_FROM_SOURCE = True
+        BUILD_TSEARCH_FROM_SOURCE = True
+        SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
+            pkg.format(POSTGRES_VERSION) for pkg in [
+                "postgresql-{0}",
+                # Dependency for building tsearch_extras from source
+                "postgresql-server-dev-{0}",
+                # Dependency for building pgroonga from source
+                "libgroonga-dev",
+                "libmsgpack-dev",
             ]
         ]
     else:
