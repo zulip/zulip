@@ -33,7 +33,7 @@ boto==2.49.0
 botocore==1.12.135        # via boto3, moto, s3transfer
 cachetools==3.1.0         # via google-auth, premailer
 cchardet==2.1.4
-certifi==2018.11.29
+certifi==2019.3.9
 cffi==1.12.2
 chardet==3.0.4
 click==6.6                # via gitlint, pip-tools
