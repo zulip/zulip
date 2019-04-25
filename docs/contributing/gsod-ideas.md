@@ -7,10 +7,9 @@
 ## About us
 
 [Zulip](https://zulipchat.com) is a powerful, open source team chat
-application. Zulip has a web app,
-a cross-platform mobile app, an Android app, a
-cross-platform desktop app, and over 100 native integrations, all open
-source.
+application. Zulip has a web app, a cross-platform mobile app for iOS
+and Android, a cross-platform desktop app, and over 100 native
+integrations, all open source.
 
 Zulip has gained a considerable amount of traction since it was
 [released as open source software][oss-release] in late 2015, with

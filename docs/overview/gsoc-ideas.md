@@ -17,9 +17,9 @@ getting involved.
 
 [Zulip](https://zulipchat.com) is a powerful, open source team chat
 application. The core web app is written in Python and uses the Django
-framework. We also make a cross-platform mobile app, an Android app, a
-cross-platform desktop app, and over 100 native integrations, all open
-source.
+framework. We also make a cross-platform mobile app for iOS and
+Android, a cross-platform desktop app, and over 100 native
+integrations, all open source.
 
 Zulip has gained a considerable amount of traction since it was
 [released as open source software][oss-release] in late 2015, with
