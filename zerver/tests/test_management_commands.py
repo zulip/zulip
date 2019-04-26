@@ -378,7 +378,7 @@ class TestSendToEmailMirror(ZulipTestCase):
 class TestConvertMattermostData(ZulipTestCase):
     COMMAND_NAME = 'convert_mattermost_data'
 
-    def test_check_if_command_calls_do_convert_data(self) -> None:
+    def test_if_command_calls_do_convert_data(self) -> None:
         with patch('zerver.management.commands.convert_mattermost_data.do_convert_data') as m:
             mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
