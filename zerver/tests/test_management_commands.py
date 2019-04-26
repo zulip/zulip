@@ -389,3 +389,12 @@ class TestConvertMattermostData(ZulipTestCase):
             mattermost_data_dir=os.path.realpath(mm_fixtures),
             output_dir=os.path.realpath(output_dir),
         )
+
+class TestInvoicePlans(ZulipTestCase):
+    COMMAND_NAME = 'invoice_plans'
+
+    def test_if_command_calls_invoice_plans_as_needed(self) -> None:
+        with patch('zilencer.management.commands.invoice_plans.invoice_plans_as_needed') as m:
+            call_command(self.COMMAND_NAME)
+
+        m.assert_called_once()

@@ -38,6 +38,16 @@ class zulip_ops::prod_app_frontend {
     mode   => '0644',
     source => 'puppet:///modules/zulip/cron.d/calculate-first-visible-message-id',
   }
+
+  # TODO: This should ideally move to a prod_app_frontend_once.pp
+  file { '/etc/cron.d/invoice-plans':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/cron.d/invoice-plans',
+  }
+
   # Prod has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dist.pem
 }
