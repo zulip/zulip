@@ -16,7 +16,12 @@
 <meta property="og:title" content="The world's most productive team chat">
 <meta property="og:description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones.">
 {% endif %}
+{% if OPEN_GRAPH_IMAGE %}
+<meta property="og:image" content="{{ OPEN_GRAPH_IMAGE }}">
+{% else %}
 <meta property="og:image" content="{{ realm_uri }}/static/images/logo/zulip-icon-128x128.png">
+{% endif %}
+
 
 <!-- Twitter Meta Tags -->
 <meta name="twitter:card" content="summary">
@@ -27,5 +32,8 @@
 <meta property="twitter:title" content="The world's most productive team chat">
 <meta name="twitter:description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones.">
 {% endif %}
-
+{% if OPEN_GRAPH_IMAGE %}
+<meta name="twitter:image" content="{{ OPEN_GRAPH_IMAGE }}">
+{% else %}
 <meta name="twitter:image" content="{{ realm_uri }}/static/images/logo/zulip-icon-128x128.png">
+{% endif %}
