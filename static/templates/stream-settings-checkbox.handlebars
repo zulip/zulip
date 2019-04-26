@@ -1,7 +1,13 @@
-<div id="{{prefix}}{{setting_name}}{{suffix}}" class="sub_setting_checkbox {{#if notification_setting}}sub_notification_setting {{#if is_muted}}muted-sub{{/if}}{{/if}}">
-    <input id="{{setting_name}}_{{stream_id}}" name="{{setting_name}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if is_checked}}checked{{/if}} {{#if_and is_muted notification_setting}}disabled="disabled"{{/if_and}}/>
+{{!-- If setting is disabled on realm level, then render setting as control-label-disabled and do not set setting value. Setting status should not change on any click handler, as it is disabled at realm level. --}}
+<div id="{{prefix}}{{setting_name}}{{suffix}}" class="sub_setting_checkbox {{#unless realm_setting_disabled}}{{#if notification_setting}}sub_notification_setting {{#if is_muted}}muted-sub{{/if}}{{/if}}{{else}}control-label-disabled{{/unless}}">
+    <input id="{{setting_name}}_{{stream_id}}" name="{{setting_name}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#unless realm_setting_disabled}}{{#if is_checked}}checked{{/if}}{{#if_and is_muted notification_setting}}disabled="disabled"{{/if_and}}{{else}}disabled="disabled"{{/unless}} />
     <label class="subscription-control-label">{{label}}</label>
+
+    {{!-- Tooltips for settings --}}
     {{#if_equal setting_name "is_muted"}}
     <p class="mute-note {{#unless is_muted}}hide-mute-note{{/unless}}">{{t "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned." }}</p>
+    {{/if_equal}}
+    {{#if_equal setting_name "push_notifications"}}
+    <i class="fa fa-question-circle settings-info-icon {{#unless realm_setting_disabled}}hide{{/unless}}" data-toggle="tooltip" title="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
     {{/if_equal}}
 </div>

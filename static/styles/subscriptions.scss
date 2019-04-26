@@ -144,7 +144,8 @@
     white-space: normal;
 }
 
-.muted-sub {
+.muted-sub,
+.control-label-disabled {
     color: hsl(0, 0%, 64%);
 }
 

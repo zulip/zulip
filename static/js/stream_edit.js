@@ -238,6 +238,10 @@ var settings_labels = {
     pin_to_top: i18n.t("Pin stream to top of left sidebar"),
 };
 
+var check_realm_setting = {
+    push_notifications: !page_params.realm_push_notifications_enabled,
+};
+
 exports.stream_settings = function (sub) {
     var settings = [];
     _.each(Object.keys(settings_labels), function (setting) {
@@ -267,6 +271,7 @@ exports.show_settings_for = function (node) {
     var html = templates.render('subscription_settings', {
         sub: sub,
         settings: exports.stream_settings(sub),
+        realm_settings: check_realm_setting,
     });
     ui.get_content_element($('.subscriptions .right .settings')).html(html);
 
