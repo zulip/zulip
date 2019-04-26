@@ -1601,7 +1601,7 @@ def get_analytics_config() -> Config:
 
 def export_realm_wrapper(realm: Realm, output_dir: str,
                          threads: int, upload_to_s3: bool,
-                         public_only: bool, delete_after_upload: bool) -> None:
+                         public_only: bool, delete_after_upload: bool) -> Optional[str]:
     do_export_realm(realm=realm, output_dir=output_dir, threads=threads, public_only=public_only)
     print("Finished exporting to %s; tarring" % (output_dir,))
 
@@ -1613,7 +1613,7 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
     print("Tarball written to %s" % (tarball_path,))
 
     if not upload_to_s3:
-        return
+        return None
 
     def percent_callback(complete: Any, total: Any) -> None:
         sys.stdout.write('.')
@@ -1641,3 +1641,4 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
     if delete_after_upload:
         os.remove(tarball_path)
         print("Successfully deleted the tarball at %s" % (tarball_path,))
+    return public_url
