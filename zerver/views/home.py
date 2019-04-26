@@ -279,7 +279,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
 
     navbar_logo_url = compute_navbar_logo_url(page_params)
-
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
                                'emojiset': emojiset,
@@ -295,6 +294,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'show_plans': show_plans,
                                'is_admin': user_profile.is_realm_admin,
                                'is_guest': user_profile.is_guest,
+                               'realm_video_chat_provider': page_params.get('realm_video_chat_provider'),
                                'night_mode': user_profile.night_mode,
                                'navbar_logo_url': navbar_logo_url,
                                'show_webathena': user_profile.realm.webathena_enabled,
