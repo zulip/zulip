@@ -1018,6 +1018,31 @@ exports.initialize = function () {
         }
     });
 
+        $('body').on('click', '.audio_link', function (e) {
+        e.preventDefault();
+
+        var target_textarea;
+        // The data-message-id atribute is only present in the video
+        // call icon present in the message edit form.  If present,
+        // the request is for the edit UI; otherwise, it's for the
+        // compose box.
+        var edit_message_id = $(e.target).attr('data-message-id');
+        if (edit_message_id !== undefined) {
+            target_textarea = $("#message_edit_content_" + edit_message_id);
+        }
+
+        if (page_params.jitsi_server_url === null) {
+            return;
+        }
+
+        var video_call_link;
+        var video_call_id = util.random_int(100000000000000, 999999999999999);
+        // This is currently only enabled for jitsi servers, so we don't need
+        // any logic to determine provider.
+        video_call_link = page_params.jitsi_server_url + "/" +  video_call_id + "#config.startWithVideoMuted=true";
+        insert_video_call_url(video_call_link, target_textarea);
+    });
+
     $("#compose").on("click", "#markdown_preview", function (e) {
         e.preventDefault();
         var content = $("#compose-textarea").val();
