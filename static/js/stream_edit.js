@@ -500,6 +500,9 @@ exports.initialize = function () {
         } else if (checkbox_id === "sub_audible_notifications_setting") {
             stream_audible_notifications_clicked(e);
         } else if (checkbox_id === "sub_push_notifications_setting") {
+            if (!page_params.realm_push_notifications_enabled) {
+                return;
+            }
             stream_push_notifications_clicked(e);
         } else if (checkbox_id === "sub_email_notifications_setting") {
             stream_email_notifications_clicked(e);

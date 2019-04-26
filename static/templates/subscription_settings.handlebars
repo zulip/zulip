@@ -71,9 +71,9 @@
                     </li>
                     <li>
                         <div id="sub_push_notifications_setting"
-                          class="sub_setting_checkbox sub_notification_setting {{#if is_muted}}muted-sub{{/if}}">
-                            <input id="push-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if push_notifications_display}}checked{{/if}} {{#if is_muted}}disabled="disabled"{{/if}}/>
-                            <label class="subscription-control-label">{{t "Mobile notifications" }}</label>
+                          class="sub_setting_checkbox {{#if page_params.realm_push_notifications_enabled}}sub_notification_setting{{else}}control-label-disabled{{/if}} {{#if is_muted}}muted-sub{{/if}}">
+                            <input id="push-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if page_params.realm_push_notifications_enabled}}{{#if push_notifications_display}}checked{{/if}}{{else}} disabled="disabled"{{/if}}{{#if is_muted}}disabled="disabled"{{/if}}/>
+                            <label class="subscription-control-label">{{t "Mobile notifications" }}<i class="fa fa-question-circle settings-info-icon {{#if page_params.realm_push_notifications_enabled}}hide{{/if}}" data-toggle="tooltip" title="{{t 'Mobile push notifications are not configured on this server.' }}"></i></label>
                         </div>
                     </li>
                     <li>

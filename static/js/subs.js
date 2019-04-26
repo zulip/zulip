@@ -846,6 +846,9 @@ exports.initialize = function () {
         if ($(e.target).closest('.sub_setting_checkbox').hasClass('muted-sub')) {
             return false;
         }
+        if (!page_params.realm_push_notifications_enabled) {
+            return;
+        }
         // A hack.  Don't change the state of the checkbox if we
         // clicked on the checkbox itself.
         if (control[0] !== e.target) {
