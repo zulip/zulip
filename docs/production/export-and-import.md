@@ -77,15 +77,22 @@ archive of all the organization's uploaded files.
 
 ## Import into a new Zulip server
 
-The Zulip server you're importing into needs to be running the same
-version of Zulip as the server you exported from, so that the same
-formats are consistent.  For exports from zulipchat.com, usually this
-means you need to upgrade your Zulip server to the latest `master`
-branch, using [upgrade-zulip-from-git][upgrade-zulip-from-git].
-
 First [install a new Zulip server](../production/install.html),
 skipping "Step 3: Create a Zulip organization, and log in" (you'll
 create your Zulip organization via the data import tool instead).
+
+The Zulip server you're importing into needs to be running the same
+version of Zulip as the server you exported from.
+For exports from zulipchat.com, run the following:
+
+```
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
+```
+
+Note that if your server has 2GB of RAM or less, you'll want to read the detailed instructions
+[here][upgrade-zulip-from-git].
+It is not sufficient to be on the latest stable release, as zulipchat.com is
+often several months of development ahead of the latest release.
 
 If your new Zulip server is meant to fully replace a previous Zulip
 server, you may want to copy the contents of `/etc/zulip` to your new
