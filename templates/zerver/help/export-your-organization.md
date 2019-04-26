@@ -69,7 +69,8 @@ other organizations in case of due legal process.
 
 ## Related articles
 
-* [Import into an on-premises installation][export-and-import]
+* [Import into an on-premises installation][import-only]
 
 [production-backups]: https://zulip.readthedocs.io/en/stable/production/maintain-secure-upgrade.html#backups
 [export-and-import]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html
+[import-only]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html#import-into-a-new-zulip-server
