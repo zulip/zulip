@@ -3,6 +3,7 @@ zrequire('templates');
 zrequire('settings_notifications');
 
 set_global('i18n', global.stub_i18n);
+set_global('page_params', {});
 zrequire('stream_edit');
 
 const { JSDOM } = require("jsdom");
@@ -1268,9 +1269,15 @@ run_test('subscription_settings', () => {
     };
 
     var html = '';
+    page_params.realm_push_notifications_enabled = false;
+    var check_realm_setting = {
+        push_notifications: !page_params.realm_push_notifications_enabled,
+    };
+
     html += render('subscription_settings', {
         sub: sub,
         settings: stream_edit.stream_settings(sub),
+        realm_settings: check_realm_setting,
     });
 
     var div = $(html).find(".subscription-type");
