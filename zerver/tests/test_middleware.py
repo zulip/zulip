@@ -4,6 +4,7 @@ from typing import List
 from bs4 import BeautifulSoup
 from django.test import override_settings
 from unittest.mock import Mock, patch
+from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.middleware import is_slow_query, write_log_line
 from zerver.models import get_realm
@@ -167,3 +168,19 @@ class OpenGraphTest(ZulipTestCase):
             ['Welcome to Clojurians Zulip - the place where the Clojure community meets',
              'note-1', 'note-2', 'note-3', 'Enjoy!'],
             [])
+
+    def test_login_page_realm_icon(self) -> None:
+        realm = get_realm('zulip')
+        realm.icon_source = 'U'
+        realm.save(update_fields=['icon_source'])
+        realm_icon = get_realm_icon_url(realm)
+
+        response = self.client_get('/login/')
+        self.assertEqual(response.status_code, 200)
+
+        decoded = response.content.decode('utf-8')
+        bs = BeautifulSoup(decoded, features='lxml')
+        open_graph_image = bs.select_one('meta[property="og:image"]').get('content')
+        twitter_image = bs.select_one('meta[name="twitter:image"]').get('content')
+        self.assertTrue(open_graph_image.endswith(realm_icon))
+        self.assertTrue(twitter_image.endswith(realm_icon))
