@@ -11,6 +11,8 @@ from typing import (
     Any, Callable, Dict, Iterable, Optional, Sequence, Set
 )
 
+from django.utils.timezone import now as timezone_now
+
 session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
@@ -45,7 +47,8 @@ from zerver.lib.actions import (
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
-from zerver.models import Client, Message, Realm, UserPresence, UserProfile, CustomProfileFieldValue, \
+from zerver.models import Client, Message, UserMessage, Realm, UserPresence, UserProfile, \
+    CustomProfileFieldValue, \
     get_user_profile_by_id, \
     get_realm_user_dicts, realm_filters_for_realm, get_user,\
     custom_profile_fields_for_realm, get_realm_domains, \
@@ -307,6 +310,17 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # generate a flag update so we need to use the flags field in the
         # message event.
         state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
+
+        try:
+            latest_read = UserMessage.objects.get(user_profile=user_profile,
+                                                  message__id=user_profile.pointer)
+            last_message_timedelta = (timezone_now() - latest_read.message.pub_date)
+            state['should_consider_bankruptcy'] = (
+                len(state['raw_unread_msgs']) > 500 and
+                last_message_timedelta.total_seconds() > 60 * 60 * 24 * 4  # 4 days in seconds
+            )
+        except UserMessage.DoesNotExist:
+            state['should_consider_bankruptcy'] = False
 
     if want('starred_messages'):
         state['starred_messages'] = get_starred_message_ids(user_profile)

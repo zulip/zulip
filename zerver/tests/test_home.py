@@ -185,6 +185,7 @@ class HomeTest(ZulipTestCase):
             "server_generation",
             "server_inline_image_preview",
             "server_inline_url_embed_preview",
+            "should_consider_bankruptcy",
             "starred_message_counts",
             "starred_messages",
             "stop_words",
@@ -228,7 +229,7 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 45)
+        self.assert_length(queries, 46)
         self.assert_length(cache_mock.call_args_list, 7)
 
         html = result.content.decode('utf-8')
@@ -294,7 +295,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 42)
+            self.assert_length(queries, 43)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
@@ -326,7 +327,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 39)
+        self.assert_length(queries2, 40)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')

@@ -787,6 +787,29 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+    def test_should_consider_bankruptcy(self) -> None:
+        user = self.example_user('hamlet')
+
+        msg_id = self.send_stream_message(
+            self.example_email('hamlet'),
+            'Verona',
+            'Test'
+        )
+        user.pointer = msg_id
+        state = fetch_initial_state_data(user, ['update_message_flags', 'message'],
+                                         '', client_gravatar=False)
+        self.assertEqual(state['should_consider_bankruptcy'], False)
+
+        for i in range(501):
+            self.send_stream_message(
+                self.example_email('othello'),
+                'Verona',
+                'Test'
+            )
+        state = fetch_initial_state_data(user, ['update_message_flags', 'message'],
+                                         '', client_gravatar=False)
+        self.assertEqual(state['should_consider_bankruptcy'], False)
+
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
 
         user_profile = self.example_user('hamlet')
@@ -3312,7 +3335,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 33)
+        self.assert_length(queries, 34)
 
         expected_counts = dict(
             alert_words=0,
@@ -3339,7 +3362,7 @@ class FetchQueriesTest(ZulipTestCase):
             subscription=6,
             update_display_settings=0,
             update_global_notifications=0,
-            update_message_flags=5,
+            update_message_flags=6,
             user_status=1,
             zulip_version=0,
         )
