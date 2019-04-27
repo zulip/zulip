@@ -5,10 +5,11 @@
             <div class="alert-notification" id="admin-realm-authentication-methods-status"></div>
             <p>{{#tr this}}Configure the authentication methods for your organization.{{/tr}}</p>
             <table class="table table-condensed table-striped">
-                <tbody id="admin_auth_methods_table" class=" admin_auth_methods_table">
+                <thead>
                     <th>{{t "Method" }}</th>
                     <th>{{t "Enabled" }}</th>
-                </tbody>
+                </thead>
+                <tbody id="admin_auth_methods_table" class=" admin_auth_methods_table"></tbody>
             </table>
         </div>
     </form>

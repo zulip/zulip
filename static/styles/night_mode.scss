@@ -329,6 +329,7 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    thead,
     #searchbox,
     #searchbox_legacy,
     .drafts-header,
@@ -341,12 +342,16 @@ on a dark background, and don't change the dark labels dark either. */
     #settings_page .form-sidebar .title,
     #settings_page .sidebar li.active,
     #settings_page .sidebar .tab-container,
-    .table-striped tbody tr:nth-child(odd) td,
+    .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
     .modal-footer,
     .modal-bg .modal-header {
         border-color: hsla(0, 0%, 0%, 0.2);
         background-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .table-striped tbody tr:nth-child(odd) td {
+        background-color: hsl(212, 28%, 18%);
     }
 
     .modal-footer {
