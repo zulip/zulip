@@ -68,16 +68,21 @@ exports.options = function (config) {
 
     var uploadStarted = function (i, file) {
         error_msg.html($("<p>").text(i18n.t("Uploading…")));
-        // Here file.lastModified is unique for each upload
-        // so it is used to track each upload individually
+        // file.lastModified is unique for each upload, and was previously used to track each
+        // upload. But, when an image is pasted into Safari, it looks like the lastModified time
+        // gets changed by the time the image upload is finished, and we lose track of the
+        // uploaded images. Instead, we set a random ID for each image, to track it.
+        if (!file.trackingId) {  // The conditional check is present to make this easy to test
+            file.trackingId = Math.random().toString().substring(2);  // Use digits after the `.`
+        }
         send_status.append('<div class="progress active">' +
-                           '<div class="bar" id="' + upload_bar + '-' + file.lastModified + '" style="width: 0"></div>' +
+                           '<div class="bar" id="' + upload_bar + '-' + file.trackingId + '" style="width: 0"></div>' +
                            '</div>');
         compose_ui.insert_syntax_and_focus("[Uploading " + file.name + "…]()", textarea);
     };
 
     var progressUpdated = function (i, file, progress) {
-        $("#" + upload_bar + '-' + file.lastModified).width(progress + "%");
+        $("#" + upload_bar + '-' + file.trackingId).width(progress + "%");
     };
 
     var uploadError = function (error_code, server_response, file) {
@@ -85,7 +90,7 @@ exports.options = function (config) {
         send_status.addClass("alert-error").removeClass("alert-info");
         send_button.prop("disabled", false);
         if (file !== undefined) {
-            $("#" + upload_bar + '-' + file.lastModified).parent().remove();
+            $("#" + upload_bar + '-' + file.trackingId).parent().remove();
         }
 
         switch (error_code) {
@@ -145,7 +150,7 @@ exports.options = function (config) {
         compose_ui.autosize_textarea();
 
         setTimeout(function () {
-            $("#" + upload_bar  + '-' + file.lastModified).parent().remove();
+            $("#" + upload_bar  + '-' + file.trackingId).parent().remove();
             if ($('div.progress.active').length === 0) {
                 hide_upload_status(file);
             }

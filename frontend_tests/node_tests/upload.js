@@ -47,7 +47,7 @@ run_test('upload_started', () => {
 
     upload_opts.drop();
     upload_opts.uploadStarted(0, {
-        lastModified: 1549958107000,
+        trackingId: "1549958107000",
         name: 'some-file',
     }, 1);
 
@@ -63,7 +63,7 @@ run_test('progress_updated', () => {
         assert.equal(width_percent, '39%');
         width_update_checked = true;
     };
-    upload_opts.progressUpdated(1, {lastModified: 1549958107000}, 39);
+    upload_opts.progressUpdated(1, {trackingId: "1549958107000"}, 39);
     assert(width_update_checked);
 });
 
@@ -88,7 +88,7 @@ run_test('upload_error', () => {
 
     function test(err, msg, server_response = null, file = {}) {
         setup_test();
-        file.lastModified = 1549958107000;
+        file.trackingId = "1549958107000";
         upload_opts.error(err, server_response, file);
         assert_side_effects(msg);
     }
@@ -174,10 +174,10 @@ run_test('upload_finish', () => {
 
         setup();
         upload_opts.uploadFinished(i, {
-            lastModified: 1549958107000,
+            trackingId: "1549958107000",
             name: 'some-file',
         }, response);
-        upload_opts.progressUpdated(1, {lastModified: 1549958107000}, 100);
+        upload_opts.progressUpdated(1, {trackingId: "1549958107000"}, 100);
         assert_side_effects();
     }
 
