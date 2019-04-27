@@ -487,18 +487,23 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", "#sub_setting_is_muted",
-                                 stream_is_muted_clicked);
-    $("#subscriptions_table").on("click", "#sub_desktop_notifications_setting",
-                                 stream_desktop_notifications_clicked);
-    $("#subscriptions_table").on("click", "#sub_audible_notifications_setting",
-                                 stream_audible_notifications_clicked);
-    $("#subscriptions_table").on("click", "#sub_push_notifications_setting",
-                                 stream_push_notifications_clicked);
-    $("#subscriptions_table").on("click", "#sub_email_notifications_setting",
-                                 stream_email_notifications_clicked);
-    $("#subscriptions_table").on("click", "#sub_pin_setting",
-                                 stream_pin_clicked);
+    $("#subscriptions_table").on("click", function (e) {
+        var checkbox_div_elem = $(e.target).closest('.sub_setting_checkbox');
+        var checkbox_id = checkbox_div_elem.attr("id");
+        if (checkbox_id === "sub_setting_is_muted") {
+            stream_is_muted_clicked(e);
+        } else if (checkbox_id === "sub_desktop_notifications_setting") {
+            stream_desktop_notifications_clicked(e);
+        } else if (checkbox_id === "sub_audible_notifications_setting") {
+            stream_audible_notifications_clicked(e);
+        } else if (checkbox_id === "sub_push_notifications_setting") {
+            stream_push_notifications_clicked(e);
+        } else if (checkbox_id === "sub_email_notifications_setting") {
+            stream_email_notifications_clicked(e);
+        } else if (checkbox_id === "sub_pin_setting") {
+            stream_pin_clicked(e);
+        }
+    });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
