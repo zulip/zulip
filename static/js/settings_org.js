@@ -669,7 +669,7 @@ exports.build_page = function () {
                 data.message_content_delete_limit_seconds =
                     exports.msg_delete_limit_dropdown_values[delete_limit_setting_value].seconds;
             }
-        } else if (subsection == 'other_settings') {
+        } else if (subsection === 'other_settings') {
             var new_message_retention_days = $("#id_realm_message_retention_days").val();
 
             if (parseInt(new_message_retention_days, 10).toString() !== new_message_retention_days
