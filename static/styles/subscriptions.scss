@@ -144,6 +144,10 @@
     white-space: normal;
 }
 
+.mute-sub .subscription-control-label {
+    cursor: not-allowed;
+}
+
 .muted-sub {
     color: hsl(0, 0%, 64%);
 }

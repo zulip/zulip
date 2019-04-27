@@ -843,6 +843,9 @@ exports.initialize = function () {
 
     $("#subscriptions_table").on("click", ".sub_setting_checkbox", function (e) {
         var control = $(e.target).closest('.sub_setting_checkbox').find('.sub_setting_control');
+        if ($(e.target).closest('.sub_setting_checkbox').hasClass('muted-sub')) {
+            return false;
+        }
         // A hack.  Don't change the state of the checkbox if we
         // clicked on the checkbox itself.
         if (control[0] !== e.target) {

@@ -489,6 +489,9 @@ exports.initialize = function () {
 
     $("#subscriptions_table").on("click", function (e) {
         var checkbox_div_elem = $(e.target).closest('.sub_setting_checkbox');
+        if (checkbox_div_elem.hasClass('muted-sub')) {
+            return;
+        }
         var checkbox_id = checkbox_div_elem.attr("id");
         if (checkbox_id === "sub_setting_is_muted") {
             stream_is_muted_clicked(e);
