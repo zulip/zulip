@@ -327,6 +327,12 @@
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     z-index: 5;
+
+    .user_status_overlay & {
+        margin-left: -26px;
+        right: 0;
+        padding-top: 6px;
+    }
 }
 
 .grey-box {

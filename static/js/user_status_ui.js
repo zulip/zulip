@@ -24,6 +24,7 @@ exports.open_overlay = function () {
     field.val(old_status_text);
     field.select();
     field.focus();
+    exports.toggle_clear_message_button();
 
     var button = exports.submit_button();
     button.attr('disabled', true);
@@ -66,12 +67,32 @@ exports.update_button = function () {
     }
 };
 
+exports.toggle_clear_message_button = function () {
+    if (exports.input_field().val() !== '') {
+        $('#clear_status_message_button').prop('disabled', false);
+    } else {
+        $('#clear_status_message_button').prop('disabled', true);
+    }
+};
+
+exports.clear_message = function () {
+    var field = exports.input_field();
+    field.val('');
+    $('#clear_status_message_button').prop('disabled', true);
+};
+
 exports.initialize = function () {
     $('body').on('click', '.user_status_overlay .set_user_status', function () {
         exports.submit_new_status();
     });
 
     $('body').on('keyup', '.user_status_overlay input.user_status', function () {
+        exports.update_button();
+        exports.toggle_clear_message_button();
+    });
+
+    $('#clear_status_message_button').on('click', function () {
+        exports.clear_message();
         exports.update_button();
     });
 };
