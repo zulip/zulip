@@ -768,6 +768,11 @@ exports.initialize = function () {
 
     // MAIN CLICK HANDLER
 
+    var focusedElement;
+    $('input, textarea').focus(function () {
+        focusedElement = $(this);
+    });
+
     $(document).on('click', function (e) {
         if (e.button !== 0 || $(e.target).is(".drag")) {
             // Firefox emits right click events on the document, but not on
@@ -788,10 +793,9 @@ exports.initialize = function () {
         }
 
         if (compose_state.composing()) {
-            if ($(e.target).closest("a").length > 0) {
-                // Refocus compose message text box if link is clicked
-                $("#compose-textarea").focus();
-                return;
+            if ($(e.target).closest("a").length > 0 && focusedElement !== undefined) {
+                // Refocus `focused` input/textarea element inside compose box
+                focusedElement.focus();
             } else if (!window.getSelection().toString() &&
                        // Clicks inside an overlay, popover, custom
                        // modal, or backdrop of one of the above
