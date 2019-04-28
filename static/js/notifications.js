@@ -228,10 +228,15 @@ function flash_pms() {
 }
 
 exports.update_pm_count = function () {
-    // TODO: Add a `window.electron_bridge.updatePMCount(new_pm_count);` call?
     if (!flashing) {
         flashing = true;
         flash_pms();
+    }
+    if (window.electron_bridge !== undefined) {
+        window.electron_bridge.send_event('unread_pm_count', {
+            unread_pm_count: unread.get_counts().private_message_count,
+            realm_uri: page_params.realm_uri,
+        });
     }
 };
 
