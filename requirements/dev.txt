@@ -22,21 +22,19 @@ arrow==0.10.0             # via gitlint
 asn1crypto==0.24.0        # via cryptography
 attrs==19.1.0             # via automat, service-identity, twisted
 automat==0.7.0            # via twisted
-aws-sam-translator==1.10.0  # via cfn-lint
 aws-xray-sdk==0.95        # via moto
 babel==2.5.3
 backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.7.0.1
 beautifulsoup4==4.7.1
-boto3==1.9.135            # via aws-sam-translator, moto
+boto3==1.9.135            # via moto
 boto==2.49.0
 botocore==1.12.135        # via boto3, moto, s3transfer
 cachetools==3.1.0         # via google-auth, premailer
 cchardet==2.1.4
 certifi==2019.3.9
 cffi==1.12.3
-cfn-lint==0.19.1          # via moto
 chardet==3.0.4
 click==6.7                # via gitlint, pip-tools
 commonmark==0.5.4
@@ -80,7 +78,7 @@ hypchat==0.21
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 hyperlink==19.0.0         # via twisted
-idna==2.8                 # via hyperlink, moto, requests
+idna==2.8                 # via hyperlink, requests
 ijson==2.3
 imagesize==1.1.0
 incremental==17.5.0       # via twisted
@@ -90,11 +88,8 @@ isort==4.3.17
 jedi==0.13.3              # via ipython
 jinja2==2.10.1
 jmespath==0.9.4           # via boto3, botocore
-jsondiff==1.1.2           # via moto
-jsonpatch==1.23           # via cfn-lint
+jsondiff==1.1.1           # via moto
 jsonpickle==1.1           # via aws-xray-sdk, python-digitalocean
-jsonpointer==2.0          # via jsonpatch
-jsonschema==2.6.0         # via aws-sam-translator, cfn-lint
 line_profiler==2.1.2
 lxml==4.3.3
 markdown-include==0.5.1
@@ -102,7 +97,7 @@ markdown==3.0.1
 markupsafe==1.1.1
 matrix-client==0.3.2
 mock==2.0.0
-moto==1.3.8
+moto==1.3.7
 mypy-extensions==0.4.1
 mypy==0.670
 ndg-httpsclient==0.5.1
@@ -125,6 +120,7 @@ psycopg2==2.8.2
 ptyprocess==0.6.0         # via pexpect
 py3dns==3.2.0
 pyahocorasick==1.4.0
+pyaml==19.4.1             # via moto
 pyasn1-modules==0.2.5
 pyasn1==0.4.5
 pycodestyle==2.5.0
@@ -150,14 +146,14 @@ python-ldap==3.2.0        # via django-auth-ldap, pyldap
 python-twitter==3.5
 python3-openid==3.1.0     # via social-auth-core
 pytz==2019.1
-pyyaml==5.1               # via cfn-lint, moto, yamole
+pyyaml==5.1               # via pyaml, yamole
 qrcode==6.1               # via django-two-factor-auth
 queuelib==1.5.0           # via scrapy
 recommonmark==0.4.0
 redis==2.10.6
 regex==2019.4.14
 requests-oauthlib==1.0.0
-requests[security]==2.21.0  # via aws-xray-sdk, cfn-lint, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
+requests[security]==2.21.0  # via aws-xray-sdk, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
 responses==0.10.6         # via moto
 rsa==4.0
 s3transfer==0.2.0         # via boto3
