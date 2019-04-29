@@ -237,6 +237,11 @@
       };
       reader.readAsBinaryString(data);
       opts.uploadStarted(undefined, data);
+
+      // Once the upload has started, the event needn't be processed further. This seems to be required on Safari to
+      // prevent the Copied Image URL from being pasted along with the uploaded image URL.
+      event.stopPropagation();
+      event.preventDefault();
     }
 
     function getBuilder(filename, filedata, mime, boundary) {
