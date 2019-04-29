@@ -816,11 +816,25 @@ run_test('misc', () => {
     assert.equal($("#change_email .button").attr('disabled'), 'disabled');
 
     page_params.realm_avatar_changes_disabled = false;
+    page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
     assert.equal($("#user_avatar_upload_button .button").attr('disabled'), false);
     assert.equal($("#user_avatar_delete_button .button").attr('disabled'), false);
 
     page_params.realm_avatar_changes_disabled = true;
+    page_params.server_avatar_changes_disabled = false;
+    settings_account.update_avatar_change_display();
+    assert.equal($("#user_avatar_upload_button .button").attr('disabled'), 'disabled');
+    assert.equal($("#user_avatar_delete_button .button").attr('disabled'), 'disabled');
+
+    page_params.realm_avatar_changes_disabled = false;
+    page_params.server_avatar_changes_disabled = true;
+    settings_account.update_avatar_change_display();
+    assert.equal($("#user_avatar_upload_button .button").attr('disabled'), 'disabled');
+    assert.equal($("#user_avatar_delete_button .button").attr('disabled'), 'disabled');
+
+    page_params.realm_avatar_changes_disabled = true;
+    page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
     assert.equal($("#user_avatar_upload_button .button").attr('disabled'), 'disabled');
     assert.equal($("#user_avatar_delete_button .button").attr('disabled'), 'disabled');

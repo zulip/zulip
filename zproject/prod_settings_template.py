@@ -300,9 +300,15 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # uploads, so browsers will crash if you try uploading larger files.
 MAX_FILE_UPLOAD_SIZE = 25
 
-# Controls whether name changes are completely disabled for this installation
-# This is useful in settings where you're syncing names from an integrated LDAP/Active Directory
+# Controls whether name changes are completely disabled for this
+# installation.  This is useful when you're syncing names from an
+# integrated LDAP/Active Directory.
 NAME_CHANGES_DISABLED = False
+
+# Controls whether avatar changes are completely disabled for this
+# installation.  This is useful when you're syncing avatars from an
+# integrated LDAP/Active Directory.
+AVATAR_CHANGES_DISABLED = False
 
 # Controls whether users who have not uploaded an avatar will receive an avatar
 # from gravatar.com.

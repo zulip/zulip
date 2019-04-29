@@ -184,6 +184,7 @@ class HomeTest(ZulipTestCase):
             "root_domain_uri",
             "save_stacktraces",
             "search_pills_enabled",
+            "server_avatar_changes_disabled",
             "server_generation",
             "server_inline_image_preview",
             "server_inline_url_embed_preview",

@@ -46,7 +46,9 @@ exports.update_email_change_display = function () {
 };
 
 exports.update_avatar_change_display = function () {
-    if (page_params.realm_avatar_changes_disabled && !page_params.is_admin) {
+    if ((page_params.realm_avatar_changes_disabled ||
+         page_params.server_avatar_changes_disabled)
+            && !page_params.is_admin) {
         $('#user_avatar_upload_button .button').attr('disabled', 'disabled');
         $('#user_avatar_delete_button .button').attr('disabled', 'disabled');
     } else {
