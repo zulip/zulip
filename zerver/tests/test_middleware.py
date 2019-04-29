@@ -184,3 +184,13 @@ class OpenGraphTest(ZulipTestCase):
         twitter_image = bs.select_one('meta[name="twitter:image"]').get('content')
         self.assertTrue(open_graph_image.endswith(realm_icon))
         self.assertTrue(twitter_image.endswith(realm_icon))
+
+    def test_no_realm_api_page_og_url(self) -> None:
+        response = self.client_get('/api/', subdomain='')
+        self.assertEqual(response.status_code, 200)
+
+        decoded = response.content.decode('utf-8')
+        bs = BeautifulSoup(decoded, features='lxml')
+        open_graph_url = bs.select_one('meta[property="og:url"]').get('content')
+
+        self.assertTrue(open_graph_url.endswith('/api/'))

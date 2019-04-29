@@ -133,6 +133,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'allow_search_engine_indexing': allow_search_engine_indexing,
     }
 
+    context['OPEN_GRAPH_URL'] = '%s%s' % (realm_uri, request.path)
     if realm is not None and realm.icon_source == realm.ICON_UPLOADED:
         context['OPEN_GRAPH_IMAGE'] = '%s%s' % (realm_uri, realm_icon)
 
