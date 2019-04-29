@@ -152,7 +152,8 @@ class TestFollowupEmails(ZulipTestCase):
 
         enqueue_welcome_emails(self.example_user("hamlet"))
         # Hamlet has account only in Zulip realm so both day1 and day2 emails should be sent
-        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
+        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
+            "scheduled_timestamp")
         self.assertEqual(2, len(scheduled_emails))
         self.assertEqual(ujson.loads(scheduled_emails[1].data)["template_prefix"], 'zerver/emails/followup_day2')
         self.assertEqual(ujson.loads(scheduled_emails[0].data)["template_prefix"], 'zerver/emails/followup_day1')
