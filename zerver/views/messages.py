@@ -294,6 +294,9 @@ class NarrowBuilder:
     def by_near(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         return query
 
+    def by_date(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+        return query
+
     def by_id(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if not str(operand).isdigit():
             raise BadNarrowOperator("Invalid message ID")
@@ -699,6 +702,39 @@ def find_first_unread_anchor(sa_conn: Any,
 
     return anchor
 
+def find_anchor_after_date(sa_conn: Any,
+                           user_profile: UserProfile,
+                           need_message: bool,
+                           need_user_message: bool,
+                           narrow: List[Dict[str, Any]],
+                           date: str) -> int:
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile=user_profile,
+        need_message=need_message,
+        need_user_message=need_user_message,
+    )
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+    )
+    try:
+        query_date = dateparser(date)
+        utc_iso_query_date = convert_to_UTC(query_date).isoformat()
+    except ValueError:
+        raise BadNarrowOperator("Invalid date")
+    cond = column('pub_date') >= literal(utc_iso_query_date)
+    query = query.where(cond).order_by(column('pub_date').asc()).limit(1)
+    query_result = list(sa_conn.execute(query).fetchall())
+    if len(query_result) > 0:
+        anchor = query_result[0][0]
+    else:
+        anchor = LARGER_THAN_MAX_MESSAGE_ID
+
+    return anchor
+
+
 @has_request_variables
 def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
                      command: str=REQ('command')) -> HttpResponse:
@@ -744,14 +780,12 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         need_message=need_message,
         need_user_message=need_user_message,
     )
-
     query, is_search = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
         narrow=narrow,
     )
-
     if narrow is not None:
         # Add some metadata to our logging data for narrows
         verbose_operators = []
@@ -763,14 +797,24 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         request._log_data['extra'] = "[%s]" % (",".join(verbose_operators),)
 
     sa_conn = get_sqlalchemy_connection()
-
     if use_first_unread_anchor:
         anchor = find_first_unread_anchor(
             sa_conn,
             user_profile,
             narrow,
         )
-
+    elif narrow is not None:
+        for term in narrow:
+            if term['operator'] == "date":
+                anchor = find_anchor_after_date(
+                    sa_conn,
+                    user_profile,
+                    need_message,
+                    need_user_message,
+                    narrow,
+                    term['operand']
+                )
+                break
     anchored_to_left = (anchor == 0)
 
     # Set value that will be used to short circuit the after_query
@@ -790,7 +834,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         id_col=inner_msg_id_col,
         first_visible_message_id=first_visible_message_id,
     )
-
     main_query = alias(query)
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
     # This is a hack to tag the query we use for testing
@@ -859,7 +902,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         client_gravatar=client_gravatar,
         allow_edit_history=user_profile.realm.allow_edit_history,
     )
-
     statsd.incr('loaded_old_messages', len(message_list))
 
     ret = dict(
