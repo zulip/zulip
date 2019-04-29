@@ -1,4 +1,5 @@
 zrequire('util');
+zrequire("moment", 'moment');
 zrequire('unread');
 zrequire('stream_data');
 zrequire('people');
@@ -107,6 +108,16 @@ run_test('basics', () => {
     filter = new Filter(operators);
     assert(filter.has_operator('has'));
     assert(!filter.can_apply_locally());
+
+    operators = [
+        {operator: "stream", operand: "foo"},
+        {operator: "date", operand: "2019-04-17"},
+    ];
+    filter = new Filter(operators);
+
+    assert(filter.is_date());
+    assert(!filter.can_apply_locally());
+
 });
 
 run_test('topic_stuff', () => {
@@ -536,6 +547,13 @@ run_test('parse', () => {
         {operator: 'topic', operand: 'with space'},
     ];
     _test();
+
+    string = 'stream: separated date: 2019-04-17';
+    operators = [
+        {operator: 'stream', operand: 'separated'},
+        {operator: 'date', operand: moment("2019-04-17").toISOString(true)},
+    ];
+    _test();
 });
 
 run_test('unparse', () => {
@@ -548,6 +566,13 @@ run_test('unparse', () => {
         {operator: 'search', operand: 'yo'},
     ];
     string = 'stream:Foo -topic:Bar yo';
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [
+        {operator: "stream", operand: "separated"},
+        {operator: "date", operand: moment("2019-04-17").toISOString(true)},
+    ];
+    string = "stream:separated date:2019-04-17";
     assert.deepEqual(Filter.unparse(operators), string);
 
     operators = [
@@ -683,6 +708,14 @@ run_test('describe', () => {
     narrow = [];
     string = 'all messages';
     assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'stream', operand: 'devel'},
+        {operator: "date", operand: moment("2019-04-17").toISOString(true)},
+    ];
+    string = "stream devel, jump to date 2019-04-17";
+    assert.equal(Filter.describe(narrow), string);
+
 });
 
 run_test('is_functions', () => {

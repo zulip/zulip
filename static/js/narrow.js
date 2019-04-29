@@ -101,7 +101,6 @@ exports.activate = function (raw_operators, opts) {
                                                  function (e) { return e.operator; }),
                                 trigger: opts ? opts.trigger : undefined,
                                 previous_id: current_msg_list.selected_id()});
-
     opts = _.defaults({}, opts, {
         then_select_id: -1,
         then_select_offset: undefined,
@@ -145,12 +144,10 @@ exports.activate = function (raw_operators, opts) {
     // From here on down, any calls to the narrow_state API will
     // reflect the upcoming narrow.
     narrow_state.set_current_filter(filter);
-
     var muting_enabled = narrow_state.muting_enabled();
 
     // Save how far from the pointer the top of the message list was.
     exports.save_pre_narrow_offset_for_reload();
-
     var msg_data =  new MessageListData({
         filter: narrow_state.filter(),
         muting_enabled: muting_enabled,
@@ -203,13 +200,15 @@ exports.activate = function (raw_operators, opts) {
     }
 
     var select_immediately = id_info.local_select_id !== undefined;
-
     (function fetch_messages() {
         var anchor;
         var use_first_unread;
 
         if (id_info.final_select_id !== undefined) {
             anchor = id_info.final_select_id;
+            use_first_unread = false;
+        } else if (filter.has_operator("date")) {
+            anchor = -1;
             use_first_unread = false;
         } else {
             anchor = -1;
@@ -219,8 +218,11 @@ exports.activate = function (raw_operators, opts) {
         message_fetch.load_messages_for_narrow({
             then_select_id: anchor,
             use_first_unread_anchor: use_first_unread,
-            cont: function () {
+            cont: function (data) {
                 if (!select_immediately) {
+                    if (data) {
+                        id_info.final_select_id = data.anchor;
+                    }
                     exports.update_selection({
                         id_info: id_info,
                         select_offset: then_select_offset,
