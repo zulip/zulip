@@ -47,6 +47,7 @@ class HomeTest(ZulipTestCase):
         expected_keys = [
             "alert_words",
             "available_notification_sounds",
+            "avatar_changes_disabled",
             "avatar_source",
             "avatar_url",
             "avatar_url_medium",

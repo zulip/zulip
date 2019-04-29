@@ -491,7 +491,7 @@ def name_changes_disabled(realm: Optional[Realm]) -> bool:
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 def avatar_changes_disabled(realm: Realm) -> bool:
-    return realm.avatar_changes_disabled
+    return settings.AVATAR_CHANGES_DISABLED or realm.avatar_changes_disabled
 
 class RealmDomain(models.Model):
     """For an organization with emails_restricted_to_domains enabled, the list of

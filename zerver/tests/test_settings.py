@@ -9,7 +9,7 @@ from typing import Any, Dict
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import MockLDAP
+from zerver.lib.test_helpers import MockLDAP, get_test_image_file
 from zerver.lib.users import get_all_api_keys
 from zerver.models import get_realm, UserProfile, \
     get_user_profile_by_api_key
@@ -313,6 +313,19 @@ class ChangeSettingsTest(ZulipTestCase):
             result = self.do_change_emojiset(emojiset)
             self.assert_json_success(result)
 
+    def test_avatar_changes_disabled(self) -> None:
+        user = self.example_user('hamlet')
+        email = user.email
+        self.login(email)
+
+        with self.settings(AVATAR_CHANGES_DISABLED=True):
+            result = self.client_delete("/json/users/me/avatar")
+            self.assert_json_error(result, "Avatar changes have been disabled by the admin.", 400)
+
+        with self.settings(AVATAR_CHANGES_DISABLED=True):
+            with get_test_image_file('img.png') as fp1:
+                result = self.client_post("/json/users/me/avatar", {'f1': fp1})
+            self.assert_json_error(result, "Avatar changes have been disabled by the admin.", 400)
 
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:
