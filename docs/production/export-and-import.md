@@ -77,12 +77,13 @@ archive of all the organization's uploaded files.
 
 ## Import into a new Zulip server
 
-First [install a new Zulip server](../production/install.html),
+(1.) [Install a new Zulip server](../production/install.html),
 skipping "Step 3: Create a Zulip organization, and log in" (you'll
 create your Zulip organization via the data import tool instead).
 
-The Zulip server you're importing into needs to be running the same
-version of Zulip as the server you exported from.
+(1a.) Ensure that the Zulip server you're importing into is running the same
+version of Zulip as the server you're exporting from.
+
 For exports from zulipchat.com, run the following:
 
 ```
@@ -94,14 +95,14 @@ Note that if your server has 2GB of RAM or less, you'll want to read the detaile
 It is not sufficient to be on the latest stable release, as zulipchat.com is
 often several months of development ahead of the latest release.
 
-If your new Zulip server is meant to fully replace a previous Zulip
+(2.) If your new Zulip server is meant to fully replace a previous Zulip
 server, you may want to copy the contents of `/etc/zulip` to your new
-server at this point to reuse the server-level configuration and
+server to reuse the server-level configuration and
 secret keys from your old server.  See our
 [documentation on backups][backups] for details on the contents of
 this directory.
 
-Log in to a shell on your Zulip server as the `zulip` user. Run the
+(3.) Log in to a shell on your Zulip server as the `zulip` user. Run the
 following commands, replacing the filename with the path to your data
 export tarball:
 
