@@ -187,6 +187,8 @@ def main() -> None:
     os.chdir(os.path.dirname(TOOLS_DIR))
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
+    default_parallel = os.cpu_count()
+
     # Remove proxy settings for running backend tests
     os.environ["http_proxy"] = ""
     os.environ["https_proxy"] = ""
@@ -227,9 +229,9 @@ def main() -> None:
     parser.add_argument('--parallel', dest='processes',
                         type=int,
                         action='store',
-                        default=4,
+                        default=default_parallel,
                         help='Specify the number of processes to run the '
-                             'tests in. Default is 4.')
+                             'tests in. Default is the number of logical CPUs')
     parser.add_argument('--profile', dest='profile',
                         action="store_true",
                         default=False, help='Profile test runtime.')
