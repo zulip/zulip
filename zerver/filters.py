@@ -9,7 +9,8 @@ class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
     def get_post_parameters(self, request: HttpRequest) -> Dict[str, Any]:
         filtered_post = SafeExceptionReporterFilter.get_post_parameters(self, request).copy()
         filtered_vars = ['content', 'secret', 'password', 'key', 'api-key', 'subject', 'stream',
-                         'subscriptions', 'to', 'csrfmiddlewaretoken', 'api_key']
+                         'subscriptions', 'to', 'csrfmiddlewaretoken', 'api_key',
+                         'realm_counts', 'installation_counts']
 
         for var in filtered_vars:
             if var in filtered_post:
