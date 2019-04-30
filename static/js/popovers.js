@@ -342,10 +342,12 @@ function show_user_group_info_popover(element, group, message) {
     }
     current_msg_list.select_id(message.id);
     var elt = $(element);
+    var is_group_active = user_groups.is_active_user_group(group);
     if (elt.data('popover') === undefined) {
         var args = {
             group_name: group.name,
             group_description: group.description,
+            is_active: is_group_active,
             members: sort_group_members(fetch_group_members(group.members.keys())),
         };
         elt.popover({
@@ -355,7 +357,9 @@ function show_user_group_info_popover(element, group, message) {
             trigger: "manual",
         });
         elt.popover("show");
-        ui.set_up_scrollbar($('.group-info-popover .member-list'));
+        if (is_group_active) {
+            ui.set_up_scrollbar($('.group-info-popover .member-list'));
+        }
         current_message_info_popover_elem = elt;
     }
 }
