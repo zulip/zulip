@@ -1636,6 +1636,7 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
         host=conn.server_name(),
         bucket=bucket.name,
         key=key.key)
+    print()
     print("Uploaded to %s" % (public_url,))
 
     if delete_after_upload:
