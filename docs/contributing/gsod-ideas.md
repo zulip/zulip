@@ -80,7 +80,7 @@ project of its scope. Use
 [our first-time Zulip developer guide](../overview/contributing.html#your-first-codebase-contribution)
 to get your Zulip development environment set up. If you have any
 trouble, please speak up in
-[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
+[#documentation](https://chat.zulip.org/#narrow/stream/19-documentation) on
 [the Zulip development community server](../contributing/chat-zulip-org.html)
 (use your name as the topic).
 
@@ -158,7 +158,7 @@ We have several Zulip community members who are interested in mentoring
 projects.  We usually decide which members are mentoring which
 projects based in part on who is a good fit for the needs of each
 writer as well as technical expertise.  You can reach us via
-[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
+[#documentation](https://chat.zulip.org/#narrow/stream/19-documentation) on
 [the Zulip development community server](../contributing/chat-zulip-org.html),
 (compose a new stream message with your name as the topic).
 
