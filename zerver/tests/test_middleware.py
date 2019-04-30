@@ -83,7 +83,7 @@ class OpenGraphTest(ZulipTestCase):
             '/help/disable-message-edit-history',
             "Disable message edit history (Zulip Help Center)",
             ["By default, Zulip displays messages",
-             "users can view the edit history of a message. To remove the",
+             "users can view the edit history of a message. | To remove the",
              "best to delete the message entirely. "],
             ["Disable message edit history", "feature is only available", "Related articles",
              "Restrict message editing"]
@@ -104,7 +104,7 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             '/help/deactivate-your-account',
             "Deactivate your account (Zulip Help Center)",
-            ["Any bots that you maintain will be disabled. Deactivating "],
+            ["Any bots that you maintain will be disabled. | Deactivating "],
             ["Confirm by clicking", "  ", "\n"])
 
     def test_tabs(self) -> None:
@@ -135,7 +135,7 @@ class OpenGraphTest(ZulipTestCase):
             '/help/not-a-real-page',
             # Probably we should make this "Zulip Help Center"
             "No such article. (Zulip Help Center)",
-            ["No such article. We're here to help!",
+            ["No such article. | We're here to help!",
              "Email us at zulip-admin@example.com with questions, feedback, or feature requests."],
             [],
             # Test that our open graph logic doesn't throw a 500
@@ -166,7 +166,7 @@ class OpenGraphTest(ZulipTestCase):
             '/login/',
             'Zulip Dev',
             ['Welcome to Clojurians Zulip - the place where the Clojure community meets',
-             'note-1', 'note-2', 'note-3', 'Enjoy!'],
+             '* note-1 * note-2 * note-3 | Enjoy!'],
             [])
 
     def test_login_page_realm_icon(self) -> None:
