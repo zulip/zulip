@@ -109,6 +109,9 @@ exports.set_up = function () {
 
 exports.update_page = function () {
     _.each(exports.notification_settings, function (setting) {
+        if (setting === 'enable_offline_push_notifications' && !page_params.realm_push_notifications_enabled) {
+            return;
+        }
         $("#" + setting).prop('checked', page_params[setting]);
     });
 };
