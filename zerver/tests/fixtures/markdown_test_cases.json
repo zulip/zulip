@@ -249,6 +249,12 @@
       "text_content": "foo"
     },
     {
+      "name": "star_emoji",
+      "input": "**:smile:**",
+      "expected_output": "<p><strong><span aria-label=\"smile\" class=\"emoji emoji-263a\" role=\"img\" title=\"smile\">:smile:</span></strong></p>",
+      "text_content": "\u263A"
+    },
+    {
       "name": "star_strong_em",
       "input": "***foo***",
       "expected_output": "<p><strong><em>foo</em></strong></p>",
