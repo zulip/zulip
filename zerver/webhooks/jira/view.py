@@ -13,9 +13,15 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
 from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 
 IGNORED_EVENTS = [
-    'comment_deleted',  # we handle issue_update event instead
-    'issuelink_created',
+    # The reason we don't handle any comment_* events is that, depending
+    # on the JIRA version, comment payloads may or may not contain the
+    # required information about the issue that was commented on. It
+    # is better to receive comment notifications via the issue_updated
+    # event, which seems to contain all necessary data across JIRA versions.
+    'comment_deleted',
+    'comment_created',
     'comment_updated',
+    'issuelink_created',
     'attachment_created',
     'issuelink_deleted',
     'sprint_started',
@@ -230,7 +236,6 @@ JIRA_CONTENT_FUNCTION_MAPPER = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
     "jira:issue_updated": handle_updated_issue_event,
-    "comment_created": handle_updated_issue_event
 }
 
 @api_key_only_webhook_view("JIRA")
