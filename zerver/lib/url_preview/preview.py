@@ -1,6 +1,7 @@
 import re
 import requests
 
+from django.conf import settings
 from django.utils.encoding import smart_text
 from typing import Any, Optional, Dict
 from typing.re import Match
@@ -10,7 +11,10 @@ from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import OpenGraphParser, GenericParser
 
 
-CACHE_NAME = "database"
+# FIXME: Should we use a database cache or a memcached in production? What if
+# opengraph data is changed for a site?
+# Use an in-memory cache for development, to make it easy to develop this code
+CACHE_NAME = "database" if not settings.DEVELOPMENT else "in-memory"
 # Based on django.core.validators.URLValidator, with ftp support removed.
 link_regex = re.compile(
     r'^(?:http)s?://'  # http:// or https://

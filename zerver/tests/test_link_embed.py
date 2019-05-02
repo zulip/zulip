@@ -27,7 +27,11 @@ TEST_CACHES = {
     'database': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'url-preview',
-    }
+    },
+    'in-memory': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'url-preview',
+    },
 }
 
 @override_settings(INLINE_URL_EMBED_PREVIEW=True)
