@@ -74,6 +74,15 @@ exports.update_property = function (stream_id, property, value, other_values) {
         update_stream_pin(sub, value);
         stream_list.refresh_pinned_or_unpinned_stream(sub);
         break;
+    case 'invite_only':
+        subs.update_stream_privacy(sub, {
+            invite_only: value,
+            history_public_to_subscribers: other_values.history_public_to_subscribers,
+        });
+        break;
+    case 'is_announcement_only':
+        subs.update_stream_announcement_only(sub, value);
+        break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
                                                                 value: value});

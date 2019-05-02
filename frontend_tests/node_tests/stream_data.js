@@ -393,6 +393,8 @@ run_test('stream_settings', () => {
         color: 'amber',
         subscribed: true,
         invite_only: true,
+        history_public_to_subscribers: true,
+        is_announcement_only: true,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub(cinnamon.name, cinnamon);
@@ -412,6 +414,19 @@ run_test('stream_settings', () => {
     assert.equal(sub_rows[1].invite_only, false);
     assert.equal(sub_rows[2].invite_only, false);
 
+    assert.equal(sub_rows[0].history_public_to_subscribers, true);
+    assert.equal(sub_rows[0].is_announcement_only, true);
+
+    var sub = stream_data.get_sub('a');
+    stream_data.update_stream_privacy(sub, {
+        invite_only: false,
+        history_public_to_subscribers: false,
+    });
+    stream_data.update_stream_announcement_only(sub, false);
+    stream_data.update_calculated_fields(sub);
+    assert.equal(sub.invite_only, false);
+    assert.equal(sub.history_public_to_subscribers, false);
+    assert.equal(sub.is_announcement_only, false);
 });
 
 run_test('default_stream_names', () => {

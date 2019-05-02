@@ -3441,6 +3441,16 @@ def do_change_stream_invite_only(stream: Stream, invite_only: bool,
     stream.invite_only = invite_only
     stream.history_public_to_subscribers = history_public_to_subscribers
     stream.save(update_fields=['invite_only', 'history_public_to_subscribers'])
+    event = dict(
+        op="update",
+        type="stream",
+        property="invite_only",
+        value=invite_only,
+        history_public_to_subscribers=history_public_to_subscribers,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
 def do_change_stream_web_public(stream: Stream, is_web_public: bool) -> None:
     stream.is_web_public = is_web_public
@@ -3449,6 +3459,15 @@ def do_change_stream_web_public(stream: Stream, is_web_public: bool) -> None:
 def do_change_stream_announcement_only(stream: Stream, is_announcement_only: bool) -> None:
     stream.is_announcement_only = is_announcement_only
     stream.save(update_fields=['is_announcement_only'])
+    event = dict(
+        op="update",
+        type="stream",
+        property="is_announcement_only",
+        value=is_announcement_only,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
 def do_rename_stream(stream: Stream,
                      new_name: str,

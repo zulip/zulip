@@ -50,6 +50,8 @@ from zerver.lib.actions import (
     do_change_notification_settings,
     do_change_realm_domain,
     do_change_stream_description,
+    do_change_stream_invite_only,
+    do_change_stream_announcement_only,
     do_change_subscription_property,
     do_change_user_delivery_email,
     do_create_user,
@@ -2406,6 +2408,23 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_id', check_int),
             ('name', check_string),
         ])
+        stream_update_invite_only_schema_checker = self.check_events_dict([
+            ('type', equals('stream')),
+            ('op', equals('update')),
+            ('property', equals('invite_only')),
+            ('stream_id', check_int),
+            ('name', check_string),
+            ('value', check_bool),
+            ('history_public_to_subscribers', check_bool),
+        ])
+        stream_update_is_announcement_only_schema_checker = self.check_events_dict([
+            ('type', equals('stream')),
+            ('op', equals('update')),
+            ('property', equals('is_announcement_only')),
+            ('stream_id', check_int),
+            ('name', check_string),
+            ('value', check_bool),
+        ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
         action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")  # type: Callable[[], Any]
@@ -2460,6 +2479,20 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(action,
                               include_subscribers=include_subscribers)
         error = stream_update_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Update stream privacy
+        action = lambda: do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
+        events = self.do_test(action,
+                              include_subscribers=include_subscribers)
+        error = stream_update_invite_only_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Update stream is_announcement_only property
+        action = lambda: do_change_stream_announcement_only(stream, True)
+        events = self.do_test(action,
+                              include_subscribers=include_subscribers)
+        error = stream_update_is_announcement_only_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
