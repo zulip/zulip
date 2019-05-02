@@ -14,7 +14,7 @@ Test out the realm:
     go to browser and use your dev url
 '''
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandParser, CommandError
 
 from zerver.data_import.mattermost import do_convert_data
 
@@ -40,24 +40,20 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         output_dir = options["output_dir"]
         if output_dir is None:
-            print("You need to specify --output <output directory>")
-            exit(1)
+            raise CommandError("You need to specify --output <output directory>")
 
         if os.path.exists(output_dir) and not os.path.isdir(output_dir):
-            print(output_dir + " is not a directory")
-            exit(1)
+            raise CommandError(output_dir + " is not a directory")
 
         os.makedirs(output_dir, exist_ok=True)
 
         if os.listdir(output_dir):
-            print('Output directory should be empty!')
-            exit(1)
+            raise CommandError('Output directory should be empty!')
         output_dir = os.path.realpath(output_dir)
 
         data_dir = options['mattermost_data_dir']
         if not os.path.exists(data_dir):
-            print("Directory not found: '%s'" % (data_dir,))
-            exit(1)
+            raise CommandError("Directory not found: '%s'" % (data_dir,))
         data_dir = os.path.realpath(data_dir)
 
         print("Converting Data ...")
