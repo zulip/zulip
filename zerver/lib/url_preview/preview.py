@@ -1,11 +1,13 @@
 import re
+import requests
+
+from django.utils.encoding import smart_text
 from typing import Any, Optional, Dict
 from typing.re import Match
-import requests
+
 from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cache_key
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import OpenGraphParser, GenericParser
-from django.utils.encoding import smart_text
 
 
 CACHE_NAME = "database"
