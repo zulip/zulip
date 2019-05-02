@@ -326,12 +326,8 @@ function change_stream_privacy(e) {
         url: "/json/streams/" + stream_id,
         data: data,
         success: function () {
-            subs.update_stream_privacy(sub, {
-                invite_only: invite_only,
-                history_public_to_subscribers: history_public_to_subscribers,
-            });
-            subs.update_stream_announcement_only(sub, is_announcement_only);
             $("#stream_privacy_modal").remove();
+            // The rest will be done by update stream event we will get.
         },
         error: function () {
             $("#change-stream-privacy-button").text(i18n.t("Try again"));

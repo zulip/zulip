@@ -128,6 +128,32 @@ run_test('update_property', () => {
         assert.equal(checkbox.prop('checked'), true);
     });
 
+    // Test stream privacy change event
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('subs.update_stream_privacy', stub.f);
+            stream_events.update_property(1, 'invite_only', true, {
+                history_public_to_subscribers: true,
+            });
+            var args = stub.get_args('sub', 'val');
+            assert.equal(args.sub.stream_id, 1);
+            assert.deepEqual(args.val,  {
+                invite_only: true,
+                history_public_to_subscribers: true,
+            });
+        });
+    });
+
+    // Test stream is_announcement_only change event
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('subs.update_stream_announcement_only', stub.f);
+            stream_events.update_property(1, 'is_announcement_only', true);
+            var args = stub.get_args('sub', 'val');
+            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.val, true);
+        });
+    });
 });
 
 run_test('marked_subscribed', () => {

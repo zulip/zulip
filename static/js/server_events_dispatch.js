@@ -268,6 +268,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 event.value,
                 {
                     rendered_description: event.rendered_description,
+                    history_public_to_subscribers: event.history_public_to_subscribers,
                 });
             settings_streams.update_default_streams_table();
         } else if (event.op === 'create') {
