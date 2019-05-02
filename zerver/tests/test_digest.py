@@ -8,82 +8,13 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import create_stream_if_needed, do_create_user
-from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails, \
-    gather_new_users
+from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.models import get_client, get_realm, flush_per_request_caches, \
     Realm, Message, UserActivity, UserProfile
 
 class TestDigestEmailMessages(ZulipTestCase):
-
-    @mock.patch('zerver.lib.digest.enough_traffic')
-    @mock.patch('zerver.lib.digest.send_future_email')
-    def test_receive_digest_email_messages(self, mock_send_future_email: mock.MagicMock,
-                                           mock_enough_traffic: mock.MagicMock) -> None:
-
-        # build dummy messages for missed messages email reply
-        # have Hamlet send Othello a PM. Othello will reply via email
-        # Hamlet will receive the message.
-        hamlet = self.example_user('hamlet')
-        self.login(hamlet.email)
-        result = self.client_post("/json/messages", {"type": "private",
-                                                     "content": "test_receive_missed_message_email_messages",
-                                                     "client": "test suite",
-                                                     "to": self.example_email('othello')})
-        self.assert_json_success(result)
-
-        user_profile = self.example_user('othello')
-        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple())
-
-        handle_digest_email(user_profile.id, cutoff)
-        self.assertEqual(mock_send_future_email.call_count, 1)
-
-        kwargs = mock_send_future_email.call_args[1]
-        self.assertEqual(kwargs['to_user_ids'], [user_profile.id])
-        html = kwargs['context']['unread_pms'][0]['header']['html']
-        expected_url = "'http://zulip.testserver/#narrow/pm-with/{id}-hamlet'".format(id=hamlet.id)
-        self.assertIn(expected_url, html)
-
-    @mock.patch('zerver.lib.digest.enough_traffic')
-    @mock.patch('zerver.lib.digest.send_future_email')
-    def test_huddle_urls(self, mock_send_future_email: mock.MagicMock,
-                         mock_enough_traffic: mock.MagicMock) -> None:
-
-        email = self.example_email('hamlet')
-        self.login(email)
-
-        huddle_emails = [
-            self.example_email('cordelia'),
-            self.example_email('othello'),
-        ]
-
-        payload = dict(
-            type='private',
-            content='huddle message',
-            client='test suite',
-            to=','.join(huddle_emails),
-        )
-        result = self.client_post("/json/messages", payload)
-        self.assert_json_success(result)
-
-        user_profile = self.example_user('othello')
-        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple())
-
-        handle_digest_email(user_profile.id, cutoff)
-        self.assertEqual(mock_send_future_email.call_count, 1)
-
-        kwargs = mock_send_future_email.call_args[1]
-        self.assertEqual(kwargs['to_user_ids'], [user_profile.id])
-        html = kwargs['context']['unread_pms'][0]['header']['html']
-
-        other_user_ids = sorted([
-            self.example_user('cordelia').id,
-            self.example_user('hamlet').id,
-        ])
-        slug = ','.join(str(user_id) for user_id in other_user_ids) + '-group'
-        expected_url = "'http://zulip.testserver/#narrow/pm-with/" + slug + "'"
-        self.assertIn(expected_url, html)
 
     @mock.patch('zerver.lib.digest.enough_traffic')
     @mock.patch('zerver.lib.digest.send_future_email')
@@ -121,7 +52,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with queries_captured() as queries:
             handle_digest_email(othello.id, cutoff)
 
-        self.assertTrue(24 <= len(queries) <= 25)
+        self.assertTrue(21 <= len(queries) <= 22)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -244,32 +175,6 @@ class TestDigestEmailMessages(ZulipTestCase):
         new_stream = gather_new_streams(cordelia, cutoff)[1]
         expected_html = "<a href='http://zulip.testserver/#narrow/stream/{stream_id}-New-stream'>New stream</a>".format(stream_id=stream_id)
         self.assertIn(expected_html, new_stream['html'])
-
-    @mock.patch('zerver.lib.digest.timezone_now')
-    def test_gather_new_users(self, mock_django_timezone: mock.MagicMock) -> None:
-        cutoff = timezone_now()
-        do_create_user('abc@example.com', password='abc', realm=get_realm('zulip'), full_name='abc', short_name='abc')
-
-        # Normal users get info about new users
-        user = self.example_user('aaron')
-        gathered_no_of_user, _ = gather_new_users(user, cutoff)
-        self.assertEqual(gathered_no_of_user, 1)
-
-        # Definitely, admin users get info about new users
-        user = self.example_user('iago')
-        gathered_no_of_user, _ = gather_new_users(user, cutoff)
-        self.assertEqual(gathered_no_of_user, 1)
-
-        # Guest users don't get info about new users
-        user = self.example_user('polonius')
-        gathered_no_of_user, _ = gather_new_users(user, cutoff)
-        self.assertEqual(gathered_no_of_user, 0)
-
-        # Zephyr users also don't get info about new users in their realm
-        user = self.mit_user('starnine')
-        do_create_user('abc@mit.edu', password='abc', realm=user.realm, full_name='abc', short_name='abc')
-        gathered_no_of_user, _ = gather_new_users(user, cutoff)
-        self.assertEqual(gathered_no_of_user, 0)
 
 class TestDigestContentInBrowser(ZulipTestCase):
     def test_get_digest_content_in_browser(self) -> None:
