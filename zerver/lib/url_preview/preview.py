@@ -75,11 +75,9 @@ def get_link_embed_data(url: str,
     if not valid_content_type(url):
         return None
 
-    # Fetch information from URL.
-    # We are using three sources in next order:
-    # 1. OEmbed
-    # 2. Open Graph
-    # 3. Meta tags
+    # We are using two different mechanisms to get the embed data
+    # 1. Use OEmbed data, if found, for photo and video "type" sites
+    # 2. Otherwise, use a combination of Open Graph tags and Meta tags
     data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight) or {}
     if data.get('oembed'):
         return data
@@ -93,7 +91,6 @@ def get_link_embed_data(url: str,
             if not data.get(key) and generic_data.get(key):
                 data[key] = generic_data[key]
     return data
-
 
 @get_cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME)
 def link_embed_data_from_cache(url: str, maxwidth: Optional[int]=640, maxheight: Optional[int]=480) -> Any:

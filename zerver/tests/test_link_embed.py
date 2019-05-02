@@ -5,6 +5,7 @@ import ujson
 from typing import Any, Callable, Dict, Optional
 from requests.exceptions import ConnectionError
 from django.test import override_settings
+from django.utils.html import escape
 
 from zerver.models import Message, Realm
 from zerver.lib.actions import queue_json_publish
@@ -13,7 +14,7 @@ from zerver.lib.test_helpers import MockPythonResponse
 from zerver.worker.queue_processors import FetchLinksEmbedData
 from zerver.lib.url_preview.preview import (
     get_link_embed_data, link_embed_data_from_cache)
-from zerver.lib.url_preview.oembed import get_oembed_data
+from zerver.lib.url_preview.oembed import get_oembed_data, get_safe_html
 from zerver.lib.url_preview.parsers import (
     OpenGraphParser, GenericParser)
 from zerver.lib.cache import cache_set, NotFoundInCache, preview_url_cache_key
@@ -50,7 +51,7 @@ class OembedTestCase(ZulipTestCase):
             'html': '<p>test</p>',
             'version': '1.0',
             'width': 658,
-            'height': None}
+            'height': 400}
         response.text = ujson.dumps(response_data)
         url = 'http://instagram.com/p/BLtI2WdAymy'
         data = get_oembed_data(url)
@@ -85,12 +86,52 @@ class OembedTestCase(ZulipTestCase):
         self.assertTrue(data['oembed'])
 
     @mock.patch('pyoembed.requests.get')
+    def test_video_provider(self, get: Any) -> None:
+        get.return_value = response = mock.Mock()
+        response.headers = {'content-type': 'application/json'}
+        response.ok = True
+        response_data = {
+            'type': 'video',
+            'thumbnail_url': 'https://scontent.cdninstagram.com/t51.2885-15/n.jpg',
+            'thumbnail_width': 640,
+            'thumbnail_height': 426,
+            'title': 'NASA',
+            'html': '<p>test</p>',
+            'version': '1.0',
+            'width': 658,
+            'height': 400}
+        response.text = ujson.dumps(response_data)
+        url = 'http://blip.tv/video/158727223'
+        data = get_oembed_data(url)
+        self.assertIsInstance(data, dict)
+        self.assertIn('title', data)
+        assert data is not None  # allow mypy to infer data is indexable
+        self.assertEqual(data['title'], response_data['title'])
+
+    @mock.patch('pyoembed.requests.get')
     def test_error_request(self, get: Any) -> None:
         get.return_value = response = mock.Mock()
         response.ok = False
         url = 'http://instagram.com/p/BLtI2WdAymy'
         data = get_oembed_data(url)
         self.assertIsNone(data)
+
+    def test_safe_oembed_html(self) -> None:
+        html = '<iframe src="//www.instagram.com/embed.js"></iframe>'
+        safe_html = get_safe_html(html)
+        self.assertEqual(html, safe_html)
+
+    def test_unsafe_oembed_html(self) -> None:
+        html = ('<blockquote class="instagram-media" data-instgrm-captioned>test</blockquote>\n'
+                '<script async src="//www.instagram.com/embed.js"></script>')
+        safe_html = get_safe_html(html)
+        self.assertEqual('', safe_html)
+
+    def test_autodiscovered_oembed_xml_format_html(self) -> None:
+        iframe_content = '<iframe src="https://w.soundcloud.com/player"></iframe>'
+        html = '<![CDATA[{}]]>'.format(iframe_content)
+        safe_html = get_safe_html(html)
+        self.assertEqual(iframe_content, safe_html)
 
 
 class OpenGraphParserTestCase(ZulipTestCase):
@@ -518,3 +559,33 @@ class PreviewTestCase(ZulipTestCase):
         self.assertEqual(
             '<p><a href="http://test.org/x" target="_blank" title="http://test.org/x">http://test.org/x</a></p>',
             msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_safe_oembed_html_url(self) -> None:
+        url = 'http://test.org/'
+        with mock.patch('zerver.lib.actions.queue_json_publish'):
+            msg_id = self.send_personal_message(
+                self.example_email('hamlet'),
+                self.example_email('cordelia'),
+                content=url,
+            )
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        event = {
+            'message_id': msg_id,
+            'urls': [url],
+            'message_realm_id': msg.sender.realm_id,
+            'message_content': url}
+
+        mocked_data = {'html': '<iframe src="{0}"></iframe>'.format(url),
+                       'oembed': True, 'type': 'video', 'image': '{0}/image.png'.format(url)}
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch('requests.get', mocked_response):
+                with mock.patch('zerver.lib.url_preview.preview.get_oembed_data',
+                                lambda *args, **kwargs: mocked_data):
+                    FetchLinksEmbedData().consume(event)
+                    data = link_embed_data_from_cache(url)
+
+        self.assertEqual(data, mocked_data)
+        msg.refresh_from_db()
+        self.assertIn('a data-id="{}"'.format(escape(mocked_data['html'])), msg.rendered_content)

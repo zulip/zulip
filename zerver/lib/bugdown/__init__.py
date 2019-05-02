@@ -378,6 +378,16 @@ def add_oembed_data(root: Element, link: str, extracted_data: Dict[str, Any]) ->
             add_a(root, image, link, title=title)
             return True
 
+    elif type_ == 'video':
+        html = extracted_data['html']
+        image = extracted_data['image']
+        title = extracted_data.get('title', link)
+        description = extracted_data.get('description')
+        add_a(root, image, link, title, description,
+              "embed-video message_inline_image",
+              html, already_thumbnailed=True)
+        return True
+
     return False
 
 def add_embed(root: Element, link: str, extracted_data: Dict[str, Any]) -> None:

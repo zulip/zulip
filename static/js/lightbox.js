@@ -70,6 +70,11 @@ function display_video(payload) {
     iframe.attr("frameborder", 0);
     iframe.attr("allowfullscreen", true);
 
+    // For oEmbed videos we set the complete html as the payload source
+    if (payload.type === "embed-video") {
+        iframe = $(payload.source);
+    }
+
     $("#lightbox_overlay .player-container").html(iframe).show();
     $(".image-actions .open").attr("href", payload.url);
 }
@@ -91,6 +96,7 @@ exports.open = function (image, options) {
     // cast to true.
     var is_youtube_video = !!$image.closest(".youtube-video").length;
     var is_vimeo_video = !!$image.closest(".vimeo-video").length;
+    var is_embed_video = !!$image.closest(".embed-video").length;
 
     // check if image is descendent of #preview_content
     var is_compose_preview_image = $image.closest("#preview_content").length === 1;
@@ -111,6 +117,9 @@ exports.open = function (image, options) {
             $source = $parent.attr("data-id");
         } else if (is_vimeo_video) {
             $type = "vimeo-video";
+            $source = $parent.attr("data-id");
+        } else if (is_embed_video) {
+            $type = "embed-video";
             $source = $parent.attr("data-id");
         } else {
             $type = "image";

@@ -158,6 +158,27 @@ exports.initialize_kitchen_sink_stuff = function () {
         $(this).removeClass("fa fa-play");
     });
 
+    $("#main_div").on("mouseenter", ".embed-video a", function () {
+        var elem = $(this);
+        // Set image height and css vars for play button position, if not done already
+        var setPosition = !elem.data("entered-before");
+        if (setPosition) {
+            var imgW = elem.find("img")[0].width;
+            var imgH = elem.find("img")[0].height;
+            // Ensure height doesn't change on mouse enter
+            elem.css("height", imgH);
+            // variables to set play button position
+            elem.css("--margin-left", (imgW - 30) / 2)
+                .css("--margin-top", (imgH - 26) / 2);
+            elem.data("entered-before", true);
+        }
+        elem.addClass("fa fa-play");
+    });
+
+    $("#main_div").on("mouseleave", ".embed-video a", function () {
+        $(this).removeClass("fa fa-play");
+    });
+
     $("#subscriptions_table").on("mouseover", ".subscription_header", function () {
         $(this).addClass("active");
     });
