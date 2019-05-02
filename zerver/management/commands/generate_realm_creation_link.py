@@ -1,11 +1,10 @@
 
-import sys
 from typing import Any
 
 from django.db import ProgrammingError
 
 from confirmation.models import generate_realm_creation_url
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.models import Realm
 
 class Command(ZulipBaseCommand):
@@ -22,8 +21,8 @@ class Command(ZulipBaseCommand):
             # first check if the db has been initalized
             Realm.objects.first()
         except ProgrammingError:
-            print("The Zulip database does not appear to exist. Have you run initialize-database?")
-            sys.exit(1)
+            raise CommandError("The Zulip database does not appear to exist. "
+                               "Have you run initialize-database?")
 
         url = generate_realm_creation_url(by_admin=True)
         self.stdout.write(self.style.SUCCESS("Please visit the following "

@@ -1,14 +1,12 @@
 
 import logging
-import sys
 from argparse import ArgumentParser
 from typing import Any, List, Optional
 
-from django.core.management.base import CommandError
 from django.db import connection
 
 from zerver.lib.fix_unreads import fix
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.models import Realm, UserProfile
 
 logging.getLogger('zulip.fix_unreads').setLevel(logging.INFO)
@@ -55,8 +53,7 @@ class Command(ZulipBaseCommand):
 
         if options['all']:
             if realm is None:
-                print('You must specify a realm if you choose the --all option.')
-                sys.exit(1)
+                raise CommandError('You must specify a realm if you choose the --all option.')
 
             self.fix_all_users(realm)
             return

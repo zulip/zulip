@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
 from zerver.models import Message, Realm, \
@@ -19,8 +19,7 @@ class Command(BaseCommand):
             try:
                 realms = [get_realm(string_id) for string_id in options['realms']]
             except Realm.DoesNotExist as e:
-                print(e)
-                exit(1)
+                raise CommandError(e)
         else:
             realms = Realm.objects.all()
 

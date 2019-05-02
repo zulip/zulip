@@ -4,7 +4,7 @@ import time
 from typing import Any, Callable, Optional
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandParser, CommandError
 
 from zerver.lib.rate_limiter import RateLimitedUser, \
     client, max_api_calls, max_api_window
@@ -44,8 +44,7 @@ than max_api_calls! (trying to trim) %s %s" % (key, count))
 
     def handle(self, *args: Any, **options: Any) -> None:
         if not settings.RATE_LIMITING:
-            print("This machine is not using redis or rate limiting, aborting")
-            exit(1)
+            raise CommandError("This machine is not using redis or rate limiting, aborting")
 
         # Find all keys, and make sure they're all within size constraints
         wildcard_list = "ratelimit:*:*:list"

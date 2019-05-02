@@ -21,7 +21,7 @@ spec:
     exporting-from-hipchat-server-or-data-center-for-data-portability-950821555.html
 '''
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandParser, CommandError
 
 from zerver.data_import.hipchat import do_convert_data
 
@@ -56,25 +56,21 @@ class Command(BaseCommand):
         output_dir = options["output_dir"]
 
         if output_dir is None:
-            print("You need to specify --output <output directory>")
-            exit(1)
+            raise CommandError("You need to specify --output <output directory>")
 
         if os.path.exists(output_dir) and not os.path.isdir(output_dir):
-            print(output_dir + " is not a directory")
-            exit(1)
+            raise CommandError(output_dir + " is not a directory")
 
         os.makedirs(output_dir, exist_ok=True)
 
         if os.listdir(output_dir):
-            print('Output directory should be empty!')
-            exit(1)
+            raise CommandError('Output directory should be empty!')
 
         output_dir = os.path.realpath(output_dir)
 
         for path in options['hipchat_tar']:
             if not os.path.exists(path):
-                print("Tar file not found: '%s'" % (path,))
-                exit(1)
+                raise CommandError("Tar file not found: '%s'" % (path,))
 
             print("Converting Data ...")
             do_convert_data(

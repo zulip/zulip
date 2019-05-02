@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
 from zerver.lib.domains import validate_domain
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.models import RealmDomain, get_realm_domains
 
 class Command(ZulipBaseCommand):
@@ -44,23 +44,21 @@ class Command(ZulipBaseCommand):
         try:
             validate_domain(domain)
         except ValidationError as e:
-            print(e.messages[0])
-            sys.exit(1)
+            raise CommandError(e.messages[0])
         if options["op"] == "add":
             try:
                 RealmDomain.objects.create(realm=realm, domain=domain,
                                            allow_subdomains=options["allow_subdomains"])
                 sys.exit(0)
             except IntegrityError:
-                print("The domain %(domain)s is already a part of your organization." % {'domain': domain})
-                sys.exit(1)
+                raise CommandError("The domain %(domain)s is already a part "
+                                   "of your organization." % {'domain': domain})
         elif options["op"] == "remove":
             try:
                 RealmDomain.objects.get(realm=realm, domain=domain).delete()
                 sys.exit(0)
             except RealmDomain.DoesNotExist:
-                print("No such entry found!")
-                sys.exit(1)
+                raise CommandError("No such entry found!")
         else:
             self.print_help("./manage.py", "realm_domain")
-            sys.exit(1)
+            raise CommandError

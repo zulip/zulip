@@ -29,7 +29,7 @@ class Command(ZulipBaseCommand):
 
         if not options['emails']:
             self.print_help("./manage.py", "generate_invite_links")
-            exit(1)
+            raise CommandError
 
         for email in options['emails']:
             try:
@@ -48,10 +48,9 @@ class Command(ZulipBaseCommand):
                 email_allowed_for_realm(email, realm)
             except DomainNotAllowedForRealmError:
                 if not options["force"]:
-                    print("You've asked to add an external user '%s' to a closed realm '%s'." % (
-                        email, realm.string_id))
-                    print("Are you sure? To do this, pass --force.")
-                    exit(1)
+                    raise CommandError("You've asked to add an external user '{}' to a "
+                                       "closed realm '{}'.\nAre you sure? To do this, "
+                                       "pass --force.".format(email, realm.string_id))
 
             prereg_user = PreregistrationUser(email=email, realm=realm)
             prereg_user.save()
