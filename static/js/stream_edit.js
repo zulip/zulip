@@ -17,10 +17,10 @@ exports.setup_subscriptions_tab_hash = function (tab_key_value) {
     }
 };
 
-function settings_for_sub(sub) {
+exports.settings_for_sub = function (sub) {
     var id = parseInt(sub.stream_id, 10);
     return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
-}
+};
 
 exports.is_sub_settings_active = function (sub) {
     // This function return whether the provided given sub object is
@@ -121,13 +121,13 @@ function get_subscriber_list(sub_row) {
 }
 
 exports.update_stream_name = function (sub, new_name) {
-    var sub_settings = settings_for_sub(sub);
+    var sub_settings = exports.settings_for_sub(sub);
     sub_settings.find(".email-address").text(sub.email_address);
     sub_settings.find(".stream-name-editable").text(new_name);
 };
 
 exports.update_stream_description = function (sub) {
-    var stream_settings = settings_for_sub(sub);
+    var stream_settings = exports.settings_for_sub(sub);
     stream_settings.find('input.description').val(sub.description);
     stream_settings.find('.stream-description-editable').html(sub.rendered_description);
 };
@@ -174,7 +174,7 @@ exports.sort_but_pin_current_user_on_top = function (emails) {
 function show_subscription_settings(sub_row) {
     var stream_id = sub_row.data("stream-id");
     var sub = stream_data.get_sub_by_id(stream_id);
-    var sub_settings = settings_for_sub(sub);
+    var sub_settings = exports.settings_for_sub(sub);
 
     var colorpicker = sub_settings.find('.colorpicker');
     var color = stream_data.get_color(sub.name);
@@ -249,7 +249,7 @@ exports.show_settings_for = function (node) {
     var html = templates.render('subscription_settings', sub);
     $('.subscriptions .right .settings').html(html);
 
-    var sub_settings = settings_for_sub(sub);
+    var sub_settings = exports.settings_for_sub(sub);
 
     $(".nothing-selected").hide();
 
@@ -267,7 +267,7 @@ function stream_home_view_clicked(e) {
         return;
     }
 
-    var sub_settings = settings_for_sub(sub);
+    var sub_settings = exports.settings_for_sub(sub);
     var notification_checkboxes = sub_settings.find(".sub_notification_setting");
 
     subs.toggle_home(sub);
@@ -310,31 +310,6 @@ exports.set_notification_setting_for_all_streams = function (notification_type, 
     exports.bulk_set_stream_property(sub_data);
 };
 
-function redraw_privacy_related_stuff(sub_row, sub) {
-    var stream_settings = settings_for_sub(sub);
-    var html;
-
-    stream_data.update_calculated_fields(sub);
-
-    html = templates.render('subscription_setting_icon', sub);
-    sub_row.find('.icon').expectOne().replaceWith($(html));
-
-    html = templates.render('subscription_type', sub);
-    stream_settings.find('.subscription-type-text').expectOne().html(html);
-
-    if (sub.invite_only) {
-        stream_settings.find(".large-icon")
-            .removeClass("hash").addClass("lock")
-            .html("<i class='fa fa-lock' aria-hidden='true'></i>");
-    } else {
-        stream_settings.find(".large-icon")
-            .addClass("hash").removeClass("lock")
-            .html("");
-    }
-
-    stream_list.redraw_stream_privacy(sub);
-}
-
 function change_stream_privacy(e) {
     e.stopPropagation();
 
@@ -372,14 +347,13 @@ function change_stream_privacy(e) {
         data: data,
         success: function () {
             sub = stream_data.get_sub_by_id(stream_id);
-            var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
 
             // save new privacy settings.
             sub.invite_only = invite_only;
             sub.is_announcement_only = is_announcement_only;
             sub.history_public_to_subscribers = history_public_to_subscribers;
 
-            redraw_privacy_related_stuff(sub_row, sub);
+            stream_ui_updates.update_stream_privacy(sub);
             $("#stream_privacy_modal").remove();
 
             // For auto update, without rendering whole template
