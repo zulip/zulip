@@ -352,8 +352,11 @@ function change_stream_privacy(e) {
             sub.invite_only = invite_only;
             sub.is_announcement_only = is_announcement_only;
             sub.history_public_to_subscribers = history_public_to_subscribers;
+            stream_data.update_calculated_fields(sub);
 
-            stream_ui_updates.update_stream_privacy(sub);
+            stream_ui_updates.update_stream_privacy_type_icon(sub);
+            stream_ui_updates.update_stream_privacy_type_text(sub);
+            stream_list.redraw_stream_privacy(sub);
             $("#stream_privacy_modal").remove();
 
             // For auto update, without rendering whole template

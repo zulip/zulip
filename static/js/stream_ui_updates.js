@@ -70,30 +70,33 @@ exports.update_stream_row_in_settings_tab = function (sub) {
     }
 };
 
-exports.update_stream_privacy = function (sub) {
+exports.update_stream_privacy_type_icon = function (sub) {
     var stream_settings = stream_edit.settings_for_sub(sub);
     var sub_row = subs.row_for_stream_id(sub.stream_id);
-    var html;
+    var html = templates.render('subscription_setting_icon', sub);
 
-    stream_data.update_calculated_fields(sub);
-
-    html = templates.render('subscription_setting_icon', sub);
-    sub_row.find('.icon').expectOne().replaceWith($(html));
-
-    html = templates.render('subscription_type', sub);
-    stream_settings.find('.subscription-type-text').expectOne().html(html);
-
-    if (sub.invite_only) {
-        stream_settings.find(".large-icon")
-            .removeClass("hash").addClass("lock")
-            .html("<i class='fa fa-lock' aria-hidden='true'></i>");
-    } else {
-        stream_settings.find(".large-icon")
-            .addClass("hash").removeClass("lock")
-            .html("");
+    if (overlays.streams_open()) {
+        sub_row.find('.icon').expectOne().replaceWith($(html));
     }
+    if (stream_edit.is_sub_settings_active(sub)) {
+        var large_icon = stream_settings.find('.large-icon').expectOne();
+        if (sub.invite_only) {
+            large_icon.removeClass("hash").addClass("lock")
+                .html("<i class='fa fa-lock' aria-hidden='true'></i>");
+        } else {
+            large_icon.addClass("hash").removeClass("lock").html("");
+        }
+    }
+};
 
-    stream_list.redraw_stream_privacy(sub);
+
+
+exports.update_stream_privacy_type_text = function (sub) {
+    var stream_settings = stream_edit.settings_for_sub(sub);
+    var html = templates.render('subscription_type', sub);
+    if (stream_edit.is_sub_settings_active(sub)) {
+        stream_settings.find('.subscription-type-text').expectOne().html(html);
+    }
 };
 
 return exports;
