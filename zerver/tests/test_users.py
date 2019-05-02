@@ -242,6 +242,7 @@ class PermissionTest(ZulipTestCase):
 
         hamlet = self.example_user("hamlet")
         self.assertTrue(hamlet.is_guest)
+        self.assertFalse(hamlet.can_access_all_realm_members())
         person = events[0]['event']['person']
         self.assertEqual(person['email'], hamlet.email)
         self.assertTrue(person['is_guest'])
