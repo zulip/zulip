@@ -334,7 +334,7 @@ match the new OS version:
     pg_dropcluster 9.5 main
     apt remove postgresql-9.5
     systemctl start postgresql
-    service memcached restart
+    systemctl restart memcached
     ```
 
 4. At this point, you are now running the version of postgres that
