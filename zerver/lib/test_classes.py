@@ -63,6 +63,7 @@ import re
 import ujson
 import urllib
 import shutil
+import tempfile
 
 API_KEYS = {}  # type: Dict[str, str]
 
@@ -692,8 +693,8 @@ class ZulipTestCase(TestCase):
             shutil.rmtree(path)
 
     def make_import_output_dir(self, exported_from: str) -> str:
-        output_dir = "var/test-{}-import".format(exported_from)
-        self.rm_tree(output_dir)
+        output_dir = tempfile.mkdtemp(dir="var/",
+                                      prefix="test-" + exported_from + "-import-")
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
