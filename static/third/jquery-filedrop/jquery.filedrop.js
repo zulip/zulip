@@ -58,10 +58,10 @@
       paramname: 'userfile',
       allowedfiletypes:[],
       raw_droppable:[],
-      maxfiles: 25,           // Ignored if queuefiles is set > 0
-      maxfilesize: 1,         // MB file size limit
-      queuefiles: 0,          // Max files before queueing (for large volume uploads)
-      queuewait: 200,         // Queue wait time if full
+      maxfiles: 25,             // Ignored if queuefiles is set > 0
+      max_file_upload_size: 1,  // MB file size limit
+      queuefiles: 0,            // Max files before queueing (for large volume uploads)
+      queuewait: 200,           // Queue wait time if full
       data: {},
       headers: {},
       drop: empty,
@@ -474,7 +474,7 @@
               return;
             }
             var reader = new FileReader(),
-                max_file_size = 1048576 * opts.maxfilesize;
+                max_file_size = 1048576 * opts.max_file_upload_size;
 
             reader.index = fileIndex;
             if (files[fileIndex].size > max_file_size) {

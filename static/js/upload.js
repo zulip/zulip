@@ -104,7 +104,7 @@ exports.options = function (config) {
             // sanitization not needed as the file name is not potentially parsed as HTML, etc.
             var context = {
                 file_name: file.name,
-                file_size: page_params.maxfilesize,
+                file_size: page_params.max_file_upload_size,
             };
             msg = i18n.t('"__file_name__" was too large; the maximum file size is __file_size__MB.', context);
             break;
@@ -172,7 +172,7 @@ exports.options = function (config) {
         url: "/json/user_uploads",
         fallback_id: file_input,  // Target for standard file dialog
         paramname: "file",
-        maxfilesize: page_params.maxfilesize,
+        max_file_upload_size: page_params.max_file_upload_size,
         data: {
             // the token isn't automatically included in filedrop's post
             csrfmiddlewaretoken: csrf_token,

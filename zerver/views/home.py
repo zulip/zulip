@@ -191,7 +191,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         poll_timeout          = settings.POLL_TIMEOUT,
         login_page            = settings.HOME_NOT_LOGGED_IN,
         root_domain_uri       = settings.ROOT_DOMAIN_URI,
-        maxfilesize           = settings.MAX_FILE_UPLOAD_SIZE,
+        max_file_upload_size  = settings.MAX_FILE_UPLOAD_SIZE,
         max_avatar_file_size  = settings.MAX_AVATAR_FILE_SIZE,
         server_generation     = settings.SERVER_GENERATION,
         use_websockets        = settings.USE_WEBSOCKETS,
