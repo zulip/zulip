@@ -77,8 +77,8 @@ exports.open_edit_panel_for_row = function (stream_row) {
     clear_edit_panel();
     subs.show_subs_pane.settings();
     $(stream_row).addClass("active");
-    stream_edit.show_settings_for(stream_row);
     setup_subscriptions_stream_hash(sub);
+    stream_edit.show_settings_for(stream_row);
 };
 
 exports.open_edit_panel_empty = function () {
