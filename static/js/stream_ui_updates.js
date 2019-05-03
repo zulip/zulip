@@ -157,7 +157,7 @@ exports.update_add_subscriptions_elements = function (sub) {
         input_element.removeAttr("disabled");
         button_element.removeAttr("disabled");
         button_element.css('pointer-events', "");
-        $('.add_subscriber_btn_wrapper').popover('destroy');
+        $('.add_subscribers_container input').popover('destroy');
     } else {
         input_element.attr("disabled", "disabled");
         button_element.attr("disabled", "disabled");
