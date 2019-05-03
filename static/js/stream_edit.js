@@ -34,33 +34,13 @@ exports.is_sub_settings_active = function (sub) {
     return false;
 };
 
-function get_email_of_subscribers(subscribers) {
+exports.get_email_of_subscribers = function (subscribers) {
     var emails = [];
     subscribers.each(function (o, i) {
         var email = people.get_person_from_user_id(i).email;
         emails.push(email);
     });
     return emails;
-}
-
-exports.rerender_subscribers_list = function (sub) {
-    if (!sub.can_access_subscribers) {
-        $(".subscriber_list_settings_container").hide();
-    } else {
-        var emails = get_email_of_subscribers(sub.subscribers);
-        var subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
-
-        // Changing the data clears the rendered list and the list needs to be re-rendered.
-        // Perform re-rendering only when the stream settings form of the corresponding
-        // stream is open.
-        if (subscribers_list) {
-            exports.sort_but_pin_current_user_on_top(emails);
-            subscribers_list.data(emails);
-            subscribers_list.render();
-            ui.update_scrollbar($(".subscriber_list_container"));
-        }
-        $(".subscriber_list_settings_container").show();
-    }
 };
 
 function clear_edit_panel() {
@@ -188,7 +168,7 @@ function show_subscription_settings(sub_row) {
     var list = get_subscriber_list(sub_settings);
     list.empty();
 
-    var emails = get_email_of_subscribers(sub.subscribers);
+    var emails = exports.get_email_of_subscribers(sub.subscribers);
     exports.sort_but_pin_current_user_on_top(emails);
 
     list_render.create(list, emails, {
