@@ -327,10 +327,11 @@ successfully:
 match the new OS version:
 
     ```
+    touch /usr/share/postgresql/10/pgroonga_setup.sql.applied
     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
     pg_dropcluster 10 main --stop
     systemctl stop postgresql
-    pg_upgradecluster -m upgrade 9.5 main
+    pg_upgradecluster 9.5 main
     pg_dropcluster 9.5 main
     apt remove postgresql-9.5
     systemctl start postgresql
