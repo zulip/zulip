@@ -249,7 +249,7 @@ exports.remove_stream = function (stream_id) {
 };
 
 exports.update_settings_for_subscribed = function (sub) {
-    exports.update_add_subscriptions_elements(sub.can_add_subscribers);
+    stream_ui_updates.update_add_subscriptions_elements(sub);
     $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #preview-stream-button").show();
 
     if (exports.is_sub_already_present(sub)) {
@@ -259,7 +259,6 @@ exports.update_settings_for_subscribed = function (sub) {
         stream_ui_updates.update_check_button_for_sub(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
         stream_ui_updates.update_change_stream_privacy_settings(sub);
-
     } else {
         exports.add_sub_to_table(sub);
     }
@@ -287,50 +286,6 @@ exports.add_tooltips_to_left_panel = function () {
     });
 };
 
-exports.update_add_subscriptions_elements = function (allow_user_to_add_subs) {
-    if (page_params.is_guest) {
-        // For guest users, we just hide the add_subscribers feature.
-        $('.add_subscribers_container').hide();
-        return;
-    }
-
-    // Otherwise, we adjust whether the widgets are disabled based on
-    // whether this user is authorized to add subscribers.
-    var input_element = $('.add_subscribers_container').find('input[name="principal"]').expectOne();
-    var button_element = $('.add_subscribers_container').find('button[name="add_subscriber"]').expectOne();
-
-    if (allow_user_to_add_subs) {
-        input_element.removeAttr("disabled");
-        button_element.removeAttr("disabled");
-        button_element.css('pointer-events', "");
-        $('.add_subscriber_btn_wrapper').popover('destroy');
-    } else {
-        input_element.attr("disabled", "disabled");
-        button_element.attr("disabled", "disabled");
-
-        // Disabled button blocks mouse events(hover) from reaching
-        // to it's parent div element, so popover don't get triggered.
-        // Add css to prevent this.
-        button_element.css("pointer-events", "none");
-
-        $('.add_subscribers_container input').popover({
-            placement: "bottom",
-            content: "<div class='cant_add_subs_hint'>%s</div>".replace(
-                '%s', i18n.t('Only stream subscribers can add users to a private stream.')),
-            trigger: "manual",
-            html: true,
-            animation: false});
-        $('.add_subscribers_container').on('mouseover', function (e) {
-            $('.add_subscribers_container input').popover('show');
-            e.stopPropagation();
-        });
-        $('.add_subscribers_container').on('mouseout', function (e) {
-            $('.add_subscribers_container input').popover('hide');
-            e.stopPropagation();
-        });
-    }
-};
-
 exports.update_settings_for_unsubscribed = function (sub) {
     exports.rerender_subscriptions_settings(sub);
     stream_ui_updates.update_check_button_for_sub(sub);
@@ -339,12 +294,10 @@ exports.update_settings_for_unsubscribed = function (sub) {
     stream_ui_updates.update_change_stream_privacy_settings(sub);
 
     stream_data.update_stream_email_address(sub, "");
-    if (stream_edit.is_sub_settings_active(sub)) {
-        // If user unsubscribed from private stream then user cannot subscribe to
-        // stream without invitation and cannot add subscribers to stream.
-        if (!sub.should_display_subscription_button) {
-            exports.update_add_subscriptions_elements(sub.can_add_subscribers);
-        }
+    // If user unsubscribed from private stream then user cannot subscribe to
+    // stream without invitation and cannot add subscribers to stream.
+    if (!sub.should_display_subscription_button) {
+        stream_ui_updates.update_add_subscriptions_elements(sub);
     }
 
     // Remove private streams from subscribed streams list.
