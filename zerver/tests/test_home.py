@@ -188,6 +188,7 @@ class HomeTest(ZulipTestCase):
             "server_generation",
             "server_inline_image_preview",
             "server_inline_url_embed_preview",
+            "server_name_changes_disabled",
             "settings_send_digest_emails",
             "starred_message_counts",
             "starred_messages",

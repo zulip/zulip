@@ -204,6 +204,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         jitsi_server_url      = settings.JITSI_SERVER_URL,
         search_pills_enabled  = settings.SEARCH_PILLS_ENABLED,
         server_avatar_changes_disabled = settings.AVATAR_CHANGES_DISABLED,
+        server_name_changes_disabled = settings.NAME_CHANGES_DISABLED,
 
         # Misc. extra data.
         have_initial_messages = user_has_messages,
