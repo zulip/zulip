@@ -6,7 +6,9 @@ set_global('navigator', {
     userAgent: 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
 });
 set_global('i18n', global.stub_i18n);
-set_global('page_params', { });
+set_global('page_params', {
+    max_file_upload_size: 25,
+});
 set_global('csrf_token', { });
 global.patch_builtin('window', {
     bridge: false,
@@ -96,7 +98,7 @@ run_test('upload_error', () => {
     var msg_prefix = 'translated: ';
     var msg_1 = 'File upload is not yet available for your browser.';
     var msg_2 = 'Unable to upload that many files at once.';
-    var msg_3 = '"foobar.txt" was too large; the maximum file size is 25MiB.';
+    var msg_3 = '"foobar.txt" was too large; the maximum file size is 25MB.';
     var msg_4 = 'Sorry, the file was too large.';
     var msg_5 = 'An unknown error occurred.';
 

@@ -830,7 +830,7 @@ function verify_filedrop_payload(payload) {
     assert.equal(payload.url, '/json/user_uploads');
     assert.equal(payload.fallback_id, 'file_input');
     assert.equal(payload.paramname, 'file');
-    assert.equal(payload.maxfilesize, 512);
+    assert.equal(payload.max_file_upload_size, 512);
     assert.equal(payload.data.csrfmiddlewaretoken, 'fake-csrf-token');
     assert.deepEqual(payload.raw_droppable, ['text/uri-list', 'text/plain']);
     assert.equal(typeof payload.drop, 'function');
@@ -888,7 +888,7 @@ run_test('initialize', () => {
     global.csrf_token = 'fake-csrf-token';
 
     var filedrop_in_compose_checked = false;
-    page_params.maxfilesize = 512;
+    page_params.max_file_upload_size = 512;
     $("#compose").filedrop = function (payload) {
         verify_filedrop_payload(payload);
         test_raw_file_drop(payload.rawDrop);
