@@ -104,8 +104,9 @@ exports.options = function (config) {
             // sanitization not needed as the file name is not potentially parsed as HTML, etc.
             var context = {
                 file_name: file.name,
+                file_size: page_params.maxfilesize,
             };
-            msg = i18n.t('"__file_name__" was too large; the maximum file size is 25MiB.', context);
+            msg = i18n.t('"__file_name__" was too large; the maximum file size is __file_size__MB.', context);
             break;
         case 413: // HTTP status "Request Entity Too Large"
             msg = i18n.t("Sorry, the file was too large.");
