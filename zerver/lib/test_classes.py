@@ -39,6 +39,7 @@ from zerver.lib.test_helpers import (
 
 from zerver.models import (
     clear_supported_auth_backends_cache,
+    flush_per_request_caches,
     get_stream,
     get_client,
     get_display_recipient,
@@ -98,6 +99,7 @@ class ZulipTestCase(TestCase):
         # Important: we need to clear event queues to avoid leaking data to future tests.
         clear_client_event_queues_for_testing()
         clear_supported_auth_backends_cache()
+        flush_per_request_caches()
 
     '''
     WRAPPER_COMMENT:
