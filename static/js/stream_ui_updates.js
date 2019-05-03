@@ -136,6 +136,55 @@ exports.update_subscribers_list = function (sub) {
     }
 };
 
+exports.update_add_subscriptions_elements = function (sub) {
+    if (!stream_edit.is_sub_settings_active(sub)) {
+        return;
+    }
+
+    if (page_params.is_guest) {
+        // For guest users, we just hide the add_subscribers feature.
+        $('.add_subscribers_container').hide();
+        return;
+    }
+
+    // Otherwise, we adjust whether the widgets are disabled based on
+    // whether this user is authorized to add subscribers.
+    var input_element = $('.add_subscribers_container').find('input[name="principal"]').expectOne();
+    var button_element = $('.add_subscribers_container').find('button[name="add_subscriber"]').expectOne();
+    var allow_user_to_add_subs = sub.can_add_subscribers;
+
+    if (allow_user_to_add_subs) {
+        input_element.removeAttr("disabled");
+        button_element.removeAttr("disabled");
+        button_element.css('pointer-events', "");
+        $('.add_subscriber_btn_wrapper').popover('destroy');
+    } else {
+        input_element.attr("disabled", "disabled");
+        button_element.attr("disabled", "disabled");
+
+        // Disabled button blocks mouse events(hover) from reaching
+        // to it's parent div element, so popover don't get triggered.
+        // Add css to prevent this.
+        button_element.css("pointer-events", "none");
+
+        $('.add_subscribers_container input').popover({
+            placement: "bottom",
+            content: "<div class='cant_add_subs_hint'>%s</div>".replace(
+                '%s', i18n.t('Only stream subscribers can add users to a private stream.')),
+            trigger: "manual",
+            html: true,
+            animation: false});
+        $('.add_subscribers_container').on('mouseover', function (e) {
+            $('.add_subscribers_container input').popover('show');
+            e.stopPropagation();
+        });
+        $('.add_subscribers_container').on('mouseout', function (e) {
+            $('.add_subscribers_container input').popover('hide');
+            e.stopPropagation();
+        });
+    }
+};
+
 return exports;
 }());
 
