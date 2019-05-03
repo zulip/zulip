@@ -1,29 +1,27 @@
-<div id="private-container" class="scrolling_list">
-    <ul class='expanded_private_messages' data-name='private'>
-        {{#each messages}}
-        <li class='{{#if is_zero}}zero-pm-unreads{{/if}} top_left_row expanded_private_message' data-user-ids-string='{{user_ids_string}}'>
-            <span class='pm-box'>
+<ul class='expanded_private_messages' data-name='private'>
+    {{#each messages}}
+    <li class='{{#if is_zero}}zero-pm-unreads{{/if}} top_left_row expanded_private_message' data-user-ids-string='{{user_ids_string}}'>
+        <span class='pm-box'>
 
-                <div class="pm_left_col">
-                    {{#if is_group}}
-                        {{#if fraction_present}}
-                        <span class="{{user_circle_class}} user_circle" style="background:rgba(68,194,29,{{fraction_present}});"></span>
-                        {{else}}
-                        <span class="{{user_circle_class}} user_circle" style="background:none; border-color:rgb(127,127,127);"></span>
-                        {{/if}}
+            <div class="pm_left_col">
+                {{#if is_group}}
+                    {{#if fraction_present}}
+                    <span class="{{user_circle_class}} user_circle" style="background:rgba(68,194,29,{{fraction_present}});"></span>
                     {{else}}
-                        <span class="{{user_circle_class}} user_circle"></span>
+                    <span class="{{user_circle_class}} user_circle" style="background:none; border-color:rgb(127,127,127);"></span>
                     {{/if}}
-                </div>
+                {{else}}
+                    <span class="{{user_circle_class}} user_circle"></span>
+                {{/if}}
+            </div>
 
-                <a href='{{url}}' class="conversation-partners" title="{{ recipients }}">
-                    {{recipients}}
-                </a>
-                <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
-                    <div class="value">{{unread}}</div>
-                </div>
-            </span>
-        </li>
-        {{/each}}
-    </ul>
-</div>
+            <a href='{{url}}' class="conversation-partners" title="{{ recipients }}">
+                {{recipients}}
+            </a>
+            <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
+                <div class="value">{{unread}}</div>
+            </div>
+        </span>
+    </li>
+    {{/each}}
+</ul>

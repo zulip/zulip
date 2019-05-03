@@ -57,7 +57,7 @@ function set_pm_conversation_count(user_ids_string, count) {
 
 function remove_expanded_private_messages() {
     stream_popover.hide_topic_popover();
-    $("#private-container").remove();
+    ui.get_content_element($("#private-container")).empty();
     resize.resize_stream_filters_container();
 }
 
@@ -113,15 +113,13 @@ exports._build_private_messages_list = function (active_conversation) {
 
 exports.rebuild_recent = function (active_conversation) {
     stream_popover.hide_topic_popover();
-    $("#private-container").remove();
 
     if (private_messages_open) {
-        var private_li = get_filter_li();
-        var private_messages_dom = exports._build_private_messages_list(
+        var rendered_pm_list = exports._build_private_messages_list(
             active_conversation);
-
-        private_li.append(private_messages_dom);
+        ui.get_content_element($("#private-container")).html(rendered_pm_list);
     }
+
     if (active_conversation) {
         var active_li = exports.get_conversation_li(active_conversation);
         if (active_li) {
@@ -159,10 +157,6 @@ exports.update_private_messages = function () {
     if (is_pm_filter) {
         $(".top_left_private_messages").addClass('active-filter');
     }
-
-    if ($("#private-container").length !== 0) {
-        ui.set_up_scrollbar($("#private-container"));
-    }
 };
 
 exports.expand = function (op_pm) {
@@ -191,7 +185,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
 
 exports.initialize = function () {
-    // will add back soon
+    ui.set_up_scrollbar($("#private-container"));
 };
 
 return exports;
