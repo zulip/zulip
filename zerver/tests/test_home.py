@@ -101,6 +101,7 @@ class HomeTest(ZulipTestCase):
             "maxfilesize",
             "message_content_in_email_notifications",
             "muted_topics",
+            "name_changes_disabled",
             "narrow",
             "narrow_stream",
             "needs_tutorial",

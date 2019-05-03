@@ -26,7 +26,8 @@ exports.update_full_name = function (new_full_name) {
 };
 
 exports.update_name_change_display = function () {
-    if (page_params.realm_name_changes_disabled && !page_params.is_admin) {
+    if ((page_params.realm_name_changes_disabled || page_params.name_changes_disabled)
+        && !page_params.is_admin) {
         $('#full_name').attr('disabled', 'disabled');
         $(".change_name_tooltip").show();
     } else {
@@ -301,7 +302,8 @@ exports.set_up = function () {
     $("#change_full_name").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (!page_params.realm_name_changes_disabled || page_params.is_admin) {
+        if (!page_params.realm_name_changes_disabled && !page_params.name_changes_disabled
+        || page_params.is_admin) {
             overlays.open_modal('change_full_name_modal');
         }
     });

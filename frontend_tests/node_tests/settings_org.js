@@ -800,10 +800,22 @@ run_test('misc', () => {
                                                       $.create('<disable link>'));
 
     page_params.realm_name_changes_disabled = false;
+    page_params.name_changes_disabled = false;
     settings_account.update_name_change_display();
     assert.equal($('#full_name').attr('disabled'), false);
 
     page_params.realm_name_changes_disabled = true;
+    page_params.name_changes_disabled = false;
+    settings_account.update_name_change_display();
+    assert.equal($('#full_name').attr('disabled'), 'disabled');
+
+    page_params.realm_name_changes_disabled = true;
+    page_params.name_changes_disabled = true;
+    settings_account.update_name_change_display();
+    assert.equal($('#full_name').attr('disabled'), 'disabled');
+
+    page_params.realm_name_changes_disabled = false;
+    page_params.name_changes_disabled = true;
     settings_account.update_name_change_display();
     assert.equal($('#full_name').attr('disabled'), 'disabled');
 
