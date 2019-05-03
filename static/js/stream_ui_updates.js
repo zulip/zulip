@@ -111,6 +111,31 @@ exports.update_subscribers_count = function (sub, just_subscribed) {
     }
 };
 
+exports.update_subscribers_list = function (sub) {
+    // Render subscriptions only if stream settings is open
+    if (!stream_edit.is_sub_settings_active(sub)) {
+        return;
+    }
+
+    if (!sub.can_access_subscribers) {
+        $(".subscriber_list_settings_container").hide();
+    } else {
+        var emails = stream_edit.get_email_of_subscribers(sub.subscribers);
+        var subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
+
+        // Changing the data clears the rendered list and the list needs to be re-rendered.
+        // Perform re-rendering only when the stream settings form of the corresponding
+        // stream is open.
+        if (subscribers_list) {
+            stream_edit.sort_but_pin_current_user_on_top(emails);
+            subscribers_list.data(emails);
+            subscribers_list.render();
+            ui.update_scrollbar($(".subscriber_list_container"));
+        }
+        $(".subscriber_list_settings_container").show();
+    }
+};
+
 return exports;
 }());
 

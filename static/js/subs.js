@@ -171,10 +171,7 @@ exports.rerender_subscriptions_settings = function (sub) {
     }
     stream_data.update_subscribers_count(sub);
     stream_ui_updates.update_subscribers_count(sub);
-    if (stream_edit.is_sub_settings_active(sub)) {
-        // Render subscriptions only if stream settings is open
-        stream_edit.rerender_subscribers_list(sub);
-    }
+    stream_ui_updates.update_subscribers_list(sub);
 };
 
 function add_email_hint_handler() {
@@ -267,9 +264,7 @@ exports.update_settings_for_subscribed = function (sub) {
         exports.add_sub_to_table(sub);
     }
 
-    if (stream_edit.is_sub_settings_active(sub)) {
-        stream_edit.rerender_subscribers_list(sub);
-    }
+    stream_ui_updates.update_subscribers_list(sub);
 
     // Display the swatch and subscription stream_settings
     stream_ui_updates.update_regular_sub_settings(sub);
