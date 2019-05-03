@@ -89,13 +89,25 @@ exports.update_stream_privacy_type_icon = function (sub) {
     }
 };
 
-
-
 exports.update_stream_privacy_type_text = function (sub) {
     var stream_settings = stream_edit.settings_for_sub(sub);
     var html = templates.render('subscription_type', sub);
     if (stream_edit.is_sub_settings_active(sub)) {
         stream_settings.find('.subscription-type-text').expectOne().html(html);
+    }
+};
+
+exports.update_subscribers_count = function (sub, just_subscribed) {
+    if (!overlays.streams_open()) {
+        // If the streams overlay isn't open, we don't need to rerender anything.
+        return;
+    }
+    var stream_row = subs.row_for_stream_id(sub.stream_id);
+    if (!sub.can_access_subscribers || just_subscribed && sub.invite_only) {
+        var rendered_sub_count = templates.render("subscription_count", sub);
+        stream_row.find('.subscriber-count').expectOne().html(rendered_sub_count);
+    } else {
+        stream_row.find(".subscriber-count-text").expectOne().text(sub.subscriber_count);
     }
 };
 

@@ -162,21 +162,6 @@ exports.set_color = function (stream_id, color) {
     stream_edit.set_stream_property(sub, 'color', color);
 };
 
-exports.rerender_subscribers_count = function (sub, just_subscribed) {
-    if (!overlays.streams_open()) {
-        // If the streams overlay isn't open, we don't need to rerender anything.
-        return;
-    }
-    var stream_row = exports.row_for_stream_id(sub.stream_id);
-    stream_data.update_subscribers_count(sub);
-    if (!sub.can_access_subscribers || just_subscribed && sub.invite_only) {
-        var rendered_sub_count = templates.render("subscription_count", sub);
-        stream_row.find('.subscriber-count').expectOne().html(rendered_sub_count);
-    } else {
-        stream_row.find(".subscriber-count-text").expectOne().text(sub.subscriber_count);
-    }
-};
-
 exports.rerender_subscriptions_settings = function (sub) {
     // This rerendes the subscriber data for a given sub object
     // where it might have already been rendered in the subscriptions UI.
@@ -184,14 +169,11 @@ exports.rerender_subscriptions_settings = function (sub) {
         blueslip.error('Undefined sub passed to function rerender_subscriptions_settings');
         return;
     }
-
-    if (overlays.streams_open()) {
-        // Render subscriptions templates only if subscription tab is open
-        exports.rerender_subscribers_count(sub);
-        if (stream_edit.is_sub_settings_active(sub)) {
-            // Render subscriptions only if stream settings is open
-            stream_edit.rerender_subscribers_list(sub);
-        }
+    stream_data.update_subscribers_count(sub);
+    stream_ui_updates.update_subscribers_count(sub);
+    if (stream_edit.is_sub_settings_active(sub)) {
+        // Render subscriptions only if stream settings is open
+        stream_edit.rerender_subscribers_list(sub);
     }
 };
 
@@ -274,8 +256,9 @@ exports.update_settings_for_subscribed = function (sub) {
     $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #preview-stream-button").show();
 
     if (exports.is_sub_already_present(sub)) {
+        stream_data.update_subscribers_count(sub);
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
-        exports.rerender_subscribers_count(sub, true);
+        stream_ui_updates.update_subscribers_count(sub, true);
         stream_ui_updates.update_check_button_for_sub(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
         stream_ui_updates.update_change_stream_privacy_settings(sub);
