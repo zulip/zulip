@@ -145,7 +145,7 @@ jobs:
           command: |
               # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
               # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-              redis-server --daemonize yes
+              sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
 
       - *restore_cache_package_json
       - *restore_cache_requirements
