@@ -92,7 +92,7 @@ class JiraHookTests(WebhookTestCase):
 
     def test_commented(self) -> None:
         expected_topic = "BUG-15: New bug with hook"
-        expected_message = """Leo Franchi **added comment to** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
+        expected_message = """Leo Franchi **added comment to** [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
 
 Adding a comment. Oh, what a comment it is!"""
@@ -101,7 +101,7 @@ Adding a comment. Oh, what a comment it is!"""
 
     def test_comment_edited(self) -> None:
         expected_topic = "BUG-15: New bug with hook"
-        expected_message = """Leo Franchi **edited comment on** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
+        expected_message = """Leo Franchi **edited comment on** [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
 
 Adding a comment. Oh, what a comment it is!"""
@@ -109,24 +109,24 @@ Adding a comment. Oh, what a comment it is!"""
 
     def test_comment_deleted(self) -> None:
         expected_topic = "TOM-1: New Issue"
-        expected_message = "Tomasz Kolek **deleted comment from** [TOM-1](https://zuliptomek.atlassian.net/browse/TOM-1) (assigned to **kolaszek@go2.pl**)"
+        expected_message = "Tomasz Kolek **deleted comment from** [TOM-1: New Issue](https://zuliptomek.atlassian.net/browse/TOM-1) (assigned to **kolaszek@go2.pl**)"
         self.send_and_test_stream_message('comment_deleted_v2', expected_topic, expected_message)
 
     def test_commented_markup(self) -> None:
         expected_topic = "TEST-7: Testing of rich text"
-        expected_message = """Leonardo Franchi [Administrator] **added comment to** [TEST-7](https://zulipp.atlassian.net/browse/TEST-7):\n\n\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~"""
+        expected_message = """Leonardo Franchi [Administrator] **added comment to** [TEST-7: Testing of rich text](https://zulipp.atlassian.net/browse/TEST-7):\n\n\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~"""
         self.send_and_test_stream_message('commented_markup_v1', expected_topic, expected_message)
         self.send_and_test_stream_message('commented_markup_v2', expected_topic, expected_message)
 
     def test_deleted(self) -> None:
         expected_topic = "BUG-15: New bug with hook"
-        expected_message = "Leo Franchi **deleted** [BUG-15](http://lfranchi.com:8080/browse/BUG-15)!"
+        expected_message = "Leo Franchi **deleted** [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)!"
         self.send_and_test_stream_message('deleted_v1', expected_topic, expected_message)
         self.send_and_test_stream_message('deleted_v2', expected_topic, expected_message)
 
     def test_reassigned(self) -> None:
         expected_topic = "BUG-15: New bug with hook"
-        expected_message = """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
+        expected_message = """Leo Franchi **updated** [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
 * Changed assignee to **Othello, the Moor of Venice**"""
         self.send_and_test_stream_message('reassigned_v1', expected_topic, expected_message)
@@ -134,7 +134,7 @@ Adding a comment. Oh, what a comment it is!"""
 
     def test_priority_updated(self) -> None:
         expected_topic = "TEST-1: Fix That"
-        expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-1](https://zulipp.atlassian.net/browse/TEST-1) (assigned to **leo@zulip.com**):
+        expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1) (assigned to **leo@zulip.com**):
 
 * Changed priority from **Critical** to **Major**"""
         self.send_and_test_stream_message('updated_priority_v1', expected_topic, expected_message)
@@ -142,7 +142,7 @@ Adding a comment. Oh, what a comment it is!"""
 
     def test_status_changed(self) -> None:
         expected_topic = "TEST-1: Fix That"
-        expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-1](https://zulipp.atlassian.net/browse/TEST-1):
+        expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1):
 
 * Changed status from **To Do** to **In Progress**"""
         self.send_and_test_stream_message('change_status_v1', expected_topic, expected_message)

@@ -101,18 +101,23 @@ def get_in(payload: Dict[str, Any], keys: List[str], default: str='') -> Any:
         return default
     return payload
 
-def get_issue_string(payload: Dict[str, Any], issue_id: Optional[str]=None) -> str:
+def get_issue_string(payload: Dict[str, Any], issue_id: Optional[str]=None, with_title: bool=False) -> str:
     # Guess the URL as it is not specified in the payload
     # We assume that there is a /browse/BUG-### page
     # from the REST url of the issue itself
     if issue_id is None:
         issue_id = get_issue_id(payload)
 
+    if with_title:
+        text = "{}: {}".format(issue_id, get_issue_title(payload))
+    else:
+        text = issue_id
+
     base_url = re.match(r"(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
     if base_url and len(base_url.groups()):
-        return u"[{}]({}/browse/{})".format(issue_id, base_url.group(1), issue_id)
+        return u"[{}]({}/browse/{})".format(text, base_url.group(1), issue_id)
     else:
-        return issue_id
+        return text
 
 def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
     if assignee_email != '':
@@ -163,7 +168,7 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     # into this one 'updated' event type, so we try to extract the meaningful
     # event that happened
     issue_id = get_in(payload, ['issue', 'key'])
-    issue = get_issue_string(payload, issue_id)
+    issue = get_issue_string(payload, issue_id, True)
 
     assignee_email = get_in(payload, ['issue', 'fields', 'assignee', 'emailAddress'], '')
     assignee_mention = get_assignee_mention(assignee_email, user_profile.realm)
@@ -230,7 +235,8 @@ def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     )
 
 def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
-    return u"{} **deleted** {}!".format(get_issue_author(payload), get_issue_string(payload))
+    return u"{} **deleted** {}!".format(
+        get_issue_author(payload), get_issue_string(payload, with_title=True))
 
 JIRA_CONTENT_FUNCTION_MAPPER = {
     "jira:issue_created": handle_created_issue_event,
