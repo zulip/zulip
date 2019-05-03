@@ -260,6 +260,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('circleci', ['continuous-integration'], display_name='CircleCI'),
     WebhookIntegration('clubhouse', ['project-management']),
     WebhookIntegration('codeship', ['continuous-integration', 'deployment']),
+    WebhookIntegration('codebase', ['project-management'], display_name='Codebase'),
     WebhookIntegration('crashlytics', ['monitoring']),
     WebhookIntegration('dialogflow', ['customer-support'], display_name='Dialogflow'),
     WebhookIntegration('delighted', ['customer-support', 'marketing'], display_name='Delighted'),
