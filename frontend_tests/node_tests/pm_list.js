@@ -6,6 +6,7 @@ set_global('resize', {
 });
 set_global('ui', {
     set_up_scrollbar: function () {},
+    get_content_element: element => element,
 });
 set_global('stream_popover', {
     hide_topic_popover: function () {},
@@ -54,7 +55,7 @@ run_test('get_conversation_li', () => {
 
 run_test('close', () => {
     var collapsed;
-    $('#private-container').remove = function () {
+    $('#private-container').empty = function () {
         collapsed = true;
     };
     pm_list.close();
@@ -115,11 +116,6 @@ run_test('build_private_messages_list', () => {
 });
 
 run_test('expand_and_update_private_messages', () => {
-    var collapsed;
-    $('#private-container').remove = function () {
-        collapsed = true;
-    };
-
     global.templates.render = function (template_name) {
         assert.equal(template_name, 'sidebar_private_message_list');
         return 'fake-dom-for-pm-list';
@@ -133,23 +129,20 @@ run_test('expand_and_update_private_messages', () => {
     private_li.set_find_results("li[data-user-ids-string='102']", bob_li);
 
     var dom;
-    private_li.append = function (html) {
+    $('#private-container').html = function (html) {
         dom = html;
     };
 
     pm_list.expand([alice.email, bob.email]);
     assert.equal(dom, 'fake-dom-for-pm-list');
-    assert(collapsed);
     assert(!alice_li.hasClass('active-sub-filter'));
 
     pm_list.expand([alice.email]);
     assert.equal(dom, 'fake-dom-for-pm-list');
-    assert(collapsed);
     assert(alice_li.hasClass('active-sub-filter'));
 
     pm_list.expand([]);
     assert.equal(dom, 'fake-dom-for-pm-list');
-    assert(collapsed);
 
     // Next, simulate clicking on Bob.
     narrow_state.active = function () { return true; };
@@ -166,11 +159,8 @@ run_test('expand_and_update_private_messages', () => {
         };
     };
 
-    collapsed = false;
-
     pm_list.update_private_messages();
 
-    assert(collapsed);
     assert(!bob_li.hasClass('active-sub-filter'));
 
     narrow_state.filter = function () {
@@ -185,11 +175,8 @@ run_test('expand_and_update_private_messages', () => {
         };
     };
 
-    collapsed = false;
-
     pm_list.update_private_messages();
 
-    assert(collapsed);
     assert(!bob_li.hasClass('active-sub-filter'));
 
     narrow_state.filter = function () {
@@ -204,11 +191,8 @@ run_test('expand_and_update_private_messages', () => {
         };
     };
 
-    collapsed = false;
-
     pm_list.update_private_messages();
 
-    assert(collapsed);
     assert(bob_li.hasClass('active-sub-filter'));
 
     narrow_state.active = function () { return false; };
