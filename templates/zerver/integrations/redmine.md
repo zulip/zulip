@@ -1,21 +1,16 @@
 Get information on new or updated Redmine issues right in
-Zulip with our Zulip Redmine plugin! Note: this setup must be
-done by a Redmine Administrator.
+Zulip with our Zulip Redmine plugin!
 
-{!create-stream.md!}
+_Note: this setup must be done by a Redmine Administrator._
 
-Clone the [Zulip Redmine plugin repository][1] by running:
-`git clone https://github.com/zulip/zulip-redmine-plugin`
+### Installing
 
-[1]: https://github.com/zulip/zulip-redmine-plugin
+Follow the [Redmine plugin installation guide][1].  Start by changing
+to the Redmine instance root directory: `cd /path/to/redmine/instance`
 
-Follow the [Redmine plugin installation guide][2] to install
-the `zulip_redmine` plugin directory, which is a subdirectory
-of the `zulip-redmine-plugin` repository directory. In a nutshell,
-the steps are:
-
-1. Copy the `zulip_redmine` directory to the `plugins`
-   directory of your Redmine instance.
+1. Clone the [Zulip Redmine plugin repository][2] into the `plugins` subdirectory
+   of your Redmine instance.
+   `git clone https://github.com/zulip/zulip-redmine-plugin plugins/redmine_zulip`
 
 2. Update the Redmine database by running (for Rake 2.X, see
    the guide for instructions for older versions):
@@ -25,29 +20,34 @@ the steps are:
 
 The Zulip plugin is now registered with Redmine!
 
-[2]: http://www.redmine.org/projects/redmine/wiki/Plugins
+### Global settings
 
 On your {{ settings_html|safe }}, create a new Redmine bot.
 
-To configure Zulip notification settings that apply to many
-projects in one go, in Redmine click the **Administration** link in
-the top left. Click the **Plugins** link on the Administration page,
-and click the **Configure** link to the right of the Zulip plugin
-description. In the **Projects** section, select all projects to which
-you want these settings to apply.
+To configure Zulip notification global settings, in Redmine click the
+**Administration** link in the top left, then click the **Plugins** link on the
+Administration page, and click the **Configure** link to the right of
+the Zulip plugin description. Fill out the settings:
 
-To configure Zulip notifications for a particular Redmine project,
-visit the project's **Settings** page.
+* Zulip URL (`{{ zulip_url }}`)
+* Bot's email address
+* Bot's API key
 
-In either case, fill out the settings with the Zulip server
-(`{{ api_url }}`), the bot's email address and API key,
-and the Zulip stream that should receive notifications, and apply your
-changes.
+### Project settings
 
-To test the plugin, create an issue or update an existing issue
-in a Redmine project that has Zulip notifications configured (any
-project, if you've configured global settings).
+Create the stream you'd like to use for the project's notifications.
+
+Visit the project's **Settings** page in Redmine, and fill out the
+**Zulip** tab:
+
+* Stream name
+* Get notified on assignments (enable/disable)
+* Get notified on issue updates (enable/disable)
+* Get notified on milestone progress (enable/disable)
 
 {!congrats.md!}
 
 ![](/static/images/integrations/redmine/001.png)
+
+[1]: http://www.redmine.org/projects/redmine/wiki/Plugins
+[2]: https://github.com/zulip/zulip-redmine-plugin
