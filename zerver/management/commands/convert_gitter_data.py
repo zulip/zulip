@@ -41,8 +41,7 @@ class Command(BaseCommand):
 
         for path in options['gitter_data']:
             if not os.path.exists(path):
-                print("Gitter data file not found: '%s'" % (path,))
-                exit(1)
+                raise CommandError("Gitter data file not found: '%s'" % (path,))
             # TODO add json check
             print("Converting Data ...")
             do_convert_data(path, output_dir, num_threads)

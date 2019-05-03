@@ -2,7 +2,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.lib.rate_limiter import RateLimitedUser, \
     block_access, unblock_access
 from zerver.models import UserProfile, get_user_profile_by_api_key
@@ -38,8 +38,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         if (not options['api_key'] and not options['email']) or \
            (options['api_key'] and options['email']):
-            print("Please enter either an email or API key to manage")
-            exit(1)
+            raise CommandError("Please enter either an email or API key to manage")
 
         realm = self.get_realm(options)
         if options['email']:
@@ -48,8 +47,7 @@ class Command(ZulipBaseCommand):
             try:
                 user_profile = get_user_profile_by_api_key(options['api_key'])
             except UserProfile.DoesNotExist:
-                print("Unable to get user profile for api key %s" % (options['api_key'],))
-                exit(1)
+                raise CommandError("Unable to get user profile for api key %s" % (options['api_key'],))
 
         users = [user_profile]
         if options['bots']:

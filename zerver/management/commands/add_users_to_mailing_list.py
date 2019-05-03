@@ -6,7 +6,7 @@ from typing import Any
 import requests
 import ujson
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import UserProfile
@@ -33,24 +33,20 @@ class Command(BaseCommand):
         if options['api_key'] is None:
             try:
                 if settings.MAILCHIMP_API_KEY is None:
-                    print('MAILCHIMP_API_KEY is None. Check your server settings file.')
-                    exit(1)
+                    raise CommandError('MAILCHIMP_API_KEY is None. Check your server settings file.')
                 options['api_key'] = settings.MAILCHIMP_API_KEY
             except AttributeError:
-                print('Please supply a MailChimp API key to --api-key, or add a '
-                      'MAILCHIMP_API_KEY to your server settings file.')
-                exit(1)
+                raise CommandError('Please supply a MailChimp API key to --api-key, or add a '
+                                   'MAILCHIMP_API_KEY to your server settings file.')
 
         if options['list_id'] is None:
             try:
                 if settings.ZULIP_FRIENDS_LIST_ID is None:
-                    print('ZULIP_FRIENDS_LIST_ID is None. Check your server settings file.')
-                    exit(1)
+                    raise CommandError('ZULIP_FRIENDS_LIST_ID is None. Check your server settings file.')
                 options['list_id'] = settings.ZULIP_FRIENDS_LIST_ID
             except AttributeError:
-                print('Please supply a MailChimp List ID to --list-id, or add a '
-                      'ZULIP_FRIENDS_LIST_ID to your server settings file.')
-                exit(1)
+                raise CommandError('Please supply a MailChimp List ID to --list-id, or add a '
+                                   'ZULIP_FRIENDS_LIST_ID to your server settings file.')
 
         endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
                    (options['api_key'].split('-')[1], options['list_id'])

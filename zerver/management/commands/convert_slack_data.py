@@ -40,8 +40,7 @@ class Command(BaseCommand):
 
         token = options['token']
         if token is None:
-            print("Enter slack legacy token!")
-            exit(1)
+            raise CommandError("Enter slack legacy token!")
 
         num_threads = int(options['threads'])
         if num_threads < 1:
@@ -49,8 +48,7 @@ class Command(BaseCommand):
 
         for path in options['slack_data_zip']:
             if not os.path.exists(path):
-                print("Slack data directory not found: '%s'" % (path,))
-                exit(1)
+                raise CommandError("Slack data directory not found: '%s'" % (path,))
 
             print("Converting Data ...")
             do_convert_data(path, output_dir, token, threads=num_threads)

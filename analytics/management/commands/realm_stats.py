@@ -2,7 +2,7 @@ import datetime
 from argparse import ArgumentParser
 from typing import Any, List
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Count
 from django.utils.timezone import now as timezone_now
 
@@ -73,8 +73,7 @@ class Command(BaseCommand):
             try:
                 realms = [get_realm(string_id) for string_id in options['realms']]
             except Realm.DoesNotExist as e:
-                print(e)
-                exit(1)
+                raise CommandError(e)
         else:
             realms = Realm.objects.all()
 

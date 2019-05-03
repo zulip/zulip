@@ -8,7 +8,7 @@ from types import FrameType
 from typing import Any, List
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.utils import autoreload
 
 from zerver.worker.queue_processors import get_active_worker_queues, get_worker
@@ -46,7 +46,7 @@ class Command(BaseCommand):
                 logger.info("Not using RabbitMQ queue workers in the test suite.")
             else:
                 logger.error("Cannot run a queue processor when USING_RABBITMQ is False!")
-            sys.exit(1)
+            raise CommandError
 
         def run_threaded_workers(queues: List[str], logger: logging.Logger) -> None:
             cnt = 0

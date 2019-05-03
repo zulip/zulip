@@ -2,7 +2,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
 from zerver.models import get_old_unclaimed_attachments
@@ -36,8 +36,7 @@ class Command(BaseCommand):
 
         print("")
         if not options["for_real"]:
-            print("This was a dry run. Pass -f to actually delete.")
-            exit(1)
+            raise CommandError("This was a dry run. Pass -f to actually delete.")
 
         do_delete_old_unclaimed_attachments(delta_weeks)
         print("")

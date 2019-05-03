@@ -1,8 +1,7 @@
-import sys
 from argparse import ArgumentParser
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from analytics.lib.counts import COUNT_STATS, do_drop_single_stat
 
@@ -20,10 +19,8 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         property = options['property']
         if property not in COUNT_STATS:
-            print("Invalid property: %s" % (property,))
-            sys.exit(1)
+            raise CommandError("Invalid property: %s" % (property,))
         if not options['force']:
-            print("No action taken. Use --force.")
-            sys.exit(1)
+            raise CommandError("No action taken. Use --force.")
 
         do_drop_single_stat(property)

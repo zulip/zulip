@@ -169,14 +169,14 @@ class TestSendWebhookFixtureMessage(TestCase):
 
     @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
     def test_check_if_command_exits_when_fixture_param_is_empty(self, print_help_mock: MagicMock) -> None:
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, url=self.url)
 
         print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
 
     @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
     def test_check_if_command_exits_when_url_param_is_empty(self, print_help_mock: MagicMock) -> None:
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path)
 
         print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
@@ -186,7 +186,7 @@ class TestSendWebhookFixtureMessage(TestCase):
             self, os_path_exists_mock: MagicMock) -> None:
         os_path_exists_mock.return_value = False
 
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url)
 
         os_path_exists_mock.assert_any_call(os.path.join(settings.DEPLOY_ROOT, self.fixture_path))
@@ -206,7 +206,7 @@ class TestSendWebhookFixtureMessage(TestCase):
 
         client = client_mock()
 
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url)
         self.assertTrue(ujson_mock.dumps.called)
         self.assertTrue(ujson_mock.loads.called)
@@ -225,7 +225,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         get_fixture_as_json_mock.return_value = "{}"
 
         improper_headers = '{"X-Custom - Headers": "some_val"}'
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url,
                          custom_headers=improper_headers)
 
@@ -235,7 +235,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         command = Command()
         self.assertEqual(command.parse_headers(None), None)
         self.assertEqual(command.parse_headers('{"X-Custom-Header": "value"}'), {"HTTP_X_CUSTOM_HEADER": "value"})
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(CommandError):
             command.parse_headers('{"X-Custom - Headers": "some_val"}')
 
 class TestGenerateRealmCreationLink(ZulipTestCase):

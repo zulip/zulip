@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.models import all_realm_filters
 
 class Command(ZulipBaseCommand):
@@ -44,13 +44,13 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
         pattern = options['pattern']
         if not pattern:
             self.print_help("./manage.py", "realm_filters")
-            sys.exit(1)
+            raise CommandError
 
         if options["op"] == "add":
             url_format_string = options['url_format_string']
             if not url_format_string:
                 self.print_help("./manage.py", "realm_filters")
-                sys.exit(1)
+                raise CommandError
             do_add_realm_filter(realm, pattern, url_format_string)
             sys.exit(0)
         elif options["op"] == "remove":
@@ -58,4 +58,4 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
             sys.exit(0)
         else:
             self.print_help("./manage.py", "realm_filters")
-            sys.exit(1)
+            raise CommandError

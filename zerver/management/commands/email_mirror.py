@@ -29,7 +29,7 @@ from imaplib import IMAP4_SSL
 from typing import Any, Generator
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from zerver.lib.email_mirror import logger, process_message
 
@@ -73,8 +73,7 @@ class Command(BaseCommand):
         if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
             not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
                 not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER):
-            print("Please configure the Email Mirror Gateway in /etc/zulip/, "
-                  "or specify $ORIGINAL_RECIPIENT if piping a single mail.")
-            exit(1)
+            raise CommandError("Please configure the Email Mirror Gateway in /etc/zulip/, "
+                               "or specify $ORIGINAL_RECIPIENT if piping a single mail.")
         for message in get_imap_messages():
             process_message(message)
