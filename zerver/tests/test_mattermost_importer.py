@@ -199,11 +199,12 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("slytherin-quidditch-team")), {3, 4})
 
     def test_write_emoticon_data(self) -> None:
+        output_dir = self.make_import_output_dir("mattermost")
         zerver_realm_emoji = write_emoticon_data(
             realm_id=3,
             custom_emoji_data=self.mattermost_data["emoji"],
             data_dir=self.fixture_file_name("", "mattermost_fixtures"),
-            output_dir=self.make_import_output_dir("mattermost")
+            output_dir = output_dir
         )
         self.assertEqual(len(zerver_realm_emoji), 2)
         self.assertEqual(zerver_realm_emoji[0]["file_name"], "peerdium")
@@ -214,7 +215,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(zerver_realm_emoji[1]["realm"], 3)
         self.assertEqual(zerver_realm_emoji[1]["deactivated"], False)
 
-        records_file = os.path.join('var', 'test-mattermost-import', "emoji", "records.json")
+        records_file = os.path.join(output_dir, "emoji", "records.json")
         with open(records_file, "r") as f:
             records_json = ujson.load(f)
 
