@@ -1,6 +1,5 @@
 var message_flags = (function () {
 var exports = {};
-
 function send_flag_update(message, flag, op) {
     channel.post({
         url: '/json/messages/flags',
@@ -12,12 +11,11 @@ function send_flag_update(message, flag, op) {
         },
     });
 }
-
+exports._unread_batch_size = 1000;
 exports.send_read = (function () {
     var queue = [];
     var on_success;
     var start;
-
     function server_request() {
         // Wait for server IDs before sending flags
         var real_msgs = _.filter(queue, function (msg) {
@@ -32,13 +30,15 @@ exports.send_read = (function () {
             return;
         }
 
+        var real_msg_ids_batch = real_msg_ids.slice(0, message_flags._unread_batch_size);
+
         // We have some real IDs.  If there are any left in the queue when this
         // call finishes, they will be handled in the success callback.
 
         channel.post({
             url: '/json/messages/flags',
             idempotent: true,
-            data: {messages: JSON.stringify(real_msg_ids),
+            data: {messages: JSON.stringify(real_msg_ids_batch),
                    op: 'add',
                    flag: 'read'},
             success: on_success,
