@@ -274,6 +274,12 @@ function edit_message(row, raw_content) {
     var editability = get_editability(message, seconds_left_buffer);
     var is_editable = editability === message_edit.editability_types.TOPIC_ONLY ||
                        editability === message_edit.editability_types.FULL;
+    var max_file_upload_size = page_params.max_file_upload_size;
+    var file_upload_enabled = false;
+
+    if (max_file_upload_size > 0) {
+        file_upload_enabled = true;
+    }
 
     var form = $(templates.render(
         'message_edit_form',
@@ -284,6 +290,7 @@ function edit_message(row, raw_content) {
          has_been_editable: editability !== editability_types.NO,
          topic: util.get_message_topic(message),
          content: raw_content,
+         file_upload_enabled: file_upload_enabled,
          minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
 
     var edit_obj = {form: form, raw_content: raw_content};
