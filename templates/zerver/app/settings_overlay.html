@@ -33,10 +33,12 @@
                     <i class="icon fa fa-book" aria-hidden="true"></i>
                     <div class="text">{{ _('Alert words') }}</div>
                 </li>
+                {% if max_file_upload_size > 0 %}
                 <li tabindex="0" data-section="uploaded-files">
                     <i class="icon fa fa-paperclip" aria-hidden="true"></i>
                     <div class="text">{{ _('Uploaded files') }}</div>
                 </li>
+                {% endif %}
                 <li tabindex="0" data-section="muted-topics">
                     <i class="icon fa fa-eye-slash" aria-hidden="true"></i>
                     <div class="text">{{ _('Muted topics') }}</div>

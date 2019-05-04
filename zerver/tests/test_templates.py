@@ -205,6 +205,7 @@ class TemplateTestCase(ZulipTestCase):
             seat_count=8,
             request=RequestFactory().get("/"),
             invite_as={"MEMBER": 1},
+            max_file_upload_size = 25,
         )
 
         context.update(kwargs)

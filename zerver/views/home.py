@@ -304,6 +304,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'enable_feedback': settings.ENABLE_FEEDBACK,
                                'embedded': narrow_stream is not None,
                                'invite_as': PreregistrationUser.INVITE_AS,
+                               'max_file_upload_size': settings.MAX_FILE_UPLOAD_SIZE,
                                },)
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response

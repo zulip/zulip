@@ -101,6 +101,7 @@ run_test('upload_error', () => {
     var msg_3 = '"foobar.txt" was too large; the maximum file size is 25MB.';
     var msg_4 = 'Sorry, the file was too large.';
     var msg_5 = 'An unknown error occurred.';
+    var msg_6 = 'File and image uploads have been disabled for this organization.';
 
     test('BrowserNotSupported', msg_prefix + msg_1);
     test('TooManyFiles', msg_prefix + msg_2);
@@ -108,6 +109,11 @@ run_test('upload_error', () => {
     test(413, msg_prefix + msg_4);
     test(400, 'ちょっと…', {msg: 'ちょっと…'});
     test('Do-not-match-any-case', msg_prefix + msg_5);
+
+    // If uploading files has been disabled, then a different error message is
+    // displayed when a user tries to paste or drag a file onto the UI.
+    page_params.max_file_upload_size = 0;
+    test('FileTooLarge', msg_prefix + msg_6, null);
 });
 
 run_test('upload_finish', () => {

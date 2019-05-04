@@ -101,12 +101,18 @@ exports.options = function (config) {
             msg = i18n.t("Unable to upload that many files at once.");
             break;
         case 'FileTooLarge':
-            // sanitization not needed as the file name is not potentially parsed as HTML, etc.
-            var context = {
-                file_name: file.name,
-                file_size: page_params.max_file_upload_size,
-            };
-            msg = i18n.t('"__file_name__" was too large; the maximum file size is __file_size__MB.', context);
+            if (page_params.max_file_upload_size > 0) {
+                // sanitization not needed as the file name is not potentially parsed as HTML, etc.
+                var context = {
+                    file_name: file.name,
+                    file_size: page_params.max_file_upload_size,
+                };
+                msg = i18n.t('"__file_name__" was too large; the maximum file size is __file_size__MB.',
+                             context);
+            } else {
+                // If uploading files has been disabled.
+                msg = i18n.t('File and image uploads have been disabled for this organization.');
+            }
             break;
         case 413: // HTTP status "Request Entity Too Large"
             msg = i18n.t("Sorry, the file was too large.");
