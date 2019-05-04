@@ -261,12 +261,11 @@ def remote_user_sso(request: HttpRequest,
 
     subdomain = get_subdomain(request)
     try:
-        realm = get_realm(subdomain)  # type: Optional[Realm]
+        realm = get_realm(subdomain)
     except Realm.DoesNotExist:
-        realm = None
-    # Since RemoteUserBackend will return None if Realm is None, we
-    # don't need to check whether `realm` is None.
-    user_profile = authenticate(remote_user=remote_user, realm=realm)
+        user_profile = None
+    else:
+        user_profile = authenticate(remote_user=remote_user, realm=realm)
 
     redirect_to = request.GET.get('next', '')
 

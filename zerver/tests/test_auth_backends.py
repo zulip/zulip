@@ -201,7 +201,7 @@ class AuthBackendTest(ZulipTestCase):
                                              return_data=dict()),
                             bad_kwargs=dict(password=password,
                                             username=username,
-                                            realm=None,
+                                            realm=get_realm('zephyr'),
                                             return_data=dict()))
 
     def test_email_auth_backend_disabled_password_auth(self) -> None:
@@ -268,15 +268,18 @@ class AuthBackendTest(ZulipTestCase):
 
         with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
             self.verify_backend(backend,
-                                good_kwargs=dict(realm=get_realm("zulip")),
-                                bad_kwargs=dict(realm=None))
+                                good_kwargs=dict(google_oauth2_token="",
+                                                 realm=get_realm("zulip")),
+                                bad_kwargs=dict(google_oauth2_token="",
+                                                realm=get_realm("zephyr")))
 
         # Verify valid_attestation parameter is set correctly
         unverified_payload = dict(email_verified=False)
         with mock.patch('apiclient.sample_tools.client.verify_id_token',
                         return_value=unverified_payload):
             ret = dict()  # type: Dict[str, str]
-            result = backend.authenticate(realm=get_realm("zulip"), return_data=ret)
+            result = backend.authenticate(
+                google_oauth2_token="", realm=get_realm("zulip"), return_data=ret)
             self.assertIsNone(result)
             self.assertFalse(ret["valid_attestation"])
 
@@ -284,13 +287,15 @@ class AuthBackendTest(ZulipTestCase):
         with mock.patch('apiclient.sample_tools.client.verify_id_token',
                         return_value=nonexistent_user_payload):
             ret = dict()
-            result = backend.authenticate(realm=get_realm("zulip"), return_data=ret)
+            result = backend.authenticate(
+                google_oauth2_token="", realm=get_realm("zulip"), return_data=ret)
             self.assertIsNone(result)
             self.assertTrue(ret["valid_attestation"])
         with mock.patch('apiclient.sample_tools.client.verify_id_token',
                         side_effect=AppIdentityError):
             ret = dict()
-            result = backend.authenticate(realm=get_realm("zulip"), return_data=ret)
+            result = backend.authenticate(
+                google_oauth2_token="", realm=get_realm("zulip"), return_data=ret)
             self.assertIsNone(result)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -325,7 +330,7 @@ class AuthBackendTest(ZulipTestCase):
             self.verify_backend(backend,
                                 bad_kwargs=dict(username=username,
                                                 password=password,
-                                                realm=None),
+                                                realm=get_realm('zephyr')),
                                 good_kwargs=dict(username=username,
                                                  password=password,
                                                  realm=get_realm('zulip')))
@@ -335,7 +340,7 @@ class AuthBackendTest(ZulipTestCase):
                             good_kwargs=dict(dev_auth_username=self.get_username(),
                                              realm=get_realm("zulip")),
                             bad_kwargs=dict(dev_auth_username=self.get_username(),
-                                            realm=None))
+                                            realm=get_realm("zephyr")))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_remote_user_backend(self) -> None:
@@ -353,7 +358,7 @@ class AuthBackendTest(ZulipTestCase):
                             good_kwargs=dict(remote_user=username,
                                              realm=get_realm('zulip')),
                             bad_kwargs=dict(remote_user=username,
-                                            realm=None))
+                                            realm=get_realm('zephyr')))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     @override_settings(SSO_APPEND_DOMAIN='zulip.com')
@@ -2468,7 +2473,8 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user = self.backend.authenticate(self.example_email("hamlet"), 'wrong')
+            user = self.backend.authenticate(self.example_email("hamlet"), 'wrong',
+                                             realm=get_realm('zulip'))
             self.assertIs(user, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -2482,7 +2488,8 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user = self.backend.authenticate('nonexistent@zulip.com', 'testing')
+            user = self.backend.authenticate('nonexistent@zulip.com', 'testing',
+                                             realm=get_realm('zulip'))
             self.assertIs(user, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -2638,7 +2645,8 @@ class TestLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_when_domain_does_not_match(self) -> None:
         with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
-            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'pass')
+            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'pass',
+                                                     realm=get_realm('zulip'))
             self.assertIs(user_profile, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -2661,21 +2669,6 @@ class TestLDAP(ZulipLDAPTestCase):
             user_profile = self.backend.authenticate(self.example_email('hamlet'), 'testing',
                                                      realm=get_realm('acme'))
             self.assertEqual(user_profile.email, self.example_email('hamlet'))
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_login_failure_due_to_invalid_subdomain(self) -> None:
-        self.mock_ldap.directory = {
-            'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ]
-            }
-        }
-        with self.settings(
-                LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'testing',
-                                                     realm=None)
-            self.assertIs(user_profile, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_with_valid_subdomain(self) -> None:
@@ -2764,7 +2757,8 @@ class TestLDAP(ZulipLDAPTestCase):
 class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_authenticate(self) -> None:
         backend = ZulipLDAPUserPopulator()
-        result = backend.authenticate(self.example_email("hamlet"), 'testing')  # type: ignore # complains that the function does not return any value!
+        result = backend.authenticate(self.example_email("hamlet"), 'testing',
+                                      realm=get_realm('zulip'))
         self.assertIs(result, None)
 
     def perform_ldap_sync(self, user_profile: UserProfile) -> None:
