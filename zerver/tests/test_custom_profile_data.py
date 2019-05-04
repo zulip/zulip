@@ -2,13 +2,13 @@
 
 from typing import Union, List, Dict, Any
 
-from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
+from zerver.lib.actions import try_add_realm_custom_profile_field, \
     do_update_user_custom_profile_data, do_remove_realm_custom_profile_field, \
     try_reorder_realm_custom_profile_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.models import CustomProfileField, \
-    custom_profile_fields_for_realm, CustomProfileFieldValue
+    custom_profile_fields_for_realm, CustomProfileFieldValue, get_realm
 import ujson
 
 class CustomProfileFieldTest(ZulipTestCase):

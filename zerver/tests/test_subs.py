@@ -44,14 +44,14 @@ from zerver.models import (
     Realm, Recipient, Stream, Subscription,
     DefaultStream, UserProfile, get_user_profile_by_id, active_non_guest_user_ids,
     get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup,
-    get_client, get_user
+    get_client, get_realm, get_user
 )
 
 from zerver.lib.actions import (
     do_add_default_stream, do_change_is_admin, do_set_realm_property,
     do_create_realm, do_remove_default_stream, bulk_get_subscriber_user_ids,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
-    gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
+    gather_subscriptions, get_default_streams_for_realm, get_stream,
     do_get_streams, do_change_is_guest,
     create_stream_if_needed, create_streams_if_needed,
     ensure_stream,

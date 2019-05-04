@@ -85,10 +85,10 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         # For creating a new realm, there is no existing realm or domain
         realm = None
     else:
-        realm = get_realm(get_subdomain(request))
-        if realm is None or realm != prereg_user.realm:
+        if get_subdomain(request) != prereg_user.realm.string_id:
             return render_confirmation_key_error(
                 request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
+        realm = prereg_user.realm
 
         try:
             email_allowed_for_realm(email, realm)
@@ -417,9 +417,9 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
 
 def accounts_home(request: HttpRequest, multiuse_object_key: Optional[str]="",
                   multiuse_object: Optional[MultiuseInvite]=None) -> HttpResponse:
-    realm = get_realm(get_subdomain(request))
-
-    if realm is None:
+    try:
+        realm = get_realm(get_subdomain(request))
+    except Realm.DoesNotExist:
         return HttpResponseRedirect(reverse('zerver.views.registration.find_account'))
     if realm.deactivated:
         return redirect_to_deactivation_notice()

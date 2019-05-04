@@ -245,7 +245,7 @@ class AuthBackendTest(ZulipTestCase):
         with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
             self.verify_backend(backend,
                                 good_kwargs=dict(realm=get_realm("zulip")),
-                                bad_kwargs=dict(realm=get_realm('invalid')))
+                                bad_kwargs=dict(realm=None))
 
         # Verify valid_attestation parameter is set correctly
         unverified_payload = dict(email_verified=False)
@@ -301,7 +301,7 @@ class AuthBackendTest(ZulipTestCase):
             self.verify_backend(backend,
                                 bad_kwargs=dict(username=username,
                                                 password=password,
-                                                realm=get_realm('acme')),
+                                                realm=None),
                                 good_kwargs=dict(username=username,
                                                  password=password,
                                                  realm=get_realm('zulip')))
@@ -311,7 +311,7 @@ class AuthBackendTest(ZulipTestCase):
                             good_kwargs=dict(dev_auth_username=self.get_username(),
                                              realm=get_realm("zulip")),
                             bad_kwargs=dict(dev_auth_username=self.get_username(),
-                                            realm=get_realm("invalid")))
+                                            realm=None))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_remote_user_backend(self) -> None:

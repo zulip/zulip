@@ -1,5 +1,4 @@
-
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from django.http import HttpRequest
 from django.conf import settings
 from django.urls import reverse
@@ -35,7 +34,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
         'user_name': user.full_name,
     }
 
-def get_realm_from_request(request: HttpRequest) -> Realm:
+def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
     if not hasattr(request, "realm"):
@@ -44,7 +43,10 @@ def get_realm_from_request(request: HttpRequest) -> Realm:
         # need to do duplicate queries on the same realm while
         # processing a single request.
         subdomain = get_subdomain(request)
-        request.realm = get_realm(subdomain)
+        try:
+            request.realm = get_realm(subdomain)
+        except Realm.DoesNotExist:
+            request.realm = None
     return request.realm
 
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:

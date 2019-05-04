@@ -369,8 +369,9 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                 not request.path.startswith("/json/")):
             subdomain = get_subdomain(request)
             if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-                realm = get_realm(subdomain)
-                if (realm is None):
+                try:
+                    get_realm(subdomain)
+                except Realm.DoesNotExist:
                     return render(request, "zerver/invalid_realm.html", status=404)
         """
         If request.session was modified, or if the configuration is to save the

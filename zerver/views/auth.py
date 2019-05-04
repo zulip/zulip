@@ -64,7 +64,10 @@ def create_preregistration_user(email: str, request: HttpRequest, realm_creation
                                 password_required: bool=True) -> HttpResponse:
     realm = None
     if not realm_creation:
-        realm = get_realm(get_subdomain(request))
+        try:
+            realm = get_realm(get_subdomain(request))
+        except Realm.DoesNotExist:
+            pass
     return PreregistrationUser.objects.create(email=email,
                                               realm_creation=realm_creation,
                                               password_required=password_required,
@@ -80,17 +83,21 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
     depending on is_signup, whether the email address can join the
     organization (checked in HomepageForm), and similar details.
     """
-    realm = get_realm(get_subdomain(request))
-    from_multiuse_invite = False
-    multiuse_obj = None
-    streams_to_subscribe = None
-    invited_as = PreregistrationUser.INVITE_AS['MEMBER']
     if multiuse_object_key:
         from_multiuse_invite = True
         multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
         realm = multiuse_obj.realm
         streams_to_subscribe = multiuse_obj.streams.all()
         invited_as = multiuse_obj.invited_as
+    else:
+        from_multiuse_invite = False
+        multiuse_obj = None
+        try:
+            realm = get_realm(get_subdomain(request))
+        except Realm.DoesNotExist:
+            realm = None
+        streams_to_subscribe = None
+        invited_as = PreregistrationUser.INVITE_AS['MEMBER']
 
     form = HomepageForm({'email': email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
     if form.is_valid():
@@ -241,9 +248,12 @@ def remote_user_sso(request: HttpRequest,
             raise JsonableError(_("Invalid OTP"))
 
     subdomain = get_subdomain(request)
-    realm = get_realm(subdomain)
+    try:
+        realm = get_realm(subdomain)  # type: Optional[Realm]
+    except Realm.DoesNotExist:
+        realm = None
     # Since RemoteUserBackend will return None if Realm is None, we
-    # don't need to check whether `get_realm` returned None.
+    # don't need to check whether `realm` is None.
     return_data = {}  # type: Dict[str, Any]
     user_profile = authenticate(remote_user=remote_user, realm=realm,
                                 return_data=return_data)
@@ -282,8 +292,9 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
 
     email = "%s@%s" % (remote_user, email_domain)
 
-    realm = get_realm(subdomain)
-    if realm is None:
+    try:
+        realm = get_realm(subdomain)
+    except Realm.DoesNotExist:
         raise JsonableError(_("Wrong subdomain"))
 
     try:
@@ -604,7 +615,7 @@ def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
 def redirect_to_deactivation_notice() -> HttpResponse:
     return HttpResponseRedirect(reverse('zerver.views.auth.show_deactivation_notice'))
 
-def add_dev_login_context(realm: Realm, context: Dict[str, Any]) -> None:
+def add_dev_login_context(realm: Optional[Realm], context: Dict[str, Any]) -> None:
     users = get_dev_users(realm)
     context['current_realm'] = realm
     context['all_realms'] = Realm.objects.all()
@@ -960,9 +971,7 @@ def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     return django_logout_then_login(request, kwargs)
 
 def password_reset(request: HttpRequest, **kwargs: Any) -> HttpResponse:
-    realm = get_realm(get_subdomain(request))
-
-    if realm is None:
+    if not Realm.objects.filter(string_id=get_subdomain(request)).exists():
         # If trying to get to password reset on a subdomain that
         # doesn't exist, just go to find_account.
         redirect_url = reverse('zerver.views.registration.find_account')

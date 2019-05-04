@@ -79,7 +79,7 @@ def check_subdomain_available(subdomain: str, from_management_command: bool=Fals
     if len(subdomain) < 3:
         raise ValidationError(error_strings['too short'])
     if is_reserved_subdomain(subdomain) or \
-       get_realm(subdomain) is not None:
+       Realm.objects.filter(string_id=subdomain).exists():
         raise ValidationError(error_strings['unavailable'])
 
 class RegistrationForm(forms.Form):
@@ -279,7 +279,10 @@ class OurAuthenticationForm(AuthenticationForm):
 
         if username is not None and password:
             subdomain = get_subdomain(self.request)
-            realm = get_realm(subdomain)
+            try:
+                realm = get_realm(subdomain)  # type: Optional[Realm]
+            except Realm.DoesNotExist:
+                realm = None
             return_data = {}  # type: Dict[str, Any]
             self.user_cache = authenticate(self.request, username=username, password=password,
                                            realm=realm, return_data=return_data)
@@ -356,6 +359,8 @@ class RealmRedirectForm(forms.Form):
 
     def clean_subdomain(self) -> str:
         subdomain = self.cleaned_data['subdomain']
-        if get_realm(subdomain) is None:
+        try:
+            get_realm(subdomain)
+        except Realm.DoesNotExist:
             raise ValidationError(_("We couldn't find that Zulip organization."))
         return subdomain

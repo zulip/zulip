@@ -779,7 +779,7 @@ class UserProfileTest(ZulipTestCase):
         # Pass in the ID of a cross-realm bot but with a invalid realm,
         # note that the realm should be irrelevant here
         cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(
-            bot.id, get_realm('invalid'))
+            bot.id, None)
         self.assertEqual(cross_realm_bot.email, bot.email)
         self.assertEqual(cross_realm_bot.id, bot.id)
 
@@ -793,7 +793,7 @@ class UserProfileTest(ZulipTestCase):
         # cross-realm bot, UserProfile.DoesNotExist is raised
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_by_id_in_realm_including_cross_realm(
-                hamlet.id, get_realm('invalid'))
+                hamlet.id, None)
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:

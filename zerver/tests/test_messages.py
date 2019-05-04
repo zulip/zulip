@@ -3619,7 +3619,7 @@ class CheckMessageTest(ZulipTestCase):
         )
         content = 'whatever'
         good_realm = test_bot.realm
-        wrong_realm = get_realm('mit')
+        wrong_realm = get_realm("zephyr")
         wrong_sender = cordelia
 
         send_rate_limited_pm_notification_to_bot_owner(test_bot, wrong_realm, content)

@@ -82,8 +82,9 @@ def stats(request: HttpRequest) -> HttpResponse:
 @require_server_admin
 @has_request_variables
 def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
-    realm = get_realm(realm_str)
-    if realm is None:
+    try:
+        realm = get_realm(realm_str)
+    except Realm.DoesNotExist:
         return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
 
     return render_stats(request, '/realm/%s' % (realm_str,), realm.name or realm.string_id)
@@ -100,8 +101,9 @@ def stats_for_remote_realm(request: HttpRequest, remote_server_id: str,
 @has_request_variables
 def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
                              realm_str: str, **kwargs: Any) -> HttpResponse:
-    realm = get_realm(realm_str)
-    if realm is None:
+    try:
+        realm = get_realm(realm_str)
+    except Realm.DoesNotExist:
         raise JsonableError(_("Invalid organization"))
 
     return get_chart_data(request=request, user_profile=user_profile, realm=realm, **kwargs)
@@ -1088,9 +1090,10 @@ def support(request: HttpRequest) -> HttpResponse:
                 if parse_result.port:
                     hostname = "{}:{}".format(hostname, parse_result.port)
                 subdomain = get_subdomain_from_hostname(hostname)
-                realm = get_realm(subdomain)
-                if realm is not None:
-                    realms.add(realm)
+                try:
+                    realms.add(get_realm(subdomain))
+                except Realm.DoesNotExist:
+                    pass
             except ValidationError:
                 pass
 

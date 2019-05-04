@@ -174,7 +174,8 @@ class RealmTest(ZulipTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(user.realm.string_id, "newzulip")
         # This doesn't use a cache right now, but may later.
-        self.assertIsNone(get_realm("zulip"))
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm("zulip")
 
     def test_do_deactivate_realm_clears_scheduled_jobs(self) -> None:
         user = self.example_user('hamlet')

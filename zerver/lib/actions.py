@@ -93,7 +93,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, \
     get_user_profile_by_id, PreregistrationUser, \
-    get_realm, bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
+    bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
@@ -3536,8 +3536,7 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
 
 def do_create_realm(string_id: str, name: str,
                     emails_restricted_to_domains: Optional[bool]=None) -> Realm:
-    existing_realm = get_realm(string_id)
-    if existing_realm is not None:
+    if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError("Realm %s already exists!" % (string_id,))
 
     kwargs = {}  # type: Dict[str, Any]

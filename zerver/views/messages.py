@@ -1232,8 +1232,9 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             # The email gateway bot needs to be able to send messages in
             # any realm.
             return json_error(_("User not authorized for this query"))
-        realm = get_realm(realm_str)
-        if not realm:
+        try:
+            realm = get_realm(realm_str)
+        except Realm.DoesNotExist:
             return json_error(_("Unknown organization '%s'") % (realm_str,))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:

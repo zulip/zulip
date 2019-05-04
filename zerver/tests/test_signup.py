@@ -455,7 +455,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 78)
+        self.assert_length(queries, 77)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -1674,9 +1674,9 @@ class RealmCreationTest(ZulipTestCase):
     def check_able_to_create_realm(self, email: str) -> None:
         password = "test"
         string_id = "zuliptest"
-        realm = get_realm(string_id)
         # Make sure the realm does not exist
-        self.assertIsNone(realm)
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
 
         # Create new realm with the email
         result = self.client_post('/new/', {'email': email})
@@ -1697,7 +1697,6 @@ class RealmCreationTest(ZulipTestCase):
 
         # Make sure the realm is created
         realm = get_realm(string_id)
-        self.assertIsNotNone(realm)
         self.assertEqual(realm.string_id, string_id)
         self.assertEqual(get_user(email, realm).realm, realm)
 
@@ -1748,7 +1747,8 @@ class RealmCreationTest(ZulipTestCase):
         realm_name = "Test"
 
         # Make sure the realm does not exist
-        self.assertIsNone(get_realm(string_id))
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
 
         # Create new realm with the email
         result = self.client_post('/new/', {'email': email})
@@ -1772,7 +1772,6 @@ class RealmCreationTest(ZulipTestCase):
 
         # Make sure the realm is created
         realm = get_realm(string_id)
-        self.assertIsNotNone(realm)
         self.assertEqual(realm.string_id, string_id)
         self.assertEqual(get_user(email, realm).realm, realm)
 

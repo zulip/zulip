@@ -489,7 +489,7 @@ class Realm(models.Model):
 post_save.connect(flush_realm, sender=Realm)
 
 def get_realm(string_id: str) -> Realm:
-    return Realm.objects.filter(string_id=string_id).first()
+    return Realm.objects.get(string_id=string_id)
 
 def name_changes_disabled(realm: Optional[Realm]) -> bool:
     if realm is None:
@@ -1949,7 +1949,7 @@ def get_system_bot(email: str) -> UserProfile:
 
 def get_user_by_id_in_realm_including_cross_realm(
         uid: int,
-        realm: Realm
+        realm: Optional[Realm]
 ) -> UserProfile:
     user_profile = get_user_profile_by_id(uid)
     if user_profile.realm == realm:
@@ -1986,14 +1986,9 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
     return list(query)
 
 def get_source_profile(email: str, string_id: str) -> Optional[UserProfile]:
-    realm = get_realm(string_id)
-
-    if realm is None:
-        return None
-
     try:
-        return get_user_by_delivery_email(email, realm)
-    except UserProfile.DoesNotExist:
+        return get_user_by_delivery_email(email, get_realm(string_id))
+    except (Realm.DoesNotExist, UserProfile.DoesNotExist):
         return None
 
 @cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600*24*7)

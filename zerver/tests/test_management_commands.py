@@ -251,7 +251,8 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         self.assert_in_success_response([u"Create a new Zulip organization"], result)
 
         # Enter email
-        self.assertIsNone(get_realm('test'))
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm('test')
         result = self.client_post(generated_link, {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(re.search(r'/accounts/do_confirm/\w+$', result["Location"]))

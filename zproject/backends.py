@@ -653,8 +653,9 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     Returns a UserProfile object for successful authentication, and None otherwise.
     """
     subdomain = backend.strategy.session_get('subdomain')
-    realm = get_realm(subdomain)
-    if realm is None:
+    try:
+        realm = get_realm(subdomain)
+    except Realm.DoesNotExist:
         return_data["invalid_realm"] = True
         return None
     return_data["realm_id"] = realm.id
