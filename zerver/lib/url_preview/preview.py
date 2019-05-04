@@ -3,6 +3,7 @@ import requests
 
 from django.conf import settings
 from django.utils.encoding import smart_text
+import magic
 from typing import Any, Optional, Dict
 from typing.re import Match
 
@@ -28,12 +29,40 @@ def is_link(url: str) -> Match[str]:
     return link_regex.match(smart_text(url))
 
 
+def guess_mimetype_from_content(response: requests.Response) -> str:
+    mime_magic = magic.Magic(mime=True)
+    try:
+        content = next(response.iter_content(1000))
+    except StopIteration:
+        content = ''
+    return mime_magic.from_buffer(content)
+
+def valid_content_type(url: str) -> bool:
+    try:
+        response = requests.get(url, stream=True)
+    except requests.RequestException:
+        return False
+
+    if not response.ok:
+        return False
+
+    content_type = response.headers.get('content-type')
+    # Be accommodating of bad servers: assume content may be html if no content-type header
+    if not content_type or content_type.startswith('text/html'):
+        # Verify that the content is actually HTML if the server claims it is
+        content_type = guess_mimetype_from_content(response)
+    return content_type.startswith('text/html')
+
 @cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
 def get_link_embed_data(url: str,
                         maxwidth: Optional[int]=640,
                         maxheight: Optional[int]=480) -> Optional[Dict[str, Any]]:
     if not is_link(url):
         return None
+
+    if not valid_content_type(url):
+        return None
+
     # Fetch information from URL.
     # We are using three sources in next order:
     # 1. OEmbed
@@ -47,7 +76,7 @@ def get_link_embed_data(url: str,
         # open graph data.
         return None
     data = data or {}
-    response = requests.get(url)
+    response = requests.get(url, stream=True)
     if response.ok:
         og_data = OpenGraphParser(response.text).extract_data()
         if og_data:

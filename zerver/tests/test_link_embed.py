@@ -2,7 +2,7 @@
 
 import mock
 import ujson
-from typing import Any, Callable
+from typing import Any, Callable, Dict, Optional
 from requests.exceptions import ConnectionError
 from django.test import override_settings
 
@@ -171,12 +171,13 @@ class PreviewTestCase(ZulipTestCase):
         """
 
     @classmethod
-    def create_mock_response(cls, url: str, relative_url: bool=False) -> Callable[..., MockPythonResponse]:
+    def create_mock_response(cls, url: str, relative_url: bool=False,
+                             headers: Optional[Dict[str, str]]=None) -> Callable[..., MockPythonResponse]:
         html = cls.open_graph_html
         if relative_url is True:
             html = html.replace('http://ia.media-imdb.com', '')
-        response = MockPythonResponse(html, 200)
-        return lambda k: {url: response}.get(k, MockPythonResponse('', 404))
+        response = MockPythonResponse(html, 200, headers)
+        return lambda k, **kwargs: {url: response}.get(k, MockPythonResponse('', 404, headers))
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_edit_message_history(self) -> None:
@@ -374,3 +375,116 @@ class PreviewTestCase(ZulipTestCase):
             key = preview_url_cache_key(url)
             cache_set(key, link_embed_data, 'database')
             self.assertEqual(link_embed_data, link_embed_data_from_cache(url))
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_link_preview_non_html_data(self) -> None:
+        email = self.example_email('hamlet')
+        self.login(email)
+        url = 'http://test.org/audio.mp3'
+        with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
+            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        headers = {'content-type': 'application/octet-stream'}
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url, headers=headers))
+
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch('requests.get', mocked_response):
+                FetchLinksEmbedData().consume(event)
+
+                cached_data = link_embed_data_from_cache(url)
+
+        self.assertIsNone(cached_data)
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        self.assertEqual(
+            ('<p><a href="http://test.org/audio.mp3" target="_blank" title="http://test.org/audio.mp3">'
+             'http://test.org/audio.mp3</a></p>'),
+            msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_link_preview_no_content_type_header(self) -> None:
+        email = self.example_email('hamlet')
+        self.login(email)
+        url = 'http://test.org/'
+        with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
+            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        headers = {'content-type': ''}  # No content type header
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url, headers=headers))
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch('requests.get', mocked_response):
+                FetchLinksEmbedData().consume(event)
+                data = link_embed_data_from_cache(url)
+
+        self.assertIn('title', data)
+        self.assertIn('image', data)
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        self.assertIn(data['title'], msg.rendered_content)
+        self.assertIn(data['image'], msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_valid_content_type_error_get_data(self) -> None:
+        url = 'http://test.org/'
+        with mock.patch('zerver.lib.actions.queue_json_publish'):
+            msg_id = self.send_personal_message(
+                self.example_email('hamlet'),
+                self.example_email('cordelia'),
+                content=url,
+            )
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        event = {
+            'message_id': msg_id,
+            'urls': [url],
+            'message_realm_id': msg.sender.realm_id,
+            'message_content': url}
+
+        with mock.patch('zerver.lib.url_preview.preview.valid_content_type', side_effect=lambda k: True):
+            with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+                with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())):
+                    FetchLinksEmbedData().consume(event)
+                cached_data = link_embed_data_from_cache(url)
+
+        # FIXME: Should we really cache this, looks like a network error?
+        self.assertIsNone(cached_data)
+        msg.refresh_from_db()
+        self.assertEqual(
+            '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>',
+            msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_invalid_url(self) -> None:
+        url = 'http://test.org/'
+        error_url = 'http://test.org/x'
+        with mock.patch('zerver.lib.actions.queue_json_publish'):
+            msg_id = self.send_personal_message(
+                self.example_email('hamlet'),
+                self.example_email('cordelia'),
+                content=error_url,
+            )
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        event = {
+            'message_id': msg_id,
+            'urls': [error_url],
+            'message_realm_id': msg.sender.realm_id,
+            'message_content': error_url}
+
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch('requests.get', mocked_response):
+                FetchLinksEmbedData().consume(event)
+            cached_data = link_embed_data_from_cache(error_url)
+
+        # FIXME: Should we really cache this, especially without cache invalidation?
+        self.assertIsNone(cached_data)
+        msg.refresh_from_db()
+        self.assertEqual(
+            '<p><a href="http://test.org/x" target="_blank" title="http://test.org/x">http://test.org/x</a></p>',
+            msg.rendered_content)
