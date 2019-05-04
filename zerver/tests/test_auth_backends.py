@@ -1121,7 +1121,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             user_profile = self.example_user('hamlet')
             with mock.patch(
                     'zerver.views.auth.authenticate_remote_user',
-                    return_value=(user_profile, {'invalid_subdomain': False})):
+                    return_value=user_profile):
                 with mock.patch('zerver.views.auth.do_login'):
                     result = self.get_log_into_subdomain(data)
             return result

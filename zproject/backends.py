@@ -753,7 +753,6 @@ def social_auth_finish(backend: Any,
     inactive_user = return_data.get('inactive_user')
     inactive_realm = return_data.get('inactive_realm')
     invalid_realm = return_data.get('invalid_realm')
-    invalid_subdomain = return_data.get('invalid_subdomain')
     invalid_email = return_data.get('invalid_email')
     auth_failed_reason = return_data.get("social_auth_failed_reason")
 
@@ -812,7 +811,6 @@ def social_auth_finish(backend: Any,
         # in the web login flow (below).
         return login_or_register_remote_user(strategy.request, email_address,
                                              user_profile, full_name,
-                                             invalid_subdomain=bool(invalid_subdomain),
                                              mobile_flow_otp=mobile_flow_otp,
                                              is_signup=is_signup,
                                              redirect_to=redirect_to)
