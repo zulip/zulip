@@ -59,3 +59,99 @@ run_test('starred', () => {
         starred: false,
     });
 });
+run_test('read', () => {
+    // Way to capture posted info in every request
+    var channel_post_opts;
+    channel.post = (opts) => {
+        channel_post_opts = opts;
+    };
+
+    // For testing purpose limit the batch size value to 5 instead of 1000
+    message_flags._unread_batch_size = 5;
+    var msgs_to_flag_read = [
+        { locally_echoed: false, id: 1 },
+        { locally_echoed: false, id: 2 },
+        { locally_echoed: false, id: 3 },
+        { locally_echoed: false, id: 4 },
+        { locally_echoed: false, id: 5 },
+        { locally_echoed: false, id: 6 },
+        { locally_echoed: false, id: 7 },
+    ];
+    message_flags.send_read(msgs_to_flag_read);
+    assert.deepEqual(channel_post_opts, {
+        url: '/json/messages/flags',
+        idempotent: true,
+        data: {
+            messages: '[1,2,3,4,5]',
+            op: 'add',
+            flag: 'read',
+        },
+        success: channel_post_opts.success,
+    });
+
+    // Mock successful flagging of ids
+    var success_response_data = {
+        messages: [1, 2, 3, 4, 5],
+    };
+    channel_post_opts.success(success_response_data);
+    assert.deepEqual(channel_post_opts, {
+        url: '/json/messages/flags',
+        idempotent: true,
+        data: {
+            messages: '[6,7]',
+            op: 'add',
+            flag: 'read',
+        },
+        success: channel_post_opts.success,
+    });
+    success_response_data = {
+        messages: [6, 7],
+    };
+    channel_post_opts.success(success_response_data);
+
+    // Don't flag locally echoed messages as read
+    var local_msg_1 = { locally_echoed: true, id: 1 };
+    var local_msg_2 = { locally_echoed: true, id: 2 };
+    msgs_to_flag_read = [
+        local_msg_1,
+        local_msg_2,
+        { locally_echoed: false, id: 3 },
+        { locally_echoed: false, id: 4 },
+        { locally_echoed: false, id: 5 },
+        { locally_echoed: false, id: 6 },
+        { locally_echoed: false, id: 7 },
+    ];
+    message_flags.send_read(msgs_to_flag_read);
+    assert.deepEqual(channel_post_opts, {
+        url: '/json/messages/flags',
+        idempotent: true,
+        data: {
+            messages: '[3,4,5,6,7]',
+            op: 'add',
+            flag: 'read',
+        },
+        success: channel_post_opts.success,
+    });
+
+    // Mark them non local
+    local_msg_1.locally_echoed = false;
+    local_msg_2.locally_echoed = false;
+
+    // Mock successful flagging of ids
+    success_response_data = {
+        messages: [3, 4, 5, 6, 7],
+    };
+    channel_post_opts.success(success_response_data);
+
+    // Former locally echoed messages flagging retried
+    assert.deepEqual(channel_post_opts, {
+        url: '/json/messages/flags',
+        idempotent: true,
+        data: {
+            messages: '[1,2]',
+            op: 'add',
+            flag: 'read',
+        },
+        success: channel_post_opts.success,
+    });
+});
