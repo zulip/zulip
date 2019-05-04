@@ -17,7 +17,7 @@ from django.utils.translation import ugettext as _
 from django.utils.http import is_safe_url
 from django.core import signing
 import urllib
-from typing import Any, Dict, List, Optional, Tuple, Mapping
+from typing import Any, Dict, List, Optional, Mapping
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import zulip_default_context, get_realm_from_request, \
@@ -169,7 +169,7 @@ def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
 
 def login_or_register_remote_user(request: HttpRequest, remote_username: str,
                                   user_profile: Optional[UserProfile], full_name: str='',
-                                  invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
+                                  mobile_flow_otp: Optional[str]=None,
                                   is_signup: bool=False, redirect_to: str='',
                                   multiuse_object_key: str='') -> HttpResponse:
     """Given a successful authentication showing the user controls given
@@ -266,14 +266,11 @@ def remote_user_sso(request: HttpRequest,
         realm = None
     # Since RemoteUserBackend will return None if Realm is None, we
     # don't need to check whether `realm` is None.
-    return_data = {}  # type: Dict[str, Any]
-    user_profile = authenticate(remote_user=remote_user, realm=realm,
-                                return_data=return_data)
+    user_profile = authenticate(remote_user=remote_user, realm=realm)
 
     redirect_to = request.GET.get('next', '')
 
     return login_or_register_remote_user(request, remote_user, user_profile,
-                                         invalid_subdomain = bool(return_data.get("invalid_subdomain")),
                                          mobile_flow_otp=mobile_flow_otp,
                                          redirect_to=redirect_to)
 
@@ -482,10 +479,9 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
 
     if mobile_flow_otp is not None:
         # When request was not initiated from subdomain.
-        user_profile, return_data = authenticate_remote_user(realm, email_address)
-        invalid_subdomain = bool(return_data.get('invalid_subdomain'))
+        user_profile = authenticate_remote_user(realm, email_address)
         return login_or_register_remote_user(request, email_address, user_profile,
-                                             full_name, invalid_subdomain,
+                                             full_name,
                                              mobile_flow_otp=mobile_flow_otp,
                                              is_signup=is_signup,
                                              redirect_to=next)
@@ -494,8 +490,7 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
         realm, full_name, email_address, is_signup=is_signup,
         redirect_to=next, multiuse_object_key=multiuse_object_key)
 
-def authenticate_remote_user(realm: Realm, email_address: str) -> Tuple[UserProfile, Dict[str, Any]]:
-    return_data = {}  # type: Dict[str, bool]
+def authenticate_remote_user(realm: Realm, email_address: str) -> UserProfile:
     if email_address is None:
         # No need to authenticate if email address is None. We already
         # know that user_profile would be None as well. In fact, if we
@@ -503,13 +498,12 @@ def authenticate_remote_user(realm: Realm, email_address: str) -> Tuple[UserProf
         # ZulipDummyBackend which doesn't accept a None as a username.
         logging.warning("Email address was None while trying to authenticate "
                         "remote user.")
-        return None, return_data
+        return None
 
     user_profile = authenticate(username=email_address,
                                 realm=realm,
-                                use_dummy_backend=True,
-                                return_data=return_data)
-    return user_profile, return_data
+                                use_dummy_backend=True)
+    return user_profile
 
 _subdomain_token_salt = 'zerver.views.auth.log_into_subdomain'
 
@@ -556,7 +550,6 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
         # race, the eventual registration code will catch that and
         # throw an error, so we don't need to check for that here.
         user_profile = None
-        return_data = {}  # type: Dict[str, Any]
     else:
         # We're just trying to login.  We can be reasonably confident
         # that this subdomain actually has a corresponding active
@@ -573,11 +566,10 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
         # is correct in those cases and such a race would be very
         # rare, so a nice error message is low priority.
         realm = get_realm(subdomain)
-        user_profile, return_data = authenticate_remote_user(realm, email_address)
+        user_profile = authenticate_remote_user(realm, email_address)
 
-    invalid_subdomain = bool(return_data.get('invalid_subdomain'))
     return login_or_register_remote_user(request, email_address, user_profile,
-                                         full_name, invalid_subdomain=invalid_subdomain,
+                                         full_name,
                                          is_signup=is_signup, redirect_to=redirect_to,
                                          multiuse_object_key=multiuse_object_key)
 
