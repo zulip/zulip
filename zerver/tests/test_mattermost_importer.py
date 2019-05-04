@@ -365,26 +365,14 @@ class MatterMostImporter(ZulipTestCase):
         smile_emoji_code = name_to_codepoint["smile"]
         world_map_emoji_code = name_to_codepoint["world_map"]
 
-        expected_total_reactions = [
-            {
-                'user_profile': harry_id, 'message': 5, 'id': 1, 'reaction_type': Reaction.REALM_EMOJI,
-                'emoji_code': tick_emoji_code, 'emoji_name': 'tick'
-            },
-            {
-                'user_profile': ron_id, 'message': 5, 'id': 2, 'reaction_type': Reaction.UNICODE_EMOJI,
-                'emoji_code': smile_emoji_code, 'emoji_name': 'smile'
-            },
-            {
-                'user_profile': ron_id, 'message': 5, 'id': 3, 'reaction_type': Reaction.UNICODE_EMOJI,
-                'emoji_code': world_map_emoji_code, 'emoji_name': 'world_map'
-            },
-            {
-                'user_profile': harry_id, 'message': 5, 'id': 4, 'reaction_type': Reaction.UNICODE_EMOJI,
-                'emoji_code': world_map_emoji_code, 'emoji_name': 'world_map'
-            }
-        ]
-
-        self.assertEqual(total_reactions, expected_total_reactions)
+        self.assertEqual(len(total_reactions), 4)
+        self.assertEqual(self.get_set(total_reactions, "reaction_type"), set([Reaction.REALM_EMOJI, Reaction.UNICODE_EMOJI]))
+        self.assertEqual(self.get_set(total_reactions, "emoji_name"), set(["tick", "smile", "world_map"]))
+        self.assertEqual(self.get_set(total_reactions, "emoji_code"), set([tick_emoji_code, smile_emoji_code,
+                                                                           world_map_emoji_code]))
+        self.assertEqual(self.get_set(total_reactions, "user_profile"), set([harry_id, ron_id]))
+        self.assertEqual(len(self.get_set(total_reactions, "id")), 4)
+        self.assertEqual(len(self.get_set(total_reactions, "message")), 1)
 
     def team_output_dir(self, output_dir: str, team_name: str) -> str:
         return os.path.join(output_dir, team_name)
@@ -434,16 +422,16 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(len(realm['zerver_defaultstream']), 0)
 
         exported_recipient_ids = self.get_set(realm['zerver_recipient'], 'id')
-        self.assertEqual(exported_recipient_ids, set([1, 2, 3, 4, 5, 6]))
+        self.assertEqual(len(exported_recipient_ids), 6)
         exported_recipient_types = self.get_set(realm['zerver_recipient'], 'type')
         self.assertEqual(exported_recipient_types, set([1, 2]))
         exported_recipient_type_ids = self.get_set(realm['zerver_recipient'], 'type_id')
-        self.assertEqual(exported_recipient_type_ids, set([1, 2, 3]))
+        self.assertEqual(len(exported_recipient_type_ids), 3)
 
         exported_subscription_userprofile = self.get_set(realm['zerver_subscription'], 'user_profile')
-        self.assertEqual(exported_subscription_userprofile, set([1, 2, 3]))
+        self.assertEqual(len(exported_subscription_userprofile), 3)
         exported_subscription_recipients = self.get_set(realm['zerver_subscription'], 'recipient')
-        self.assertEqual(exported_subscription_recipients, set([1, 2, 3, 4, 5, 6]))
+        self.assertEqual(len(exported_subscription_recipients), 6)
 
         messages = self.read_file(harry_team_output_dir, 'messages-000001.json')
 
