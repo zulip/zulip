@@ -597,22 +597,23 @@ exports.build_page = function () {
 
     function populate_data_for_request(subsection) {
         var data = {};
-        var subsection_elem = $('#org-' + subsection);
-        var input_elems = subsection_elem.find('.setting-widget');
-        _.each(input_elems, function (input_elem) {
+        var properties_elements = get_subsection_property_elements(subsection);
+        _.each(properties_elements, function (input_elem) {
             input_elem = $(input_elem);
             var input_type = input_elem.data("setting-widget-type");
-            var property_name = input_elem.attr('id').replace("id_realm_", "");
-            if (input_type === 'bool') {
-                data[property_name] = JSON.stringify(input_elem.prop('checked'));
-                return;
-            }
-            if (input_type === 'text') {
-                data[property_name] = JSON.stringify(input_elem.val().trim());
-                return;
-            }
-            if (input_type === 'integer') {
-                data[property_name] = JSON.stringify(parseInt(input_elem.val().trim(), 10));
+            if (input_type) {
+                var property_name = input_elem.attr('id').replace("id_realm_", "");
+                if (input_type === 'bool') {
+                    data[property_name] = JSON.stringify(input_elem.prop('checked'));
+                    return;
+                }
+                if (input_type === 'text') {
+                    data[property_name] = JSON.stringify(input_elem.val().trim());
+                    return;
+                }
+                if (input_type === 'integer') {
+                    data[property_name] = JSON.stringify(parseInt(input_elem.val().trim(), 10));
+                }
             }
         });
         return data;
@@ -826,8 +827,9 @@ exports.build_page = function () {
         var save_button = $(e.currentTarget);
         var subsection_id = save_button.attr('id').replace("org-submit-", "");
         var subsection = subsection_id.split('-').join('_');
+        var subsection_elem = save_button.closest('.org-subsection-parent');
 
-        var data = populate_data_for_request(subsection_id);
+        var data = populate_data_for_request(subsection_elem);
         data = _.extend(data, get_complete_data_for_subsection(subsection));
         exports.save_organization_settings(data, save_button);
     });
