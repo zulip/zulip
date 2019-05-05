@@ -170,6 +170,11 @@ exports.extract_property_name = function (elem) {
     return elem.attr('id').split('-').join('_').replace("id_", "");
 };
 
+function get_subsection_property_elements(element) {
+    var subsection = $(element).closest('.org-subsection-parent');
+    return subsection.find('.prop-element');
+}
+
 function set_realm_waiting_period_dropdown() {
     var value = get_property_value("realm_waiting_period_setting");
     $("#id_realm_waiting_period_setting").val(value);
@@ -657,11 +662,6 @@ exports.build_page = function () {
         }
 
         return current_val !== changed_val;
-    }
-
-    function get_subsection_property_elements(element) {
-        var subsection = $(element).closest('.org-subsection-parent');
-        return subsection.find('.prop-element');
     }
 
     $('.admin-realm-form').on('change input', 'input, select, textarea', function (e) {
