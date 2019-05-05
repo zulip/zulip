@@ -16,6 +16,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db import connection
 from django.db.utils import IntegrityError
 from django.http import HttpRequest
+from django.utils import translation
 
 from two_factor.models import PhoneDevice
 from zerver.lib.initial_password import initial_password
@@ -100,6 +101,7 @@ class ZulipTestCase(TestCase):
         clear_client_event_queues_for_testing()
         clear_supported_auth_backends_cache()
         flush_per_request_caches()
+        translation.activate(settings.LANGUAGE_CODE)
 
     '''
     WRAPPER_COMMENT:
