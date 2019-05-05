@@ -102,6 +102,7 @@ pysocks==1.6.8            # via twilio
 python-dateutil==2.8.0
 python-gcm==0.4
 python-ldap==3.2.0        # via django-auth-ldap
+python-magic==0.4.15
 python-twitter==3.5
 python3-openid==3.1.0     # via social-auth-core
 pytz==2019.1
