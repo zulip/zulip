@@ -8,6 +8,6 @@ class OpenGraphParser(BaseParser):
         meta = self._soup.findAll('meta')
         content = {}
         for tag in meta:
-            if tag.has_attr('property') and 'og:' in tag['property']:
+            if tag.has_attr('property') and 'og:' in tag['property'] and tag.has_attr('content'):
                 content[re.sub('og:', '', tag['property'])] = tag['content']
         return content
