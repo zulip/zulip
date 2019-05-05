@@ -51,6 +51,14 @@ iterative development, but you can override this behavior with the
 the `--rerun` option, which will rerun just the tests that failed in
 the last test run.
 
+Additionally, we have a `--replicate` option that can prove useful for
+debugging a non-deterministic test failure.  Such test failures may
+arise when running `test-backend` with high levels of parallelism, in
+which case we may wish to rerun only the tests which were part of the
+failed process.  This option gives us a free reproduction of the failure,
+while writing the list of tests to `var/failed_thread_tests.json` in a
+pretty-printed format for quick hand-editing.
+
 **Webhook integrations**.  For performance, `test-backend` with no
 arguments will not run webhook integration tests (`zerver/webhooks/`),
 which would otherwise account for about 25% of the total runtime.
