@@ -7,10 +7,10 @@ import magic
 from typing import Any, Optional, Dict
 from typing.re import Match
 
+from version import ZULIP_VERSION
 from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cache_key
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import OpenGraphParser, GenericParser
-
 
 # FIXME: Should we use a database cache or a memcached in production? What if
 # opengraph data is changed for a site?
@@ -23,6 +23,9 @@ link_regex = re.compile(
     r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
     r'(?::\d+)?'  # optional port
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+# FIXME: This header is not used by pyoembed, when trying to autodiscover!
+# Set a custom user agent, since some sites block us with the default requests header
+HEADERS = {'User-Agent': 'Zulip URL preview/%s' % (ZULIP_VERSION,)}
 
 
 def is_link(url: str) -> Match[str]:
@@ -39,7 +42,7 @@ def guess_mimetype_from_content(response: requests.Response) -> str:
 
 def valid_content_type(url: str) -> bool:
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, headers=HEADERS)
     except requests.RequestException:
         return False
 
@@ -76,7 +79,8 @@ def get_link_embed_data(url: str,
         # open graph data.
         return None
     data = data or {}
-    response = requests.get(url, stream=True)
+    response = requests.get(url, stream=True, headers=HEADERS)
+
     if response.ok:
         og_data = OpenGraphParser(response.text).extract_data()
         if og_data:
