@@ -2,7 +2,7 @@
 
 import mock
 import ujson
-from typing import Any
+from typing import Any, Callable
 from requests.exceptions import ConnectionError
 from django.test import override_settings
 
@@ -170,6 +170,14 @@ class PreviewTestCase(ZulipTestCase):
           </html>
         """
 
+    @classmethod
+    def create_mock_response(cls, url: str, relative_url: bool=False) -> Callable[..., MockPythonResponse]:
+        html = cls.open_graph_html
+        if relative_url is True:
+            html = html.replace('http://ia.media-imdb.com', '')
+        response = MockPythonResponse(html, 200)
+        return lambda k: {url: response}.get(k, MockPythonResponse('', 404))
+
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_edit_message_history(self) -> None:
         email = self.example_email('hamlet')
@@ -178,9 +186,7 @@ class PreviewTestCase(ZulipTestCase):
                                           topic_name="editing", content="original")
 
         url = 'http://test.org/'
-        response = MockPythonResponse(self.open_graph_html, 200)
-        mocked_response = mock.Mock(
-            side_effect=lambda k: {url: response}.get(k, MockPythonResponse('', 404)))
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
 
         with mock.patch('zerver.views.messages.queue_json_publish') as patched:
             result = self.client_patch("/json/messages/" + str(msg_id), {
@@ -228,11 +234,7 @@ class PreviewTestCase(ZulipTestCase):
             msg.rendered_content)
 
         # Mock the network request result so the test can be fast without Internet
-        response = MockPythonResponse(self.open_graph_html, 200)
-        if relative_url is True:
-            response = MockPythonResponse(self.open_graph_html.replace('http://ia.media-imdb.com', ''), 200)
-        mocked_response = mock.Mock(
-            side_effect=lambda k: {url: response}.get(k, MockPythonResponse('', 404)))
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url, relative_url=relative_url))
 
         # Run the queue processor to potentially rerender things
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
@@ -258,10 +260,9 @@ class PreviewTestCase(ZulipTestCase):
         def wrapped_queue_json_publish(*args: Any, **kwargs: Any) -> None:
             # Mock the network request result so the test can be fast without Internet
             response = MockPythonResponse(self.open_graph_html, 200)
-            mocked_response_original = mock.Mock(
-                side_effect=lambda k: {original_url: response}.get(k, MockPythonResponse('', 404)))
-            mocked_response_edited = mock.Mock(
-                side_effect=lambda k: {edited_url: response}.get(k, MockPythonResponse('', 404)))
+            mocked_response_original = mock.Mock(side_effect=self.create_mock_response(original_url))
+            mocked_response_edited = mock.Mock(side_effect=self.create_mock_response(edited_url))
+
             with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
                 with mock.patch('requests.get', mocked_response_original):
                     # Run the queue processor. This will simulate the event for original_url being
