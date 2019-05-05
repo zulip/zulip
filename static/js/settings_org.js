@@ -595,29 +595,6 @@ exports.build_page = function () {
     exports.populate_auth_methods(page_params.realm_authentication_methods);
     insert_tip_box();
 
-    function populate_data_for_request(subsection) {
-        var data = {};
-        var properties_elements = get_subsection_property_elements(subsection);
-        _.each(properties_elements, function (input_elem) {
-            input_elem = $(input_elem);
-            var input_type = input_elem.data("setting-widget-type");
-            if (input_type) {
-                var property_name = input_elem.attr('id').replace("id_realm_", "");
-                if (input_type === 'bool') {
-                    data[property_name] = JSON.stringify(input_elem.prop('checked'));
-                    return;
-                }
-                if (input_type === 'text') {
-                    data[property_name] = JSON.stringify(input_elem.val().trim());
-                    return;
-                }
-                if (input_type === 'integer') {
-                    data[property_name] = JSON.stringify(parseInt(input_elem.val().trim(), 10));
-                }
-            }
-        });
-        return data;
-    }
 
     set_realm_waiting_period_dropdown();
     set_create_stream_policy_dropdown();
@@ -818,6 +795,30 @@ exports.build_page = function () {
             data = {};
             data.authentication_methods = JSON.stringify(get_auth_method_table_data());
         }
+        return data;
+    }
+
+    function populate_data_for_request(subsection) {
+        var data = {};
+        var properties_elements = get_subsection_property_elements(subsection);
+        _.each(properties_elements, function (input_elem) {
+            input_elem = $(input_elem);
+            var input_type = input_elem.data("setting-widget-type");
+            if (input_type) {
+                var property_name = input_elem.attr('id').replace("id_realm_", "");
+                if (input_type === 'bool') {
+                    data[property_name] = JSON.stringify(input_elem.prop('checked'));
+                    return;
+                }
+                if (input_type === 'text') {
+                    data[property_name] = JSON.stringify(input_elem.val().trim());
+                    return;
+                }
+                if (input_type === 'integer') {
+                    data[property_name] = JSON.stringify(parseInt(input_elem.val().trim(), 10));
+                }
+            }
+        });
         return data;
     }
 
