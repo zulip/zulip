@@ -148,8 +148,8 @@ function test_realms_domain_modal(add_realm_domain) {
 }
 
 function createSaveButtons(subsection) {
-    const stub_save_button_header = $('.subsection-header');
-    const save_button_controls = $('.save-btn-controls');
+    const stub_save_button_header = $(`#org-${subsection}`);
+    const save_button_controls = $('.save-button-controls');
     const stub_save_button = $(`#org-submit-${subsection}`);
     const stub_discard_button = $(`#org-submit-${subsection}`);
     const stub_save_button_text = $('.icon-button-text');
@@ -215,10 +215,14 @@ function test_submit_settings_form(submit_form) {
     save_button.replace = () => {
         return `${subsection}`;
     };
-    $("#id_realm_add_emoji_by_admins_only").val("by_anyone");
     $("#id_realm_create_stream_policy").val("by_members");
     $("#id_realm_invite_to_stream_policy").val("by_members");
     $("#id_realm_waiting_period_threshold").val(10);
+
+    const add_emoji_by_admins_only_elem = $("#id_realm_add_emoji_by_admins_only");
+    add_emoji_by_admins_only_elem.val("by_anyone");
+    add_emoji_by_admins_only_elem.attr("id", 'id_realm_add_emoji_by_admins_only');
+
     const bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
     bot_creation_policy_elem.val("1");
     bot_creation_policy_elem.attr('id', 'id_realm_bot_creation_policy');
@@ -233,9 +237,11 @@ function test_submit_settings_form(submit_form) {
     };
 
     let subsection_elem = $(`#org-${subsection}`);
-    subsection_elem.set_find_results('.setting-widget', [
+    subsection_elem.closest = () => subsection_elem;
+    subsection_elem.set_find_results('.prop-element', [
         bot_creation_policy_elem,
         email_address_visibility_elem,
+        add_emoji_by_admins_only_elem,
     ]);
 
     patched = false;
@@ -273,7 +279,8 @@ function test_submit_settings_form(submit_form) {
     };
 
     subsection_elem = $(`#org-${subsection}`);
-    subsection_elem.set_find_results('.setting-widget', [
+    subsection_elem.closest = () => subsection_elem;
+    subsection_elem.set_find_results('.prop-element', [
         realm_default_language_elem,
         realm_default_twenty_four_hour_time_elem,
     ]);
