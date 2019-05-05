@@ -25,11 +25,11 @@ class GenericParser(BaseParser):
         first_h1 = soup.find('h1')
         if first_h1:
             first_p = first_h1.find_next('p')
-            if (first_p and first_p.string != ''):
+            if (first_p and first_p.text != ''):
                 return first_p.text
         first_p = soup.find('p')
-        if (first_p and first_p.string != ''):
-            return first_p.string
+        if (first_p and first_p.text != ''):
+            return first_p.text
         return None
 
     def _get_image(self) -> Optional[str]:
