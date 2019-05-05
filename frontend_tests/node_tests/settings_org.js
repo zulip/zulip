@@ -191,6 +191,17 @@ function createSaveButtons(subsection) {
 }
 
 function test_submit_settings_form(submit_form) {
+    Object.assign(page_params, {
+        realm_bot_creation_policy: '2',
+        realm_email_address_visibility: '2',
+        realm_add_emoji_by_admins_only: true,
+        realm_create_stream_by_admins_only: true,
+        realm_waiting_period_threshold: 1,
+        realm_default_language: '"es"',
+        realm_default_twenty_four_hour_time: 'false',
+        realm_invite_to_stream_policy: 2,
+    });
+
     global.patch_builtin('setTimeout', func => func());
     const ev = {
         preventDefault: noop,
