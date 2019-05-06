@@ -34,6 +34,20 @@ def filter_by_subscription_history(user_profile: UserProfile,
         stream_messages = list(stream_messages_raw)
 
         for log_entry in stream_subscription_logs:
+            # For each stream, we iterate through all of the changes
+            # to the user's subscription to that stream, ordered by
+            # event_last_message_id, to determine whether the user was
+            # subscribed to the target stream at that time.
+            #
+            # For each message, we're looking for the first event for
+            # the user's subscription to the target stream after the
+            # message was sent.
+            # * If it's an unsubscribe, we know the user was subscribed
+            #   when the message was sent, and create a UserMessage
+            # * If it's a subscribe, we know the user was not, and we
+            #   skip the message by mutating the stream_messages list
+            #   to skip that message.
+
             if len(stream_messages) == 0:
                 # Because stream_messages gets mutated below, this
                 # check belongs in this inner loop, not the outer loop.
@@ -45,6 +59,9 @@ def filter_by_subscription_history(user_profile: UserProfile,
                 continue
 
             if log_entry.event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
+                # If the event shows the user was unsubscribed after
+                # event_last_message_id, we know they must have been
+                # subscribed immediately before the event.
                 for stream_message in stream_messages:
                     if stream_message['id'] <= log_entry.event_last_message_id:
                         store_user_message_to_insert(stream_message)
