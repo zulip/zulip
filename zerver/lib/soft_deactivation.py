@@ -124,11 +124,18 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     stream_ids = [sub['recipient__type_id'] for sub in all_stream_subs]
     events = [RealmAuditLog.SUBSCRIPTION_CREATED, RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
               RealmAuditLog.SUBSCRIPTION_ACTIVATED]
+
+    # Important: We order first by event_last_message_id, which is the
+    # official ordering, and then tiebreak by RealmAuditLog event ID.
+    # That second tiebreak is important in case a user is subscribed
+    # and then unsubscribed without any messages being sent in the
+    # meantime.  Without that tiebreak, we could end up incorrectly
+    # processing the ordering of those two subscription changes.
     subscription_logs = list(RealmAuditLog.objects.select_related(
         'modified_stream').filter(
         modified_user=user_profile,
         modified_stream__id__in=stream_ids,
-        event_type__in=events).order_by('event_last_message_id'))
+        event_type__in=events).order_by('event_last_message_id', 'id'))
 
     all_stream_subscription_logs = defaultdict(list)  # type: DefaultDict[int, List[RealmAuditLog]]
     for log in subscription_logs:
