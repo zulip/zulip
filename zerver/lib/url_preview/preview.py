@@ -23,9 +23,10 @@ link_regex = re.compile(
     r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
     r'(?::\d+)?'  # optional port
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-# FIXME: This header is not used by pyoembed, when trying to autodiscover!
+# FIXME: This header and timeout are not used by pyoembed, when trying to autodiscover!
 # Set a custom user agent, since some sites block us with the default requests header
 HEADERS = {'User-Agent': 'Zulip URL preview/%s' % (ZULIP_VERSION,)}
+TIMEOUT = 15
 
 
 def is_link(url: str) -> Match[str]:
@@ -42,7 +43,7 @@ def guess_mimetype_from_content(response: requests.Response) -> str:
 
 def valid_content_type(url: str) -> bool:
     try:
-        response = requests.get(url, stream=True, headers=HEADERS)
+        response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
     except requests.RequestException:
         return False
 
@@ -79,7 +80,7 @@ def get_link_embed_data(url: str,
         # open graph data.
         return None
     data = data or {}
-    response = requests.get(url, stream=True, headers=HEADERS)
+    response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
 
     if response.ok:
         og_data = OpenGraphParser(response.text).extract_data()
