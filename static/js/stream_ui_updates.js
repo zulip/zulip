@@ -16,6 +16,34 @@ exports.update_check_button_for_sub = function (sub) {
     }
 };
 
+exports.initialize_cant_subscribe_popover = function (sub) {
+    var button_wrapper = stream_edit.settings_for_sub(sub).find('.sub_unsub_button_wrapper');
+    var settings_button = subs.settings_button_for_sub(sub);
+
+    // Disabled button blocks mouse events(hover) from reaching
+    // to it's parent div element, so popover don't get triggered.
+    // Add css to prevent this.
+    settings_button.css("pointer-events", "none");
+    settings_button.popover({
+        placement: "bottom",
+        content: "<div class='cant_subscribe_hint'>%s</div>".replace(
+            '%s', i18n.t('You can not join private streams without invitation.')),
+        trigger: "manual",
+        html: true,
+        animation: false,
+    });
+
+    button_wrapper.on('mouseover', function (e) {
+        settings_button.popover('show');
+        e.stopPropagation();
+    });
+
+    button_wrapper.on('mouseout', function (e) {
+        settings_button.popover('hide');
+        e.stopPropagation();
+    });
+};
+
 exports.update_settings_button_for_sub = function (sub) {
     var settings_button = subs.settings_button_for_sub(sub);
     if (sub.subscribed) {
@@ -24,9 +52,13 @@ exports.update_settings_button_for_sub = function (sub) {
         settings_button.text(i18n.t("Subscribe")).addClass("unsubscribed");
     }
     if (sub.should_display_subscription_button) {
-        settings_button.show();
+        settings_button.prop("disabled", false);
+        settings_button.popover('destroy');
+        settings_button.css("pointer-events", "");
     } else {
-        settings_button.hide();
+        settings_button.attr("title", "");
+        exports.initialize_cant_subscribe_popover(sub);
+        settings_button.attr("disabled", "disabled");
     }
 };
 

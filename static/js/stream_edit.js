@@ -164,6 +164,9 @@ function show_subscription_settings(sub_row) {
     if (!sub.render_subscribers) {
         return;
     }
+    if (!sub.should_display_subscription_button) {
+        stream_ui_updates.initialize_cant_subscribe_popover(sub);
+    }
     // fetch subscriber list from memory.
     var list = get_subscriber_list(sub_settings);
     list.empty();
