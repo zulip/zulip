@@ -27,8 +27,11 @@ def filter_by_subscription_history(user_profile: UserProfile,
                               message_id=message['id'], flags=0)
         user_messages_to_insert.append(message)
 
-    for (stream_id, stream_messages) in all_stream_messages.items():
+    for (stream_id, stream_messages_raw) in all_stream_messages.items():
         stream_subscription_logs = all_stream_subscription_logs[stream_id]
+        # Make a copy of the original list of messages, which we will
+        # mutate in the loop below.
+        stream_messages = list(stream_messages_raw)
 
         for log_entry in stream_subscription_logs:
             if len(stream_messages) == 0:
