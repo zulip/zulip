@@ -967,28 +967,16 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_subscribed"]), 0)
 
-    def test_create_stream_by_admins_only_setting(self) -> None:
+    def test_create_stream_policy_setting(self) -> None:
         """
-        When realm.create_stream_by_admins_only setting is active and
-        the number of days since the user had joined is less than waiting period
-        threshold, non admin users shouldn't be able to create new streams.
-        """
-        user_profile = self.example_user('hamlet')
-        email = user_profile.email
-        self.login(email)
-        do_set_realm_property(user_profile.realm, 'create_stream_by_admins_only', True)
+        When realm.create_stream_policy setting is Realm.CREATE_STREAM_POLICY_MEMBERS then
+        test that any user can create a stream.
 
-        stream_name = ['adminsonlysetting']
-        result = self.common_subscribe_to_streams(
-            email,
-            stream_name
-        )
-        self.assert_json_error(result, 'User cannot create streams.')
+        When realm.create_stream_policy setting is Realm.CREATE_STREAM_POLICY_ADMINS then
+        test that only admins can create a stream.
 
-    def test_create_stream_by_waiting_period_threshold(self) -> None:
-        """
-        Non admin users with account age greater or equal to waiting period
-        threshold should be able to create new streams.
+        When realm.create_stream_policy setting is Realm.CREATE_STREAM_POLICY_WAITING_PERIOD then
+        test that admins and users with accounts older than the waiting period can create a stream.
         """
         user_profile = self.example_user('hamlet')
         user_profile.date_joined = timezone_now()
@@ -997,21 +985,60 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         do_change_is_admin(user_profile, False)
 
+        # Allow all members to create streams.
+        do_set_realm_property(user_profile.realm, 'create_stream_policy',
+                              Realm.CREATE_STREAM_POLICY_MEMBERS)
+        # Set waiting period to 10 days.
         do_set_realm_property(user_profile.realm, 'waiting_period_threshold', 10)
 
-        stream_name = ['waitingperiodtest']
-        result = self.common_subscribe_to_streams(
-            email,
-            stream_name
-        )
+        # Can successfully create stream despite being less than waiting period and not an admin,
+        # due to create stream policy.
+        stream_name = ['all_members']
+        result = self.common_subscribe_to_streams(email, stream_name)
+        self.assert_json_success(result)
+
+        # Allow only administrators to create streams.
+        do_set_realm_property(user_profile.realm, 'create_stream_policy',
+                              Realm.CREATE_STREAM_POLICY_ADMINS)
+
+        # Cannot create stream because not an admin.
+        stream_name = ['admins_only']
+        result = self.common_subscribe_to_streams(email, stream_name)
         self.assert_json_error(result, 'User cannot create streams.')
 
-        do_set_realm_property(user_profile.realm, 'waiting_period_threshold', 0)
+        # Make current user an admin.
+        do_change_is_admin(user_profile, True)
 
-        result = self.common_subscribe_to_streams(
-            email,
-            stream_name
-        )
+        # Can successfully create stream as user is now an admin.
+        stream_name = ['admins_only']
+        result = self.common_subscribe_to_streams(email, stream_name)
+        self.assert_json_success(result)
+
+        # Allow users older than the waiting period to create streams.
+        do_set_realm_property(user_profile.realm, 'create_stream_policy',
+                              Realm.CREATE_STREAM_POLICY_WAITING_PERIOD)
+
+        # Can successfully create stream despite being under waiting period because user is admin.
+        stream_name = ['waiting_period_as_admin']
+        result = self.common_subscribe_to_streams(email, stream_name)
+        self.assert_json_success(result)
+
+        # Make current user no longer an admin.
+        do_change_is_admin(user_profile, False)
+
+        # Cannot create stream because user is not an admin and is not older than the waiting
+        # period.
+        stream_name = ['waiting_period']
+        result = self.common_subscribe_to_streams(email, stream_name)
+        self.assert_json_error(result, 'User cannot create streams.')
+
+        # Make user account 11 days old..
+        user_profile.date_joined = timezone_now() - timedelta(days=11)
+        user_profile.save()
+
+        # Can successfully create stream now that account is old enough.
+        stream_name = ['waiting_period']
+        result = self.common_subscribe_to_streams(email, stream_name)
         self.assert_json_success(result)
 
     def test_invite_to_stream_by_invite_period_threshold(self) -> None:
@@ -2127,15 +2154,16 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertTrue(othello.can_create_streams())
 
         othello.is_realm_admin = False
-        othello.realm.create_stream_by_admins_only = True
+        othello.realm.create_stream_policy = Realm.CREATE_STREAM_POLICY_ADMINS
         self.assertFalse(othello.can_create_streams())
 
-        othello.realm.create_stream_by_admins_only = False
+        othello.realm.create_stream_policy = Realm.CREATE_STREAM_POLICY_MEMBERS
         othello.is_guest = True
         self.assertFalse(othello.can_create_streams())
 
         othello.is_guest = False
         othello.realm.waiting_period_threshold = 1000
+        othello.realm.create_stream_policy = Realm.CREATE_STREAM_POLICY_WAITING_PERIOD
         othello.date_joined = timezone_now() - timedelta(days=(othello.realm.waiting_period_threshold - 1))
         self.assertFalse(othello.can_create_streams())
 
@@ -2151,7 +2179,7 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee_email = user_profile.email
         realm = user_profile.realm
 
-        do_set_realm_property(realm, "create_stream_by_admins_only", False)
+        do_set_realm_property(realm, "create_stream_policy", Realm.CREATE_STREAM_POLICY_MEMBERS)
         do_set_realm_property(realm, "invite_to_stream_policy",
                               Realm.INVITE_TO_STREAM_POLICY_ADMINS)
         result = self.common_subscribe_to_streams(

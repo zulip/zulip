@@ -357,7 +357,7 @@ paths:
 
                        * `realm_bots`:
 
-                       * `realm_create_stream_by_admins_only`:
+                       * `realm_create_stream_policy`:
 
                        * `realm_invite_to_stream_policy`:
 
@@ -892,8 +892,8 @@ definitions:
         type: string
       realm_bots:
         type: string
-      realm_create_stream_by_admins_only:
-        type: boolean
+      realm_create_stream_policy:
+        type: int64
       realm_invite_to_stream_policy:
         type: int64
       realm_default_language:
