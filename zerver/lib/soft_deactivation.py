@@ -39,6 +39,11 @@ def filter_by_subscription_history(user_profile: UserProfile,
                 # check belongs in this inner loop, not the outer loop.
                 break
 
+            if log_entry.modified_stream_id != stream_id:
+                # We only care about subscription changes for the
+                # stream this batch of messages was sent to.
+                continue
+
             if log_entry.event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
                 for stream_message in stream_messages:
                     if stream_message['id'] <= log_entry.event_last_message_id:
