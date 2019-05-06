@@ -232,7 +232,7 @@ function test_submit_settings_form(submit_form) {
     save_button.replace = () => {
         return `${subsection}`;
     };
-    $("#id_realm_create_stream_permission").val("by_anyone");
+    $("#id_realm_create_stream_policy").val("by_anyone");
     $("#id_realm_add_emoji_by_admins_only").val("by_anyone");
     const invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
     invite_to_stream_policy_elem.val("1");
@@ -525,9 +525,9 @@ function test_sync_realm_settings() {
 
     {
         /* Test create new stream permission settings sync */
-        const property_elem = $('#id_realm_create_stream_permission');
+        const property_elem = $('#id_realm_create_stream_policy');
         property_elem.length = 1;
-        property_elem.attr('id', 'id_realm_create_stream_permission');
+        property_elem.attr('id', 'id_realm_create_stream_policy');
 
         const waiting_period_input_parent = $.create('stub-waiting-period-input-parent');
         $("#id_realm_waiting_period_threshold").set_parent(waiting_period_input_parent);
@@ -536,7 +536,7 @@ function test_sync_realm_settings() {
         page_params.realm_waiting_period_threshold = 3;
 
         settings_org.sync_realm_settings('create_stream_policy');
-        assert.equal($("#id_realm_create_stream_permission").val(), "by_admin_user_with_three_days_old");
+        assert.equal($("#id_realm_create_stream_policy").val(), "by_admin_user_with_three_days_old");
         assert.equal(waiting_period_input_parent.visible(), false);
     }
 
@@ -722,7 +722,7 @@ run_test('set_up', () => {
     const verify_realm_domains = simulate_realm_domains_table();
     simulate_auth_methods();
 
-    $('#id_realm_create_stream_permission').change = set_callback('realm_create_stream_permission');
+    $('#id_realm_create_stream_policy').change = set_callback('realm_create_stream_policy');
     $('#id_realm_video_chat_provider').change = set_callback('realm_video_chat_provider');
     $("#id_realm_org_join_restrictions").change = set_callback('change_org_join_restrictions');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');

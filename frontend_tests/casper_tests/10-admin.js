@@ -88,9 +88,9 @@ function submit_permissions_change() {
 // Test setting limiting stream creation to administrators
 casper.then(function () {
     casper.test.info("Test setting limiting stream creation to administrators");
-    casper.waitUntilVisible("#id_realm_create_stream_permission", function () {
+    casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
         casper.evaluate(function () {
-            $("#id_realm_create_stream_permission").val("by_admins_only").change();
+            $("#id_realm_create_stream_policy").val("by_admins_only").change();
         });
         submit_permissions_change();
     });
@@ -105,9 +105,9 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible("#id_realm_create_stream_permission", function () {
+    casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
         casper.evaluate(function () {
-            $("#id_realm_create_stream_permission").val("by_admin_user_with_custom_time").change();
+            $("#id_realm_create_stream_policy").val("by_admin_user_with_custom_time").change();
             $("#id_realm_waiting_period_threshold").val('6');
         });
         submit_permissions_change();
@@ -122,7 +122,7 @@ casper.then(function () {
     });
 });
 
-casper.waitUntilVisible('#id_realm_create_stream_permission', function () {
+casper.waitUntilVisible('#id_realm_create_stream_policy', function () {
     // Test setting was saved
     casper.test.assertEval(function () {
         return $('input[type="text"][id="id_realm_waiting_period_threshold"]').val() === '6';
@@ -131,7 +131,7 @@ casper.waitUntilVisible('#id_realm_create_stream_permission', function () {
 
     // Deactivate setting
     casper.evaluate(function () {
-        $("#id_realm_create_stream_permission").val("by_admins_only").change();
+        $("#id_realm_create_stream_policy").val("by_admins_only").change();
     });
     submit_permissions_change();
 });
