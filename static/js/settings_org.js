@@ -71,13 +71,14 @@ function get_property_value(property_name) {
     }
 
     if (property_name === 'realm_create_stream_permission') {
-        if (page_params.realm_create_stream_by_admins_only) {
+        if (page_params.realm_create_stream_policy === 2) {
             return "by_admins_only";
         }
-        if (page_params.realm_waiting_period_threshold === 0) {
+        if (page_params.realm_create_stream_policy === 1) {
             return "by_anyone";
         }
-        if (page_params.realm_waiting_period_threshold === 3) {
+        if (page_params.realm_create_stream_policy === 3 &&
+            page_params.realm_waiting_period_threshold === 3) {
             return "by_admin_user_with_three_days_old";
         }
         return "by_admin_user_with_custom_time";
@@ -455,7 +456,7 @@ exports.sync_realm_settings = function (property) {
 
     if (property === 'message_content_edit_limit_seconds') {
         property = 'message_content_edit_limit_minutes';
-    } else if (property === 'create_stream_by_admins_only') {
+    } else if (property === 'create_stream_policy') {
         property = 'create_stream_permission';
     } else if (property === 'invite_to_stream_policy') {
         property = 'invite_to_stream_policy';
@@ -724,15 +725,15 @@ exports.build_page = function () {
             }
 
             if (create_stream_permission === "by_admins_only") {
-                data.create_stream_by_admins_only = true;
+                data.create_stream_policy = 2;
             } else if (create_stream_permission === "by_admin_user_with_three_days_old") {
-                data.create_stream_by_admins_only = false;
+                data.create_stream_policy = 3;
                 data.waiting_period_threshold = 3;
             } else if (create_stream_permission === "by_admin_user_with_custom_time") {
-                data.create_stream_by_admins_only = false;
+                data.create_stream_policy = 3;
                 data.waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
             } else if (create_stream_permission === "by_anyone") {
-                data.create_stream_by_admins_only = false;
+                data.create_stream_policy = 1;
                 data.waiting_period_threshold = 0;
             }
 

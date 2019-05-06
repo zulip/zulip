@@ -92,7 +92,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             allow_community_topic_editing: noop,
             avatar_changes_disabled: settings_account.update_avatar_change_display,
             bot_creation_policy: settings_bots.update_bot_permissions_ui,
-            create_stream_by_admins_only: noop,
+            create_stream_policy: noop,
             invite_to_stream_policy: noop,
             default_language: noop,
             default_twenty_four_hour_time: noop,
@@ -128,10 +128,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params['realm_' + event.property] = event.value;
             realm_settings[event.property]();
             settings_org.sync_realm_settings(event.property);
-            if (event.property === 'create_stream_by_admins_only') {
+            if (event.property === 'create_stream_policy') {
                 if (!page_params.is_admin) {
+                    // TODO: Add waiting_period_threshold logic here.
                     page_params.can_create_streams =
-                        !page_params.realm_create_stream_by_admins_only;
+                        page_params.realm_create_stream_policy === 1;
                 }
             } else if (event.property === 'invite_to_stream_policy') {
                 if (!page_params.is_admin) {

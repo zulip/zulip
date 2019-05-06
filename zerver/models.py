@@ -206,14 +206,14 @@ class Realm(models.Model):
     CREATE_STREAM_POLICY_ADMINS = 2
     CREATE_STREAM_POLICY_WAITING_PERIOD = 3
     create_stream_policy = models.PositiveSmallIntegerField(
-        default=CREATE_STREAM_POLICY_MEMBERS)  # type: bool
+        default=CREATE_STREAM_POLICY_MEMBERS)  # type: int
 
     # Who in the organization is allowed to invite other users to streams.
     INVITE_TO_STREAM_POLICY_MEMBERS = 1
     INVITE_TO_STREAM_POLICY_ADMINS = 2
     INVITE_TO_STREAM_POLICY_WAITING_PERIOD = 3
     invite_to_stream_policy = models.PositiveSmallIntegerField(
-        default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: bool
+        default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
 
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is the
@@ -1010,10 +1010,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def can_create_streams(self) -> bool:
         if self.is_realm_admin:
             return True
-        if self.realm.create_stream_by_admins_only:
+        if self.realm.create_stream_policy == Realm.CREATE_STREAM_POLICY_ADMINS:
             return False
         if self.is_guest:
             return False
+
+        if self.realm.create_stream_policy == Realm.CREATE_STREAM_POLICY_MEMBERS:
+            return True
 
         diff = (timezone_now() - self.date_joined).days
         if diff >= self.realm.waiting_period_threshold:

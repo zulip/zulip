@@ -193,11 +193,11 @@ var event_fixtures = {
 
     // Please keep this next section un-nested, as we want this to partly
     // be simple documentation on the formats of individual events.
-    realm__update__create_stream_by_admins_only: {
+    realm__update__create_stream_policy: {
         type: 'realm',
         op: 'update',
-        property: 'create_stream_by_admins_only',
-        value: false,
+        property: 'create_stream_policy',
+        value: 2,
     },
 
     realm__update__invite_to_stream_policy: {
@@ -872,8 +872,8 @@ with_overrides(function (override) {
         assert.equal(page_params[parameter_name], true);
     }
 
-    var event = event_fixtures.realm__update__create_stream_by_admins_only;
-    test_realm_boolean(event, 'realm_create_stream_by_admins_only');
+    var event = event_fixtures.realm__update__create_stream_policy;
+    test_realm_boolean(event, 'realm_create_stream_policy');
 
     event = event_fixtures.realm__update__invite_to_stream_policy;
     test_realm_boolean(event, 'realm_invite_to_stream_policy');
@@ -902,9 +902,6 @@ with_overrides(function (override) {
 
     event = event_fixtures.realm__update__disallow_disposable_email_addresses;
     test_realm_boolean(event, 'realm_disallow_disposable_email_addresses');
-
-    event = event_fixtures.realm__update__create_stream_by_admins_only;
-    test_realm_boolean(event, 'realm_create_stream_by_admins_only');
 
     event = event_fixtures.realm__update_notifications_stream_id;
     override('settings_org.render_notifications_stream_ui', noop);

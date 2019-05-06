@@ -125,7 +125,7 @@ class HomeTest(ZulipTestCase):
             "realm_bot_creation_policy",
             "realm_bot_domain",
             "realm_bots",
-            "realm_create_stream_by_admins_only",
+            "realm_create_stream_policy",
             "realm_default_language",
             "realm_default_stream_groups",
             "realm_default_streams",

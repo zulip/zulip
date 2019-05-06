@@ -568,7 +568,7 @@ def apply_event(state: Dict[str, Any],
             state[field] = event['value']
 
             # Tricky interaction: Whether we can create streams can get changed here.
-            if (field in ['realm_create_stream_by_admins_only',
+            if (field in ['realm_create_stream_policy',
                           'realm_waiting_period_threshold']) and 'can_create_streams' in state:
                 state['can_create_streams'] = user_profile.can_create_streams()
 
