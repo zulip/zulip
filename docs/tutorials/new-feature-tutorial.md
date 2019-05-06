@@ -556,8 +556,8 @@ var org_settings = {
 
 ```
 
-Note that some settings, like `realm_create_stream_permission`,
-reuqire special treatment, because they don't match the common
+Note that some settings, like `realm_msg_edit_limit_setting`,
+require special treatment, because they don't match the common
 pattern.  We can't extract the property name and compare the value of
 such input elements with those in `page_params`, so we have to
 manually handle such situations in a couple key functions:
@@ -570,7 +570,7 @@ manually handle such situations in a couple key functions:
 - `settings_org.update_dependent_subsettings`: This handles settings
     whose value and state depend on other elements.  For example,
     `realm_waiting_period_threshold` is only shown for with the right
-    state of `realm_create_stream_permission`.
+    state of `realm_create_stream_policy`.
 
 Finally, update `server_events_dispatch.js` to handle related events coming from
 the server. There is an object, `realm_settings`, in the function
@@ -621,7 +621,7 @@ Here are few important cases you should consider when testing your changes:
   that both are properly synchronized.  For example, the input element
   for `realm_waiting_period_threshold` is shown only when we have
   selected the custom time limit option in the
-  `realm_create_stream_permission` dropdown.
+  `realm_create_stream_policy` dropdown.
 
 - Do some manual testing for the real-time synchronization of input
   elements across the browsers and just like "Discard changes" button,
