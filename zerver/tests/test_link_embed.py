@@ -259,7 +259,6 @@ class PreviewTestCase(ZulipTestCase):
 
         def wrapped_queue_json_publish(*args: Any, **kwargs: Any) -> None:
             # Mock the network request result so the test can be fast without Internet
-            response = MockPythonResponse(self.open_graph_html, 200)
             mocked_response_original = mock.Mock(side_effect=self.create_mock_response(original_url))
             mocked_response_edited = mock.Mock(side_effect=self.create_mock_response(edited_url))
 
