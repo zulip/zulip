@@ -196,11 +196,17 @@ class Realm(models.Model):
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)  # type: bool
 
     mandatory_topics = models.BooleanField(default=False)  # type: bool
-    create_stream_by_admins_only = models.BooleanField(default=False)  # type: bool
     add_emoji_by_admins_only = models.BooleanField(default=False)  # type: bool
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     avatar_changes_disabled = models.BooleanField(default=False)  # type: bool
+
+    # Who in the organization is allowed to create streams.
+    CREATE_STREAM_POLICY_MEMBERS = 1
+    CREATE_STREAM_POLICY_ADMINS = 2
+    CREATE_STREAM_POLICY_WAITING_PERIOD = 3
+    create_stream_policy = models.PositiveSmallIntegerField(
+        default=CREATE_STREAM_POLICY_MEMBERS)  # type: bool
 
     # Who in the organization is allowed to invite other users to streams.
     INVITE_TO_STREAM_POLICY_MEMBERS = 1
@@ -298,7 +304,7 @@ class Realm(models.Model):
         allow_edit_history=bool,
         allow_message_deleting=bool,
         bot_creation_policy=int,
-        create_stream_by_admins_only=bool,
+        create_stream_policy=int,
         invite_to_stream_policy=int,
         default_language=str,
         default_twenty_four_hour_time = bool,
