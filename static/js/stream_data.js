@@ -264,6 +264,15 @@ exports.get_subscriber_count = function (stream_name) {
     return sub.subscribers.num_items();
 };
 
+exports.update_stream_announcement_only = function (sub, is_announcement_only) {
+    sub.is_announcement_only = is_announcement_only;
+};
+
+exports.update_stream_privacy = function (sub, values) {
+    sub.invite_only = values.invite_only;
+    sub.history_public_to_subscribers = values.history_public_to_subscribers;
+};
+
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
     // Admin can change any stream's name & description either stream is public or

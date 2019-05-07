@@ -157,6 +157,24 @@ exports.update_stream_description = function (sub, description, rendered_descrip
     stream_edit.update_stream_description(sub);
 };
 
+exports.update_stream_privacy = function (sub, values) {
+    stream_data.update_stream_privacy(sub, values);
+    stream_data.update_calculated_fields(sub);
+
+    // Update UI elements
+    stream_ui_updates.update_stream_privacy_type_icon(sub);
+    stream_ui_updates.update_stream_privacy_type_text(sub);
+    stream_ui_updates.update_change_stream_privacy_settings(sub);
+    stream_list.redraw_stream_privacy(sub);
+};
+
+exports.update_stream_announcement_only = function (sub, new_value) {
+    stream_data.update_stream_announcement_only(sub, new_value);
+    stream_data.update_calculated_fields(sub);
+
+    stream_ui_updates.update_stream_privacy_type_text(sub);
+};
+
 exports.set_color = function (stream_id, color) {
     var sub = stream_data.get_sub_by_id(stream_id);
     stream_edit.set_stream_property(sub, 'color', color);
