@@ -32,7 +32,7 @@ class Bitbucket3HookTests(WebhookTestCase):
         self.send_and_test_stream_message("repo_forked", self.EXPECTED_TOPIC, expected_message)
 
     def test_bitbucket3_repo_modified(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) changed the name of the **sandbox** repo from **sandbox** to **sandbox v2**"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) changed the name of the **sandbox** repo from **sandbox** to **sandbox v2**."""
         expected_topic = "sandbox v2"
         self.send_and_test_stream_message("repo_modified", expected_topic, expected_message)
 
@@ -115,7 +115,7 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     def test_pr_opened_with_two_reviewers(self) -> None:
         expected_topic = "sandbox / PR #5 Add Notes Feature"
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #5](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/5)\nfrom `master` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) and [sougo](http://139.59.64.214:7990/users/sougo) for review)"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #5](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/5) from `master` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) and [sougo](http://139.59.64.214:7990/users/sougo) for review)."""
         self.send_and_test_stream_message("pull_request_opened_with_two_reviewers",
                                           expected_topic,
                                           expected_message)
@@ -124,28 +124,28 @@ class Bitbucket3HookTests(WebhookTestCase):
         expected_topic = "sandbox / PR #5 Add Notes Feature"
         expected_topic = "custom_topic"
         self.url = self.build_webhook_url(topic='custom_topic')
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #5 Add Notes Feature](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/5)\nfrom `master` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) and [sougo](http://139.59.64.214:7990/users/sougo) for review)"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #5 Add Notes Feature](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/5) from `master` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) and [sougo](http://139.59.64.214:7990/users/sougo) for review)."""
         self.send_and_test_stream_message("pull_request_opened_with_two_reviewers",
                                           expected_topic,
                                           expected_message)
 
     def test_pr_opened_with_mulitple_reviewers(self) -> None:
         expected_topic = "sandbox / PR #6 sample_file: Add sample_file.txt."
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6)\nfrom `master` to `master` (assigned to [sougo](http://139.59.64.214:7990/users/sougo), [zura](http://139.59.64.214:7990/users/zura) and [shimura](http://139.59.64.214:7990/users/shimura) for review)\n\n~~~ quote\nAdd a simple text file for further testing purposes.\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) from `master` to `master` (assigned to [sougo](http://139.59.64.214:7990/users/sougo), [zura](http://139.59.64.214:7990/users/zura) and [shimura](http://139.59.64.214:7990/users/shimura) for review):\n\n~~~ quote\nAdd a simple text file for further testing purposes.\n~~~"""
         self.send_and_test_stream_message("pull_request_opened_with_multiple_reviewers",
                                           expected_topic,
                                           expected_message)
 
     def test_pr_modified(self) -> None:
         expected_topic = "sandbox / PR #1 Branch1"
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1)\nfrom `branch1` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) for review)\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) from `branch1` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) for review):\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
         self.send_and_test_stream_message("pull_request_modified",
                                           expected_topic,
                                           expected_message)
 
     def test_pr_modified_with_include_title(self) -> None:
         expected_topic = "custom_topic"
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1)\nfrom `branch1` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) for review)\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) from `branch1` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) for review):\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
         self.url = self.build_webhook_url(topic='custom_topic')
         self.send_and_test_stream_message("pull_request_modified",
                                           expected_topic,
@@ -197,28 +197,28 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     def test_pr_marked_as_needs_review(self) -> None:
         expected_topic = "sandbox / PR #6 sample_file: Add sample_file.txt."
-        expected_message = """[zura](http://139.59.64.214:7990/users/zura) marked [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) as \"needs work\""""
+        expected_message = """[zura](http://139.59.64.214:7990/users/zura) marked [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) as \"needs work\"."""
         self.send_and_test_stream_message("pull_request_needs_work",
                                           expected_topic,
                                           expected_message)
 
     def test_pr_marked_as_needs_review_and_include_title(self) -> None:
         expected_topic = "custom_topic"
-        expected_message = """[zura](http://139.59.64.214:7990/users/zura) marked [PR #6 sample_file: Add sample_file.txt.](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) as \"needs work\""""
+        expected_message = """[zura](http://139.59.64.214:7990/users/zura) marked [PR #6 sample_file: Add sample_file.txt.](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) as \"needs work\"."""
         self.url = self.build_webhook_url(topic='custom_topic')
         self.send_and_test_stream_message("pull_request_needs_work",
                                           expected_topic,
                                           expected_message)
 
     def test_pull_request_reviewer_added(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) reassigned [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) to [shimura](http://139.59.64.214:7990/users/shimura)"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) reassigned [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) to [shimura](http://139.59.64.214:7990/users/shimura)."""
         expected_topic = "sandbox / PR #1 Branch1"
         self.send_and_test_stream_message("pull_request_add_reviewer",
                                           expected_topic,
                                           expected_message)
 
     def test_pull_request_reviewer_added_and_include_title(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) reassigned [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) to [shimura](http://139.59.64.214:7990/users/shimura)"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) reassigned [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) to [shimura](http://139.59.64.214:7990/users/shimura)."""
         expected_topic = "custom_topic"
         self.url = self.build_webhook_url(topic='custom_topic')
         self.send_and_test_stream_message("pull_request_add_reviewer",
@@ -226,21 +226,21 @@ class Bitbucket3HookTests(WebhookTestCase):
                                           expected_message)
 
     def test_pull_request_reviewers_added(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) reassigned [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) to [shimura](http://139.59.64.214:7990/users/shimura) and [sougo](http://139.59.64.214:7990/users/sougo)"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) reassigned [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) to [shimura](http://139.59.64.214:7990/users/shimura) and [sougo](http://139.59.64.214:7990/users/sougo)."""
         expected_topic = "sandbox / PR #1 Branch1"
         self.send_and_test_stream_message("pull_request_add_two_reviewers",
                                           expected_topic,
                                           expected_message)
 
     def test_pull_request_remove_all_reviewers(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) removed all reviewers from [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1)"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) removed all reviewers from [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1)."""
         expected_topic = "sandbox / PR #1 Branch1"
         self.send_and_test_stream_message("pull_request_remove_reviewer",
                                           expected_topic,
                                           expected_message)
 
     def test_pull_request_remove_all_reviewers_with_title(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) removed all reviewers from [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1)"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) removed all reviewers from [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1)."""
         expected_topic = "sandbox / PR #1 Branch1"
         expected_topic = "custom_topic"
         self.url = self.build_webhook_url(topic='custom_topic')
