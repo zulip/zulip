@@ -58,7 +58,7 @@ accounts with their respective providers.
 
 {tab|jitsi-on-premise}
 
-If you're running both Zulip and Jitsi on-premise, just set
+If you're running both Zulip and Jitsi Meet on-premise, just set
 `JITSI_SERVER_URL` in `/etc/zulip/settings.py`.
 
 {end_tabs}

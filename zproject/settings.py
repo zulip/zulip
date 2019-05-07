@@ -188,7 +188,7 @@ DEFAULT_SETTINGS = {
     'LOCAL_UPLOADS_DIR': None,
     'MAX_FILE_UPLOAD_SIZE': 25,
 
-    # JITSI video call integration; set to None to disable integration.
+    # Jitsi Meet video call integration; set to None to disable integration.
     'JITSI_SERVER_URL': 'https://meet.jit.si/',
 
     # Feedback bot settings
