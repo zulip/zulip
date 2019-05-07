@@ -2,11 +2,12 @@
 
 {!admin-only.md!}
 
-By default, anyone other than guests can create new streams. However, you can restrict stream creation to
+By default, anyone other than guests can create new streams. However, you can restrict stream
+creation to:
 
-* **Organization administrators**, or
-* **Organization administrators, and members with accounts at least `N` days old**,
-  for any `N`.
+* **Organization administrators and members**
+* **Organization administrators**
+* **Organization administrators, and members with accounts at least `N` days old**, for some `N`.
 
 For corporations and other entities with controlled access, we highly
 recommend keeping stream creation open. A typical Zulip organization with
@@ -22,7 +23,7 @@ with `N = 3`), to make it easier to cope with spammers and confused users.
 
 {settings_tab|organization-permissions}
 
-2. Under **Other permissions**, configure **Who can create streams**.
+2. Under **New user permissions**, configure **Who can create streams**.
 
 {!save-changes.md!}
 
