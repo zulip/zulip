@@ -80,8 +80,11 @@ def get_link_embed_data(url: str,
         # open graph data.
         return None
     data = data or {}
-    response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
 
+    try:
+        response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
+    except requests.exceptions.RequestException:
+        return None
     if response.ok:
         og_data = OpenGraphParser(response.text).extract_data()
         if og_data:

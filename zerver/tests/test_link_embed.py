@@ -446,11 +446,12 @@ class PreviewTestCase(ZulipTestCase):
             'message_realm_id': msg.sender.realm_id,
             'message_content': url}
 
-        with mock.patch('zerver.lib.url_preview.preview.valid_content_type', side_effect=lambda k: True):
-            with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
-                with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())):
-                    FetchLinksEmbedData().consume(event)
-                cached_data = link_embed_data_from_cache(url)
+        with mock.patch('zerver.lib.url_preview.preview.get_oembed_data', side_effect=lambda *args, **kwargs: None):
+            with mock.patch('zerver.lib.url_preview.preview.valid_content_type', side_effect=lambda k: True):
+                with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+                    with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())):
+                        FetchLinksEmbedData().consume(event)
+                    cached_data = link_embed_data_from_cache(url)
 
         # FIXME: Should we really cache this, looks like a network error?
         self.assertIsNone(cached_data)
