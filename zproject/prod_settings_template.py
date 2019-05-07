@@ -553,7 +553,7 @@ CAMO_URI = '/external_content/'
 # can modify the image's appearance.
 #THUMBNAIL_IMAGES = True
 
-# Controls the Jitsi video call integration.  By default, the
+# Controls the Jitsi Meet video call integration.  By default, the
 # integration uses the SaaS meet.jit.si server.  You can specify
 # your own Jitsi Meet server, or if you'd like to disable the
 # integration, set JITSI_SERVER_URL = None.
