@@ -232,14 +232,10 @@ function test_submit_settings_form(submit_form) {
     save_button.replace = () => {
         return `${subsection}`;
     };
-    $("#id_realm_create_stream_policy").val("by_anyone");
     $("#id_realm_add_emoji_by_admins_only").val("by_anyone");
-    const invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
-    invite_to_stream_policy_elem.val("1");
-    invite_to_stream_policy_elem.attr('id', 'id_realm_invite_to_stream_policy');
-    invite_to_stream_policy_elem.data = () => {
-        return "integer";
-    };
+    $("#id_realm_create_stream_policy").val("by_members");
+    $("#id_realm_invite_to_stream_policy").val("by_members");
+    $("#id_realm_waiting_period_threshold").val(10);
     const bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
     bot_creation_policy_elem.val("1");
     bot_creation_policy_elem.attr('id', 'id_realm_bot_creation_policy');
@@ -256,7 +252,6 @@ function test_submit_settings_form(submit_form) {
     let subsection_elem = $(`#org-${subsection}`);
     subsection_elem.set_find_results('.setting-widget', [
         bot_creation_policy_elem,
-        invite_to_stream_policy_elem,
         email_address_visibility_elem,
     ]);
 
@@ -266,11 +261,11 @@ function test_submit_settings_form(submit_form) {
 
     let expected_value = {
         bot_creation_policy: '1',
-        invite_to_stream_policy: '1',
+        invite_to_stream_policy: 1,
         email_address_visibility: '1',
         add_emoji_by_admins_only: false,
-        create_stream_policy: '1',
-        waiting_period_threshold: 0,
+        create_stream_policy: 1,
+        waiting_period_threshold: 10,
     };
     assert.deepEqual(data, expected_value);
 
@@ -524,24 +519,55 @@ function test_sync_realm_settings() {
     }
 
     {
-        /* Test create new stream permission settings sync */
+        /*
+            Test that when create stream policy is set to "full members" that the dropdown
+            is set to the correct value.
+        */
         const property_elem = $('#id_realm_create_stream_policy');
         property_elem.length = 1;
         property_elem.attr('id', 'id_realm_create_stream_policy');
 
-        const waiting_period_input_parent = $.create('stub-waiting-period-input-parent');
-        $("#id_realm_waiting_period_threshold").set_parent(waiting_period_input_parent);
-
         page_params.realm_create_stream_policy = 3;
-        page_params.realm_waiting_period_threshold = 3;
 
         settings_org.sync_realm_settings('create_stream_policy');
-        assert.equal($("#id_realm_create_stream_policy").val(), "by_admin_user_with_three_days_old");
-        assert.equal(waiting_period_input_parent.visible(), false);
+        assert.equal($("#id_realm_create_stream_policy").val(), "by_full_members");
     }
 
     {
-        /* Test invite to stream policy settings sync */
+        /*
+            Test that when create stream policy is set to "by members" that the dropdown
+            is set to the correct value.
+        */
+        const property_elem = $('#id_realm_create_stream_policy');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_create_stream_policy');
+
+        page_params.realm_create_stream_policy = 1;
+
+        settings_org.sync_realm_settings('create_stream_policy');
+        assert.equal($("#id_realm_create_stream_policy").val(), "by_members");
+    }
+
+    {
+        /*
+            Test that when create stream policy is set to "by admins only" that the dropdown
+            is set to the correct value.
+        */
+        const property_elem = $('#id_realm_create_stream_policy');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_create_stream_policy');
+
+        page_params.realm_create_stream_policy = 2;
+
+        settings_org.sync_realm_settings('create_stream_policy');
+        assert.equal($("#id_realm_create_stream_policy").val(), "by_admins_only");
+    }
+
+    {
+        /*
+            Test that when invite to stream policy is set to "full members" that the dropdown
+            is set to the correct value.
+        */
         const property_elem = $('#id_realm_invite_to_stream_policy');
         property_elem.length = 1;
         property_elem.attr('id', 'id_realm_invite_to_stream_policy');
@@ -549,7 +575,37 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 3;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_members_with_waiting_period");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_full_members");
+    }
+
+    {
+        /*
+            Test that when create stream policy is set to "by members" that the dropdown
+            is set to the correct value.
+        */
+        const property_elem = $('#id_realm_invite_to_stream_policy');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_invite_to_stream_policy');
+
+        page_params.realm_invite_to_stream_policy = 1;
+
+        settings_org.sync_realm_settings('invite_to_stream_policy');
+        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_members");
+    }
+
+    {
+        /*
+            Test that when create stream policy is set to "by admins only" that the dropdown
+            is set to the correct value.
+        */
+        const property_elem = $('#id_realm_invite_to_stream_policy');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_invite_to_stream_policy');
+
+        page_params.realm_invite_to_stream_policy = 2;
+
+        settings_org.sync_realm_settings('invite_to_stream_policy');
+        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_admins_only");
     }
 
     {
@@ -736,7 +792,6 @@ run_test('set_up', () => {
     };
     simulate_auth_methods();
 
-    $('#id_realm_create_stream_policy').change = set_callback('realm_create_stream_policy');
     $('#id_realm_video_chat_provider').change = set_callback('realm_video_chat_provider');
     $("#id_realm_org_join_restrictions").change = set_callback('change_org_join_restrictions');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
@@ -778,9 +833,10 @@ run_test('set_up', () => {
     $("#id_realm_digest_weekday").set_parent($.create('<stub digest weekday setting dropdown>'));
     $("#id_realm_msg_edit_limit_setting").change = noop;
     $('#id_realm_msg_delete_limit_setting').change = noop;
+    $("#allowed_domains_label").set_parent($.create('<stub-allowed-domain-label-parent>'));
     const waiting_period_parent_elem = $.create('waiting-period-parent-stub');
     $('#id_realm_waiting_period_threshold').set_parent(waiting_period_parent_elem);
-    $("#allowed_domains_label").set_parent($.create('<stub-allowed-domain-label-parent>'));
+    $("#id_realm_waiting_period_setting").change = noop;
 
     const allow_topic_edit_label_parent = $.create('allow-topic-edit-label-parent');
     $('#id_realm_allow_community_topic_editing_label').set_parent(allow_topic_edit_label_parent);
