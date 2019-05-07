@@ -45,6 +45,7 @@ exports.set_up_toggler = function () {
     $(".informational-overlays .overlay-tabs").append(elem);
 
     common.adjust_mac_shortcuts(".hotkeys_table .hotkey kbd");
+    common.adjust_mac_shortcuts("#markdown-instructions kbd");
 
     exports.toggler = toggler;
 };
