@@ -329,22 +329,12 @@ function change_stream_privacy(e) {
         url: "/json/streams/" + stream_id,
         data: data,
         success: function () {
-            sub = stream_data.get_sub_by_id(stream_id);
-
-            // save new privacy settings.
-            sub.invite_only = invite_only;
-            sub.is_announcement_only = is_announcement_only;
-            sub.history_public_to_subscribers = history_public_to_subscribers;
-            stream_data.update_calculated_fields(sub);
-
-            stream_ui_updates.update_stream_privacy_type_icon(sub);
-            stream_ui_updates.update_stream_privacy_type_text(sub);
-            stream_list.redraw_stream_privacy(sub);
+            subs.update_stream_privacy(sub, {
+                invite_only: invite_only,
+                history_public_to_subscribers: history_public_to_subscribers,
+            });
+            subs.update_stream_announcement_only(sub, is_announcement_only);
             $("#stream_privacy_modal").remove();
-
-            // For auto update, without rendering whole template
-            stream_data.update_calculated_fields(sub);
-            stream_ui_updates.update_change_stream_privacy_settings(sub);
         },
         error: function () {
             $("#change-stream-privacy-button").text(i18n.t("Try again"));
