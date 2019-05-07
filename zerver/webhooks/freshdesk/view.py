@@ -13,6 +13,24 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+NOTE_TEMPLATE = "{name} <{email}> added a {note_type} note to [ticket #{ticket_id}]({ticket_url})."
+PROPERTY_CHANGE_TEMPLATE = """
+{name} <{email}> updated [ticket #{ticket_id}]({ticket_url}):
+
+* **{property_name}**: {old} -> {new}
+""".strip()
+TICKET_CREATION_TEMPLATE = """
+{name} <{email}> created [ticket #{ticket_id}]({ticket_url}):
+
+``` quote
+{description}
+```
+
+* **Type**: {type}
+* **Priority**: {priority}
+* **Status**: {status}
+""".strip()
+
 class TicketDict(Dict[str, Any]):
     """
     A helper class to turn a dictionary with ticket information into
@@ -68,9 +86,13 @@ def parse_freshdesk_event(event_string: str) -> List[str]:
 def format_freshdesk_note_message(ticket: TicketDict, event_info: List[str]) -> str:
     """There are public (visible to customers) and private note types."""
     note_type = event_info[1]
-    content = "%s <%s> added a %s note to [ticket #%s](%s)." % (
-        ticket.requester_name, ticket.requester_email, note_type,
-        ticket.id, ticket.url)
+    content = NOTE_TEMPLATE.format(
+        name=ticket.requester_name,
+        email=ticket.requester_email,
+        note_type=note_type,
+        ticket_id=ticket.id,
+        ticket_url=ticket.url
+    )
 
     return content
 
@@ -80,13 +102,15 @@ def format_freshdesk_property_change_message(ticket: TicketDict, event_info: Lis
     configuration, so if we change multiple properties, we only get the before
     and after data for the first one.
     """
-    content = "%s <%s> updated [ticket #%s](%s):\n\n" % (
-        ticket.requester_name, ticket.requester_email, ticket.id, ticket.url)
-    # Why not `"%s %s %s" % event_info`? Because the linter doesn't like it?
-    # No, because it doesn't work: `event_info` is a list, not a tuple. But you
-    # could write `"%s %s %s" % (*event_info,)`.
-    content += "%s: **%s** => **%s**" % (
-        event_info[0].capitalize(), event_info[1], event_info[2])
+    content = PROPERTY_CHANGE_TEMPLATE.format(
+        name=ticket.requester_name,
+        email=ticket.requester_email,
+        ticket_id=ticket.id,
+        ticket_url=ticket.url,
+        property_name=event_info[0].capitalize(),
+        old=event_info[1],
+        new=event_info[2]
+    )
 
     return content
 
@@ -94,14 +118,16 @@ def format_freshdesk_property_change_message(ticket: TicketDict, event_info: Lis
 def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
     """They send us the description as HTML."""
     cleaned_description = convert_html_to_markdown(ticket.description)
-    content = "%s <%s> created [ticket #%s](%s):\n\n" % (
-        ticket.requester_name, ticket.requester_email, ticket.id, ticket.url)
-    content += """~~~ quote
-%s
-~~~\n
-""" % (cleaned_description,)
-    content += "Type: **%s**\nPriority: **%s**\nStatus: **%s**" % (
-        ticket.type, ticket.priority, ticket.status)
+    content = TICKET_CREATION_TEMPLATE.format(
+        name=ticket.requester_name,
+        email=ticket.requester_email,
+        ticket_id=ticket.id,
+        ticket_url=ticket.url,
+        description=cleaned_description,
+        type=ticket.type,
+        priority=ticket.priority,
+        status=ticket.status
+    )
 
     return content
 
@@ -125,7 +151,10 @@ def api_freshdesk_webhook(request: HttpRequest, user_profile: UserProfile,
 
     ticket = TicketDict(ticket_data)
 
-    subject = "#%s: %s" % (ticket.id, ticket.subject)
+    subject = "#{ticket_id}: {ticket_subject}".format(
+        ticket_id=ticket.id,
+        ticket_subject=ticket.subject
+    )
     event_info = parse_freshdesk_event(ticket.triggered_event)
 
     if event_info[1] == "created":
