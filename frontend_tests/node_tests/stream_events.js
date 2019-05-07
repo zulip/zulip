@@ -109,7 +109,7 @@ run_test('update_property', () => {
     with_overrides(function (override) {
         global.with_stub(function (stub) {
             override('subs.update_stream_description', stub.f);
-            stream_events.update_property(1, 'description', 'we write code');
+            stream_events.update_property(1, 'description', 'we write code', {rendered_description: 'we write code'});
             var args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, 'we write code');
