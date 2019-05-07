@@ -58,7 +58,7 @@ class GogsHookTests(WebhookTestCase):
 
     def test_new_branch(self) -> None:
         expected_topic = u"try-git / my_feature"
-        expected_message = u"john created [my_feature](http://localhost:3000/john/try-git/src/my_feature) branch"
+        expected_message = u"john created [my_feature](http://localhost:3000/john/try-git/src/my_feature) branch."
         self.send_and_test_stream_message('branch', expected_topic, expected_message, HTTP_X_GOGS_EVENT='create')
 
     def test_pull_request_opened(self) -> None:
