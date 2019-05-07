@@ -14,15 +14,18 @@ class FreshdeskHookTests(WebhookTestCase):
         "Dispatch'r" service.
         """
         expected_topic = u"#11: Test ticket subject ☃"
-        expected_message = u"""Requester ☃ Bob <requester-bob@example.com> created [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
+        expected_message = """
+Requester ☃ Bob <requester-bob@example.com> created [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
-~~~ quote
+``` quote
 Test ticket description ☃.
-~~~
+```
 
-Type: **Incident**
-Priority: **High**
-Status: **Pending**"""
+* **Type**: Incident
+* **Priority**: High
+* **Status**: Pending
+""".strip()
+
         self.api_stream_message(self.TEST_USER_EMAIL, 'ticket_created', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
@@ -32,9 +35,12 @@ Status: **Pending**"""
         Freshdesk's "Observer" service.
         """
         expected_topic = u"#11: Test ticket subject ☃"
-        expected_message = """Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
+        expected_message = """
+Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
-Status: **Resolved** => **Waiting on Customer**"""
+* **Status**: Resolved -> Waiting on Customer
+""".strip()
+
         self.api_stream_message(self.TEST_USER_EMAIL, 'status_changed', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
@@ -57,9 +63,11 @@ Status: **Resolved** => **Waiting on Customer**"""
         Freshdesk's "Observer" service.
         """
         expected_topic = u"#11: Test ticket subject"
-        expected_message = """Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
+        expected_message = """
+Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
-Priority: **High** => **Low**"""
+* **Priority**: High -> Low
+""".strip()
         self.api_stream_message(self.TEST_USER_EMAIL, 'priority_changed', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
@@ -85,7 +93,10 @@ Priority: **High** => **Low**"""
         Freshdesk's "Observer" service.
         """
         expected_topic = u"#11: Test ticket subject"
-        expected_message = """Requester Bob <requester-bob@example.com> added a {} note to [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11).""".format(note_type)
+        expected_message = """
+Requester Bob <requester-bob@example.com> added a {} note to \
+[ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11).
+""".strip().format(note_type)
         self.api_stream_message(self.TEST_USER_EMAIL, fixture, expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
@@ -102,7 +113,9 @@ Priority: **High** => **Low**"""
         preserve links and images.
         """
         expected_topic = u"#12: Not enough ☃ guinea pigs"
-        expected_message = u"Requester \u2603 Bob <requester-bob@example.com> created [ticket #12](http://test1234zzz.freshdesk.com/helpdesk/tickets/12):\n\n~~~ quote\nThere are too many cat pictures on the internet \u2603. We need more guinea pigs. Exhibit 1:\n\n  \n\n\n[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)\n~~~\n\nType: **Problem**\nPriority: **Urgent**\nStatus: **Open**"
+        expected_message = """
+Requester \u2603 Bob <requester-bob@example.com> created [ticket #12](http://test1234zzz.freshdesk.com/helpdesk/tickets/12):\n\n``` quote\nThere are too many cat pictures on the internet \u2603. We need more guinea pigs. Exhibit 1:\n\n  \n\n\n[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)\n```\n\n* **Type**: Problem\n* **Priority**: Urgent\n* **Status**: Open
+""".strip()
         self.api_stream_message(self.TEST_USER_EMAIL, "inline_images", expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
