@@ -3,11 +3,11 @@
 {!admin-only.md!}
 
 By default, anyone other than guests can invite others to streams. However, you can restrict stream
-invitation to
+invitation to:
 
-* **Members and organization administrators**, or
-* **Organization administrators**, or
-* **Organization administrators, and members with accounts older than the new user waiting period**
+* **Organization administrators and members**
+* **Organization administrators**
+* **Organization administrators, and members with accounts at least `N` days old**, for some `N`.
 
 For corporations and other entities with controlled access, we highly
 recommend keeping stream invitation open.
