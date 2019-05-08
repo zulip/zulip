@@ -1058,7 +1058,7 @@ def support(request: HttpRequest) -> HttpResponse:
             if status == "active":
                 do_reactivate_realm(realm)
                 context["message"] = "{} reactivated.".format(realm.name)
-            elif status == "deactive":
+            elif status == "deactivated":
                 do_deactivate_realm(realm)
                 context["message"] = "{} deactivated.".format(realm.name)
 
