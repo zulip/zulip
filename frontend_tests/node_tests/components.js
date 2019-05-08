@@ -34,6 +34,11 @@ run_test('basics', () => {
             self.class = _.without(tokens, c).join(' ');
         };
 
+        self.hasClass = function (c) {
+            var tokens = self.class.trim().split(/ +/);
+            return tokens.includes(c);
+        };
+
         self.data = function (name) {
             assert.equal(name, 'tab-id');
             return i;
@@ -197,4 +202,14 @@ run_test('basics', () => {
 
     click_f.call(tabs[1]);
     assert.equal(widget.value(), 'translated: Message formatting');
+
+    callback_args = undefined;
+    widget.disable_tab("search-operators");
+    assert.equal(tabs[2].hasClass('disabled'), true);
+    assert.equal(tabs[2].class, "last disabled");
+
+    widget.goto('keyboard-shortcuts');
+    assert.equal(focused_tab, 0);
+    widget.goto("search-operators");
+    assert.equal(focused_tab, 0);
 });
