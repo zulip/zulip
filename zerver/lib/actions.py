@@ -656,7 +656,7 @@ def do_set_realm_signup_notifications_stream(realm: Realm, stream: Stream,
     )
     send_event(realm, event, active_user_ids(realm.id))
 
-def do_deactivate_realm(realm: Realm) -> None:
+def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -671,7 +671,8 @@ def do_deactivate_realm(realm: Realm) -> None:
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
-        realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, event_time=event_time)
+        realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, event_time=event_time,
+        acting_user=acting_user)
 
     ScheduledEmail.objects.filter(realm=realm).delete()
     for user in active_humans_in_realm(realm):
