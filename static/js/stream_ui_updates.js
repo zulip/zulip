@@ -16,32 +16,37 @@ exports.update_check_button_for_sub = function (sub) {
     }
 };
 
-exports.initialize_cant_subscribe_popover = function (sub) {
-    var button_wrapper = stream_edit.settings_for_sub(sub).find('.sub_unsub_button_wrapper');
-    var settings_button = subs.settings_button_for_sub(sub);
-
+exports.initialize_disable_btn_hint_popover = function (btn_wrapper, popover_btn,
+                                                        disabled_btn, hint_text) {
     // Disabled button blocks mouse events(hover) from reaching
     // to it's parent div element, so popover don't get triggered.
     // Add css to prevent this.
-    settings_button.css("pointer-events", "none");
-    settings_button.popover({
+    disabled_btn.css("pointer-events", "none");
+    popover_btn.popover({
         placement: "bottom",
-        content: "<div class='cant_subscribe_hint'>%s</div>".replace(
-            '%s', i18n.t('Only existing subscribers can add users to private streams.')),
+        content: "<div class='sub_disable_btn_hint'>%s</div>".replace(
+            '%s', hint_text),
         trigger: "manual",
         html: true,
         animation: false,
     });
 
-    button_wrapper.on('mouseover', function (e) {
-        settings_button.popover('show');
+    btn_wrapper.on('mouseover', function (e) {
+        popover_btn.popover('show');
         e.stopPropagation();
     });
 
-    button_wrapper.on('mouseout', function (e) {
-        settings_button.popover('hide');
+    btn_wrapper.on('mouseout', function (e) {
+        popover_btn.popover('hide');
         e.stopPropagation();
     });
+};
+
+exports.initialize_cant_subscribe_popover = function (sub) {
+    var button_wrapper = stream_edit.settings_for_sub(sub).find('.sub_unsub_button_wrapper');
+    var settings_button = subs.settings_button_for_sub(sub);
+    exports.initialize_disable_btn_hint_popover(button_wrapper, settings_button, settings_button,
+                                                i18n.t("Only stream members can add users to a private stream"));
 };
 
 exports.update_settings_button_for_sub = function (sub) {
@@ -199,26 +204,8 @@ exports.update_add_subscriptions_elements = function (sub) {
         input_element.attr("disabled", "disabled");
         button_element.attr("disabled", "disabled");
 
-        // Disabled button blocks mouse events(hover) from reaching
-        // to it's parent div element, so popover don't get triggered.
-        // Add css to prevent this.
-        button_element.css("pointer-events", "none");
-
-        $('.add_subscribers_container input').popover({
-            placement: "bottom",
-            content: "<div class='cant_add_subs_hint'>%s</div>".replace(
-                '%s', i18n.t('Only stream subscribers can add users to a private stream.')),
-            trigger: "manual",
-            html: true,
-            animation: false});
-        $('.add_subscribers_container').on('mouseover', function (e) {
-            $('.add_subscribers_container input').popover('show');
-            e.stopPropagation();
-        });
-        $('.add_subscribers_container').on('mouseout', function (e) {
-            $('.add_subscribers_container input').popover('hide');
-            e.stopPropagation();
-        });
+        exports.initialize_disable_btn_hint_popover($('.add_subscribers_container'), input_element, button_element,
+                                                    i18n.t("Only stream members can add users to a private stream"));
     }
 };
 
