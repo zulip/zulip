@@ -7,5 +7,11 @@
     {{t 'This is a <span class="fa fa-globe" aria-hidden="true"></span> <b>public stream</b>. Any member of the organization can join without an invitation.' }}
 {{/if}}
 {{#if is_announcement_only}}
-{{t 'Only organization administrators can post.'}}
+    {{t 'Only organization administrators can post.'}}
+{{else}}
+    {{#if invite_only}}
+    {{t 'Any subscriber can post to the stream.'}}
+    {{else}}
+    {{t 'Anyone can post to the stream.'}}
+    {{/if}}
 {{/if}}
