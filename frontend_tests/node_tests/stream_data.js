@@ -1,6 +1,7 @@
 set_global('page_params', {
     is_admin: false,
     realm_users: [],
+    is_guest: false,
 });
 
 set_global('$', function () {
@@ -427,6 +428,15 @@ run_test('stream_settings', () => {
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.is_announcement_only, false);
+
+    // For guest user only retrieve subscribed streams
+    sub_rows = stream_data.get_updated_unsorted_subs();
+    assert.equal(sub_rows.length, 3);
+    global.page_params.is_guest = true;
+    sub_rows = stream_data.get_updated_unsorted_subs();
+    assert.equal(sub_rows[0].name, 'c');
+    assert.equal(sub_rows[1].name, 'a');
+    assert.equal(sub_rows.length, 2);
 });
 
 run_test('default_stream_names', () => {

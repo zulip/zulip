@@ -5,6 +5,7 @@ set_global('ui', {});
 zrequire('util');
 zrequire('stream_data');
 zrequire('search_util');
+set_global('page_params', {});
 
 global.patch_builtin('window', {
     location: {
