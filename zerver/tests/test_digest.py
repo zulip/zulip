@@ -76,6 +76,8 @@ class TestDigestEmailMessages(ZulipTestCase):
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_inactive_users_queued_for_digest(self, mock_django_timezone: mock.MagicMock,
                                               mock_queue_digest_recipient: mock.MagicMock) -> None:
+        # Turn on realm digest emails for all realms
+        Realm.objects.update(digest_emails_enabled=True)
         cutoff = timezone_now()
         # Test Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
@@ -113,6 +115,8 @@ class TestDigestEmailMessages(ZulipTestCase):
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_active_users_not_enqueued(self, mock_django_timezone: mock.MagicMock,
                                        mock_enough_traffic: mock.MagicMock) -> None:
+        # Turn on realm digest emails for all realms
+        Realm.objects.update(digest_emails_enabled=True)
         cutoff = timezone_now()
         # A Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
@@ -148,6 +152,8 @@ class TestDigestEmailMessages(ZulipTestCase):
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_no_email_digest_for_bots(self, mock_django_timezone: mock.MagicMock,
                                       mock_queue_digest_recipient: mock.MagicMock) -> None:
+        # Turn on realm digest emails for all realms
+        Realm.objects.update(digest_emails_enabled=True)
         cutoff = timezone_now()
         # A Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
