@@ -83,6 +83,23 @@
                   "is_checked" realm_digest_emails_enabled
                   "label" admin_settings_label.realm_digest_emails_enabled}}
                 {{/if}}
+                {{#if realm_digest_emails_enabled}}
+                <div class="input-group">
+                    <label for="realm_digest_weekday" class="dropdown-title">{{t "Day of the week to send digests" }}</label>
+                    <select name="realm_digest_weekday"
+                      id="id_realm_digest_weekday"
+                      class="setting-widget prop-element"
+                      data-setting-widget-type="integer">
+                        <option value="0">{{t "Monday" }}</option>
+                        <option value="1">{{t "Tuesday" }}</option>
+                        <option value="2">{{t "Wednesday" }}</option>
+                        <option value="3">{{t "Thursday" }}</option>
+                        <option value="4">{{t "Friday" }}</option>
+                        <option value="5">{{t "Saturday" }}</option>
+                        <option value="6">{{t "Sunday" }}</option>
+                    </select>
+                </div>
+                {{/if}}
             </div>
 
             <div class="input-group">
@@ -246,24 +263,6 @@
                   "prefix" "id_"
                   "is_checked" realm_inline_url_embed_preview
                   "label" admin_settings_label.realm_inline_url_embed_preview}}
-                {{/if}}
-
-                {{#if realm_digest_emails_enabled}}
-                <div class="input-group">
-                    <label for="realm_digest_weekday" class="dropdown-title">{{t "Day of the week to send digests" }}</label>
-                    <select name="realm_digest_weekday"
-                      id="id_realm_digest_weekday"
-                      class="setting-widget prop-element"
-                      data-setting-widget-type="integer">
-                        <option value="0">{{t "Monday" }}</option>
-                        <option value="1">{{t "Tuesday" }}</option>
-                        <option value="2">{{t "Wednesday" }}</option>
-                        <option value="3">{{t "Thursday" }}</option>
-                        <option value="4">{{t "Friday" }}</option>
-                        <option value="5">{{t "Saturday" }}</option>
-                        <option value="6">{{t "Sunday" }}</option>
-                    </select>
-                </div>
                 {{/if}}
             </div>
         </div>
