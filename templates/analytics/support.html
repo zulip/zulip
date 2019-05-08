@@ -80,7 +80,7 @@
                     {{ csrf_input }}
                     <input type="hidden" name="realm_id" value="{{ user.realm.id }}" />
                     <input type="hidden" name="scrub_realm" value="scrub_realm" />
-                    <button data-string-id="{{user.realm.string_id}}" class="button rounded btn-danger small scrub-realm-button">Scrub realm</button>
+                    <button data-string-id="{{user.realm.string_id}}" class="button rounded btn-danger small scrub-realm-button">Scrub realm (danger)</button>
                 </form>
             </div>
             <hr>
@@ -127,7 +127,7 @@
                 {{ csrf_input }}
                 <input type="hidden" name="realm_id" value="{{ realm.id }}" />
                 <input type="hidden" name="scrub_realm" value="scrub_realm" />
-                <button data-string-id="{{realm.string_id}}" class="button rounded btn-danger small scrub-realm-button">Scrub realm</button>
+                <button data-string-id="{{realm.string_id}}" class="button rounded btn-danger small scrub-realm-button">Scrub realm (danger)</button>
             </form>
             <hr>
         </div>
