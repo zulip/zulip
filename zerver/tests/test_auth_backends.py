@@ -178,7 +178,7 @@ class AuthBackendTest(ZulipTestCase):
                 mock.patch('zproject.backends.password_auth_enabled',
                            return_value=True):
             return_data = {}  # type: Dict[str, bool]
-            user = EmailAuthBackend().authenticate(self.example_email('hamlet'),
+            user = EmailAuthBackend().authenticate(username=self.example_email('hamlet'),
                                                    realm=get_realm("zulip"),
                                                    password=password,
                                                    return_data=return_data)
@@ -211,8 +211,8 @@ class AuthBackendTest(ZulipTestCase):
         user_profile.save()
         # Verify if a realm has password auth disabled, correct password is rejected
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
-            self.assertIsNone(EmailAuthBackend().authenticate(self.example_email('hamlet'),
-                                                              password,
+            self.assertIsNone(EmailAuthBackend().authenticate(username=self.example_email('hamlet'),
+                                                              password=password,
                                                               realm=get_realm("zulip")))
 
     def test_login_preview(self) -> None:
@@ -314,7 +314,7 @@ class AuthBackendTest(ZulipTestCase):
             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
             mock.patch('django_auth_ldap.backend._LDAPUser.attrs',
                        return_value=dict(full_name=['Hamlet']))):
-            self.assertIsNone(backend.authenticate(email, password, realm=get_realm("zulip")))
+            self.assertIsNone(backend.authenticate(username=email, password=password, realm=get_realm("zulip")))
 
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
@@ -412,11 +412,11 @@ class AuthBackendTest(ZulipTestCase):
             }
         }   # type: Dict[str, Any]
 
-        def patched_authenticate(*args: Any, **kwargs: Any) -> Any:
+        def patched_authenticate(**kwargs: Any) -> Any:
             if 'subdomain' in kwargs:
                 backend.strategy.session_set("subdomain", kwargs["subdomain"])
                 del kwargs['subdomain']
-            result = orig_authenticate(backend, *args, **kwargs)
+            result = orig_authenticate(backend, **kwargs)
             return result
 
         for backend_name in backends_to_test:
@@ -2406,7 +2406,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user_profile = self.backend.authenticate('ldapuser1', 'dapu',
+            user_profile = self.backend.authenticate(username='ldapuser1', password='dapu',
                                                      realm=get_realm('zulip'))
 
             assert(user_profile is None)
@@ -2422,7 +2422,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'testing',
+            user_profile = self.backend.authenticate(username=self.example_email("hamlet"), password='testing',
                                                      realm=get_realm('zulip'))
 
             assert(user_profile is not None)
@@ -2439,7 +2439,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user_profile = self.backend.authenticate("hamlet", 'testing',
+            user_profile = self.backend.authenticate(username="hamlet", password='testing',
                                                      realm=get_realm('zulip'))
 
             assert(user_profile is not None)
@@ -2456,7 +2456,7 @@ class TestLDAP(ZulipLDAPTestCase):
         with self.settings(LDAP_EMAIL_ATTR='email',
                            AUTH_LDAP_BIND_PASSWORD='',
                            AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user_profile = self.backend.authenticate("letham", 'testing',
+            user_profile = self.backend.authenticate(username="letham", password='testing',
                                                      realm=get_realm('zulip'))
 
             assert (user_profile is not None)
@@ -2473,7 +2473,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user = self.backend.authenticate(self.example_email("hamlet"), 'wrong',
+            user = self.backend.authenticate(username=self.example_email("hamlet"), password='wrong',
                                              realm=get_realm('zulip'))
             self.assertIs(user, None)
 
@@ -2488,7 +2488,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user = self.backend.authenticate('nonexistent@zulip.com', 'testing',
+            user = self.backend.authenticate(username='nonexistent@zulip.com', password='testing',
                                              realm=get_realm('zulip'))
             self.assertIs(user, None)
 
@@ -2645,7 +2645,7 @@ class TestLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_when_domain_does_not_match(self) -> None:
         with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
-            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'pass',
+            user_profile = self.backend.authenticate(username=self.example_email("hamlet"), password='pass',
                                                      realm=get_realm('zulip'))
             self.assertIs(user_profile, None)
 
@@ -2666,7 +2666,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
-            user_profile = self.backend.authenticate(self.example_email('hamlet'), 'testing',
+            user_profile = self.backend.authenticate(username=self.example_email('hamlet'), password='testing',
                                                      realm=get_realm('acme'))
             self.assertEqual(user_profile.email, self.example_email('hamlet'))
 
@@ -2681,7 +2681,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'testing',
+            user_profile = self.backend.authenticate(username=self.example_email("hamlet"), password='testing',
                                                      realm=get_realm('zulip'))
             assert(user_profile is not None)
             self.assertEqual(user_profile.email, self.example_email("hamlet"))
@@ -2699,7 +2699,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'testing',
+            user_profile = self.backend.authenticate(username=self.example_email("hamlet"), password='testing',
                                                      realm=get_realm('zulip'))
             self.assertIs(user_profile, None)
 
@@ -2721,7 +2721,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='acme.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=acme,dc=com'):
-            user_profile = self.backend.authenticate('nonexisting@acme.com', 'testing',
+            user_profile = self.backend.authenticate(username='nonexisting@acme.com', password='testing',
                                                      realm=get_realm('zulip'))
             assert(user_profile is not None)
             self.assertEqual(user_profile.email, 'nonexisting@acme.com')
@@ -2747,7 +2747,7 @@ class TestLDAP(ZulipLDAPTestCase):
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
                 AUTH_LDAP_USER_ATTR_MAP={'first_name': 'fn', 'last_name': 'ln'}):
-            user_profile = self.backend.authenticate('nonexisting@zulip.com', 'testing',
+            user_profile = self.backend.authenticate(username='nonexisting@zulip.com', password='testing',
                                                      realm=get_realm('zulip'))
             assert(user_profile is not None)
             self.assertEqual(user_profile.email, 'nonexisting@zulip.com')
@@ -2757,7 +2757,7 @@ class TestLDAP(ZulipLDAPTestCase):
 class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_authenticate(self) -> None:
         backend = ZulipLDAPUserPopulator()
-        result = backend.authenticate(self.example_email("hamlet"), 'testing',
+        result = backend.authenticate(username=self.example_email("hamlet"), password='testing',
                                       realm=get_realm('zulip'))
         self.assertIs(result, None)
 
