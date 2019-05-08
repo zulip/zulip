@@ -185,7 +185,7 @@ class RealmTest(ZulipTestCase):
         do_deactivate_realm(user.realm)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
-    def test_do_deactivate_realm_on_deactived_realm(self) -> None:
+    def test_do_deactivate_realm_on_deactivated_realm(self) -> None:
         """Ensure early exit is working in realm deactivation"""
         realm = get_realm('zulip')
         self.assertFalse(realm.deactivated)

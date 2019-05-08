@@ -341,7 +341,7 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<option value="2" >Limited</option>',
                                              'input type="number" name="discount" value="None"',
                                              '<option value="active" selected>Active</option>',
-                                             '<option value="deactive" >Deactive</option>',
+                                             '<option value="deactivated" >Deactivated</option>',
                                              'scrub-realm-button">',
                                              'data-string-id="zulip"'], result)
 
@@ -351,7 +351,7 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<option value="2" >Limited</option>',
                                              'input type="number" name="discount" value="None"',
                                              '<option value="active" selected>Active</option>',
-                                             '<option value="deactive" >Deactive</option>',
+                                             '<option value="deactivated" >Deactivated</option>',
                                              'scrub-realm-button">',
                                              'data-string-id="lear"'], result)
 
@@ -428,7 +428,7 @@ class TestSupportEndpoint(ZulipTestCase):
         cordelia_email = self.example_email("cordelia")
         self.login(cordelia_email)
 
-        result = self.client_post("/activity/support", {"realm_id": "3", "status": "deactive"})
+        result = self.client_post("/activity/support", {"realm_id": "3", "status": "deactivated"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
@@ -436,7 +436,7 @@ class TestSupportEndpoint(ZulipTestCase):
         self.login(iago_email)
 
         with mock.patch("analytics.views.do_deactivate_realm") as m:
-            result = self.client_post("/activity/support", {"realm_id": "3", "status": "deactive"})
+            result = self.client_post("/activity/support", {"realm_id": "3", "status": "deactivated"})
             m.assert_called_once_with(get_realm("lear"))
             self.assert_in_success_response(["Lear &amp; Co. deactivated"], result)
 

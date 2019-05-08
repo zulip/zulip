@@ -53,7 +53,7 @@
                     <input type="hidden" name="realm_id" value="{{ user.realm.id }}" />
                     <select name="status">
                         <option value="active" {% if not user.realm.deactivated %}selected{% endif %}>Active</option>
-                        <option value="deactive" {% if user.realm.deactivated %}selected{% endif %}>Deactive</option>
+                        <option value="deactivated" {% if user.realm.deactivated %}selected{% endif %}>Deactivated</option>
                     </select>
                     <button type="submit" class="button rounded small support-submit-button">Update</button>
                 </form>
@@ -100,7 +100,7 @@
                 <input type="hidden" name="realm_id" value="{{ realm.id }}" />
                 <select name="status">
                     <option value="active" {% if not realm.deactivated %}selected{% endif %}>Active</option>
-                    <option value="deactive" {% if realm.deactivated %}selected{% endif %}>Deactive</option>
+                    <option value="deactivated" {% if realm.deactivated %}selected{% endif %}>Deactivated</option>
                 </select>
                 <button type="submit" class="button rounded small support-submit-button">Update</button>
             </form>
