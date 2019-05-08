@@ -53,11 +53,6 @@ def filter_by_subscription_history(user_profile: UserProfile,
                 # check belongs in this inner loop, not the outer loop.
                 break
 
-            if log_entry.modified_stream_id != stream_id:  # nocoverage
-                # We only care about subscription changes for the
-                # stream this batch of messages was sent to.
-                continue
-
             if log_entry.event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
                 # If the event shows the user was unsubscribed after
                 # event_last_message_id, we know they must have been
@@ -156,7 +151,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     all_stream_subscription_logs = defaultdict(list)  # type: DefaultDict[int, List[RealmAuditLog]]
     for log in subscription_logs:
-        all_stream_subscription_logs[log.modified_stream.id].append(log)
+        all_stream_subscription_logs[log.modified_stream_id].append(log)
 
     recipient_ids = []
     for sub in all_stream_subs:
