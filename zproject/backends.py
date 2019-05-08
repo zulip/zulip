@@ -154,7 +154,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
     when explicitly requested by including the use_dummy_backend kwarg.
     """
 
-    def authenticate(self, username: str, realm: Realm,
+    def authenticate(self, *, username: str, realm: Realm,
                      use_dummy_backend: bool=False,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if use_dummy_backend:
@@ -168,7 +168,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     Allows a user to sign in using an email/password pair.
     """
 
-    def authenticate(self, username: str, password: str,
+    def authenticate(self, *, username: str, password: str,
                      realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         """ Authenticate a user based on email address as the user name. """
@@ -201,7 +201,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
     """
 
-    def authenticate(self, google_oauth2_token: str, realm: Realm,
+    def authenticate(self, *, google_oauth2_token: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         # We lazily import apiclient as part of optimizing the base
         # import time for a Zulip management command, since it's only
@@ -238,7 +238,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
     """
     create_unknown_user = False
 
-    def authenticate(self, remote_user: str, realm: Realm,
+    def authenticate(self, *, remote_user: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if not auth_enabled_helper(["RemoteUser"], realm):
             return None
@@ -456,7 +456,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
-    def authenticate(self, username: str, password: str, realm: Realm,
+    def authenticate(self, *, username: str, password: str, realm: Realm,
                      prereg_user: Optional[PreregistrationUser]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         self._realm = realm
@@ -574,7 +574,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     registration for organizations that use a different SSO solution
     for managing login (often via RemoteUserBackend).
     """
-    def authenticate(self, username: str, password: str, realm: Realm,
+    def authenticate(self, *, username: str, password: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         return None
 
@@ -611,7 +611,7 @@ def query_ldap(email: str) -> List[str]:
 class DevAuthBackend(ZulipAuthMixin):
     """Allow logging in as any user without a password.  This is used for
     convenience when developing Zulip, and is disabled in production."""
-    def authenticate(self, dev_auth_username: str, realm: Realm,
+    def authenticate(self, *, dev_auth_username: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if not dev_auth_enabled(realm):
             return None
