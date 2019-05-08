@@ -194,6 +194,13 @@ exports.get_updated_unsorted_subs = function () {
         exports.update_calculated_fields(sub);
     });
 
+    // We don't display unsubscribed streams to guest users.
+    if (page_params.is_guest) {
+        all_subs = _.reject(all_subs, function (sub) {
+            return !sub.subscribed;
+        });
+    }
+
     return all_subs;
 };
 
