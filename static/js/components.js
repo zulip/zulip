@@ -42,9 +42,12 @@ exports.toggle = function (opts) {
     };
 
     function select_tab(idx) {
+        var elem = meta.$ind_tab.eq(idx);
+        if (elem.hasClass('disabled')) {
+            return;
+        }
         meta.$ind_tab.removeClass("selected");
 
-        var elem = meta.$ind_tab.eq(idx);
         elem.addClass("selected");
 
         meta.idx = idx;
@@ -97,6 +100,15 @@ exports.toggle = function (opts) {
     var prototype = {
         maybe_go_left: maybe_go_left,
         maybe_go_right: maybe_go_right,
+
+        disable_tab: function (name) {
+            var value = _.find(opts.values, function (o) {
+                return o.key === name;
+            });
+
+            var idx = opts.values.indexOf(value);
+            meta.$ind_tab.eq(idx).addClass('disabled');
+        },
 
         value: function () {
             if (meta.idx >= 0) {
