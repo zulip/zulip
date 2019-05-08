@@ -406,7 +406,7 @@ class TestSupportEndpoint(ZulipTestCase):
         with mock.patch("analytics.views.do_change_plan_type") as m:
             result = self.client_post("/activity/support", {"realm_id": "1", "plan_type": "2"})
             m.assert_called_once_with(get_realm("zulip"), 2)
-            self.assert_in_success_response(["Plan type of Zulip Dev changed to limited from self hosted"], result)
+            self.assert_in_success_response(["Plan type of Zulip Dev changed from self hosted to limited"], result)
 
     def test_attach_discount(self) -> None:
         cordelia_email = self.example_email("cordelia")
