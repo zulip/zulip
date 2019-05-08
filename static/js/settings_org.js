@@ -282,6 +282,14 @@ function set_enable_digest_emails_visibility() {
     }
 }
 
+function set_digest_emails_weekday_visibility() {
+    if (page_params.realm_digest_emails_enabled) {
+        $('#id_realm_digest_weekday').parent().show();
+    } else {
+        $('#id_realm_digest_weekday').parent().hide();
+    }
+}
+
 exports.populate_realm_domains = function (realm_domains) {
     if (!meta.loaded) {
         return;
@@ -430,6 +438,7 @@ function update_dependent_subsettings(property_name) {
         set_message_content_in_email_notifications_visiblity();
     } else if (property_name === 'realm_digest_emails_enabled') {
         set_enable_digest_emails_visibility();
+        set_digest_emails_weekday_visibility();
     }
 }
 
@@ -593,6 +602,7 @@ exports.build_page = function () {
     set_user_invite_restriction_dropdown();
     set_message_content_in_email_notifications_visiblity();
     set_enable_digest_emails_visibility();
+    set_digest_emails_weekday_visibility();
 
     function check_property_changed(elem) {
         elem = $(elem);
