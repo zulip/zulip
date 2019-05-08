@@ -551,7 +551,12 @@ exports.initialize = function () {
 
     $("#streams_inline_cog").click(function (e) {
         e.stopPropagation();
-        hashchange.go_to_location('streams/all');
+        // For guest users, "All streams" is disabled
+        if (page_params.is_guest) {
+            hashchange.go_to_location('streams/subscribed');
+        } else {
+            hashchange.go_to_location('streams/all');
+        }
     });
 
     $("#streams_filter_icon").click(function (e) {
