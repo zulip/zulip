@@ -372,7 +372,7 @@ function get_mention_candidates_data(is_silent) {
 
     var groups = user_groups.get_realm_user_groups();
     var persons = people.get_realm_persons();
-    return [].concat(persons, all_items, groups);
+    return [].concat(persons, groups, all_items);
 }
 
 function filter_mention_name(current_token) {
