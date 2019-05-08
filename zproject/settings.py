@@ -431,9 +431,8 @@ DEFAULT_SETTINGS.update({
     # because some transactional email providers reject sending such
     # emails since they can look like spam.
     'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
-    # Whether to send periodic digests of activity.  Off by default
-    # because this feature is in beta.
-    'SEND_DIGEST_EMAILS': False,
+    # Whether to send periodic digests of activity.
+    'SEND_DIGEST_EMAILS': True,
 
     # Used to change the Zulip logo in portico pages.
     'CUSTOM_LOGO_URL': None,
