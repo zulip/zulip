@@ -1060,7 +1060,7 @@ def support(request: HttpRequest) -> HttpResponse:
                 do_reactivate_realm(realm)
                 context["message"] = "{} reactivated.".format(realm.name)
             elif status == "deactivated":
-                do_deactivate_realm(realm)
+                do_deactivate_realm(realm, request.user)
                 context["message"] = "{} deactivated.".format(realm.name)
 
         scrub_realm = request.POST.get("scrub_realm", None)

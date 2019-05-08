@@ -437,7 +437,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
         with mock.patch("analytics.views.do_deactivate_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": "3", "status": "deactivated"})
-            m.assert_called_once_with(get_realm("lear"))
+            m.assert_called_once_with(get_realm("lear"), self.example_user("iago"))
             self.assert_in_success_response(["Lear &amp; Co. deactivated"], result)
 
         with mock.patch("analytics.views.do_reactivate_realm") as m:
