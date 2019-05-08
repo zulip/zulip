@@ -304,11 +304,12 @@ class TestCalculateFirstVisibleMessageID(ZulipTestCase):
     COMMAND_NAME = 'calculate_first_visible_message_id'
 
     def test_check_if_command_calls_maybe_update_first_visible_message_id(self) -> None:
-        with patch('zerver.lib.message.maybe_update_first_visible_message_id') as m:
+        func_name = "zilencer.management.commands.calculate_first_visible_message_id.maybe_update_first_visible_message_id"
+        with patch(func_name) as m:
             call_command(self.COMMAND_NAME, "--realm=zulip", "--lookback-hours=30")
         m.assert_called_with(get_realm("zulip"), 30)
 
-        with patch('zerver.lib.message.maybe_update_first_visible_message_id') as m:
+        with patch(func_name) as m:
             call_command(self.COMMAND_NAME, "--lookback-hours=35")
         calls = [call(realm, 35) for realm in Realm.objects.all()]
         m.has_calls(calls, any_order=True)
