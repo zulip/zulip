@@ -28,13 +28,13 @@ def get_target_name(payload: Dict[str, Any]) -> str:
 
 def get_inbound_message_body(payload: Dict[str, Any]) -> str:
     link, outbox, inbox, subject = get_message_data(payload)
-    return "[Inbound message]({link}) from **{outbox}** to **{inbox}**.\n" \
+    return "[Inbound message]({link}) from **{outbox}** to **{inbox}**:\n" \
            "```quote\n*Subject*: {subject}\n```" \
         .format(link=link, outbox=outbox, inbox=inbox, subject=subject)
 
 def get_outbound_message_body(payload: Dict[str, Any]) -> str:
     link, outbox, inbox, subject = get_message_data(payload)
-    return "[Outbound message]({link}) from **{inbox}** to **{outbox}**.\n" \
+    return "[Outbound message]({link}) from **{inbox}** to **{outbox}**:\n" \
            "```quote\n*Subject*: {subject}\n```" \
         .format(link=link, inbox=inbox, outbox=outbox, subject=subject)
 
@@ -62,7 +62,7 @@ def get_conversation_assigned_body(payload: Dict[str, Any]) -> str:
 
 def get_conversation_unassigned_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
-    return "Unassined by **{name}**.".format(name=name)
+    return "Unassigned by **{name}**.".format(name=name)
 
 def get_conversation_archived_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
