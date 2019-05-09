@@ -14,37 +14,70 @@ def api_opsgenie_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
 
     # construct the body of the message
-    info = {"additional_info": '',
-            "alert_type": payload['action'],
-            "alert_id": payload['alert']['alertId'],
-            "integration_name": payload['integrationName'],
-            "tags": ' '.join(['`' + tag + '`' for tag in payload['alert'].get('tags', [])]),
-            }
+    info = {
+        "additional_info": '',
+        "alert_type": payload['action'],
+        "alert_id": payload['alert']['alertId'],
+        "integration_name": payload['integrationName'],
+        "tags": ', '.join(['`' + tag + '`' for tag in payload['alert'].get('tags', [])]),
+    }
+
     topic = info['integration_name']
+    bullet_template = "* **{key}**: {value}\n"
+
     if 'note' in payload['alert']:
-        info['additional_info'] += "Note: *{}*\n".format(payload['alert']['note'])
+        info['additional_info'] += bullet_template.format(
+            key='Note',
+            value=payload['alert']['note']
+        )
     if 'recipient' in payload['alert']:
-        info['additional_info'] += "Recipient: *{}*\n".format(payload['alert']['recipient'])
+        info['additional_info'] += bullet_template.format(
+            key='Recipient',
+            value=payload['alert']['recipient']
+        )
     if 'addedTags' in payload['alert']:
-        info['additional_info'] += "Added tags: *{}*\n".format(payload['alert']['addedTags'])
+        info['additional_info'] += bullet_template.format(
+            key='Tags added',
+            value=payload['alert']['addedTags']
+        )
     if 'team' in payload['alert']:
-        info['additional_info'] += "Added team: *{}*\n".format(payload['alert']['team'])
+        info['additional_info'] += bullet_template.format(
+            key='Team added',
+            value=payload['alert']['team']
+        )
     if 'owner' in payload['alert']:
-        info['additional_info'] += "Assigned owner: *{}*\n".format(payload['alert']['owner'])
+        info['additional_info'] += bullet_template.format(
+            key='Assigned owner',
+            value=payload['alert']['owner']
+        )
     if 'escalationName' in payload:
-        info['additional_info'] += "Escalation: *{}*\n".format(payload['escalationName'])
+        info['additional_info'] += bullet_template.format(
+            key='Escalation',
+            value=payload['escalationName']
+        )
     if 'removedTags' in payload['alert']:
-        info['additional_info'] += "Removed tags: *{}*\n".format(payload['alert']['removedTags'])
+        info['additional_info'] += bullet_template.format(
+            key='Tags removed',
+            value=payload['alert']['removedTags']
+        )
     if 'message' in payload['alert']:
-        info['additional_info'] += "Message: *{}*\n".format(payload['alert']['message'])
-    body = ''
-    body_template = "**OpsGenie: [Alert for {integration_name}.]" \
-                    "(https://app.opsgenie.com/alert/V2#/show/{alert_id})**\n" \
-                    "Type: *{alert_type}*\n" \
-                    "{additional_info}" \
-                    "{tags}"
-    body += body_template.format(**info)
-    # send the message
+        info['additional_info'] += bullet_template.format(
+            key='Message',
+            value=payload['alert']['message']
+        )
+    if info['tags']:
+        info['additional_info'] += bullet_template.format(
+            key='Tags',
+            value=info['tags']
+        )
+
+    body_template = """
+[OpsGenie Alert for {integration_name}](https://app.opsgenie.com/alert/V2#/show/{alert_id}):
+* **Type**: {alert_type}
+{additional_info}
+""".strip()
+
+    body = body_template.format(**info)
     check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()
