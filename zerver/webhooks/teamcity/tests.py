@@ -13,28 +13,28 @@ class TeamcityHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'teamcity'
 
     def test_teamcity_success(self) -> None:
-        expected_message = u"Project :: Compile build 5535 - CL 123456 was successful! :thumbs_up:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)"
+        expected_message = u"Project :: Compile build 5535 - CL 123456 was successful! :thumbs_up: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
         self.send_and_test_stream_message('success', self.TOPIC, expected_message)
 
     def test_teamcity_success_branch(self) -> None:
-        expected_message = u"Project :: Compile build 5535 - CL 123456 was successful! :thumbs_up:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)"
+        expected_message = u"Project :: Compile build 5535 - CL 123456 was successful! :thumbs_up: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
         expected_topic = u"Project :: Compile (MyBranch)"
         self.send_and_test_stream_message('success_branch', expected_topic, expected_message)
 
     def test_teamcity_broken(self) -> None:
-        expected_message = u"Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbs_down:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)"
+        expected_message = u"Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbs_down: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
         self.send_and_test_stream_message('broken', self.TOPIC, expected_message)
 
     def test_teamcity_failure(self) -> None:
-        expected_message = u"Project :: Compile build 5535 - CL 123456 is still broken with status Exit code 1! :thumbs_down:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)"
+        expected_message = u"Project :: Compile build 5535 - CL 123456 is still broken with status Exit code 1! :thumbs_down: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
         self.send_and_test_stream_message('failure', self.TOPIC, expected_message)
 
     def test_teamcity_fixed(self) -> None:
-        expected_message = u"Project :: Compile build 5535 - CL 123456 has been fixed! :thumbs_up:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)"
+        expected_message = u"Project :: Compile build 5535 - CL 123456 has been fixed! :thumbs_up: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
         self.send_and_test_stream_message('fixed', self.TOPIC, expected_message)
 
     def test_teamcity_personal(self) -> None:
-        expected_message = u"Your personal build of Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbs_down:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)"
+        expected_message = u"Your personal build for Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbs_down: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
         payload = ujson.dumps(ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, 'personal')))
         self.client_post(self.url, payload, content_type="application/json")
         msg = self.get_last_message()
