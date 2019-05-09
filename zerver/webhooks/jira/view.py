@@ -1,5 +1,6 @@
 # Webhooks for external integrations.
 import re
+import string
 from typing import Any, Dict, List, Optional
 
 from django.db.models import Q
@@ -181,24 +182,26 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     sub_event = get_sub_event_for_update_issue(payload)
     if 'comment' in sub_event:
         if sub_event == 'issue_commented':
-            verb = 'added comment to'
+            verb = 'commented on'
         elif sub_event == 'issue_comment_edited':
-            verb = 'edited comment on'
+            verb = 'edited a comment on'
         else:
-            verb = 'deleted comment from'
+            verb = 'deleted a comment from'
 
         if payload.get('webhookEvent') == 'comment_created':
             author = payload['comment']['author']['displayName']
         else:
             author = get_issue_author(payload)
 
-        content = u"{} **{}** {}{}".format(author, verb, issue, assignee_blurb)
+        content = u"{} {} {}{}".format(author, verb, issue, assignee_blurb)
         comment = get_in(payload, ['comment', 'body'])
         if comment:
             comment = convert_jira_markup(comment, user_profile.realm)
-            content = u"{}:\n\n\n{}\n".format(content, comment)
+            content = u"{}:\n\n``` quote\n{}\n```".format(content, comment)
+        else:
+            content = "{}.".format(content)
     else:
-        content = u"{} **updated** {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
+        content = u"{} updated {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
         changelog = get_in(payload, ['changelog'])
 
         if changelog != '':
@@ -226,17 +229,29 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     return content
 
 def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
-    return u"{} **created** {} priority {}, assigned to **{}**:\n\n> {}".format(
-        get_issue_author(payload),
-        get_issue_string(payload),
-        get_in(payload, ['issue', 'fields', 'priority', 'name']),
-        get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one'),
-        get_issue_title(payload)
+    template = """
+{author} created {issue_string}:
+
+* **Priority**: {priority}
+* **Assignee**: {assignee}
+""".strip()
+
+    return template.format(
+        author=get_issue_author(payload),
+        issue_string=get_issue_string(payload, with_title=True),
+        priority=get_in(payload, ['issue', 'fields', 'priority', 'name']),
+        assignee=get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one')
     )
 
 def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
-    return u"{} **deleted** {}!".format(
-        get_issue_author(payload), get_issue_string(payload, with_title=True))
+    template = "{author} deleted {issue_string}{punctuation}"
+    title = get_issue_title(payload)
+    punctuation = '.' if title[-1] not in string.punctuation else ''
+    return template.format(
+        author=get_issue_author(payload),
+        issue_string=get_issue_string(payload, with_title=True),
+        punctuation=punctuation
+    )
 
 JIRA_CONTENT_FUNCTION_MAPPER = {
     "jira:issue_created": handle_created_issue_event,
