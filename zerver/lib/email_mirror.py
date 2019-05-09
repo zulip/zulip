@@ -217,6 +217,11 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
             assert isinstance(content, bytes)
             if charsets[idx]:
                 return content.decode(charsets[idx], errors="ignore")
+            # If no charset has been specified in the header, assume us-ascii,
+            # by RFC6657: https://tools.ietf.org/html/rfc6657
+            else:
+                return content.decode("us-ascii", errors="ignore")
+
     return None
 
 talon_initialized = False
