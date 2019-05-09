@@ -292,7 +292,7 @@ class Realm(models.Model):
 
     VIDEO_CHAT_PROVIDERS = {
         'jitsi_meet': {
-            'name': u"Jitsi",
+            'name': u"Jitsi Meet",
             'id': 1
         },
         'google_hangouts': {
