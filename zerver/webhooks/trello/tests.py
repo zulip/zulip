@@ -89,7 +89,7 @@ class TrelloHookTests(WebhookTestCase):
         self.send_and_test_stream_message('adding_new_list_to_board', u"Welcome Board", expected_message)
 
     def test_trello_webhook_when_comment_was_added_to_card(self) -> None:
-        expected_message = u"TomaszKolek commented on [New card](https://trello.com/c/xPKXoSTQ)\n~~~ quote\nNew comment\n~~~"
+        expected_message = u"TomaszKolek commented on [New card](https://trello.com/c/xPKXoSTQ):\n~~~ quote\nNew comment\n~~~"
         self.send_and_test_stream_message('adding_comment_to_card', u"Welcome Board", expected_message)
 
     def test_trello_webhook_when_board_was_renamed(self) -> None:
@@ -121,7 +121,7 @@ class TrelloHookTests(WebhookTestCase):
         self.assert_json_success(result)
 
     def test_trello_webhook_when_description_was_added_to_card(self) -> None:
-        expected_message = u"Marco Matarazzo set description for [New Card](https://trello.com/c/P2r0z66z) to\n~~~ quote\nNew Description\n~~~"
+        expected_message = u"Marco Matarazzo set description for [New Card](https://trello.com/c/P2r0z66z) to:\n~~~ quote\nNew Description\n~~~"
         self.send_and_test_stream_message('adding_description_to_card', u"Welcome Board", expected_message)
 
     def test_trello_webhook_when_description_was_removed_from_card(self) -> None:

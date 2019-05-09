@@ -45,7 +45,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     CREATE: u'created {card_url_template}.',
     CHANGE_LIST: u'moved {card_url_template} from {old_list} to {new_list}.',
     CHANGE_NAME: u'renamed the card from "{old_name}" to {card_url_template}.',
-    SET_DESC: u'set description for {card_url_template} to\n~~~ quote\n{desc}\n~~~\n',
+    SET_DESC: u'set description for {card_url_template} to:\n~~~ quote\n{desc}\n~~~\n',
     CHANGE_DESC: (u'changed description for {card_url_template} from\n' +
                   '~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n'),
     REMOVE_DESC: u'removed description from {card_url_template}.',
@@ -60,7 +60,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     REMOVE_MEMBER: u'removed {member_name} from {card_url_template}.',
     ADD_ATTACHMENT: u'added [{attachment_name}]({attachment_url}) to {card_url_template}.',
     ADD_CHECKLIST: u'added the {checklist_name} checklist to {card_url_template}.',
-    COMMENT: u'commented on {card_url_template}\n~~~ quote\n{text}\n~~~\n',
+    COMMENT: u'commented on {card_url_template}:\n~~~ quote\n{text}\n~~~\n',
     UPDATE_CHECK_ITEM_STATE: u'{action} **{item_name}** in **{checklist_name}** ({card_url_template}).'
 }
 
