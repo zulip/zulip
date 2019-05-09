@@ -19,7 +19,15 @@ def api_mention_webhook(
     source_url = payload["url"]
     description = payload["description"]
     # construct the body of the message
-    body = '**[%s](%s)**:\n%s' % (title, source_url, description)
+    template = """
+**[{title}]({url})**:
+
+``` quote
+{description}
+```
+""".strip()
+    body = template.format(title=title, url=source_url,
+                           description=description)
     topic = 'news'
 
     # send the message
