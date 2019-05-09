@@ -40,6 +40,7 @@ from zerver.lib.email_mirror_helpers import (
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.send_email import FromAddress
 
+from email import message_from_string
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
@@ -735,3 +736,25 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         for subject in subject_list:
             stripped = strip_from_subject(subject['original_subject'])
             self.assertEqual(stripped, subject['stripped_subject'])
+
+# If the Content-Type header didn't specify a charset, the text content
+# of the email used to not be properly found. Test that this is fixed:
+class TestContentTypeUnspecifiedCharset(ZulipTestCase):
+    def test_charset_not_specified(self) -> None:
+        message_as_string = self.fixture_data('1.txt', type='email')
+        message_as_string = message_as_string.replace("Content-Type: text/plain; charset=\"us-ascii\"",
+                                                      "Content-Type: text/plain")
+        incoming_message = message_from_string(message_as_string)
+
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+
+        del incoming_message['To']
+        incoming_message['To'] = stream_to_address
+        process_message(incoming_message)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.content, "Email fixture 1.txt body")
