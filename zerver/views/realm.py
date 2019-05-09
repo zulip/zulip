@@ -84,12 +84,12 @@ def update_realm(
         return json_error(_("Organization name is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."))
-    if video_chat_provider == "Google Hangouts":
+    if video_chat_provider == Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['name']:
         try:
             validate_domain(google_hangouts_domain)
         except ValidationError as e:
             return json_error(_('Invalid domain: {}').format(e.messages[0]))
-    if video_chat_provider == "Zoom":
+    if video_chat_provider == Realm.VIDEO_CHAT_PROVIDERS['zoom']['name']:
         if not zoom_api_secret:
             # Use the saved Zoom API secret if a new value isn't being sent
             zoom_api_secret = user_profile.realm.zoom_api_secret
