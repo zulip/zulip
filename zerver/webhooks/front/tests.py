@@ -23,7 +23,7 @@ class FrontHookTests(WebhookTestCase):
         expected_topic = 'cnv_keo696'
         expected_message = "[Outbound message](https://app.frontapp.com/open/msg_1176ie2) " \
                            "from **support@planet-express.com** " \
-                           "to **calculon@momsbot.com**.\n" \
+                           "to **calculon@momsbot.com**:\n" \
                            "```quote\n*Subject*: Your next delivery is on Epsilon 96Z\n```"
 
         self.send_and_test_stream_message('outbound_message',
@@ -69,7 +69,7 @@ class FrontHookTests(WebhookTestCase):
 
     def test_conversation_unassigned(self) -> None:
         expected_topic = 'cnv_keo696'
-        expected_message = "Unassined by **Leela Turanga**."
+        expected_message = "Unassigned by **Leela Turanga**."
 
         self.send_and_test_stream_message('conversation_unassigned',
                                           expected_topic,
@@ -92,7 +92,7 @@ class FrontHookTests(WebhookTestCase):
         expected_topic = 'cnv_keocka'
         expected_message = "[Inbound message](https://app.frontapp.com/open/msg_1176r8y) " \
                            "from **calculon@momsbot.com** " \
-                           "to **support@planet-express.com**.\n" \
+                           "to **support@planet-express.com**:\n" \
                            "```quote\n*Subject*: Being a robot is great, but...\n```"
 
         self.send_and_test_stream_message('inbound_message',
