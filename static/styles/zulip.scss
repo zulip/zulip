@@ -2234,28 +2234,6 @@ div.floating_recipient {
     background-color: hsl(0, 0%, 88%);
 }
 
-.recipient_row.sticky {
-    margin-top: 22px;
-}
-
-.sticky .message_header {
-    position: fixed;
-    z-index: 99;
-    top: 50px;
-    width: 100%;
-    left: 0px;
-}
-
-.sticky .message-header-wrapper {
-    max-width: 1400px;
-    margin: auto;
-}
-
-.sticky .message-header-contents {
-    margin-left: 250px;
-    margin-right: 251px;
-}
-
 #bottom_whitespace {
     display: block;
     height: 300px;
