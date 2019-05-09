@@ -245,10 +245,14 @@ the capacity to do the polish work on these post drafts to turn them
 into something we can publish on our blog.  We have in mind two types
 of posts:
 
-* Major blog posts, similar to our
-  [mypy blog post](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/),
+* Major blog posts, similar to our [mypy blog
+  post](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/),
   which aim to be the authoritative article on a topic and might be
-  read by many 10,000s of people.
+  read by many 10,000s of people.  The Zulip team did a lot of the
+  work on the [old Ksplice
+  blog](https://web.mit.edu/tabbott/www/ksplice-blog.html) years ago,
+  which has many more examples of the types of posts we would like to
+  write.
 * Shorter blog posts, more similar in content to one of our StackShare
   answers, but polished with more context to be something that is
   reasonable to publish on our blog.
