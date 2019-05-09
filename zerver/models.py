@@ -153,11 +153,9 @@ def clear_supported_auth_backends_cache() -> None:
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
-    MAX_VIDEO_CHAT_PROVIDER_LENGTH = 40
     MAX_GOOGLE_HANGOUTS_DOMAIN_LENGTH = 255  # This is just the maximum domain length by RFC
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
-    VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts", u"Zoom"]
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser', u'AzureAD']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
 
@@ -292,7 +290,23 @@ class Realm(models.Model):
     UPLOAD_QUOTA_STANDARD = 50
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
 
-    video_chat_provider = models.CharField(default=u"Jitsi", max_length=MAX_VIDEO_CHAT_PROVIDER_LENGTH)
+    MAX_VIDEO_CHAT_PROVIDER_LENGTH = 40
+    VIDEO_CHAT_PROVIDERS = {
+        'jitsi_meet': {
+            'name': u"Jitsi",
+            'id': 1
+        },
+        'google_hangouts': {
+            'name': u"Google Hangouts",
+            'id': 2
+        },
+        'zoom': {
+            'name': u"Zoom",
+            'id': 3
+        }
+    }
+    video_chat_provider = models.CharField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['name'],
+                                           max_length=MAX_VIDEO_CHAT_PROVIDER_LENGTH)
     google_hangouts_domain = models.TextField(default="")
     zoom_user_id = models.TextField(default="")
     zoom_api_key = models.TextField(default="")

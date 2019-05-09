@@ -384,47 +384,48 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(edited_user_profile.email, "user%s@zulip.testserver" % (edited_user_profile.id,))
 
     def test_change_video_chat_provider(self) -> None:
-        self.assertEqual(get_realm('zulip').video_chat_provider, "Jitsi")
+        self.assertEqual(get_realm('zulip').video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['name'])
         email = self.example_email("iago")
         self.login(email)
 
-        req = {"video_chat_provider": ujson.dumps("Google Hangouts")}
+        req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['name'])}
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Invalid domain: Domain can't be empty.")
 
         req = {
-            "video_chat_provider": ujson.dumps("Google Hangouts"),
+            "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['name']),
             "google_hangouts_domain": ujson.dumps("invaliddomain"),
         }
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Invalid domain: Domain must have at least one dot (.)")
 
         req = {
-            "video_chat_provider": ujson.dumps("Google Hangouts"),
+            "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['name']),
             "google_hangouts_domain": ujson.dumps("zulip.com"),
         }
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
-        self.assertEqual(get_realm('zulip').video_chat_provider, "Google Hangouts")
+        self.assertEqual(get_realm('zulip').video_chat_provider,
+                         Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['name'])
 
-        req = {"video_chat_provider": ujson.dumps("Jitsi")}
+        req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['name'])}
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
-        self.assertEqual(get_realm('zulip').video_chat_provider, "Jitsi")
+        self.assertEqual(get_realm('zulip').video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['name'])
 
-        req = {"video_chat_provider": ujson.dumps("Zoom")}
+        req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['name'])}
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "User ID cannot be empty")
 
         req = {
-            "video_chat_provider": ujson.dumps("Zoom"),
+            "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['name']),
             "zoom_user_id": ujson.dumps("example@example.com")
         }
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "API key cannot be empty")
 
         req = {
-            "video_chat_provider": ujson.dumps("Zoom"),
+            "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['name']),
             "zoom_user_id": ujson.dumps("example@example.com"),
             "zoom_api_key": ujson.dumps("abc")
         }
@@ -433,7 +434,7 @@ class RealmTest(ZulipTestCase):
 
         with mock.patch("zerver.views.realm.request_zoom_video_call_url", return_value=None):
             req = {
-                "video_chat_provider": ujson.dumps("Zoom"),
+                "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['name']),
                 "zoom_user_id": ujson.dumps("example@example.com"),
                 "zoom_api_key": ujson.dumps("abc"),
                 "zoom_api_secret": ujson.dumps("abc"),
@@ -444,7 +445,7 @@ class RealmTest(ZulipTestCase):
         with mock.patch("zerver.views.realm.request_zoom_video_call_url",
                         return_value={'join_url': 'example.com'}) as mock_validation:
             req = {
-                "video_chat_provider": ujson.dumps("Zoom"),
+                "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['name']),
                 "zoom_user_id": ujson.dumps("example@example.com"),
                 "zoom_api_key": ujson.dumps("abc"),
                 "zoom_api_secret": ujson.dumps("abc"),
@@ -456,7 +457,7 @@ class RealmTest(ZulipTestCase):
         with mock.patch("zerver.views.realm.request_zoom_video_call_url",
                         return_value={'join_url': 'example.com'}) as mock_validation:
             req = {
-                "video_chat_provider": ujson.dumps("Zoom"),
+                "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['name']),
                 "zoom_user_id": ujson.dumps("example@example.com"),
                 "zoom_api_key": ujson.dumps("abc"),
                 "zoom_api_secret": ujson.dumps("abc"),
@@ -468,7 +469,7 @@ class RealmTest(ZulipTestCase):
         with mock.patch("zerver.views.realm.request_zoom_video_call_url",
                         return_value={'join_url': 'example.com'}) as mock_validation:
             req = {
-                "video_chat_provider": ujson.dumps("Zoom"),
+                "video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['zoom']['name']),
                 "zoom_user_id": ujson.dumps("example@example.com"),
                 "zoom_api_key": ujson.dumps("abc"),
                 "zoom_api_secret": ujson.dumps(""),
