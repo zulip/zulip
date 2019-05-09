@@ -193,6 +193,7 @@ def get_setup_webhook_message(integration: str, user_name: Optional[str]=None) -
     content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
     if user_name:
         content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
+    content = "{}.".format(content)
     return content
 
 def get_issue_event_message(user_name: str,

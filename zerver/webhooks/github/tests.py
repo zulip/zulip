@@ -16,11 +16,11 @@ class GithubWebhookTest(WebhookTestCase):
     EXPECTED_TOPIC_WIKI_EVENTS = u"public-repo / Wiki Pages"
 
     def test_ping_event(self) -> None:
-        expected_message = u"GitHub webhook has been successfully configured by TomaszKolek"
+        expected_message = u"GitHub webhook has been successfully configured by TomaszKolek."
         self.send_and_test_stream_message('ping', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='ping')
 
     def test_ping_organization_event(self) -> None:
-        expected_message = u"GitHub webhook has been successfully configured by eeshangarg"
+        expected_message = u"GitHub webhook has been successfully configured by eeshangarg."
         self.send_and_test_stream_message('ping_organization', 'zulip-test-org', expected_message, HTTP_X_GITHUB_EVENT='ping')
 
     def test_push_delete_branch(self) -> None:
@@ -90,23 +90,23 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('commit_comment', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='commit_comment')
 
     def test_create_msg(self) -> None:
-        expected_message = u"baxterthehacker created tag 0.0.1"
+        expected_message = u"baxterthehacker created tag 0.0.1."
         self.send_and_test_stream_message('create', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='create')
 
     def test_delete_msg(self) -> None:
-        expected_message = u"baxterthehacker deleted tag simple-tag"
+        expected_message = u"baxterthehacker deleted tag simple-tag."
         self.send_and_test_stream_message('delete', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='delete')
 
     def test_deployment_msg(self) -> None:
-        expected_message = u"baxterthehacker created new deployment"
+        expected_message = u"baxterthehacker created new deployment."
         self.send_and_test_stream_message('deployment', self.EXPECTED_TOPIC_DEPLOYMENT_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='deployment')
 
     def test_deployment_status_msg(self) -> None:
-        expected_message = u"Deployment changed status to success"
+        expected_message = u"Deployment changed status to success."
         self.send_and_test_stream_message('deployment_status', self.EXPECTED_TOPIC_DEPLOYMENT_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='deployment_status')
 
     def test_fork_msg(self) -> None:
-        expected_message = u"baxterandthehackers forked [public-repo](https://github.com/baxterandthehackers/public-repo)"
+        expected_message = u"baxterandthehackers forked [public-repo](https://github.com/baxterandthehackers/public-repo)."
         self.send_and_test_stream_message('fork', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='fork')
 
     def test_issue_comment_msg(self) -> None:
@@ -140,21 +140,21 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('issue', expected_topic, expected_message, HTTP_X_GITHUB_EVENT='issues')
 
     def test_membership_msg(self) -> None:
-        expected_message = u"baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team"
+        expected_message = u"baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team."
         self.send_and_test_stream_message('membership',
                                           self.EXPECTED_TOPIC_ORGANIZATION_EVENTS,
                                           expected_message,
                                           HTTP_X_GITHUB_EVENT='membership')
 
     def test_membership_removal_msg(self) -> None:
-        expected_message = u"baxterthehacker removed [kdaigle](https://github.com/kdaigle) from the Contractors team"
+        expected_message = u"baxterthehacker removed [kdaigle](https://github.com/kdaigle) from the Contractors team."
         self.send_and_test_stream_message('membership_removal',
                                           self.EXPECTED_TOPIC_ORGANIZATION_EVENTS,
                                           expected_message,
                                           HTTP_X_GITHUB_EVENT='membership')
 
     def test_member_msg(self) -> None:
-        expected_message = u"baxterthehacker added [octocat](https://github.com/octocat) to [public-repo](https://github.com/baxterthehacker/public-repo)"
+        expected_message = u"baxterthehacker added [octocat](https://github.com/octocat) to [public-repo](https://github.com/baxterthehacker/public-repo)."
         self.send_and_test_stream_message('member', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='member')
 
     def test_pull_request_opened_msg(self) -> None:
@@ -193,7 +193,7 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('merged_pull_request', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_public_msg(self) -> None:
-        expected_message = u"baxterthehacker made [the repository](https://github.com/baxterthehacker/public-repo) public"
+        expected_message = u"baxterthehacker made [the repository](https://github.com/baxterthehacker/public-repo) public."
         self.send_and_test_stream_message('public', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='public')
 
     def test_wiki_pages_msg(self) -> None:
@@ -201,31 +201,31 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('wiki_pages', self.EXPECTED_TOPIC_WIKI_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='gollum')
 
     def test_watch_msg(self) -> None:
-        expected_message = u"baxterthehacker starred [the repository](https://github.com/baxterthehacker/public-repo)"
+        expected_message = u"baxterthehacker starred [the repository](https://github.com/baxterthehacker/public-repo)."
         self.send_and_test_stream_message('watch_repository', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='watch')
 
     def test_repository_msg(self) -> None:
-        expected_message = u"baxterthehacker created [the repository](https://github.com/baxterandthehackers/public-repo)"
+        expected_message = u"baxterthehacker created [the repository](https://github.com/baxterandthehackers/public-repo)."
         self.send_and_test_stream_message('repository', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='repository')
 
     def test_team_add_msg(self) -> None:
-        expected_message = u"[The repository](https://github.com/baxterandthehackers/public-repo) was added to team github"
+        expected_message = u"[The repository](https://github.com/baxterandthehackers/public-repo) was added to team github."
         self.send_and_test_stream_message('team_add', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='team_add')
 
     def test_release_msg(self) -> None:
-        expected_message = u"baxterthehacker published [the release](https://github.com/baxterthehacker/public-repo/releases/tag/0.0.1)"
+        expected_message = u"baxterthehacker published [the release](https://github.com/baxterthehacker/public-repo/releases/tag/0.0.1)."
         self.send_and_test_stream_message('release', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='release')
 
     def test_page_build_msg(self) -> None:
-        expected_message = u"Github Pages build, trigerred by baxterthehacker, has finished building"
+        expected_message = u"Github Pages build, trigerred by baxterthehacker, has finished building."
         self.send_and_test_stream_message('page_build', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='page_build')
 
     def test_status_msg(self) -> None:
-        expected_message = u"[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success"
+        expected_message = u"[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
         self.send_and_test_stream_message('status', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='status')
 
     def test_status_with_target_url_msg(self) -> None:
-        expected_message = u"[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)"
+        expected_message = u"[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
         self.send_and_test_stream_message(
             'status_with_target_url',
             self.EXPECTED_TOPIC_REPO_EVENTS,
