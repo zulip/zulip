@@ -320,6 +320,9 @@ exports.update_settings_for_unsubscribed = function (sub) {
     if (!sub.should_display_subscription_button) {
         stream_ui_updates.update_add_subscriptions_elements(sub);
     }
+    if (page_params.is_guest) {
+        stream_edit.open_edit_panel_empty();
+    }
 
     // Remove private streams from subscribed streams list.
     stream_ui_updates.update_stream_row_in_settings_tab(sub);
