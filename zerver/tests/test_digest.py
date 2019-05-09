@@ -29,9 +29,9 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         one_day_ago = timezone_now() - datetime.timedelta(days=1)
         Message.objects.all().update(pub_date=one_day_ago)
-        one_sec_ago = timezone_now() - datetime.timedelta(seconds=1)
+        one_hour_ago = timezone_now() - datetime.timedelta(seconds=3600)
 
-        cutoff = time.mktime(one_sec_ago.timetuple())
+        cutoff = time.mktime(one_hour_ago.timetuple())
 
         senders = ['hamlet', 'cordelia',  'iago', 'prospero', 'ZOE']
         for sender_name in senders:
