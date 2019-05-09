@@ -1013,10 +1013,12 @@ exports.initialize = function () {
 
         var video_call_link;
         var video_call_id = util.random_int(100000000000000, 999999999999999);
-        if (page_params.realm_video_chat_provider === "Google Hangouts") {
+        var available_providers = page_params.realm_available_video_chat_providers;
+
+        if (page_params.realm_video_chat_provider === available_providers.google_hangouts.id) {
             video_call_link = "https://hangouts.google.com/hangouts/_/" + page_params.realm_google_hangouts_domain + "/" + video_call_id;
             insert_video_call_url(video_call_link, target_textarea);
-        } else if (page_params.realm_video_chat_provider === "Zoom") {
+        } else if (page_params.realm_video_chat_provider === available_providers.zoom.id) {
             channel.get({
                 url: '/json/calls/create',
                 success: function (response) {

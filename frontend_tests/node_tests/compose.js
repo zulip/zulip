@@ -1429,6 +1429,16 @@ run_test('on_events', () => {
                 to_$: () => textarea,
             },
         };
+        page_params.realm_available_video_chat_providers = {
+            google_hangouts: {
+                id: 2,
+                name: "Google Hangouts",
+            },
+            zoom: {
+                id: 3,
+                name: "Zoom",
+            },
+        };
 
         compose_ui.insert_syntax_and_focus = function (syntax) {
             syntax_to_insert = syntax;
@@ -1444,7 +1454,8 @@ run_test('on_events', () => {
         var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
         assert(video_link_regex.test(syntax_to_insert));
 
-        page_params.realm_video_chat_provider = 'Google Hangouts';
+        page_params.realm_video_chat_provider =
+            page_params.realm_available_video_chat_providers.google_hangouts.id;
         page_params.realm_google_hangouts_domain = 'zulip';
 
         handler(ev);
@@ -1452,7 +1463,8 @@ run_test('on_events', () => {
         video_link_regex = /\[Click to join video call\]\(https:\/\/hangouts.google.com\/hangouts\/\_\/zulip\/\d{15}\)/;
         assert(video_link_regex.test(syntax_to_insert));
 
-        page_params.realm_video_chat_provider = 'Zoom';
+        page_params.realm_video_chat_provider =
+            page_params.realm_available_video_chat_providers.zoom.id;
         page_params.realm_zoom_user_id = 'example@example.com';
         page_params.realm_zoom_api_key = 'abc';
         page_params.realm_zoom_api_secret = 'abc';

@@ -176,13 +176,15 @@ function set_add_emoji_permission_dropdown() {
 }
 
 function set_video_chat_provider_dropdown() {
-    var chat_provider = page_params.realm_video_chat_provider;
-    $("#id_realm_video_chat_provider").val(chat_provider);
-    if (chat_provider === "Google Hangouts") {
+    var chat_provider_id = page_params.realm_video_chat_provider;
+    var available_providers = page_params.realm_available_video_chat_providers;
+
+    $("#id_realm_video_chat_provider").val(chat_provider_id);
+    if (chat_provider_id === available_providers.google_hangouts.id) {
         $("#google_hangouts_domain").show();
         $(".zoom_credentials").hide();
         $("#id_realm_google_hangouts_domain").val(page_params.realm_google_hangouts_domain);
-    } else if (chat_provider === "Zoom") {
+    } else if (chat_provider_id === available_providers.zoom.id) {
         $("#google_hangouts_domain").hide();
         $(".zoom_credentials").show();
         $("#id_realm_zoom_user_id").val(page_params.realm_zoom_user_id);
@@ -820,11 +822,13 @@ exports.build_page = function () {
     });
 
     $("#id_realm_video_chat_provider").change(function (e) {
-        var video_chat_provider = e.target.value;
-        if (video_chat_provider === "Google Hangouts") {
+        var available_providers = page_params.realm_available_video_chat_providers;
+        var video_chat_provider_id = parseInt(e.target.value, 10);
+
+        if (video_chat_provider_id === available_providers.google_hangouts.id) {
             $("#google_hangouts_domain").show();
             $(".zoom_credentials").hide();
-        } else if (video_chat_provider === "Zoom") {
+        } else if (video_chat_provider_id === available_providers.zoom.id) {
             $("#google_hangouts_domain").hide();
             $(".zoom_credentials").show();
         } else {

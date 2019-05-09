@@ -290,7 +290,6 @@ class Realm(models.Model):
     UPLOAD_QUOTA_STANDARD = 50
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
 
-    MAX_VIDEO_CHAT_PROVIDER_LENGTH = 40
     VIDEO_CHAT_PROVIDERS = {
         'jitsi_meet': {
             'name': u"Jitsi",
@@ -305,8 +304,7 @@ class Realm(models.Model):
             'id': 3
         }
     }
-    video_chat_provider = models.CharField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['name'],
-                                           max_length=MAX_VIDEO_CHAT_PROVIDER_LENGTH)
+    video_chat_provider = models.PositiveSmallIntegerField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
     google_hangouts_domain = models.TextField(default="")
     zoom_user_id = models.TextField(default="")
     zoom_api_key = models.TextField(default="")
@@ -343,7 +341,7 @@ class Realm(models.Model):
         emails_restricted_to_domains=bool,
         send_welcome_emails=bool,
         message_content_allowed_in_email_notifications=bool,
-        video_chat_provider=str,
+        video_chat_provider=int,
         waiting_period_threshold=int,
         digest_weekday=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
