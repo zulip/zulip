@@ -77,22 +77,29 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
             status = 'was successful! :thumbs_up:'
     elif build_result == 'failure':
         if build_result_delta == 'broken':
-            status = 'is broken with status %s! :thumbs_down:' % (build_status,)
+            status = 'is broken with status {status}! :thumbs_down:'.format(
+                status=build_status)
         else:
-            status = 'is still broken with status %s! :thumbs_down:' % (build_status,)
+            status = 'is still broken with status {status}! :thumbs_down:'.format(
+                status=build_status)
     elif build_result == 'running':
         status = 'has started.'
-    else:
-        status = '(has no message specified for status %s)' % (build_status,)
 
-    template = (
-        u'%s build %s %s\n'
-        u'Details: [changes](%s), [build log](%s)')
+    template = """
+{build_name} build {build_id} {status} See [changes]\
+({changes_url}) and [build log]({log_url}).
+""".strip()
 
-    body = template % (build_name, build_number, status, changes_url, build_url)
+    body = template.format(
+        build_name=build_name,
+        build_id=build_number,
+        status=status,
+        changes_url=changes_url,
+        log_url=build_url
+    )
 
     if 'branchDisplayName' in message:
-        topic = build_name + ' (' + message['branchDisplayName'] + ')'
+        topic = '{} ({})'.format(build_name, message['branchDisplayName'])
     else:
         topic = build_name
 
@@ -116,7 +123,7 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
                          "Teamcity user '%s' or '%s'" % (teamcity_fullname, teamcity_shortname))
             return json_success()
 
-        body = "Your personal build of " + body
+        body = "Your personal build for {}".format(body)
         check_send_private_message(user_profile, request.client, teamcity_user, body)
 
         return json_success()
