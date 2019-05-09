@@ -1583,8 +1583,8 @@ class EventsRegisterTest(ZulipTestCase):
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
             video_chat_provider=[
-                Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['name'],
-                Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['name']
+                Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'],
+                Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']
             ],
             google_hangouts_domain=[u"zulip.com", u"zulip.org"],
             zoom_api_secret=[u"abc", u"xyz"],

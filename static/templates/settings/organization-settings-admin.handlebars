@@ -178,9 +178,9 @@
                     <label for="realm_video_chat_provider" class="dropdown-title">
                         {{t 'Video chat provider' }}
                     </label>
-                    <select name="realm_video_chat_provider" class ="setting-widget prop-element" id="id_realm_video_chat_provider" data-setting-widget-type="text">
+                    <select name="realm_video_chat_provider" class ="setting-widget prop-element" id="id_realm_video_chat_provider" data-setting-widget-type="integer">
                         {{#each realm_available_video_chat_providers}}
-                        <option value='{{this}}'>{{this}}</option>
+                        <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
                     <div id="google_hangouts_domain">

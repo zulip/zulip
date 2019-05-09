@@ -720,6 +720,20 @@ run_test('set_up', () => {
     };
 
     const verify_realm_domains = simulate_realm_domains_table();
+    page_params.realm_available_video_chat_providers = {
+        jitsi_meet: {
+            id: 1,
+            name: "Jitsi Meet",
+        },
+        google_hangouts: {
+            id: 2,
+            name: "Google Hangouts",
+        },
+        zoom: {
+            id: 3,
+            name: "Zoom",
+        },
+    };
     simulate_auth_methods();
 
     $('#id_realm_create_stream_policy').change = set_callback('realm_create_stream_policy');
