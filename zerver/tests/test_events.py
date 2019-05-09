@@ -525,8 +525,9 @@ class EventsRegisterTest(ZulipTestCase):
         after = ujson.dumps(hybrid_state)
 
         if state_change_expected:
-            if before == after:
-                print(events)  # nocoverage
+            if before == after:  # nocoverage
+                print(ujson.dumps(initial_state, indent=2))
+                print(events)
                 raise AssertionError('Test does not exercise enough code -- events do not change state.')
         else:
             try:
