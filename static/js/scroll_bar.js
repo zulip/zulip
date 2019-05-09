@@ -3,6 +3,12 @@ var scroll_bar = (function () {
 
 var exports = {};
 
+// A few of our width properties in zulip depend on the width of the
+// browser scrollbar that is generated at the far right side of the
+// page, which unfortunately varies depending on the browser and
+// cannot be detected directly using CSS.  As a result, we adjust a
+// number of element widths based on the value detected here.
+//
 // From https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
 function getScrollbarWidth() {
     var outer = document.createElement("div");
@@ -60,6 +66,10 @@ exports.initialize = function () {
 };
 
 exports.set_layout_width = function () {
+    // This logic unfortunately leads to a flash of mispositioned
+    // content when reloading a Zulip browser window.  More details
+    // are available in the comments on the max-width of 1400px in
+    // the .app-main CSS rules.
     var sbWidth = getScrollbarWidth();
     if (page_params.fluid_layout_width) {
         $(".header-main").css("max-width", "inherit");
