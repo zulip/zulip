@@ -132,35 +132,5 @@ class RaygunHookTests(WebhookTestCase):
                                           content_type=
                                           "application/x-www-form-urlencoded")
 
-    def test_no_event_type_message(self) -> None:
-        expected_topic = u"test"
-        expected_message = u"Unsupported event type: new_event_type"
-
-        self.send_and_test_stream_message('no_event_type',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
-
-    def test_unimplemented_notification_feature(self) -> None:
-        expected_topic = u"test"
-        expected_message = u"Unsupported event_type type: UnimplementedFeature"
-
-        self.send_and_test_stream_message('no_notification_eventType_type',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
-
-    def test_unimplemented_activity_feature(self) -> None:
-        expected_topic = u"test"
-        expected_message = u"Unsupported event_type type: UnimplementedFeature"
-
-        self.send_and_test_stream_message('no_activity_eventType_type',
-                                          expected_topic,
-                                          expected_message,
-                                          content_type=
-                                          "application/x-www-form-urlencoded")
-
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("raygun", fixture_name, file_type="json")
