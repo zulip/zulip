@@ -65,7 +65,7 @@ def update_realm(
         invite_to_stream_policy: Optional[int]=REQ(validator=check_int, default=None),
         email_address_visibility: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
-        video_chat_provider: Optional[str]=REQ(validator=check_int, default=None),
+        video_chat_provider: Optional[int]=REQ(validator=check_int, default=None),
         google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None),
         zoom_user_id: Optional[str]=REQ(validator=check_string, default=None),
         zoom_api_key: Optional[str]=REQ(validator=check_string, default=None),
@@ -84,6 +84,9 @@ def update_realm(
         return json_error(_("Organization name is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."))
+    if (video_chat_provider is not None and
+            video_chat_provider not in set(p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values())):
+        return json_error(_("Invalid video chat provider {}").format(video_chat_provider))
     if video_chat_provider == Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']:
         try:
             validate_domain(google_hangouts_domain)

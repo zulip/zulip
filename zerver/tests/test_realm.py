@@ -388,6 +388,12 @@ class RealmTest(ZulipTestCase):
         email = self.example_email("iago")
         self.login(email)
 
+        invalid_video_chat_provider_value = 0
+        req = {"video_chat_provider": ujson.dumps(invalid_video_chat_provider_value)}
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result,
+                               ("Invalid video chat provider {}").format(invalid_video_chat_provider_value))
+
         req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id'])}
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Invalid domain: Domain can't be empty.")
