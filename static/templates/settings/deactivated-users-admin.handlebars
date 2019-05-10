@@ -10,7 +10,9 @@
                 <th>{{t "Name" }}</th>
                 <th>{{t "Email" }}</th>
                 <th class="user_role">{{t "Role" }}</th>
+                {{#if is_admin}}
                 <th class="actions">{{t "Actions" }}</th>
+                {{/if}}
             </thead>
             <tbody id="admin_deactivated_users_table" class="required-text thick admin_user_table" data-empty="{{t 'No users match your current filter.' }}"></tbody>
         </table>
