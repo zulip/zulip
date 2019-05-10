@@ -83,7 +83,6 @@
                   "is_checked" realm_digest_emails_enabled
                   "label" admin_settings_label.realm_digest_emails_enabled}}
                 {{/if}}
-                {{#if realm_digest_emails_enabled}}
                 <div class="input-group">
                     <label for="realm_digest_weekday" class="dropdown-title">{{t "Day of the week to send digests" }}</label>
                     <select name="realm_digest_weekday"
@@ -99,7 +98,6 @@
                         <option value="6">{{t "Sunday" }}</option>
                     </select>
                 </div>
-                {{/if}}
             </div>
 
             <div class="input-group">
