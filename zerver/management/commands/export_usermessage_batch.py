@@ -24,6 +24,12 @@ class Command(BaseCommand):
                             action="store",
                             default=None,
                             help='Thread ID')
+        parser.add_argument('--consent-message-id',
+                            dest="consent_message_id",
+                            action="store",
+                            default=None,
+                            type=int,
+                            help='ID of the message advertising users to react with thumbs up')
 
     def handle(self, *args: Any, **options: Any) -> None:
         logging.info("Starting UserMessage batch thread %s" % (options['thread'],))
@@ -38,7 +44,7 @@ class Command(BaseCommand):
                 continue
             logging.info("Thread %s processing %s" % (options['thread'], output_path))
             try:
-                export_usermessages_batch(locked_path, output_path)
+                export_usermessages_batch(locked_path, output_path, options["consent_message_id"])
             except Exception:
                 # Put the item back in the free pool when we fail
                 shutil.move(locked_path, partial_path)

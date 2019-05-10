@@ -51,7 +51,12 @@ Such an export will include all the messages received by any user in
 the organization that consented to the data export.  In particular, it
 will include all public stream content and any private stream or
 private message content where at least one of the participants gave
-consent.
+consent.  Users who do not consent to export their private data will
+still be able to see public message history sent before the export,
+but will not have access to any private message history, including the
+history of which messages they personally received (which will result
+in their experience for All Messages and our full-text search being
+like that of a new user who joined after the data export).
 
 For **full export without member consent**, we will additionally need
 evidence that you have authority to read members' private

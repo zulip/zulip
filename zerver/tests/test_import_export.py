@@ -8,6 +8,7 @@ import ujson
 from mock import patch
 from typing import Any, Dict, List, Set, Optional, Tuple, Callable, \
     FrozenSet
+from django.db.models import Q
 
 from zerver.lib.export import (
     do_export_realm,
@@ -49,6 +50,8 @@ from zerver.lib.bot_config import (
 )
 from zerver.lib.actions import (
     do_create_user,
+    do_add_reaction,
+    create_stream_if_needed
 )
 
 from zerver.lib.test_runner import slow
@@ -61,6 +64,7 @@ from zerver.models import (
     Subscription,
     Attachment,
     RealmEmoji,
+    Reaction,
     Recipient,
     UserMessage,
     CustomProfileField,
@@ -224,7 +228,8 @@ class ImportExportTest(ZulipTestCase):
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
-    def _export_realm(self, realm: Realm, exportable_user_ids: Optional[Set[int]]=None) -> Dict[str, Any]:
+    def _export_realm(self, realm: Realm, exportable_user_ids: Optional[Set[int]]=None,
+                      consent_message_id: Optional[int]=None) -> Dict[str, Any]:
         output_dir = self._make_output_dir()
         with patch('logging.info'), patch('zerver.lib.export.create_soft_link'):
             do_export_realm(
@@ -232,12 +237,14 @@ class ImportExportTest(ZulipTestCase):
                 output_dir=output_dir,
                 threads=0,
                 exportable_user_ids=exportable_user_ids,
+                consent_message_id=consent_message_id,
             )
             # TODO: Process the second partial file, which can be created
             #       for certain edge cases.
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, 'messages-000001.json.partial'),
-                output_path=os.path.join(output_dir, 'messages-000001.json')
+                output_path=os.path.join(output_dir, 'messages-000001.json'),
+                consent_message_id=consent_message_id,
             )
 
         def read_file(fn: str) -> Any:
@@ -441,6 +448,120 @@ class ImportExportTest(ZulipTestCase):
         dummy_user_emails = get_set('zerver_userprofile_mirrordummy', 'email')
         self.assertIn(self.example_email('iago'), dummy_user_emails)
         self.assertNotIn(self.example_email('cordelia'), dummy_user_emails)
+
+    def test_export_realm_with_member_consent(self) -> None:
+        realm = Realm.objects.get(string_id='zulip')
+
+        # Create private streams and subscribe users for testing export
+        create_stream_if_needed(realm, "Private A", invite_only=True)
+        self.subscribe(self.example_user("iago"), "Private A")
+        self.subscribe(self.example_user("othello"), "Private A")
+        self.send_stream_message(self.example_email("iago"), "Private A", "Hello Stream A")
+
+        create_stream_if_needed(realm, "Private B", invite_only=True)
+        self.subscribe(self.example_user("hamlet"), "Private B")
+        self.subscribe(self.example_user("prospero"), "Private B")
+        self.send_stream_message(self.example_email("prospero"), "Private B", "Hello Stream B")
+
+        create_stream_if_needed(realm, "Private C", invite_only=True)
+        self.subscribe(self.example_user("othello"), "Private C")
+        self.subscribe(self.example_user("prospero"), "Private C")
+        stream_c_message_id = self.send_stream_message(self.example_email("othello"),
+                                                       "Private C", "Hello Stream C")
+
+        # Create huddles
+        self.send_huddle_message(self.example_email("iago"), [self.example_email("cordelia"),
+                                                              self.example_email("AARON")])
+        huddle_a = Huddle.objects.last()
+        self.send_huddle_message(self.example_email("ZOE"), [self.example_email("hamlet"),
+                                                             self.example_email("AARON"),
+                                                             self.example_email("othello")])
+        huddle_b = Huddle.objects.last()
+
+        huddle_b_message_id = self.send_huddle_message(
+            self.example_email("AARON"), [self.example_email("cordelia"),
+                                          self.example_email("ZOE"),
+                                          self.example_email("othello")])
+
+        # Send message advertising export and make users react
+        self.send_stream_message(self.example_email("othello"), "Verona",
+                                 topic_name="Export",
+                                 content="Thumbs up for export")
+        message = Message.objects.last()
+        consented_user_ids = [self.example_user(user).id for user in ["iago", "hamlet"]]
+        do_add_reaction(self.example_user("iago"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
+        do_add_reaction(self.example_user("hamlet"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
+
+        realm_emoji = RealmEmoji.objects.get(realm=realm)
+        realm_emoji.delete()
+        full_data = self._export_realm(realm, consent_message_id=message.id)
+        realm_emoji.save()
+
+        data = full_data['realm']
+
+        self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
+        self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
+
+        def get_set(table: str, field: str) -> Set[str]:
+            values = set(r[field] for r in data[table])
+            return values
+
+        def find_by_id(table: str, db_id: int) -> Dict[str, Any]:
+            return [
+                r for r in data[table]
+                if r['id'] == db_id][0]
+
+        exported_user_emails = get_set('zerver_userprofile', 'email')
+        self.assertIn(self.example_email('cordelia'), exported_user_emails)
+        self.assertIn(self.example_email('hamlet'), exported_user_emails)
+        self.assertIn(self.example_email('iago'), exported_user_emails)
+        self.assertIn(self.example_email('othello'), exported_user_emails)
+        self.assertIn('default-bot@zulip.com', exported_user_emails)
+        self.assertIn('emailgateway@zulip.com', exported_user_emails)
+
+        exported_streams = get_set('zerver_stream', 'name')
+        self.assertEqual(
+            exported_streams,
+            set([u'Denmark', u'Rome', u'Scotland', u'Venice', u'Verona',
+                 u'Private A', u'Private B', u'Private C'])
+        )
+
+        data = full_data['message']
+        exported_usermessages = UserMessage.objects.filter(user_profile__in=[self.example_user("iago"),
+                                                                             self.example_user("hamlet")])
+        um = exported_usermessages[0]
+        self.assertEqual(len(data["zerver_usermessage"]), len(exported_usermessages))
+        exported_um = find_by_id('zerver_usermessage', um.id)
+        self.assertEqual(exported_um['message'], um.message_id)
+        self.assertEqual(exported_um['user_profile'], um.user_profile_id)
+
+        exported_message = find_by_id('zerver_message', um.message_id)
+        self.assertEqual(exported_message['content'], um.message.content)
+
+        public_stream_names = ['Denmark', 'Rome', 'Scotland', 'Venice', 'Verona']
+        public_stream_ids = Stream.objects.filter(name__in=public_stream_names).values_list("id", flat=True)
+        public_stream_recipients = Recipient.objects.filter(type_id__in=public_stream_ids, type=Recipient.STREAM)
+        public_stream_message_ids = Message.objects.filter(recipient__in=public_stream_recipients).values_list("id", flat=True)
+
+        # Messages from Private Stream C are not exported since no member gave consent
+        private_stream_ids = Stream.objects.filter(name__in=["Private A", "Private B"]).values_list("id", flat=True)
+        private_stream_recipients = Recipient.objects.filter(type_id__in=private_stream_ids, type=Recipient.STREAM)
+        private_stream_message_ids = Message.objects.filter(recipient__in=private_stream_recipients).values_list("id", flat=True)
+
+        pm_recipients = Recipient.objects.filter(type_id__in=consented_user_ids, type=Recipient.PERSONAL)
+        pm_query = Q(recipient__in=pm_recipients) | Q(sender__in=consented_user_ids)
+        exported_pm_ids = Message.objects.filter(pm_query).values_list("id", flat=True).values_list("id", flat=True)
+
+        # Third huddle is not exported since none of the members gave consent
+        huddle_recipients = Recipient.objects.filter(type_id__in=[huddle_a.id, huddle_b.id], type=Recipient.HUDDLE)
+        pm_query = Q(recipient__in=huddle_recipients) | Q(sender__in=consented_user_ids)
+        exported_huddle_ids = Message.objects.filter(pm_query).values_list("id", flat=True).values_list("id", flat=True)
+
+        exported_msg_ids = set(public_stream_message_ids) | set(private_stream_message_ids) \
+            | set(exported_pm_ids) | set(exported_huddle_ids)
+        self.assertEqual(get_set("zerver_message", "id"), exported_msg_ids)
+        self.assertNotIn(stream_c_message_id, exported_msg_ids)
+        self.assertNotIn(huddle_b_message_id, exported_msg_ids)
 
     def test_export_single_user(self) -> None:
         output_dir = self._make_output_dir()

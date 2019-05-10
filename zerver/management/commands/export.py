@@ -9,6 +9,7 @@ from django.core.management.base import CommandError
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.export import export_realm_wrapper
+from zerver.models import Message, Reaction
 
 class Command(ZulipBaseCommand):
     help = """Exports all data from a Zulip realm
@@ -92,6 +93,12 @@ class Command(ZulipBaseCommand):
         parser.add_argument('--public-only',
                             action="store_true",
                             help='Export only public stream messages and associated attachments')
+        parser.add_argument('--consent-message-id',
+                            dest="consent_message_id",
+                            action="store",
+                            default=None,
+                            type=int,
+                            help='ID of the message advertising users to react with thumbs up')
         parser.add_argument('--upload-to-s3',
                             action="store_true",
                             help="Whether to upload resulting tarball to s3")
@@ -105,6 +112,9 @@ class Command(ZulipBaseCommand):
         assert realm is not None  # Should be ensured by parser
 
         output_dir = options["output_dir"]
+        public_only = options["public_only"]
+        consent_message_id = options["consent_message_id"]
+
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
         else:
@@ -112,13 +122,42 @@ class Command(ZulipBaseCommand):
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
         os.makedirs(output_dir)
-        print("Exporting realm %s" % (realm.string_id,))
+        print("\033[94mExporting realm\033[0m: %s" % (realm.string_id,))
+
         num_threads = int(options['threads'])
         if num_threads < 1:
             raise CommandError('You must have at least one thread.')
 
+        if public_only and consent_message_id is not None:
+            raise CommandError('Please pass either --public-only or --consent-message-id')
+
+        if consent_message_id is not None:
+            try:
+                message = Message.objects.get(id=consent_message_id)
+            except Message.DoesNotExist:
+                raise CommandError("Message with given ID does not exist. Aborting...")
+
+            if message.last_edit_time is not None:
+                raise CommandError("Message was edited. Aborting...")
+
+            # Since the message might have been sent by
+            # Notification Bot, we can't trivially check the realm of
+            # the message through message.sender.realm.  So instead we
+            # check the realm of the people who reacted to the message
+            # (who must all be in the message's realm).
+            reactions = Reaction.objects.filter(message=message, emoji_code="1f44d",
+                                                reaction_type="unicode_emoji")
+            for reaction in reactions:
+                if reaction.user_profile.realm != realm:
+                    raise CommandError("Users from a different realm reacted to message. Aborting...")
+
+            print("\n\033[94mMessage content:\033[0m\n{}\n".format(message.content))
+
+            print("\033[94mNumber of users that reacted +1:\033[0m {}\n".format(len(reactions)))
+
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(realm=realm, output_dir=output_dir,
                              threads=num_threads, upload_to_s3=options['upload_to_s3'],
-                             public_only=options["public_only"],
-                             delete_after_upload=options["delete_after_upload"])
+                             public_only=public_only,
+                             delete_after_upload=options["delete_after_upload"],
+                             consent_message_id=consent_message_id)
