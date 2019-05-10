@@ -451,10 +451,10 @@ class PreviewTestCase(ZulipTestCase):
                 with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
                     with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())):
                         FetchLinksEmbedData().consume(event)
-                    cached_data = link_embed_data_from_cache(url)
 
-        # FIXME: Should we really cache this, looks like a network error?
-        self.assertIsNone(cached_data)
+                    with self.assertRaises(NotFoundInCache):
+                        link_embed_data_from_cache(url)
+
         msg.refresh_from_db()
         self.assertEqual(
             '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>',

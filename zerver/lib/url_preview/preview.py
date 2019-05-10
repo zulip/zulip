@@ -4,7 +4,7 @@ import requests
 from django.conf import settings
 from django.utils.encoding import smart_text
 import magic
-from typing import Any, Optional, Dict
+from typing import Any, Optional, Dict, Callable
 from typing.re import Match
 
 from version import ZULIP_VERSION
@@ -32,7 +32,6 @@ TIMEOUT = 15
 def is_link(url: str) -> Match[str]:
     return link_regex.match(smart_text(url))
 
-
 def guess_mimetype_from_content(response: requests.Response) -> str:
     mime_magic = magic.Magic(mime=True)
     try:
@@ -57,6 +56,15 @@ def valid_content_type(url: str) -> bool:
         content_type = guess_mimetype_from_content(response)
     return content_type.startswith('text/html')
 
+def catch_network_errors(func: Callable[..., Any]) -> Callable[..., Any]:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return func(*args, **kwargs)
+        except requests.exceptions.RequestException:
+            pass
+    return wrapper
+
+@catch_network_errors
 @cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
 def get_link_embed_data(url: str,
                         maxwidth: Optional[int]=640,
@@ -72,19 +80,8 @@ def get_link_embed_data(url: str,
     # 1. OEmbed
     # 2. Open Graph
     # 3. Meta tags
-    try:
-        data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight)
-    except requests.exceptions.RequestException:
-        # This is what happens if the target URL cannot be fetched; in
-        # that case, there's nothing to do here, and this URL has no
-        # open graph data.
-        return None
-    data = data or {}
-
-    try:
-        response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
-    except requests.exceptions.RequestException:
-        return None
+    data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight) or {}
+    response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
     if response.ok:
         og_data = OpenGraphParser(response.text).extract_data()
         if og_data:
