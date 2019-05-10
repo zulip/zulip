@@ -5,22 +5,24 @@ import os
 import re
 from datetime import timedelta
 from email.utils import parseaddr
+import mock
 from mock import MagicMock, patch, call
 from typing import List, Dict, Any, Optional
 
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from zerver.lib.actions import do_create_user
+from zerver.lib.actions import do_create_user, do_add_reaction
 from zerver.lib.management import ZulipBaseCommand, CommandError, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import stdout_suppressed
 from zerver.lib.test_runner import slow
 from zerver.models import Recipient, get_user_profile_by_email, get_stream
+from django.utils.timezone import now as timezone_now
 
 from zerver.management.commands.send_webhook_fixture_message import Command
 from zerver.lib.test_helpers import most_recent_message
-from zerver.models import get_realm, UserProfile, Realm
+from zerver.models import get_realm, UserProfile, Realm, Reaction, Message
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 
 class TestCheckConfig(ZulipTestCase):
@@ -399,3 +401,35 @@ class TestInvoicePlans(ZulipTestCase):
             call_command(self.COMMAND_NAME)
 
         m.assert_called_once()
+
+class TestExport(ZulipTestCase):
+    COMMAND_NAME = 'export'
+
+    def test_command_with_consented_message_id(self) -> None:
+        realm = get_realm("zulip")
+        self.send_stream_message(self.example_email("othello"), "Verona",
+                                 topic_name="Export",
+                                 content="Thumbs up for export")
+        message = Message.objects.last()
+        do_add_reaction(self.example_user("iago"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
+        do_add_reaction(self.example_user("hamlet"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
+
+        with patch("zerver.management.commands.export.export_realm_wrapper") as m:
+            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
+            m.assert_called_once_with(realm=realm, public_only=False, consent_message_id=message.id,
+                                      delete_after_upload=False, threads=mock.ANY, output_dir=mock.ANY,
+                                      upload_to_s3=False)
+
+        with self.assertRaisesRegex(CommandError, "Message with given ID does not"):
+            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id=123456")
+
+        message.last_edit_time = timezone_now()
+        message.save()
+        with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."):
+            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
+
+        message.last_edit_time = None
+        message.save()
+        do_add_reaction(self.mit_user("sipbtest"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
+        with self.assertRaisesRegex(CommandError, "Users from a diffrent realm reacted to message. Aborting..."):
+            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
