@@ -99,9 +99,9 @@ class Command(ZulipBaseCommand):
                             default=None,
                             type=int,
                             help='ID of the message advertising users to react with thumbs up')
-        parser.add_argument('--upload-to-s3',
+        parser.add_argument('--upload',
                             action="store_true",
-                            help="Whether to upload resulting tarball to s3")
+                            help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR")
         parser.add_argument('--delete-after-upload',
                             action="store_true",
                             help='Automatically delete the local tarball after a successful export')
@@ -157,7 +157,7 @@ class Command(ZulipBaseCommand):
 
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(realm=realm, output_dir=output_dir,
-                             threads=num_threads, upload_to_s3=options['upload_to_s3'],
+                             threads=num_threads, upload=options['upload'],
                              public_only=public_only,
                              delete_after_upload=options["delete_after_upload"],
                              consent_message_id=consent_message_id)

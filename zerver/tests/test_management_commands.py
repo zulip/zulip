@@ -419,7 +419,7 @@ class TestExport(ZulipTestCase):
             call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
             m.assert_called_once_with(realm=realm, public_only=False, consent_message_id=message.id,
                                       delete_after_upload=False, threads=mock.ANY, output_dir=mock.ANY,
-                                      upload_to_s3=False)
+                                      upload=False)
 
         with self.assertRaisesRegex(CommandError, "Message with given ID does not"):
             call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id=123456")

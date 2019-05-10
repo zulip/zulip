@@ -619,9 +619,8 @@ class DeferredWorker(QueueProcessingWorker):
             # backend in export_realm_wrapper so we don't need this assertion.
             assert settings.LOCAL_UPLOADS_DIR is None
 
-            public_url = export_realm_wrapper(realm=realm, output_dir=output_dir,
-                                              upload_to_s3=True, threads=6, public_only=True,
-                                              delete_after_upload=True)
+            public_url = export_realm_wrapper(realm=realm, output_dir=output_dir, threads=6,
+                                              upload=True, public_only=True, delete_after_upload=True)
             assert public_url is not None
 
             # Send a private message notification letting the user who

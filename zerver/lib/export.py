@@ -1663,7 +1663,7 @@ def get_consented_user_ids(consent_message_id: int) -> Set[int]:
                values_list("user_profile", flat=True))
 
 def export_realm_wrapper(realm: Realm, output_dir: str,
-                         threads: int, upload_to_s3: bool,
+                         threads: int, upload: bool,
                          public_only: bool,
                          delete_after_upload: bool,
                          consent_message_id: Optional[int]=None) -> Optional[str]:
@@ -1678,7 +1678,7 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
     subprocess.check_call(["tar", "-czf", tarball_path, os.path.basename(output_dir)])
     print("Tarball written to %s" % (tarball_path,))
 
-    if not upload_to_s3:
+    if not upload:
         return None
 
     def percent_callback(complete: Any, total: Any) -> None:
