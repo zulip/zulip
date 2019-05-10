@@ -533,6 +533,11 @@ class RealmAPITest(ZulipTestCase):
         self.assert_json_success(result)
         return get_realm('zulip')  # refresh data
 
+    def update_with_api_multiple_value(self, data_dict: Dict[str, Any]) -> Realm:
+        result = self.client_patch('/json/realm', data_dict)
+        self.assert_json_success(result)
+        return get_realm('zulip')  # refresh data
+
     def do_test_realm_update_api(self, name: str) -> None:
         """Test updating realm properties.
 
@@ -558,23 +563,39 @@ class RealmAPITest(ZulipTestCase):
             bot_creation_policy=[1, 2],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                                       Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
-            video_chat_provider=[u'Jitsi', u'Hangouts'],
+            video_chat_provider=[
+                dict(
+                    video_chat_provider=ujson.dumps('Google Hangouts'),
+                    google_hangouts_domain=ujson.dumps(u'zulip.com')
+                ),
+                dict(
+                    video_chat_provider=ujson.dumps('Jitsi'),
+                )
+            ],
             google_hangouts_domain=[u'zulip.com', u'zulip.org'],
             zoom_api_secret=[u"abc", u"xyz"],
             zoom_api_key=[u"abc", u"xyz"],
             zoom_user_id=[u"example@example.com", u"example@example.org"]
         )  # type: Dict[str, Any]
+
         vals = test_values.get(name)
         if Realm.property_types[name] is bool:
             vals = bool_tests
         if vals is None:
             raise AssertionError('No test created for %s' % (name,))
 
-        self.set_up_db(name, vals[0])
-        realm = self.update_with_api(name, vals[1])
-        self.assertEqual(getattr(realm, name), vals[1])
-        realm = self.update_with_api(name, vals[0])
-        self.assertEqual(getattr(realm, name), vals[0])
+        if name == 'video_chat_provider':
+            self.set_up_db(name, vals[0][name])
+            realm = self.update_with_api_multiple_value(vals[1])
+            self.assertEqual(getattr(realm, name), ujson.loads(vals[1][name]))
+            realm = self.update_with_api_multiple_value(vals[0])
+            self.assertEqual(getattr(realm, name), ujson.loads(vals[0][name]))
+        else:
+            self.set_up_db(name, vals[0])
+            realm = self.update_with_api(name, vals[1])
+            self.assertEqual(getattr(realm, name), vals[1])
+            realm = self.update_with_api(name, vals[0])
+            self.assertEqual(getattr(realm, name), vals[0])
 
     @slow("Tests a dozen properties in a loop")
     def test_update_realm_properties(self) -> None:
