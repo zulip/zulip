@@ -29,9 +29,12 @@ import configparser
 import sys
 import os
 
+BATCH_SIZE = 1000
+
 def update_fts_columns(cursor):
-    # type: (psycopg2.extensions.cursor) -> None
-    cursor.execute("SELECT id, message_id FROM fts_update_log;")
+    # type: (psycopg2.extensions.cursor) -> int
+    cursor.execute("SELECT id, message_id FROM fts_update_log LIMIT %s;" % (
+        BATCH_SIZE,))
     ids = []
     for (id, message_id) in cursor.fetchall():
         if USING_PGROONGA:
@@ -45,7 +48,7 @@ def update_fts_columns(cursor):
                        "WHERE id = %s", (message_id,))
         ids.append(id)
     cursor.execute("DELETE FROM fts_update_log WHERE id = ANY(%s)", (ids,))
-
+    return len(ids)
 
 def am_master(cursor):
     # type: (psycopg2.extensions.cursor) -> bool
@@ -114,7 +117,13 @@ while not am_master(cursor):
 logger.info("Not in recovery; listening for FTS updates")
 
 cursor.execute("LISTEN fts_update_log;")
-update_fts_columns(cursor)
+# Catch up on any historical columns
+while True:
+    rows_updated = update_fts_columns(cursor)
+    logger.info("Processed %s columns catching up" % (BATCH_SIZE,))
+    if rows_updated != BATCH_SIZE:
+        # We're caught up, so proceed to the listening for updates phase.
+        break
 
 # TODO: If we go back into recovery, we should stop processing updates
 try:
