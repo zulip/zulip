@@ -74,11 +74,11 @@ exports.set_layout_width = function () {
     // the .app-main CSS rules.
     if (page_params.fluid_layout_width) {
         $(".header-main").css("max-width", "inherit");
-        $(".app-main").css("max-width", "inherit");
+        $(".fixed-app .app-main").css("max-width", "inherit");
         $("#compose-container").css("max-width", "inherit");
     } else {
         $(".header-main").css("max-width", 1400 + sbWidth + "px");
-        $(".app-main").css("max-width", 1400 + sbWidth + "px");
+        $(".fixed-app .app-main").css("max-width", 1400 + sbWidth + "px");
         $("#compose-container").css("max-width", 1400 + sbWidth + "px");
     }
 };
