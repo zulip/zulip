@@ -392,7 +392,6 @@ class ImportExportTest(ZulipTestCase):
 
         def get_set(table: str, field: str) -> Set[str]:
             values = set(r[field] for r in data[table])
-            # print('set(%s)' % (sorted(values),))
             return values
 
         def find_by_id(table: str, db_id: int) -> Dict[str, Any]:
@@ -457,7 +456,6 @@ class ImportExportTest(ZulipTestCase):
 
         def get_set(data: List[Dict[str, Any]], field: str) -> Set[str]:
             values = set(r[field] for r in data)
-            # print('set(%s)' % (sorted(values),))
             return values
 
         messages = read_file('messages-000001.json')
