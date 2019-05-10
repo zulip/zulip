@@ -104,6 +104,9 @@
                 <li tabindex="0" data-section="deactivated-users-admin">
                     <i class="icon fa fa-trash-o" aria-hidden="true"></i>
                     <div class="text">{{ _('Deactivated users') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 {% endif %}
                 {% if not is_guest %}
