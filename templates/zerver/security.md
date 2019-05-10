@@ -48,13 +48,17 @@ priority.
   projects), to requiring an invitation to join, to having an email from a
   list of domains, to being a member of a specific organization in
   LDAP/Active Directory.
+- Zulip can limit the features that new users have access to until their
+  accounts are older than a [configurable waiting period][waiting_period].
 - Zulip also supports customizing whether non-admins can
   [create streams](/help/configure-who-can-create-streams),
+  [invite to streams](/help/configure-who-can-invite-to-streams),
   [add custom emoji](/help/only-allow-admins-to-add-emoji),
   [add integrations and bots](/help/restrict-bot-creation),
   [edit or delete messages](/help/configure-message-editing-and-deletion),
   and more.
 
+[waiting_period]: /help/configure-waiting-period-for-full-members
 [ldap-name]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
 
 ## Authentication
