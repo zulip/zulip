@@ -37,6 +37,14 @@ function change_notification_setting(setting, setting_data, status_element) {
     settings_ui.do_settings_change(channel.patch, '/json/settings/notifications', data, status_element);
 }
 
+exports.set_enable_digest_emails_visibility = function () {
+    if (page_params.realm_digest_emails_enabled) {
+        $('#enable_digest_emails_label').parent().show();
+    } else {
+        $('#enable_digest_emails_label').parent().hide();
+    }
+};
+
 exports.set_up = function () {
     _.each(pm_mention_notification_settings, function (setting) {
         $("#" + setting).change(function () {
@@ -85,6 +93,7 @@ exports.set_up = function () {
             notification_sound_dropdown.parent().addClass("control-label-disabled");
         }
     });
+    exports.set_enable_digest_emails_visibility();
 };
 
 exports.update_page = function () {

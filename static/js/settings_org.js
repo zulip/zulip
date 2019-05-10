@@ -274,14 +274,6 @@ function set_message_content_in_email_notifications_visiblity() {
     }
 }
 
-function set_enable_digest_emails_visibility() {
-    if (page_params.realm_digest_emails_enabled) {
-        $('#enable_digest_emails_label').parent().show();
-    } else {
-        $('#enable_digest_emails_label').parent().hide();
-    }
-}
-
 function set_digest_emails_weekday_visibility() {
     if (page_params.realm_digest_emails_enabled) {
         $('#id_realm_digest_weekday').parent().show();
@@ -437,7 +429,7 @@ function update_dependent_subsettings(property_name) {
     } else if (property_name === 'realm_message_content_allowed_in_email_notifications') {
         set_message_content_in_email_notifications_visiblity();
     } else if (property_name === 'realm_digest_emails_enabled') {
-        set_enable_digest_emails_visibility();
+        settings_notifications.set_enable_digest_emails_visibility();
         set_digest_emails_weekday_visibility();
     }
 }
@@ -601,7 +593,6 @@ exports.build_page = function () {
     set_org_join_restrictions_dropdown();
     set_user_invite_restriction_dropdown();
     set_message_content_in_email_notifications_visiblity();
-    set_enable_digest_emails_visibility();
     set_digest_emails_weekday_visibility();
 
     function check_property_changed(elem) {
