@@ -116,6 +116,7 @@
 * [GDPR Compliance](/help/gdpr-compliance)
 
 ## Organization settings
+* [Waiting period for full members](/help/configure-waiting-period-for-full-members)
 * [Restrict stream creation](/help/configure-who-can-create-streams)
 * [Restrict stream invitation](/help/configure-who-can-invite-to-streams)
 * [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
