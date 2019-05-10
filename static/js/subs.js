@@ -593,7 +593,11 @@ exports.switch_to_stream_row = function (stream_id) {
 exports.change_state = function (section) {
     // if in #streams/new form.
     if (section === "new") {
-        exports.do_open_create_stream();
+        if (!page_params.is_guest) {
+            exports.do_open_create_stream();
+        } else {
+            exports.toggler.goto('subscribed');
+        }
         return;
     }
 
@@ -610,7 +614,14 @@ exports.change_state = function (section) {
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         var stream_id = section;
-        exports.switch_to_stream_row(stream_id);
+        // Guest users can not access unsubscribed streams
+        // So redirect guest users to 'subscribed' tab
+        // for any unsubscribed stream settings hash
+        if (page_params.is_guest && !stream_data.id_is_subscribed(stream_id)) {
+            exports.toggler.goto('subscribed');
+        } else {
+            exports.switch_to_stream_row(stream_id);
+        }
         return;
     }
 
