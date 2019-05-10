@@ -35,9 +35,11 @@ function getScrollbarWidth() {
     return widthNoScroll - widthWithScroll;
 }
 
+var sbWidth;
+
 exports.initialize = function () {
 // Workaround for browsers with fixed scrollbars
-    var sbWidth = getScrollbarWidth();
+    sbWidth = getScrollbarWidth();
 
     if (sbWidth > 0) {
         $(".header").css("left", "-" + sbWidth + "px");
@@ -70,7 +72,6 @@ exports.set_layout_width = function () {
     // content when reloading a Zulip browser window.  More details
     // are available in the comments on the max-width of 1400px in
     // the .app-main CSS rules.
-    var sbWidth = getScrollbarWidth();
     if (page_params.fluid_layout_width) {
         $(".header-main").css("max-width", "inherit");
         $(".app-main").css("max-width", "inherit");
