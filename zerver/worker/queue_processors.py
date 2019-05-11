@@ -615,12 +615,9 @@ class DeferredWorker(QueueProcessingWorker):
             realm = Realm.objects.get(id=event['realm_id'])
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
 
-            # TODO: Add support for the LOCAL_UPLOADS_DIR uploads
-            # backend in export_realm_wrapper so we don't need this assertion.
-            assert settings.LOCAL_UPLOADS_DIR is None
-
-            public_url = export_realm_wrapper(realm=realm, output_dir=output_dir, threads=6,
-                                              upload=True, public_only=True, delete_after_upload=True)
+            public_url = export_realm_wrapper(realm=realm, output_dir=output_dir,
+                                              threads=6, upload=True, public_only=True,
+                                              delete_after_upload=True)
             assert public_url is not None
 
             # Send a private message notification letting the user who
