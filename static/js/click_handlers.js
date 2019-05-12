@@ -469,6 +469,9 @@ exports.initialize = function () {
         }, 300);
     });
 
+    $("#settings_page").on("click", ".collapse-settings-btn", function () {
+        settings_toggle.toggle_org_setting_collapse();
+    });
 
     // COMPOSE
 

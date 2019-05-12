@@ -53,14 +53,14 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
-                <li tabindex="0" data-section="organization-settings">
+                <li class="collapse-org-settings {% if not is_admin %}hide-org-settings{% endif %}" tabindex="0" data-section="organization-settings">
                     <i class="icon fa fa-flask" aria-hidden="true"></i>
                     <div class="text">{{ _('Organization settings') }}</div>
                     {% if not is_admin %}
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
-                <li tabindex="0" data-section="organization-permissions">
+                <li class="collapse-org-settings {% if not is_admin %}hide-org-settings{% endif %}" tabindex="0" data-section="organization-permissions">
                     <i class="icon fa fa-lock" aria-hidden="true"></i>
                     <div class="text">{{ _('Organization permissions') }}</div>
                     {% if not is_admin %}
@@ -84,7 +84,7 @@
                     <div class="text">{{ _('User groups') }}</div>
                 </li>
                 {% endif %}
-                <li tabindex="0" data-section="auth-methods">
+                <li class="collapse-org-settings {% if not is_admin %}hide-org-settings{% endif %}" tabindex="0" data-section="auth-methods">
                     <i class="icon fa fa-key" aria-hidden="true"></i>
                     <div class="text">{{ _('Authentication methods') }}</div>
                     {% if not is_admin %}
@@ -116,7 +116,7 @@
                 </li>
                 {% endif %}
                 {% if not is_guest %}
-                <li tabindex="0" data-section="default-streams-list">
+                <li class="collapse-org-settings {% if not is_admin %}hide-org-settings{% endif %}" tabindex="0" data-section="default-streams-list">
                     <i class="icon fa fa-exchange" aria-hidden="true"></i>
                     <div class="text">{{ _('Default streams') }}</div>
                     {% if not is_admin %}
@@ -135,9 +135,6 @@
                 <li tabindex="0" data-section="profile-field-settings">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
                     <div class="text">{{ _('Custom profile fields') }}</div>
-                    {% if not is_admin %}
-                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
-                    {% endif %}
                 </li>
                 {% endif %}
                 {% if is_admin %}
@@ -145,6 +142,12 @@
                     <i class="icon fa fa-user" aria-hidden="true"></i>
                     <div class="text">{{ _('Invitations') }}</div>
                 </li>
+                {% endif %}
+                {% if not is_admin %}
+                <div class="collapse-settings-btn">
+                    <i id='toggle_collapse_chevron' class='fa fa-angle-double-down'></i>
+                    <p id='toggle_collapse'>{{ _('Show more') }}</p>
+                </div>
                 {% endif %}
             </ul>
         </div>
