@@ -686,7 +686,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         youtube_re = r'^({schema_re}?{host_re}{param_re}?)?{id_re}(?(1).+)?$'
         youtube_re = youtube_re.format(schema_re=schema_re, host_re=host_re, id_re=id_re, param_re=param_re)
         match = re.match(youtube_re, url)
-        if match is None:
+        # URLs of the form youtube.com/playlist?list=<list-id> are incorrectly matched
+        if match is None or match.group(2) == 'playlist':
             return None
         return match.group(2)
 
