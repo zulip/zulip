@@ -1921,3 +1921,22 @@ thead .actions {
     margin-top: 13px;
     display: inline-block;
 }
+
+.hide-org-settings {
+    display: none;
+}
+
+.collapse-settings-btn {
+    margin: 10px 0px 0px 10px;
+    color: hsl(200, 100%, 40%);
+}
+
+.collapse-settings-btn:hover {
+    cursor: pointer;
+    color: hsl(208, 56%, 38%);
+}
+
+#toggle_collapse {
+    margin-left: 2px;
+    display: inline-block;
+}
