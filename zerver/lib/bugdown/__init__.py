@@ -677,11 +677,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.markdown.image_preview_enabled:
             return None
         # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
-        # Slightly modified to support URLs of the form youtu.be/<id>
+        # Slightly modified to support URLs of the form youtu.be/<id>, youtube.com/playlist?v=x&list=y
         # If it matches, match.group(2) is the video id.
         schema_re = r'(?:https?://)'
         host_re = r'(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)'
-        param_re = r'(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=))'
+        param_re = r'(?:(?:(?:v|embed)/)|' + \
+            r'(?:(?:(?:watch|playlist)(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=))'
         id_re = r'([0-9A-Za-z_-]+)'
         youtube_re = r'^({schema_re}?{host_re}{param_re}?)?{id_re}(?(1).+)?$'
         youtube_re = youtube_re.format(schema_re=schema_re, host_re=host_re, id_re=id_re, param_re=param_re)
