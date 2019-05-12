@@ -78,14 +78,12 @@
                         {% endif %}
                     {% endif %}
                 </li>
+                {% if not is_guest %}
                 <li tabindex="0" data-section="user-groups-admin">
                     <i class="icon fa fa-group" aria-hidden="true"></i>
                     <div class="text">{{ _('User groups') }}</div>
-                    {% if is_guest %}
-                    <i class="locked fa fa-lock"
-                      title="{{ _('Only group members and organization administrators can modify a group.') }}"></i>
-                    {% endif %}
                 </li>
+                {% endif %}
                 <li tabindex="0" data-section="auth-methods">
                     <i class="icon fa fa-key" aria-hidden="true"></i>
                     <div class="text">{{ _('Authentication methods') }}</div>
@@ -93,6 +91,7 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
+                {% if not is_guest %}
                 <li tabindex="0" data-section="user-list-admin">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
                     <div class="text">{{ _('Users') }}</div>
@@ -100,12 +99,14 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
-                {% if is_admin %}
+                {% endif %}
+                {% if not is_guest %}
                 <li tabindex="0" data-section="deactivated-users-admin">
                     <i class="icon fa fa-trash-o" aria-hidden="true"></i>
                     <div class="text">{{ _('Deactivated users') }}</div>
                 </li>
                 {% endif %}
+                {% if not is_guest %}
                 <li tabindex="0" data-section="bot-list-admin">
                     <i class="icon fa fa-github" aria-hidden="true"></i>
                     <div class="text">{{ _('Bots') }}</div>
@@ -113,6 +114,7 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
+                {% endif %}
                 {% if not is_guest %}
                 <li tabindex="0" data-section="default-streams-list">
                     <i class="icon fa fa-exchange" aria-hidden="true"></i>
@@ -129,6 +131,7 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
+                {% if is_admin %}
                 <li tabindex="0" data-section="profile-field-settings">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
                     <div class="text">{{ _('Custom profile fields') }}</div>
@@ -136,6 +139,7 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
+                {% endif %}
                 {% if is_admin %}
                 <li tabindex="0" data-section="invites-list-admin">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
