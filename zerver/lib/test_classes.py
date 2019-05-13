@@ -789,7 +789,7 @@ class WebhookTestCase(ZulipTestCase):
         if expected_message is not None:
             self.assertEqual(msg.content, expected_message)
 
-class MigrationsTestCase(ZulipTestCase):
+class MigrationsTestCase(ZulipTestCase):  # nocoverage
     """
     Test class for database migrations inspired by this blog post:
        https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/

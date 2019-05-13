@@ -480,7 +480,7 @@ def create_s3_buckets(*bucket_names: Tuple[str]) -> List[Bucket]:
     buckets = [conn.create_bucket(name) for name in bucket_names]
     return buckets
 
-def use_db_models(method: Callable[..., None]) -> Callable[..., None]:
+def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocoverage
     def method_patched_with_mock(self: 'MigrationsTestCase', apps: StateApps) -> None:
         ArchivedAttachment = apps.get_model('zerver', 'ArchivedAttachment')
         ArchivedMessage = apps.get_model('zerver', 'ArchivedMessage')

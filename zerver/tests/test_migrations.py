@@ -22,8 +22,12 @@ from zerver.models import get_stream
 #
 #   django.db.utils.OperationalError: cannot ALTER TABLE
 #   "zerver_subscription" because it has pending trigger events
+#
+# As a result, we generally mark these tests as skipped once they have
+# been tested for a migration being merged.
 
-class SubsNotificationSettingsTestCase(MigrationsTestCase):
+class SubsNotificationSettingsTestCase(MigrationsTestCase):  # nocoverage
+    __unittest_skip__ = True
 
     migrate_from = '0220_subscription_notification_settings'
     migrate_to = '0221_subscription_notifications_data_migration'
