@@ -58,25 +58,25 @@ class RealmFilterTest(ZulipTestCase):
         self.assertIsNotNone(re.match(data['pattern'], 'ZUL2-15'))
 
         data['pattern'] = r'_code=(?P<id>[0-9a-zA-Z]+)'
-        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        data['url_format_string'] = 'https://example.com/product/%(id)s/details'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], '_code=123abcdZ'))
 
         data['pattern'] = r'PR (?P<id>[0-9]+)'
-        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        data['url_format_string'] = 'https://example.com/web#view_type=type&model=model&action=12345&id=%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], 'PR 123'))
 
         data['pattern'] = r'lp/(?P<id>[0-9]+)'
-        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s&sort=reverse'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], 'lp/123'))
 
         data['pattern'] = r'lp:(?P<id>[0-9]+)'
-        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/?sort=reverse&value=%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], 'lp:123'))
