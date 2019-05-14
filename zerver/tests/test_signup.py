@@ -744,6 +744,7 @@ class InviteUserTest(InviteUserBase):
         self.submit_reg_form_for_user(invitee, "password")
         invitee_profile = self.nonreg_user('alice')
         self.assertTrue(invitee_profile.is_realm_admin)
+        self.assertFalse(invitee_profile.is_primary_admin)
         self.assertFalse(invitee_profile.is_guest)
 
     def test_invite_user_as_admin_from_normal_account(self) -> None:
@@ -777,6 +778,7 @@ class InviteUserTest(InviteUserBase):
         self.submit_reg_form_for_user(invitee, "password")
         invitee_profile = self.nonreg_user('alice')
         self.assertFalse(invitee_profile.is_realm_admin)
+        self.assertFalse(invitee_profile.is_primary_admin)
         self.assertTrue(invitee_profile.is_guest)
 
     def test_successful_invite_user_as_guest_from_admin_account(self) -> None:
@@ -789,6 +791,7 @@ class InviteUserTest(InviteUserBase):
         self.submit_reg_form_for_user(invitee, "password")
         invitee_profile = self.nonreg_user('alice')
         self.assertFalse(invitee_profile.is_realm_admin)
+        self.assertFalse(invitee_profile.is_primary_admin)
         self.assertTrue(invitee_profile.is_guest)
 
     def test_successful_invite_user_with_name(self) -> None:
@@ -1698,6 +1701,10 @@ class RealmCreationTest(ZulipTestCase):
         realm = get_realm(string_id)
         self.assertEqual(realm.string_id, string_id)
         self.assertEqual(get_user(email, realm).realm, realm)
+
+        # check is_primary_admin field upon realm creation
+        user = get_user(email, realm)
+        self.assertEqual(user.is_primary_admin, True)
 
         # Check defaults
         self.assertEqual(realm.org_type, Realm.CORPORATE)

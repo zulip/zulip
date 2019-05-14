@@ -79,6 +79,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
 def create_user(email: str, password: Optional[str], realm: Realm,
                 full_name: str, short_name: str, active: bool = True,
                 is_realm_admin: bool = False,
+                is_primary_admin: bool = False,
                 is_guest: bool = False,
                 bot_type: Optional[int] = None,
                 bot_owner: Optional[UserProfile] = None,
@@ -92,6 +93,7 @@ def create_user(email: str, password: Optional[str], realm: Realm,
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy, tos_version, timezone)
+    user_profile.is_primary_admin = is_primary_admin
     user_profile.is_realm_admin = is_realm_admin
     user_profile.is_guest = is_guest
     user_profile.avatar_source = avatar_source

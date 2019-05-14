@@ -481,6 +481,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
                                is_realm_admin=is_realm_admin, is_guest=is_guest,
+                               is_primary_admin=realm_creation,
                                bot_type=bot_type, bot_owner=bot_owner,
                                tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
                                default_sending_stream=default_sending_stream,
