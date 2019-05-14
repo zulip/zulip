@@ -82,7 +82,7 @@ class RealmFilterTest(ZulipTestCase):
         self.assertIsNotNone(re.match(data['pattern'], 'lp:123'))
 
         data['pattern'] = r'!(?P<id>[0-9]+)'
-        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        data['url_format_string'] = 'https://realm.com/index.pl?Action=AgentTicketZoom;TicketNumber=%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], '!123'))
