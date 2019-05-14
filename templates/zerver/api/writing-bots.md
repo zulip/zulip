@@ -388,19 +388,22 @@ refactor them.
  https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/helloworld)
  bot.
 
-    from zulip_bots.test_lib import StubBotTestCase
+```
+from zulip_bots.test_lib import StubBotTestCase
 
-    class TestHelpBot(StubBotTestCase):
-        bot_name = "helloworld"  # type: str
+class TestHelpBot(StubBotTestCase):
+    bot_name = "helloworld"  # type: str
 
-        def test_bot(self) -> None:
-            dialog = [
-                ('', 'beep boop'),
-                ('help', 'beep boop'),
-                ('foo', 'beep boop'),
-            ]
+    def test_bot(self) -> None:
+        dialog = [
+            ('', 'beep boop'),
+            ('help', 'beep boop'),
+            ('foo', 'beep boop'),
+        ]
 
-            self.verify_dialog(dialog)
+        self.verify_dialog(dialog)
+
+```
 
 The `helloworld` bot replies with "beep boop" to every message @-mentioning it.  We
 want our test to verify that the bot **actually** does that.
