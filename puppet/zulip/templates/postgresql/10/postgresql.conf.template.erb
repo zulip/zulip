@@ -61,7 +61,7 @@ external_pid_file = '/var/run/postgresql/<%= scope["zulip::base::postgres_versio
 					# defaults to 'localhost'; use '*' for all
 					# (change requires restart)
 port = 5432				# (change requires restart)
-max_connections = 100			# (change requires restart)
+max_connections = 1000			# (change requires restart)
 #superuser_reserved_connections = 3	# (change requires restart)
 unix_socket_directories = '/var/run/postgresql'	# comma-separated list of directories
 					# (change requires restart)
