@@ -98,7 +98,7 @@ function get_property_value(property_name) {
             return "by_admins_only";
         }
         if (page_params.realm_invite_to_stream_policy === 3) {
-            return "by_members_with_waiting_period";
+            return "by_full_members";
         }
     }
 
@@ -766,7 +766,7 @@ exports.build_page = function () {
                 data.invite_to_stream_policy = 2;
             } else if (invite_to_stream_policy === "by_members") {
                 data.invite_to_stream_policy = 1;
-            } else if (invite_to_stream_policy === "by_members_with_waiting_period") {
+            } else if (invite_to_stream_policy === "by_full_members") {
                 data.invite_to_stream_policy = 3;
             }
         } else if (subsection === 'org_join') {
