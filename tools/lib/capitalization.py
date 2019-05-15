@@ -39,6 +39,8 @@ IGNORED_PHRASES = [
     r"OTP",
     r"Pivotal",
     r"Play Store",
+    r"PM",
+    r"PMs",
     r'REMOTE_USER',
     r'Slack',
     r"SSO",
