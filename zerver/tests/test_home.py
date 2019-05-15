@@ -34,7 +34,7 @@ class HomeTest(ZulipTestCase):
             'Keyboard shortcuts',
             'Loading...',
             'Manage streams',
-            'Narrow by topic',
+            'Narrow to topic',
             'Next message',
             'Search streams',
             'Welcome to Zulip',

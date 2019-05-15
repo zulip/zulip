@@ -70,7 +70,7 @@ below, and add more to your repertoire as needed.
 
 * **Narrow to stream**: `s`
 
-* **Narrow to topic**: `S`
+* **Narrow to topic or PM conversation**: `S`
 
 * **Narrow to all private messages**: `P`
 
