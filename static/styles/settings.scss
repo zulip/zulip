@@ -492,7 +492,6 @@ input[type=checkbox] + .inline-block {
 }
 
 .realm-logo-section {
-    margin-top: 10px;
     margin-bottom: 20px;
 }
 
@@ -1121,12 +1120,11 @@ input[type=checkbox].inline-block {
 
 #realm-settings-logo,
 #realm-settings-night-logo {
-    border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.2);
     /* We allow actual images up to 800x100 in the main display, but the
-       settings UI looks bad beyond ~730px, so we limit the width here */
-    height: 100px;
-    max-width: 720px;
+       settings UI looks bad beyond ~500px, so we limit the width here */
+    height: 55px;
+    max-width: 500px;
 }
 
 #realm-settings-night-logo {
@@ -1702,14 +1700,6 @@ input[type=text]#settings_search {
     padding: 2px 6px;
     border-radius: 4px;
     margin: 0 0 0 5px;
-}
-
-@media (max-width: 1023px) {
-    #realm-settings-logo,
-    #realm-settings-night-logo {
-        max-width: 600px;
-        height: 75px;
-    }
 }
 
 @media (max-width: 953px) {

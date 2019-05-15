@@ -46,16 +46,22 @@
             </div>
         </div>
 
-        <h3>{{t "Organization logo" }}</h3>
-        <p>{{t "A wide image, replacing the Zulip logo in the upper left corner of the Zulip apps." }}</p>
+        <div class="subsection-header">
+            <h3>{{t "Organization logo" }}
+                <a href="/help/create-your-organization-profile#add-a-wide-logo" target="_blank">
+                    <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                </a>
+            </h3>
+        </div>
 
+        <p>{{t "A wide image for the upper left corner of the app." }}</p>
         <div class="realm-logo-section">
-            <div class="block realm-logo-block">
+            <div class="inline-block realm-logo-block">
                 <img id="realm-settings-logo" src="{{ realm_logo_url }}"/>
                 <input type="file" name="realm_logo_file_input" class="notvisible"
                   id="realm_logo_file_input" value="{{t 'Upload logo' }}"/>
             </div>
-            <div class="block avatar-controls">
+            <div class="inline-block avatar-controls">
                 <div id="realm_logo_file_input_error" class="alert text-error"></div>
                 <button class="button rounded sea-green w-200 block input-size"
                   id="realm_logo_upload_button">
@@ -67,16 +73,14 @@
             </div>
         </div>
 
-        <h3>{{t "Organization logo for night mode" }}</h3>
-        <p>{{t "Like Organization logo, but for the night theme." }}</p>
-
+        <p>{{t "A wide logo for night mode. Logo will be shown against a dark background." }}</p>
         <div class="realm-logo-section realm-night-logo-section">
-            <div class="block realm-logo-block">
+            <div class="inline-block realm-logo-block">
                 <img id="realm-settings-night-logo" src="{{ realm_night_logo_url }}">
                 <input type="file" name="realm_night_logo_file_input" class="notvisible"
                   id="realm_night_logo_file_input" value="{{t 'Upload logo' }}"/>
             </div>
-            <div class="block avatar-controls">
+            <div class="inline-block avatar-controls">
                 <div id="realm_night_logo_file_input_error" class="alert text-error"></div>
                 <button class="button rounded sea-green w-200 block input-size"
                   id="realm_night_logo_upload_button">
