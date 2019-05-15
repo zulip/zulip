@@ -27,7 +27,7 @@ var frontend = {
     color: 'yellow',
     name: 'frontend',
     stream_id: 1,
-    in_home_view: false,
+    is_muted: true,
     invite_only: false,
 };
 
@@ -364,7 +364,7 @@ var dev_help = {
     color: 'blue',
     name: 'dev help',
     stream_id: 2,
-    in_home_view: false,
+    is_muted: true,
     invite_only: false,
 };
 stream_data.add_sub(dev_help.name, dev_help);

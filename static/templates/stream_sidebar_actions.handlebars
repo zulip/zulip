@@ -24,12 +24,12 @@
     </li>
     <li>
         <a class="toggle_home">
-            {{#if stream.in_home_view}}
-                <i class="fa fa-eye-slash" aria-hidden="true"></i>
-                {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
-            {{else}}
+            {{#if stream.is_muted}}
                 <i class="fa fa-eye" aria-hidden="true"></i>
                 {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
+            {{else}}
+                <i class="fa fa-eye-slash" aria-hidden="true"></i>
+                {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
             {{/if}}
         </a>
     </li>

@@ -639,7 +639,7 @@ run_test('rename_stream', () => {
             name: 'Development',
             id: 1000,
             uri: '#narrow/stream/1000-Development',
-            not_in_home_view: false,
+            is_muted: false,
             invite_only: undefined,
             is_web_public: undefined,
             color: payload.color,

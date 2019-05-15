@@ -26,7 +26,7 @@ var social = {
     stream_id: 200,
     name: 'social',
     subscribed: true,
-    in_home_view: true,
+    is_muted: false,
 };
 stream_data.add_sub('social', social);
 

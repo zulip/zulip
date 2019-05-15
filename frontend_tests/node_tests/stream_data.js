@@ -31,14 +31,14 @@ run_test('basics', () => {
         color: 'blue',
         name: 'Denmark',
         stream_id: 1,
-        in_home_view: false,
+        is_muted: true,
     };
     var social = {
         subscribed: true,
         color: 'red',
         name: 'social',
         stream_id: 2,
-        in_home_view: true,
+        is_muted: false,
         invite_only: true,
         is_announcement_only: true,
     };
@@ -47,7 +47,7 @@ run_test('basics', () => {
         color: 'yellow',
         name: 'test',
         stream_id: 3,
-        in_home_view: false,
+        is_muted: true,
         invite_only: false,
     };
     stream_data.add_sub('Denmark', denmark);
@@ -328,7 +328,7 @@ run_test('admin_options', () => {
             color: 'blue',
             name: 'stream_to_admin',
             stream_id: 1,
-            in_home_view: false,
+            is_muted: true,
             invite_only: false,
         };
         stream_data.add_sub(sub.name, sub);
@@ -583,19 +583,19 @@ run_test('notifications', () => {
     assert(!stream_data.receives_audible_notifications('India'));
 });
 
-run_test('in_home_view', () => {
+run_test('is_muted', () => {
     var tony = {
         stream_id: 999,
         name: 'tony',
         subscribed: true,
-        in_home_view: true,
+        is_muted: false,
     };
 
     var jazy = {
         stream_id: 500,
         name: 'jazy',
         subscribed: false,
-        in_home_view: false,
+        is_muted: true,
     };
 
     stream_data.add_sub('tony', tony);
@@ -618,7 +618,7 @@ run_test('remove_default_stream', () => {
         stream_id: 674,
         name: 'remove_me',
         subscribed: false,
-        in_home_view: false,
+        is_muted: true,
     };
 
     stream_data.add_sub('remove_me', remove_me);

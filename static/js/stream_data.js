@@ -330,13 +330,13 @@ exports.update_calculated_fields = function (sub) {
 
 exports.all_subscribed_streams_are_in_home_view = function () {
     return _.every(exports.subscribed_subs(), function (sub) {
-        return sub.in_home_view;
+        return !sub.is_muted;
     });
 };
 
 exports.home_view_stream_names = function () {
     var home_view_subs = _.filter(exports.subscribed_subs(), function (sub) {
-        return sub.in_home_view;
+        return !sub.is_muted;
     });
     return _.map(home_view_subs, function (sub) {
         return sub.name;
@@ -357,12 +357,12 @@ exports.get_color = function (stream_name) {
 
 exports.in_home_view = function (stream_id) {
     var sub = exports.get_sub_by_id(stream_id);
-    return sub !== undefined && sub.in_home_view;
+    return sub !== undefined && !sub.is_muted;
 };
 
 exports.name_in_home_view = function (stream_name) {
     var sub = exports.get_sub(stream_name);
-    return sub !== undefined && sub.in_home_view;
+    return sub !== undefined && !sub.is_muted;
 };
 
 exports.notifications_in_home_view = function () {
@@ -581,7 +581,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
         newly_subscribed: false,
-        in_home_view: true,
+        is_muted: false,
         invite_only: false,
         desktop_notifications: page_params.enable_stream_desktop_notifications,
         audible_notifications: page_params.enable_stream_sounds,

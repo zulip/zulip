@@ -55,7 +55,7 @@ var denmark = {
     color: 'blue',
     name: 'Denmark',
     stream_id: 1,
-    in_home_view: false,
+    is_muted: true,
 };
 stream_data.add_sub('Denmark', denmark);
 
