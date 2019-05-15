@@ -50,36 +50,36 @@
                 <ul class="grey-box">
                     <li>
                         <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox sub-mute-setting">
-                            <input id="mutestream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#unless in_home_view}}checked{{/unless}} />
+                            <input id="mutestream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if is_muted}}checked{{/if}} />
                             <label class="subscription-control-label">{{t "Mute stream" }}</label>
-                            <p class="mute-note {{#if in_home_view}}hide-mute-note{{/if}}">{{t "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned." }}</p>
+                            <p class="mute-note {{#unless is_muted}}hide-mute-note{{/unless}}">{{t "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned." }}</p>
                         </div>
                     </li>
                     <li>
                         <div id="sub_desktop_notifications_setting"
-                          class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
-                            <input id="desktop-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if desktop_notifications_display}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
+                          class="sub_setting_checkbox sub_notification_setting {{#if is_muted}}muted-sub{{/if}}">
+                            <input id="desktop-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if desktop_notifications_display}}checked{{/if}} {{#if is_muted}}disabled="disabled"{{/if}}/>
                             <label class="subscription-control-label">{{t "Visual desktop notifications" }}</label>
                         </div>
                     </li>
                     <li>
                         <div id="sub_audible_notifications_setting"
-                          class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
-                            <input id="audible-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications_display}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
+                          class="sub_setting_checkbox sub_notification_setting {{#if is_muted}}muted-sub{{/if}}">
+                            <input id="audible-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications_display}}checked{{/if}} {{#if is_muted}}disabled="disabled"{{/if}}/>
                             <label class="subscription-control-label">{{t "Audible desktop notifications" }}</label>
                         </div>
                     </li>
                     <li>
                         <div id="sub_push_notifications_setting"
-                          class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
-                            <input id="push-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if push_notifications_display}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
+                          class="sub_setting_checkbox sub_notification_setting {{#if is_muted}}muted-sub{{/if}}">
+                            <input id="push-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if push_notifications_display}}checked{{/if}} {{#if is_muted}}disabled="disabled"{{/if}}/>
                             <label class="subscription-control-label">{{t "Mobile notifications" }}</label>
                         </div>
                     </li>
                     <li>
                         <div id="sub_email_notifications_setting"
-                          class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
-                            <input id="email-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if email_notifications_display}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
+                          class="sub_setting_checkbox sub_notification_setting {{#if is_muted}}muted-sub{{/if}}">
+                            <input id="email-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if email_notifications_display}}checked{{/if}} {{#if is_muted}}disabled="disabled"{{/if}}/>
                             <label class="subscription-control-label">{{t "Email notifications" }}</label>
                         </div>
                     </li>

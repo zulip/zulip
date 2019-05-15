@@ -5,7 +5,7 @@ var exports = {};
 exports.update_in_home_view = function (sub, value) {
     // value is true if we are in home view
     // TODO: flip the semantics to be is_muting
-    sub.in_home_view = value;
+    sub.is_muted = !value;
 
     setTimeout(function () {
         var msg_offset;
@@ -48,7 +48,7 @@ exports.update_in_home_view = function (sub, value) {
         }
     }, 0);
 
-    stream_list.set_in_home_view(sub.stream_id, sub.in_home_view);
+    stream_list.set_in_home_view(sub.stream_id, !sub.is_muted);
 
     var not_in_home_view_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_setting_not_in_home_view .sub_setting_control");
     not_in_home_view_checkbox.prop('checked', !value);

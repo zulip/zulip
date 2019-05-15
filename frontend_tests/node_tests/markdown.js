@@ -130,14 +130,14 @@ var denmark = {
     color: 'blue',
     name: 'Denmark',
     stream_id: 1,
-    in_home_view: false,
+    is_muted: true,
 };
 var social = {
     subscribed: true,
     color: 'red',
     name: 'social',
     stream_id: 2,
-    in_home_view: true,
+    is_muted: false,
     invite_only: true,
 };
 var edgecase_stream = {
@@ -145,7 +145,7 @@ var edgecase_stream = {
     color: 'green',
     name: 'Bobby <h1>Tables</h1>',
     stream_id: 3,
-    in_home_view: true,
+    is_muted: false,
 };
 stream_data.add_sub('Denmark', denmark);
 stream_data.add_sub('social', social);

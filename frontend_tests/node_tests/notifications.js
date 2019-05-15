@@ -26,7 +26,7 @@ var general = {
     subscribed: true,
     name: 'general',
     stream_id: 10,
-    in_home_view: true,
+    is_muted: false,
 };
 
 // Muted streams
@@ -34,7 +34,7 @@ var muted = {
     subscribed: true,
     name: 'muted',
     stream_id: 20,
-    in_home_view: false,
+    is_muted: true,
 };
 
 stream_data.add_sub('general', general);

@@ -1207,7 +1207,7 @@ run_test('stream_sidebar_actions', () => {
         stream: {
             color: 'red',
             name: 'devel',
-            in_home_view: true,
+            is_muted: false,
             id: 55,
         },
     };
@@ -1257,7 +1257,7 @@ run_test('subscription_settings', () => {
         can_change_stream_permissions: true,
         email_address: 'xxxxxxxxxxxxxxx@zulip.com',
         stream_id: 888,
-        in_home_view: true,
+        is_muted: false,
     };
 
     var html = '';
@@ -1314,7 +1314,7 @@ run_test('subscriptions', () => {
                 invite_only: true,
                 email_address: 'xxxxxxxxxxxxxxx@zulip.com',
                 stream_id: 888,
-                in_home_view: true,
+                is_muted: false,
             },
             {
                 name: 'social',

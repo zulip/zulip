@@ -251,7 +251,7 @@ function stream_home_view_clicked(e) {
 
     subs.toggle_home(sub);
 
-    if (sub.in_home_view) {
+    if (!sub.is_muted) {
         sub_settings.find(".mute-note").addClass("hide-mute-note");
         notification_checkboxes.removeClass("muted-sub");
         notification_checkboxes.find("input[type='checkbox']").prop("disabled", false);
