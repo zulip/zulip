@@ -12,13 +12,6 @@ from zerver.models import RealmAuditLog
 
 # TODO: Mock export_realm_wrapper to test for s3 or local
 class RealmExportTest(ZulipTestCase):
-    def setUp(self) -> None:
-        # TODO: Just inline this 2 lines of basic code in the
-        # individual test functions, since that's our standard style
-        # in Zulip's unit tests
-        self.admin = self.example_user('iago')
-        self.login(self.admin.email)
-
     def test_export_as_not_admin(self) -> None:
         user = self.example_user('hamlet')
         self.login(user.email)
@@ -27,6 +20,8 @@ class RealmExportTest(ZulipTestCase):
 
     @use_s3_backend
     def test_endpoint_s3(self) -> None:
+        admin = self.example_user('iago')
+        self.login(admin.email)
         create_s3_buckets(
             settings.S3_AUTH_UPLOADS_BUCKET,
             settings.S3_AVATAR_BUCKET)
@@ -54,13 +49,16 @@ class RealmExportTest(ZulipTestCase):
             #
             # Probably setting a `side_effect` makes sense?
         self.assert_json_success(result)
-        self.assertEqual(args['realm'], self.admin.realm)
+        self.assertEqual(args['realm'], admin.realm)
         self.assertEqual(args['public_only'], True)
         self.assertEqual(args['output_dir'].startswith('/tmp/zulip-export-'), True)
         self.assertEqual(args['threads'], 6)
 
     @override_settings(LOCAL_UPLOADS_DIR='/var/uploads')
     def test_endpoint_local_uploads(self) -> None:
+        admin = self.example_user('iago')
+        self.login(admin.email)
+
         with patch('zerver.lib.export.do_export_realm'):
             with patch('zerver.views.public_export.queue_json_publish') as mock_publish:
                 result = self.client_post('/json/export/realm')
@@ -86,22 +84,25 @@ class RealmExportTest(ZulipTestCase):
             # Probably setting a `side_effect` makes sense?
         self.assert_json_success(result)
 
-        self.assertEqual(args['realm'], self.admin.realm)
+        self.assertEqual(args['realm'], admin.realm)
         self.assertEqual(args['public_only'], True)
         self.assertEqual(args['output_dir'].startswith('/tmp/zulip-export-'), True)
         self.assertEqual(args['threads'], 6)
 
     def test_realm_export_rate_limited(self) -> None:
+        admin = self.example_user('iago')
+        self.login(admin.email)
+
         current_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED)
         self.assertEqual(len(current_log), 0)
 
         exports = []
         for i in range(0, 5):
-            exports.append(RealmAuditLog(realm=self.admin.realm,
+            exports.append(RealmAuditLog(realm=admin.realm,
                                          event_type=RealmAuditLog.REALM_EXPORTED,
                                          event_time=timezone_now()))
         RealmAuditLog.objects.bulk_create(exports)
 
-        result = public_only_realm_export(self.client_post, self.admin)
+        result = public_only_realm_export(self.client_post, admin)
         self.assert_json_error(result, 'Exceeded rate limit.')
