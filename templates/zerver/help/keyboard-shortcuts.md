@@ -37,8 +37,6 @@ below, and add more to your repertoire as needed.
 
 * **Next unread private message**: `p`
 
-* **All private messages**: `P`
-
 * **Search messages**: `/`
 
 * **Toggle keyboard shortcuts view**: `?`
