@@ -15,6 +15,9 @@ In most other cases, [renaming a topic](/help/rename-a-topic) is often a
 better idea, or just leaving the topic as is. Deleting a topic can confuse
 users who come to the topic later via an email notification.
 
+Note that deleting a topic also deletes every message with that topic,
+whereas [deleting a stream](/help/delete-a-stream) does not.
+
 ### Delete a topic
 
 {start_tabs}
@@ -28,3 +31,6 @@ users who come to the topic later via an email notification.
 1. Click **Delete messages**.
 
 {end_tabs}
+
+Note that deleting the last message with a particular topic also deletes
+that topic.
