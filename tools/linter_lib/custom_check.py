@@ -673,6 +673,10 @@ def build_custom_checkers(by_lang):
          ]),
          'description': "Now that we're a Python 3 only codebase, we don't need to use typing.Text. Please use str instead.",
          },
+        {'pattern': 'exit[(]1[)]',
+         'include_only': set(["/management/commands/"]),
+         'description': 'Raise CommandError to exit with failure in management commands',
+         },
     ]) + whitespace_rules + comma_whitespace_rule
     bash_rules = cast(RuleList, [
         {'pattern': '#!.*sh [-xe]',
