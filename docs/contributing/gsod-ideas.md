@@ -49,6 +49,15 @@ project today).
 
 ### Expectations for technical writers
 
+At minimum, you'll need native or near-native written fluency in English,
+and some public-facing writing you can show us.
+
+We also recommend reviewing
+[the official GSoD guide](https://developers.google.com/season-of-docs/docs/tech-writer-guide),
+and keeping your eye on
+[the GSoD timeline](https://developers.google.com/season-of-docs/docs/timeline). The
+application deadline is June 28, 2019.
+
 [Our guide for having a great summer with Zulip](../contributing/summer-with-zulip.html)
 is focused on what one should know once doing a GSoC project with
 Zulip; while it is written for the GSoC student audience, it should give
@@ -57,13 +66,6 @@ you a feel for how we interact with and mentor committed contributors.
 [What makes a great Zulip contributor](../overview/contributing.html#what-makes-a-great-zulip-contributor)
 also has some helpful information on what we look for during the application
 process.
-
-We also recommend reviewing
-[the official GSoD guide](https://developers.google.com/season-of-docs/docs/tech-writer-guide).
-
-Finally, keep your eye on
-[the GSoD timeline](https://developers.google.com/season-of-docs/docs/timeline). The
-application deadline is June 28, 2019.
 
 ## Getting started
 
@@ -105,8 +107,7 @@ abilities during the application process, through some combination of
 looking at your past work and collaborating with you on small
 preparatory projects for your summer.  For example, for working on our
 REST API docs, we'd love to see you contribute documentation for at
-least one endpoint as well as some thoughtful feedback or discussions
-on how we can improve the system.
+least one endpoint.
 
 Getting started earlier is better, so you have more time to learn
 about the organization, make contributions, and make a good proposal.
@@ -129,7 +130,7 @@ Your application should include the following:
   chat.zulip.org talking about Zulip's documentation are considered
   valuable contributions worth mentioning here.
 
-We expect applicants to be fluent in (technical) English writing.  For
+We expect applicants to have near-native fluency in English writing.  For
 some projects, a technical background is a plus,
 but not essential as long as we're confident you
 can learn.  General programming and/or sysadmin
@@ -141,11 +142,6 @@ We also expect applicants to be able to edit their work effectively,
 and communicate clearly about the reasoning behind their ideas (as
 well as which parts of their work they have concerns about and would
 appreciate extra attention on).
-
-While only one contribution is required to be considered for the
-program, we find that the strongest applicants make multiple
-contributions throughout the application process, including after the
-application deadline.
 
 We are more interested in candidates if we see them submitting good
 bug reports, helping other people on GitHub and on
