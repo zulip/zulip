@@ -21,6 +21,7 @@ from zerver.lib.actions import (
 )
 
 from confirmation.models import create_confirmation_link, Confirmation
+from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
@@ -184,6 +185,22 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_realm(user.realm)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
+
+    def test_do_change_realm_description_clears_cached_descriptions(self) -> None:
+        realm = get_realm('zulip')
+        rendered_description = get_realm_rendered_description(realm)
+        text_description = get_realm_text_description(realm)
+
+        realm.description = 'New Description'
+        realm.save(update_fields=['description'])
+
+        new_rendered_description = get_realm_rendered_description(realm)
+        self.assertNotEqual(rendered_description, new_rendered_description)
+        self.assertIn(realm.description, new_rendered_description)
+
+        new_text_description = get_realm_text_description(realm)
+        self.assertNotEqual(text_description, new_text_description)
+        self.assertEqual(realm.description, new_text_description)
 
     def test_do_deactivate_realm_on_deactivated_realm(self) -> None:
         """Ensure early exit is working in realm deactivation"""
