@@ -15,7 +15,7 @@ per-stream notification settings.
 
 {tab|curl}
 
-```
+``` curl
 curl -X POST {{ api_url }}/v1/users/me/subscriptions/properties \
      -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
      -d 'subscription_data=[{"stream_id": 1, \

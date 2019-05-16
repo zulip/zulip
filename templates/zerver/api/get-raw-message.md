@@ -18,7 +18,7 @@ UI).
 
 {tab|curl}
 
-```
+``` curl
 curl -X GET {{ api_url }}/v1/messages/<msg_id> \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
 ```

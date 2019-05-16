@@ -38,8 +38,8 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-```
-curl {{ api_url }}/v1/users \
+``` curl
+curl -X POST {{ api_url }}/v1/users \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "email=newbie@zulip.com" \
     -d "full_name=New User" \

@@ -89,6 +89,22 @@ class DocPageTest(ZulipTestCase):
             if not doc_html_str:
                 self.assert_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
 
+    @slow("Tests dozens of endpoints")
+    def test_api_doc_endpoints(self) -> None:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        api_docs_dir = os.path.join(current_dir, '..', '..', 'templates/zerver/api/')
+        files = os.listdir(api_docs_dir)
+
+        def _filter_func(fp: str) -> bool:
+            ignored_files = ['sidebar_index.md', 'index.md', 'missing.md']
+            return fp.endswith('.md') and fp not in ignored_files
+
+        files = list(filter(_filter_func, files))
+
+        for f in files:
+            endpoint = '/api/{}'.format(os.path.splitext(f)[0])
+            self._test(endpoint, '', doc_html_str=True)
+
     @slow("Tests dozens of endpoints, including generating lots of emails")
     def test_doc_endpoints(self) -> None:
         self._test('/api/', 'The Zulip API')

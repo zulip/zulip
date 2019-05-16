@@ -15,7 +15,7 @@ UI, and are not included in the user's unread count totals.
 
 {tab|curl}
 
-```
+``` curl
 curl -X PATCH {{ api_url }}/v1/users/me/subscriptions/muted_topics \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "stream=Verona"

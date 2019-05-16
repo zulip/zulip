@@ -1709,6 +1709,50 @@ class BugdownErrorTests(ZulipTestCase):
             with self.assertRaises(BugdownRenderingException):
                 bugdown_convert(msg)
 
+    def test_curl_code_block_validation(self) -> None:
+        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+        processor.run_content_validators = True
+
+        # Simulate code formatting.
+        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore # https://github.com/python/mypy/issues/708
+
+        markdown = [
+            '``` curl',
+            'curl {{ api_url }}/v1/register',
+            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY',
+            '    -d "queue_id=1375801870:2942"',
+            '```',
+        ]
+
+        with self.assertRaises(BugdownRenderingException):
+            processor.run(markdown)
+
+    def test_curl_code_block_without_validation(self) -> None:
+        processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
+
+        # Simulate code formatting.
+        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore # https://github.com/python/mypy/issues/708
+
+        markdown = [
+            '``` curl',
+            'curl {{ api_url }}/v1/register',
+            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY',
+            '    -d "queue_id=1375801870:2942"',
+            '```',
+        ]
+        expected = [
+            '',
+            '**curl:curl {{ api_url }}/v1/register',
+            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY',
+            '    -d "queue_id=1375801870:2942"**',
+            '',
+            ''
+        ]
+
+        result = processor.run(markdown)
+        self.assertEqual(result, expected)
 
 class BugdownAvatarTestCase(ZulipTestCase):
     def test_possible_avatar_emails(self) -> None:
