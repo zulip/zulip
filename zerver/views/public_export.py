@@ -25,14 +25,15 @@ def public_only_realm_export(request: HttpRequest, user: UserProfile) -> HttpRes
     if len(limit_check) >= time_delta_limit:
         return json_error(_('Exceeded rate limit.'))
 
-    RealmAuditLog.objects.create(realm=realm,
-                                 event_type=event_type,
-                                 event_time=event_time)
+    row = RealmAuditLog.objects.create(realm=realm,
+                                       event_type=event_type,
+                                       event_time=event_time)
     # Using the deferred_work queue processor to avoid
-    # killing the process after 60s.
+    # killing the process after 60s
     event = {'type': event_type,
              'time': event_time,
              'realm_id': realm.id,
-             'user_profile_id': user.id}
+             'user_profile_id': user.id,
+             'id': row.id}
     queue_json_publish('deferred_work', event)
     return json_success()

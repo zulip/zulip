@@ -43,7 +43,7 @@ from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
-from zerver.models import get_bot_services
+from zerver.models import get_bot_services, RealmAuditLog
 from zulip_bots.lib import extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 from zerver.lib.exceptions import RateLimited
@@ -619,6 +619,11 @@ class DeferredWorker(QueueProcessingWorker):
                                               threads=6, upload=True, public_only=True,
                                               delete_after_upload=True)
             assert public_url is not None
+
+            # TODO: This enables support for delete after access, and needs to be tested.
+            export_event = RealmAuditLog.objects.get(id=event['id'])
+            export_event.extra_data = public_url
+            export_event.save(update_fields=['extra_data'])
 
             # Send a private message notification letting the user who
             # triggered the export know the export finished.

@@ -32,6 +32,7 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(event['realm_id'], 1)
         self.assertEqual(event['user_profile_id'], 5)
         self.assertEqual(event['type'], 'realm_exported')
+        self.assertTrue(type(event['id']), int)
 
         with patch('zerver.lib.export.do_export_realm',
                    side_effect=FileNotFoundError) as mock_export:
@@ -57,6 +58,7 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(event['realm_id'], 1)
         self.assertEqual(event['user_profile_id'], 5)
         self.assertEqual(event['type'], 'realm_exported')
+        self.assertEqual(type(event['id']), int)
 
         with patch('zerver.lib.export.do_export_realm',
                    side_effect=FileNotFoundError) as mock_export:
