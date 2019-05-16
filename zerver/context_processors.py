@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 from typing import Any, Dict, Optional
 from django.http import HttpRequest
 from django.conf import settings
@@ -137,7 +139,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
 
     context['OPEN_GRAPH_URL'] = '%s%s' % (realm_uri, request.path)
     if realm is not None and realm.icon_source == realm.ICON_UPLOADED:
-        context['OPEN_GRAPH_IMAGE'] = '%s%s' % (realm_uri, realm_icon)
+        context['OPEN_GRAPH_IMAGE'] = urljoin(realm_uri, realm_icon)
 
     return context
 

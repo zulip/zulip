@@ -176,7 +176,21 @@ class OpenGraphTest(ZulipTestCase):
         decoded = response.content.decode('utf-8')
         bs = BeautifulSoup(decoded, features='lxml')
         open_graph_image = bs.select_one('meta[property="og:image"]').get('content')
-        self.assertTrue(open_graph_image.endswith(realm_icon))
+        self.assertEqual(open_graph_image, '%s%s' % (realm.uri, realm_icon))
+
+    def test_login_page_realm_icon_absolute_url(self) -> None:
+        realm = get_realm('zulip')
+        realm.icon_source = 'U'
+        realm.save(update_fields=['icon_source'])
+        icon_url = "https://foo.s3.amazonaws.com/%s/realm/icon.png?version=%s" % (realm.id, 1)
+        with patch('zerver.lib.realm_icon.upload_backend.get_realm_icon_url', return_value=icon_url):
+            response = self.client_get('/login/')
+        self.assertEqual(response.status_code, 200)
+
+        decoded = response.content.decode('utf-8')
+        bs = BeautifulSoup(decoded, features='lxml')
+        open_graph_image = bs.select_one('meta[property="og:image"]').get('content')
+        self.assertEqual(open_graph_image, icon_url)
 
     def test_no_realm_api_page_og_url(self) -> None:
         response = self.client_get('/api/', subdomain='')
