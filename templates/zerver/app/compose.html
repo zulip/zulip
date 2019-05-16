@@ -22,26 +22,23 @@
                     </button>
                 </span>
                 <span class="new_message_button">
-                    <button type="button" class="button small rounded compose_stream_button"
-                      id="left_bar_compose_stream_button_big"
-                      title="{{ _('New topic') }} (c)">
-                        <span class="compose_stream_button_label">{{ _('New topic') }}</span>
-                    </button>
-                </span>
-                {% if not embedded %}
-                <span class="new_message_button">
-                    <button type="button" class="button small rounded compose_private_button"
-                      id="left_bar_compose_private_button_big"
-                      title="{{ _('New private message') }} (x)">
-                        <span class="compose_private_button_label">{{ _('New private message') }}</span>
-                    </button>
-                </span>
-                {% endif %}
-                <span class="new_message_button">
-                    <button type="button" class="button small rounded compose_reply_button"
+                    <button type="button" class="button small rounded has-dropdown compose_reply_button"
                       id="left_bar_compose_reply_button_big"
                       title="{{ _('Reply') }} (r)">
                         <span class="compose_reply_button_label">{{ _('Reply') }}</span>
+                    </button><!-- we can't have a space character between these divs or they'll have a gap between
+                 --><button type="button" class="button small dropdown compose_dropdown_button">
+                        ▾
+                        <div class="menu button">
+                            <div class="menu-item compose_private_button" id="left_bar_compose_private_button_big" title="{{ _('New private message') }} (x)">
+                                <span class="compose_private_button_label">{{ _('New private message') }}</span>
+                                <div class="shortcut">x</div>
+                            </div>
+                            <div class="menu-item compose_stream_button" id="left_bar_compose_stream_button_big" title="{{ _('New topic') }} (c)">
+                                <span class="compose_stream_button_label">{{ _('New topic') }}</span>
+                                <div class="shortcut">c</div>
+                            </div>
+                        </div>
                     </button>
                 </span>
             </div>

@@ -504,6 +504,29 @@ exports.initialize = function () {
         compose_actions.respond_to_message({trigger: 'reply button'});
     });
 
+    $('.button.dropdown').click(function () {
+        var menu = $(this).find(".menu");
+        var dropdown_button = $(this);
+
+        var close_menu = function () {
+            menu.slideUp('fast');
+            dropdown_button.removeClass("menu-open");
+            $("body").off("click", close_menu);
+        };
+
+        var open_menu = function () {
+            menu.slideDown('fast');
+            dropdown_button.addClass("menu-open");
+            $("body").on("click", close_menu)
+        }
+
+        if (dropdown_button.hasClass("menu-open")) {
+            close_menu();
+        } else {
+            open_menu();
+        }
+    });
+
     $('.empty_feed_compose_stream').click(function (e) {
         compose_actions.start('stream', {trigger: 'empty feed message'});
         e.preventDefault();
