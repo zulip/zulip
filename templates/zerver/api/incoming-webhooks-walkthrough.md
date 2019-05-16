@@ -237,17 +237,19 @@ This is the GUI tool.
 
 1. Run `./tools/run-dev.py` then go to http://localhost:9991/devtools/integrations/.
 
-2. Set the following mandatory fields:
-- **Bot** - Any incoming webhook bot.
-- **Integration** - One of the integrations.
-- **Fixture** - Though not mandatory, it's recommended that you select one and then tweak it if necessary.
+2. Set the following mandatory fields:  
+**Bot** - Any incoming webhook bot.  
+**Integration** - One of the integrations.  
+**Fixture** - Though not mandatory, it's recommended that you select one and then tweak it if necessary.
 The remaining fields are optional, and the URL will automatically be generated.
 
 3. Click **Send**!
 
-By opening Zulip in one tab and this tool in another, you can quickly tweak
+By opening Zulip in one tab and then this tool in another, you can quickly tweak
 your code and send sample messages for many different test fixtures.
 
+Note: Custom HTTP Headers must be entered as a JSON dictionary, if you want to use any in the first place that is.
+Feel free to use 4-spaces as tabs for indentation if you'd like!
 
 Your sample notification may look like:
 

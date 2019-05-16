@@ -7,6 +7,11 @@
     padding: 10px;
 }
 
+#custom_http_headers {
+    height: 200px;
+    width: 700px;
+}
+
 #fixture_body {
     height: 500px;
     width: 700px;

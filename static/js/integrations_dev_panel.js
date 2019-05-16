@@ -17,6 +17,7 @@ var clear_handlers = {
     integration_name: function () { $('#integration_name').children()[0].selected = true; },
     fixture_name: function () { $('#fixture_name').empty(); },
     fixture_body: function () { $("#fixture_body")[0].value = ""; },
+    custom_http_headers: function () { $("#custom_http_headers")[0].value = ""; },
 };
 
 function clear_elements(elements) {
@@ -141,7 +142,7 @@ function get_fixtures(integration_name) {
     /* Request fixtures from the backend for any integrations that we don't already have fixtures
     for (which would be stored in the JS variable called "loaded_fixtures"). */
     if (integration_name === "") {
-        clear_elements(["fixture_body", "fixture_name", "URL", "message"]);
+        clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "URL", "message"]);
         return;
     }
 
@@ -190,9 +191,21 @@ function send_webhook_fixture_message() {
         return;
     }
 
+    var custom_headers = $("#custom_http_headers").val();
+    if (custom_headers !== "") {
+        // JSON.parse("") would trigger an error, as empty strings do not qualify as JSON.
+        try {
+            // Let JavaScript validate the JSON for us.
+            custom_headers = JSON.stringify(JSON.parse(custom_headers));
+        } catch (err) {
+            set_message("Custom HTTP headers are not in a valid JSON format.", "warning");
+            return;
+        }
+    }
+
     channel.post({
         url: "/devtools/integrations/check_send_webhook_fixture_message",
-        data: {url: url, body: body},
+        data: {url: url, body: body, custom_headers: custom_headers},
         beforeSend: function (xhr) {xhr.setRequestHeader('X-CSRFToken', csrftoken);},
         success: function () {
             // If the previous fixture body was sent successfully, then we should change the success
@@ -214,7 +227,7 @@ function send_webhook_fixture_message() {
 // Initialization
 $(function () {
     clear_elements(["stream_name", "topic_name", "URL", "bot_name", "integration_name",
-                    "fixture_name", "fixture_body", "message"]);
+                    "fixture_name", "custom_http_headers", "fixture_body", "message"]);
 
     var potential_default_bot = $("#bot_name")[0][1];
     if (potential_default_bot !== undefined) {
@@ -222,7 +235,7 @@ $(function () {
     }
 
     $('#integration_name').change(function () {
-        clear_elements(["fixture_body", "fixture_name", "message"]);
+        clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "message"]);
         var integration_name = $(this).children("option:selected").val();
         get_fixtures(integration_name);
         update_url();
