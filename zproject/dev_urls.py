@@ -54,6 +54,8 @@ urls = [
     url(r'^devtools/integrations/$', zerver.views.development.integrations.dev_panel),
     url(r'^devtools/integrations/check_send_webhook_fixture_message$',
         zerver.views.development.integrations.check_send_webhook_fixture_message),
+    url(r'^devtools/integrations/send_all_webhook_fixture_messages$',
+        zerver.views.development.integrations.send_all_webhook_fixture_messages),
     url(r'^devtools/integrations/(?P<integration_name>.+)/fixtures$',
         zerver.views.development.integrations.get_fixtures),
 ]

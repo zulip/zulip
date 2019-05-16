@@ -62,6 +62,21 @@ function get_selected_integration_name() {
     return $("#integration_name").children("option:selected").val();
 }
 
+function get_custom_http_headers() {
+    var custom_headers = $("#custom_http_headers").val();
+    if (custom_headers !== "") {
+        // JSON.parse("") would trigger an error, as empty strings do not qualify as JSON.
+        try {
+            // Let JavaScript validate the JSON for us.
+            custom_headers = JSON.stringify(JSON.parse(custom_headers));
+        } catch (err) {
+            set_message("Custom HTTP headers are not in a valid JSON format.", "warning");
+            return;
+        }
+    }
+    return custom_headers;
+}
+
 function load_fixture_body(fixture_name) {
     /* Given a fixture name, use the loaded_fixtures dictionary to set the fixture body field. */
     var integration_name = get_selected_integration_name();
@@ -191,17 +206,7 @@ function send_webhook_fixture_message() {
         return;
     }
 
-    var custom_headers = $("#custom_http_headers").val();
-    if (custom_headers !== "") {
-        // JSON.parse("") would trigger an error, as empty strings do not qualify as JSON.
-        try {
-            // Let JavaScript validate the JSON for us.
-            custom_headers = JSON.stringify(JSON.parse(custom_headers));
-        } catch (err) {
-            set_message("Custom HTTP headers are not in a valid JSON format.", "warning");
-            return;
-        }
-    }
+    var custom_headers = get_custom_http_headers();
 
     channel.post({
         url: "/devtools/integrations/check_send_webhook_fixture_message",
@@ -217,6 +222,40 @@ function send_webhook_fixture_message() {
                 set_message("Success!", "success");
             }
             return;
+        },
+        error: handle_unsuccessful_response,
+    });
+
+    return;
+}
+
+function send_all_fixture_messages() {
+    /* Send all fixture messages for a given integration. */
+    var url = $("#URL").val();
+    var integration = get_selected_integration_name();
+    if (integration === "") {
+        set_message("You have to select an integration first.");
+        return;
+    }
+
+    var custom_headers = get_custom_http_headers();
+
+    var csrftoken = $("#csrftoken").val();
+    channel.post({
+        url: "/devtools/integrations/send_all_webhook_fixture_messages",
+        data: {url: url, custom_headers: custom_headers, integration_name: integration},
+        beforeSend: function (xhr) {xhr.setRequestHeader('X-CSRFToken', csrftoken);},
+        success: function (response) {
+            var responses = response.responses;
+            // This following bit of code is not efficient and might need to be optimized.
+            // Since this is a devtool and the number of test fixtures for any given
+            // integration is pretty low, optimization here is not a high priority task.
+            var data = "Results:\n\n";
+            responses.forEach(function (response) {
+                data += "Fixture:            " + response.fixture_name + "\nStatus Code:    ";
+                data += response.status_code + "\nResponse:       " + response.message + "\n\n";
+            });
+            $("#fixture_body")[0].value = data;
         },
         error: handle_unsuccessful_response,
     });
@@ -254,6 +293,11 @@ $(function () {
 
     $('#send_fixture_button').click(function () {
         send_webhook_fixture_message();
+        return;
+    });
+
+    $('#send_all_fixtures_button').click(function () {
+        send_all_fixture_messages();
         return;
     });
 
