@@ -17,8 +17,8 @@ in a Zulip production server.
 {start_tabs}
 {tab|curl}
 
-```
-curl {{ api_url }}/v1/dev_fetch_api_key \
+``` curl
+curl -X POST {{ api_url }}/v1/dev_fetch_api_key \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "username=iago@zulip.com"
 ```

@@ -124,6 +124,7 @@ class MarkdownDirectoryView(ApiURLView):
         # An "article" might require the api_uri_context to be rendered
         api_uri_context = {}  # type: Dict[str, Any]
         add_api_uri_context(api_uri_context, self.request)
+        api_uri_context["run_content_validators"] = True
         context["api_uri_context"] = api_uri_context
         return context
 

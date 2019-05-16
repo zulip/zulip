@@ -44,7 +44,7 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-```
+``` curl
 curl -X POST {{ api_url }}/v1/messages/flags \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "messages=[4,8,15]" \

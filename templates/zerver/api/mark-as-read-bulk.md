@@ -13,7 +13,7 @@ Marks all of the current user's unread messages as read.
 
 {tab|curl}
 
-```
+``` curl
 curl -X POST {{ api_url }}/v1/mark_all_as_read \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
@@ -48,7 +48,7 @@ Mark all the unread messages in a stream as read.
 
 {tab|curl}
 
-```
+``` curl
 curl -X POST {{ api_url }}/v1/mark_stream_as_read \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "stream_id=42"
@@ -84,7 +84,7 @@ Mark all the unread messages in a topic as read.
 
 {tab|curl}
 
-```
+``` curl
 curl -X POST {{ api_url }}/v1/mark_topic_as_read \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "stream_id=42" \

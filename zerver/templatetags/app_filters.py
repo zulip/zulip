@@ -103,7 +103,9 @@ def render_markdown_path(markdown_file_path: str,
                 linenums=False,
                 guess_lang=False
             ),
-            zerver.lib.bugdown.fenced_code.makeExtension(),
+            zerver.lib.bugdown.fenced_code.makeExtension(
+                run_content_validators=context.get('run_content_validators', False)
+            ),
             zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),
             zerver.lib.bugdown.api_code_examples.makeExtension(),

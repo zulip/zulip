@@ -80,8 +80,9 @@ import re
 import markdown
 from django.utils.html import escape
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+from zerver.lib.exceptions import BugdownRenderingException
 from zerver.lib.tex import render_tex
-from typing import Any, Dict, Iterable, List, MutableSequence
+from typing import Any, Dict, Iterable, List, MutableSequence, Optional
 
 # Global vars
 FENCE_RE = re.compile("""
@@ -107,12 +108,44 @@ FENCE_RE = re.compile("""
 CODE_WRAP = '<pre><code%s>%s\n</code></pre>'
 LANG_TAG = ' class="%s"'
 
+def validate_curl_content(lines: List[str]) -> None:
+    error_msg = """
+Missing required -X argument in curl command:
+
+{command}
+""".strip()
+
+    for line in lines:
+        regex = r'curl [-]X "?(GET|DELETE|PATCH|POST)"?'
+        if line.startswith('curl'):
+            if re.search(regex, line) is None:
+                raise BugdownRenderingException(error_msg.format(command=line.strip()))
+
+
+CODE_VALIDATORS = {
+    'curl': validate_curl_content,
+}
+
 class FencedCodeExtension(markdown.Extension):
+    def __init__(self, config: Optional[Dict[str, Any]]=None) -> None:
+        if config is None:
+            config = {}
+        self.config = {
+            'run_content_validators': [
+                config.get('run_content_validators', False),
+                'Boolean specifying whether to run content validation code in CodeHandler'
+            ]
+        }
+
+        for key, value in config.items():
+            self.setConfig(key, value)
 
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         """ Add FencedBlockPreprocessor to the Markdown instance. """
         md.registerExtension(self)
-        md.preprocessors.register(FencedBlockPreprocessor(md), 'fenced_code_block', 25)
+        processor = FencedBlockPreprocessor(
+            md, run_content_validators=self.config['run_content_validators'][0])
+        md.preprocessors.register(processor, 'fenced_code_block', 25)
 
 
 class BaseHandler:
@@ -122,42 +155,51 @@ class BaseHandler:
     def done(self) -> None:
         raise NotImplementedError()
 
-def generic_handler(processor: Any, output: MutableSequence[str], fence: str, lang: str) -> BaseHandler:
+def generic_handler(processor: Any, output: MutableSequence[str],
+                    fence: str, lang: str,
+                    run_content_validators: Optional[bool]=False) -> BaseHandler:
     if lang in ('quote', 'quoted'):
         return QuoteHandler(processor, output, fence)
     elif lang in ('math', 'tex', 'latex'):
         return TexHandler(processor, output, fence)
     else:
-        return CodeHandler(processor, output, fence, lang)
+        return CodeHandler(processor, output, fence, lang, run_content_validators)
 
-def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str) -> None:
+def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str,
+                        run_content_validators: Optional[bool]=False) -> None:
     m = FENCE_RE.match(line)
     if m:
         fence = m.group('fence')
         lang = m.group('lang')
-        handler = generic_handler(processor, output, fence, lang)
+
+        handler = generic_handler(processor, output, fence, lang, run_content_validators)
         processor.push(handler)
     else:
         output.append(line)
 
 class OuterHandler(BaseHandler):
-    def __init__(self, processor: Any, output: MutableSequence[str]) -> None:
+    def __init__(self, processor: Any, output: MutableSequence[str],
+                 run_content_validators: Optional[bool]=False) -> None:
         self.output = output
         self.processor = processor
+        self.run_content_validators = run_content_validators
 
     def handle_line(self, line: str) -> None:
-        check_for_new_fence(self.processor, self.output, line)
+        check_for_new_fence(self.processor, self.output, line,
+                            self.run_content_validators)
 
     def done(self) -> None:
         self.processor.pop()
 
 class CodeHandler(BaseHandler):
-    def __init__(self, processor: Any, output: MutableSequence[str], fence: str, lang: str) -> None:
+    def __init__(self, processor: Any, output: MutableSequence[str],
+                 fence: str, lang: str, run_content_validators: Optional[bool]=False) -> None:
         self.processor = processor
         self.output = output
         self.fence = fence
         self.lang = lang
         self.lines = []  # type: List[str]
+        self.run_content_validators = run_content_validators
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -167,6 +209,12 @@ class CodeHandler(BaseHandler):
 
     def done(self) -> None:
         text = '\n'.join(self.lines)
+
+        # run content validators (if any)
+        if self.run_content_validators:
+            validator = CODE_VALIDATORS.get(self.lang, lambda text: None)
+            validator(self.lines)
+
         text = self.processor.format_code(self.lang, text)
         text = self.processor.placeholder(text)
         processed_lines = text.split('\n')
@@ -222,10 +270,11 @@ class TexHandler(BaseHandler):
 
 
 class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
-    def __init__(self, md: markdown.Markdown) -> None:
+    def __init__(self, md: markdown.Markdown, run_content_validators: Optional[bool]=False) -> None:
         markdown.preprocessors.Preprocessor.__init__(self, md)
 
         self.checked_for_codehilite = False
+        self.run_content_validators = run_content_validators
         self.codehilite_conf = {}  # type: Dict[str, List[Any]]
 
     def push(self, handler: BaseHandler) -> None:
@@ -242,7 +291,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         processor = self
         self.handlers = []  # type: List[BaseHandler]
 
-        handler = OuterHandler(processor, output)
+        handler = OuterHandler(processor, output, self.run_content_validators)
         self.push(handler)
 
         for line in lines:
@@ -324,7 +373,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
 
 def makeExtension(*args: Any, **kwargs: None) -> FencedCodeExtension:
-    return FencedCodeExtension(*args, **kwargs)
+    return FencedCodeExtension(kwargs)
 
 if __name__ == "__main__":
     import doctest

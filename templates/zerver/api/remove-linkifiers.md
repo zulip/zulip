@@ -15,7 +15,7 @@ in messages and topics.
 
 {tab|curl}
 
-```
+``` curl
 curl -X DELETE {{ api_url }}/v1/realm/filters/<filter_id> \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```

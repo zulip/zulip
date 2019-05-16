@@ -15,7 +15,7 @@ appear in messages and topics.
 
 {tab|curl}
 
-```
+``` curl
 curl -X POST {{ api_url }}/v1/realm/filters \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "pattern=#(?P<id>[0-9]+)" \

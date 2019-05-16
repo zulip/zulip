@@ -33,13 +33,13 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-```
+``` curl
 curl -X GET {{ api_url }}/v1/users -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
 
 You may pass the `client_gravatar` query parameter as follows:
 
-```
+``` curl
 curl -X GET {{ api_url }}/v1/users?client_gravatar=true \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
