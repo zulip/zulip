@@ -26,9 +26,9 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
     context = {"integrations": integrations, "bots": bots}
     return render(request, "zerver/integrations/development/dev_panel.html", context)
 
-
 def send_webhook_fixture_message(url: str=REQ(),
                                  body: str=REQ(),
+                                 is_json: bool=REQ(),
                                  custom_headers: str=REQ()) -> HttpResponse:
     client = Client()
     realm = get_realm("zulip")
@@ -39,9 +39,11 @@ def send_webhook_fixture_message(url: str=REQ(),
     if not headers:
         headers = {}
     http_host = headers.pop("HTTP_HOST", realm.host)
-    content_type = headers.pop("HTTP_CONTENT_TYPE", "application/json")
+    if is_json:
+        content_type = headers.pop("HTTP_CONTENT_TYPE", "application/json")
+    else:
+        content_type = headers.pop("HTTP_CONTENT_TYPE", "text/plain")
     return client.post(url, body, content_type=content_type, HTTP_HOST=http_host, **headers)
-
 
 @has_request_variables
 def get_fixtures(request: HttpResponse,
@@ -61,13 +63,12 @@ def get_fixtures(request: HttpResponse,
 
     for fixture in os.listdir(fixtures_dir):
         fixture_path = os.path.join(fixtures_dir, fixture)
+        content = open(fixture_path).read()
         try:
-            json_data = ujson.loads(open(fixture_path).read())
+            content = ujson.loads(content)
         except ValueError:
-            msg = ("The integration \"{integration_name}\" has non-JSON fixtures.").format(
-                integration_name=integration_name)
-            return json_error(msg)
-        fixtures[fixture] = json_data
+            pass  # The file extension will be used to determine the type.
+        fixtures[fixture] = content
 
     return json_success({"fixtures": fixtures})
 
@@ -76,8 +77,9 @@ def get_fixtures(request: HttpResponse,
 def check_send_webhook_fixture_message(request: HttpRequest,
                                        url: str=REQ(),
                                        body: str=REQ(),
+                                       is_json: bool=REQ(),
                                        custom_headers: str=REQ()) -> HttpResponse:
-    response = send_webhook_fixture_message(url, body, custom_headers)
+    response = send_webhook_fixture_message(url, body, is_json, custom_headers)
     if response.status_code == 200:
         return json_success()
     else:
@@ -99,14 +101,13 @@ def send_all_webhook_fixture_messages(request: HttpRequest,
     responses = []
     for fixture in os.listdir(fixtures_dir):
         fixture_path = os.path.join(fixtures_dir, fixture)
-        try:
-            # Just a quick check to make sure that the fixtures are of a valid JSON format.
-            json_data = ujson.dumps(ujson.loads(open(fixture_path).read()))
-        except ValueError:
-            msg = ("The integration \"{integration_name}\" has non-JSON fixtures.").format(
-                integration_name=integration_name)
-            return json_error(msg)
-        response = send_webhook_fixture_message(url, json_data, custom_headers)
+        content = open(fixture_path).read()
+        fixture_format = fixture.split(".")[-1]
+        if fixture_format == "json":
+            is_json = True
+        else:
+            is_json = False
+        response = send_webhook_fixture_message(url, content, is_json, custom_headers)
         responses.append({"status_code": response.status_code,
                           "fixture_name": fixture,
                           "message": response.content})
