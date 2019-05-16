@@ -62,6 +62,7 @@ def do_upgrade(requirement_file: str, locked_requirement_files: List[str]) -> No
         pkg_name = package["name"]
         version = package["version"]
         latest_version = package["latest_version"]
+        log_file = "{}/{}".format(log_dir, pkg_name)
 
         if pkg_name in unupgradable_packages:
             continue
@@ -76,22 +77,28 @@ def do_upgrade(requirement_file: str, locked_requirement_files: List[str]) -> No
         file_path = "requirements/{}".format(requirement_file)
         subprocess.check_call(["sed", "-i", sed_string, file_path])
 
-        diff = subprocess.check_output(["git", "diff", file_path])
-        if diff:
-            files_updated = True
+        files_updated = subprocess.check_output(["git", "diff", file_path])
 
-        if files_updated:
-            try:
-                print("Trying to upgrade {}".format(pkg_name))
-                prepare_for_commit()
-                commit_msg = "requirements: Upgrade {} from {} to {}.".format(pkg_name, version,
-                                                                              latest_version)
-                commit_and_push(commit_msg)
-            except subprocess.CalledProcessError as e:
-                print("{} upgrade failed".format(pkg_name))
-                log_file = "{}/{}".format(log_dir, pkg_name)
-                with open(log_file, "w") as f:
-                    f.write(e.output.decode("utf-8"))
+        if not files_updated:
+            continue
+
+        if pkg_name == "stripe":
+            with open(log_file, "w") as f:
+                url = ("https://zulip.readthedocs.io/en/stable/subsystems/billing.html"
+                       "#upgrading-stripe-api-versions")
+                f.write("Stripe upgrade available. Upgrade manually. Make sure to update fixtures as well.")
+                f.write(url)
+            continue
+
+        try:
+            print("Trying to upgrade {}".format(pkg_name))
+            prepare_for_commit()
+            commit_msg = "requirements: Upgrade {} from {} to {}.".format(pkg_name, version, latest_version)
+            commit_and_push(commit_msg)
+        except subprocess.CalledProcessError as e:
+            print("{} upgrade failed".format(pkg_name))
+            with open(log_file, "w") as f:
+                f.write(e.output.decode("utf-8"))
 
 do_upgrade("common.in", ["dev.txt", "prod.txt"])
 do_upgrade("dev.in", [])
