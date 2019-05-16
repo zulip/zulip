@@ -375,47 +375,47 @@ def delete_display_recipient_cache(user_profile: 'UserProfile') -> None:
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
     cache_delete_many(keys)
 
+def changed(kwargs: Any, fields: List[str]) -> bool:
+    if kwargs.get('update_fields') is None:
+        # adds/deletes should invalidate the cache
+        return True
+
+    update_fields = set(kwargs['update_fields'])
+    for f in fields:
+        if f in update_fields:
+            return True
+
+    return False
+
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
 def flush_user_profile(sender: Any, **kwargs: Any) -> None:
     user_profile = kwargs['instance']
     delete_user_profile_caches([user_profile])
 
-    def changed(fields: List[str]) -> bool:
-        if kwargs.get('update_fields') is None:
-            # adds/deletes should invalidate the cache
-            return True
-
-        update_fields = set(kwargs['update_fields'])
-        for f in fields:
-            if f in update_fields:
-                return True
-
-        return False
-
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
-    if changed(realm_user_dict_fields):
+    if changed(kwargs, realm_user_dict_fields):
         cache_delete(realm_user_dicts_cache_key(user_profile.realm_id))
 
-    if changed(['is_active']):
+    if changed(kwargs, ['is_active']):
         cache_delete(active_user_ids_cache_key(user_profile.realm_id))
         cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
-    if changed(['is_guest']):
+    if changed(kwargs, ['is_guest']):
         cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
-    if changed(['email', 'full_name', 'short_name', 'id', 'is_mirror_dummy']):
+    if changed(kwargs, ['email', 'full_name', 'short_name', 'id', 'is_mirror_dummy']):
         delete_display_recipient_cache(user_profile)
 
     # Invalidate our bots_in_realm info dict if any bot has
     # changed the fields in the dict or become (in)active
-    if user_profile.is_bot and changed(bot_dict_fields):
+    if user_profile.is_bot and changed(kwargs, bot_dict_fields):
         cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm))
 
     # Invalidate realm-wide alert words cache if any user in the realm has changed
     # alert words
-    if changed(['alert_words']):
+    if changed(kwargs, ['alert_words']):
         cache_delete(realm_alert_words_cache_key(user_profile.realm))
         cache_delete(realm_alert_words_automaton_cache_key(user_profile.realm))
 
@@ -435,6 +435,10 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(realm_alert_words_cache_key(realm))
         cache_delete(realm_alert_words_automaton_cache_key(realm))
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
+        cache_delete(realm_rendered_description_cache_key(realm))
+        cache_delete(realm_text_description_cache_key(realm))
+
+    if changed(kwargs, ['description']):
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
 
