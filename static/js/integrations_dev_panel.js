@@ -125,7 +125,6 @@ function update_url() {
 
 // API Callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response) {
-    clear_elements(["fixture_body", "fixture_name", "integration_name", "URL"]);
     try {
         var status_code = response.statusCode().status;
         response = JSON.parse(response.responseText);
