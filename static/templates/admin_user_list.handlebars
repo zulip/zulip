@@ -2,6 +2,7 @@
 <tr class="user_row{{#unless is_active}} deactivated_user{{/unless}}" data-user-id="{{user_id}}" data-email="{{email}}">
     <td>
         <span class="user_name">{{full_name}}</span>
+        <i class="fa fa-ban deactivated-user-icon" title="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i>
     </td>
     <td>
         {{#if ../can_modify}}

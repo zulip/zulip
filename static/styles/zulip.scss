@@ -2931,9 +2931,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-right: 25px;
 }
 
-.deactivated_user .user_name,
-.deactivated_user .email {
-    text-decoration: line-through;
+.deactivated_user .deactivated-user-icon {
+    color: inherit;
+    margin-left: 2px;
+    font-size: .9em;
 }
 
 .no-drag {

@@ -16,25 +16,36 @@ function get_user_info_row(user_id) {
 
 function update_view_on_deactivate(row) {
     var button = row.find("button.deactivate");
+    var user_role = row.find(".user_role");
     button.prop("disabled", false);
     row.find('button.open-user-form').hide();
-    button.addClass("btn-warning");
-    button.removeClass("btn-danger");
-    button.addClass("reactivate");
-    button.removeClass("deactivate");
+    row.find('i.deactivated-user-icon').show();
+    button.addClass("btn-warning reactivate");
+    button.removeClass("deactivate btn-danger");
     button.text(i18n.t("Reactivate"));
     row.addClass("deactivated_user");
+
+    if (user_role) {
+        var user_id = row.data('user-id');
+        user_role.text("%state (%role)".replace("%state", i18n.t("Deactivated")).
+            replace("%role", people.get_user_type(user_id)));
+    }
 }
 
 function update_view_on_reactivate(row) {
     var button = row.find("button.reactivate");
+    var user_role = row.find(".user_role");
     row.find("button.open-user-form").show();
-    button.addClass("btn-danger");
-    button.removeClass("btn-warning");
-    button.addClass("deactivate");
-    button.removeClass("reactivate");
+    row.find('i.deactivated-user-icon').hide();
+    button.addClass("btn-danger deactivate");
+    button.removeClass("btn-warning reactivate");
     button.text(i18n.t("Deactivate"));
     row.removeClass("deactivated_user");
+
+    if (user_role) {
+        var user_id = row.data('user-id');
+        user_role.text(people.get_user_type(user_id));
+    }
 }
 
 function get_status_field() {
