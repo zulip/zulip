@@ -27,6 +27,22 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
     return render(request, "zerver/integrations/development/dev_panel.html", context)
 
 
+def send_webhook_fixture_message(url: str=REQ(),
+                                 body: str=REQ(),
+                                 custom_headers: str=REQ()) -> HttpResponse:
+    client = Client()
+    realm = get_realm("zulip")
+    try:
+        headers = parse_headers(custom_headers)
+    except ValueError as ve:
+        return json_error("Custom HTTP headers are not in a valid JSON format. {}".format(ve))  # nolint
+    if not headers:
+        headers = {}
+    http_host = headers.pop("HTTP_HOST", realm.host)
+    content_type = headers.pop("HTTP_CONTENT_TYPE", "application/json")
+    return client.post(url, body, content_type=content_type, HTTP_HOST=http_host, **headers)
+
+
 @has_request_variables
 def get_fixtures(request: HttpResponse,
                  integration_name: str=REQ()) -> HttpResponse:
@@ -61,18 +77,37 @@ def check_send_webhook_fixture_message(request: HttpRequest,
                                        url: str=REQ(),
                                        body: str=REQ(),
                                        custom_headers: str=REQ()) -> HttpResponse:
-    client = Client()
-    realm = get_realm("zulip")
-    try:
-        headers = parse_headers(custom_headers)
-    except ValueError as ve:
-        return json_error("Custom HTTP headers are not in a valid JSON format. {}".format(ve))  # nolint
-    if not headers:
-        headers = {}
-    http_host = headers.pop("HTTP_HOST", realm.host)
-    content_type = headers.pop("HTTP_CONTENT_TYPE", "application/json")
-    response = client.post(url, body, content_type=content_type, HTTP_HOST=http_host, **headers)
+    response = send_webhook_fixture_message(url, body, custom_headers)
     if response.status_code == 200:
         return json_success()
     else:
         return response
+
+
+@has_request_variables
+def send_all_webhook_fixture_messages(request: HttpRequest,
+                                      url: str=REQ(),
+                                      custom_headers: str=REQ(),
+                                      integration_name: str=REQ()) -> HttpResponse:
+    fixtures_dir = os.path.join(ZULIP_PATH, "zerver/webhooks/{integration_name}/fixtures".format(
+        integration_name=integration_name))
+    if not os.path.exists(fixtures_dir):
+        msg = ("The integration \"{integration_name}\" does not have fixtures.").format(
+            integration_name=integration_name)
+        return json_error(msg, status=404)
+
+    responses = []
+    for fixture in os.listdir(fixtures_dir):
+        fixture_path = os.path.join(fixtures_dir, fixture)
+        try:
+            # Just a quick check to make sure that the fixtures are of a valid JSON format.
+            json_data = ujson.dumps(ujson.loads(open(fixture_path).read()))
+        except ValueError:
+            msg = ("The integration \"{integration_name}\" has non-JSON fixtures.").format(
+                integration_name=integration_name)
+            return json_error(msg)
+        response = send_webhook_fixture_message(url, json_data, custom_headers)
+        responses.append({"status_code": response.status_code,
+                          "fixture_name": fixture,
+                          "message": response.content})
+    return json_success({"responses": responses})
