@@ -436,6 +436,7 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(realm_alert_words_automaton_cache_key(realm))
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
         cache_delete(realm_rendered_description_cache_key(realm))
+        cache_delete(realm_text_description_cache_key(realm))
 
 def realm_alert_words_cache_key(realm: 'Realm') -> str:
     return "realm_alert_words:%s" % (realm.string_id,)
