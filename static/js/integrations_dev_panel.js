@@ -62,6 +62,11 @@ function get_selected_integration_name() {
     return $("#integration_name").children("option:selected").val();
 }
 
+function get_fixture_format(fixture_name) {
+    var pieces = fixture_name.split(".");
+    return pieces[pieces.length - 1];
+}
+
 function get_custom_http_headers() {
     var custom_headers = $("#custom_http_headers").val();
     if (custom_headers !== "") {
@@ -80,12 +85,13 @@ function get_custom_http_headers() {
 function load_fixture_body(fixture_name) {
     /* Given a fixture name, use the loaded_fixtures dictionary to set the fixture body field. */
     var integration_name = get_selected_integration_name();
-    var element = loaded_fixtures[integration_name][fixture_name];
-    var fixture_body = JSON.stringify(element, null, 4); // 4 is for the pretty print indent factor.
-
+    var fixture_body = loaded_fixtures[integration_name][fixture_name];
     if (fixture_body === undefined) {
         set_message("Fixture does not have a body.", "warning");
         return;
+    }
+    if (get_fixture_format(fixture_name) === "json") {
+        fixture_body = JSON.stringify(fixture_body, null, 4);// 4 is for pretty print .
     }
     $("#fixture_body")[0].value = fixture_body;
 
@@ -166,7 +172,7 @@ function get_fixtures(integration_name) {
         return;
     }
 
-    // We don't have the fixutures for this integration; fetch them using Zulip's channel library.
+    // We don't have the fixtures for this integration; fetch them using Zulip's channel library.
     // Relative url pattern: /devtools/integrations/(?P<integration_name>.+)/fixtures
     channel.get({
         url: "/devtools/integrations/" + integration_name + "/fixtures",
@@ -198,19 +204,24 @@ function send_webhook_fixture_message() {
     }
 
     var body = $("#fixture_body").val();
-    try {
-        // Let JavaScript validate the JSON for us.
-        body = JSON.stringify(JSON.parse(body));
-    } catch (err) {
-        set_message("Invalid JSON in fixture body.", "warning");
-        return;
+    var fixture_name = $("#fixture_name").val();
+    var is_json = false;
+    if (fixture_name && get_fixture_format(fixture_name) === "json") {
+        try {
+            // Let JavaScript validate the JSON for us.
+            body = JSON.stringify(JSON.parse(body));
+            is_json = true;
+        } catch (err) {
+            set_message("Invalid JSON in fixture body.", "warning");
+            return;
+        }
     }
 
     var custom_headers = get_custom_http_headers();
 
     channel.post({
         url: "/devtools/integrations/check_send_webhook_fixture_message",
-        data: {url: url, body: body, custom_headers: custom_headers},
+        data: {url: url, body: body, custom_headers: custom_headers, is_json: is_json},
         beforeSend: function (xhr) {xhr.setRequestHeader('X-CSRFToken', csrftoken);},
         success: function () {
             // If the previous fixture body was sent successfully, then we should change the success
