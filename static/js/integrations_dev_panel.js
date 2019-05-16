@@ -229,6 +229,9 @@ $(function () {
     clear_elements(["stream_name", "topic_name", "URL", "bot_name", "integration_name",
                     "fixture_name", "custom_http_headers", "fixture_body", "message"]);
 
+    $("#stream_name")[0].value = "Denmark";
+    $("#topic_name")[0].value = "Integrations Testing";
+
     var potential_default_bot = $("#bot_name")[0][1];
     if (potential_default_bot !== undefined) {
         potential_default_bot.selected = true;
