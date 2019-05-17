@@ -5,7 +5,7 @@
 <meta name="robots" content="noindex,nofollow">
 {% endif %}
 
-<!-- Open Graph / Facebook Meta Tags -->
+<!-- Open Graph / Facebook / Twitter Meta Tags -->
 <meta property="og:url" content="{{ OPEN_GRAPH_URL }}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Zulip">
@@ -21,19 +21,4 @@
 {% else %}
 <meta property="og:image" content="{{ realm_uri }}/static/images/logo/zulip-icon-128x128.png">
 {% endif %}
-
-
-<!-- Twitter Meta Tags -->
 <meta name="twitter:card" content="summary">
-{% if OPEN_GRAPH_TITLE %}
-<meta property="twitter:title" content="{{ OPEN_GRAPH_TITLE }}">
-<meta name="twitter:description" content="{{ OPEN_GRAPH_DESCRIPTION }}">
-{% else %}
-<meta property="twitter:title" content="The world's most productive team chat">
-<meta name="twitter:description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones.">
-{% endif %}
-{% if OPEN_GRAPH_IMAGE %}
-<meta name="twitter:image" content="{{ OPEN_GRAPH_IMAGE }}">
-{% else %}
-<meta name="twitter:image" content="{{ realm_uri }}/static/images/logo/zulip-icon-128x128.png">
-{% endif %}

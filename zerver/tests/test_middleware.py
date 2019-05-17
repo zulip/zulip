@@ -64,17 +64,12 @@ class OpenGraphTest(ZulipTestCase):
         bs = BeautifulSoup(decoded, features='lxml')
         open_graph_title = bs.select_one('meta[property="og:title"]').get('content')
         self.assertEqual(open_graph_title, title)
-        twitter_title = bs.select_one('meta[property="twitter:title"]').get('content')
-        self.assertEqual(twitter_title, title)
 
         open_graph_description = bs.select_one('meta[property="og:description"]').get('content')
-        twitter_description = bs.select_one('meta[name="twitter:description"]').get('content')
         for substring in in_description:
             self.assertIn(substring, open_graph_description)
-            self.assertIn(substring, twitter_description)
         for substring in not_in_description:
             self.assertNotIn(substring, open_graph_description)
-            self.assertNotIn(substring, twitter_description)
 
     def test_admonition_and_link(self) -> None:
         # disable-message-edit-history starts with an {!admin-only.md!}, and has a link
@@ -181,9 +176,7 @@ class OpenGraphTest(ZulipTestCase):
         decoded = response.content.decode('utf-8')
         bs = BeautifulSoup(decoded, features='lxml')
         open_graph_image = bs.select_one('meta[property="og:image"]').get('content')
-        twitter_image = bs.select_one('meta[name="twitter:image"]').get('content')
         self.assertTrue(open_graph_image.endswith(realm_icon))
-        self.assertTrue(twitter_image.endswith(realm_icon))
 
     def test_no_realm_api_page_og_url(self) -> None:
         response = self.client_get('/api/', subdomain='')
