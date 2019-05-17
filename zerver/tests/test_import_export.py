@@ -478,7 +478,7 @@ class ImportExportTest(ZulipTestCase):
                                                              self.example_email("othello")])
         huddle_b = Huddle.objects.last()
 
-        huddle_b_message_id = self.send_huddle_message(
+        huddle_c_message_id = self.send_huddle_message(
             self.example_email("AARON"), [self.example_email("cordelia"),
                                           self.example_email("ZOE"),
                                           self.example_email("othello")])
@@ -561,7 +561,7 @@ class ImportExportTest(ZulipTestCase):
             | set(exported_pm_ids) | set(exported_huddle_ids)
         self.assertEqual(get_set("zerver_message", "id"), exported_msg_ids)
         self.assertNotIn(stream_c_message_id, exported_msg_ids)
-        self.assertNotIn(huddle_b_message_id, exported_msg_ids)
+        self.assertNotIn(huddle_c_message_id, exported_msg_ids)
 
     def test_export_single_user(self) -> None:
         output_dir = self._make_output_dir()
