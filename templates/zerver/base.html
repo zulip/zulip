@@ -13,7 +13,9 @@
             {% endif %}
         {% endblock %}
         <link href="/static/favicon.ico?v=2" rel="shortcut icon">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        {% block meta_viewport %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% endblock %}
         {% if not user_profile %}
         {% include 'zerver/meta_tags.html' %}
         {% endif %}
