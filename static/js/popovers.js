@@ -276,7 +276,6 @@ exports.show_user_profile = function (user) {
     };
 
     $("#user-profile-modal-holder").html(templates.render("user_profile_modal", args));
-    ui.set_up_scrollbar($("#user-profile-modal #body"));
     $("#user-profile-modal").modal("show");
 
     settings_account.initialize_custom_user_type_fields("#user-profile-modal #content", user.user_id, false, false);
@@ -355,7 +354,6 @@ function show_user_group_info_popover(element, group, message) {
             trigger: "manual",
         });
         elt.popover("show");
-        ui.set_up_scrollbar($('.group-info-popover .member-list'));
         current_message_info_popover_elem = elt;
     }
 }

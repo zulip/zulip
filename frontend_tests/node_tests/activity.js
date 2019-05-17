@@ -19,7 +19,6 @@ const _document = {
 const _channel = {};
 
 const _ui = {
-    set_up_scrollbar: function () {},
     get_content_element: element => element,
 };
 

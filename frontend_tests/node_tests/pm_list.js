@@ -5,7 +5,6 @@ set_global('resize', {
     resize_stream_filters_container: function () {},
 });
 set_global('ui', {
-    set_up_scrollbar: function () {},
     get_content_element: element => element,
 });
 set_global('stream_popover', {

@@ -1,6 +1,6 @@
 var ui = (function () {
 
-var SimpleBar = require("simplebar").default;
+require("simplebar");
 
 var exports = {};
 
@@ -13,10 +13,6 @@ exports.replace_emoji_with_text = function (element) {
         }
         return $(this).text();
     });
-};
-
-exports.set_up_scrollbar = function (element_selector) {
-    new SimpleBar(element_selector.expectOne()[0]);
 };
 
 exports.get_content_element = function (element_selector) {
@@ -42,10 +38,6 @@ exports.reset_scrollbar = function (element_selector) {
     } else {
         element.scrollTop = 0;
     }
-};
-
-exports.destroy_scrollbar = function (element_selector) {
-    element_selector.expectOne()[0].SimpleBar.unMount();
 };
 
 function update_message_in_all_views(message_id, callback) {

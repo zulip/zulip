@@ -185,7 +185,6 @@ exports.update_dom_with_unread_counts = function (counts) {
 
 
 exports.initialize = function () {
-    ui.set_up_scrollbar($("#private-container"));
 };
 
 return exports;

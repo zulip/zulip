@@ -175,8 +175,6 @@ exports.hide_emoji_popover = function () {
     $('.has_popover').removeClass('has_popover has_emoji_popover');
     if (exports.reactions_popped()) {
         var orig_title = current_message_emoji_popover_elem.data("original-title");
-        ui.destroy_scrollbar($(".emoji-popover-emoji-map"));
-        ui.destroy_scrollbar($(".emoji-search-results-container"));
         current_message_emoji_popover_elem.popover("destroy");
         current_message_emoji_popover_elem.prop("title", orig_title);
         current_message_emoji_popover_elem.removeClass("reaction_button_visible");
@@ -602,8 +600,6 @@ exports.render_emoji_popover = function (elt, id) {
 
     var popover = elt.data('popover').$tip;
     popover.find('.emoji-popover-filter').focus();
-    ui.set_up_scrollbar(popover.find(".emoji-popover-emoji-map"));
-    ui.set_up_scrollbar(popover.find(".emoji-search-results-container"));
     current_message_emoji_popover_elem = elt;
 
     emoji_catalog_last_coordinates = {

@@ -638,10 +638,6 @@ exports.launch = function (section) {
             on_close: exports.close,
         });
         exports.change_state(section);
-
-        ui.set_up_scrollbar($("#subscription_overlay .streams-list"));
-        ui.set_up_scrollbar($("#subscription_overlay .settings"));
-
     });
     if (!exports.get_active_data().id) {
         $('#search_stream_name').focus();

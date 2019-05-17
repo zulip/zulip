@@ -46,8 +46,6 @@ exports.build_default_stream_table = function (streams_data) {
         },
     }).init();
 
-    ui.set_up_scrollbar(table.closest(".progressive-table-wrapper"));
-
     loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
 
     self.remove = function (stream_id) {

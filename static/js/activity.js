@@ -328,7 +328,6 @@ exports.initialize = function () {
     exports.build_user_sidebar();
     exports.update_huddles();
 
-    ui.set_up_scrollbar($("#buddy_list_wrapper"));
     buddy_list.start_scroll_handler();
 
     // Let the server know we're here, but pass "false" for
@@ -340,8 +339,6 @@ exports.initialize = function () {
     }
 
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
-
-    ui.set_up_scrollbar($("#group-pms"));
 };
 
 exports.update_presence_info = function (email, info, server_time) {

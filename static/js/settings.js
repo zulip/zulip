@@ -119,9 +119,6 @@ function setup_settings_label() {
 }
 
 exports.build_page = function () {
-    ui.set_up_scrollbar($("#settings_page .sidebar.left"));
-    ui.set_up_scrollbar($("#settings_content"));
-
     setup_settings_label();
 
     var rendered_settings_tab = templates.render('settings_tab', {

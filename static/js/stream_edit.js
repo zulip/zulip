@@ -194,8 +194,6 @@ function show_subscription_settings(sub_row) {
         },
     }).init();
 
-    ui.set_up_scrollbar($(".subscriber_list_container"));
-
     sub_settings.find('input[name="principal"]').typeahead({
         source: people.get_realm_persons, // This is a function.
         items: 5,

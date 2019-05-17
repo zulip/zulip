@@ -74,7 +74,6 @@ zrequire('util');
 
 util.is_mobile = () => false;
 templates.render = () => 'some-html';
-ui.set_up_scrollbar = () => {};
 ui.get_scroll_element = element => element;
 
 zrequire('echo');

@@ -138,8 +138,6 @@ function prepare_form_to_be_shown() {
 }
 
 exports.launch = function () {
-    ui.set_up_scrollbar($("#invite_user_form .modal-body"));
-
     $('#submit-invitation').button();
     prepare_form_to_be_shown();
     $("#invitee_emails").focus().autosize();

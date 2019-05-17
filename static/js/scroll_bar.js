@@ -64,7 +64,6 @@ exports.initialize = function () {
 
         exports.set_layout_width();
     }
-    ui.set_up_scrollbar($("#stream-filters-container"));
 };
 
 exports.set_layout_width = function () {

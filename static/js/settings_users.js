@@ -203,10 +203,6 @@ function populate_users(realm_people_data) {
         },
     }).init();
 
-    [$bots_table, $users_table, $deactivated_users_table].forEach(function ($o) {
-        ui.set_up_scrollbar($o.closest(".progressive-table-wrapper"));
-    });
-
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));

@@ -372,8 +372,6 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
         },
     }).init();
 
-    ui.set_up_scrollbar(dropdown_list_body);
-
     $("#id_realm_notifications_stream .dropdown-search").click(function (e) {
         e.stopPropagation();
     });
