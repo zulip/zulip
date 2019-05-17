@@ -89,6 +89,7 @@ class zulip::app_frontend_base {
     notify  => Service[$zulip::common::supervisor_service],
   }
 
+  $uwsgi_listen_backlog_limit = zulipconf('application_server', 'uwsgi_listen_backlog_limit', 128)
   $uwsgi_buffer_size = zulipconf('application_server', 'uwsgi_buffer_size', 8192)
   $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
   file { '/etc/zulip/uwsgi.ini':

@@ -8,6 +8,7 @@ chown-socket=zulip:zulip
 processes=<%= @uwsgi_processes %>
 harakiri=20
 buffer-size=<%= @uwsgi_buffer_size %>
+listen=<%= @uwsgi_listen_backlog_limit %>
 post-buffering=4096
 env= LANG=en_US.UTF-8
 uid=zulip
