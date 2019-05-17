@@ -13,7 +13,7 @@ user, or anything else. Make sure to read the
 before posting. The Zulip community is also governed by a
 [code of conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
 
-You can subscribe to zulip-devel@googlegroups.com for a lower traffic (~1
+You can subscribe to zulip-devel-announce@googlegroups.com for a lower traffic (~1
 email/month) way to hear about things like mentorship opportunities with Google
 Code-in, in-person sprints at conferences, and other opportunities to
 contribute.
