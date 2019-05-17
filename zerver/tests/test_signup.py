@@ -3174,13 +3174,14 @@ class DeactivateUserTest(ZulipTestCase):
         user = self.example_user('iago')
         self.assertTrue(user.is_active)
         result = self.client_delete('/json/users/me')
-        self.assert_json_error(result, "Cannot deactivate the only organization administrator.")
+        self.assert_json_error(result, "Cannot deactivate the only primary administrator")
         user = self.example_user('iago')
         self.assertTrue(user.is_active)
         self.assertTrue(user.is_realm_admin)
         email = self.example_email("hamlet")
         user_2 = self.example_user('hamlet')
         do_change_is_admin(user_2, True)
+        self.login(email)
         self.assertTrue(user_2.is_realm_admin)
         result = self.client_delete('/json/users/me')
         self.assert_json_success(result)
@@ -3192,7 +3193,7 @@ class DeactivateUserTest(ZulipTestCase):
         email = self.example_email("iago")
         self.login(email)
         result = self.client_delete('/json/users/me')
-        self.assert_json_error(result, "Cannot deactivate the only user.")
+        self.assert_json_error(result, "Cannot deactivate the only primary administrator")
 
 class TestLoginPage(ZulipTestCase):
     def test_login_page_wrong_subdomain_error(self) -> None:

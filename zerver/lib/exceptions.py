@@ -153,18 +153,6 @@ class StreamWithIDDoesNotExistError(JsonableError):
     def msg_format() -> str:
         return _("Stream with ID '{stream_id}' does not exist")
 
-class CannotDeactivateLastUserError(JsonableError):
-    code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
-    data_fields = ['is_last_admin', 'entity']
-
-    def __init__(self, is_last_admin: bool) -> None:
-        self.is_last_admin = is_last_admin
-        self.entity = _("organization administrator") if is_last_admin else _("user")
-
-    @staticmethod
-    def msg_format() -> str:
-        return _("Cannot deactivate the only {entity}.")
-
 class InvalidMarkdownIncludeStatement(JsonableError):
     code = ErrorCode.INVALID_MARKDOWN_INCLUDE_STATEMENT
     data_fields = ['include_statement']

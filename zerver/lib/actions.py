@@ -3473,6 +3473,23 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
                                  is_admin=value))
         send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
+def do_change_is_primary_admin(target: UserProfile, user_profile: UserProfile) -> None:
+    user_profile.is_primary_admin = False
+    user_profile.save(update_fields=["is_primary_admin"])
+    target.is_primary_admin = True
+    target.is_realm_admin = True
+    target.save(update_fields=["is_primary_admin", "is_realm_admin"])
+    event_user = dict(type="realm_user", op="update",
+                      person=dict(email=user_profile.email,
+                                  user_id=user_profile.id,
+                                  is_primary_admin=False))
+    event_target = dict(type="realm_user", op="update",
+                        person=dict(email=target.email,
+                                    user_id=target.id,
+                                    is_primary_admin=True))
+    send_event(user_profile.realm, event_user, active_user_ids(user_profile.realm_id))
+    send_event(user_profile.realm, event_target, active_user_ids(user_profile.realm_id))
+
 def do_change_is_guest(user_profile: UserProfile, value: bool) -> None:
     user_profile.is_guest = value
     user_profile.save(update_fields=["is_guest"])

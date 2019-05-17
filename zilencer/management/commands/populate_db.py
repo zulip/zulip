@@ -13,7 +13,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
-    do_change_is_admin, do_send_messages, do_update_user_custom_profile_data, \
+    do_change_is_primary_admin, do_send_messages, do_update_user_custom_profile_data, \
     try_add_realm_custom_profile_field
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.cache import cache_set
@@ -202,7 +202,7 @@ class Command(BaseCommand):
             create_users(zulip_realm, names)
 
             iago = get_user("iago@zulip.com", zulip_realm)
-            do_change_is_admin(iago, True)
+            do_change_is_primary_admin(iago, iago)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
 

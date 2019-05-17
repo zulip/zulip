@@ -17,10 +17,10 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
     check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
     do_update_bot_config_data, check_change_bot_full_name, do_change_is_guest, \
-    do_update_user_custom_profile_data, check_remove_custom_profile_field_value
+    do_update_user_custom_profile_data, check_remove_custom_profile_field_value, \
+    do_change_is_primary_admin
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.bot_config import set_bot_config
-from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
@@ -41,22 +41,16 @@ from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm,
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id)
-    if check_last_admin(target):
-        return json_error(_('Cannot deactivate the only organization administrator'))
+    if target.is_primary_admin:
+        return json_error(_('Cannot deactivate the only primary administrator'))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    if UserProfile.objects.filter(realm=user_profile.realm, is_active=True).count() == 1:
-        raise CannotDeactivateLastUserError(is_last_admin=False)
-    if user_profile.is_realm_admin and check_last_admin(user_profile):
-        raise CannotDeactivateLastUserError(is_last_admin=True)
+    if user_profile.is_primary_admin:
+        return json_error(_('Cannot deactivate the only primary administrator'))
 
     do_deactivate_user(user_profile, acting_user=user_profile)
     return json_success()
-
-def check_last_admin(user_profile: UserProfile) -> bool:
-    admins = set(user_profile.realm.get_admin_users())
-    return user_profile.is_realm_admin and len(admins) == 1
 
 def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
                            bot_id: int) -> HttpResponse:
@@ -81,6 +75,7 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
 def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
                         full_name: Optional[str]=REQ(default="", validator=check_string),
                         is_admin: Optional[bool]=REQ(default=None, validator=check_bool),
+                        is_primary_admin: Optional[bool]=REQ(default=None, validator=check_bool),
                         is_guest: Optional[bool]=REQ(default=None, validator=check_bool),
                         profile_data: List[Dict[str, Union[int, str, List[int]]]]=
                         REQ(default=None,
@@ -97,12 +92,15 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
         return json_error(_("Guests cannot be organization administrators"))
 
     if is_admin is not None and target.is_realm_admin != is_admin:
-        if not is_admin and check_last_admin(user_profile):
-            return json_error(_('Cannot remove the only organization administrator'))
+        if not is_admin and target.is_primary_admin:
+            return json_error(_('Only a primary administrator can remove primary administrator status'))
         do_change_is_admin(target, is_admin)
 
     if is_guest is not None and target.is_guest != is_guest:
         do_change_is_guest(target, is_guest)
+
+    if is_primary_admin is not None and user_profile.is_primary_admin:
+        do_change_is_primary_admin(target, user_profile)
 
     if (full_name is not None and target.full_name != full_name and
             full_name.strip() != ""):

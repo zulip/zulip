@@ -69,6 +69,22 @@ class PermissionTest(ZulipTestCase):
         with self.assertRaises(AssertionError):
             do_change_is_admin(user_profile, True, permission='totally-not-valid-perm')
 
+    def test_change_is_primary_admin(self) -> None:
+        iago = self.example_user('iago')
+        hamlet = self.example_user('hamlet')
+
+        self.assertTrue(iago.is_primary_admin)
+        self.assertFalse(hamlet.is_primary_admin)
+
+        self.login(iago.email)
+        req = dict(is_primary_admin=ujson.dumps(True))
+        result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+        self.assert_json_success(result)
+        primary_admin_queryset = UserProfile.objects.filter(realm=iago.realm, is_primary_admin=True)
+        self.assertEqual(len(primary_admin_queryset), 1)
+        primary_admin = primary_admin_queryset[0]
+        self.assertEqual(primary_admin.email, hamlet.email)
+
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, False)
@@ -140,14 +156,16 @@ class PermissionTest(ZulipTestCase):
         person = events[0]['event']['person']
         self.assertEqual(person['email'], self.example_email("hamlet"))
         self.assertEqual(person['is_admin'], False)
-        with tornado_redirected_to_list([]):
-            result = self.client_patch('/json/users/{}'.format(self.example_user("iago").id), req)
-        self.assert_json_error(result, 'Cannot remove the only organization administrator')
 
         # Make sure only admins can patch other user's info.
         self.login(self.example_email("othello"))
         result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, 'Insufficient permission')
+
+        # Make sure primary admin can not deactivate himself
+        self.login(self.example_email("iago"))
+        result = self.client_delete('/json/users/me')
+        self.assert_json_error(result, "Cannot deactivate the only primary administrator")
 
     def test_admin_api_hide_emails(self) -> None:
         user = self.example_user('hamlet')
@@ -282,6 +300,17 @@ class PermissionTest(ZulipTestCase):
         # Non-admin user can't admin another user
         with self.assertRaises(JsonableError):
             access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id)
+
+    def test_change_is_admin_of_primary_admin(self) -> None:
+        admin = self.example_user('othello')
+        do_change_is_admin(admin, True)
+        self.login(self.example_email("othello"))
+
+        iago = self.example_user("iago")
+        req = dict(is_admin=ujson.dumps(False))
+        result = self.client_patch('/json/users/{}'.format(iago.id), req)
+        self.assert_json_error(result, 'Only a primary administrator can remove primary administrator status')
+        self.assertTrue(iago.is_realm_admin)
 
     def test_change_regular_member_to_guest(self) -> None:
         iago = self.example_user("iago")
@@ -902,11 +931,11 @@ class ActivateTest(ZulipTestCase):
         result = self.client_delete('/json/users/{}'.format(self.example_user("webhook_bot").id))
         self.assert_json_error(result, 'No such user')
 
-        result = self.client_delete('/json/users/{}'.format(self.example_user("iago").id))
+        result = self.client_delete('/json/users/{}'.format(self.example_user("hamlet").id))
         self.assert_json_success(result)
 
-        result = self.client_delete('/json/users/{}'.format(admin.id))
-        self.assert_json_error(result, 'Cannot deactivate the only organization administrator')
+        result = self.client_delete('/json/users/{}'.format(self.example_user("iago").id))
+        self.assert_json_error(result, 'Cannot deactivate the only primary administrator')
 
         # Cannot reactivate a nonexistent user.
         invalid_user_id = 1000
