@@ -133,18 +133,18 @@
 .emoji-info-popover {
     padding: 0;
     height: 370px;
-}
 
-.emoji-info-popover .popover-content {
-    padding: 0;
-}
+    .popover-content {
+        padding: 0;
+    }
 
-.emoji-info-popover.bottom .arrow {
-    border-bottom-color: hsl(0, 0%, 93%);
-}
+    &.bottom .arrow {
+        border-bottom-color: hsl(0, 0%, 93%);
+    }
 
-.emoji-info-popover.top .arrow {
-    border-top-color: hsl(0, 0%, 93%);
+    &.top .arrow {
+        border-top-color: hsl(0, 0%, 93%);
+    }
 }
 
 .emoji-popover {
