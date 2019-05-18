@@ -152,6 +152,11 @@
     width: 250px;
 }
 
+.emoji-popover .reacted {
+    background-color: hsl(195, 50%, 95%);
+    border-color: hsl(195, 52%, 79%);
+}
+
 .emoji-popover-top {
     position: relative;
 
@@ -225,11 +230,6 @@
 
 .emoji-popover-emoji .emoji {
     top: 6px;
-}
-
-.emoji-popover .reacted {
-    background-color: hsl(195, 50%, 95%);
-    border-color: hsl(195, 52%, 79%);
 }
 
 .emoji_alt_code {
