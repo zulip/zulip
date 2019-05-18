@@ -100,11 +100,11 @@
 
 .private-message .message_reactions .message_reaction {
     background-color: hsl(192, 20%, 95%);
-}
 
-.private-message .message_reactions .message_reaction.reacted {
-    background-color: hsl(196, 51%, 93%);
-    border-color: hsl(193, 38%, 70%);
+    &.reacted {
+        background-color: hsl(196, 51%, 93%);
+        border-color: hsl(193, 38%, 70%);
+    }
 }
 
 .message_reaction .emoji {
