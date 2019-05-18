@@ -248,22 +248,22 @@
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-}
 
-.emoji-popover-category-tabs .emoji-popover-tab-item {
-    display: inline-block;
-    padding-top: 8px;
-    width: 25px;
-    height: 25px;
-    text-align: center;
-    font-size: 16px;
-    cursor: pointer;
-    /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
-    flex-grow: 1;
-}
+    .emoji-popover-tab-item {
+        display: inline-block;
+        padding-top: 8px;
+        width: 25px;
+        height: 25px;
+        text-align: center;
+        font-size: 16px;
+        cursor: pointer;
+        /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+        flex-grow: 1;
+    }
 
-.emoji-popover-category-tabs .emoji-popover-tab-item.active {
-    background-color: hsla(0, 0%, 100%, 0.2);
+    .emoji-popover-tab-item.active {
+        background-color: hsla(0, 0%, 100%, 0.2);
+    }
 }
 
 .typeahead .emoji {
