@@ -645,6 +645,14 @@ button.login-google-button {
     transform: translateX(15px) translateY(13px);
 }
 
+.facebook-wrapper::before {
+    content:"\F230";
+    position:absolute;
+    font-family:"FontAwesome";
+    font-size:2rem;color:#3b5998;
+    transform: translateX(15px) translateY(13px);
+}
+
 .login-page-container .right-side .actions,
 .forgot-password-container .actions {
     margin: 20px 0px 0px;
