@@ -150,11 +150,11 @@
 .emoji-popover {
     display: block;
     width: 250px;
-}
 
-.emoji-popover .reacted {
-    background-color: hsl(195, 50%, 95%);
-    border-color: hsl(195, 52%, 79%);
+    .reacted {
+        background-color: hsl(195, 50%, 95%);
+        border-color: hsl(195, 52%, 79%);
+    }
 }
 
 .emoji-popover-top {
