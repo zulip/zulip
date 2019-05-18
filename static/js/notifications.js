@@ -531,7 +531,7 @@ exports.received_messages = function (messages) {
         if (should_send_desktop_notification(message)) {
             process_notification({
                 message: message,
-                desktop_notify: exports.granted_desktop_notifications_permission()
+                desktop_notify: exports.granted_desktop_notifications_permission(),
             });
         }
         if (should_send_audible_notification(message) && supports_sound) {
