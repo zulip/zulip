@@ -41,7 +41,11 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         }
 
         response = self.client_post(target_url, data)
+        expected_response = {'responses': [{'status_code': 200, 'message': {"result": "success", "msg": ""}}], 'result': 'success', 'msg': ''}
+        response_content = ujson.loads(response.content)
+        response_content["responses"][0]["message"] = ujson.loads(response_content["responses"][0]["message"])
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_content, expected_response)
 
         latest_msg = Message.objects.latest('id')
         expected_message = "[ZeroDivisionError](https://zulip.airbrake.io/projects/125209/groups/1705190192091077626): \"Error message from logger\" occurred."

@@ -233,8 +233,6 @@ approach shown above.
 ### Integrations Dev Panel
 This is the GUI tool.
 
-<img class="screenshot" src="/static/images/integrations/integrations_dev_panel.png" />
-
 1. Run `./tools/run-dev.py` then go to http://localhost:9991/devtools/integrations/.
 
 2. Set the following mandatory fields:  
