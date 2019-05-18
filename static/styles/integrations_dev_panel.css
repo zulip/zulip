@@ -1,34 +1,114 @@
-#panel_div {
-    margin: auto;
-    width: 720px;
-    margin-top: 50px;
-    border: 3px solid;
-    border-color: rgb(0, 128, 0);
-    padding: 10px;
+circle {
+    fill: rgb(0, 0, 0);
+    stroke-width: 1.93936479;
+    stroke: transparent;
+}
+
+path {
+    fill: rgb(82, 194, 175);
+    stroke: rgb(82, 194, 175);
+}
+
+button {
+    background-color: rgb(220, 244, 233);
+    color: rgb(46, 139, 87);
 }
 
 #custom_http_headers {
-    height: 200px;
-    width: 700px;
+    width: 100%;
+    height: 60px;
+    resize: vertical;
+}
+
+#dev-panel {
+    margin-left: 3%;
+    margin-right: 3%;
+    padding-bottom: 15px;
+    padding-top: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: rgb(247, 255, 254);
+    box-shadow: 8px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 #fixture_body {
+    width: 90%;
     height: 500px;
-    width: 700px;
+    resize: vertical;
 }
 
-#send_fixture_button {
-    float: right;
+#idp-results {
+    width: 100%;
+    height: 500px;
+    resize: vertical;
+    background-color: rgb(256, 256, 256);
+}
+
+#top-navbar {
+    display: grid;
+    grid-template-columns: 1fr 5fr 1fr;
 }
 
 #URL {
-    width: 90%;
+    width: 100%;
 }
 
-.center-text {
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 92%;
+    margin-right: 2%;
+}
+
+.centerpiece {
+    font-size: 30px;
     text-align: center;
 }
 
-.pad-top {
-    padding-top: 30px;
+.inline {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    margin-right: 10%;
+}
+
+.optional {
+    color: rgb(128, 128, 128);
+}
+
+.pad-small {
+    height: 100px;
+    width: 100%;
+}
+
+.row1 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.row2 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.row3 {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.row4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-left: 2%;
+    margin-right: 2%;
 }

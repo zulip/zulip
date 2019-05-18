@@ -81,7 +81,9 @@ def check_send_webhook_fixture_message(request: HttpRequest,
                                        custom_headers: str=REQ()) -> HttpResponse:
     response = send_webhook_fixture_message(url, body, is_json, custom_headers)
     if response.status_code == 200:
-        return json_success()
+        responses = [{"status_code": response.status_code,
+                      "message": response.content}]
+        return json_success({"responses": responses})
     else:
         return response
 

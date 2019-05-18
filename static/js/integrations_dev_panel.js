@@ -18,6 +18,7 @@ var clear_handlers = {
     fixture_name: function () { $('#fixture_name').empty(); },
     fixture_body: function () { $("#fixture_body")[0].value = ""; },
     custom_http_headers: function () { $("#custom_http_headers")[0].value = ""; },
+    results: function () { $("#idp-results")[0].value = ""; },
 };
 
 function clear_elements(elements) {
@@ -80,6 +81,27 @@ function get_custom_http_headers() {
         }
     }
     return custom_headers;
+}
+
+function set_results(response) {
+    /* After sending a webhook fixture message, the backend will let
+    us know the responses information for each of the requests sent
+    (which is just 1 for send, but usually is several for send all).
+
+    The following is a bit messy, but it's a devtool, so ultimately OK */
+    var responses = response.responses;
+
+    var data = "Results:\n\n";
+    responses.forEach(function (response) {
+        if (response.fixture_name !== undefined) {
+            data += "Fixture:            " + response.fixture_name;
+            data += "\nStatus Code:    "  + response.status_code;
+        } else {
+            data += "Status Code:    "  + response.status_code;
+        }
+        data += "\nResponse:       " + response.message + "\n\n";
+    });
+    $("#idp-results")[0].value = data;
 }
 
 function load_fixture_body(fixture_name) {
@@ -223,10 +245,11 @@ function send_webhook_fixture_message() {
         url: "/devtools/integrations/check_send_webhook_fixture_message",
         data: {url: url, body: body, custom_headers: custom_headers, is_json: is_json},
         beforeSend: function (xhr) {xhr.setRequestHeader('X-CSRFToken', csrftoken);},
-        success: function () {
+        success: function (response) {
             // If the previous fixture body was sent successfully, then we should change the success
             // message up a bit to let the user easily know that this fixture body was also sent
             // successfully.
+            set_results(response);
             if ($("#message")[0].innerHTML === "Success!") {
                 set_message("Success!!!", "success");
             } else {
@@ -256,16 +279,7 @@ function send_all_fixture_messages() {
         url: "/devtools/integrations/send_all_webhook_fixture_messages",
         data: {url: url, custom_headers: custom_headers, integration_name: integration},
         beforeSend: function (xhr) {xhr.setRequestHeader('X-CSRFToken', csrftoken);},
-        success: function (response) {
-            // This is a somewhat sloppy construction, but ultimately, it's a devtool.
-            var responses = response.responses;
-            var data = "Results:\n\n";
-            responses.forEach(function (response) {
-                data += "Fixture:            " + response.fixture_name + "\nStatus Code:    ";
-                data += response.status_code + "\nResponse:       " + response.message + "\n\n";
-            });
-            $("#fixture_body")[0].value = data;
-        },
+        success: function (response) {set_results(response);},
         error: handle_unsuccessful_response,
     });
 
@@ -275,7 +289,8 @@ function send_all_fixture_messages() {
 // Initialization
 $(function () {
     clear_elements(["stream_name", "topic_name", "URL", "bot_name", "integration_name",
-                    "fixture_name", "custom_http_headers", "fixture_body", "message"]);
+                    "fixture_name", "custom_http_headers", "fixture_body", "message",
+                    "results"]);
 
     $("#stream_name")[0].value = "Denmark";
     $("#topic_name")[0].value = "Integrations Testing";
@@ -306,6 +321,7 @@ $(function () {
     });
 
     $('#send_all_fixtures_button').click(function () {
+        clear_elements(["message"]);
         send_all_fixture_messages();
         return;
     });
@@ -319,11 +335,3 @@ $(function () {
 });
 
 }());
-
-/*
-Development Notes:
- - We currently don't support non-json fixtures.
-
-Possible Improvements:
- - Add support for extra keys, headers, etc.
-*/
