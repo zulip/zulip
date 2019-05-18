@@ -166,20 +166,20 @@
     background-color: hsl(0, 0%, 93%);
 
     border-radius: 5px 5px 0px 0px;
-}
 
-.emoji-popover-top .fa-search {
-    position: absolute;
-    color: hsl(0, 0%, 73%);
-    top: 15px;
-    left: 17px;
-    z-index: 3;
-}
+    .fa-search {
+        position: absolute;
+        color: hsl(0, 0%, 73%);
+        top: 15px;
+        left: 17px;
+        z-index: 3;
+    }
 
-.emoji-popover-top .emoji-popover-filter {
-    margin: auto;
-    padding-left: 22px;
-    width: calc(100% - 22px - 8px);
+    .emoji-popover-filter {
+        margin: auto;
+        padding-left: 22px;
+        width: calc(100% - 22px - 8px);
+    }
 }
 
 .emoji-popover-emoji-map,
