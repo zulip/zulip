@@ -133,28 +133,28 @@
 .emoji-info-popover {
     padding: 0;
     height: 370px;
-}
 
-.emoji-info-popover .popover-content {
-    padding: 0;
-}
+    .popover-content {
+        padding: 0;
+    }
 
-.emoji-info-popover.bottom .arrow {
-    border-bottom-color: hsl(0, 0%, 93%);
-}
+    &.bottom .arrow {
+        border-bottom-color: hsl(0, 0%, 93%);
+    }
 
-.emoji-info-popover.top .arrow {
-    border-top-color: hsl(0, 0%, 93%);
+    &.top .arrow {
+        border-top-color: hsl(0, 0%, 93%);
+    }
 }
 
 .emoji-popover {
     display: block;
     width: 250px;
-}
 
-.emoji-popover .reacted {
-    background-color: hsl(195, 50%, 95%);
-    border-color: hsl(195, 52%, 79%);
+    .reacted {
+        background-color: hsl(195, 50%, 95%);
+        border-color: hsl(195, 52%, 79%);
+    }
 }
 
 .emoji-popover-top {
@@ -166,20 +166,20 @@
     background-color: hsl(0, 0%, 93%);
 
     border-radius: 5px 5px 0px 0px;
-}
 
-.emoji-popover-top .fa-search {
-    position: absolute;
-    color: hsl(0, 0%, 73%);
-    top: 15px;
-    left: 17px;
-    z-index: 3;
-}
+    .fa-search {
+        position: absolute;
+        color: hsl(0, 0%, 73%);
+        top: 15px;
+        left: 17px;
+        z-index: 3;
+    }
 
-.emoji-popover-top .emoji-popover-filter {
-    margin: auto;
-    padding-left: 22px;
-    width: calc(100% - 22px - 8px);
+    .emoji-popover-filter {
+        margin: auto;
+        padding-left: 22px;
+        width: calc(100% - 22px - 8px);
+    }
 }
 
 .emoji-popover-emoji-map,
@@ -249,22 +249,22 @@
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-}
 
-.emoji-popover-category-tabs .emoji-popover-tab-item {
-    display: inline-block;
-    padding-top: 8px;
-    width: 25px;
-    height: 25px;
-    text-align: center;
-    font-size: 16px;
-    cursor: pointer;
-    /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
-    flex-grow: 1;
-}
+    .emoji-popover-tab-item {
+        display: inline-block;
+        padding-top: 8px;
+        width: 25px;
+        height: 25px;
+        text-align: center;
+        font-size: 16px;
+        cursor: pointer;
+        /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+        flex-grow: 1;
 
-.emoji-popover-category-tabs .emoji-popover-tab-item.active {
-    background-color: hsla(0, 0%, 100%, 0.2);
+        &.active {
+            background-color: hsla(0, 0%, 100%, 0.2);
+        }
+    }
 }
 
 .typeahead .emoji {
