@@ -6,96 +6,96 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
 
-.message_reactions .message_reaction {
-    float: left;
-    margin: 0.15em;
-    padding: 0 2px 0 0;
-    height: 19px;
-    cursor: pointer;
-    background-color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(194, 37%, 84%);
-    border-radius: 4px;
-}
+    .message_reaction {
+        float: left;
+        margin: 0.15em;
+        padding: 0 2px 0 0;
+        height: 19px;
+        cursor: pointer;
+        background-color: hsl(0, 0%, 100%);
+        border: 1px solid hsl(194, 37%, 84%);
+        border-radius: 4px;
+    }
 
-.message_reactions .message_reaction.reacted {
-    background-color: hsl(195, 50%, 95%);
-}
+    .message_reaction.reacted {
+        background-color: hsl(195, 50%, 95%);
+    }
 
-.message_reactions .message_reaction_count {
-    position: relative;
-    top: 4px;
-    font-size: 0.8em;
-    display: inline-block;
-    vertical-align: top;
-    color: hsl(200, 100%, 40%);
-    margin: 0px 1px 0px 0px;
-    line-height: 1em;
-}
+    .message_reaction_count {
+        position: relative;
+        top: 4px;
+        font-size: 0.8em;
+        display: inline-block;
+        vertical-align: top;
+        color: hsl(200, 100%, 40%);
+        margin: 0px 1px 0px 0px;
+        line-height: 1em;
+    }
 
-.message_reactions .reaction_button .message_reaction_count {
-    top: 0.5px;
-}
+    .reaction_button .message_reaction_count {
+        top: 0.5px;
+    }
 
-.message_reactions i {
-    font-size: 1.3em;
-    float: left;
-    color: hsl(0, 0%, 33%);
-}
+    i {
+        font-size: 1.3em;
+        float: left;
+        color: hsl(0, 0%, 33%);
+    }
 
-.message_reactions:hover .message_reaction + .reaction_button {
-    visibility: visible;
-    pointer-events: all;
-    background-color: hsl(0, 0%, 98%);
-}
+    &:hover .message_reaction + .reaction_button {
+        visibility: visible;
+        pointer-events: all;
+        background-color: hsl(0, 0%, 98%);
+    }
 
-.message_reactions .reaction_button i {
-    font-size: 1em;
-    margin-right: 3px;
-}
+    .reaction_button i {
+        font-size: 1em;
+        margin-right: 3px;
+    }
 
-.message_reactions .reaction_button:hover i {
-    color: hsl(200, 100%, 40%);
-}
+    .reaction_button:hover i {
+        color: hsl(200, 100%, 40%);
+    }
 
-.message_reactions .message_reaction:hover {
-    border: 1px solid hsl(200, 100%, 40%);
-}
+    .message_reaction:hover {
+        border: 1px solid hsl(200, 100%, 40%);
+    }
 
-.message_reactions .reaction_button:only-child {
-    display: none;
-}
+    .reaction_button:only-child {
+        display: none;
+    }
 
-.message_reactions .message_reaction + .reaction_button {
-    visibility: hidden;
-    pointer-events: none;
-    margin: 2px 0.1em 3px 0.1em;
-    padding: 3px;
-    height: 14px;
-    border-radius: 4px;
-    padding-left: 0.3em;
-    border: 1px solid hsl(0, 0%, 73%);
-    padding-right: 0.3em;
-    float: left;
-}
+    .message_reaction + .reaction_button {
+        visibility: hidden;
+        pointer-events: none;
+        margin: 2px 0.1em 3px 0.1em;
+        padding: 3px;
+        height: 14px;
+        border-radius: 4px;
+        padding-left: 0.3em;
+        border: 1px solid hsl(0, 0%, 73%);
+        padding-right: 0.3em;
+        float: left;
+    }
 
-.message_reactions .reaction_button:hover {
-    border: 1px solid hsl(200, 100%, 40%);
-    background-color: hsl(195, 50%, 95%);
-    cursor: pointer;
-    opacity: 1.0;
-    color: hsl(200, 100%, 40%);
-}
+    .reaction_button:hover {
+        border: 1px solid hsl(200, 100%, 40%);
+        background-color: hsl(195, 50%, 95%);
+        cursor: pointer;
+        opacity: 1.0;
+        color: hsl(200, 100%, 40%);
+    }
 
-.message_reactions .reaction_button .message_reaction_count {
-    font-size: 1.1em;
-    color: hsl(0, 0%, 33%);
-    margin-left: 3px;
-}
+    .reaction_button .message_reaction_count {
+        font-size: 1.1em;
+        color: hsl(0, 0%, 33%);
+        margin-left: 3px;
+    }
 
-.message_reactions .reaction_button:hover .message_reaction_count {
-    color: hsl(200, 100%, 40%);
+    .reaction_button:hover .message_reaction_count {
+        color: hsl(200, 100%, 40%);
+    }
 }
 
 .private-message .message_reactions .message_reaction {
