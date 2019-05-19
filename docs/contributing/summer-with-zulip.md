@@ -86,11 +86,19 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     stressed about something involving your mentor, bring it up with
     an organization admin.
 
-  - Join Zulip's GitHub teams that relate to your projects and/or interests, so
-    that you see new issues and PRs coming in that are relevant to your work.
-    You can browse the area teams here:
-    https://github.com/orgs/zulip/teams (You need to be a member of
-    the Zulip organization to see them; ask Tim for an invite if needed).
+  - If you work in one a smaller Zulip project
+    (e.g. `zulip-terminal`), follow the project on GitHub so you can
+    keep track of what's happening there.  For folks working in
+    `zulip/zulip`, doing that will send you too many notifications.
+    So instead, we recommend that you join Zulip's GitHub teams that
+    relate to your projects and/or interests, so that you see new
+    issues and PRs coming in that are relevant to your work.  When we
+    label an issue or PR with one of our area labels, `zulipbot` will
+    automatically mention the relevant teams for that area,
+    subscribing you to those issues/PR threads.  You can browse the
+    area teams here: https://github.com/orgs/zulip/teams (You need to
+    be a member of the Zulip organization to see them;
+    ask Tim for an invite if needed).
 
 - Everyone's goal is to avoid students ending up blocked and feeling stuck.
   There are lots of things that students can do (and mentors can help them to)
