@@ -2405,7 +2405,7 @@ def internal_prep_private_message(realm: Realm,
 
 def internal_send_message(realm: Realm, sender_email: str, recipient_type_name: str,
                           recipients: str, topic_name: str, content: str,
-                          email_gateway: Optional[bool]=False) -> None:
+                          email_gateway: Optional[bool]=False) -> Optional[int]:
     """internal_send_message should only be used where `sender_email` is a
     system bot."""
 
@@ -2429,47 +2429,51 @@ def internal_send_message(realm: Realm, sender_email: str, recipient_type_name: 
         content=content,
     )
     if msg is None:
-        return
+        return None
 
-    do_send_messages([msg], email_gateway=email_gateway)
+    message_ids = do_send_messages([msg], email_gateway=email_gateway)
+    return message_ids[0]
 
 def internal_send_private_message(realm: Realm,
                                   sender: UserProfile,
                                   recipient_user: UserProfile,
-                                  content: str) -> None:
+                                  content: str) -> Optional[int]:
     message = internal_prep_private_message(realm, sender, recipient_user, content)
     if message is None:
-        return
-    do_send_messages([message])
+        return None
+    message_ids = do_send_messages([message])
+    return message_ids[0]
 
 def internal_send_stream_message(
         realm: Realm, sender: UserProfile,
         stream: Stream, topic: str, content: str
-) -> None:
+) -> Optional[int]:
     message = internal_prep_stream_message(
         realm, sender, stream,
         topic, content
     )
 
     if message is None:
-        return
-    do_send_messages([message])
+        return None
+    message_ids = do_send_messages([message])
+    return message_ids[0]
 
 def internal_send_stream_message_by_name(
         realm: Realm, sender: UserProfile,
         stream_name: str, topic: str, content: str
-) -> None:
+) -> Optional[int]:
     message = internal_prep_stream_message_by_name(
         realm, sender, stream_name,
         topic, content
     )
 
     if message is None:
-        return
-    do_send_messages([message])
+        return None
+    message_ids = do_send_messages([message])
+    return message_ids[0]
 
 def internal_send_huddle_message(realm: Realm, sender: UserProfile, emails: List[str],
-                                 content: str) -> None:
+                                 content: str) -> Optional[int]:
     addressee = Addressee.for_private(emails, realm)
     message = _internal_prep_message(
         realm=realm,
@@ -2478,8 +2482,9 @@ def internal_send_huddle_message(realm: Realm, sender: UserProfile, emails: List
         content=content,
     )
     if message is None:
-        return
-    do_send_messages([message])
+        return None
+    message_ids = do_send_messages([message])
+    return message_ids[0]
 
 def pick_color(user_profile: UserProfile, subs: Iterable[Subscription]) -> str:
     # These colors are shared with the palette in subs.js.
