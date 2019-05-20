@@ -62,39 +62,41 @@
         background-color: hsl(0, 0%, 98%);
     }
 
-    .reaction_button i {
-        font-size: 1em;
-        margin-right: 3px;
-    }
+    .reaction_button {
+        i {
+            font-size: 1em;
+            margin-right: 3px;
+        }
 
-    .reaction_button:hover i {
-        color: hsl(200, 100%, 40%);
-    }
+        &:hover i {
+            color: hsl(200, 100%, 40%);
+        }
 
-    .reaction_button:only-child {
-        display: none;
-    }
+        &:only-child {
+            display: none;
+        }
 
-    .reaction_button:hover {
-        border: 1px solid hsl(200, 100%, 40%);
-        background-color: hsl(195, 50%, 95%);
-        cursor: pointer;
-        opacity: 1.0;
-        color: hsl(200, 100%, 40%);
-    }
+        &:hover {
+            border: 1px solid hsl(200, 100%, 40%);
+            background-color: hsl(195, 50%, 95%);
+            cursor: pointer;
+            opacity: 1.0;
+            color: hsl(200, 100%, 40%);
+        }
 
-    .reaction_button .message_reaction_count {
-        font-size: 1.1em;
-        color: hsl(0, 0%, 33%);
-        margin-left: 3px;
-    }
+        .message_reaction_count {
+            font-size: 1.1em;
+            color: hsl(0, 0%, 33%);
+            margin-left: 3px;
+        }
 
-    .reaction_button .message_reaction_count {
-        top: 0.5px;
-    }
+        .message_reaction_count {
+            top: 0.5px;
+        }
 
-    .reaction_button:hover .message_reaction_count {
-        color: hsl(200, 100%, 40%);
+        &:hover .message_reaction_count {
+            color: hsl(200, 100%, 40%);
+        }
     }
 }
 
