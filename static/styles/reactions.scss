@@ -16,27 +16,27 @@
         background-color: hsl(0, 0%, 100%);
         border: 1px solid hsl(194, 37%, 84%);
         border-radius: 4px;
-    }
 
-    .message_reaction.reacted {
-        background-color: hsl(195, 50%, 95%);
-    }
+        &.reacted {
+            background-color: hsl(195, 50%, 95%);
+        }
 
-    .message_reaction:hover {
-        border: 1px solid hsl(200, 100%, 40%);
-    }
+        &:hover {
+            border: 1px solid hsl(200, 100%, 40%);
+        }
 
-    .message_reaction + .reaction_button {
-        visibility: hidden;
-        pointer-events: none;
-        margin: 2px 0.1em 3px 0.1em;
-        padding: 3px;
-        height: 14px;
-        border-radius: 4px;
-        padding-left: 0.3em;
-        border: 1px solid hsl(0, 0%, 73%);
-        padding-right: 0.3em;
-        float: left;
+        + .reaction_button {
+            visibility: hidden;
+            pointer-events: none;
+            margin: 2px 0.1em 3px 0.1em;
+            padding: 3px;
+            height: 14px;
+            border-radius: 4px;
+            padding-left: 0.3em;
+            border: 1px solid hsl(0, 0%, 73%);
+            padding-right: 0.3em;
+            float: left;
+        }
     }
 
     .message_reaction_count {
