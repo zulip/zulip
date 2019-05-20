@@ -204,6 +204,40 @@ exports.quote_selected_text = function () {
     compose_actions.quote_and_reply({trigger: 'popover respond'}, selected_text.trim());
 };
 
+// Copies only the selected text irrespective of how many messages are selected.
+exports.copy_selected_text = function () {
+    var selection = window.getSelection();
+    var analysis = exports.analyze_selection(selection);
+    var ranges = analysis.ranges;
+    var start_id = analysis.start_id;
+    var end_id = analysis.end_id;
+    var skip_same_td_check = analysis.skip_same_td_check;
+    var div = $('<div>');
+    var selected_text = selection.toString().trim();
+
+    // Check if single message is selected, then let browser handle it.
+    if (start_id === undefined || end_id === undefined) {
+        document.execCommand('copy');
+        return;
+    }
+
+    if (!skip_same_td_check && start_id === end_id) {
+        document.execCommand('copy');
+        return;
+    }
+
+    // Multiple messages selected, so we handle it manually.
+
+    // Replace newline with a linebreak to retain format in final copied text.
+    var text = selected_text.replace(/[\n\r]/g, "<br>");
+
+    div.append(text);
+
+    select_div(div, selection);
+    document.execCommand('copy');
+    remove_div(div, ranges);
+};
+
 exports.analyze_selection = function (selection) {
     // Here we analyze our selection to determine if part of a message
     // or multiple messages are selected.
