@@ -159,6 +159,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.vmx["numvcpus"] = vm_num_cpus
   end
 
+  config.vm.provider "docker" do |d, override|
+    override.vm.box = nil
+    d.build_dir = File.join(__dir__, "tools", "dev-vagrant-docker")
+    d.has_ssh = true
+    d.create_args = ["--ulimit", "nofile=1024:65536"]
+  end
+
 $provision_script = <<SCRIPT
 set -x
 set -e
