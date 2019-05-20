@@ -21,14 +21,13 @@ Contents:
 * [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
 
 **If you encounter errors installing the Zulip development
-environment,** check
-[Troubleshooting and Common Errors](#troubleshooting-and-common-errors). If
-that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.html) for
-real-time help, send a note to the
-[Zulip-devel Google group](https://groups.google.com/forum/#!forum/zulip-devel)
-or [file an issue](https://github.com/zulip/zulip/issues).
+environment,** check [Troubleshooting and Common
+Errors](#troubleshooting-and-common-errors). If that doesn't help,
+please visit [#provision
+help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
+[Zulip development community
+server](../contributing/chat-zulip-org.html) for real-time help or
+[file an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
 
@@ -616,9 +615,7 @@ If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
 * Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-  in the [Zulip development community server](../contributing/chat-zulip-org.html),
-* send a note to the [Zulip-devel Google
-  group](https://groups.google.com/forum/#!forum/zulip-devel), or
+  in the [Zulip development community server](../contributing/chat-zulip-org.html).
 * [File an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
