@@ -1056,7 +1056,7 @@ exports.register_click_handlers = function () {
         var selected_text = window.getSelection().toString();
         e.stopPropagation();
         popovers.render_text_options_popover(this, rows.id(row), selected_text);
-        $(".popover").css('left', e.pageX - 40 + 'px');
+        $(".popover").css('left', e.pageX - 60 + 'px');
         $(".popover").css('top', e.pageY - 70 + 'px');
     });
 
@@ -1071,6 +1071,22 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.copy_text_button', function (e) {
         copy_and_paste.copy_selected_text();
+        popovers.hide_all();
+
+        var id = $(this).attr("data-message-id");
+        var row = $("[zid='" + id + "']");
+        row.find(".alert-msg")
+            .text(i18n.t("Copied!"))
+            .css("display", "block")
+            .delay(1000).fadeOut(300);
+
+        $(".tooltip").remove();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.copy_message_button', function (e) {
+        copy_and_paste.copy_full_message();
         popovers.hide_all();
 
         var id = $(this).attr("data-message-id");
@@ -1119,6 +1135,24 @@ exports.register_click_handlers = function () {
     });
 
     $('.text_options_popover').on('mouseleave', '.copy_text_button', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
+    $('body').on('mouseenter', '.copy_message_button', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var content = i18n.t("Copy message");
+        elem.tooltip({
+            title: content,
+            trigger: 'hover',
+            placement: 'top',
+            animation: false,
+        });
+        elem.tooltip('show');
+    });
+
+    $('.text_options_popover').on('mouseleave', '.copy_message_button', function (e) {
         e.stopPropagation();
         $(this).tooltip('destroy');
     });

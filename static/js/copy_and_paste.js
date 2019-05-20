@@ -238,6 +238,22 @@ exports.copy_selected_text = function () {
     remove_div(div, ranges);
 };
 
+// Copies the complete message(s) irrespective of how much text is selected.
+exports.copy_full_message = function () {
+    var selection = window.getSelection();
+    var analysis = exports.analyze_selection(selection);
+    var ranges = analysis.ranges;
+    var start_id = analysis.start_id;
+    var end_id = analysis.end_id;
+    var div = $('<div>');
+
+    construct_copy_div(div, start_id, end_id);
+
+    select_div(div, selection);
+    document.execCommand('copy');
+    remove_div(div, ranges);
+};
+
 exports.analyze_selection = function (selection) {
     // Here we analyze our selection to determine if part of a message
     // or multiple messages are selected.
