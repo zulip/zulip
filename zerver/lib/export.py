@@ -15,7 +15,6 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import make_aware as timezone_make_aware
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.core.management.base import CommandError
-from django.db.models import Q
 import glob
 import logging
 import os
@@ -1045,10 +1044,6 @@ def export_partial_message_files(realm: Realm,
             sender__in=consented_user_ids,
             recipient__in=recipient_ids_for_them,
         ).order_by('id')
-
-        messages_we_received = Message.objects.filter(
-            Q(sender__in=consented_user_ids) | Q(recipient__in=recipient_ids_for_us),
-        )
 
         message_queries = [
             messages_we_received,
