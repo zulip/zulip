@@ -506,11 +506,11 @@ we have enough strong applicants.
 ### Electron Desktop app
 
 Code:
-[Our cross-platform desktop app written in JavaScript on Electron](https://github.com/zulip/zulip-electron).
+[Our cross-platform desktop app written in JavaScript on Electron](https://github.com/zulip/zulip-desktop).
 Experts: Akash Nimare, Abhighyan Khaund
 
 - Contribute to our
-  [Electron-based desktop client application](https://github.com/zulip/zulip-electron).
+  [Electron-based desktop client application](https://github.com/zulip/zulip-desktop).
   There's plenty of feature/UI work to do, but focus areas for us
   include things to (1) improve the release process for the app, using
   automated testing, typescript, etc. and (2) making it easy to

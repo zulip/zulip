@@ -120,8 +120,8 @@ sudo apt update
 sudo apt install zulip
 ```
 
-[latest]: https://github.com/zulip/zulip-electron/releases/latest
-[release-list]: https://github.com/zulip/zulip-electron/releases
+[latest]: https://github.com/zulip/zulip-desktop/releases/latest
+[release-list]: https://github.com/zulip/zulip-desktop/releases
 
 ## Related articles
 

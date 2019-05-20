@@ -14,7 +14,7 @@ bindings and most of our integrations with other services and applications (see
 [Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official
 mobile Zulip client supporting both iOS and Android, written in
 JavaScript with React Native, and
-[Zulip Desktop](https://github.com/zulip/zulip-electron) is the
+[Zulip Desktop](https://github.com/zulip/zulip-desktop) is the
 official Zulip desktop client for macOS, Linux, and Windows.
 
 We also maintain several separate repositories for integrations and
