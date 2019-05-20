@@ -65,7 +65,3 @@ To learn more, see the [plugin's README](https://github.com/jenkinsci/zulip-plug
 
 1. Configure a Jenkins log recorder for **jenkins.plugins.zulip**
    and check why your messages fail to send.
-
-1. Still stuck? Email [zulip-devel@googlegroups.com][mail].
-
-[mail]: mailto:zulip-devel@googlegroups.com?subject=Jenkins
