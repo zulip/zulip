@@ -1328,18 +1328,12 @@ input[type=checkbox].inline-block {
 
 #settings_page .table-striped thead th.active {
     opacity: 1;
-    -webkit-transition: opacity 100ms ease-out;
-    -moz-transition: opacity 100ms ease-out;
-    -o-transition: opacity 100ms ease-out;
     transition: opacity 100ms ease-out;
 }
 
 .modal.fade {
     /* Ensure the modal is entirely off-screen while we fade the background */
     top: -50%;
-    -webkit-transition: opacity 0.3s linear;
-    -moz-transition: opacity 0.3s linear;
-    -o-transition: opacity 0.3s linear;
     transition: opacity 0.3s linear;
     transform: translateY(-50%);
 }
