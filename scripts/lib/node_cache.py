@@ -97,7 +97,7 @@ def do_yarn_install(target_path, yarn_args, success_stamp, stdout=None, stderr=N
         cd_exec = os.path.join(ZULIP_PATH, "scripts/lib/cd_exec")
         if os.environ.get('CUSTOM_CA_CERTIFICATES'):
             cmds.append([YARN_BIN, "config", "set", "cafile", os.environ['CUSTOM_CA_CERTIFICATES']])
-        cmds.append([cd_exec, target_path, YARN_BIN, "install", "--non-interactive"] +
+        cmds.append([cd_exec, target_path, YARN_BIN, "install", "--non-interactive", "--frozen-lockfile"] +
                     yarn_args)
     cmds.append(['touch', success_stamp])
 
