@@ -69,10 +69,6 @@
     color: hsl(0, 0%, 33%);
 }
 
-.message_reactions .reaction_button:not(:only-child) {
-    margin-bottom: 5px;
-}
-
 .message_reactions:hover .message_reaction + .reaction_button {
     visibility: visible;
     pointer-events: all;
