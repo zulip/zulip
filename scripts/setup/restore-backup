@@ -94,22 +94,22 @@ def restore_backup(tarball_file):
         as_postgres = ["su", "-s", "/usr/bin/env", "-", "--", POSTGRES_USER]
         run(as_postgres + ["dropdb", "--if-exists", "--", db_name])
         run(as_postgres + ["createdb", "-O", "zulip", "-T", "template0", "--", db_name])
-        run(as_postgres + ["pg_restore", "-d", db_name, "--", db_dir])
-        run(["chown", "-R", str(uid), "--", tmp])
-        os.setresuid(uid, uid, 0)
 
         # In production, we also need to do a `zulip-puppet-apply` in
         # order to adjust any configuration from /etc/zulip/zulip.conf
         # to this system.
         if settings.PRODUCTION:
-            os.setresuid(0, 0, 0)
             run(
                 [
                     os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"),
                     "-f",
                 ]
             )
-            os.setresuid(uid, uid, 0)
+        run(as_postgres + ["pg_restore", "-d", db_name, "--", db_dir])
+        run(["chown", "-R", str(uid), "--", tmp])
+        os.setresuid(uid, uid, 0)
+
+        if settings.PRODUCTION:
             run(["supervisorctl", "restart", "all"])
 
         run([os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "flush-memcached")])
