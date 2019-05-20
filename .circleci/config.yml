@@ -101,6 +101,8 @@ jobs:
       - *save_cache_requirements
       - *run_backend_tests
       - *run_frontend_tests
+      # We only need to upload coverage reports on whichever platform
+      # runs the frontend tests.
       - *upload_coverage_report
 
       # - store_artifacts:  # TODO
@@ -125,7 +127,6 @@ jobs:
       - *save_cache_package_json
       - *save_cache_requirements
       - *run_backend_tests
-      - *upload_coverage_report
 
   "bionic-backend-python3.6":
     docker:
@@ -153,7 +154,6 @@ jobs:
       - *save_cache_package_json
       - *save_cache_requirements
       - *run_backend_tests
-      - *upload_coverage_report
 
 workflows:
   version: 2
