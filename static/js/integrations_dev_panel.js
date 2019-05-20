@@ -1,13 +1,14 @@
+// Main JavaScript file for the Integrations development panel at
+// /devtools/integrations.
 (function () {
 
+// Data Segment: We lazy load the requested fixtures from the backend
+// as and when required and then cache them here.
 
-// Data Segment: We lazy load the requested fixtures from the backend as and when required
-// and then keep them here.
 var loaded_fixtures = {};
 var url_base = "/api/v1/external/";
 
-
-// Resetting/Clearing: a method and a map for clearing certain UI elements.
+// A map defining how to clear the various UI elements.
 var clear_handlers = {
     stream_name: "#stream_name",
     topic_name: "#topic_name",
@@ -22,25 +23,22 @@ var clear_handlers = {
 };
 
 function clear_elements(elements) {
-    /* Clear UI elements by specifying which ones to clear as an array of strings. */
+    // Supports strings (a selector to clear) or calling a function
+    // (for more complex logic).
     elements.forEach(function (element_name) {
         var handler = clear_handlers[element_name];
         if (typeof handler === "string") {
-            // Handle clearing text input fields or the message field.
             var element_object = $(handler)[0];
             element_object.value = "";
             element_object.innerHTML = "";
         } else {
-            // Use the function returned by the map directly.
             handler();
         }
     });
     return;
 }
 
-
-// Message handlers: The message is a small paragraph at the bottom of the page where
-// we let the user know what happened - e.g. success, invalid JSON, etc.
+// Success/failure colors used for displaying results to the user.
 var message_level_to_color_map = {
     warning: "#be1931",
     success: "#085d44",
@@ -53,8 +51,6 @@ function set_message(msg, level) {
     return;
 }
 
-
-// Helper methods
 function get_api_key_from_selected_bot() {
     return $("#bot_name").children("option:selected").val();
 }
@@ -84,9 +80,10 @@ function get_custom_http_headers() {
 }
 
 function set_results(response) {
-    /* After sending a webhook fixture message, the backend will let
-    us know the responses information for each of the requests sent
-    (which is just 1 for send, but usually is several for send all).
+    /* The backend returns the JSON responses for each of the
+    send_message actions included in our request (which is just 1 for
+    send, but usually is several for send all).  We display these
+    responses to the user in the "results" panel.
 
     The following is a bit messy, but it's a devtool, so ultimately OK */
     var responses = response.responses;
@@ -105,7 +102,8 @@ function set_results(response) {
 }
 
 function load_fixture_body(fixture_name) {
-    /* Given a fixture name, use the loaded_fixtures dictionary to set the fixture body field. */
+    /* Given a fixture name, use the loaded_fixtures dictionary to set
+     * the fixture body field. */
     var integration_name = get_selected_integration_name();
     var fixture_body = loaded_fixtures[integration_name][fixture_name];
     if (fixture_body === undefined) {
@@ -113,7 +111,8 @@ function load_fixture_body(fixture_name) {
         return;
     }
     if (get_fixture_format(fixture_name) === "json") {
-        fixture_body = JSON.stringify(fixture_body, null, 4);// 4 is for pretty print .
+        // The 4 argument is pretty printer indentation.
+        fixture_body = JSON.stringify(fixture_body, null, 4);
     }
     $("#fixture_body")[0].value = fixture_body;
 
@@ -121,8 +120,9 @@ function load_fixture_body(fixture_name) {
 }
 
 function load_fixture_options(integration_name) {
-    /* Using the integration name and loaded_fixtures object to set the fixture options for the
-    fixture_names dropdown and also set the fixture body to the first fixture by default. */
+    /* Using the integration name and loaded_fixtures object to set
+    the fixture options for the fixture_names dropdown and also set
+    the fixture body to the first fixture by default. */
     var fixtures_options_dropdown = $("#fixture_name")[0];
     var fixtures_names = Object.keys(loaded_fixtures[integration_name]);
 
@@ -138,10 +138,11 @@ function load_fixture_options(integration_name) {
 }
 
 function update_url() {
-    /* Automatically build the URL that the webhook should be targeting. To generate this URL, we
-    would need at least the bot's API Key and the integration name. The stream and topic are both
-    optional, and for the sake of completeness, it should be noted that the topic is irrelavent
-    without specifying the stream.*/
+    /* Construct the URL that the webhook should be targeting, using
+    the bot's API key and the integration name.  The stream and topic
+    are both optional, and for the sake of completeness, it should be
+    noted that the topic is irrelavent without specifying the
+    stream. */
     var url_field = $("#URL")[0];
 
     var integration_name = get_selected_integration_name();
@@ -166,7 +167,6 @@ function update_url() {
     return;
 }
 
-
 // API Callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response) {
     try {
@@ -174,16 +174,18 @@ function handle_unsuccessful_response(response) {
         response = JSON.parse(response.responseText);
         set_message("Result: " + "(" + status_code + ") " + response.msg, "warning");
     } catch (err) {
-        // If the response is not a JSON response then it would be Django sending a HTML response
-        // containing a stack trace and useful debugging information regarding the backend code.
+        // If the response is not a JSON response, then it is probably
+        // Django returning an HTML response containing a stack trace
+        // with useful debugging information regarding the backend
+        // code.
         document.write(response.responseText);
     }
     return;
 }
 
 function get_fixtures(integration_name) {
-    /* Request fixtures from the backend for any integrations that we don't already have fixtures
-    for (which would be stored in the JS variable called "loaded_fixtures"). */
+    /* Request fixtures from the backend for any integrations that we
+    don't already have fixtures cached in loaded_fixtures). */
     if (integration_name === "") {
         clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "URL", "message"]);
         return;
@@ -194,11 +196,13 @@ function get_fixtures(integration_name) {
         return;
     }
 
-    // We don't have the fixtures for this integration; fetch them using Zulip's channel library.
-    // Relative url pattern: /devtools/integrations/(?P<integration_name>.+)/fixtures
+    // We don't have the fixtures for this integration; fetch them
+    // from the backend.  Relative url pattern:
+    // /devtools/integrations/(?P<integration_name>.+)/fixtures
     channel.get({
         url: "/devtools/integrations/" + integration_name + "/fixtures",
-        idempotent: false,  // Since the user may add or modify fixtures while testing.
+        // Since the user may add or modify fixtures as they edit.
+        idempotent: false,
         success: function (response) {
             loaded_fixtures[integration_name] = response.fixtures;
             load_fixture_options(integration_name);
@@ -211,12 +215,15 @@ function get_fixtures(integration_name) {
 }
 
 function send_webhook_fixture_message() {
-    /* Make sure that the user is sending valid JSON in the fixture body and that the URL is not
-    empty. Then simply send the fixture body to the specified URL. */
+    /* Make sure that the user is sending valid JSON in the fixture
+    body and that the URL is not empty. Then simply send the fixture
+    body to the target URL. */
 
-    // Note: If the user has just logged in using a seperate tab while the integrations dev panel is
-    // open, then the csrf token that we have stored in the hidden input element would be obsoleted
-    // leading to an error message when the user tries to send the fixture body.
+    // Note: If the user just logged in to a different Zulip account
+    // using another tab while the integrations dev panel is open,
+    // then the csrf token that we have stored in the hidden input
+    // element would have been expired, leading to an error message
+    // when the user tries to send the fixture body.
     var csrftoken = $("#csrftoken").val();
 
     var url = $("#URL").val();
@@ -246,9 +253,10 @@ function send_webhook_fixture_message() {
         data: {url: url, body: body, custom_headers: custom_headers, is_json: is_json},
         beforeSend: function (xhr) {xhr.setRequestHeader('X-CSRFToken', csrftoken);},
         success: function (response) {
-            // If the previous fixture body was sent successfully, then we should change the success
-            // message up a bit to let the user easily know that this fixture body was also sent
-            // successfully.
+            // If the previous fixture body was sent successfully,
+            // then we should change the success message up a bit to
+            // let the user easily know that this fixture body was
+            // also sent successfully.
             set_results(response);
             if ($("#message")[0].innerHTML === "Success!") {
                 set_message("Success!!!", "success");
