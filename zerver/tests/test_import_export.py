@@ -239,13 +239,20 @@ class ImportExportTest(ZulipTestCase):
                 exportable_user_ids=exportable_user_ids,
                 consent_message_id=consent_message_id,
             )
-            # TODO: Process the second partial file, which can be created
-            #       for certain edge cases.
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, 'messages-000001.json.partial'),
                 output_path=os.path.join(output_dir, 'messages-000001.json'),
                 consent_message_id=consent_message_id,
             )
+
+            try:
+                export_usermessages_batch(
+                    input_path=os.path.join(output_dir, 'messages-000002.json.partial'),
+                    output_path=os.path.join(output_dir, 'messages-000002.json'),
+                    consent_message_id=consent_message_id,
+                )
+            except FileNotFoundError:
+                pass
 
         def read_file(fn: str) -> Any:
             full_fn = os.path.join(output_dir, fn)
@@ -256,6 +263,12 @@ class ImportExportTest(ZulipTestCase):
         result['realm'] = read_file('realm.json')
         result['attachment'] = read_file('attachment.json')
         result['message'] = read_file('messages-000001.json')
+        try:
+            message = read_file('messages-000002.json')
+            result["message"]["zerver_usermessage"].extend(message["zerver_usermessage"])
+            result["message"]["zerver_message"].extend(message["zerver_message"])
+        except FileNotFoundError:
+            pass
         result['uploads_dir'] = os.path.join(output_dir, 'uploads')
         result['uploads_dir_records'] = read_file(os.path.join('uploads', 'records.json'))
         result['emoji_dir'] = os.path.join(output_dir, 'emoji')
@@ -483,6 +496,12 @@ class ImportExportTest(ZulipTestCase):
                                           self.example_email("ZOE"),
                                           self.example_email("othello")])
 
+        # Create PMs
+        pm_a_msg_id = self.send_personal_message(self.example_email("AARON"), self.example_email("othello"))
+        pm_b_msg_id = self.send_personal_message(self.example_email("cordelia"), self.example_email("iago"))
+        pm_c_msg_id = self.send_personal_message(self.example_email("hamlet"), self.example_email("othello"))
+        pm_d_msg_id = self.send_personal_message(self.example_email("iago"), self.example_email("hamlet"))
+
         # Send message advertising export and make users react
         self.send_stream_message(self.example_email("othello"), "Verona",
                                  topic_name="Export",
@@ -562,6 +581,11 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(get_set("zerver_message", "id"), exported_msg_ids)
         self.assertNotIn(stream_c_message_id, exported_msg_ids)
         self.assertNotIn(huddle_c_message_id, exported_msg_ids)
+
+        self.assertNotIn(pm_a_msg_id, exported_msg_ids)
+        self.assertIn(pm_b_msg_id, exported_msg_ids)
+        self.assertIn(pm_c_msg_id, exported_msg_ids)
+        self.assertIn(pm_d_msg_id, exported_msg_ids)
 
     def test_export_single_user(self) -> None:
         output_dir = self._make_output_dir()
