@@ -37,26 +37,25 @@ application.
 Usage assumptions and concepts
 ------------------------------
 
-Zulip is a real-time web-based chat application meant for companies and
-similar groups ranging in size from a small team to more than a thousand
+Zulip is a real-time web-based chat application meant for companies
+and similar groups ranging in size from a small team to 10,000s of
 users. It features real-time notifications, message persistence and
 search, public group conversations (*streams*), private streams,
-private one-on-one and group conversations, inline image previews, team
-presence/buddy lists, a rich API, Markdown message support, and numerous
-integrations with other services. The maintainer team aims to support
-users who connect to Zulip using dedicated iOS, Android, Linux, Windows,
-and macOS clients, as well as people using modern web browsers or
-dedicated Zulip API clients.
+private one-on-one and group conversations, inline image previews,
+team presence/buddy lists, a rich API, Markdown message support, and
+numerous integrations with other services. It supports dedicated iOS,
+Android, Linux, Windows, and macOS clients, as well as people using
+modern web browsers, cross-protocol chat tools, and dedicated [Zulip
+API](https://zulipchat.com/apoi) clients (e.g. bots).
 
 A server can host multiple Zulip *realms* (organizations) at the same
 domain, each of which is a private chamber with its own users,
 streams, customizations, and so on. This means that one person might
-be a user of multiple Zulip realms. The administrators of a realm can
-choose whether to allow anyone to register an account and join, or
-only allow people who have been invited, or restrict registrations to
-members of particular groups (using email domain names or corporate
-single-sign-on login for verification). For more on security
-considerations, see [the security model section](../production/security-model.html).
+be a user of multiple Zulip realms. The administrators of an
+organization have a great deal of control over who can register an
+account, what permissions new users have, etc. For more on security
+considerations and options, see [the security model
+section](../production/security-model.html) and the [Zulip Help Center](https://zulipchat.com/help).
 
 The Zulip "All messages" screen is like a chronologically ordered inbox;
 it displays messages, starting at the oldest message that the user
@@ -296,8 +295,9 @@ component of the Zulip server (e.g.
 ## Glossary
 
 This section gives names for some of the elements in the Zulip UI used
-in Zulip development conversations.  Contributions to extend this list
-are welcome!
+in Zulip development conversations.  In general, our goal is to
+minimize the set of terminology listed here by giving elements
+self-explanatory names.
 
 * **chevron**: A small downward-facing arrow next to a message's
     timestamp, offering contextual options, e.g., "Reply", "Mute [this
