@@ -286,7 +286,7 @@ run_test('quote_and_reply', () => {
         assert.equal(pos, 0);
     };
 
-    quote_and_reply(opts);
+    quote_and_reply(opts, '');
 
     current_msg_list.selected_message = function () {
         return {
@@ -304,7 +304,7 @@ run_test('quote_and_reply', () => {
         assert.fail('channel.get should not be used if raw_content is present');
     };
 
-    quote_and_reply(opts);
+    quote_and_reply(opts, '');
 });
 
 run_test('get_focus_area', () => {

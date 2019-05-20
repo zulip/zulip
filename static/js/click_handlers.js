@@ -762,6 +762,11 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
+    // Dissmiss Text options popover if this is clicked
+    $('#bottom_whitespace').click(function (e) {
+        e.stopPropagation();
+        popovers.hide_all();
+    });
 
     // MAIN CLICK HANDLER
 
@@ -775,6 +780,11 @@ exports.initialize = function () {
 
         // Dismiss popovers if the user has clicked outside them
         if ($('.popover-inner, #user-profile-modal, .emoji-info-popover, .app-main [class^="column-"].expanded').has(e.target).length === 0) {
+            popovers.hide_all_except_text_options_popover();
+        }
+
+        // Dismiss Text Options popover when user clicks outside of these
+        if ($('.popover-inner, #main_div, #user-profile-modal, .app-main [class^="column-"].expanded').has(e.target).length === 0) {
             popovers.hide_all();
         }
 

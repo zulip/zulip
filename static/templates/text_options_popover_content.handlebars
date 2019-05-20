@@ -1,0 +1,10 @@
+{{! Contents of the "text options" popup }}
+<ul class="nav nav-pills text_options_popover">
+    {{#if should_display_quote_and_reply}}
+    <li>
+        <a href="#" class="quote_selected_text_button" data-message-id="{{message_id}}">
+            <i class="fa fa-quote-left" aria-hidden="true"></i>
+        </a>
+    </li>
+    {{/if}}
+</ul>

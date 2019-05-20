@@ -384,7 +384,7 @@ exports.on_topic_narrow = function () {
     $('#compose-textarea').focus().select();
 };
 
-exports.quote_and_reply = function (opts) {
+exports.quote_and_reply = function (opts, selected_text) {
     var textarea = $("#compose-textarea");
     var message_id = current_msg_list.selected_id();
     var message = current_msg_list.selected_message();
@@ -418,7 +418,10 @@ exports.quote_and_reply = function (opts) {
         $("#compose-textarea").trigger("autosize.resize");
     }
 
-    if (message && message.raw_content) {
+    if (message && selected_text !== '') {
+        replace_content(selected_text);
+        return;
+    } else if (message && message.raw_content) {
         replace_content(message.raw_content);
         return;
     }

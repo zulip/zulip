@@ -8,6 +8,7 @@ var current_actions_popover_elem;
 var current_flatpickr_instance;
 var current_message_info_popover_elem;
 var current_mobile_message_buttons_popover_elem;
+var current_text_options_popover_elem;
 var userlist_placement = "right";
 
 var list_of_popovers = [];
@@ -358,6 +359,35 @@ function show_user_group_info_popover(element, group, message) {
     }
 }
 
+exports.render_text_options_popover = function (element, id, selected_text) {
+    popovers.hide_all();
+    // Don't open the popover if no text is selected.
+    if (selected_text === "") {
+        return;
+    }
+
+    current_msg_list.select_id(id);
+    var elt = $(element);
+    if (elt.data('popover') === undefined) {
+        var message = current_msg_list.get(id);
+        var should_display_quote_and_reply = message.content !== '<p>(deleted)</p>';
+        var args = {
+            message_id: message.id,
+            should_display_quote_and_reply: should_display_quote_and_reply,
+            selected_text: selected_text,
+        };
+
+        elt.popover({
+            placement: 'top',
+            title: "",
+            content: templates.render('text_options_popover_content', args),
+            trigger: "manual",
+        });
+        elt.popover("show");
+        current_text_options_popover_elem = elt;
+    }
+};
+
 exports.toggle_actions_popover = function (element, id) {
     var last_popover_elem = current_actions_popover_elem;
     popovers.hide_all();
@@ -551,6 +581,17 @@ exports.open_message_menu = function (message) {
 exports.actions_menu_handle_keyboard = function (key) {
     var items = get_action_menu_menu_items();
     popover_items_handle_keyboard(key, items);
+};
+
+exports.text_options_popped = function () {
+    return current_text_options_popover_elem !== undefined;
+};
+
+exports.hide_text_options_popover = function () {
+    if (exports.text_options_popped()) {
+        current_text_options_popover_elem.popover("destroy");
+        current_text_options_popover_elem = undefined;
+    }
 };
 
 exports.actions_popped = function () {
@@ -848,7 +889,7 @@ exports.register_click_handlers = function () {
         // message in the current message list (and
         // compose_actions.respond_to_message doesn't take a message
         // argument).
-        compose_actions.quote_and_reply({trigger: 'popover respond'});
+        compose_actions.quote_and_reply({trigger: 'popover respond'}, '');
         popovers.hide_actions_popover();
         e.stopPropagation();
         e.preventDefault();
@@ -1008,6 +1049,46 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    // TEXT OPTIONS POPOVER
+
+    $("#main_div").on("mouseup", ".messagebox", function (e) {
+        var row = $(this).closest(".message_row");
+        var selected_text = window.getSelection().toString();
+        e.stopPropagation();
+        popovers.render_text_options_popover(this, rows.id(row), selected_text);
+        $(".popover").css('left', e.pageX - 20 + 'px');
+        $(".popover").css('top', e.pageY - 70 + 'px');
+    });
+
+    $('body').on('click', '.quote_selected_text_button', function (e) {
+        copy_and_paste.quote_selected_text();
+        popovers.hide_all();
+
+        $(".tooltip").remove();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    // TEXT OPTIONS POPOVER BUTTON JS TOOLTIPS
+
+    $('body').on('mouseenter', '.quote_selected_text_button', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var content = i18n.t("Quote selected text");
+        elem.tooltip({
+            title: content,
+            trigger: 'hover',
+            placement: 'top',
+            animation: false,
+        });
+        elem.tooltip('show');
+    });
+
+    $('body').on('mouseleave', '.quote_selected_text_button', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
     (function () {
         var last_scroll = 0;
 
@@ -1038,7 +1119,7 @@ exports.any_active = function () {
     return popovers.actions_popped() || user_sidebar_popped() ||
         stream_popover.stream_popped() || stream_popover.topic_popped() ||
         exports.message_info_popped() || emoji_picker.reactions_popped() ||
-        $("[class^='column-'].expanded").length;
+        popovers.text_options_popped() || $("[class^='column-'].expanded").length;
 };
 
 // This function will hide all true popovers (the userlist sidebar
@@ -1067,11 +1148,18 @@ exports.hide_all_except_userlist_sidebar = function () {
     list_of_popovers = [];
 };
 
+// This function will hide all popovers, except the text options popover.
+exports.hide_all_except_text_options_popover = function () {
+    popovers.hide_userlist_sidebar();
+    popovers.hide_all_except_userlist_sidebar();
+};
+
 // This function will hide all the popovers, including the userlist
 // sidebar.
 exports.hide_all = function () {
     popovers.hide_userlist_sidebar();
     popovers.hide_all_except_userlist_sidebar();
+    popovers.hide_text_options_popover();
 };
 
 exports.set_userlist_placement = function (placement) {

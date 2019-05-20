@@ -198,6 +198,12 @@ exports.copy_handler = function () {
     remove_div(div, ranges, selection);
 };
 
+// Quotes the selected text.
+exports.quote_selected_text = function () {
+    var selected_text = window.getSelection().toString();
+    compose_actions.quote_and_reply({trigger: 'popover respond'}, selected_text.trim());
+};
+
 exports.analyze_selection = function (selection) {
     // Here we analyze our selection to determine if part of a message
     // or multiple messages are selected.
