@@ -50,10 +50,6 @@
         line-height: 1em;
     }
 
-    .reaction_button .message_reaction_count {
-        top: 0.5px;
-    }
-
     i {
         font-size: 1.3em;
         float: left;
@@ -91,6 +87,10 @@
         font-size: 1.1em;
         color: hsl(0, 0%, 33%);
         margin-left: 3px;
+    }
+
+    .reaction_button .message_reaction_count {
+        top: 0.5px;
     }
 
     .reaction_button:hover .message_reaction_count {
