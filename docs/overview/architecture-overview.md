@@ -4,29 +4,32 @@ Zulip architectural overview
 Key Codebases
 -------------
 
-The core Zulip application is at
-<https://github.com/zulip/zulip> and
-is a web application written in Python 3.x and using the Django framework. That
-codebase includes server-side code and the web client, as well as Python API
-bindings and most of our integrations with other services and applications (see
-[the directory structure guide](../overview/directory-structure.html)).
+The main Zulip codebase is at <https://github.com/zulip/zulip>.  It
+contains the Zulip backend (written in Python 3.x and Django), the
+webapp (written in JavaScript and TypeScript) and our library of
+incoming webhook [integrations](https://zulipchat.com/integrations)
+with other services and applications (see [the directory structure
+guide](../overview/directory-structure.html)).
 
 [Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official
 mobile Zulip client supporting both iOS and Android, written in
-JavaScript with React Native, and
-[Zulip Desktop](https://github.com/zulip/zulip-desktop) is the
-official Zulip desktop client for macOS, Linux, and Windows.
+JavaScript with React Native, and [Zulip
+Desktop](https://github.com/zulip/zulip-desktop) is the official Zulip
+desktop client for macOS, Linux, and Windows.  We also have an alpha
+[Zulip Terminal](https://github.com/zulip/zulip-terminal) project.
 
 We also maintain several separate repositories for integrations and
-other glue code: a
-[Hubot adapter](https://github.com/zulip/hubot-zulip); integrations
-with [Phabricator](https://github.com/zulip/phabricator-to-zulip),
+other glue code: [Python API
+bindings](https://github.com/zulip/python-zulip-api); [JavaScript API
+bindings](https://github.com/zulip/zulip-js); a [Hubot
+adapter](https://github.com/zulip/hubot-zulip); integrations with
+[Phabricator](https://github.com/zulip/phabricator-to-zulip),
 [Jenkins](https://github.com/zulip/zulip-jenkins-plugin),
 [Puppet](https://github.com/matthewbarr/puppet-zulip),
 [Redmine](https://github.com/zulip/zulip-redmine-plugin), and
-[Trello](https://github.com/zulip/trello-to-zulip);
-[node.js API bindings](https://github.com/zulip/zulip-node); and our
-[full-text search PostgreSQL extension](https://github.com/zulip/tsearch_extras).
+[Trello](https://github.com/zulip/trello-to-zulip); our [full-text
+search PostgreSQL extension](https://github.com/zulip/tsearch_extras);
+and [many more](https://github.com/zulip/).
 
 We use [Transifex](https://www.transifex.com/zulip/zulip/) to do
 translations.
@@ -37,44 +40,26 @@ application.
 Usage assumptions and concepts
 ------------------------------
 
-Zulip is a real-time web-based chat application meant for companies
-and similar groups ranging in size from a small team to 10,000s of
-users. It features real-time notifications, message persistence and
-search, public group conversations (*streams*), private streams,
-private one-on-one and group conversations, inline image previews,
-team presence/buddy lists, a rich API, Markdown message support, and
-numerous integrations with other services. It supports dedicated iOS,
-Android, Linux, Windows, and macOS clients, as well as people using
-modern web browsers, cross-protocol chat tools, and dedicated [Zulip
-API](https://zulipchat.com/apoi) clients (e.g. bots).
+Zulip is a real-time team chat application meant to provide a great
+experience for a wide range of organizations, from companies to
+volunteer projects groups of friends, ranging in size from a small
+team to 10,000s of users.  It has [hundreds of
+features](https://zulipchat.com/features) both larger and small, and
+supports dedicated apps for iOS, Android, Linux, Windows, and macOS,
+all modern web browsers, several cross-protocol chat clients, and
+numerous dedicated [Zulip API](https://zulipchat.com/api) clients
+(e.g. bots).
 
-A server can host multiple Zulip *realms* (organizations) at the same
-domain, each of which is a private chamber with its own users,
-streams, customizations, and so on. This means that one person might
-be a user of multiple Zulip realms. The administrators of an
-organization have a great deal of control over who can register an
-account, what permissions new users have, etc. For more on security
-considerations and options, see [the security model
-section](../production/security-model.html) and the [Zulip Help Center](https://zulipchat.com/help).
-
-The Zulip "All messages" screen is like a chronologically ordered inbox;
-it displays messages, starting at the oldest message that the user
-hasn't viewed yet (for more on that logic, see [the guide to the
-pointer and unread counts](../subsystems/pointer.html)). The "All messages" screen displays
-the most recent messages in all the streams a user has joined (except
-for the streams they've muted), as well as private messages from other
-users, in strict chronological order. A user can *narrow* to view only
-the messages in a single stream, and can further narrow to focus on a
-*topic* (thread) within that stream. Each narrow has its own URL. The
-user can quickly see what conversation they're in -- the stream and
-topic, or the names of the user(s) they're private messaging with
--- using *the recipient bar* displayed atop each conversation.
-
-Zulip's philosophy is to provide sensible defaults but give the user
-fine-grained control over their incoming information flow; a user can
-mute topics and streams, and can make fine-grained choices to reduce
-real-time notifications they find irrelevant.
-
+A server can host multiple Zulip *realms* (organizations), each on its
+own (sub)domain.  While most deployments host only organization, some
+such as zulipchat.com host thousands.  Each organization is a private
+chamber with its own users, streams, customizations, and so on. This
+means that one person might be a user of multiple Zulip realms. The
+administrators of an organization have a great deal of control over
+who can register an account, what permissions new users have, etc. For
+more on security considerations and options, see [the security model
+section](../production/security-model.html) and the [Zulip Help
+Center](https://zulipchat.com/help).
 
 Components
 ----------
