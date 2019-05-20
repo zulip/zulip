@@ -310,7 +310,13 @@ def install_apt_deps(deps_to_install, retry=False):
 
     # setup-apt-repo does an `apt-get update`
     run_as_root(["./scripts/lib/setup-apt-repo"])
-    run_as_root(["apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
+    run_as_root(
+        [
+            "env", "DEBIAN_FRONTEND=noninteractive",
+            "apt-get", "-y", "install", "--no-install-recommends",
+        ]
+        + deps_to_install
+    )
 
 def install_yum_deps(deps_to_install, retry=False):
     # type: (List[str], bool) -> None
