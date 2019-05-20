@@ -28,7 +28,7 @@ needs doing:
   [backend](https://github.com/zulip/zulip), web
   [frontend](https://github.com/zulip/zulip), React Native
   [mobile app](https://github.com/zulip/zulip-mobile), or Electron
-  [desktop app](https://github.com/zulip/zulip-electron).
+  [desktop app](https://github.com/zulip/zulip-desktop).
 * Building out our
   [Python API and bots](https://github.com/zulip/python-zulip-api) framework.
 * [Writing an integration](https://zulipchat.com/api/integrations-overview).
@@ -85,7 +85,7 @@ on.
 
 * If you're interested in
   [mobile](https://github.com/zulip/zulip-mobile/issues?q=is%3Aopen+is%3Aissue),
-  [desktop](https://github.com/zulip/zulip-electron/issues?q=is%3Aopen+is%3Aissue),
+  [desktop](https://github.com/zulip/zulip-desktop/issues?q=is%3Aopen+is%3Aissue),
   or
   [bots](https://github.com/zulip/python-zulip-api/issues?q=is%3Aopen+is%3Aissue)
   development, check the respective links for open issues, or post in
@@ -318,7 +318,7 @@ list typically takes about 15 minutes.
 * Star us on GitHub. There are four main repositories:
   [server/web](https://github.com/zulip/zulip),
   [mobile](https://github.com/zulip/zulip-mobile),
-  [desktop](https://github.com/zulip/zulip-electron), and
+  [desktop](https://github.com/zulip/zulip-desktop), and
   [Python API](https://github.com/zulip/python-zulip-api).
 * [Follow us](https://twitter.com/zulip) on Twitter.
 

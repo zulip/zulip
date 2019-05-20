@@ -95,7 +95,7 @@ Don’t like something? You can
 [submit a patch](https://zulip.readthedocs.io/en/latest/development/overview.html),
 [fork the project](https://github.com/zulip/zulip), or chat with us directly
 at [chat.zulip.org](https://chat.zulip.org). All code, including the
-[desktop](https://github.com/zulip/zulip-electron) and
+[desktop](https://github.com/zulip/zulip-desktop) and
 [mobile](https://github.com/zulip/zulip-mobile) apps, is under the Apache 2
 license.
 

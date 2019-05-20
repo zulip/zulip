@@ -754,7 +754,7 @@ Zulip apps.
   Serbian, Malayalam, Korean, and Italian).
 
 [mobile-push]: ../production/mobile-push-notifications.html
-[electron-app]: https://github.com/zulip/zulip-electron/releases
+[electron-app]: https://github.com/zulip/zulip-desktop/releases
 [ios-app]: https://itunes.apple.com/us/app/zulip/id1203036395
 
 **Full feature changelog:**

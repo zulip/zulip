@@ -72,7 +72,7 @@ def run_production() -> None:
     # page (e.g. if they are deprecated).
     repositories = {
         'server': 'https://api.github.com/repos/zulip/zulip/stats/contributors',
-        'desktop': 'https://api.github.com/repos/zulip/zulip-electron/stats/contributors',
+        'desktop': 'https://api.github.com/repos/zulip/zulip-desktop/stats/contributors',
         'mobile': 'https://api.github.com/repos/zulip/zulip-mobile/stats/contributors',
         'python-zulip-api': 'https://api.github.com/repos/zulip/python-zulip-api/stats/contributors',
         'zulip-js': 'https://api.github.com/repos/zulip/zulip-js/stats/contributors',
