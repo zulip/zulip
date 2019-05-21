@@ -410,11 +410,6 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
-        def find_by_id(table: str, db_id: int) -> Dict[str, Any]:
-            return [
-                r for r in data[table]
-                if r['id'] == db_id][0]
-
         exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn('default-bot@zulip.com', exported_user_emails)
@@ -428,11 +423,11 @@ class ImportExportTest(ZulipTestCase):
 
         data = full_data['message']
         um = UserMessage.objects.all()[0]
-        exported_um = find_by_id('zerver_usermessage', um.id)
+        exported_um = self.find_by_id(data['zerver_usermessage'], um.id)
         self.assertEqual(exported_um['message'], um.message_id)
         self.assertEqual(exported_um['user_profile'], um.user_profile_id)
 
-        exported_message = find_by_id('zerver_message', um.message_id)
+        exported_message = self.find_by_id(data['zerver_message'], um.message_id)
         self.assertEqual(exported_message['content'], um.message.content)
 
         # TODO, extract get_set/find_by_id, so we can split this test up
@@ -517,11 +512,6 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
-        def find_by_id(table: str, db_id: int) -> Dict[str, Any]:
-            return [
-                r for r in data[table]
-                if r['id'] == db_id][0]
-
         exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn(self.example_email('hamlet'), exported_user_emails)
@@ -542,11 +532,11 @@ class ImportExportTest(ZulipTestCase):
                                                                              self.example_user("hamlet")])
         um = exported_usermessages[0]
         self.assertEqual(len(data["zerver_usermessage"]), len(exported_usermessages))
-        exported_um = find_by_id('zerver_usermessage', um.id)
+        exported_um = self.find_by_id(data['zerver_usermessage'], um.id)
         self.assertEqual(exported_um['message'], um.message_id)
         self.assertEqual(exported_um['user_profile'], um.user_profile_id)
 
-        exported_message = find_by_id('zerver_message', um.message_id)
+        exported_message = self.find_by_id(data['zerver_message'], um.message_id)
         self.assertEqual(exported_message['content'], um.message.content)
 
         public_stream_names = ['Denmark', 'Rome', 'Scotland', 'Venice', 'Verona']
