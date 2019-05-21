@@ -20,6 +20,8 @@ Moderation is a big part of making an open community work.
 * Configure a [waiting period](/help/configure-waiting-period-for-full-members)
   before new members in the organization can do disruptive actions like creating
   streams.
+* [Restrict email visibility](/help/restrict-visibility-of-email-addresses)
+  to reduce the likelihood of off-platform spam.
 
 ## Response
 
