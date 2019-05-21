@@ -706,6 +706,11 @@ class ZulipTestCase(TestCase):
         values = set(r[field] for r in data)
         return values
 
+    def find_by_id(self, data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:
+        return [
+            r for r in data
+            if r['id'] == db_id][0]
+
 class WebhookTestCase(ZulipTestCase):
     """
     Common for all webhooks tests
