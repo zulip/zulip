@@ -108,8 +108,12 @@
                     </select>
                 </div>
 
-                <div class="input-group" {{#if development}}{{else}}style="display: none"{{/if}}>
-                    <label for="realm_email_address_visibility">{{t "Who can see users email addresses" }}</label>
+                <div class="input-group">
+                    <label for="realm_email_address_visibility">{{t "Who can access user email addresses (beta)" }}
+                        <a href="/help/restrict-visibility-of-email-addresses" target="_blank">
+                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                        </a>
+                    </label>
                     <select name="realm_email_address_visibility" class="setting-widget prop-element" id="id_realm_email_address_visibility" data-setting-widget-type="integer">
                         {{#each email_address_visibility_values}}
                         <option value='{{this.code}}'>{{this.description}}</option>

@@ -80,8 +80,14 @@ label {
     width: 214px;
 }
 
+.settings-section label > a,
 .settings-section h3 > a {
     color: inherit;
+}
+
+.settings-section label .fa-question-circle-o {
+    top: 1px;
+    left: 2px;
 }
 
 .settings-section h3 .fa-question-circle-o {

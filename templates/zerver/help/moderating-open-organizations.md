@@ -17,6 +17,8 @@ Moderation is a big part of making an open community work.
 * Create at least one
   [default stream](/help/set-default-streams-for-new-users) where
   [only admins can post](/help/announcement-only-streams).
+* [Restrict email visibility](/help/restrict-visibility-of-email-addresses)
+  to reduce the likelihood of off-platform spam.
 
 ## Response
 
