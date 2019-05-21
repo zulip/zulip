@@ -430,9 +430,9 @@ class ImportExportTest(ZulipTestCase):
         exported_message = self.find_by_id(data['zerver_message'], um.message_id)
         self.assertEqual(exported_message['content'], um.message.content)
 
-        # TODO, extract get_set/find_by_id, so we can split this test up
+    def test_export_realm_with_exportable_user_ids(self) -> None:
+        realm = Realm.objects.get(string_id='zulip')
 
-        # Now, restrict users
         cordelia = self.example_user('cordelia')
         hamlet = self.example_user('hamlet')
         user_ids = set([cordelia.id, hamlet.id])
