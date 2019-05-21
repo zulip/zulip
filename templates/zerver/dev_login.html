@@ -22,7 +22,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% if direct_admins %}
                             {% for direct_admin in direct_admins %}
                             <p><input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
-                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.email }}" /></p>
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.delivery_email }}" /></p>
                             {% endfor %}
                         {% else %}
                             <p>No administrators found in this realm</p>
@@ -31,7 +31,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% if guest_users %}
                             {% for guest_user in guest_users %}
                             <p><input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
-                                      name="direct_email" class="btn-direct btn-admin" value="{{ guest_user.email }}" /></p>
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ guest_user.delivery_email }}" /></p>
                             {% endfor %}
                         {% else %}
                             <p>No guest users found in this realm</p>
@@ -43,7 +43,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% if direct_users %}
                             {% for direct_user in direct_users %}
                             <p><input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
-                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.email }}" /></p>
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.delivery_email }}" /></p>
                             {% endfor %}
                         {% else %}
                             <p>No normal users found in this realm</p>
