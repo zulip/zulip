@@ -401,6 +401,11 @@ class ImportExportTest(ZulipTestCase):
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
+
+        pm_a_msg_id = self.send_personal_message(self.example_email("AARON"), "default-bot@zulip.com")
+        pm_b_msg_id = self.send_personal_message("default-bot@zulip.com", self.example_email("iago"))
+        pm_c_msg_id = self.send_personal_message(self.example_email("othello"), self.example_email("hamlet"))
+
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
         full_data = self._export_realm(realm)
@@ -429,6 +434,11 @@ class ImportExportTest(ZulipTestCase):
 
         exported_message = self.find_by_id(data['zerver_message'], um.message_id)
         self.assertEqual(exported_message['content'], um.message.content)
+
+        exported_message_ids = self.get_set(data['zerver_message'], "id")
+        self.assertIn(pm_a_msg_id, exported_message_ids)
+        self.assertIn(pm_b_msg_id, exported_message_ids)
+        self.assertIn(pm_c_msg_id, exported_message_ids)
 
     def test_export_realm_with_exportable_user_ids(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
