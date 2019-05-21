@@ -491,9 +491,10 @@ class ImportExportTest(ZulipTestCase):
         self.send_stream_message(self.example_email("iago"), "Private A", "Hello Stream A")
 
         create_stream_if_needed(realm, "Private B", invite_only=True)
-        self.subscribe(self.example_user("hamlet"), "Private B")
         self.subscribe(self.example_user("prospero"), "Private B")
-        self.send_stream_message(self.example_email("prospero"), "Private B", "Hello Stream B")
+        stream_b_message_id = self.send_stream_message(self.example_email("prospero"),
+                                                       "Private B", "Hello Stream B")
+        self.subscribe(self.example_user("hamlet"), "Private B")
 
         create_stream_if_needed(realm, "Private C", invite_only=True)
         self.subscribe(self.example_user("othello"), "Private C")
@@ -589,6 +590,11 @@ class ImportExportTest(ZulipTestCase):
         exported_msg_ids = set(public_stream_message_ids) | set(private_stream_message_ids) \
             | set(exported_pm_ids) | set(exported_huddle_ids)
         self.assertEqual(self.get_set(data["zerver_message"], "id"), exported_msg_ids)
+
+        # TODO: This behavior is wrong and should be fixed. The message should not be exported
+        # since it was sent before the only consented user iago joined the stream.
+        self.assertIn(stream_b_message_id, exported_msg_ids)
+
         self.assertNotIn(stream_c_message_id, exported_msg_ids)
         self.assertNotIn(huddle_c_message_id, exported_msg_ids)
 
