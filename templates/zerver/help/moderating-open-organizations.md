@@ -38,8 +38,6 @@ Moderation is a big part of making an open community work.
 
 ## In the works
 
-* **Mark as spam**. This will allow non-admins to collectively impose a
-  temporary ban on a user.
 * **Delete spammer**. This will wipe the user from your Zulip, by deleting
   all their messages and reactions, banning them, etc.
 * **Mute user**. This will allow an individual user to hide the messages of
