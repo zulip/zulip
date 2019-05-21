@@ -18,7 +18,7 @@ var clear_handlers = {
     integration_name: function () { $('#integration_name').children()[0].selected = true; },
     fixture_name: function () { $('#fixture_name').empty(); },
     fixture_body: function () { $("#fixture_body")[0].value = ""; },
-    custom_http_headers: function () { $("#custom_http_headers")[0].value = ""; },
+    custom_http_headers: function () { $("#custom_http_headers")[0].value = "{}"; },
     results: function () { $("#idp-results")[0].value = ""; },
 };
 
