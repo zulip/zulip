@@ -573,6 +573,11 @@ on a dark background, and don't change the dark labels dark either. */
         -webkit-filter: invert(100%);
         filter: invert(100%);
     }
+
+    .simplebar-track .simplebar-scrollbar::before {
+        background-color: rgb(255, 255, 255);
+        box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.33);
+    }
 }
 
 @-moz-document url-prefix() {

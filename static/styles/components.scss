@@ -67,7 +67,8 @@ a.no-underline:hover {
 }
 
 .simplebar-track .simplebar-scrollbar::before {
-    background-color: rgb(136, 136, 136);
+    background-color: rgb(0, 0, 0);
+    box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.33);
 }
 
 .simplebar-track.simplebar-vertical {
