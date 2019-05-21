@@ -355,19 +355,27 @@ exports.get_color = function (stream_name) {
     return sub.color;
 };
 
-exports.in_home_view = function (stream_id) {
+exports.is_muted = function (stream_id) {
     var sub = exports.get_sub_by_id(stream_id);
-    return sub !== undefined && !sub.is_muted;
+    // Return true for undefined streams
+    if (sub === undefined) {
+        return true;
+    }
+    return sub.is_muted;
 };
 
-exports.name_in_home_view = function (stream_name) {
+exports.is_stream_muted_by_name = function (stream_name) {
     var sub = exports.get_sub(stream_name);
-    return sub !== undefined && !sub.is_muted;
+    // Return true for undefined streams
+    if (sub === undefined) {
+        return true;
+    }
+    return sub.is_muted;
 };
 
-exports.notifications_in_home_view = function () {
+exports.is_notifications_stream_muted = function () {
     // TODO: add page_params.notifications_stream_id
-    return exports.name_in_home_view(page_params.notifications_stream);
+    return exports.is_stream_muted_by_name(page_params.notifications_stream);
 };
 
 exports.is_subscribed = function (stream_name) {

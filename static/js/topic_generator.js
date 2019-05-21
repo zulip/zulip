@@ -198,7 +198,7 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
     var my_streams = stream_sort.get_streams();
 
     my_streams = _.filter(my_streams, function (stream_name) {
-        if (stream_data.name_in_home_view(stream_name)) {
+        if (!stream_data.is_stream_muted_by_name(stream_name)) {
             return true;
         }
         if  (stream_name === curr_stream) {

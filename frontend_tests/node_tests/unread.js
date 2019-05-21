@@ -303,8 +303,8 @@ run_test('home_messages', () => {
     stream_data.is_subscribed = function () {
         return true;
     };
-    stream_data.in_home_view = function () {
-        return true;
+    stream_data.is_muted = function () {
+        return false;
     };
 
     var stream_id = 401;

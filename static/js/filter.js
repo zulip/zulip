@@ -41,7 +41,8 @@ function message_in_home(message) {
         return true;
     }
 
-    return stream_data.in_home_view(message.stream_id);
+    // We don't display muted streams in 'All messages' view
+    return !stream_data.is_muted(message.stream_id);
 }
 
 function message_matches_search_term(message, operator, operand) {
