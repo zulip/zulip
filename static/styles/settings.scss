@@ -80,18 +80,21 @@ label {
     width: 214px;
 }
 
-.subsection-header > h3 a {
+.settings-section h3 > a {
     color: inherit;
 }
 
-.subsection-header > h3 .fa-question-circle-o {
-    opacity: 0.4;
-    position: relative;
+.settings-section h3 .fa-question-circle-o {
     top: 1px;
     left: 5px;
 }
 
-.subsection-header > h3 .fa-question-circle-o:hover {
+.settings-section .fa-question-circle-o {
+    opacity: 0.4;
+    position: relative;
+}
+
+.settings-section .fa-question-circle-o:hover {
     opacity: 1;
 }
 
