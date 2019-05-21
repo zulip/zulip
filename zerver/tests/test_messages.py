@@ -1860,13 +1860,13 @@ class MessagePOSTTest(ZulipTestCase):
         user.set_password(password)
         user.is_api_super_user = True
         user.save()
-        self.login(user.email, password)
-        result = self.client_post("/json/messages", {"type": "stream",
-                                                     "to": "Verona",
-                                                     "client": "test suite",
-                                                     "content": "Test message",
-                                                     "topic": "Test topic",
-                                                     "realm_str": "non-existing"})
+        result = self.api_post(user.email,
+                               "/api/v1/messages", {"type": "stream",
+                                                    "to": "Verona",
+                                                    "client": "test suite",
+                                                    "content": "Test message",
+                                                    "topic": "Test topic",
+                                                    "realm_str": "non-existing"})
         user.is_api_super_user = False
         user.save()
         self.assert_json_error(result, "Unknown organization 'non-existing'")
