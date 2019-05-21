@@ -443,9 +443,14 @@ class ImportExportTest(ZulipTestCase):
     def test_export_realm_with_exportable_user_ids(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
 
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user('iago')
         hamlet = self.example_user('hamlet')
         user_ids = set([cordelia.id, hamlet.id])
+
+        pm_a_msg_id = self.send_personal_message(self.example_email("AARON"), self.example_email("othello"))
+        pm_b_msg_id = self.send_personal_message(self.example_email("cordelia"), self.example_email("iago"))
+        pm_c_msg_id = self.send_personal_message(self.example_email("hamlet"), self.example_email("othello"))
+        pm_d_msg_id = self.send_personal_message(self.example_email("iago"), self.example_email("hamlet"))
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
@@ -453,15 +458,28 @@ class ImportExportTest(ZulipTestCase):
         realm_emoji.save()
 
         data = full_data['realm']
+
         exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
-        self.assertIn(self.example_email('cordelia'), exported_user_emails)
+        self.assertIn(self.example_email('iago'), exported_user_emails)
         self.assertIn(self.example_email('hamlet'), exported_user_emails)
         self.assertNotIn('default-bot@zulip.com', exported_user_emails)
-        self.assertNotIn(self.example_email('iago'), exported_user_emails)
+        self.assertNotIn(self.example_email('cordelia'), exported_user_emails)
 
         dummy_user_emails = self.get_set(data['zerver_userprofile_mirrordummy'], 'email')
-        self.assertIn(self.example_email('iago'), dummy_user_emails)
-        self.assertNotIn(self.example_email('cordelia'), dummy_user_emails)
+        self.assertIn(self.example_email('cordelia'), dummy_user_emails)
+        self.assertIn(self.example_email('othello'), dummy_user_emails)
+        self.assertIn('default-bot@zulip.com', dummy_user_emails)
+        self.assertIn('emailgateway@zulip.com', dummy_user_emails)
+        self.assertNotIn(self.example_email('iago'), dummy_user_emails)
+        self.assertNotIn(self.example_email('hamlet'), dummy_user_emails)
+
+        data = full_data['message']
+
+        exported_message_ids = self.get_set(data['zerver_message'], "id")
+        self.assertNotIn(pm_a_msg_id, exported_message_ids)
+        self.assertIn(pm_b_msg_id, exported_message_ids)
+        self.assertIn(pm_c_msg_id, exported_message_ids)
+        self.assertIn(pm_d_msg_id, exported_message_ids)
 
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
