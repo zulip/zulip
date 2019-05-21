@@ -74,6 +74,11 @@ used.
 Keep in mind that the UI may change — don’t describe it in more detail than
 is needed. **Never identify or refer to a button by its color.**
 
+### Voice
+
+Do not use `we` to refer to Zulip or its creators; e.g. "Zulip also
+allows .." rather than "we also allow ..". `You` is ok and used liberally.
+
 ## Features
 
 Zulip's Markdown processor allows you to include several special features in
