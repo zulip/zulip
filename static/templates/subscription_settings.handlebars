@@ -49,7 +49,7 @@
             <div class="subscription-config">
                 <ul class="grey-box">
                     <li>
-                        <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox sub-mute-setting">
+                        <div id="sub_setting_is_muted" class="sub_setting_checkbox sub-mute-setting">
                             <input id="mutestream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if is_muted}}checked{{/if}} />
                             <label class="subscription-control-label">{{t "Mute stream" }}</label>
                             <p class="mute-note {{#unless is_muted}}hide-mute-note{{/unless}}">{{t "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned." }}</p>
