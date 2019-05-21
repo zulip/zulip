@@ -27,38 +27,40 @@
 #user_presences {
     max-width: 95%;
     overflow-x: hidden;
-}
 
-#user_presences li {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
+    li {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
 
-#user_presences .user-list-arrow {
-    position: absolute;
-    top: 0px;
-    right: 10px;
-    font-size: 0.8em;
-    display: none;
-}
+        .user-list-arrow {
+            position: absolute;
+            top: 0px;
+            right: 10px;
+            font-size: 0.8em;
+            display: none;
 
-.user-list-arrow i {
-    padding-right: 0.25em;
-    display: inline-block;
-    width: 13px;
-}
+            i {
+                padding-right: 0.25em;
+                display: inline-block;
+                width: 13px;
+            }
 
-#user_presences li .user-list-arrow:hover {
-    display: inline;
-    cursor: pointer;
-    color: hsl(0, 0%, 0%);
-}
+            &:hover {
+                display: inline;
+                cursor: pointer;
+                color: hsl(0, 0%, 0%);
+            }
+        }
 
-#user_presences li:hover .user-list-arrow {
-    display: inline;
-    cursor: pointer;
-    color: hsl(0, 0%, 53%);
+        &:hover {
+            .user-list-arrow {
+                display: inline;
+                cursor: pointer;
+                color: hsl(0, 0%, 53%);
+            }
+        }
+    }
 }
 
 #user_presences li,
