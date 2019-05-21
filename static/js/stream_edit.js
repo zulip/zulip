@@ -228,7 +228,7 @@ exports.show_settings_for = function (node) {
 
     stream_data.update_calculated_fields(sub);
     var html = templates.render('subscription_settings', sub);
-    ui.get_content_element($('.subscriptions .right .settings')).html(html);
+    $('.subscriptions .right .settings').html(html);
 
     var sub_settings = exports.settings_for_sub(sub);
 

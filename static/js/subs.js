@@ -235,7 +235,7 @@ exports.add_sub_to_table = function (sub) {
     } else {
         ui.get_content_element($(".streams-list")).append(html);
     }
-    ui.get_content_element($(".subscriptions .settings")).append($(settings_html));
+    $(".subscriptions .settings").append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
