@@ -267,6 +267,10 @@ class TestRetentionLib(ZulipTestCase):
         msgs_qty = Message.objects.count()
         archive_messages()
 
+        # Temporary debugging code while we investigate CI failures
+        print(expected_message_ids)
+        print(ArchivedMessage.objects.all())
+
         # Compare archived messages and user messages with expired messages
         self.assertEqual(ArchivedMessage.objects.count(), len(expected_message_ids))
         self.assertEqual(ArchivedUserMessage.objects.count(), len(expected_user_msgs_ids))
