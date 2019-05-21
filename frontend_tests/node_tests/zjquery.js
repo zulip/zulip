@@ -215,26 +215,38 @@ run_test('closest', () => {
     var widget = $('#my-widget');
     var parent;
     var parentSelector;
+    var closest;
 
     parentSelector = '#my-parent';
     parent = $(parentSelector);
     widget.set_parent(parent);
-    assert.equal(widget.closest('#my-parent').selector, parentSelector);
+    closest = widget.closest('#my-parent');
+    assert.equal(closest.selector, parentSelector);
+    assert.equal(closest.length, 1);
 
     parentSelector = '<div id="my-parent"></div>';
     parent = $(parentSelector);
     widget.set_parent(parent);
-    assert.equal(widget.closest('#my-parent').selector, parentSelector);
+    closest = widget.closest('#my-parent');
+    assert.equal(closest.selector, parentSelector);
+    assert.equal(closest.length, 1);
 
     parentSelector = '<div class="parent-class"></div>';
     parent = $(parentSelector);
     widget.set_parent(parent);
-    assert.equal(widget.closest('.parent-class').selector, parentSelector);
+    closest = widget.closest('.parent-class');
+    assert.equal(closest.selector, parentSelector);
+    assert.equal(closest.length, 1);
 
     parentSelector = '#my-parent';
     parent = $(parentSelector);
     widget.set_parents_result(parentSelector, parent);
-    assert.equal(widget.closest('#my-parent').selector, parentSelector);
+    closest = widget.closest('#my-parent');
+    assert.equal(closest.selector, parentSelector);
+    assert.equal(closest.length, 1);
 
-    assert.equal(widget.closest('#bogus-parent').selector, undefined);
+    closest = widget.closest('#bogus-parent-class');
+    assert.equal(closest.selector, undefined);
+    assert.equal(closest.length, 0);
+
 });
