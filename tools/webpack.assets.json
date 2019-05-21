@@ -87,7 +87,7 @@
     ],
     "dev-login": "./static/js/portico/dev-login.js",
     "integrations-dev-panel": [
-        "./static/js/integrations_dev_panel.js",
+        "./static/js/portico/integrations_dev_panel.js",
         "./static/styles/integrations_dev_panel.css",
         "./static/js/channel.js"
       ],
