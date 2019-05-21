@@ -3,7 +3,7 @@ import ujson
 import filecmp
 import logging
 
-from typing import Dict, Any, List, Set
+from typing import Dict, Any, List
 
 from zerver.lib.import_realm import (
     do_import_realm,
@@ -382,10 +382,6 @@ class MatterMostImporter(ZulipTestCase):
         full_path = os.path.join(team_output_dir, output_file)
         with open(full_path) as f:
             return ujson.load(f)
-
-    def get_set(self, data: List[Dict[str, Any]], field: str) -> Set[str]:
-        values = set(r[field] for r in data)
-        return values
 
     def test_do_convert_data(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")

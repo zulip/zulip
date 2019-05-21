@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from typing import (cast, Any, Dict, Iterable, Iterator, List, Optional,
-                    Tuple, Union)
+                    Tuple, Union, Set)
 
 from django.apps import apps
 from django.db.migrations.state import StateApps
@@ -701,6 +701,10 @@ class ZulipTestCase(TestCase):
                                       prefix="test-" + exported_from + "-import-")
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
+
+    def get_set(self, data: List[Dict[str, Any]], field: str) -> Set[str]:
+        values = set(r[field] for r in data)
+        return values
 
 class WebhookTestCase(ZulipTestCase):
     """

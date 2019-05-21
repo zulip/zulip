@@ -410,21 +410,17 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
-        def get_set(table: str, field: str) -> Set[str]:
-            values = set(r[field] for r in data[table])
-            return values
-
         def find_by_id(table: str, db_id: int) -> Dict[str, Any]:
             return [
                 r for r in data[table]
                 if r['id'] == db_id][0]
 
-        exported_user_emails = get_set('zerver_userprofile', 'email')
+        exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn('default-bot@zulip.com', exported_user_emails)
         self.assertIn('emailgateway@zulip.com', exported_user_emails)
 
-        exported_streams = get_set('zerver_stream', 'name')
+        exported_streams = self.get_set(data['zerver_stream'], 'name')
         self.assertEqual(
             exported_streams,
             set([u'Denmark', u'Rome', u'Scotland', u'Venice', u'Verona'])
@@ -452,13 +448,13 @@ class ImportExportTest(ZulipTestCase):
         realm_emoji.save()
 
         data = full_data['realm']
-        exported_user_emails = get_set('zerver_userprofile', 'email')
+        exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn(self.example_email('hamlet'), exported_user_emails)
         self.assertNotIn('default-bot@zulip.com', exported_user_emails)
         self.assertNotIn(self.example_email('iago'), exported_user_emails)
 
-        dummy_user_emails = get_set('zerver_userprofile_mirrordummy', 'email')
+        dummy_user_emails = self.get_set(data['zerver_userprofile_mirrordummy'], 'email')
         self.assertIn(self.example_email('iago'), dummy_user_emails)
         self.assertNotIn(self.example_email('cordelia'), dummy_user_emails)
 
@@ -521,16 +517,12 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
-        def get_set(table: str, field: str) -> Set[str]:
-            values = set(r[field] for r in data[table])
-            return values
-
         def find_by_id(table: str, db_id: int) -> Dict[str, Any]:
             return [
                 r for r in data[table]
                 if r['id'] == db_id][0]
 
-        exported_user_emails = get_set('zerver_userprofile', 'email')
+        exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn(self.example_email('hamlet'), exported_user_emails)
         self.assertIn(self.example_email('iago'), exported_user_emails)
@@ -538,7 +530,7 @@ class ImportExportTest(ZulipTestCase):
         self.assertIn('default-bot@zulip.com', exported_user_emails)
         self.assertIn('emailgateway@zulip.com', exported_user_emails)
 
-        exported_streams = get_set('zerver_stream', 'name')
+        exported_streams = self.get_set(data['zerver_stream'], 'name')
         self.assertEqual(
             exported_streams,
             set([u'Denmark', u'Rome', u'Scotland', u'Venice', u'Verona',
@@ -578,7 +570,7 @@ class ImportExportTest(ZulipTestCase):
 
         exported_msg_ids = set(public_stream_message_ids) | set(private_stream_message_ids) \
             | set(exported_pm_ids) | set(exported_huddle_ids)
-        self.assertEqual(get_set("zerver_message", "id"), exported_msg_ids)
+        self.assertEqual(self.get_set(data["zerver_message"], "id"), exported_msg_ids)
         self.assertNotIn(stream_c_message_id, exported_msg_ids)
         self.assertNotIn(huddle_c_message_id, exported_msg_ids)
 
@@ -599,29 +591,25 @@ class ImportExportTest(ZulipTestCase):
             with open(full_fn) as f:
                 return ujson.load(f)
 
-        def get_set(data: List[Dict[str, Any]], field: str) -> Set[str]:
-            values = set(r[field] for r in data)
-            return values
-
         messages = read_file('messages-000001.json')
         user = read_file('user.json')
 
-        exported_user_id = get_set(user['zerver_userprofile'], 'id')
+        exported_user_id = self.get_set(user['zerver_userprofile'], 'id')
         self.assertEqual(exported_user_id, set([cordelia.id]))
-        exported_user_email = get_set(user['zerver_userprofile'], 'email')
+        exported_user_email = self.get_set(user['zerver_userprofile'], 'email')
         self.assertEqual(exported_user_email, set([cordelia.email]))
 
-        exported_recipient_type_id = get_set(user['zerver_recipient'], 'type_id')
+        exported_recipient_type_id = self.get_set(user['zerver_recipient'], 'type_id')
         self.assertIn(cordelia.id, exported_recipient_type_id)
 
-        exported_stream_id = get_set(user['zerver_stream'], 'id')
+        exported_stream_id = self.get_set(user['zerver_stream'], 'id')
         self.assertIn(list(exported_stream_id)[0], exported_recipient_type_id)
 
-        exported_recipient_id = get_set(user['zerver_recipient'], 'id')
-        exported_subscription_recipient = get_set(user['zerver_subscription'], 'recipient')
+        exported_recipient_id = self.get_set(user['zerver_recipient'], 'id')
+        exported_subscription_recipient = self.get_set(user['zerver_subscription'], 'recipient')
         self.assertEqual(exported_recipient_id, exported_subscription_recipient)
 
-        exported_messages_recipient = get_set(messages['zerver_message'], 'recipient')
+        exported_messages_recipient = self.get_set(messages['zerver_message'], 'recipient')
         self.assertIn(list(exported_messages_recipient)[0], exported_recipient_id)
 
     """

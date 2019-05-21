@@ -19,7 +19,7 @@ import ujson
 import logging
 import os
 import mock
-from typing import Any, Dict, List, Set
+from typing import Any
 
 class GitterImporter(ZulipTestCase):
     logger = logging.getLogger()
@@ -37,10 +37,6 @@ class GitterImporter(ZulipTestCase):
             with open(full_path) as f:
                 return ujson.load(f)
 
-        def get_set(data: List[Dict[str, Any]], field: str) -> Set[str]:
-            values = set(r[field] for r in data)
-            return values
-
         self.assertEqual(os.path.exists(os.path.join(output_dir, 'avatars')), True)
         self.assertEqual(os.path.exists(os.path.join(output_dir, 'emoji')), True)
         self.assertEqual(os.path.exists(os.path.join(output_dir, 'attachment.json')), True)
@@ -52,10 +48,10 @@ class GitterImporter(ZulipTestCase):
                          realm['zerver_realm'][0]['description'])
 
         # test users
-        exported_user_ids = get_set(realm['zerver_userprofile'], 'id')
-        exported_user_full_name = get_set(realm['zerver_userprofile'], 'full_name')
+        exported_user_ids = self.get_set(realm['zerver_userprofile'], 'id')
+        exported_user_full_name = self.get_set(realm['zerver_userprofile'], 'full_name')
         self.assertIn('User Full Name', exported_user_full_name)
-        exported_user_email = get_set(realm['zerver_userprofile'], 'email')
+        exported_user_email = self.get_set(realm['zerver_userprofile'], 'email')
         self.assertIn('username2@users.noreply.github.com', exported_user_email)
 
         # test stream
@@ -67,29 +63,29 @@ class GitterImporter(ZulipTestCase):
         self.assertEqual(realm['zerver_defaultstream'][0]['stream'], realm['zerver_stream'][0]['id'])
 
         # test recipient
-        exported_recipient_id = get_set(realm['zerver_recipient'], 'id')
-        exported_recipient_type = get_set(realm['zerver_recipient'], 'type')
+        exported_recipient_id = self.get_set(realm['zerver_recipient'], 'id')
+        exported_recipient_type = self.get_set(realm['zerver_recipient'], 'type')
         self.assertEqual(set([1, 2]), exported_recipient_type)
 
         # test subscription
-        exported_subscription_userprofile = get_set(realm['zerver_subscription'], 'user_profile')
+        exported_subscription_userprofile = self.get_set(realm['zerver_subscription'], 'user_profile')
         self.assertEqual(set([0, 1]), exported_subscription_userprofile)
-        exported_subscription_recipient = get_set(realm['zerver_subscription'], 'recipient')
+        exported_subscription_recipient = self.get_set(realm['zerver_subscription'], 'recipient')
         self.assertEqual(len(exported_subscription_recipient), 3)
         self.assertIn(realm['zerver_subscription'][1]['recipient'], exported_recipient_id)
 
         messages = read_file('messages-000001.json')
 
         # test messages
-        exported_messages_id = get_set(messages['zerver_message'], 'id')
+        exported_messages_id = self.get_set(messages['zerver_message'], 'id')
         self.assertIn(messages['zerver_message'][0]['sender'], exported_user_ids)
         self.assertIn(messages['zerver_message'][1]['recipient'], exported_recipient_id)
         self.assertIn(messages['zerver_message'][0]['content'], 'test message')
 
         # test usermessages
-        exported_usermessage_userprofile = get_set(messages['zerver_usermessage'], 'user_profile')
+        exported_usermessage_userprofile = self.get_set(messages['zerver_usermessage'], 'user_profile')
         self.assertEqual(exported_user_ids, exported_usermessage_userprofile)
-        exported_usermessage_message = get_set(messages['zerver_usermessage'], 'message')
+        exported_usermessage_message = self.get_set(messages['zerver_usermessage'], 'message')
         self.assertEqual(exported_usermessage_message, exported_messages_id)
 
     @mock.patch('zerver.data_import.gitter.process_avatars', return_value=[])
