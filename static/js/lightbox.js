@@ -71,9 +71,7 @@ function display_video(payload) {
     iframe.attr("allowfullscreen", true);
 
     $("#lightbox_overlay .player-container").html(iframe).show();
-
-    var url = (payload.type === "youtube-video" ? "https://youtu.be/" : "https://vimeo.com/") + payload.source;
-    $(".image-actions .open").attr("href", url);
+    $(".image-actions .open").attr("href", payload.url);
 }
 
 // the image param is optional, but required on the first preview of an image.
@@ -107,6 +105,7 @@ exports.open = function (image, options) {
         var $parent = $image.parent();
         var $type;
         var $source;
+        var $url = $parent.attr("href");
         if (is_youtube_video) {
             $type = "youtube-video";
             $source = $parent.attr("data-id");
@@ -139,6 +138,7 @@ exports.open = function (image, options) {
             type: $type,
             preview: $image.attr("src"),
             source: $source,
+            url: $url,
         };
 
         asset_map[$source] = payload;
