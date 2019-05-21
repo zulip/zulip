@@ -1,12 +1,30 @@
 # Incoming webhook integrations
 
 An incoming webhook allows a third-party service to push data to Zulip when
-something happens. The third-party service `POST`s to a special URL when it
-has something for you, and then your webhook integration handles that
-incoming data.
+something happens.  There's two ways to do an incoming webhook in
+Zulip:
 
-New Zulip webhook integrations can take just a few hours to write,
-including tests and documentation, if you use the right process.
+* Use our [REST API](/api/rest) endpoint for [sending
+  messages](/api/send-message).  This works great for internal tools
+  or cases where the third-party tool wants to control the formatting
+  of the messages in Zulip.
+* Adding an incoming webhook integration (detailed on this page),
+  where all the logic for formatting the Zulip messages lives in the
+  Zulip server.  This is how most of [Zulip's official
+  integrations](/integrations) work, because they enable Zulip to
+  support third-party services that just have an "outgoing webhook"
+  feature (without the third party needing to do any work specific to
+  Zulip).
+
+In an incoming webhook integration, the third-party service's
+"outgoing webhook" feature sends an `HTTP POST`s to a special URL when
+it has something for you, and then the Zulip "incoming webhook"
+integration handles that incoming data to format and send a message in
+Zulip.
+
+New official Zulip webhook integrations can take just a few hours to
+write, including tests and documentation, if you use the right
+process.
 
 ## Quick guide
 
