@@ -65,11 +65,10 @@ function display_video(payload) {
         source = "https://player.vimeo.com/video/" + payload.source;
     }
 
-    var iframe = $("<iframe></iframe>", {
-        src: source,
-        frameborder: 0,
-        allowfullscreen: true,
-    });
+    var iframe = $("<iframe></iframe>");
+    iframe.attr("src", source);
+    iframe.attr("frameborder", 0);
+    iframe.attr("allowfullscreen", true);
 
     $("#lightbox_overlay .player-container").html(iframe).show();
 
