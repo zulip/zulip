@@ -91,6 +91,10 @@ exports.update_person = function update(person) {
     if (_.has(person, 'timezone')) {
         person_obj.timezone = person.timezone;
     }
+
+    if (_.has(person, 'bot_owner_id')) {
+        person_obj.bot_owner_id = person.bot_owner_id;
+    }
 };
 
 return exports;

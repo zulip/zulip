@@ -2138,7 +2138,16 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_change_bot_owner(self) -> None:
-        change_bot_owner_checker = self.check_events_dict([
+        change_bot_owner_checker_user = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict_only([
+                ('user_id', check_int),
+                ('bot_owner_id', check_int),
+            ])),
+        ])
+
+        change_bot_owner_checker_bot = self.check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('update')),
             ('bot', check_dict_only([
@@ -2151,11 +2160,13 @@ class EventsRegisterTest(ZulipTestCase):
         owner = self.example_user('hamlet')
         bot = self.create_bot('test')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
-        events = self.do_test(action)
-        error = change_bot_owner_checker('events[0]', events[0])
+        events = self.do_test(action, num_events=2)
+        error = change_bot_owner_checker_bot('events[0]', events[0])
+        self.assert_on_error(error)
+        error = change_bot_owner_checker_user('events[1]', events[1])
         self.assert_on_error(error)
 
-        change_bot_owner_checker = self.check_events_dict([
+        change_bot_owner_checker_bot = self.check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('delete')),
             ('bot', check_dict_only([
@@ -2167,12 +2178,14 @@ class EventsRegisterTest(ZulipTestCase):
         owner = self.example_user('hamlet')
         bot = self.create_bot('test1', full_name='Test1 Testerson')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
-        events = self.do_test(action)
-        error = change_bot_owner_checker('events[0]', events[0])
+        events = self.do_test(action, num_events=2)
+        error = change_bot_owner_checker_bot('events[0]', events[0])
+        self.assert_on_error(error)
+        error = change_bot_owner_checker_user('events[1]', events[1])
         self.assert_on_error(error)
 
         check_services = check_list(sub_validator=None, length=0)
-        change_bot_owner_checker = self.check_events_dict([
+        change_bot_owner_checker_bot = self.check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('add')),
             ('bot', check_dict_only([
@@ -2194,8 +2207,10 @@ class EventsRegisterTest(ZulipTestCase):
         self.user_profile = self.example_user('hamlet')
         bot = self.create_test_bot('test2', previous_owner, full_name='Test2 Testerson')
         action = lambda: do_change_bot_owner(bot, self.user_profile, previous_owner)
-        events = self.do_test(action)
-        error = change_bot_owner_checker('events[0]', events[0])
+        events = self.do_test(action, num_events=2)
+        error = change_bot_owner_checker_bot('events[0]', events[0])
+        self.assert_on_error(error)
+        error = change_bot_owner_checker_user('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_do_update_outgoing_webhook_service(self):

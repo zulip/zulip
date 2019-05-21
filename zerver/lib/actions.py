@@ -407,16 +407,18 @@ def process_new_human_user(user_profile: UserProfile,
             lambda event: None)
 
 def notify_created_user(user_profile: UserProfile) -> None:
-    event = dict(type="realm_user", op="add",
-                 person=dict(email=user_profile.email,
-                             user_id=user_profile.id,
-                             is_admin=user_profile.is_realm_admin,
-                             full_name=user_profile.full_name,
-                             avatar_url=avatar_url(user_profile),
-                             timezone=user_profile.timezone,
-                             date_joined=user_profile.date_joined.isoformat(),
-                             is_guest=user_profile.is_guest,
-                             is_bot=user_profile.is_bot))  # type: Dict[str, Any]
+    person = dict(email=user_profile.email,
+                  user_id=user_profile.id,
+                  is_admin=user_profile.is_realm_admin,
+                  full_name=user_profile.full_name,
+                  avatar_url=avatar_url(user_profile),
+                  timezone=user_profile.timezone,
+                  date_joined=user_profile.date_joined.isoformat(),
+                  is_guest=user_profile.is_guest,
+                  is_bot=user_profile.is_bot)  # type: Dict[str, Any]
+    if user_profile.is_bot and user_profile.bot_owner_id is not None:
+        person["bot_owner_id"] = user_profile.bot_owner_id
+    event = dict(type="realm_user", op="add", person=person)  # type: Dict[str, Any]
     if not user_profile.is_bot:
         event["person"]["profile_data"] = {}
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
@@ -3228,6 +3230,18 @@ def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
                              owner_id=user_profile.bot_owner.id,
                              )),
                update_users)
+
+    # Since `bot_owner_id` is included in the user profile dict we need
+    # to update the users dict with the new bot owner id
+    event = dict(
+        type="realm_user",
+        op="update",
+        person=dict(
+            user_id=user_profile.id,
+            bot_owner_id=user_profile.bot_owner.id,
+        ),
+    )  # type: Dict[str, Any]
+    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
     user_profile.tos_version = tos_version

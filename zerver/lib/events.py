@@ -101,7 +101,10 @@ def get_raw_user_data(realm: Realm, client_gravatar: bool) -> Dict[int, Dict[str
             is_active = row['is_active'],
             date_joined = row['date_joined'].isoformat(),
         )
-        if not is_bot:
+        if is_bot:
+            if row['bot_owner_id'] is not None:
+                result['bot_owner_id'] = row['bot_owner_id']
+        else:
             result['profile_data'] = profiles_by_user_id.get(row['id'], {})
         return result
 
