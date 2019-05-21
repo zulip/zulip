@@ -62,8 +62,8 @@ run_test('update_property', () => {
     // Test in home view
     with_overrides(function (override) {
         global.with_stub(function (stub) {
-            override('stream_muting.update_in_home_view', stub.f);
-            stream_events.update_property(1, 'in_home_view', true);
+            override('stream_muting.update_is_muted', stub.f);
+            stream_events.update_property(1, 'in_home_view', false);
             var args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, true);

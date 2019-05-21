@@ -51,7 +51,7 @@ exports.update_property = function (stream_id, property, value, other_values) {
         stream_color.update_stream_color(sub, value, {update_historical: true});
         break;
     case 'in_home_view':
-        stream_muting.update_in_home_view(sub, value);
+        stream_muting.update_is_muted(sub, !value);
         break;
     case 'desktop_notifications':
         update_stream_desktop_notifications(sub, value);
