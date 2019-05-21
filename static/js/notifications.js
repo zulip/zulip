@@ -443,7 +443,7 @@ exports.message_is_notifiable = function (message) {
     // Messages to muted streams that don't mention us specifically
     // are not notifiable.
     if (message.type === "stream" &&
-        !stream_data.in_home_view(message.stream_id)) {
+        stream_data.is_muted(message.stream_id)) {
         return false;
     }
 
@@ -576,7 +576,7 @@ exports.get_local_notify_mix_reason = function (message) {
         return i18n.t("Sent! Your message was sent to a topic you have muted.");
     }
 
-    if (message.type === "stream" && !stream_data.in_home_view(message.stream_id)) {
+    if (message.type === "stream" && stream_data.is_muted(message.stream_id)) {
         return i18n.t("Sent! Your message was sent to a stream you have muted.");
     }
 

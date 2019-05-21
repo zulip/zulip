@@ -282,8 +282,8 @@ run_test('topics', () => {
         return stream_id_dct[stream_name];
     };
 
-    global.stream_data.name_in_home_view = function (stream_name) {
-        return stream_name !== 'muted';
+    global.stream_data.is_stream_muted_by_name = function (stream_name) {
+        return stream_name === 'muted';
     };
 
     global.unread.topic_has_any_unread = function (stream_id) {

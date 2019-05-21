@@ -305,7 +305,7 @@ exports.unread_topic_counter = (function () {
                 }
             });
             res.stream_count.set(stream_id, stream_count);
-            if (stream_data.in_home_view(stream_id)) {
+            if (!stream_data.is_muted(stream_id)) {
                 res.stream_unread_messages += stream_count;
             }
 

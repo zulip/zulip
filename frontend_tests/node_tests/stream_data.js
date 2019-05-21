@@ -79,8 +79,8 @@ run_test('basics', () => {
     assert.equal(stream_data.get_name('denMARK'), 'Denmark');
     assert.equal(stream_data.get_name('unknown Stream'), 'unknown Stream');
 
-    assert(stream_data.in_home_view(social.stream_id));
-    assert(!stream_data.in_home_view(denmark.stream_id));
+    assert(!stream_data.is_muted(social.stream_id));
+    assert(stream_data.is_muted(denmark.stream_id));
 
     assert.equal(stream_data.maybe_get_stream_name(), undefined);
     assert.equal(stream_data.maybe_get_stream_name(social.stream_id), 'social');
@@ -600,17 +600,17 @@ run_test('is_muted', () => {
 
     stream_data.add_sub('tony', tony);
     stream_data.add_sub('jazy', jazy);
-    assert(stream_data.name_in_home_view('tony'));
-    assert(!stream_data.name_in_home_view('jazy'));
-    assert(!stream_data.name_in_home_view('EEXISTS'));
+    assert(!stream_data.is_stream_muted_by_name('tony'));
+    assert(stream_data.is_stream_muted_by_name('jazy'));
+    assert(stream_data.is_stream_muted_by_name('EEXISTS'));
 });
 
-run_test('notifications_in_home_view', () => {
+run_test('is_notifications_stream_muted', () => {
     page_params.notifications_stream = 'tony';
-    assert(stream_data.notifications_in_home_view());
+    assert(!stream_data.is_notifications_stream_muted());
 
     page_params.notifications_stream = 'jazy';
-    assert(!stream_data.notifications_in_home_view());
+    assert(stream_data.is_notifications_stream_muted());
 });
 
 run_test('remove_default_stream', () => {

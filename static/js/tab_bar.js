@@ -25,7 +25,7 @@ function make_tab_data() {
             return true;
         }
 
-        return !stream_data.in_home_view(stream_id);
+        return stream_data.is_muted(stream_id);
     }
 
     function in_all() {
