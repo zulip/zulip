@@ -259,6 +259,7 @@ class TestRetentionLib(ZulipTestCase):
             timezone_now() - timedelta(days=MIT_REALM_DAYS + 1)
         )
         expected_message_ids = expected_message_ids_dict['mit_msgs_ids'] + expected_message_ids_dict['zulip_msgs_ids']
+        print(Message.objects.filter(id__in=expected_message_ids), flush=True)
 
         # Get expired user messages by message ids
         expected_user_msgs_ids = list(UserMessage.objects.filter(
@@ -268,8 +269,8 @@ class TestRetentionLib(ZulipTestCase):
         archive_messages()
 
         # Temporary debugging code while we investigate CI failures
-        print(expected_message_ids)
-        print(ArchivedMessage.objects.all())
+        print(expected_message_ids, flush=True)
+        print(ArchivedMessage.objects.all(), flush=True)
 
         # Compare archived messages and user messages with expired messages
         self.assertEqual(ArchivedMessage.objects.count(), len(expected_message_ids))
