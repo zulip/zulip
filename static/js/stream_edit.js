@@ -239,10 +239,10 @@ exports.show_settings_for = function (node) {
     show_subscription_settings(sub_settings);
 };
 
-function stream_home_view_clicked(e) {
+function stream_is_muted_clicked(e) {
     var sub = get_sub_for_target(e.target);
     if (!sub) {
-        blueslip.error('stream_home_view_clicked() fails');
+        blueslip.error('stream_is_muted_clicked() fails');
         return;
     }
 
@@ -487,8 +487,8 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", "#sub_setting_not_in_home_view",
-                                 stream_home_view_clicked);
+    $("#subscriptions_table").on("click", "#sub_setting_is_muted",
+                                 stream_is_muted_clicked);
     $("#subscriptions_table").on("click", "#sub_desktop_notifications_setting",
                                  stream_desktop_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_audible_notifications_setting",
