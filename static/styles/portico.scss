@@ -386,6 +386,12 @@ body {
     top: -2px;
 }
 
+/* TODO: Clean up this override */
+.portico-landing.integrations ol > li > p {
+    max-width: calc(100% - 33px) !important;
+    margin-top: 0px !important;
+}
+
 .help-center ol,
 .portico-landing.integrations ol {
     margin-left: 0;
