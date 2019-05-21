@@ -210,3 +210,31 @@ run_test('extensions', () => {
     // But we also have area available from general extension.
     assert.equal(rect.area(), 35);
 });
+
+run_test('closest', () => {
+    var widget = $('#my-widget');
+    var parent;
+    var parentSelector;
+
+    parentSelector = '#my-parent';
+    parent = $(parentSelector);
+    widget.set_parent(parent);
+    assert.equal(widget.closest('#my-parent').selector, parentSelector);
+
+    parentSelector = '<div id="my-parent"></div>';
+    parent = $(parentSelector);
+    widget.set_parent(parent);
+    assert.equal(widget.closest('#my-parent').selector, parentSelector);
+
+    parentSelector = '<div class="parent-class"></div>';
+    parent = $(parentSelector);
+    widget.set_parent(parent);
+    assert.equal(widget.closest('.parent-class').selector, parentSelector);
+
+    parentSelector = '#my-parent';
+    parent = $(parentSelector);
+    widget.set_parents_result(parentSelector, parent);
+    assert.equal(widget.closest('#my-parent').selector, parentSelector);
+
+    assert.equal(widget.closest('#bogus-parent').selector, undefined);
+});
