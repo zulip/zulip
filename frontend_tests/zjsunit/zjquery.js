@@ -367,6 +367,8 @@ exports.make_new_elem = function (selector, opts) {
 
     self.selector = selector;
 
+    self.length = 1;
+
     return self;
 };
 
