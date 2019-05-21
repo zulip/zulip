@@ -1628,7 +1628,6 @@ input.new-organization-button {
 
 .markdown strong {
     font-weight: 600;
-    white-space: pre;
 }
 
 .markdown h1,
@@ -1825,11 +1824,6 @@ input.new-organization-button {
 
 .markdown .indicator.green.solid {
     background-color: hsl(106, 74%, 44%);
-}
-
-/* make sure that it doesn't wrap and disappear around the line.. odd bug. */
-.markdown a {
-    white-space: pre;
 }
 
 .markdown ul {
@@ -2086,14 +2080,6 @@ input.new-organization-button {
 
     .markdown ol {
         margin-left: 0px;
-    }
-
-    .markdown a {
-        white-space: pre-wrap;
-    }
-
-    .markdown strong {
-        white-space: pre-wrap;
     }
 
     .main-headline-text .tagline {
