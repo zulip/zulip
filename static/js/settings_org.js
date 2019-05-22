@@ -38,7 +38,7 @@ exports.maybe_disable_widgets = function () {
 exports.email_address_visibility_values = {
     everyone: {
         code: 1,
-        description: i18n.t("Members, admins, and guests"),
+        description: i18n.t("Admins, members, and guests"),
     },
     //// Backend support for this configuration is not available yet.
     // admins_and_members: {
