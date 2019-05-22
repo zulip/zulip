@@ -53,7 +53,7 @@ exports.email_address_visibility_values = {
 
 exports.show_email = function () {
     // TODO: Extend this when we add support for admins_and_members above.
-    return page_params.email_address_visibility ===
+    return page_params.realm_email_address_visibility ===
         exports.email_address_visibility_values.admins_only.code;
 };
 
