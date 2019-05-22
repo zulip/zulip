@@ -13,7 +13,7 @@ var clear_handlers = {
     stream_name: "#stream_name",
     topic_name: "#topic_name",
     URL: "#URL",
-    message: "#message",
+    results_notice: "#results_notice",
     bot_name: function () { $('#bot_name').children()[0].selected = true; },
     integration_name: function () { $('#integration_name').children()[0].selected = true; },
     fixture_name: function () { $('#fixture_name').empty(); },
@@ -39,15 +39,15 @@ function clear_elements(elements) {
 }
 
 // Success/failure colors used for displaying results to the user.
-var message_level_to_color_map = {
+var results_notice_level_to_color_map = {
     warning: "#be1931",
     success: "#085d44",
 };
 
-function set_message(msg, level) {
-    var message_field = $("#message")[0];
-    message_field.innerHTML = msg;
-    message_field.style.color = message_level_to_color_map[level];
+function set_results_notice(msg, level) {
+    var results_notice_field = $("#results_notice")[0];
+    results_notice_field.innerHTML = msg;
+    results_notice_field.style.color = results_notice_level_to_color_map[level];
     return;
 }
 
@@ -72,7 +72,7 @@ function get_custom_http_headers() {
             // Let JavaScript validate the JSON for us.
             custom_headers = JSON.stringify(JSON.parse(custom_headers));
         } catch (err) {
-            set_message("Custom HTTP headers are not in a valid JSON format.", "warning");
+            set_results_notice("Custom HTTP headers are not in a valid JSON format.", "warning");
             return;
         }
     }
@@ -107,7 +107,7 @@ function load_fixture_body(fixture_name) {
     var integration_name = get_selected_integration_name();
     var fixture_body = loaded_fixtures[integration_name][fixture_name];
     if (fixture_body === undefined) {
-        set_message("Fixture does not have a body.", "warning");
+        set_results_notice("Fixture does not have a body.", "warning");
         return;
     }
     if (get_fixture_format(fixture_name) === "json") {
@@ -172,7 +172,7 @@ function handle_unsuccessful_response(response) {
     try {
         var status_code = response.statusCode().status;
         response = JSON.parse(response.responseText);
-        set_message("Result: " + "(" + status_code + ") " + response.msg, "warning");
+        set_results_notice("Result: " + "(" + status_code + ") " + response.msg, "warning");
     } catch (err) {
         // If the response is not a JSON response, then it is probably
         // Django returning an HTML response containing a stack trace
@@ -187,7 +187,7 @@ function get_fixtures(integration_name) {
     /* Request fixtures from the backend for any integrations that we
     don't already have fixtures cached in loaded_fixtures). */
     if (integration_name === "") {
-        clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "URL", "message"]);
+        clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "URL", "results_notice"]);
         return;
     }
 
@@ -228,7 +228,7 @@ function send_webhook_fixture_message() {
 
     var url = $("#URL").val();
     if (url === "") {
-        set_message("URL can't be empty.", "warning");
+        set_results_notice("URL can't be empty.", "warning");
         return;
     }
 
@@ -241,7 +241,7 @@ function send_webhook_fixture_message() {
             body = JSON.stringify(JSON.parse(body));
             is_json = true;
         } catch (err) {
-            set_message("Invalid JSON in fixture body.", "warning");
+            set_results_notice("Invalid JSON in fixture body.", "warning");
             return;
         }
     }
@@ -258,10 +258,10 @@ function send_webhook_fixture_message() {
             // let the user easily know that this fixture body was
             // also sent successfully.
             set_results(response);
-            if ($("#message")[0].innerHTML === "Success!") {
-                set_message("Success!!!", "success");
+            if ($("#results_notice")[0].innerHTML === "Success!") {
+                set_results_notice("Success!!!", "success");
             } else {
-                set_message("Success!", "success");
+                set_results_notice("Success!", "success");
             }
             return;
         },
@@ -276,7 +276,7 @@ function send_all_fixture_messages() {
     var url = $("#URL").val();
     var integration = get_selected_integration_name();
     if (integration === "") {
-        set_message("You have to select an integration first.");
+        set_results_notice("You have to select an integration first.");
         return;
     }
 
@@ -297,7 +297,7 @@ function send_all_fixture_messages() {
 // Initialization
 $(function () {
     clear_elements(["stream_name", "topic_name", "URL", "bot_name", "integration_name",
-                    "fixture_name", "custom_http_headers", "fixture_body", "message",
+                    "fixture_name", "custom_http_headers", "fixture_body", "results_notice",
                     "results"]);
 
     $("#stream_name")[0].value = "Denmark";
@@ -309,7 +309,7 @@ $(function () {
     }
 
     $('#integration_name').change(function () {
-        clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "message"]);
+        clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "results_notice"]);
         var integration_name = $(this).children("option:selected").val();
         get_fixtures(integration_name);
         update_url();
@@ -317,7 +317,7 @@ $(function () {
     });
 
     $('#fixture_name').change(function () {
-        clear_elements(["fixture_body", "message"]);
+        clear_elements(["fixture_body", "results_notice"]);
         var fixture_name = $(this).children("option:selected").val();
         load_fixture_body(fixture_name);
         return;
@@ -329,7 +329,7 @@ $(function () {
     });
 
     $('#send_all_fixtures_button').click(function () {
-        clear_elements(["message"]);
+        clear_elements(["results_notice"]);
         send_all_fixture_messages();
         return;
     });
