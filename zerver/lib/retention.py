@@ -131,7 +131,7 @@ def clean_unused_messages() -> None:
 
 
 def archive_messages() -> None:
-    for realm in Realm.objects.filter(message_retention_days__isnull=False):
+    for realm in Realm.objects.filter(message_retention_days__isnull=False).order_by("id"):
         move_expired_messages_to_archive(realm)
         move_expired_user_messages_to_archive(realm)
         move_expired_attachments_to_archive(realm)

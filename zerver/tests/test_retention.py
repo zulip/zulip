@@ -263,19 +263,9 @@ class TestRetentionLib(ZulipTestCase):
         # Get expired user messages by message ids
         expected_user_msgs_ids = list(UserMessage.objects.filter(
             message_id__in=expected_message_ids).order_by('id').values_list('id', flat=True))
-        user_messages = list(UserMessage.objects.select_related(
-            "message").filter(message_id__in=expected_message_ids).order_by('message_id'))
 
         msgs_qty = Message.objects.count()
         archive_messages()
-
-        # Temporary debugging code while we investigate CI failures
-        for user_message in user_messages:  # nocoverage
-            archived = ArchivedUserMessage.objects.filter(
-                message_id=user_message.message_id,
-                user_profile_id=user_message.user_profile_id).exists()
-            if not archived:
-                print("Missing:", user_message, user_message.message_id, flush=True)
 
         # Compare archived messages and user messages with expired messages
         self.assertEqual(ArchivedMessage.objects.count(), len(expected_message_ids))
