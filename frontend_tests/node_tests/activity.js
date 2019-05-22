@@ -383,7 +383,7 @@ run_test('PM_update_dom_counts', () => {
     buddy_list_add(pm_key, li);
     count.set_find_results('.value', value);
     li.set_find_results('.count', count);
-    count.set_parent(li);
+    count.set_parents_result('li', li);
 
     const counts = new Dict();
     counts.set(pm_key, 5);
