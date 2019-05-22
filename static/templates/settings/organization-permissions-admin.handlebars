@@ -88,18 +88,18 @@
                 <div class="input-group">
                     <label for="realm_create_stream_policy" class="dropdown-title">{{t "Who can create streams" }}</label>
                     <select name="realm_create_stream_policy" id="id_realm_create_stream_policy" class="prop-element">
-                        <option value="by_members">{{t "Members and admins" }}</option>
-                        <option value="by_admins_only">{{t "Admins only" }}</option>
+                        <option value="by_admins_only">{{t "Admins" }}</option>
                         <option value="by_full_members">{{t "Admins and full members" }}</option>
+                        <option value="by_members">{{t "Admins and members" }}</option>
                     </select>
                 </div>
 
                 <div class="input-group">
                     <label for="realm_invite_to_stream_policy" class="dropdown-title">{{t "Who can add users to streams" }}</label>
                     <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element">
-                        <option value="by_members">{{t "Members and admins" }}</option>
-                        <option value="by_admins_only">{{t "Admins only" }}</option>
+                        <option value="by_admins_only">{{t "Admins" }}</option>
                         <option value="by_full_members">{{t "Admins and full members" }}</option>
+                        <option value="by_members">{{t "Admins and members" }}</option>
                     </select>
                 </div>
 
@@ -115,8 +115,8 @@
                 <div class="input-group">
                     <label for="realm_add_emoji_by_admins_only" class="dropdown-title">{{t "Who can add custom emoji" }}</label>
                     <select name="realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only" class="prop-element">
-                        <option value="by_anyone">{{t "Members and admins" }}</option>
-                        <option value="by_admins_only">{{t "Admins only" }}</option>
+                        <option value="by_admins_only">{{t "Admins" }}</option>
+                        <option value="by_anyone">{{t "Admins and members" }}</option>
                     </select>
                 </div>
 
