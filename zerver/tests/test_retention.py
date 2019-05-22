@@ -123,7 +123,7 @@ class TestRetentionLib(ZulipTestCase):
         sent_message_id = self._send_cross_realm_message()
         all_user_messages_qty = UserMessage.objects.count()
         self._change_messages_pub_date([sent_message_id], timezone_now() - timedelta(days=period))
-        realms = Realm.objects.filter(message_retention_days__isnull=False)
+        realms = Realm.objects.filter(message_retention_days__isnull=False).order_by("id")
         for realm_instance in realms:
             move_expired_messages_to_archive(realm_instance)
             move_expired_user_messages_to_archive(realm_instance)
