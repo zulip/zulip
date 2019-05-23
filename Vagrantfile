@@ -147,7 +147,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.provider "virtualbox" do |vb, override|
-    override.vm.box = "ubuntu/trusty64"
+    override.vm.box = "ubuntu/bionic64"
     # An unnecessary log file gets generated when running vagrant up for the
     # first time with the Ubuntu Bionic box. This looks like it is being
     # caused upstream by the base box containing a Vagrantfile with a similar
@@ -185,7 +185,7 @@ set -o pipefail
 # Set the MOTD on the system to have Zulip instructions
 sudo ln -s /srv/zulip/tools/setup/dev-motd /etc/update-motd.d/99-zulip-dev
 sudo rm -f /etc/update-motd.d/10-help-text
-sudo dpkg --purge landscape-client landscape-common ubuntu-release-upgrader-core update-manager-core update-notifier-common
+sudo dpkg --purge landscape-client landscape-common ubuntu-release-upgrader-core update-manager-core update-notifier-common ubuntu-server
 sudo dpkg-divert --add --rename /etc/default/motd-news
 sudo sh -c 'echo ENABLED=0 > /etc/default/motd-news'
 
