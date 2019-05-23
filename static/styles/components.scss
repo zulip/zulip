@@ -110,27 +110,27 @@ a.no-underline:hover {
 /* -- flex forms -- */
 .flex-row {
     display: flex;
-}
 
-.flex-row * {
-    box-sizing: border-box;
-}
+    * {
+        box-sizing: border-box;
+    }
 
-.flex-row input[type=text],
-.flex-row input[type=password] {
-    height: auto;
-    width: 100%;
-}
+    input[type=text],
+    input[type=password] {
+        height: auto;
+        width: 100%;
+    }
 
-.flex-row.normal {
-    width: 500px;
-}
+    &.normal {
+        width: 500px;
+    }
 
-.flex-row .field {
-    margin: 10px 10px;
-    width: 100%;
-}
+    .field {
+        margin: 10px 10px;
+        width: 100%;
+    }
 
-.flex-row .field + .field {
-    margin-left: 10px;
+    .field + .field {
+        margin-left: 10px;
+    }
 }
