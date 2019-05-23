@@ -5210,9 +5210,11 @@ def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
 def do_get_streams(
         user_profile: UserProfile, include_public: bool=True,
         include_subscribed: bool=True, include_all_active: bool=False,
-        include_default: bool=False, include_owner_subscribed: bool=False
+        include_default: bool=False, include_owner_subscribed: bool=False,
+        include_all_deactivated: bool=False,
 ) -> List[Dict[str, Any]]:
-    if include_all_active and not user_profile.is_api_super_user:
+    if (include_all_active or include_all_deactivated) and \
+            not user_profile.is_api_super_user:
         raise JsonableError(_("User not authorized for this query"))
 
     include_public = include_public and user_profile.can_access_public_streams()
@@ -5254,6 +5256,9 @@ def do_get_streams(
         else:
             # Don't bother doing to the database with no valid sources
             query = []
+
+    if include_all_deactivated:
+        query = query | Stream.objects.filter(deactivated=True)
 
     streams = [(row.to_dict()) for row in query]
     streams.sort(key=lambda elt: elt["name"])

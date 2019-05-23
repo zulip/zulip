@@ -1836,6 +1836,14 @@ paths:
           type: boolean
           default: false
         example: true
+      - name: include_all_deactivated
+        in: query
+        description: Include all deactivated streams. The user must have
+          administrative privileges to use this parameter.
+        schema:
+          type: boolean
+          default: false
+        example: true
       security:
       - basicAuth: []
       responses:

@@ -3204,6 +3204,56 @@ class GetBotOwnerStreamsTest(ZulipTestCase):
 
         self.assertEqual(actual, expected)
 
+class GetDeactivatedStreamsTest(ZulipTestCase):
+
+    def test_deactivated_streams_api(self) -> None:
+        realm = get_realm('zulip')
+        iago_user = self.example_user('iago')
+        iago_user.is_api_super_user = True
+        iago_user.save()
+        self.login(iago_user.email)
+
+        def delete_stream(stream_name: str) -> None:
+            stream_id = get_stream(stream_name, realm).id
+            result = self.client_delete('/json/streams/%d' % (stream_id,))
+            self.assert_json_success(result)
+
+        # Create a stream and then delete (deactivate) it
+        self.common_subscribe_to_streams(iago_user.email, ["deleted-stream"])
+        delete_stream('deleted-stream')
+        # Create an invite-only stream and then delete (deactivate) it
+        self.common_subscribe_to_streams(iago_user.email, ["deleted-private-stream"], invite_only=True)
+        delete_stream('deleted-private-stream')
+
+        # Make sure we're able to fetch deactivated streams with
+        # `include_all_deactivated`
+        result = self.api_get(iago_user.email, '/api/v1/streams?include_all_deactivated=true')
+        self.assert_json_success(result)
+
+        result_json = result.json()
+        self.assertTrue('!DEACTIVATED:deleted-private-stream' in str(result_json))
+        self.assertTrue('!DEACTIVATED:deleted-stream' in str(result_json))
+
+        all_streams = [stream.name for stream in
+                       Stream.objects.filter(realm=realm)]
+        self.assertEqual(sorted(s["name"] for s in result_json["streams"]),
+                         sorted(all_streams))
+
+        # Make sure deactivated streams aren't included without
+        # `include_all_deactivated` argument
+        result = self.api_get(iago_user.email, '/api/v1/streams')
+        self.assert_json_success(result)
+
+        result_json = result.json()
+        self.assertTrue('!DEACTIVATED:deleted-private-stream' not in str(result_json))
+        self.assertTrue('!DEACTIVATED:deleted-stream' not in str(result_json))
+
+        non_deactivated_streams = [stream.name for stream in
+                                   Stream.objects.filter(realm=realm, deactivated=False)]
+        self.assertEqual(sorted(s["name"] for s in result_json["streams"]),
+                         sorted(non_deactivated_streams))
+
+
 class GetPublicStreamsTest(ZulipTestCase):
 
     def test_public_streams_api(self) -> None:
@@ -3244,6 +3294,10 @@ class GetPublicStreamsTest(ZulipTestCase):
 
         # Check non-superuser can't use include_all_active
         result = self.api_get(email, "/api/v1/streams?include_all_active=true")
+        self.assertEqual(result.status_code, 400)
+
+        # Check non-superuser can't use include_all_deactivated
+        result = self.api_get(email, "/api/v1/streams?include_all_deactivated=true")
         self.assertEqual(result.status_code, 400)
 
 class StreamIdTest(ZulipTestCase):
