@@ -179,6 +179,15 @@ function create_message_object() {
         message.reply_to = recipient;
         message.private_message_recipient = recipient;
         message.to_user_ids = people.email_list_to_user_ids_string(emails);
+
+        if (message.to_user_ids !== undefined) {
+            // split the user_ids into array i.e. "1,2" -> ["1", "2"]
+            // then turn them into number
+            message.to = _.map(message.to_user_ids.split(','), function (id) {
+                return Number(id);
+            });
+        }
+
     } else {
         var stream_name = compose_state.stream_name();
         message.to = stream_name;
