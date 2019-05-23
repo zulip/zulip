@@ -652,6 +652,9 @@ class ImportExportTest(ZulipTestCase):
             self.example_email('cordelia'), huddle, 'test huddle message'
         )
 
+        user_mention_message = '@**King Hamlet** Hello'
+        self.send_stream_message(self.example_email("iago"), "Verona", user_mention_message)
+
         # data to test import of hotspots
         sample_user = self.example_user('hamlet')
 
@@ -881,6 +884,17 @@ class ImportExportTest(ZulipTestCase):
             return usermessage_user
 
         assert_realm_values(get_usermessages_user)
+
+        # tests to make sure that various data-*-ids in rendered_content
+        # are replaced correctly with the values of newer realm.
+
+        def get_user_mention(r: Realm) -> Set[Any]:
+            mentioned_user = UserProfile.objects.get(delivery_email=self.example_email("hamlet"), realm=r)
+            data_user_id = 'data-user-id="{}"'.format(mentioned_user.id)
+            mention_message = get_stream_messages(r).get(rendered_content__contains=data_user_id)
+            return mention_message.content
+
+        assert_realm_values(get_user_mention)
 
     def test_import_files_from_local(self) -> None:
 
