@@ -64,6 +64,12 @@ aliases:
       name: run backend tests
       command: |
         . /srv/zulip-py3-venv/bin/activate
+        sudo apt-get install squashfs-tools
+        pip install pex xar
+        pex -r requirements/dev.txt -o pak.pex
+        make_xar --python pak.pex --output pak.xar
+        deactivate
+        ./pak.xar
         mispipe ./tools/ci/backend ts
 
   - &run_frontend_tests
