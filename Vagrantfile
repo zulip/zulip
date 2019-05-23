@@ -176,18 +176,11 @@ set -o pipefail
 # development environment not using Vagrant.
 
 # Set the MOTD on the system to have Zulip instructions
-sudo rm -f /etc/update-motd.d/*
-sudo bash -c 'cat << EndOfMessage > /etc/motd
-Welcome to the Zulip development environment!  Popular commands:
-* tools/provision - Update the development environment
-* tools/run-dev.py - Run the development server
-* tools/lint - Run the linter (quick and catches many problems)
-* tools/test-* - Run tests (use --help to learn about options)
-
-Read https://zulip.readthedocs.io/en/latest/testing/testing.html to learn
-how to run individual test suites so that you can get a fast debug cycle.
-
-EndOfMessage'
+sudo ln -s /srv/zulip/tools/setup/dev-motd /etc/update-motd.d/99-zulip-dev
+sudo rm -f /etc/update-motd.d/10-help-text
+sudo dpkg --purge landscape-client landscape-common ubuntu-release-upgrader-core update-manager-core update-notifier-common
+sudo dpkg-divert --add --rename /etc/default/motd-news
+sudo sh -c 'echo ENABLED=0 > /etc/default/motd-news'
 
 # If the host is running SELinux remount the /sys/fs/selinux directory as read only,
 # needed for apt-get to work.
