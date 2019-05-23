@@ -108,6 +108,10 @@ a.no-underline:hover {
 }
 
 /* -- flex forms -- */
+.flex-row {
+    display: flex;
+}
+
 .flex-row * {
     box-sizing: border-box;
 }
@@ -116,10 +120,6 @@ a.no-underline:hover {
 .flex-row input[type=password] {
     height: auto;
     width: 100%;
-}
-
-.flex-row {
-    display: flex;
 }
 
 .flex-row.normal {
