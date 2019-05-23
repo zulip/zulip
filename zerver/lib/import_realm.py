@@ -6,6 +6,7 @@ import shutil
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.db import connection
 from django.db.models import Max
@@ -239,9 +240,16 @@ def fix_message_rendered_content(realm: Realm,
             # longer render properly because a user has changed their
             # name.  However, some syntax ends up being broken, e.g.:
             # data-user-id for mentions.
-            #
-            # TODO: Add logic to parse the markdown and edit those
-            # data-user-id values.
+            soup = BeautifulSoup(message["rendered_content"], "lxml")
+
+            user_mentions = soup.findAll("span", {"class": "user-mention"})
+            if len(user_mentions) != 0:
+                user_id_map = ID_MAP["user_profile"]
+                for mention in user_mentions:
+                    old_user_id = int(mention["data-user-id"])
+                    if old_user_id in user_id_map:
+                        mention["data-user-id"] = str(user_id_map[old_user_id])
+                message['rendered_content'] = str(soup)
             continue
 
         message_object = FakeMessage()
