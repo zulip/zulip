@@ -179,6 +179,20 @@ function create_message_object() {
         message.reply_to = recipient;
         message.private_message_recipient = recipient;
         message.to_user_ids = people.email_list_to_user_ids_string(emails);
+
+        // Note: The `undefined` case is for situations like the
+        // is_zephyr_mirror_realm case where users may be
+        // automatically created when you try to send a private
+        // message to their email address.
+        if (message.to_user_ids !== undefined) {
+            // to_user_ids is a string containing a comma-separated
+            // list of user IDs for the recipients; convert this into
+            // an array of integers.
+            message.to = _.map(message.to_user_ids.split(','), function (id) {
+                return Number(id);
+            });
+        }
+
     } else {
         var stream_name = compose_state.stream_name();
         message.to = stream_name;

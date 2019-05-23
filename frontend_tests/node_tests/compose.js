@@ -607,13 +607,14 @@ run_test('send_message', () => {
                 queue_id: undefined,
                 stream: '',
                 topic: '',
-                to: '["alice@example.com"]',
+                to: `[${alice.user_id}]`,
                 reply_to: 'alice@example.com',
                 private_message_recipient: 'alice@example.com',
                 to_user_ids: '31',
                 local_id: 1,
                 locally_echoed: true,
             };
+
             assert.deepEqual(payload, single_msg);
             payload.id = stub_state.local_id_counter;
             success(payload);
@@ -1672,14 +1673,19 @@ run_test('create_message_object', () => {
         return 'private';
     };
     compose_state.recipient = function () {
-        return 'alice@example.com,    bob@example.com';
+        return 'alice@example.com, bob@example.com';
     };
 
     message = compose.create_message_object();
-    assert.deepEqual(message.to, ['alice@example.com', 'bob@example.com']);
+    assert.deepEqual(message.to, [alice.user_id, bob.user_id]);
     assert.equal(message.to_user_ids, '31,32');
     assert.equal(message.content, 'burrito');
 
+    var { email_list_to_user_ids_string } = people;
+    people.email_list_to_user_ids_string = () => undefined;
+    message = compose.create_message_object();
+    assert.deepEqual(message.to, [alice.email, bob.email]);
+    people.email_list_to_user_ids_string = email_list_to_user_ids_string;
 });
 
 run_test('nonexistent_stream_reply_error', () => {
