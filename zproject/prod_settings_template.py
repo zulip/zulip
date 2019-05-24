@@ -298,6 +298,8 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # Maximum allowed size of uploaded files, in megabytes.  DO NOT SET
 # ABOVE 80MB.  The file upload implementation doesn't support chunked
 # uploads, so browsers will crash if you try uploading larger files.
+# Set MAX_FILE_UPLOAD_SIZE to 0 to disable file uploads completely
+# (including hiding upload-related options from UI).
 MAX_FILE_UPLOAD_SIZE = 25
 
 # Controls whether name changes are completely disabled for this
