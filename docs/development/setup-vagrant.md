@@ -366,36 +366,10 @@ christie@win10 ~/zulip
 $ vagrant ssh
 ```
 
-You should see something like this on Windows and macOS:
-
-```
-Welcome to Ubuntu 14.04.4 LTS (GNU/Linux 3.13.0-85-generic x86_64)
-
- * Documentation:  https://help.ubuntu.com/
-
-  System information as of Wed May  4 21:45:43 UTC 2016
-
-  System load:  0.61              Processes:           88
-  Usage of /:   3.5% of 39.34GB   Users logged in:     0
-  Memory usage: 7%                IP address for eth0: 10.0.2.15
-  Swap usage:   0%
-
-  Graph this data and manage this system at:
-    https://landscape.canonical.com/
-
-  Get cloud support with Ubuntu Advantage Cloud Guest:
-    http://www.ubuntu.com/business/services/cloud
-
-0 packages can be updated.
-0 updates are security updates.
-```
-
-Or something as brief as this in the case of Ubuntu:
+You should see output that starts like this:
 
 ```
 Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 4.4.0-21-generic x86_64)
-
- * Documentation:  https://help.ubuntu.com/
 ```
 
 Congrats, you're now inside the Zulip development environment!
