@@ -82,25 +82,6 @@ aliases:
          || echo "Error in uploading coverage reports to codecov.io."
 
 jobs:
-  "trusty-backend-python3.4":
-    docker:
-      # This is built from tools/circleci/images/trusty/Dockerfile .
-      # Trusty ships with Python 3.4.
-      - image: gregprice/circleci:trusty-python-5.test
-
-    working_directory: ~/zulip
-
-    steps:
-      - checkout
-
-      - *create_cache_directories
-      - *restore_cache_package_json
-      - *restore_cache_requirements
-      - *install_dependencies
-      - *save_cache_package_json
-      - *save_cache_requirements
-      - *run_backend_tests
-
   "xenial-backend-frontend-python3.5":
     docker:
       # This is built from tools/circleci/images/xenial/Dockerfile .
@@ -160,6 +141,5 @@ workflows:
   version: 2
   build:
     jobs:
-      - "trusty-backend-python3.4"
       - "xenial-backend-frontend-python3.5"
       - "bionic-backend-python3.6"

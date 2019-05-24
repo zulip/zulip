@@ -53,7 +53,6 @@ uses those SSH keys for authentication.
 The main CircleCI configuration file is
 [./circleci/config.yml](https://github.com/zulip/zulip/blob/master/.circleci/config.yml).
 We currently run several jobs during a CircleCI build. They are:
-* trusty-python-3.4
 * xenial-python-3.5
 * bionic-python-3.6
 
