@@ -277,16 +277,16 @@ def setup_shell_profile(shell_profile):
     write_command(source_activate_command)
     write_command('cd /srv/zulip')
 
-def install_system_deps(retry=False):
-    # type: (bool) -> None
+def install_system_deps():
+    # type: () -> None
 
     # By doing list -> set -> list conversion, we remove duplicates.
     deps_to_install = list(set(SYSTEM_DEPENDENCIES))
 
     if family == 'redhat':
-        install_yum_deps(deps_to_install, retry=retry)
+        install_yum_deps(deps_to_install)
     elif vendor in ["Debian", "Ubuntu"]:
-        install_apt_deps(deps_to_install, retry=retry)
+        install_apt_deps(deps_to_install)
     else:
         raise AssertionError("Invalid vendor")
 
@@ -297,17 +297,8 @@ def install_system_deps(retry=False):
     if BUILD_TSEARCH_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-tsearch-extras"])
 
-def install_apt_deps(deps_to_install, retry=False):
-    # type: (List[str], bool) -> None
-    if retry:
-        print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
-        # Since a common failure mode is for the caching in
-        # `setup-apt-repo` to optimize the fast code path to skip
-        # running `apt-get update` when the target apt repository
-        # is out of date, we run it explicitly here so that we
-        # recover automatically.
-        run_as_root(['apt-get', 'update'])
-
+def install_apt_deps(deps_to_install):
+    # type: (List[str]) -> None
     # setup-apt-repo does an `apt-get update`
     run_as_root(["./scripts/lib/setup-apt-repo"])
     run_as_root(
@@ -318,8 +309,8 @@ def install_apt_deps(deps_to_install, retry=False):
         + deps_to_install
     )
 
-def install_yum_deps(deps_to_install, retry=False):
-    # type: (List[str], bool) -> None
+def install_yum_deps(deps_to_install):
+    # type: (List[str]) -> None
     print(WARNING + "RedHat support is still experimental.")
     run_as_root(["./scripts/lib/setup-yum-repo"])
 
@@ -412,7 +403,8 @@ def main(options):
             install_system_deps()
         except subprocess.CalledProcessError:
             # Might be a failure due to network connection issues. Retrying...
-            install_system_deps(retry=True)
+            print(WARNING + "Installing system dependencies failed; retrying..." + ENDC)
+            install_system_deps()
         with open(apt_hash_file_path, 'w') as hash_file:
             hash_file.write(new_apt_dependencies_hash)
     else:
