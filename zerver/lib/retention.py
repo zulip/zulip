@@ -129,18 +129,23 @@ def clean_unused_messages() -> None:
     )
     unused_messages.delete()
 
-
-def archive_messages() -> None:
+def move_expired_to_archive() -> None:
     for realm in Realm.objects.filter(message_retention_days__isnull=False).order_by("id"):
         move_expired_messages_to_archive(realm)
         move_expired_user_messages_to_archive(realm)
         move_expired_attachments_to_archive(realm)
         move_expired_attachments_message_rows_to_archive(realm)
+
+def clean_expired() -> None:
+    for realm in Realm.objects.filter(message_retention_days__isnull=False).order_by("id"):
         delete_expired_user_messages(realm)
         delete_expired_messages(realm)
         delete_expired_attachments(realm)
     clean_unused_messages()
 
+def archive_messages() -> None:
+    move_expired_to_archive()
+    clean_expired()
 
 def move_attachment_message_to_archive_by_message(message_ids: List[int]) -> None:
     # Move attachments messages relation table data to archive.
