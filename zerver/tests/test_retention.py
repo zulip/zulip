@@ -12,11 +12,8 @@ from zerver.models import (Message, Realm, UserProfile, ArchivedUserMessage,
                            get_user_profile_by_email, get_system_bot)
 from zerver.lib.retention import (
     archive_messages,
-    clean_unused_messages,
-    delete_expired_messages,
-    delete_expired_user_messages,
-    move_expired_messages_to_archive,
-    move_expired_user_messages_to_archive,
+    clean_expired,
+    move_expired_to_archive,
     move_messages_to_archive
 )
 
@@ -123,10 +120,9 @@ class TestRetentionLib(ZulipTestCase):
         sent_message_id = self._send_cross_realm_message()
         all_user_messages_qty = UserMessage.objects.count()
         self._change_messages_pub_date([sent_message_id], timezone_now() - timedelta(days=period))
-        realms = Realm.objects.filter(message_retention_days__isnull=False).order_by("id")
-        for realm_instance in realms:
-            move_expired_messages_to_archive(realm_instance)
-            move_expired_user_messages_to_archive(realm_instance)
+
+        move_expired_to_archive()
+
         user_messages_sent = UserMessage.objects.order_by('id').filter(
             message_id=sent_message_id)
         archived_messages = ArchivedMessage.objects.all()
@@ -143,10 +139,8 @@ class TestRetentionLib(ZulipTestCase):
             [arc_user_msg.id for arc_user_msg in archived_user_messages],
             [user_msg.id for user_msg in user_messages_sent]
         )
-        for realm_instance in realms:
-            delete_expired_user_messages(realm_instance)
-            delete_expired_messages(realm_instance)
-        clean_unused_messages()
+
+        clean_expired()
 
         # Check messages and user messages after deleting expired messages
         # from the main tables.
@@ -175,9 +169,8 @@ class TestRetentionLib(ZulipTestCase):
         }
 
     def test_no_expired_messages(self) -> None:
-        for realm_instance in Realm.objects.filter(message_retention_days__isnull=False):
-            move_expired_messages_to_archive(realm_instance)
-            move_expired_user_messages_to_archive(realm_instance)
+        move_expired_to_archive()
+
         self.assertEqual(ArchivedUserMessage.objects.count(), 0)
         self.assertEqual(ArchivedMessage.objects.count(), 0)
 
@@ -195,9 +188,8 @@ class TestRetentionLib(ZulipTestCase):
             zulip_msgs_ids,
             timezone_now() - timedelta(days=ZULIP_REALM_DAYS + 1))
 
-        for realm_instance in Realm.objects.filter(message_retention_days__isnull=False):
-            move_expired_messages_to_archive(realm_instance)
-            move_expired_user_messages_to_archive(realm_instance)
+        move_expired_to_archive()
+
         self.assertEqual(ArchivedMessage.objects.count(), len(expected_message_ids))
         self.assertEqual(
             ArchivedUserMessage.objects.count(),
@@ -213,9 +205,7 @@ class TestRetentionLib(ZulipTestCase):
         expected_mit_msgs = self._make_mit_messages(
             5, timezone_now() - timedelta(days=MIT_REALM_DAYS + 1))
 
-        for realm_instance in Realm.objects.filter(message_retention_days__isnull=False):
-            move_expired_messages_to_archive(realm_instance)
-            move_expired_user_messages_to_archive(realm_instance)
+        move_expired_to_archive()
 
         self.assertEqual(ArchivedMessage.objects.count(), 5)
         self.assertEqual(ArchivedUserMessage.objects.count(), 10)
