@@ -1,12 +1,11 @@
 from mock import patch
 
 from django.test import override_settings
-from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets
+from zerver.lib.test_helpers import use_s3_backend
 from zerver.views.public_export import public_only_realm_export
 from zerver.models import RealmAuditLog
 
@@ -22,9 +21,6 @@ class RealmExportTest(ZulipTestCase):
     def test_endpoint_s3(self) -> None:
         admin = self.example_user('iago')
         self.login(admin.email)
-        create_s3_buckets(
-            settings.S3_AUTH_UPLOADS_BUCKET,
-            settings.S3_AVATAR_BUCKET)
 
         with patch('zerver.views.public_export.queue_json_publish') as mock_publish:
             result = self.client_post('/json/export/realm')
