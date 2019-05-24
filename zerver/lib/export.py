@@ -34,7 +34,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserGroupMembership, BotStorageData, BotConfigData
 from zerver.lib.parallel import run_parallel
 from zerver.lib.utils import generate_random_token
-from zerver.lib.upload import random_name
+from zerver.lib.upload import random_name, get_bucket
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Union
 
@@ -1697,7 +1697,6 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
         shutil.copy(tarball_path, abs_path)
         public_url = realm.uri + '/user_avatars/' + path
     else:
-        from zerver.lib.upload import S3Connection, get_bucket, Key
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         # We use the avatar bucket, because it's world-readable.
         bucket = get_bucket(conn, settings.S3_AVATAR_BUCKET)
