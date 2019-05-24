@@ -52,18 +52,16 @@ uses those SSH keys for authentication.
 
 The main CircleCI configuration file is
 [./circleci/config.yml](https://github.com/zulip/zulip/blob/master/.circleci/config.yml).
-We currently run several jobs during a CircleCI build. They are:
-* trusty-python-3.4
-* xenial-python-3.5
-* bionic-python-3.6
+We run multiple jobs during a CircleCI build to test different
+supported platforms. They are currently:
+
+* xenial-backend-frontend-python-3.5
+* bionic-backend-python3.6
 
 Each runs the Zulip backend test suites, using the indicated
-platform/OS and Python version. `bionic-python-3.6` job for example
-runs the tests in Ubuntu Xenial with Python 3.6 pre-installed.
-Additionally, the `xenial` suite also runs the Zulip frontend test
-suites; since those are not platform-dependent, it doesn't make sense
-to run them on all platforms.  Your build for the PR will pass only if
-all the 3 jobs are executed successfully.
+platform/OS and Python version.  As suggested by the names, only one
+suite runs the frontend test suites, since those are not
+platform-dependent.
 
 ### Configuration
 
