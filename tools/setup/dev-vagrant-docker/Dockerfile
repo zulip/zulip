@@ -3,7 +3,13 @@ FROM ubuntu:18.04
 # Basic packages and dependencies of docker-systemctl-replacement
 RUN echo locales locales/default_environment_locale select en_US.UTF-8 | debconf-set-selections \
     && echo locales locales/locales_to_be_generated select "en_US.UTF-8 UTF-8" | debconf-set-selections \
-    && apt-get update \
+    # This restores man pages and other documentation that have been
+    # stripped from the default Ubuntu cloud image and installs
+    # ubuntu-minimal and ubuntu-standard.
+    #
+    # This makes sense to do because we're using this image as a
+    # development environment, not a minimal production system.
+    && printf 'y\n\n' | unminimize \
     && apt-get install --no-install-recommends -y \
            ca-certificates \
            curl \
