@@ -160,6 +160,14 @@ exports.add_topic_links = function (message) {
             links.push(link_url);
         }
     });
+
+    // Also make raw urls navigable
+    var url_re = /\b(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g; // Slightly modified from third/marked.js
+    var match = topic.match(url_re);
+    if (match) {
+        links = links.concat(match);
+    }
+
     util.set_topic_links(message, links);
 };
 

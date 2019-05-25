@@ -425,6 +425,18 @@ run_test('topic_links', () => {
     assert.equal(util.get_topic_links(message).length, 1);
     assert.equal(util.get_topic_links(message)[0], "https://zone_45.zulip.net/ticket/123");
 
+    message = {type: 'stream', topic: "Hello https://google.com"};
+    markdown.add_topic_links(message);
+    assert.equal(util.get_topic_links(message).length, 1);
+    assert.equal(util.get_topic_links(message)[0], "https://google.com");
+
+    message = {type: 'stream', topic: "#456 https://google.com https://github.com"};
+    markdown.add_topic_links(message);
+    assert.equal(util.get_topic_links(message).length, 3);
+    assert(util.get_topic_links(message).indexOf("https://google.com") !== -1);
+    assert(util.get_topic_links(message).indexOf("https://github.com") !== -1);
+    assert(util.get_topic_links(message).indexOf("https://trac.zulip.net/ticket/456") !== -1);
+
     message = {type: "not-stream"};
     markdown.add_topic_links(message);
     assert.equal(util.get_topic_links(message).length, 0);

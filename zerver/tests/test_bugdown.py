@@ -787,6 +787,18 @@ class BugdownTest(ZulipTestCase):
         converted = bugdown_convert(msg)
         self.assertEqual(converted, unicode_converted)
 
+    def test_links_in_topic_name(self) -> None:
+        realm = get_realm('zulip')
+        msg = Message(sender=self.example_user('othello'))
+
+        msg.set_topic_name("https://google.com/hello-world")
+        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        self.assertEqual(converted_topic, [u'https://google.com/hello-world'])
+
+        msg.set_topic_name("Try out http://ftp.debian.org, https://google.com/ and https://google.in/.")
+        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        self.assertEqual(converted_topic, [u'http://ftp.debian.org', 'https://google.com/', 'https://google.in/'])
+
     def test_realm_patterns(self) -> None:
         realm = get_realm('zulip')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
@@ -810,6 +822,10 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
         self.assertEqual(converted_topic, [u'https://trac.zulip.net/ticket/444'])
+
+        msg.set_topic_name("#444 https://google.com")
+        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        self.assertEqual(converted_topic, [u'https://trac.zulip.net/ticket/444', u'https://google.com'])
 
         RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
                     url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
