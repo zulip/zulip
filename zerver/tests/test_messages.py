@@ -1444,11 +1444,11 @@ class MessagePOSTTest(ZulipTestCase):
         # Cross realm bots should be allowed.
         notification_bot = get_system_bot("notification-bot@zulip.com")
         result = self.api_post(notification_bot.email,
-                               "/json/messages", {"type": "stream",
-                                                  "to": stream_name,
-                                                  "client": "test suite",
-                                                  "content": "Test message",
-                                                  "topic": "Test topic"})
+                               "/api/v1/messages", {"type": "stream",
+                                                    "to": stream_name,
+                                                    "client": "test suite",
+                                                    "content": "Test message",
+                                                    "topic": "Test topic"})
         self.assert_json_success(result)
 
     def test_message_fail_to_announce(self) -> None:
