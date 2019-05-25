@@ -1451,6 +1451,18 @@ class MessagePOSTTest(ZulipTestCase):
                                                     "topic": "Test topic"})
         self.assert_json_success(result)
 
+        admin_owned_bot = self.create_test_bot(
+            short_name='whatever',
+            user_profile=user_profile,
+        )
+        result = self.api_post(admin_owned_bot.email,
+                               "/api/v1/messages", {"type": "stream",
+                                                    "to": stream_name,
+                                                    "client": "test suite",
+                                                    "content": "Test message",
+                                                    "topic": "Test topic"})
+        self.assert_json_success(result)
+
     def test_message_fail_to_announce(self) -> None:
         """
         Sending a message to an announcement_only stream not by a realm
@@ -1468,6 +1480,36 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "topic": "Test topic"})
+        self.assert_json_error(result, "Only organization administrators can send to this stream.")
+
+        # Non admin owned bot fail to send to announcement only stream
+        non_admin_owned_bot = self.create_test_bot(
+            short_name='whatever',
+            user_profile=user_profile,
+        )
+        result = self.api_post(non_admin_owned_bot.email,
+                               "/api/v1/messages", {"type": "stream",
+                                                    "to": stream_name,
+                                                    "client": "test suite",
+                                                    "content": "Test message",
+                                                    "topic": "Test topic"})
+        self.assert_json_error(result, "Only organization administrators can send to this stream.")
+
+        # Bots without owner (except cross realm bot) fail to send to announcement only stream
+        bot_without_owner = do_create_user(
+            email='free-bot@zulip.testserver',
+            password='',
+            realm=user_profile.realm,
+            full_name='freebot',
+            short_name='freebot',
+            bot_type=UserProfile.DEFAULT_BOT,
+        )
+        result = self.api_post(bot_without_owner.email,
+                               "/api/v1/messages", {"type": "stream",
+                                                    "to": stream_name,
+                                                    "client": "test suite",
+                                                    "content": "Test message",
+                                                    "topic": "Test topic"})
         self.assert_json_error(result, "Only organization administrators can send to this stream.")
 
     def test_api_message_with_default_to(self) -> None:

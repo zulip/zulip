@@ -2162,7 +2162,12 @@ def validate_sender_can_write_to_stream(sender: UserProfile,
     # matches the realm of the sender.
 
     if stream.is_announcement_only:
-        if not (sender.is_realm_admin or is_cross_realm_bot_email(sender.email)):
+        if sender.is_realm_admin or is_cross_realm_bot_email(sender.email):
+            pass
+        elif sender.is_bot and (sender.bot_owner is not None and
+                                sender.bot_owner.is_realm_admin):
+            pass
+        else:
             raise JsonableError(_("Only organization administrators can send to this stream."))
 
     if not (stream.invite_only or sender.is_guest):
