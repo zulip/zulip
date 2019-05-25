@@ -33,6 +33,8 @@ def get_ftype(fpath, use_shebang):
                 return 'js'
             elif re.search(r'^#!.*\bruby', first_line):
                 return 'rb'
+            elif re.search(r'^#!.*\btail', first_line):
+                return ''  # do not lint these scripts.
             elif re.search(r'^#!', first_line):
                 print('Error: Unknown shebang in file "%s":\n%s' % (fpath, first_line), file=sys.stderr)
                 return ''
