@@ -60,7 +60,7 @@ We currently run several jobs during a CircleCI build. They are:
 Each runs the Zulip backend test suites, using the indicated
 platform/OS and Python version. `bionic-python-3.6` job for example
 runs the tests in Ubuntu Xenial with Python 3.6 pre-installed.
-Additionally, the `trusty` suite also runs the Zulip frontend test
+Additionally, the `xenial` suite also runs the Zulip frontend test
 suites; since those are not platform-dependent, it doesn't make sense
 to run them on all platforms.  Your build for the PR will pass only if
 all the 3 jobs are executed successfully.

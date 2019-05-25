@@ -1,7 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/testing/continuous-integration.html for
 # high-level documentation on our Travis CI setup.
-dist: trusty
-group: deprecated-2017Q4
+dist: xenial
 install:
   # Disable sometimes-broken sources.list in Travis base images
   - sudo rm -vf /etc/apt/sources.list.d/*
@@ -40,15 +39,15 @@ env:
   global:
     - BOTO_CONFIG=/nonexistent
 language: python
-# Our test suites generally run on Python 3.4, the version in
-# Ubuntu 14.04 trusty, which is the oldest OS release we support.
+# Our test suites generally run on Python 3.5, the version in
+# Ubuntu 16.04 xenial, which is the oldest OS release we support.
 matrix:
   include:
     # Travis will actually run the jobs in the order they're listed here;
     # that doesn't seem to be documented, but it's what we see empirically.
     # We only get 4 jobs running at a time, so we try to make the first few
     # the most likely to break.
-    - python: "3.4"
+    - python: "3.5"
       env: TEST_SUITE=production
     # Other suites moved to CircleCI -- see .circleci/.
 sudo: required
@@ -59,7 +58,7 @@ addons:
       # debugging test flakes.
       - $(ls var/casper/* | tr "\n" ":")
       - $(ls /tmp/zulip-test-event-log/* | tr "\n" ":")
-  postgresql: "9.3"
+  postgresql: "9.5"
   apt:
     packages:
       - moreutils
