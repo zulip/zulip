@@ -1969,6 +1969,10 @@ def build_engine(realm_filters: List[Tuple[str, str, int]],
         ])
     return engine
 
+# Split the topic name into multiple sections so that we can easily use
+# our common single link matching regex on it.
+basic_link_splitter = re.compile(r'[ !;\?\),\'\"]')
+
 # Security note: We don't do any HTML escaping in this
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
@@ -1982,6 +1986,13 @@ def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
         pattern = prepare_realm_pattern(realm_filter[0])
         for m in re.finditer(pattern, topic_name):
             matches += [realm_filter[1] % m.groupdict()]
+
+    # Also make raw urls navigable.
+    for sub_string in basic_link_splitter.split(topic_name):
+        link_match = re.match(get_web_link_regex(), sub_string)
+        if link_match:
+            matches.append(link_match.group('url'))
+
     return matches
 
 def maybe_update_markdown_engines(realm_filters_key: Optional[int], email_gateway: bool) -> None:
