@@ -211,14 +211,20 @@
 
 #userlist-header {
     cursor: pointer;
-}
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 
-#user_filter_icon {
-    float: right;
-    font-size: 13px;
-    opacity: 0.50;
-    margin-top: 3px;
-    margin-right: 10px;
+    #userlist-title {
+        margin: 0;
+    }
+
+    #user_filter_icon {
+        font-size: 13px;
+        opacity: 0.50;
+        margin-right: 5px;
+    }
 }
 
 #feedback_section {
