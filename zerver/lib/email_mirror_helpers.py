@@ -5,7 +5,9 @@ from django.utils.text import slugify
 
 from zerver.models import Stream
 
-from typing import Tuple
+from typing import Dict, Tuple
+
+optional_address_tokens = ["show-sender"]
 
 class ZulipEmailForwardError(Exception):
     pass
@@ -52,27 +54,29 @@ def encode_email_address_helper(name: str, email_token: str) -> str:
 
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
-def decode_email_address(email: str) -> Tuple[str, bool]:
+def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
     # Perform the reverse of encode_email_address. Returns a tuple of
-    # (email_token, show_sender)
+    # (email_token, options)
     msg_string = get_email_gateway_message_string_from_address(email)
-
-    if msg_string.endswith(('+show-sender', '.show-sender')):
-        show_sender = True
-        msg_string = msg_string[:-12]  # strip "+show-sender"
-    else:
-        show_sender = False
 
     # Workaround for Google Groups and other programs that don't accept emails
     # that have + signs in them (see Trac #2102)
     splitting_char = '.' if '.' in msg_string else '+'
 
     parts = msg_string.split(splitting_char)
-    # msg_string may have one or two parts:
+    options = {}  # type: Dict[str, bool]
+    for part in parts:
+        if part in optional_address_tokens:
+            options[part.replace('-', '_')] = True
+
+    for key in options.keys():
+        parts.remove(key.replace('_', '-'))
+
+    # At this point, there should be one or two parts left:
     # [stream_name, email_token] or just [email_token]
     if len(parts) == 1:
         token = parts[0]
     else:
         token = parts[1]
 
-    return token, show_sender
+    return token, options
