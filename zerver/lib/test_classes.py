@@ -22,6 +22,7 @@ from two_factor.models import PhoneDevice
 from zerver.lib.initial_password import initial_password
 from zerver.lib.utils import is_remote_server
 from zerver.lib.users import get_api_key
+from zerver.lib.sessions import get_session_dict_user
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
@@ -558,6 +559,13 @@ class ZulipTestCase(TestCase):
         decoded = response.content.decode('utf-8')
         for substring in substrings:
             self.assertNotIn(substring, decoded)
+
+    def assert_logged_in_user_id(self, user_id: Optional[int]) -> None:
+        """
+        Verifies the user currently logged in for the test client has the provided user_id.
+        Pass None to verify no user is logged in.
+        """
+        self.assertEqual(get_session_dict_user(self.client.session), user_id)
 
     def webhook_fixture_data(self, type: str, action: str, file_type: str='json') -> str:
         fn = os.path.join(

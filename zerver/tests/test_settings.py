@@ -7,7 +7,6 @@ from mock import patch
 from typing import Any, Dict
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockLDAP, get_test_image_file
 from zerver.lib.users import get_all_api_keys
@@ -78,7 +77,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.logout()
         self.login(self.example_email("hamlet"), "foobar1")
         user_profile = self.example_user('hamlet')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     def test_illegal_name_changes(self) -> None:
         user = self.example_user('hamlet')
