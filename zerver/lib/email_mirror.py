@@ -153,8 +153,8 @@ def mark_missed_message_address_as_used(address: str) -> None:
         raise ZulipEmailForwardError('Missed message address has already been used')
 
 def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bool=False,
-                         remove_quotations: bool=True, include_footers: bool=False) -> str:
-    body = extract_body(message, remove_quotations)
+                         include_quotations: bool=False, include_footers: bool=False) -> str:
+    body = extract_body(message, include_quotations)
     # Remove null characters, since Zulip will reject
     body = body.replace("\x00", "")
     if not include_footers:
@@ -243,7 +243,7 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
     return None
 
 talon_initialized = False
-def extract_body(message: message.Message, remove_quotations: bool=True) -> str:
+def extract_body(message: message.Message, include_quotations: bool=False) -> str:
     import talon
     global talon_initialized
     if not talon_initialized:
@@ -254,18 +254,18 @@ def extract_body(message: message.Message, remove_quotations: bool=True) -> str:
     # that.
     plaintext_content = get_message_part_by_type(message, "text/plain")
     if plaintext_content:
-        if remove_quotations:
-            return talon.quotations.extract_from_plain(plaintext_content)
-        else:
+        if include_quotations:
             return plaintext_content
+        else:
+            return talon.quotations.extract_from_plain(plaintext_content)
 
     # If we only have an HTML version, try to make that look nice.
     html_content = get_message_part_by_type(message, "text/html")
     if html_content:
-        if remove_quotations:
-            return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
-        else:
+        if include_quotations:
             return convert_html_to_markdown(html_content)
+        else:
+            return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
 
     if plaintext_content is not None or html_content is not None:
         raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
@@ -358,8 +358,10 @@ def process_stream_message(to: str, message: message.Message) -> None:
     subject = strip_from_subject(subject_header) or "(no topic)"
 
     stream, options = extract_and_validate(to)
-    # Don't remove quotations if message is forwarded:
-    options['remove_quotations'] = not is_forwarded(subject_header)
+    # Don't remove quotations if message is forwarded, unless otherwise specified:
+    if 'include_quotations' not in options:
+        options['include_quotations'] = is_forwarded(subject_header)
+
     body = construct_zulip_body(message, stream.realm, **options)
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
     logger.info("Successfully processed email to %s (%s)" % (
