@@ -25,12 +25,10 @@ class RealmExportTest(ZulipTestCase):
 
         with patch('zerver.views.public_export.queue_json_publish') as mock_publish:
             result = self.client_post('/json/export/realm')
-            queue_data = mock_publish.call_args_list[0][0]
-            worker = mock_publish.call_args_list[0][0][0]
         self.assert_json_success(result)
         mock_publish.assert_called_once()
-        event = queue_data[1]
-        self.assertEqual(worker, 'deferred_work')
+        event = mock_publish.call_args_list[0][0][1]
+        self.assertEqual(mock_publish.call_args_list[0][0][0], 'deferred_work')
         self.assertEqual(event['realm_id'], 1)
         self.assertEqual(event['user_profile_id'], 5)
         self.assertEqual(event['type'], 'realm_exported')
@@ -52,12 +50,10 @@ class RealmExportTest(ZulipTestCase):
 
         with patch('zerver.views.public_export.queue_json_publish') as mock_publish:
             result = self.client_post('/json/export/realm')
-            queue_data = mock_publish.call_args_list[0][0]
-            worker = mock_publish.call_args_list[0][0][0]
         self.assert_json_success(result)
         mock_publish.assert_called_once()
-        event = queue_data[1]
-        self.assertEqual(worker, 'deferred_work')
+        event = mock_publish.call_args_list[0][0][1]
+        self.assertEqual(mock_publish.call_args_list[0][0][0], 'deferred_work')
         self.assertEqual(event['realm_id'], 1)
         self.assertEqual(event['user_profile_id'], 5)
         self.assertEqual(event['type'], 'realm_exported')
