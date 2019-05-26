@@ -7,7 +7,7 @@ from zerver.models import Stream
 
 from typing import Dict, Tuple
 
-optional_address_tokens = ["show-sender"]
+optional_address_tokens = ["show-sender", "include-footers"]
 
 class ZulipEmailForwardError(Exception):
     pass
@@ -58,7 +58,6 @@ def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
     # Perform the reverse of encode_email_address. Returns a tuple of
     # (email_token, options)
     msg_string = get_email_gateway_message_string_from_address(email)
-
     # Workaround for Google Groups and other programs that don't accept emails
     # that have + signs in them (see Trac #2102)
     splitting_char = '.' if '.' in msg_string else '+'
