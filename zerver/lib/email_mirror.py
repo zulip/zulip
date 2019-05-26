@@ -308,15 +308,15 @@ def extract_and_upload_attachments(message: message.Message, realm: Realm) -> st
 
     return "\n".join(attachment_links)
 
-def extract_and_validate(email: str) -> Tuple[Stream, bool]:
-    token, show_sender = decode_email_address(email)
+def extract_and_validate(email: str) -> Tuple[Stream, Dict[str, bool]]:
+    token, options = decode_email_address(email)
 
     try:
         stream = Stream.objects.get(email_token=token)
     except Stream.DoesNotExist:
         raise ZulipEmailForwardError("Bad stream token from email recipient " + email)
 
-    return stream, show_sender
+    return stream, options
 
 def find_emailgateway_recipient(message: message.Message) -> str:
     # We can't use Delivered-To; if there is a X-Gm-Original-To
@@ -355,10 +355,10 @@ def process_stream_message(to: str, message: message.Message) -> None:
     subject_header = str(make_header(decode_header(message.get("Subject", ""))))
     subject = strip_from_subject(subject_header) or "(no topic)"
 
-    stream, show_sender = extract_and_validate(to)
+    stream, options = extract_and_validate(to)
     # Don't remove quotations if message is forwarded:
-    remove_quotations = not is_forwarded(subject_header)
-    body = construct_zulip_body(message, stream.realm, show_sender, remove_quotations)
+    options['remove_quotations'] = not is_forwarded(subject_header)
+    body = construct_zulip_body(message, stream.realm, **options)
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
     logger.info("Successfully processed email to %s (%s)" % (
         stream.name, stream.realm.string_id))

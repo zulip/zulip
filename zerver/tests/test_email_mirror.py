@@ -55,9 +55,12 @@ import mock
 import os
 from django.conf import settings
 
-from typing import Any, Callable, Mapping, Union, Optional
+from typing import Any, Callable, Dict, Mapping, Union, Optional
 
 class TestEncodeDecode(ZulipTestCase):
+    def _assert_options(self, options: Dict[str, bool], show_sender: bool=False) -> None:
+        self.assertEqual(show_sender, ('show_sender' in options) and options['show_sender'])
+
     def test_encode_decode(self) -> None:
         realm = get_realm('zulip')
         stream_name = 'dev. help'
@@ -65,25 +68,25 @@ class TestEncodeDecode(ZulipTestCase):
         email_address = encode_email_address(stream)
         self.assertTrue(email_address.startswith('dev-help'))
         self.assertTrue(email_address.endswith('@testserver'))
-        token, show_sender = decode_email_address(email_address)
-        self.assertFalse(show_sender)
+        token, options = decode_email_address(email_address)
+        self._assert_options(options, show_sender=False)
         self.assertEqual(token, stream.email_token)
 
         parts = email_address.split('@')
         parts[0] += "+show-sender"
         email_address_show = '@'.join(parts)
-        token, show_sender = decode_email_address(email_address_show)
-        self.assertTrue(show_sender)
+        token, options = decode_email_address(email_address_show)
+        self._assert_options(options, show_sender=True)
         self.assertEqual(token, stream.email_token)
 
         email_address_dots = email_address.replace('+', '.')
-        token, show_sender = decode_email_address(email_address_dots)
-        self.assertFalse(show_sender)
+        token, options = decode_email_address(email_address_dots)
+        self._assert_options(options, show_sender=False)
         self.assertEqual(token, stream.email_token)
 
         email_address_dots_show = email_address_show.replace('+', '.')
-        token, show_sender = decode_email_address(email_address_dots_show)
-        self.assertTrue(show_sender)
+        token, options = decode_email_address(email_address_dots_show)
+        self._assert_options(options, show_sender=True)
         self.assertEqual(token, stream.email_token)
 
         email_address = email_address.replace('@testserver', '@zulip.org')
@@ -95,12 +98,12 @@ class TestEncodeDecode(ZulipTestCase):
             decode_email_address(email_address_show)
 
         with self.settings(EMAIL_GATEWAY_EXTRA_PATTERN_HACK='@zulip.org'):
-            token, show_sender = decode_email_address(email_address)
-            self.assertFalse(show_sender)
+            token, options = decode_email_address(email_address)
+            self._assert_options(options, show_sender=False)
             self.assertEqual(token, stream.email_token)
 
-            token, show_sender = decode_email_address(email_address_show)
-            self.assertTrue(show_sender)
+            token, options = decode_email_address(email_address_show)
+            self._assert_options(options, show_sender=True)
             self.assertEqual(token, stream.email_token)
 
         with self.assertRaises(ZulipEmailForwardError):
