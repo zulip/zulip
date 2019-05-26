@@ -11,4 +11,10 @@ def get_oembed_data(url: str,
         return None
 
     data['image'] = data.get('thumbnail_url')
+    type_ = data.get('type', '')
+    image = data.get('url', data.get('image'))
+    if type_ == 'photo' and image:
+        # Add a key to identify oembed metadata as opposed to other metadata
+        data['oembed'] = True
+
     return data

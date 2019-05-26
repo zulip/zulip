@@ -368,7 +368,23 @@ def add_a(
         desc_div = markdown.util.etree.SubElement(summary_div, "desc")
         desc_div.set("class", "message_inline_image_desc")
 
+def add_oembed_data(root: Element, link: str, extracted_data: Dict[str, Any]) -> bool:
+    type_ = extracted_data.get('type', '')
+    title = extracted_data.get('title', link)
+
+    if type_ == 'photo':
+        image = extracted_data.get('image')
+        if image:
+            add_a(root, image, link, title=title)
+            return True
+
+    return False
+
 def add_embed(root: Element, link: str, extracted_data: Dict[str, Any]) -> None:
+    oembed = extracted_data.get('oembed', False)
+    if oembed and add_oembed_data(root, link, extracted_data):
+        return
+
     container = markdown.util.etree.SubElement(root, "div")
     container.set("class", "message_embed")
 

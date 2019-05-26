@@ -81,6 +81,8 @@ def get_link_embed_data(url: str,
     # 2. Open Graph
     # 3. Meta tags
     data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight) or {}
+    if data.get('oembed'):
+        return data
     response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
     if response.ok:
         og_data = OpenGraphParser(response.text).extract_data()

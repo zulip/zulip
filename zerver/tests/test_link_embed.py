@@ -60,6 +60,31 @@ class OembedTestCase(ZulipTestCase):
         self.assertEqual(data['title'], response_data['title'])
 
     @mock.patch('pyoembed.requests.get')
+    def test_photo_provider(self, get: Any) -> None:
+        get.return_value = response = mock.Mock()
+        response.headers = {'content-type': 'application/json'}
+        response.ok = True
+        response_data = {
+            'type': 'photo',
+            'thumbnail_url': 'https://scontent.cdninstagram.com/t51.2885-15/n.jpg',
+            'url': 'https://scontent.cdninstagram.com/t51.2885-15/n.jpg',
+            'thumbnail_width': 640,
+            'thumbnail_height': 426,
+            'title': 'NASA',
+            'html': '<p>test</p>',
+            'version': '1.0',
+            'width': 658,
+            'height': 400}
+        response.text = ujson.dumps(response_data)
+        url = 'http://imgur.com/photo/158727223'
+        data = get_oembed_data(url)
+        self.assertIsInstance(data, dict)
+        self.assertIn('title', data)
+        assert data is not None  # allow mypy to infer data is indexable
+        self.assertEqual(data['title'], response_data['title'])
+        self.assertTrue(data['oembed'])
+
+    @mock.patch('pyoembed.requests.get')
     def test_error_request(self, get: Any) -> None:
         get.return_value = response = mock.Mock()
         response.ok = False
