@@ -37,7 +37,6 @@ from zerver.lib.validator import validate_login_email, \
 from zerver.lib.request import JsonableError
 from zerver.lib.users import get_all_api_keys
 from zerver.lib.initial_password import initial_password
-from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -742,7 +741,7 @@ class SocialAuthBase(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     def test_social_auth_registration_using_multiuse_invite(self) -> None:
         """If the user doesn't exist yet, social auth can be used to register an account"""
@@ -815,7 +814,7 @@ class SocialAuthBase(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     def test_social_auth_registration_without_is_signup(self) -> None:
         """If `is_signup` is not set then a new account isn't created"""
@@ -1377,7 +1376,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
 
         self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     def test_google_oauth2_registration_using_multiuse_invite(self) -> None:
         """If the user doesn't exist yet, Google auth can be used to register an account"""
@@ -1455,7 +1454,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
 
         self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
         self.assertEqual(sorted(self.get_streams(email, realm)), stream_names)
 
 class GoogleLoginTest(GoogleOAuthTest):
@@ -1857,7 +1856,7 @@ class TestTwoFactor(ZulipTestCase):
             data = {'direct_email': email}
             result = self.client_post('/accounts/login/local/', data)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+            self.assert_logged_in_user_id(user_profile.id)
             # User logs in but when otp device doesn't exist.
             self.assertNotIn('otp_device_id', self.client.session.keys())
 
@@ -1866,7 +1865,7 @@ class TestTwoFactor(ZulipTestCase):
             data = {'direct_email': email}
             result = self.client_post('/accounts/login/local/', data)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+            self.assert_logged_in_user_id(user_profile.id)
             # User logs in when otp device exists.
             self.assertIn('otp_device_id', self.client.session.keys())
 
@@ -1941,7 +1940,7 @@ class TestDevAuthBackend(ZulipTestCase):
         data = {'direct_email': email}
         result = self.client_post('/accounts/login/local/', data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     def test_login_success_with_2fa(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -1952,7 +1951,7 @@ class TestDevAuthBackend(ZulipTestCase):
             result = self.client_post('/accounts/login/local/', data)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, 'http://zulip.testserver')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
         self.assertIn('otp_device_id', list(self.client.session.keys()))
 
     def test_redirect_to_next_url(self) -> None:
@@ -1984,7 +1983,7 @@ class TestDevAuthBackend(ZulipTestCase):
 
         result = self.client_post('/accounts/login/local/', data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     def test_choose_realm(self) -> None:
         result = self.client_post('/devlogin/', subdomain="zulip")
@@ -2055,7 +2054,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+            self.assert_logged_in_user_id(user_profile.id)
 
     def test_login_success_with_sso_append_domain(self) -> None:
         username = 'hamlet'
@@ -2064,20 +2063,20 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                            SSO_APPEND_DOMAIN='zulip.com'):
             result = self.client_post('/accounts/login/sso/', REMOTE_USER=username)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+            self.assert_logged_in_user_id(user_profile.id)
 
     def test_login_failure(self) -> None:
         email = self.example_email("hamlet")
         result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
         self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
-        self.assertIs(get_session_dict_user(self.client.session), None)
+        self.assert_logged_in_user_id(None)
 
     def test_login_failure_due_to_nonexisting_user(self) -> None:
         email = 'nonexisting@zulip.com'
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
             self.assertEqual(result.status_code, 200)
-            self.assertIs(get_session_dict_user(self.client.session), None)
+            self.assert_logged_in_user_id(None)
             self.assert_in_response("No account found for", result)
 
     def test_login_failure_due_to_invalid_email(self) -> None:
@@ -2098,7 +2097,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                 result = self.client_post('http://testserver:9080/accounts/login/sso/',
                                           REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
-                self.assertIs(get_session_dict_user(self.client.session), None)
+                self.assert_logged_in_user_id(None)
                 self.assert_in_response("You need an invitation to join this organization.", result)
 
     def test_login_failure_due_to_empty_subdomain(self) -> None:
@@ -2108,7 +2107,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                 result = self.client_post('http://testserver:9080/accounts/login/sso/',
                                           REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
-                self.assertIs(get_session_dict_user(self.client.session), None)
+                self.assert_logged_in_user_id(None)
                 self.assert_in_response("You need an invitation to join this organization.", result)
 
     def test_login_success_under_subdomains(self) -> None:
@@ -2119,7 +2118,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                     AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
                 result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
                 self.assertEqual(result.status_code, 302)
-                self.assertIs(get_session_dict_user(self.client.session), user_profile.id)
+                self.assert_logged_in_user_id(user_profile.id)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
@@ -2135,14 +2134,14 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                                   dict(mobile_flow_otp="1234"),
                                   REMOTE_USER=email,
                                   HTTP_USER_AGENT = "ZulipAndroid")
-        self.assertIs(get_session_dict_user(self.client.session), None)
+        self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp="invalido" * 8),
                                   REMOTE_USER=email,
                                   HTTP_USER_AGENT = "ZulipAndroid")
-        self.assertIs(get_session_dict_user(self.client.session), None)
+        self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
         result = self.client_post('/accounts/login/sso/',
@@ -2178,14 +2177,14 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                                   dict(mobile_flow_otp="1234"),
                                   REMOTE_USER=remote_user,
                                   HTTP_USER_AGENT = "ZulipAndroid")
-        self.assertIs(get_session_dict_user(self.client.session), None)
+        self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp="invalido" * 8),
                                   REMOTE_USER=remote_user,
                                   HTTP_USER_AGENT = "ZulipAndroid")
-        self.assertIs(get_session_dict_user(self.client.session), None)
+        self.assert_logged_in_user_id(None)
         self.assert_json_error_contains(result, "Invalid OTP", 400)
 
         result = self.client_post('/accounts/login/sso/',
@@ -2248,7 +2247,7 @@ class TestJWTLogin(ZulipTestCase):
             data = {'json_web_token': web_token}
             result = self.client_post('/accounts/login/jwt/', data)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+            self.assert_logged_in_user_id(user_profile.id)
 
     def test_login_failure_when_user_is_missing(self) -> None:
         payload = {'realm': 'zulip.com'}
@@ -2294,7 +2293,7 @@ class TestJWTLogin(ZulipTestCase):
             data = {'json_web_token': web_token}
             result = self.client_post('/accounts/login/jwt/', data)
             self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
-            self.assertIs(get_session_dict_user(self.client.session), None)
+            self.assert_logged_in_user_id(None)
 
             # The /accounts/login/jwt/ endpoint should also handle the case
             # where the authentication attempt throws UserProfile.DoesNotExist.
@@ -2303,7 +2302,7 @@ class TestJWTLogin(ZulipTestCase):
                     side_effect=UserProfile.DoesNotExist("Do not exist")):
                 result = self.client_post('/accounts/login/jwt/', data)
             self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
-            self.assertIs(get_session_dict_user(self.client.session), None)
+            self.assert_logged_in_user_id(None)
 
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
@@ -2316,7 +2315,7 @@ class TestJWTLogin(ZulipTestCase):
                 data = {'json_web_token': web_token}
                 result = self.client_post('/accounts/login/jwt/', data)
                 self.assert_json_error_contains(result, "Wrong subdomain", 400)
-                self.assertEqual(get_session_dict_user(self.client.session), None)
+                self.assert_logged_in_user_id(None)
 
     def test_login_failure_due_to_empty_subdomain(self) -> None:
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
@@ -2329,7 +2328,7 @@ class TestJWTLogin(ZulipTestCase):
                 data = {'json_web_token': web_token}
                 result = self.client_post('/accounts/login/jwt/', data)
                 self.assert_json_error_contains(result, "Wrong subdomain", 400)
-                self.assertEqual(get_session_dict_user(self.client.session), None)
+                self.assert_logged_in_user_id(None)
 
     def test_login_success_under_subdomains(self) -> None:
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
@@ -2342,7 +2341,7 @@ class TestJWTLogin(ZulipTestCase):
                 result = self.client_post('/accounts/login/jwt/', data)
                 self.assertEqual(result.status_code, 302)
                 user_profile = self.example_user('hamlet')
-                self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+                self.assert_logged_in_user_id(user_profile.id)
 
 class ZulipLDAPTestCase(ZulipTestCase):
     def setUp(self) -> None:

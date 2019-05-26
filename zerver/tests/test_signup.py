@@ -59,7 +59,6 @@ from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.context_processors import common_context
 
@@ -199,7 +198,7 @@ class PasswordResetTest(ZulipTestCase):
         # log back in with new password
         self.login(email, password='new_password')
         user_profile = self.example_user('hamlet')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
         # make sure old password no longer works
         self.login(email, password=old_password, fails=True)
@@ -403,7 +402,7 @@ class LoginTest(ZulipTestCase):
     def test_login(self) -> None:
         self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     def test_login_deactivated_user(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -411,19 +410,19 @@ class LoginTest(ZulipTestCase):
         result = self.login_with_return(self.example_email("hamlet"), "xxx")
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Your account is no longer active.", result)
-        self.assertIsNone(get_session_dict_user(self.client.session))
+        self.assert_logged_in_user_id(None)
 
     def test_login_bad_password(self) -> None:
         email = self.example_email("hamlet")
         result = self.login_with_return(email, password="wrongpassword")
         self.assert_in_success_response([email], result)
-        self.assertIsNone(get_session_dict_user(self.client.session))
+        self.assert_logged_in_user_id(None)
 
     def test_login_nonexist_user(self) -> None:
         result = self.login_with_return("xxx@zulip.com", "xxx")
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Please enter a correct email and password", result)
-        self.assertIsNone(get_session_dict_user(self.client.session))
+        self.assert_logged_in_user_id(None)
 
     def test_login_wrong_subdomain(self) -> None:
         with patch("logging.warning") as mock_warning:
@@ -432,14 +431,14 @@ class LoginTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Your Zulip account is not a member of the "
                                 "organization associated with this subdomain.", result)
-        self.assertIsNone(get_session_dict_user(self.client.session))
+        self.assert_logged_in_user_id(None)
 
     def test_login_invalid_subdomain(self) -> None:
         result = self.login_with_return(self.example_email("hamlet"), "xxx",
                                         subdomain="invalid")
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
-        self.assertIsNone(get_session_dict_user(self.client.session))
+        self.assert_logged_in_user_id(None)
 
     def test_register(self) -> None:
         realm = get_realm("zulip")
@@ -457,7 +456,7 @@ class LoginTest(ZulipTestCase):
         # Ensure the number of queries we make is not O(streams)
         self.assert_length(queries, 77)
         user_profile = self.nonreg_user('test')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
 
     def test_register_deactivated(self) -> None:
@@ -516,7 +515,7 @@ class LoginTest(ZulipTestCase):
         # We use the logout API, not self.logout, to make sure we test
         # the actual logout code path.
         self.client_post('/accounts/logout/')
-        self.assertIsNone(get_session_dict_user(self.client.session))
+        self.assert_logged_in_user_id(None)
 
     def test_non_ascii_login(self) -> None:
         """
@@ -528,14 +527,14 @@ class LoginTest(ZulipTestCase):
         # Registering succeeds.
         self.register(email, password)
         user_profile = self.nonreg_user('test')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
         self.logout()
-        self.assertIsNone(get_session_dict_user(self.client.session))
+        self.assert_logged_in_user_id(None)
 
         # Logging in succeeds.
         self.logout()
         self.login(email, password)
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     @override_settings(TWO_FACTOR_AUTHENTICATION_ENABLED=False)
     def test_login_page_redirects_logged_in_user(self) -> None:
@@ -2109,7 +2108,7 @@ class UserSignUpTest(InviteUserBase):
         # User should now be logged in.
         self.assertEqual(result.status_code, 302)
         user_profile = self.nonreg_user('newuser')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     def test_signup_without_full_name(self) -> None:
         """
@@ -3102,7 +3101,7 @@ class UserSignUpTest(InviteUserBase):
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     def test_registration_of_active_mirror_dummy_user(self) -> None:
         """
@@ -3131,7 +3130,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(user_profile.email, email)
         self.assertEqual(result['Location'], "http://zulip.testserver/")
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
     @override_settings(TERMS_OF_SERVICE=False)
     def test_dev_user_registration_create_realm(self) -> None:
@@ -3147,7 +3146,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result["Location"], 'http://{}.testserver'.format(string_id))
 
         user_profile = UserProfile.objects.all().order_by("id").last()
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assert_logged_in_user_id(user_profile.id)
 
 class DeactivateUserTest(ZulipTestCase):
 
