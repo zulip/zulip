@@ -193,6 +193,13 @@ lxml==4.3.3
 
 # Needed for 2-factor authentication
 django-two-factor-auth==1.8.0
+
+# Required by django-phonenumber-field which is a dependency of django-two-factor-auth.
+# Developers can install either phonenumberslite or phonenumbers. Developers of
+# django-two-factor-auth has not specified which package to install so we are going
+# with phonenumberslite since it has less memory footprint.
+phonenumberslite==8.10.12
+
 twilio==6.26.2
 
 # Needed for processing payments (in corporate)
