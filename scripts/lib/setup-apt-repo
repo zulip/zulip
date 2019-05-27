@@ -28,7 +28,7 @@ touch "$SOURCES_FILE"
 zulip_source_hash=$(sha1sum "$SOURCES_FILE")
 
 pre_setup_deps=(lsb-release apt-transport-https gnupg)
-if ! apt-get -s install "${pre_setup_deps[@]}" > /dev/null 2>&1; then
+if ! apt-get -dy install "${pre_setup_deps[@]}"; then
     apt-get update
 fi
 apt-get -y install "${pre_setup_deps[@]}"
