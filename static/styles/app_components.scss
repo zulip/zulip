@@ -268,16 +268,16 @@
     overflow: hidden;
 }
 
-.overlay.show {
-    opacity: 1;
-    pointer-events: all;
-    transition-timing-function: ease-out;
-}
-
 .overlay .overlay-content {
     transform: translateY(20px);
     transition: transform 0.2s ease-in;
     z-index: 102;
+}
+
+.overlay.show {
+    opacity: 1;
+    pointer-events: all;
+    transition-timing-function: ease-out;
 }
 
 .overlay.show .overlay-content {
