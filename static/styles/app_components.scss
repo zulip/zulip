@@ -202,10 +202,6 @@
     outline: none;
 }
 
-.new-style .tab-switcher.large .ind-tab {
-    width: 100%;
-}
-
 .new-style .tab-switcher .ind-tab:not(.selected) {
     border: 1px solid hsl(0, 0%, 80%);
 }
@@ -235,6 +231,10 @@
     pointer-events: none;
     color: hsl(0, 0%, 80%);
     border-color: hsl(0, 0%, 87%);
+}
+
+.new-style .tab-switcher.large .ind-tab {
+    width: 100%;
 }
 
 .informational-overlays .tab-switcher {
