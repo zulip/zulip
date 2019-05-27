@@ -53,7 +53,7 @@ from zerver.models import Client, Message, Realm, UserPresence, UserProfile, Cus
     get_default_stream_groups, CustomProfileField, Stream
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
-
+from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 
 def get_raw_user_data(realm: Realm, client_gravatar: bool) -> Dict[int, Dict[str, str]]:
     user_dicts = get_realm_user_dicts(realm.id)
@@ -218,6 +218,8 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_plan_type'] = realm.plan_type
         state['plan_includes_wide_organization_logo'] = realm.plan_type != Realm.LIMITED
         state['upgrade_text_for_wide_organization_logo'] = str(Realm.UPGRADE_TEXT_STANDARD)
+        state['realm_default_external_accounts'] = DEFAULT_EXTERNAL_ACCOUNTS
+
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
             state['realm_notifications_stream_id'] = notifications_stream.id

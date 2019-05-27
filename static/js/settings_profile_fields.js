@@ -76,6 +76,15 @@ function read_choice_field_data_from_form(field_elem) {
     return field_data;
 }
 
+function read_external_account_field_data(field_elem) {
+    var field_data = {};
+    field_data.subtype = $(field_elem).find('select[name=external_acc_field_type]').val();
+    if (field_data.subtype === "custom") {
+        field_data.url_pattern = $(field_elem).find('input[name=url_pattern]').val();
+    }
+    return field_data;
+}
+
 function update_choice_delete_btn(container, display_flag) {
     var no_of_choice_row = container.find(".choice-row").length;
 
@@ -106,12 +115,20 @@ function clear_form_data() {
     create_choice_row($("#profile_field_choices"));
     update_choice_delete_btn($("#profile_field_choices"), false);
     $("#profile_field_choices_row").hide();
+    // Clear external account field form
+    $("#custom_field_url_pattern").val("");
+    $("#custom_external_account_url_pattern").hide();
+    $("#profile_field_external_accounts").hide();
+    $("#profile_field_external_accounts_type").val(0);
 }
 
 function read_field_data_from_form(field_type_id, field_elem) {
     // Only read field data if we are creating a choice field
+    // or external account field.
     if (field_type_id === field_types.CHOICE.id) {
         return read_choice_field_data_from_form(field_elem);
+    } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
+        return read_external_account_field_data(field_elem);
     }
 }
 
@@ -121,7 +138,6 @@ function create_profile_field(e) {
 
     var field_data = {};
     var field_type = $('#profile_field_type').val();
-
     var opts = {
         success_continuation: clear_form_data,
     };
@@ -186,6 +202,15 @@ exports.parse_field_choices_from_field_data = function (field_data) {
     return choices;
 };
 
+function set_up_external_account_field_edit_form(field_elem, url_pattern_val) {
+    if (field_elem.form.find('select[name=external_acc_field_type]').val() === 'custom') {
+        field_elem.form.find('input[name=url_pattern]').val(url_pattern_val);
+        field_elem.form.find('.custom_external_account_detail').show();
+    } else {
+        field_elem.form.find('.custom_external_account_detail').hide();
+    }
+}
+
 function set_up_choices_field_edit_form(profile_field, field_data) {
     // Re-render field choices in edit form to load initial choice data
     var choice_list = profile_field.form.find('.edit_profile_field_choices_container');
@@ -229,6 +254,11 @@ function open_edit_form(e) {
         set_up_choices_field_edit_form(profile_field, field_data);
     }
 
+    if (parseInt(field.type, 10) === field_types.EXTERNAL_ACCOUNT.id) {
+        profile_field.form.find('select[name=external_acc_field_type]').val(field_data.subtype);
+        set_up_external_account_field_edit_form(profile_field, field_data.url_pattern);
+    }
+
     profile_field.form.find('.reset').on("click", function () {
         profile_field.form.hide();
         profile_field.row.show();
@@ -254,6 +284,11 @@ function open_edit_form(e) {
 
     profile_field.form.find(".edit_profile_field_choices_container").on("input", ".choice-row input", add_choice_row);
     profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.delete-choice", delete_choice_row);
+    $(".profile_field_external_accounts_edit select").on('change', function (e) {
+        var field_id = $(e.target).closest('.profile-field-form').attr('data-profile-field-id');
+        var field_form = get_profile_field_info(field_id);
+        set_up_external_account_field_edit_form(field_form, "");
+    });
 }
 
 exports.reset = function () {
@@ -307,8 +342,11 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
                         type: exports.field_type_id_to_string(profile_field.type),
                         choices: choices,
                         is_choice_field: profile_field.type === field_types.CHOICE.id,
+                        is_external_account_field: profile_field.type ===
+                                                    field_types.EXTERNAL_ACCOUNT.id,
                     },
                     can_modify: page_params.is_admin,
+                    realm_default_external_accounts: page_params.realm_default_external_accounts,
                 }
             )
         );
@@ -355,6 +393,46 @@ function set_up_choices_field() {
     $("#profile_field_choices").on("click", "button.delete-choice", delete_choice_row);
 }
 
+function set_up_external_account_field() {
+    var field_elem = $("#profile_field_external_accounts");
+    var field_url_pattern_elem = $("#custom_external_account_url_pattern");
+
+    $('#profile_field_type').on('change', function (e) {
+        var selected_field_id = parseInt($(e.target).val(), 10);
+        if (selected_field_id === field_types.EXTERNAL_ACCOUNT.id) {
+            field_elem.show();
+            if ($("#profile_field_external_accounts_type").val() === 'custom') {
+                field_url_pattern_elem.show();
+            } else {
+                field_url_pattern_elem.hide();
+            }
+        } else {
+            field_url_pattern_elem.hide();
+            field_elem.hide();
+        }
+    });
+    $("#profile_field_external_accounts_type").on("change", function () {
+        if ($("#profile_field_external_accounts_type").val() === 'custom') {
+            field_url_pattern_elem.show();
+        } else {
+            field_url_pattern_elem.hide();
+        }
+    });
+}
+
+exports.get_external_account_link = function (field) {
+    var field_subtype = field.field_data.subtype;
+    var field_url_pattern;
+
+    if (field_subtype === 'custom') {
+        field_url_pattern = field.field_data.url_pattern;
+    } else {
+        field_url_pattern =
+            page_params.realm_default_external_accounts[field_subtype].url_pattern;
+    }
+    return field_url_pattern.replace('%(username)s', field.value);
+};
+
 exports.set_up = function () {
     exports.build_page();
     exports.maybe_disable_widgets();
@@ -371,6 +449,7 @@ exports.build_page = function () {
     $("#profile-field-settings").on("click", "#add-custom-profile-field-btn", create_profile_field);
     $("#admin_profile_fields_table").on("click", ".open-edit-form", open_edit_form);
     set_up_choices_field();
+    set_up_external_account_field();
     clear_form_data();
 };
 

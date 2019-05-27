@@ -22,6 +22,7 @@ from zerver.models import (UserProfile,
                            CustomProfileField, custom_profile_fields_for_realm)
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.users import validate_user_custom_profile_data
+from zerver.lib.external_accounts import validate_external_account_field_data
 
 def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)
@@ -50,10 +51,11 @@ def validate_custom_field_data(field_type: int,
         if len(field_data) < 1:
             raise JsonableError(_("Field must have at least one choice."))
         error = validate_choice_field_data(field_data)
+    elif field_type == CustomProfileField.EXTERNAL_ACCOUNT:
+        error = validate_external_account_field_data(field_data)
 
     if error:
         raise JsonableError(error)
-
 
 @require_realm_admin
 @has_request_variables
