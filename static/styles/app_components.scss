@@ -266,23 +266,23 @@
 
     transition: opacity 0.2s ease-in;
     overflow: hidden;
-}
 
-.overlay .overlay-content {
-    transform: translateY(20px);
-    transition: transform 0.2s ease-in;
-    z-index: 102;
-}
+    .overlay-content {
+        transform: translateY(20px);
+        transition: transform 0.2s ease-in;
+        z-index: 102;
+    }
 
-.overlay.show {
-    opacity: 1;
-    pointer-events: all;
-    transition-timing-function: ease-out;
-}
+    &.show {
+        opacity: 1;
+        pointer-events: all;
+        transition-timing-function: ease-out;
 
-.overlay.show .overlay-content {
-    transform: translateY(0px);
-    transition-timing-function: ease-out;
+        .overlay-content {
+            transform: translateY(0px);
+            transition-timing-function: ease-out;
+        }
+    }
 }
 
 .input-append {
