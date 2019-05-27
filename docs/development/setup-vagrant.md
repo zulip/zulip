@@ -4,7 +4,7 @@ This section guides first-time contributors through installing the
 Zulip development environment on Windows, macOS, Ubuntu and Debian.
 
 The recommended method for installing the Zulip development environment is to use
-Vagrant with VirtualBox on Windows and macOS, and Vagrant with LXC on
+Vagrant with VirtualBox on Windows and macOS, and Vagrant with Docker on
 Ubuntu. This method creates a virtual machine (for Windows and macOS)
 or a Linux container (for Ubuntu) inside which the Zulip server and
 all related services will run.
@@ -53,7 +53,7 @@ a proxy to access the internet.)
   virtualization enabled (VT-X or AMD-V), administrator access.
 
 Other Linux distributions work great too, but we don't maintain
-documentation for installing Vagrant and LXC on those systems, so
+documentation for installing Vagrant and Docker on those systems, so
 you'll need to find a separate guide and crib from the Debian/Ubuntu
 docs.
 
@@ -94,112 +94,40 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code).
 
 #### Ubuntu
 
-If you're in a hurry, you can copy and paste the following into your terminal
-after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
-
-```
-sudo apt-get -y purge vagrant && \
-wget https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb && \
-sudo dpkg -i vagrant*.deb && \
-sudo apt-get -y install build-essential git ruby lxc lxc-templates cgroup-lite redir && \
-vagrant plugin install vagrant-lxc && \
-vagrant lxc sudoers
-```
-
-For a step-by-step explanation, read on.
-
-##### 1. Install Vagrant
-
-For Ubuntu 18.04 Bionic or newer, you can just install from `apt`:
-
-```
-sudo apt install vagrant
-```
-
-For Ubuntu 16.04 Xenial and 14.04 Trusty, you'll need a more recent
-version of Vagrant than what's available in the official Ubuntu
-repositories.
-
-First uninstall any vagrant package you may have installed from the Ubuntu
-repository:
+##### 1. Install Vagrant, Docker, and Git
 
 ```
 christie@ubuntu-desktop:~
-$ sudo apt-get purge vagrant
+$ sudo apt install vagrant docker.io git
 ```
 
-Now download and install the .deb package for [Vagrant][vagrant-dl].  E.g.:
-
-```
-christie@ubuntu-desktop:~
-$ wget https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb
-
-christie@ubuntu-desktop:~
-$ sudo dpkg -i vagrant*.deb
-```
-
-##### 2. Install remaining dependencies
-
-Now install git and lxc-related packages:
+##### 2. Add yourself to the `docker` group:
 
 ```
 christie@ubuntu-desktop:~
-$ sudo apt-get install build-essential git ruby lxc lxc-templates cgroup-lite redir
+$ sudo adduser $USER docker
+Adding user `christie' to group `docker' ...
+Adding user christie to group docker
+Done.
 ```
 
-##### 3. Install the vagrant lxc plugin:
-
-```
-christie@ubuntu-desktop:~
-$ vagrant plugin install vagrant-lxc
-Installing the 'vagrant-lxc' plugin. This can take a few minutes...
-Installed the plugin 'vagrant-lxc (1.2.1)'!
-```
-
-If you encounter an error when trying to install the vagrant-lxc plugin, [see
-this](#nomethoderror).
-
-##### 4. Configure sudo to be passwordless
-
-Finally, [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo]:
+You will need to reboot for this change to take effect.  If it worked,
+you will see `docker` in your list of groups:
 
 ```
 christie@ubuntu-desktop:~
-$ vagrant lxc sudoers
-[sudo] password for christie:
+$ groups
+christie adm cdrom sudo dip plugdev lpadmin sambashare docker
 ```
-
-If you encounter an error running `vagrant lxc sudoers`, [see
-this](#permissions-errors).
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 #### Debian
 
-The setup for Debian 9.0 "stretch" is very similar to that
-[for Ubuntu above](#ubuntu).  Follow those instructions, except with
-the following differences:
-
-**Apt package list**.  In "2. Install remaining dependencies", the
-command to install the dependencies is a bit shorter:
-
-```
-christie@ubuntu-desktop:~
-$ sudo apt-get install build-essential git ruby lxc redir
-```
-
-**Set up LXC networking**.  After completing "2. Install remaining
-dependencies", you will have to set up networking for LXC containers,
-because Debian's packaging for LXC does not ship any default
-network setup for them.  You can do this by
-[following the steps][lxc-networking-quickstart] outlined in
-[Debian's LXC docs](https://wiki.debian.org/LXC#network_setup).
-
-[lxc-networking-quickstart]: https://wiki.debian.org/LXC#Minimal_changes_to_set_up_networking_for_LXC_for_Debian_.2BIBw-stretch.2BIB0_.28testing.29
-
-Then return to the next step in the Ubuntu instructions above.  After
-finishing those steps, you will be ready for
-[Step 2: Get Zulip Code](#step-2-get-zulip-code).
+The setup for Debian is very similar to that [for Ubuntu
+above](#ubuntu), except that the `docker.io` package is only available
+in Debian 10 and later; for Debian 9, see [Docker CE for
+Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 #### Windows 10
 
@@ -643,12 +571,12 @@ was:
 If this error starts happening unexpectedly, then just run:
 
 ```
-vagrant reload
+vagrant halt
+vagrant up
 ```
 
-This is equivalent of running a halt followed by an up (aka rebooting
-the guest).  After this, you can do `vagrant provision` and `vagrant
-ssh`.
+to reboot the guest.  After this, you can do `vagrant provision` and
+`vagrant ssh`.
 
 #### ssl read error
 
@@ -686,7 +614,7 @@ ssh_exchange_identification: Connection closed by remote host
 ```
 
 It usually means the Vagrant guest is not running, which is usually
-solved by rebooting the Vagrant guest via `vagrant reload`.  See
+solved by rebooting the Vagrant guest via `vagrant halt; vagrant up`.  See
 [Vagrant was unable to communicate with the guest machine](#vagrant-was-unable-to-communicate-with-the-guest-machine)
 for more details.
 
@@ -807,8 +735,7 @@ the timeout ("config.vm.boot_timeout") value.
 
 This has a range of possible causes, that usually amount to a bug in
 Virtualbox or Vagrant.  If you see this error, you usually can fix it
-by rebooting the guest via `vagrant reload` (or equivalently, `vagrant
-halt` followed by `vagrant up`):
+by rebooting the guest via `vagrant halt; vagrant up`.
 
 #### Vagrant up fails with subprocess.CalledProcessError
 
@@ -877,69 +804,9 @@ Done in 23.50s.
 These are warnings produced by spammy third party JavaScript packages.
 It is okay to proceed and start the Zulip server.
 
-#### vagrant-lxc errors
-
-##### Permissions errors
-
-When building the development environment using Vagrant and the LXC provider,
-if you encounter permissions errors, you may need to `chown -R 1000:$(id -g)
-/path/to/zulip` on the host before running `vagrant up` in order to ensure that
-the synced directory has the correct owner during provision. This issue will
-arise if you run `id username` on the host where `username` is the user running
-Vagrant and the output is anything but 1000.  This seems to be caused by
-Vagrant behavior; for more information, see [the vagrant-lxc FAQ entry about
-shared folder permissions][lxc-sf].
-
-
-##### NoMethodError
-
-If you see the following error when you try to install the vagrant-lxc plugin:
-
-```
-/usr/lib/ruby/2.3.0/rubygems/specification.rb:946:in `all=': undefined method `group_by' for nil:NilClass (NoMethodError)
-  from /usr/lib/ruby/vendor_ruby/vagrant/bundler.rb:275:in `with_isolated_gem'
-  from /usr/lib/ruby/vendor_ruby/vagrant/bundler.rb:231:in `internal_install'
-  from /usr/lib/ruby/vendor_ruby/vagrant/bundler.rb:102:in `install'
-  from /usr/lib/ruby/vendor_ruby/vagrant/plugin/manager.rb:62:in `block in install_plugin'
-  from /usr/lib/ruby/vendor_ruby/vagrant/plugin/manager.rb:72:in `install_plugin'
-  from /usr/share/vagrant/plugins/commands/plugin/action/install_gem.rb:37:in `call'
-  from /usr/lib/ruby/vendor_ruby/vagrant/action/warden.rb:34:in `call'
-  from /usr/lib/ruby/vendor_ruby/vagrant/action/builder.rb:116:in `call'
-  from /usr/lib/ruby/vendor_ruby/vagrant/action/runner.rb:66:in `block in run'
-  from /usr/lib/ruby/vendor_ruby/vagrant/util/busy.rb:19:in `busy'
-  from /usr/lib/ruby/vendor_ruby/vagrant/action/runner.rb:66:in `run'
-  from /usr/share/vagrant/plugins/commands/plugin/command/base.rb:14:in `action'
-  from /usr/share/vagrant/plugins/commands/plugin/command/install.rb:32:in `block in execute'
-  from /usr/share/vagrant/plugins/commands/plugin/command/install.rb:31:in `each'
-  from /usr/share/vagrant/plugins/commands/plugin/command/install.rb:31:in `execute'
-  from /usr/share/vagrant/plugins/commands/plugin/command/root.rb:56:in `execute'
-  from /usr/lib/ruby/vendor_ruby/vagrant/cli.rb:42:in `execute'
-  from /usr/lib/ruby/vendor_ruby/vagrant/environment.rb:268:in `cli'
-  from /usr/bin/vagrant:173:in `<main>'
-```
-
-And you have vagrant version 1.8.1, then you need to patch vagrant manually.
-See [this post](https://github.com/mitchellh/vagrant/issues/7073) for an
-explanation of the issue, which should be fixed when Vagrant 1.8.2 is released.
-
-In the meantime, read [this
-post](http://stackoverflow.com/questions/36811863/cant-install-vagrant-plugins-in-ubuntu-16-04/36991648#36991648)
-for how to create and apply the patch.
-
-It will look something like this:
-
-```
-christie@xenial:~
-$ sudo patch --directory /usr/lib/ruby/vendor_ruby/vagrant < vagrant-plugin.patch
-patching file bundler.rb
-```
 #### VT-X unavailability error
 
 Users who are unable to do "vagrant up" due to a VT-X unavailability error need to disable "Hyper-V" to get it to work.
-
-#### Permissions errors when running the test suite in LXC
-
-See ["Possible testing issues"](../testing/testing.html#possible-testing-issues).
 
 #### Mounting NFS fails on macOS Mojave
 
@@ -1049,7 +916,7 @@ adding to your `~/.zulip-vagrant-config` file.  E.g. if you set:
 HOST_PORT 9971
 ```
 
-(and halt and restart the Vagrant guest), then you would visit
+(and `vagrant reload` to apply the new configuration), then you would visit
 http://localhost:9971/ to connect to your development server.
 
 If you'd like to be able to connect to your development environment from other
@@ -1067,7 +934,7 @@ for the IP address that means any IP address can connect to your development ser
 
 When running Vagrant using a VM-based provider such as VirtualBox or
 VMWare Fusion, CPU and RAM resources must be explicitly allocated to
-the guest system (with LXC and other container-based Vagrant
+the guest system (with Docker and other container-based Vagrant
 providers, explicit allocation is unnecessary and the settings
 described here are ignored).
 
@@ -1105,13 +972,10 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 
 [cygwin-dl]: http://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
-[vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
-[avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
 [install-advanced]: ../development/setup-advanced.html
-[lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
 [rtd-git-guide]: ../git/index.html
 [rtd-testing]: ../testing/testing.html
 [rtd-using-dev-env]: using.html
