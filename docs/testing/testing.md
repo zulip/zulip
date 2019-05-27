@@ -126,18 +126,6 @@ something valuable to helping keep Zulip bug-free.
     git remote add -f upstream https://github.com/zulip/zulip.git
   ```
 
-- When building the development environment using Vagrant and the LXC
-  provider, if you encounter permissions errors, you may need to
-  `chown -R 1000:$(id -g) /path/to/zulip` on the host before running
-  `vagrant up` in order to ensure that the synced directory has the
-  correct owner during provision. This issue will arise if you run `id
-  username` on the host where `username` is the user running Vagrant
-  and the output is anything but 1000.
-  This seems to be caused by Vagrant behavior; for more information,
-  see [the vagrant-lxc FAQ entry about shared folder permissions][lxc-sf].
-
-[lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
-
 - When running casper tests (`./tools/test-js-with-casper`), if you
 get an error like this:
 

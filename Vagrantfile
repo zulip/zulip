@@ -19,43 +19,6 @@ if Vagrant::VERSION == "1.8.7" then
     end
 end
 
-# Workaround: the lxc-config in vagrant-lxc is incompatible with changes in
-# LXC 2.1.0, found in Ubuntu 17.10 artful.  LXC 2.1.1 (in 18.04 LTS bionic)
-# ignores the old config key, so this will only be needed for artful.
-#
-# vagrant-lxc upstream has an attempted fix:
-#   https://github.com/fgrehm/vagrant-lxc/issues/445
-# but it didn't work in our testing.  This is a temporary issue, so we just
-# hack in a fix: we patch the skeleton `lxc-config` file right in the
-# distribution of the vagrant-lxc "box" we use.  If the user doesn't yet
-# have the box (e.g. on first setup), Vagrant would download it but too
-# late for us to patch it like this; so we prompt them to explicitly add it
-# first and then rerun.
-if ['up', 'provision'].include? ARGV[0]
-  if command? "lxc-ls"
-    LXC_VERSION = `lxc-ls --version`.strip unless defined? LXC_VERSION
-    if LXC_VERSION == "2.1.0"
-      lxc_config_file = ENV['HOME'] + "/.vagrant.d/boxes/fgrehm-VAGRANTSLASH-trusty64-lxc/1.2.0/lxc/lxc-config"
-      if File.file?(lxc_config_file)
-        lines = File.readlines(lxc_config_file)
-        deprecated_line = "lxc.pivotdir = lxc_putold\n"
-        if lines[1] == deprecated_line
-          lines[1] = "# #{deprecated_line}"
-          File.open(lxc_config_file, 'w') do |f|
-            f.puts(lines)
-          end
-        end
-      else
-        puts 'You are running LXC 2.1.0, and fgrehm/trusty64-lxc box is incompatible '\
-            "with it by default. First add the box by doing:\n"\
-            "  vagrant box add  https://vagrantcloud.com/fgrehm/trusty64-lxc\n"\
-            'Once this command succeeds, do "vagrant up" again.'
-        exit
-      end
-    end
-  end
-end
-
 # Workaround: Vagrant removed the atlas.hashicorp.com to
 # vagrantcloud.com redirect in February 2018. The value of
 # DEFAULT_SERVER_URL in Vagrant versions less than 1.9.3 is
@@ -84,9 +47,6 @@ else
 end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-
-  # For LXC. VirtualBox hosts use a different box, described below.
-  config.vm.box = "fgrehm/trusty64-lxc"
 
   # The Zulip development environment runs on 9991 on the guest.
   host_port = 9991
@@ -145,22 +105,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: host_ip_addr
   config.vm.network "forwarded_port", guest: 9994, host: host_port + 3, host_ip: host_ip_addr
-  # Specify LXC provider before VirtualBox provider so it's preferred.
-  config.vm.provider "lxc" do |lxc|
-    if command? "lxc-ls"
-      LXC_VERSION = `lxc-ls --version`.strip unless defined? LXC_VERSION
-      if LXC_VERSION >= "1.1.0" and LXC_VERSION < "3.0.0"
-        # Allow start without AppArmor, otherwise Box will not Start on Ubuntu 14.10
-        # see https://github.com/fgrehm/vagrant-lxc/issues/333
-        lxc.customize 'aa_allow_incomplete', 1
-      end
-      if LXC_VERSION >= "3.0.0"
-        lxc.customize 'apparmor.allow_incomplete', 1
-      end
-      if LXC_VERSION >= "2.0.0"
-        lxc.backingstore = 'dir'
-      end
-    end
+  # Specify Docker provider before VirtualBox provider so it's preferred.
+  config.vm.provider "docker" do |d, override|
+    d.build_dir = File.join(__dir__, "tools", "setup", "dev-vagrant-docker")
+    d.build_args = ["--build-arg", "VAGRANT_UID=#{Process.uid}"]
+    d.has_ssh = true
+    d.create_args = ["--ulimit", "nofile=1024:65536"]
   end
 
   config.vm.provider "virtualbox" do |vb, override|
@@ -174,14 +124,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # It's possible we can get away with just 1.5GB; more testing needed
     vb.memory = vm_memory
     vb.cpus = vm_num_cpus
-  end
-
-  config.vm.provider "docker" do |d, override|
-    override.vm.box = nil
-    d.build_dir = File.join(__dir__, "tools", "setup", "dev-vagrant-docker")
-    d.build_args = ["--build-arg", "VAGRANT_UID=#{Process.uid}"]
-    d.has_ssh = true
-    d.create_args = ["--ulimit", "nofile=1024:65536"]
   end
 
 $provision_script = <<SCRIPT
