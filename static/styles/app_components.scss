@@ -180,61 +180,61 @@
     font-weight: initial;
     margin: 2px 4px;
     display: inline-block;
-}
 
-.new-style .tab-switcher .ind-tab {
-    display: inline-block;
-    width: 90px;
-    margin: 0px -0.5px;
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    vertical-align: bottom; /* See http://stackoverflow.com/a/43266155/ */
-    padding: 3px 10px;
-    background-color: hsl(0, 0%, 100%);
-    cursor: pointer;
-    justify-content: center;
-    align-items: center;
-}
+    .ind-tab {
+        display: inline-block;
+        width: 90px;
+        margin: 0px -0.5px;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        vertical-align: bottom; /* See http://stackoverflow.com/a/43266155/ */
+        padding: 3px 10px;
+        background-color: hsl(0, 0%, 100%);
+        cursor: pointer;
+        justify-content: center;
+        align-items: center;
 
-.new-style .tab-switcher .ind-tab:focus {
-    outline: none;
-}
+        &:focus {
+            outline: none;
+        }
 
-.new-style .tab-switcher .ind-tab:not(.selected) {
-    border: 1px solid hsl(0, 0%, 80%);
-}
+        &:not(.selected) {
+            border: 1px solid hsl(0, 0%, 80%);
+        }
 
-.new-style .tab-switcher .ind-tab.first {
-    border-radius: 5px 0px 0px 5px;
-    border-right: 1px solid transparent;
-}
+        &.first {
+            border-radius: 5px 0px 0px 5px;
+            border-right: 1px solid transparent;
+        }
 
-.new-style .tab-switcher .ind-tab.middle {
-    border-right: 1px solid transparent;
-}
+        &.middle {
+            border-right: 1px solid transparent;
+        }
 
-.new-style .tab-switcher .ind-tab.last {
-    border-radius: 0px 5px 5px 0px;
-}
+        &.last {
+            border-radius: 0px 5px 5px 0px;
+        }
 
-.new-style .tab-switcher .ind-tab.selected {
-    position: relative;
-    background-color: hsl(0, 0%, 53%);
-    color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(0, 0%, 47%);
-    z-index: 2;
-}
+        &.selected {
+            position: relative;
+            background-color: hsl(0, 0%, 53%);
+            color: hsl(0, 0%, 100%);
+            border: 1px solid hsl(0, 0%, 47%);
+            z-index: 2;
+        }
 
-.new-style .tab-switcher .ind-tab.disabled {
-    pointer-events: none;
-    color: hsl(0, 0%, 80%);
-    border-color: hsl(0, 0%, 87%);
-}
+        &.disabled {
+            pointer-events: none;
+            color: hsl(0, 0%, 80%);
+            border-color: hsl(0, 0%, 87%);
+        }
+    }
 
-.new-style .tab-switcher.large .ind-tab {
-    width: 100%;
+    &.large .ind-tab {
+        width: 100%;
+    }
 }
 
 .informational-overlays .tab-switcher {
