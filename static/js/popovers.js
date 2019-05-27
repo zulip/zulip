@@ -104,6 +104,7 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     profile_field.name = field.name;
     profile_field.is_user_field = false;
     profile_field.is_link = field_type === field_types.URL.id;
+    profile_field.is_external_account = field_type === field_types.EXTERNAL_ACCOUNT.id;
     profile_field.type = field_type;
 
     switch (field_type) {
@@ -123,6 +124,11 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     case field_types.LONG_TEXT.id:
         profile_field.value = field_value.value;
         profile_field.rendered_value = field_value.rendered_value;
+        break;
+    case field_types.EXTERNAL_ACCOUNT.id:
+        profile_field.value = field_value.value;
+        profile_field.field_data = JSON.parse(field.field_data);
+        profile_field.link = settings_profile_fields.get_external_account_link(profile_field);
         break;
     default:
         profile_field.value = field_value.value;

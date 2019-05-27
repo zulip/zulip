@@ -5385,7 +5385,8 @@ def try_add_realm_custom_profile_field(realm: Realm, name: str, field_type: int,
                                        field_data: Optional[ProfileFieldData]=None) -> CustomProfileField:
     field = CustomProfileField(realm=realm, name=name, field_type=field_type)
     field.hint = hint
-    if field.field_type == CustomProfileField.CHOICE:
+    if (field.field_type == CustomProfileField.CHOICE or
+            field.field_type == CustomProfileField.EXTERNAL_ACCOUNT):
         field.field_data = ujson.dumps(field_data or {})
 
     field.save()
@@ -5410,7 +5411,8 @@ def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileFiel
                                           field_data: Optional[ProfileFieldData]=None) -> None:
     field.name = name
     field.hint = hint
-    if field.field_type == CustomProfileField.CHOICE:
+    if (field.field_type == CustomProfileField.CHOICE or
+            field.field_type == CustomProfileField.EXTERNAL_ACCOUNT):
         field.field_data = ujson.dumps(field_data or {})
     field.save()
     notify_realm_custom_profile_fields(realm, 'update')

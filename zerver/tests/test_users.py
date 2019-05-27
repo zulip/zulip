@@ -416,6 +416,7 @@ class PermissionTest(ZulipTestCase):
             'Birthday': '1909-3-5',
             'Favorite website': 'https://zulipchat.com',
             'Mentor': [cordelia.id],
+            'GitHub': 'timabbott',
         }
 
         for field_name in fields:
@@ -500,7 +501,8 @@ class PermissionTest(ZulipTestCase):
             'Favorite editor': None,
             'Birthday': None,
             'Favorite website': 'https://zulip.github.io',
-            'Mentor': [hamlet.id]
+            'Mentor': [hamlet.id],
+            'GitHub': 'timabbott',
         }
         new_profile_data = []
         for field_name in fields:

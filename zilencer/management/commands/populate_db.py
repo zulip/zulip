@@ -29,6 +29,7 @@ from zerver.models import CustomProfileField, DefaultStream, Message, Realm, Rea
     UserMessage, UserPresence, UserProfile, clear_database, \
     email_to_username, get_client, get_huddle, get_realm, get_stream, \
     get_system_bot, get_user, get_user_profile_by_id
+from zerver.lib.types import ProfileFieldData
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 
@@ -348,7 +349,7 @@ class Command(BaseCommand):
             field_data = {
                 'vim': {'text': 'Vim', 'order': '1'},
                 'emacs': {'text': 'Emacs', 'order': '2'},
-            }
+            }  # type: ProfileFieldData
             favorite_editor = try_add_realm_custom_profile_field(zulip_realm,
                                                                  "Favorite editor",
                                                                  CustomProfileField.CHOICE,
@@ -360,6 +361,12 @@ class Command(BaseCommand):
                                                                   hint="Or your personal blog's URL")
             mentor = try_add_realm_custom_profile_field(zulip_realm, "Mentor",
                                                         CustomProfileField.USER)
+            external_account_field_data = {
+                'subtype': 'github'
+            }  # type: ProfileFieldData
+            github_profile = try_add_realm_custom_profile_field(zulip_realm, "GitHub",
+                                                                CustomProfileField.EXTERNAL_ACCOUNT,
+                                                                field_data=external_account_field_data)
 
             # Fill in values for Iago and Hamlet
             hamlet = get_user("hamlet@zulip.com", zulip_realm)
@@ -371,6 +378,7 @@ class Command(BaseCommand):
                 {"id": birthday.id, "value": "2000-1-1"},
                 {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
                 {"id": mentor.id, "value": [hamlet.id]},
+                {"id": github_profile.id, "value": 'zulip'},
             ])
             do_update_user_custom_profile_data(hamlet, [
                 {"id": phone_number.id, "value": "+0-11-23-456-7890"},
@@ -383,6 +391,7 @@ class Command(BaseCommand):
                 {"id": birthday.id, "value": "1900-1-1"},
                 {"id": favorite_website.id, "value": "https://blog.zulig.org"},
                 {"id": mentor.id, "value": [iago.id]},
+                {"id": github_profile.id, "value": 'zulipbot'},
             ])
         else:
             zulip_realm = get_realm("zulip")

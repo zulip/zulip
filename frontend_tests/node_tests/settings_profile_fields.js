@@ -7,17 +7,27 @@ set_global('Sortable', {create: () => {}});
 
 const SHORT_TEXT_ID = 1;
 const CHOICE_ID = 3;
+const EXTERNAL_ACCOUNT_ID = 7;
+
+const SHORT_TEXT_NAME = "Short Text";
+const CHOICE_NAME = "Choice";
+const EXTERNAL_ACCOUNT_NAME = "External account";
 
 page_params.custom_profile_fields = {};
+page_params.realm_default_external_accounts = JSON.stringify({});
 
 page_params.custom_profile_field_types = {
     SHORT_TEXT: {
         id: SHORT_TEXT_ID,
-        name: "Short Text",
+        name: SHORT_TEXT_NAME,
     },
     CHOICE: {
         id: CHOICE_ID,
-        name: "Choice",
+        name: CHOICE_NAME,
+    },
+    EXTERNAL_ACCOUNT: {
+        id: EXTERNAL_ACCOUNT_ID,
+        name: EXTERNAL_ACCOUNT_NAME,
     },
 };
 
@@ -78,6 +88,25 @@ run_test('populate_profile_fields', () => {
                 },
             ]),
         },
+        {
+            type: EXTERNAL_ACCOUNT_ID,
+            id: 20,
+            name: 'github profile',
+            hint: 'username only',
+            field_data: JSON.stringify({
+                subtype: 'github',
+            }),
+        },
+        {
+            type: EXTERNAL_ACCOUNT_ID,
+            id: 21,
+            name: 'zulip profile',
+            hint: 'username only',
+            field_data: JSON.stringify({
+                subtype: 'custom',
+                url_pattern: 'https://chat.zulip.com/%(username)s',
+            }),
+        },
     ];
     const expected_template_data = [
         {
@@ -85,25 +114,59 @@ run_test('populate_profile_fields', () => {
                 id: 10,
                 name: 'favorite color',
                 hint: 'blue?',
-                type: 'Short Text',
+                type: SHORT_TEXT_NAME,
                 choices: [],
                 is_choice_field: false,
+                is_external_account_field: false,
             },
             can_modify: true,
+            realm_default_external_accounts:
+                page_params.realm_default_external_accounts,
         },
         {
             profile_field: {
                 id: 30,
                 name: 'meal',
                 hint: 'lunch',
-                type: 'Choice',
+                type: CHOICE_NAME,
                 choices: [
                     {order: 0, value: 0, text: 'lunch'},
                     {order: 1, value: 1, text: 'dinner'},
                 ],
                 is_choice_field: true,
+                is_external_account_field: false,
             },
             can_modify: true,
+            realm_default_external_accounts:
+                page_params.realm_default_external_accounts,
+        },
+        {
+            profile_field: {
+                id: 20,
+                name: 'github profile',
+                hint: 'username only',
+                type: EXTERNAL_ACCOUNT_NAME,
+                choices: [],
+                is_choice_field: false,
+                is_external_account_field: true,
+            },
+            can_modify: true,
+            realm_default_external_accounts:
+                page_params.realm_default_external_accounts,
+        },
+        {
+            profile_field: {
+                id: 21,
+                name: 'zulip profile',
+                hint: 'username only',
+                type: EXTERNAL_ACCOUNT_NAME,
+                choices: [],
+                is_choice_field: false,
+                is_external_account_field: true,
+            },
+            can_modify: true,
+            realm_default_external_accounts:
+                page_params.realm_default_external_accounts,
         },
     ];
 

@@ -141,6 +141,103 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
+    def test_create_external_account_field(self) -> None:
+        self.login(self.example_email("iago"))
+        realm = get_realm('zulip')
+        data = {}  # type: Dict[str, Union[str, int, Dict[str, str]]]
+        data["name"] = "Twitter"
+        data["field_type"] = CustomProfileField.EXTERNAL_ACCOUNT
+
+        data['field_data'] = 'invalid'
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "Bad value for 'field_data': invalid")
+
+        data['field_data'] = ujson.dumps({})
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "subtype key is missing from field_data")
+
+        data["field_data"] = ujson.dumps({
+            'subtype': ''
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'field_data["subtype"] cannot be blank.')
+
+        data["field_data"] = ujson.dumps({
+            'subtype': '123'
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'Invalid external account type')
+
+        non_default_external_account = 'linkedin'
+        data["field_data"] = ujson.dumps({
+            'subtype': non_default_external_account
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'Invalid external account type')
+
+        data["field_data"] = ujson.dumps({
+            'subtype': 'twitter'
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        twitter_field = CustomProfileField.objects.get(name="Twitter", realm=realm)
+        self.assertEqual(twitter_field.field_type, CustomProfileField.EXTERNAL_ACCOUNT)
+        self.assertEqual(twitter_field.name, "Twitter")
+        self.assertEqual(ujson.loads(twitter_field.field_data)['subtype'], 'twitter')
+
+        data['name'] = 'Reddit'
+        data["field_data"] = ujson.dumps({
+            'subtype': 'custom'
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'Custom external account must define url pattern')
+
+        data["field_data"] = ujson.dumps({
+            'subtype': 'custom',
+            'url_pattern': 123,
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'field_data["url_pattern"] is not a string')
+
+        data["field_data"] = ujson.dumps({
+            'subtype': 'custom',
+            'url_pattern': 'invalid',
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'username should appear exactly once in pattern.')
+
+        data["field_data"] = ujson.dumps({
+            'subtype': 'custom',
+            'url_pattern': 'https://www.reddit.com/%(username)s/user/%(username)s',
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'username should appear exactly once in pattern.')
+
+        data["field_data"] = ujson.dumps({
+            'subtype': 'custom',
+            'url_pattern': 'reddit.com/%(username)s',
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'field_data["url_pattern"] is not a URL')
+
+        data["field_data"] = ujson.dumps({
+            'subtype': 'custom',
+            'url_pattern': 'https://www.reddit.com/user/%(username)s',
+        })
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        custom_field = CustomProfileField.objects.get(name="Reddit", realm=realm)
+        self.assertEqual(custom_field.field_type, CustomProfileField.EXTERNAL_ACCOUNT)
+        self.assertEqual(custom_field.name, "Reddit")
+        field_data = ujson.loads(custom_field.field_data)
+        self.assertEqual(field_data['subtype'], 'custom')
+        self.assertEqual(field_data['url_pattern'], 'https://www.reddit.com/user/%(username)s')
+
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "A field with that name already exists.")
+
     def test_not_realm_admin(self) -> None:
         self.login(self.example_email("hamlet"))
         result = self.client_post("/json/realm/profile_fields")
@@ -416,6 +513,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             ('Birthday', '1909-3-5'),
             ('Favorite website', 'https://zulipchat.com'),
             ('Mentor', [self.example_user("cordelia").id]),
+            ('GitHub', 'zulip-mobile')
         ]
 
         data = []

@@ -228,6 +228,21 @@ def check_url(var_name: str, val: object) -> Optional[str]:
     except ValidationError:
         return _('%s is not a URL') % (var_name,)
 
+def check_url_pattern(var_name: str, val: object) -> Optional[str]:
+    error = check_string(var_name, val)
+    if error:
+        return error
+    val = cast(str, val)
+
+    if val.count('%(username)s') != 1:
+        return _('username should appear exactly once in pattern.')
+    url_val = val.replace('%(username)s', 'username')
+
+    error = check_url(var_name, url_val)
+    if error:
+        return error
+    return None
+
 def validate_choice_field_data(field_data: ProfileFieldData) -> Optional[str]:
     """
     This function is used to validate the data sent to the server while

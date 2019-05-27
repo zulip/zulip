@@ -2614,6 +2614,7 @@ class CustomProfileField(models.Model):
     DATE = 4
     URL = 5
     USER = 6
+    EXTERNAL_ACCOUNT = 7
 
     # These are the fields whose validators require more than var_name
     # and value argument. i.e. CHOICE require field_data, USER require
@@ -2638,6 +2639,7 @@ class CustomProfileField(models.Model):
         (LONG_TEXT, str(_('Long text')), check_long_string, str, "LONG_TEXT"),
         (DATE, str(_('Date picker')), check_date, str, "DATE"),
         (URL, str(_('Link')), check_url, str, "URL"),
+        (EXTERNAL_ACCOUNT, str(_('External account')), check_short_string, str, "EXTERNAL_ACCOUNT"),
     ]  # type: FieldTypeData
 
     ALL_FIELD_TYPES = FIELD_TYPE_DATA + CHOICE_FIELD_TYPE_DATA + USER_FIELD_TYPE_DATA
