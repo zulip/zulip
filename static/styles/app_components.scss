@@ -239,13 +239,13 @@
 
 .informational-overlays .tab-switcher {
     display: flex;
-}
 
-.informational-overlays .tab-switcher .ind-tab {
-    display: flex;
-    text-overflow: initial;
-    white-space: initial;
-    vertical-align: middle;
+    .ind-tab {
+        display: flex;
+        text-overflow: initial;
+        white-space: initial;
+        vertical-align: middle;
+    }
 }
 
 /* -- unified overlay design component -- */
