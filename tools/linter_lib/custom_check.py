@@ -3,17 +3,12 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import re
-
-from zulint.printer import print_err, colors
+from zulint.printer import colors
 from zulint.custom_rules import (
-    get_line_info_from_file,
-    get_rules_applying_to_fn,
-    check_file_for_long_lines,
-    check_file_for_pattern
+    custom_check_file,
 )
 
-from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
+from typing import cast, Any, Callable, Dict, List, Tuple
 
 Rule = Dict[str, Any]
 RuleList = List[Dict[str, Any]]
@@ -44,71 +39,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     # to fix everything until we migrate the DB to "topic".
     'zerver/tests/test_narrow.py',
 }
-
-def custom_check_file(fn: str,
-                      identifier: str,
-                      rules: RuleList,
-                      color: Optional[Iterable[str]],
-                      max_length: Optional[int]=None) -> bool:
-    failed = False
-
-    line_tups = get_line_info_from_file(fn=fn)
-
-    rules_to_apply = get_rules_applying_to_fn(fn=fn, rules=rules)
-
-    for rule in rules_to_apply:
-        ok = check_file_for_pattern(
-            fn=fn,
-            line_tups=line_tups,
-            identifier=identifier,
-            color=color,
-            rule=rule,
-        )
-        if not ok:
-            failed = True
-
-    # TODO: Move the below into more of a framework.
-    firstline = None
-    lastLine = None
-    if line_tups:
-        firstline = line_tups[0][3]  # line_fully_stripped for the first line.
-        lastLine = line_tups[-1][1]
-
-    if max_length is not None:
-        ok = check_file_for_long_lines(
-            fn=fn,
-            max_length=max_length,
-            line_tups=line_tups,
-        )
-        if not ok:
-            failed = True
-
-    if firstline:
-        shebang_rules = [
-            {'pattern': '^#!',
-             'description': "zerver library code shouldn't have a shebang line.",
-             'include_only': set(['zerver/'])},
-            # /bin/sh and /usr/bin/env are the only two binaries
-            # that NixOS provides at a fixed path (outside a
-            # buildFHSUserEnv sandbox).
-            {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))',
-             'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo` for interpreters other than sh."},
-            {'pattern': '^#!/usr/bin/env python$',
-             'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
-        ]
-        shebang_rules_to_apply = get_rules_applying_to_fn(fn=fn, rules=shebang_rules)
-        for rule in shebang_rules_to_apply:
-            if re.search(rule['pattern'], firstline):
-                print_err(identifier, color,
-                          '{} at {} line 1:'.format(rule['description'], fn))
-                print_err(identifier, color, firstline)
-                failed = True
-
-    if lastLine and ('\n' not in lastLine):
-        print("No newline at the end of file.  Fix with `sed -i '$a\\' %s`" % (fn,))
-        failed = True
-
-    return failed
 
 PYDELIMS = r'''"'()\[\]{}#\\'''
 PYREG = r"[^{}]".format(PYDELIMS)
