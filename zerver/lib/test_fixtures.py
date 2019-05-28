@@ -44,7 +44,17 @@ def run_db_migrations(platform: str) -> None:
          './manage.py', 'get_migration_status',
          '--output=%s' % (migration_status_file,)])
 
-def run_generate_fixtures_if_required(use_force: bool=False) -> None:
+def update_test_databases_if_required(use_force: bool=False) -> None:
+    """Checks whether the zulip_test_template database template, is
+    consistent with our database migrations; if not, it updates them
+    in the fastest way possible:
+
+    * If all we need to do is add some migrations, just runs those
+      migrations.
+    * Otherwise, we rebuild the test database from scratch.
+
+    If use_force is specified, it will always do a full rebuild.
+    """
     generate_fixtures_command = ['tools/setup/generate-fixtures']
     test_template_db_status = template_database_status()
     if use_force or test_template_db_status == 'needs_rebuild':

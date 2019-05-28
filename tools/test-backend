@@ -193,7 +193,7 @@ def main() -> None:
     os.environ["http_proxy"] = ""
     os.environ["https_proxy"] = ""
 
-    from zerver.lib.test_fixtures import run_generate_fixtures_if_required
+    from zerver.lib.test_fixtures import update_test_databases_if_required
 
     from tools.lib.test_script import (
         get_provisioning_status,
@@ -376,7 +376,7 @@ def main() -> None:
     # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
     django.setup()
 
-    run_generate_fixtures_if_required(options.generate_fixtures)
+    update_test_databases_if_required(options.generate_fixtures)
 
     subprocess.check_call(['tools/webpack', '--test'])
 
