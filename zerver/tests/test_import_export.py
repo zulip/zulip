@@ -655,6 +655,9 @@ class ImportExportTest(ZulipTestCase):
         user_mention_message = '@**King Hamlet** Hello'
         self.send_stream_message(self.example_email("iago"), "Verona", user_mention_message)
 
+        stream_mention_message = 'Subscribe to #**Denmark**'
+        self.send_stream_message(self.example_email("hamlet"), "Verona", stream_mention_message)
+
         # data to test import of hotspots
         sample_user = self.example_user('hamlet')
 
@@ -895,6 +898,14 @@ class ImportExportTest(ZulipTestCase):
             return mention_message.content
 
         assert_realm_values(get_user_mention)
+
+        def get_stream_mention(r: Realm) -> Set[Any]:
+            mentioned_stream = get_stream(u'Denmark', r)
+            data_stream_id = 'data-stream-id="{}"'.format(mentioned_stream.id)
+            mention_message = get_stream_messages(r).get(rendered_content__contains=data_stream_id)
+            return mention_message.content
+
+        assert_realm_values(get_stream_mention)
 
     def test_import_files_from_local(self) -> None:
 

@@ -253,6 +253,15 @@ def fix_message_rendered_content(realm: Realm,
                     if old_user_id in user_id_map:
                         mention["data-user-id"] = str(user_id_map[old_user_id])
                 message['rendered_content'] = str(soup)
+
+            stream_mentions = soup.findAll("a", {"class": "stream"})
+            if len(stream_mentions) != 0:
+                stream_id_map = ID_MAP["stream"]
+                for mention in stream_mentions:
+                    old_stream_id = int(mention["data-stream-id"])
+                    if old_stream_id in stream_id_map:
+                        mention["data-stream-id"] = str(stream_id_map[old_stream_id])
+                message['rendered_content'] = str(soup)
             continue
 
         message_object = FakeMessage()
