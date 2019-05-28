@@ -146,6 +146,8 @@ DEFAULT_SETTINGS = {
     'AUTH_LDAP_CONNECTION_OPTIONS': {},
     # Disable django-auth-ldap caching, to prevent problems with OU changes.
     'AUTH_LDAP_CACHE_TIMEOUT': 0,
+    # Disable syncing user on each login; Using sync_ldap_user_data cron is recommended.
+    'AUTH_LDAP_ALWAYS_UPDATE_USER': False,
     # Development-only settings for fake LDAP authentication; used to
     # support local development of LDAP auth without an LDAP server.
     # Detailed docs in zproject/dev_settings.py.
