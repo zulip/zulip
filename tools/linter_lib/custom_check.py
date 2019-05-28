@@ -3,7 +3,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import os
 import re
 
 from zulint.printer import print_err, colors
@@ -85,20 +84,20 @@ def custom_check_file(fn: str,
             failed = True
 
     if firstline:
-        if os.path.splitext(fn)[1] and 'zerver/' in fn:
-            shebang_rules = [{'pattern': '^#!',
-                              'description': "zerver library code shouldn't have a shebang line."}]
-        else:
-            shebang_rules = [
-                # /bin/sh and /usr/bin/env are the only two binaries
-                # that NixOS provides at a fixed path (outside a
-                # buildFHSUserEnv sandbox).
-                {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))',
-                 'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo` for interpreters other than sh."},
-                {'pattern': '^#!/usr/bin/env python$',
-                 'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
-            ]
-        for rule in shebang_rules:
+        shebang_rules = [
+            {'pattern': '^#!',
+             'description': "zerver library code shouldn't have a shebang line.",
+             'include_only': set(['zerver/'])},
+            # /bin/sh and /usr/bin/env are the only two binaries
+            # that NixOS provides at a fixed path (outside a
+            # buildFHSUserEnv sandbox).
+            {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))',
+             'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo` for interpreters other than sh."},
+            {'pattern': '^#!/usr/bin/env python$',
+             'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
+        ]
+        shebang_rules_to_apply = get_rules_applying_to_fn(fn=fn, rules=shebang_rules)
+        for rule in shebang_rules_to_apply:
             if re.search(rule['pattern'], firstline):
                 print_err(identifier, color,
                           '{} at {} line 1:'.format(rule['description'], fn))
