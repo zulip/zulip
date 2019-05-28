@@ -162,6 +162,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider "docker" do |d, override|
     override.vm.box = nil
     d.build_dir = File.join(__dir__, "tools", "setup", "dev-vagrant-docker")
+    d.build_args = ["--build-arg", "VAGRANT_UID=#{Process.uid}"]
     d.has_ssh = true
     d.create_args = ["--ulimit", "nofile=1024:65536"]
   end

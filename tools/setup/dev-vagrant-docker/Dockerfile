@@ -21,6 +21,8 @@ RUN echo locales locales/default_environment_locale select en_US.UTF-8 | debconf
            systemd \
     && rm -rf /var/lib/apt/lists/*
 
+ARG VAGRANT_UID
+
 RUN \
     # We use https://github.com/gdraheim/docker-systemctl-replacement
     # to make services we install like postgres, redis, etc. normally
@@ -42,7 +44,7 @@ RUN \
     && mkdir /etc/systemd/system/redis-server.service.d \
     && printf '[Service]\nExecStart=/usr/bin/redis-server /etc/redis/redis.conf --bind 127.0.0.1\n' > /etc/systemd/system/redis-server.service.d/override.conf \
     # Set up the vagrant user and its SSH key (globally public)
-    && useradd -ms /bin/bash vagrant \
+    && useradd -ms /bin/bash -u "$VAGRANT_UID" vagrant \
     && mkdir -m 700 ~vagrant/.ssh \
     && curl -so ~vagrant/.ssh/authorized_keys 'https://raw.githubusercontent.com/hashicorp/vagrant/be7876d83644aa6bdf7f951592fdc681506bcbe6/keys/vagrant.pub' \
     && chown -R vagrant: ~vagrant/.ssh \
