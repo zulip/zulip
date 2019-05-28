@@ -31,6 +31,9 @@ pycodestyle==2.5.0
 # Needed to run pyflakes linter
 pyflakes==2.1.1
 
+# Needed for watching file changes
+pyinotify==0.9.6
+
 # Needed to run tests in parallel
 tblib==1.3.2
 
