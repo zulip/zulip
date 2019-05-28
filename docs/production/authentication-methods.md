@@ -134,11 +134,10 @@ management command:
 ```
 
 This will sync the fields declared in `AUTH_LDAP_USER_ATTR_MAP` for
-all of your users; in the default configuration, it will just
-synchronize users' `full_name`.
+all of your users.
 
 We recommend running this command in a **regular cron job**, to pick
-up name changes made on your LDAP server.
+up changes made on your LDAP server.
 
 All of these data synchronization options have the same model:
 * New users will be populated automatically with the
