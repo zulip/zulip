@@ -31,6 +31,13 @@ import unittest
 
 from multiprocessing.sharedctypes import Synchronized
 
+# We need to pick an ID for this test-backend invocation, and store it
+# in this global so it can be used in init_worker; this is used to
+# ensure the database IDs we select are unique for each `test-backend`
+# run.  This probably should use a locking mechanism rather than the
+# below hack, which fails 1/10000000 of the itme.
+random_id_range_start = random.randint(1, 10000000) * 100
+
 _worker_id = 0  # Used to identify the worker process.
 
 ReturnT = TypeVar('ReturnT')  # Constrain return type to match
@@ -218,11 +225,9 @@ def _replacement_destroy_test_db(self: DatabaseCreation,
                        % (self.connection.ops.quote_name(test_database_name),))
 DatabaseCreation._destroy_test_db = _replacement_destroy_test_db
 
-def destroy_test_databases(database_id: Optional[int]=None) -> None:
-    """
-    When database_id is None, the name of the databases is picked up
-    by the database settings.
-    """
+def destroy_test_databases(worker_id: int) -> None:
+    """Modified from the Django original to """
+    database_id = random_id_range_start + worker_id
     for alias in connections:
         connection = connections[alias]
         try:
@@ -231,7 +236,8 @@ def destroy_test_databases(database_id: Optional[int]=None) -> None:
             # DB doesn't exist. No need to do anything.
             pass
 
-def create_test_databases(database_id: int) -> None:
+def create_test_databases(worker_id: int) -> None:
+    database_id = random_id_range_start + worker_id
     for alias in connections:
         connection = connections[alias]
         connection.creation.clone_test_db(
@@ -373,7 +379,6 @@ class Runner(DiscoverRunner):
         # in `zerver.tests.test_templates`.
         self.shallow_tested_templates = set()  # type: Set[str]
         template_rendered.connect(self.on_template_rendered)
-        self.database_id = random.randint(1, 10000)
 
     def get_resultclass(self) -> Type[TestResult]:
         return TextTestResult
@@ -404,7 +409,7 @@ class Runner(DiscoverRunner):
             # In parallel mode (parallel > 1), destroy_test_databases will
             # destroy settings.BACKEND_DATABASE_TEMPLATE; we don't want that.
             # So run this only in serial mode.
-            destroy_test_databases()
+            destroy_test_databases(_worker_id)
         return super().teardown_test_environment(*args, **kwargs)
 
     def test_imports(self, test_labels: List[str], suite: unittest.TestSuite) -> None:
@@ -462,8 +467,10 @@ class Runner(DiscoverRunner):
             # because it will be called for both serial and parallel modes.
             # However, at this point we know in which mode we would be running
             # since that decision has already been made in build_suite().
-            destroy_test_databases(self.database_id)
-            create_test_databases(self.database_id)
+            #
+            # We pass a _worker_id, which in this code path is always 0
+            destroy_test_databases(_worker_id)
+            create_test_databases(_worker_id)
 
         # We have to do the next line to avoid flaky scenarios where we
         # run a single test and getting an SA connection causes data from
