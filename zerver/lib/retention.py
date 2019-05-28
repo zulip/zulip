@@ -147,7 +147,7 @@ def archive_messages() -> None:
     move_expired_to_archive()
     clean_expired()
 
-def move_attachment_message_to_archive_by_message(message_ids: List[int]) -> None:
+def move_attachment_messages_to_archive_by_message(message_ids: List[int]) -> None:
     # Move attachments messages relation table data to archive.
     id_list = ', '.join(str(message_id) for message_id in message_ids)
 
@@ -189,7 +189,7 @@ def move_messages_to_archive(message_ids: List[int]) -> None:
         [ArchivedAttachment(**attachment) for attachment in attachments]
     )
 
-    move_attachment_message_to_archive_by_message(message_ids)
+    move_attachment_messages_to_archive_by_message(message_ids)
 
     # Remove data from main tables
     Message.objects.filter(id__in=message_ids).delete()
