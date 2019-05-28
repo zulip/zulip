@@ -147,6 +147,19 @@ exports.update_messages = function update_messages(events) {
             var compose_stream_name = compose_state.stream_name();
             var orig_topic = util.get_edit_event_orig_topic(event);
 
+            if (page_params.realm_allow_edit_history) {
+                var topic_edit_history = {
+                    timestamp: event.edit_timestamp,
+                    user_id: event.user_id,
+                    prev_subject: orig_topic,
+                };
+
+                if (msg.edit_history === undefined) {
+                    msg.edit_history = [];
+                }
+                msg.edit_history = [topic_edit_history].concat(msg.edit_history);
+            }
+
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
                     if (orig_topic === compose_state.topic()) {
@@ -221,9 +234,6 @@ exports.update_messages = function update_messages(events) {
 
         if (event.orig_content !== undefined) {
             if (page_params.realm_allow_edit_history) {
-                // Most correctly, we should do this for topic edits as
-                // well; but we don't use the data except for content
-                // edits anyway.
                 var edit_history_entry = {
                     edited_by: event.edited_by,
                     prev_content: event.orig_content,
