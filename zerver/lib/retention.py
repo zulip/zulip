@@ -171,30 +171,29 @@ def move_messages_to_archive(message_ids: List[int]) -> None:
     messages = list(Message.objects.filter(id__in=message_ids).values())
     if not messages:
         raise Message.DoesNotExist
-    arc_messages = []
-    for message in messages:
-        arc_message = ArchivedMessage(**message)
-        arc_messages.append(arc_message)
-    ArchivedMessage.objects.bulk_create(arc_messages)
+
+    ArchivedMessage.objects.bulk_create([ArchivedMessage(**message) for message in messages])
+
     # Move user_messages to the archive.
     user_messages = UserMessage.objects.filter(
-        message_id__in=message_ids).exclude(id__in=ArchivedUserMessage.objects.all())
-    archiving_messages = []
-    for user_message in user_messages.values():
-        archiving_messages.append(ArchivedUserMessage(**user_message))
-    ArchivedUserMessage.objects.bulk_create(archiving_messages)
+        message_id__in=message_ids).exclude(id__in=ArchivedUserMessage.objects.all()).values()
+    user_messages_ids = [user_message['id'] for user_message in user_messages]
+    ArchivedUserMessage.objects.bulk_create(
+        [ArchivedUserMessage(**user_message) for user_message in user_messages]
+    )
 
     # Move attachments to archive
     attachments = Attachment.objects.filter(messages__id__in=message_ids).exclude(
-        id__in=ArchivedAttachment.objects.all()).distinct()
-    archiving_attachments = []
-    for attachment in attachments.values():
-        archiving_attachments.append(ArchivedAttachment(**attachment))
-    ArchivedAttachment.objects.bulk_create(archiving_attachments)
+        id__in=ArchivedAttachment.objects.all()).distinct().values()
+    ArchivedAttachment.objects.bulk_create(
+        [ArchivedAttachment(**attachment) for attachment in attachments]
+    )
+
     move_attachment_message_to_archive_by_message(message_ids)
+
     # Remove data from main tables
     Message.objects.filter(id__in=message_ids).delete()
-    user_messages.filter(id__in=ArchivedUserMessage.objects.all(),
-                         message_id__isnull=True).delete()
+    UserMessage.objects.filter(id__in=user_messages_ids, message_id__isnull=True).delete()
+
     archived_attachments = ArchivedAttachment.objects.filter(messages__id__in=message_ids).distinct()
     Attachment.objects.filter(messages__isnull=True, id__in=archived_attachments).delete()
