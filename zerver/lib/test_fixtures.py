@@ -44,14 +44,23 @@ def run_db_migrations(platform: str) -> None:
          './manage.py', 'get_migration_status',
          '--output=%s' % (migration_status_file,)])
 
-def update_test_databases_if_required(use_force: bool=False) -> None:
+def update_test_databases_if_required(use_force: bool=False,
+                                      rebuild_test_database: bool=False) -> None:
     """Checks whether the zulip_test_template database template, is
-    consistent with our database migrations; if not, it updates them
+    consistent with our database migrations; if not, it updates it
     in the fastest way possible:
 
     * If all we need to do is add some migrations, just runs those
-      migrations.
-    * Otherwise, we rebuild the test database from scratch.
+      migrations on the template database.
+    * Otherwise, we rebuild the test template database from scratch.
+
+    The default behavior is sufficient for the `test-backend` use
+    case, where the test runner code will clone directly from the
+    template database.
+
+    The `rebuild_test_database` option (used by our Casper tests) asks
+    us to drop and re-cloning the zulip_test database from the
+    template so those test suites can run with a fresh copy.
 
     If use_force is specified, it will always do a full rebuild.
     """
@@ -61,6 +70,8 @@ def update_test_databases_if_required(use_force: bool=False) -> None:
         generate_fixtures_command.append('--force')
     elif test_template_db_status == 'run_migrations':
         run_db_migrations('test')
+    elif not rebuild_test_database:
+        return
     subprocess.check_call(generate_fixtures_command)
 
 def database_exists(database_name: str, **options: Any) -> bool:
