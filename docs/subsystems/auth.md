@@ -63,10 +63,12 @@ that you can use for your development efforts.
 
 ## Testing LDAP in development
 
-Historically, one of the more common classes of bug reports with
-Zulip's authentication was users having trouble getting LDAP
-authentication working.  A big part of the cause was because setting
-up a local LDAP server for development was difficult.
+Before Zulip 2.0, one of the more common classes of bug reports with
+Zulip's authentication was users having trouble getting [LDAP
+authentication](../production/authentication-methods.html#ldap-including-active-directory)
+working.  The root cause was because setting up a local LDAP server
+for development was difficult, which meant most developers were unable
+to work on fixing even simple issues with it.
 
 We solved this problem for our unit tests long ago by using the
 popular [fakeldap](https://github.com/zulip/fakeldap) library.  And in
