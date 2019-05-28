@@ -145,6 +145,9 @@ All of these data synchronization options have the same model:
   name/avatar/etc. from LDAP (as configured) on account creation.
 * The `manage.py sync_ldap_user_data` cron job will automatically
   update existing users with any changes that were made in LDAP.
+* On every login, existing users are updated with any changes that were made in
+  LDAP, even if a syncing cron job has not been setup. These updates can be
+  turned off by setting `AUTH_LDAP_ALWAYS_UPDATE_USER = False`.
 * You can easily test your configuration using `manage.py query_ldap`.
   Once you're happy with the configuration, remember to restart the
   Zulip server with

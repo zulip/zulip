@@ -504,6 +504,12 @@ AUTH_LDAP_USER_ATTR_MAP = {
 # False.
 #LDAP_DEACTIVATE_NON_MATCHING_USERS = True
 
+# Whether to automatically update the fields of a User object with the latest
+# values from the LDAP directory every time the user logs in. Otherwise the
+# User object will only be populated when it is automatically created. Defaults
+# to True.
+#AUTH_LDAP_ALWAYS_UPDATE_USER = True
+
 ################
 # Miscellaneous settings.
 
