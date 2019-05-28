@@ -184,6 +184,34 @@ To setup Codeanywhere for Zulip:
 Now your workspace should look similar this:
 ![Codeanywhere workspace][img-ca-workspace]
 
+##### Locally installed GUI editors
+
+If you use [TextMate](https://macromates.com) or a similar GUI editor,
+tools like [rmate](https://github.com/textmate/rmate) that are designed to integrate
+that editor with remote development over SSH allow you to develop remotely
+from the comfort of your local machine.
+
+To setup [rmate](https://github.com/textmate/rmate) for VS Code:
+1. Install the extension
+[Remote VSCode](https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode).
+2. On your remote machine, run:
+```
+$ curl -Lo ~/bin/rmate https://raw.githubusercontent.com/textmate/rmate/master/bin/rmate
+$ chmod a+x ~/bin/rmate
+```
+3. Make sure the remote server is running in VS Code (you can force-start through the Command Palette).
+4. SSH to your remote machine using
+```
+$ ssh -R 52698:localhost:52698 user@example.org
+```
+5. On your remote machine, run
+```
+$ rmate [options] file
+```
+and the file should open up in VS Code. Any changes you make now will be saved remotely.
+
+Similar packages/extensions exist for other popular code editors as well.
+
 ##### Command line editors
 
 Another way to edit directly on the remote development server is with
