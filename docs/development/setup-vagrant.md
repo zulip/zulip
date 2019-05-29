@@ -17,6 +17,7 @@ Contents:
 * [Step 3: Start the development environment](#step-3-start-the-development-environment)
 * [Step 4: Developing](#step-4-developing)
 * [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
+* [Specifying an Ubuntu mirror](#specifying-an-ubuntu-mirror)
 * [Specifying a proxy](#specifying-a-proxy)
 * [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
 
@@ -881,6 +882,20 @@ implementation.
 
 You can read more about this
 [here](https://github.com/hashicorp/vagrant/issues/8788).
+
+### Specifying an Ubuntu mirror
+
+Bringing up a development environment for the first time involves
+downloading many packages from the Ubuntu archive.  The Ubuntu cloud
+images use the global mirror `http://archive.ubuntu.com/ubuntu/` by
+default, but you may find that you can speed up the download by using
+a local mirror closer to your location.  To do this, create
+`~/.zulip-vagrant-config` and add a line like this, replacing the URL
+as appropriate:
+
+```
+UBUNTU_MIRROR http://us.archive.ubuntu.com/ubuntu/
+```
 
 ### Specifying a proxy
 
