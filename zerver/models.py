@@ -1634,7 +1634,7 @@ class SubMessage(models.Model):
 
 post_save.connect(flush_submessage, sender=SubMessage)
 
-class Reaction(models.Model):
+class AbstractReaction(models.Model):
     """For emoji reactions to messages (and potentially future reaction types).
 
     Emoji are surprisingly complicated to implement correctly.  For details
@@ -1642,7 +1642,6 @@ class Reaction(models.Model):
       https://zulip.readthedocs.io/en/latest/subsystems/emoji.html
     """
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
-    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
 
     # The user-facing name for an emoji reaction.  With emoji aliases,
     # there may be multiple accepted names for a given emoji; this
@@ -1673,7 +1672,11 @@ class Reaction(models.Model):
     emoji_code = models.TextField()  # type: str
 
     class Meta:
+        abstract = True
         unique_together = ("user_profile", "message", "emoji_name")
+
+class Reaction(AbstractReaction):
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
 
     @staticmethod
     def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
@@ -1683,6 +1686,10 @@ class Reaction(models.Model):
 
     def __str__(self) -> str:
         return "%s / %s / %s" % (self.user_profile.email, self.message.id, self.emoji_name)
+
+class ArchivedReaction(AbstractReaction):
+    message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: ArchivedMessage
+    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
 
 # Whenever a message is sent, for each user subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
