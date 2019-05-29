@@ -16,11 +16,13 @@ Zulip has three major documentation systems:
   Zulip's huge collection of specific features without a lot of
   overhead or duplicated code/syntax, written in Markdown.  We have
   several hundred pages written using this system.  There are 3
-  branches of this documentation: user documentation (with a target
-  audience of individual Zulip users), integrations documentation
-  (with an audience of IT folks setting up integrations), and API
-  documentaiton (with an audience of developers writing code to extend
-  Zulip).
+  branches of this documentation:
+  * User documentation (with a target audience of individual Zulip
+  users),
+  * Integrations documentation (with a target audience of IT folks
+  setting up integrations), and
+  * API documentation (with a target audience of developers writing
+  code to extend Zulip).
 
 These three systems are documented in detail.
 
