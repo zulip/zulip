@@ -36,11 +36,13 @@ def do_batch_update(cursor: CursorObj,
                     batch_size: int=10000,
                     sleep: float=0.1,
                     escape: bool=True) -> None:  # nocoverage
+    # The string substitution below is complicated by our need to
+    # support multiple postgres versions.
     stmt = '''
         UPDATE %s
-        SET (%s) = ROW(%s)
+        SET %s
         WHERE id >= %%s AND id < %%s
-    ''' % (table, ', '.join(cols), ', '.join(['%s'] * len(cols)))
+    ''' % (table, ', '.join(['%s = %%s' % (col) for col in cols]))
 
     cursor.execute("SELECT MIN(id), MAX(id) FROM %s" % (table,))
     (min_id, max_id) = cursor.fetchall()[0]
