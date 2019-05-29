@@ -205,7 +205,7 @@ the app stores yourself.
 If you've done that work, the Zulip server configuration for sending
 push notifications through the new app is quite straightforward:
 * Create a
-  [FCM push notifications](https://developers.google.com/cloud-messaging/android/client)
+  [FCM push notifications](https://firebase.google.com/docs/cloud-messaging)
   key in the Google Developer console and set `android_gcm_api_key` in
   `/etc/zulip/zulip-secrets.conf` to that key.
 * Register for a
