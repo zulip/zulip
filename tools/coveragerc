@@ -38,3 +38,5 @@ omit =
     zerver/lib/ccache.py
     # Settings.py files are hard to test
     zproject/*settings.py
+    # https://github.com/davidhalter/jedi/issues/1122
+    blub
