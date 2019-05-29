@@ -66,6 +66,23 @@ if Vagrant::DEFAULT_SERVER_URL == "atlas.hashicorp.com"
   Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
 end
 
+# Monkey patch https://github.com/hashicorp/vagrant/pull/10879 so we
+# can fall back to another provider if docker is not installed.
+begin
+  require Vagrant.source_root.join("plugins", "providers", "docker", "provider")
+rescue LoadError
+else
+  VagrantPlugins::DockerProvider::Provider.class_eval do
+    method(:usable?).owner == singleton_class or def self.usable?(raise_error=false)
+      VagrantPlugins::DockerProvider::Driver.new.execute("docker", "version")
+      true
+    rescue Vagrant::Errors::CommandUnavailable
+      raise if raise_error
+      return false
+    end
+  end
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # For LXC. VirtualBox hosts use a different box, described below.
