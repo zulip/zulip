@@ -6,7 +6,7 @@
             <h3 id="invite-user-label">{% trans %}Invite users to Zulip{% endtrans %}</h3>
         </div>
         <form id="invite_user_form" class="form-horizontal">{{ csrf_input }}
-            <div class="modal-body" data-simplebar>
+            <div class="modal-body" data-simplebar data-simplebar-auto-hide="false">
                 <div class="alert" id="invite_status"></div>
                 {% if development_environment %}
                 <div class="alert" id="dev_env_msg"></div>
