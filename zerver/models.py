@@ -1614,16 +1614,21 @@ def get_context_for_message(message: Message) -> Sequence[Message]:
 
 post_save.connect(flush_message, sender=Message)
 
-class SubMessage(models.Model):
+class AbstractSubMessage(models.Model):
     # We can send little text messages that are associated with a regular
     # Zulip message.  These can be used for experimental widgets like embedded
     # games, surveys, mini threads, etc.  These are designed to be pretty
     # generic in purpose.
 
-    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     msg_type = models.TextField()
     content = models.TextField()
+
+    class Meta:
+        abstract = True
+
+class SubMessage(AbstractSubMessage):
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
 
     @staticmethod
     def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
@@ -1631,6 +1636,10 @@ class SubMessage(models.Model):
         query = SubMessage.objects.filter(message_id__in=needed_ids).values(*fields)
         query = query.order_by('message_id', 'id')
         return list(query)
+
+class ArchivedSubMessage(AbstractSubMessage):
+    message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: ArchivedMessage
+    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
 
 post_save.connect(flush_submessage, sender=SubMessage)
 
