@@ -57,6 +57,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   vm_num_cpus = "2"
   vm_memory = "2048"
 
+  ubuntu_mirror = ""
+
   config.vm.synced_folder ".", "/vagrant", disabled: true
   if (/darwin/ =~ RUBY_PLATFORM) != nil
     config.vm.synced_folder ".", "/srv/zulip", type: "nfs",
@@ -80,6 +82,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "HOST_IP_ADDR"; host_ip_addr = value
       when "GUEST_CPUS"; vm_num_cpus = value
       when "GUEST_MEMORY_MB"; vm_memory = value
+      when "UBUNTU_MIRROR"; ubuntu_mirror = value
       end
     end
   end
@@ -109,6 +112,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider "docker" do |d, override|
     d.build_dir = File.join(__dir__, "tools", "setup", "dev-vagrant-docker")
     d.build_args = ["--build-arg", "VAGRANT_UID=#{Process.uid}"]
+    if !ubuntu_mirror.empty?
+      d.build_args += ["--build-arg", "UBUNTU_MIRROR=#{ubuntu_mirror}"]
+    end
     d.has_ssh = true
     d.create_args = ["--ulimit", "nofile=1024:65536"]
   end
@@ -134,6 +140,9 @@ set -o pipefail
 # Code should go here, rather than tools/provision, only if it is
 # something that we don't want to happen when running provision in a
 # development environment not using Vagrant.
+
+# Set the Ubuntu mirror
+[ ! '#{ubuntu_mirror}' ] || sudo sed -i 's|http://\\(\\w*\\.\\)*archive\\.ubuntu\\.com/ubuntu/\\? |#{ubuntu_mirror} |' /etc/apt/sources.list
 
 # Set the MOTD on the system to have Zulip instructions
 sudo ln -nsf /srv/zulip/tools/setup/dev-motd /etc/update-motd.d/99-zulip-dev
