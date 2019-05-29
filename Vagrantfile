@@ -159,12 +159,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.cpus = vm_num_cpus
   end
 
-  config.vm.provider "vmware_fusion" do |vb, override|
-    override.vm.box = "puphpet/ubuntu1404-x64"
-    vb.vmx["memsize"] = vm_memory
-    vb.vmx["numvcpus"] = vm_num_cpus
-  end
-
   config.vm.provider "docker" do |d, override|
     override.vm.box = nil
     d.build_dir = File.join(__dir__, "tools", "setup", "dev-vagrant-docker")
