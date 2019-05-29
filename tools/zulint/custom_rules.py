@@ -8,13 +8,15 @@ import traceback
 
 from zulint.printer import print_err
 
-from typing import Any, Dict, List, Optional, Tuple, Iterable
+if False:
+    from typing import Any, Dict, List, Optional, Tuple, Iterable
 
-Rule = Dict[str, Any]
-RuleList = List[Dict[str, Any]]
-LineTup = Tuple[int, str, str, str]
+    Rule = Dict[str, Any]
+    RuleList = List[Dict[str, Any]]
+    LineTup = Tuple[int, str, str, str]
 
-def get_line_info_from_file(fn: str) -> List[LineTup]:
+def get_line_info_from_file(fn):
+    # type: (str) -> List[LineTup]
     line_tups = []
     for i, line in enumerate(open(fn)):
         line_newline_stripped = line.strip('\n')
@@ -25,7 +27,8 @@ def get_line_info_from_file(fn: str) -> List[LineTup]:
         line_tups.append(tup)
     return line_tups
 
-def get_rules_applying_to_fn(fn: str, rules: RuleList) -> RuleList:
+def get_rules_applying_to_fn(fn, rules):
+    # type: (str, RuleList) -> RuleList
     rules_to_apply = []
     for rule in rules:
         excluded = False
@@ -46,11 +49,12 @@ def get_rules_applying_to_fn(fn: str, rules: RuleList) -> RuleList:
 
     return rules_to_apply
 
-def check_file_for_pattern(fn: str,
-                           line_tups: List[LineTup],
-                           identifier: str,
-                           color: Optional[Iterable[str]],
-                           rule: Rule) -> bool:
+def check_file_for_pattern(fn,
+                           line_tups,
+                           identifier,
+                           color,
+                           rule):
+    # type: (str, List[LineTup], str, Optional[Iterable[str]], Rule) -> bool
 
     '''
     DO NOT MODIFY THIS FUNCTION WITHOUT PROFILING.
@@ -103,9 +107,10 @@ def check_file_for_pattern(fn: str,
 
     return ok
 
-def check_file_for_long_lines(fn: str,
-                              max_length: int,
-                              line_tups: List[LineTup]) -> bool:
+def check_file_for_long_lines(fn,
+                              max_length,
+                              line_tups):
+    # type: (str, int, List[LineTup]) -> bool
     ok = True
     for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
         if isinstance(line, bytes):
@@ -124,11 +129,12 @@ def check_file_for_long_lines(fn: str,
             ok = False
     return ok
 
-def custom_check_file(fn: str,
-                      identifier: str,
-                      rules: RuleList,
-                      color: Optional[Iterable[str]],
-                      max_length: Optional[int]=None) -> bool:
+def custom_check_file(fn,
+                      identifier,
+                      rules,
+                      color,
+                      max_length=None):
+    # type: (str, str, RuleList, Optional[Iterable[str]], Optional[int]) -> bool
     failed = False
 
     line_tups = get_line_info_from_file(fn=fn)
@@ -171,7 +177,8 @@ def custom_check_file(fn: str,
             # that NixOS provides at a fixed path (outside a
             # buildFHSUserEnv sandbox).
             {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))',
-             'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo` for interpreters other than sh."},
+             'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo`"
+                            " for interpreters other than sh."},
             {'pattern': '^#!/usr/bin/env python$',
              'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
         ]  # type: RuleList
