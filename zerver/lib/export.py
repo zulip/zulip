@@ -87,6 +87,7 @@ ALL_ZULIP_TABLES = {
     'zerver_attachment',
     'zerver_attachment_messages',
     'zerver_archivedreaction',
+    'zerver_archivedsubmessage',
     'zerver_botconfigdata',
     'zerver_botstoragedata',
     'zerver_client',
@@ -174,6 +175,7 @@ NON_EXPORTED_TABLES = {
     'zerver_archivedattachment',
     'zerver_archivedattachment_messages',
     'zerver_archivedreaction',
+    'zerver_archivedsubmessage',
 
     # Social auth tables are not needed post-export, since we don't
     # use any of this state outside of a direct authentication flow.
