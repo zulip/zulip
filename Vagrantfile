@@ -183,7 +183,7 @@ set -o pipefail
 # development environment not using Vagrant.
 
 # Set the MOTD on the system to have Zulip instructions
-sudo ln -s /srv/zulip/tools/setup/dev-motd /etc/update-motd.d/99-zulip-dev
+sudo ln -nsf /srv/zulip/tools/setup/dev-motd /etc/update-motd.d/99-zulip-dev
 sudo rm -f /etc/update-motd.d/10-help-text
 sudo dpkg --purge landscape-client landscape-common ubuntu-release-upgrader-core update-manager-core update-notifier-common
 sudo dpkg-divert --add --rename /etc/default/motd-news
