@@ -145,7 +145,7 @@ information on writing and running tests, see the
 After implementing the new feature, you should
 document it and update any existing documentation that might be
 relevant to the new feature. For more information on the kinds of
-documentation Zulip has, see [Documentation](../subsystems/documentation.html).
+documentation Zulip has, see [Documentation](../documentation/overview.html).
 
 ## Example Feature
 
@@ -667,4 +667,4 @@ At the very least, this will involve adding (or modifying) a Markdown file
 documenting the feature to `templates/zerver/help/` in the main Zulip
 server repository, where the source for Zulip's user documentation is
 stored. For information on writing user documentation, see
-[Zulip's general user guide documentation](../subsystems/user-docs.html).
+[Zulip's general user guide documentation](../documentation/user.html).

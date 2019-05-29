@@ -39,6 +39,7 @@ Contents:
 * :ref:`Code Contribution Guide <code-contribution-guide>`
 * :ref:`Code Testing <code-testing>`
 * :ref:`Subsystem Documentation <subsystem-documentation>`
+* :ref:`Writing Documentation <documentation>`
 * :ref:`Translating <translating>`
 
 .. _overview:
@@ -96,6 +97,13 @@ Contents:
    :maxdepth: 3
 
    subsystems/index
+
+.. _documentation:
+
+.. toctree::
+   :maxdepth: 3
+
+   documentation/index
 
 .. _translating:
 

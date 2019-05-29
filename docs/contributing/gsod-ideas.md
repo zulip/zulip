@@ -73,7 +73,7 @@ For many of our project ideas, you'll be working inside a Zulip
 development environment (because the documentation is implemented as
 markdown in the main Zulip repository, and can be previewed using
 tools in the Zulip development environment).  See
-[our documentation on documentation systems](../subsystems/documentation.html)
+[our documentation on documentation systems](../documentation/overview.html)
 for details on our various existing documentation systems.
 
 In part due to past work by a technical writer, Zulip has a

@@ -34,7 +34,7 @@ from this configuration to actually do the work (that way, it's
 possible to update the script without breaking users' configurations).
 
 * Be sure to test your integration carefully and
-  [document](https://zulip.readthedocs.io/en/latest/subsystems/integration-docs.html)
+  [document](https://zulip.readthedocs.io/en/latest/documentation/integrations.html)
   how to install it.
 
 * You should specify a clear HTTP User-Agent for your integration. The

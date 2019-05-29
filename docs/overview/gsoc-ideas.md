@@ -282,7 +282,7 @@ CSS](https://github.com/zulip/zulip/).
   e.g. having built a prototype with
   [the Django Oauth toolkit](https://django-oauth-toolkit.readthedocs.io/en/latest/)
   would be great to demonstrate as part of an application.  The
-  [Zulip integration writing guide](../subsystems/integration-docs.html)
+  [Zulip integration writing guide](../documentation/integrations.html)
   and
   [integration documentation](https://chat.zulip.org/integrations/)
   are useful materials for learning about how things currently work,

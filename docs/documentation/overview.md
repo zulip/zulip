@@ -90,13 +90,13 @@ to do the things one does a lot in each type of documentation.
 
 To learn more about Zulip's general user documentation,
 [visit it on zulipchat.com](https://zulipchat.com/help/) or
-[read our guide on writing user documentation](user-docs.html).
+[read our guide on writing user documentation](user.html).
 
 ### Integrations documentation
 
 To learn more about Zulip's integrations documentation,
 [visit it on zulipchat.com](https://zulipchat.com/integrations/) or
-[read our guide on writing user documentation](integration-docs.html).
+[read our guide on writing user documentation](integrations.html).
 
 ### API documentation
 
