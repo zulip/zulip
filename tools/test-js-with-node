@@ -83,8 +83,7 @@ enforce_fully_covered = {
     'static/js/typing_data.js',
     'static/js/typing_status.js',
     'static/js/unread.js',
-    # Temporarily removed due to a partial merge.
-    # 'static/js/user_events.js',
+    'static/js/user_events.js',
     'static/js/user_groups.js',
     'static/js/user_pill.js',
     'static/js/user_search.js',

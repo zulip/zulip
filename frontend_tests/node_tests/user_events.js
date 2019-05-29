@@ -170,4 +170,17 @@ run_test('updates', () => {
 
     user_events.update_person({user_id: me.user_id, delivery_email: 'you@example.org'});
     assert(updated);
+
+    var test_bot = {
+        email: 'test-bot@example.com',
+        user_id: 35,
+        full_name: 'Test Bot',
+        is_bot: true,
+        bot_owner_id: isaac.id,
+    };
+    people.add(test_bot);
+
+    user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});
+    person = people.get_by_email(test_bot.email);
+    assert.equal(person.bot_owner_id, me.user_id);
 });
