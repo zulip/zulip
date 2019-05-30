@@ -9,6 +9,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import create_attachment
 from zerver.models import (Message, Realm, UserProfile, ArchivedUserMessage, SubMessage,
                            ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
+                           Reaction,
                            get_realm, get_user_profile_by_email, get_system_bot)
 from zerver.lib.retention import (
     archive_messages,
@@ -16,6 +17,9 @@ from zerver.lib.retention import (
     move_expired_to_archive,
     move_messages_to_archive
 )
+
+# Class with helper functions useful for testing archiving of reactions:
+from zerver.tests.test_reactions import EmojiReactionBase
 
 ZULIP_REALM_DAYS = 30
 MIT_REALM_DAYS = 100
@@ -340,6 +344,26 @@ class TestArchivingSubMessages(RetentionTestingBase):
         self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 3)
         archive_messages()
         self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 0)
+
+class TestArchivingReactions(RetentionTestingBase, EmojiReactionBase):
+    def test_archiving_reactions(self) -> None:
+        # TODO: Expand this accordingly, when archiving reactions is actually implemented.
+        # For now, we just test if reactions to an archived message get correctly deleted.
+        expired_msg_ids = self._make_expired_zulip_messages(2)
+
+        self.post_zulip_reaction(expired_msg_ids[0], 'hamlet')
+        self.post_zulip_reaction(expired_msg_ids[0], 'cordelia')
+
+        self.post_zulip_reaction(expired_msg_ids[1], 'hamlet')
+
+        reaction_ids = list(
+            Reaction.objects.filter(message_id__in=expired_msg_ids).values_list('id', flat=True)
+        )
+
+        self.assertEqual(len(reaction_ids), 3)
+        self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 3)
+        archive_messages()
+        self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 0)
 
 class TestMoveMessageToArchive(ZulipTestCase):
     def setUp(self) -> None:
