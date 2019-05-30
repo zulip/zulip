@@ -4,10 +4,18 @@ from datetime import timedelta
 from django.db import connection, transaction
 from django.utils.timezone import now as timezone_now
 from zerver.models import (Message, UserMessage, ArchivedMessage, ArchivedUserMessage, Realm,
-                           Attachment, ArchivedAttachment)
+                           Attachment, ArchivedAttachment, Reaction, ArchivedReaction)
 
-from typing import Any, List
+from typing import Any, Dict, List
 
+models_with_message_key = [
+    {
+        'class': Reaction,
+        'archive_class': ArchivedReaction,
+        'table_name': 'zerver_reaction',
+        'archive_table_name': 'zerver_archivedreaction'
+    },
+]  # type: List[Dict[str, Any]]
 
 @transaction.atomic
 def move_expired_rows(src_model: Any, raw_query: str, **kwargs: Any) -> None:
@@ -58,6 +66,22 @@ def move_expired_user_messages_to_archive(realm: Realm) -> None:
     assert realm.message_retention_days is not None
     check_date = timezone_now() - timedelta(days=realm.message_retention_days)
     move_expired_rows(UserMessage, query, realm_id=realm.id, check_date=check_date.isoformat())
+
+def move_expired_models_with_message_key_to_archive(realm: Realm) -> None:
+    assert realm.message_retention_days is not None
+    for model in models_with_message_key:
+        query = """
+        INSERT INTO {archive_table_name} ({dst_fields}, archive_timestamp)
+        SELECT {src_fields}, '{archive_timestamp}'
+        FROM {table_name}
+        INNER JOIN zerver_archivedmessage ON {table_name}.message_id = zerver_archivedmessage.id
+        INNER JOIN zerver_userprofile ON zerver_archivedmessage.sender_id = zerver_userprofile.id
+        LEFT JOIN {archive_table_name} ON {archive_table_name}.id = {table_name}.id
+        WHERE zerver_userprofile.realm_id = {realm_id}
+            AND {archive_table_name}.id IS NULL
+        """
+        move_expired_rows(model['class'], query, realm_id=realm.id, table_name=model['table_name'],
+                          archive_table_name=model['archive_table_name'])
 
 def move_expired_attachments_to_archive(realm: Realm) -> None:
     query = """
@@ -133,6 +157,7 @@ def move_expired_to_archive() -> None:
     for realm in Realm.objects.filter(message_retention_days__isnull=False).order_by("id"):
         move_expired_messages_to_archive(realm)
         move_expired_user_messages_to_archive(realm)
+        move_expired_models_with_message_key_to_archive(realm)
         move_expired_attachments_to_archive(realm)
         move_expired_attachments_message_rows_to_archive(realm)
 
@@ -181,6 +206,15 @@ def move_messages_to_archive(message_ids: List[int]) -> None:
     ArchivedUserMessage.objects.bulk_create(
         [ArchivedUserMessage(**user_message) for user_message in user_messages]
     )
+
+    for model in models_with_message_key:
+        elements = model['class'].objects.filter(message_id__in=message_ids).exclude(
+            id__in=model['archive_class'].objects.all()
+        ).values()
+
+        model['archive_class'].objects.bulk_create(
+            [model['archive_class'](**element) for element in elements]
+        )
 
     # Move attachments to archive
     attachments = Attachment.objects.filter(messages__id__in=message_ids).exclude(

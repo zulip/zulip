@@ -9,7 +9,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import create_attachment
 from zerver.models import (Message, Realm, UserProfile, ArchivedUserMessage, SubMessage,
                            ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
-                           Reaction,
+                           Reaction, ArchivedReaction,
                            get_realm, get_user_profile_by_email, get_system_bot)
 from zerver.lib.retention import (
     archive_messages,
@@ -347,8 +347,6 @@ class TestArchivingSubMessages(RetentionTestingBase):
 
 class TestArchivingReactions(RetentionTestingBase, EmojiReactionBase):
     def test_archiving_reactions(self) -> None:
-        # TODO: Expand this accordingly, when archiving reactions is actually implemented.
-        # For now, we just test if reactions to an archived message get correctly deleted.
         expired_msg_ids = self._make_expired_zulip_messages(2)
 
         self.post_zulip_reaction(expired_msg_ids[0], 'hamlet')
@@ -365,7 +363,12 @@ class TestArchivingReactions(RetentionTestingBase, EmojiReactionBase):
         archive_messages()
         self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 0)
 
-class TestMoveMessageToArchive(ZulipTestCase):
+        self.assertEqual(
+            set(ArchivedReaction.objects.filter(id__in=reaction_ids).values_list('id', flat=True)),
+            set(reaction_ids)
+        )
+
+class MoveMessageToArchiveBase(ZulipTestCase):
     def setUp(self) -> None:
         self.sender = 'hamlet@zulip.com'
         self.recipient = 'cordelia@zulip.com'
@@ -405,6 +408,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
         self.assertFalse(Message.objects.filter(id__in=msg_ids).exists())
         self.assertFalse(UserMessage.objects.filter(id__in=usermsg_ids).exists())
 
+class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
     def test_personal_messages_archiving(self) -> None:
         msg_ids = [self.send_personal_message(self.sender, self.recipient)
                    for i in range(0, 3)]
@@ -520,3 +524,23 @@ class TestMoveMessageToArchive(ZulipTestCase):
         move_messages_to_archive(message_ids=[reply_msg_id])
         # Now the attachment should have been deleted:
         self.assertEqual(Attachment.objects.count(), 0)
+
+class MoveMessageToArchiveWithReactions(MoveMessageToArchiveBase, EmojiReactionBase):
+    def test_archiving_message_with_reactions(self) -> None:
+        msg_id = self.send_stream_message(self.sender, "Verona")
+
+        self.post_zulip_reaction(msg_id, 'hamlet')
+        self.post_zulip_reaction(msg_id, 'cordelia')
+
+        reaction_ids = list(
+            Reaction.objects.filter(message_id=msg_id).values_list('id', flat=True)
+        )
+
+        self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 2)
+        move_messages_to_archive(message_ids=[msg_id])
+
+        self.assertEqual(
+            set(ArchivedReaction.objects.filter(message_id=msg_id).values_list("id", flat=True)),
+            set(reaction_ids)
+        )
+        self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 0)
