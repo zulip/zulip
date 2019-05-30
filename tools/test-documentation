@@ -8,24 +8,29 @@ color_message () {
 
 loglevel=()
 
-case $1 in
-    -h|--help)
-        echo "--help, -h                   show this help message and exit"
-        echo "--loglevel=LEVEL, -L LEVEL   log level (default: ERROR)"
-        echo "--skip-check-links           skip checking of links"
-        echo "--skip-external-links        skip checking of external links"
-        exit 0
-        ;;
-    -L|--loglevel)
-        loglevel=("$1" "$2")
-        ;;
-    --skip-check-links)
-        skip_check_links=1
-        ;;
-    --skip-external-links)
-        skip_external_links=1
-        ;;
-esac
+usage () {
+    cat <<EOF
+usage:
+  --help, -h                   show this help message and exit
+  --loglevel=LEVEL, -L LEVEL   log level (default: ERROR)
+  --skip-check-links           skip checking of links
+  --skip-external-links        skip checking of external links
+EOF
+}
+
+args="$(getopt -o hL: --long help,loglevel:,skip-check-links,skip-external-links -- "$@")" ||
+    { usage >&2; exit 1; }
+eval "set -- $args"
+while true; do
+    case "$1" in
+        -h|--help) usage; exit 0;;
+        -L|--loglevel) loglevel=("$1" "$2"); shift 2;;
+        --skip-check-links) skip_check_links=1; shift;;
+        --skip-external-links) skip_external_links=1; shift;;
+        --) shift; break;;
+        *) exit 1;;
+    esac
+done
 
 cd "$(dirname "$0")"/../docs
 rm -rf _build
