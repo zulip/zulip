@@ -4,7 +4,8 @@ from datetime import timedelta
 from django.db import connection, transaction
 from django.utils.timezone import now as timezone_now
 from zerver.models import (Message, UserMessage, ArchivedMessage, ArchivedUserMessage, Realm,
-                           Attachment, ArchivedAttachment, Reaction, ArchivedReaction)
+                           Attachment, ArchivedAttachment, Reaction, ArchivedReaction,
+                           SubMessage, ArchivedSubMessage)
 
 from typing import Any, Dict, List
 
@@ -14,6 +15,12 @@ models_with_message_key = [
         'archive_class': ArchivedReaction,
         'table_name': 'zerver_reaction',
         'archive_table_name': 'zerver_archivedreaction'
+    },
+    {
+        'class': SubMessage,
+        'archive_class': ArchivedSubMessage,
+        'table_name': 'zerver_submessage',
+        'archive_table_name': 'zerver_archivedsubmessage'
     },
 ]  # type: List[Dict[str, Any]]
 
