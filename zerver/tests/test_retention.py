@@ -9,7 +9,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import create_attachment
 from zerver.models import (Message, Realm, UserProfile, ArchivedUserMessage, SubMessage,
                            ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
-                           Reaction, ArchivedReaction,
+                           Reaction, ArchivedReaction, ArchivedSubMessage,
                            get_realm, get_user_profile_by_email, get_system_bot)
 from zerver.lib.retention import (
     archive_messages,
@@ -307,8 +307,6 @@ class TestArchivingGeneral(RetentionTestingBase):
 
 class TestArchivingSubMessages(RetentionTestingBase):
     def test_archiving_submessages(self) -> None:
-        # TODO: Expand this accordingly, when archiving submessages is actually implemented.
-        # For now, we just test if submessages of an archived message get correctly deleted.
         expired_msg_ids = self._make_expired_zulip_messages(2)
         cordelia = self.example_user('cordelia')
         hamlet = self.example_user('hamlet')
@@ -344,6 +342,11 @@ class TestArchivingSubMessages(RetentionTestingBase):
         self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 3)
         archive_messages()
         self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 0)
+
+        self.assertEqual(
+            set(ArchivedSubMessage.objects.filter(id__in=submessage_ids).values_list('id', flat=True)),
+            set(submessage_ids)
+        )
 
 class TestArchivingReactions(RetentionTestingBase, EmojiReactionBase):
     def test_archiving_reactions(self) -> None:
@@ -524,6 +527,40 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         move_messages_to_archive(message_ids=[reply_msg_id])
         # Now the attachment should have been deleted:
         self.assertEqual(Attachment.objects.count(), 0)
+
+class MoveMessageToArchiveWithSubMessages(MoveMessageToArchiveBase):
+    def test_archiving_message_with_submessages(self) -> None:
+        msg_id = self.send_stream_message(self.sender, "Verona")
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+
+        do_add_submessage(
+            realm=get_realm('zulip'),
+            sender_id=cordelia.id,
+            message_id=msg_id,
+            msg_type='whatever',
+            content='{"name": "alice", "salary": 20}'
+        )
+        do_add_submessage(
+            realm=get_realm('zulip'),
+            sender_id=hamlet.id,
+            message_id=msg_id,
+            msg_type='whatever',
+            content='{"name": "john", "salary": 30}'
+        )
+
+        submessage_ids = list(
+            SubMessage.objects.filter(message_id=msg_id).values_list('id', flat=True)
+        )
+
+        self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 2)
+        move_messages_to_archive(message_ids=[msg_id])
+
+        self.assertEqual(
+            set(ArchivedSubMessage.objects.filter(message_id=msg_id).values_list("id", flat=True)),
+            set(submessage_ids)
+        )
+        self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 0)
 
 class MoveMessageToArchiveWithReactions(MoveMessageToArchiveBase, EmojiReactionBase):
     def test_archiving_message_with_reactions(self) -> None:
