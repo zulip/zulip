@@ -1,13 +1,14 @@
-import logging
 import re
 import scrapy
 
-from scrapy import Request
+from scrapy.http import Request, Response
 from scrapy.linkextractors import IGNORED_EXTENSIONS
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
+from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy.utils.url import url_has_any_extension
+from twisted.python.failure import Failure
 
-from typing import Any, Generator, List, Optional
+from typing import Callable, Iterable, List, Optional, Union
 
 EXCLUDED_URLS = [
     # Google calendar returns 404s on HEAD requests unconditionally
@@ -34,21 +35,13 @@ class BaseDocumentationSpider(scrapy.Spider):
     tags = ('a', 'area', 'img')
     attrs = ('href', 'src')
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.has_error = False
-        self.skip_external = kwargs.get('skip_external', None)
-
-    def _set_error_state(self) -> None:
-        self.has_error = True
-
     def _has_extension(self, url: str) -> bool:
         return url_has_any_extension(url, self.file_extensions)
 
     def _is_external_url(self, url: str) -> bool:
         return url.startswith('http') or self._has_extension(url)
 
-    def check_existing(self, response: Any) -> None:
+    def check_existing(self, response: Response) -> None:
         self.log(response)
 
     def _is_external_link(self, url: str) -> bool:
@@ -63,7 +56,7 @@ class BaseDocumentationSpider(scrapy.Spider):
             return False
         return True
 
-    def check_permalink(self, response: Any) -> None:
+    def check_permalink(self, response: Response) -> None:
         self.log(response)
         xpath_template = "//*[@id='{permalink}' or @name='{permalink}']"
         m = re.match(r".+\#(?P<permalink>.*)$", response.request.url)  # Get anchor value.
@@ -72,55 +65,51 @@ class BaseDocumentationSpider(scrapy.Spider):
         permalink = m.group('permalink')
         # Check permalink existing on response page.
         if not response.selector.xpath(xpath_template.format(permalink=permalink)):
-            self._set_error_state()
-            raise Exception(
-                "Permalink #{} is not found on page {}".format(permalink, response.request.url))
+            self.logger.error(
+                "Permalink #%s is not found on page %s", permalink, response.request.url)
 
-    def parse(self, response: Any) -> Generator[Request, None, None]:
+    def _make_requests(self, url: str) -> Iterable[Request]:
+        callback = self.parse  # type: Callable[[Response], Optional[Iterable[Request]]]
+        dont_filter = False
+        method = 'GET'
+        if self._is_external_url(url):
+            callback = self.check_existing
+            method = 'HEAD'
+        elif '#' in url:
+            dont_filter = True
+            callback = self.check_permalink
+        if getattr(self, 'skip_external', False) and self._is_external_link(url):
+            return
+        yield Request(url, method=method, callback=callback, dont_filter=dont_filter,
+                      errback=self.error_callback)
+
+    def start_requests(self) -> Iterable[Request]:
+        for url in self.start_urls:
+            yield from self._make_requests(url)
+
+    def parse(self, response: Response) -> Iterable[Request]:
         self.log(response)
         for link in LxmlLinkExtractor(deny_domains=self.deny_domains, deny_extensions=['doc'],
                                       tags=self.tags, attrs=self.attrs, deny=self.deny,
                                       canonicalize=False).extract_links(response):
-            callback = self.parse  # type: Any
-            dont_filter = False
-            method = 'GET'
-            if self._is_external_url(link.url):
-                callback = self.check_existing
-                method = 'HEAD'
-            elif '#' in link.url:
-                dont_filter = True
-                callback = self.check_permalink
-            if self.skip_external:
-                if (self._is_external_link(link.url)):
-                    continue
-            yield Request(link.url, method=method, callback=callback, dont_filter=dont_filter,
-                          errback=self.error_callback)
+            yield from self._make_requests(link.url)
 
-    def retry_request_with_get(self, request: Request) -> Generator[Request, None, None]:
+    def retry_request_with_get(self, request: Request) -> Iterable[Request]:
         request.method = 'GET'
         request.dont_filter = True
         yield request
 
     def exclude_error(self, url: str) -> bool:
-        if url in EXCLUDED_URLS:
-            return True
-        return False
+        return url in EXCLUDED_URLS
 
-    def error_callback(self, failure: Any) -> Optional[Generator[Any, None, None]]:
-        if hasattr(failure.value, 'response') and failure.value.response:
+    def error_callback(self, failure: Failure) -> Optional[Union[Failure, Iterable[Request]]]:
+        if failure.check(HttpError):
             response = failure.value.response
             if self.exclude_error(response.url):
                 return None
-            if response.status == 404:
-                self._set_error_state()
-                raise Exception('Page not found: {}'.format(response))
             if response.status == 405 and response.request.method == 'HEAD':
                 # Method 'HEAD' not allowed, repeat request with 'GET'
                 return self.retry_request_with_get(response.request)
-            self.log("Error! Please check link: {}".format(response), logging.ERROR)
-        elif isinstance(failure.type, IOError):
-            self._set_error_state()
-        else:
-            self._set_error_state()
-            raise Exception(failure.value)
-        return None
+            self.logger.error("Please check link: %s", response)
+
+        return failure
