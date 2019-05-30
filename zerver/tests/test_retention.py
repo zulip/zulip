@@ -4,10 +4,10 @@ from typing import Any, Dict, List, Optional
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import internal_send_private_message
+from zerver.lib.actions import internal_send_private_message, do_add_submessage
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import create_attachment
-from zerver.models import (Message, Realm, UserProfile, ArchivedUserMessage,
+from zerver.models import (Message, Realm, UserProfile, ArchivedUserMessage, SubMessage,
                            ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
                            get_realm, get_user_profile_by_email, get_system_bot)
 from zerver.lib.retention import (
@@ -300,6 +300,46 @@ class TestArchivingGeneral(RetentionTestingBase):
                 'messages__id', flat=True)),
             sorted(msgs_ids.values())
         )
+
+class TestArchivingSubMessages(RetentionTestingBase):
+    def test_archiving_submessages(self) -> None:
+        # TODO: Expand this accordingly, when archiving submessages is actually implemented.
+        # For now, we just test if submessages of an archived message get correctly deleted.
+        expired_msg_ids = self._make_expired_zulip_messages(2)
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+
+        do_add_submessage(
+            realm=self.zulip_realm,
+            sender_id=cordelia.id,
+            message_id=expired_msg_ids[0],
+            msg_type='whatever',
+            content='{"name": "alice", "salary": 20}'
+        )
+        do_add_submessage(
+            realm=self.zulip_realm,
+            sender_id=hamlet.id,
+            message_id=expired_msg_ids[0],
+            msg_type='whatever',
+            content='{"name": "john", "salary": 30}'
+        )
+
+        do_add_submessage(
+            realm=self.zulip_realm,
+            sender_id=cordelia.id,
+            message_id=expired_msg_ids[1],
+            msg_type='whatever',
+            content='{"name": "jack", "salary": 10}'
+        )
+
+        submessage_ids = list(
+            SubMessage.objects.filter(message_id__in=expired_msg_ids).values_list('id', flat=True)
+        )
+
+        self.assertEqual(len(submessage_ids), 3)
+        self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 3)
+        archive_messages()
+        self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 0)
 
 class TestMoveMessageToArchive(ZulipTestCase):
     def setUp(self) -> None:
