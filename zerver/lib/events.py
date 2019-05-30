@@ -102,7 +102,9 @@ def get_raw_user_data(realm: Realm, client_gravatar: bool) -> Dict[int, Dict[str
             date_joined = row['date_joined'].isoformat(),
         )
         if is_bot:
-            if row['bot_owner_id'] is not None:
+            if row['email'] in settings.CROSS_REALM_BOT_EMAILS:
+                result['is_cross_realm_bot'] = True
+            elif row['bot_owner_id'] is not None:
                 result['bot_owner_id'] = row['bot_owner_id']
         else:
             result['profile_data'] = profiles_by_user_id.get(row['id'], {})
