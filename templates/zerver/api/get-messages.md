@@ -70,7 +70,7 @@ curl -X GET {{ api_url }}/v1/messages \
     -d "use_first_unread_anchor=false" \
     -d "num_before=3" \
     -d "num_after=14" \
-    -d "narrow=[{\"operator\":\"stream\", \"operand\":\"party\"}]" \
+    -d 'narrow=[{"operator":"stream", "operand":"party"}]' \
 
 ```
 
