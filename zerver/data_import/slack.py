@@ -732,10 +732,11 @@ def process_message_files(message: ZerverFieldsT,
     markdown_links = []
 
     for fileinfo in files:
-        if fileinfo.get('mode', '') == 'tombstone':
+        if fileinfo.get('mode', '') in ['tombstone', 'hidden_by_limit']:
             # Slack sometimes includes tombstone mode files with no
             # real data on the actual file (presumably in cases where
-            # the file was deleted).
+            # the file was deleted). hidden_by_limit mode is for files
+            # that are hidden because of 10k cap in free plan.
             continue
 
         url = fileinfo['url_private']
