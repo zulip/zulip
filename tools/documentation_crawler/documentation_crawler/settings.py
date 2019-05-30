@@ -14,7 +14,7 @@ BOT_NAME = 'documentation_crawler'
 SPIDER_MODULES = ['documentation_crawler.spiders']
 NEWSPIDER_MODULE = 'documentation_crawler.spiders'
 COMMANDS_MODULE = 'documentation_crawler.commands'
-LOG_LEVEL = 'ERROR'
+LOG_LEVEL = 'WARNING'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
