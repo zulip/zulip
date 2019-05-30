@@ -67,6 +67,16 @@ class TestRetentionLib(ZulipTestCase):
         assert msg_id is not None
         return msg_id
 
+    def _make_expired_zulip_messages(self, message_quantity: int) -> List[int]:
+        msg_ids = list(Message.objects.order_by('id').filter(
+                       sender__realm=self.zulip_realm).values_list('id', flat=True)[3:3 + message_quantity])
+        self._change_messages_pub_date(
+            msg_ids,
+            timezone_now() - timedelta(ZULIP_REALM_DAYS+1)
+        )
+
+        return msg_ids
+
     def _verify_archive_data(self, expected_message_ids: List[int]) -> None:
         self.assertEqual(
             set(ArchivedMessage.objects.values_list('id', flat=True)),
@@ -222,12 +232,7 @@ class TestRetentionLib(ZulipTestCase):
         self._make_mit_messages(4, timezone_now() - timedelta(days=MIT_REALM_DAYS-1))
 
         # Change some Zulip messages to be expired:
-        expired_zulip_msg_ids = list(Message.objects.order_by('id').filter(
-            sender__realm=self.zulip_realm).values_list('id', flat=True)[3:10])
-        self._change_messages_pub_date(
-            expired_zulip_msg_ids,
-            timezone_now() - timedelta(ZULIP_REALM_DAYS+1)
-        )
+        expired_zulip_msg_ids = self._make_expired_zulip_messages(7)
 
         expired_crossrealm_msg_id = self._send_cross_realm_message()
         # Make the message expired on both realms:
