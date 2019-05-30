@@ -50,32 +50,6 @@
     font-size: 0.9em;
 }
 
-.informational-overlays {
-    // Hack to prevent styling from 00eaf3a effecting the markdown help overlay
-    .rendered_markdown {
-        // styles to over ride those from .rendered_markdown table
-        table {
-            padding-right: 0px;
-            margin: 0px;
-            width: 100%;
-        }
-        tr td {
-            border: 0px;
-        }
-        // Duplicate styles from bootstrap to render table correctly
-        .table th,
-        .table td {
-            border-top: 1px solid hsl(0, 0%, 87%);
-        }
-        .table-bordered td {
-            border-left: 1px solid hsl(0, 0%, 87%);
-        }
-        .table-condensed th,
-        .table-condensed td {
-            padding: 4px 5px;
-        }
-    }
-}
 
 .help-table {
     table-layout: fixed;
