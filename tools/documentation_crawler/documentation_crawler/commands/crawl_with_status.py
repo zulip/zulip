@@ -18,8 +18,5 @@ class StatusCommand(Command):
         crawler = self.crawler_process.create_crawler(spname)
         self.crawler_process.crawl(crawler, skip_external=skip_external)
         self.crawler_process.start()
-        # Get exceptions quantity from crawler stat data
-
-        if crawler.spider.has_error:
-            # Return non-zero exit code if exceptions are contained
+        if crawler.stats.get_value("log_count/ERROR"):
             self.exitcode = 1
