@@ -3,16 +3,30 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-from zulint.printer import colors
-from zulint.custom_rules import (
-    custom_check_file,
-)
+from zulint.custom_rules import RuleList
 
-from typing import cast, Any, Callable, Dict, List, Tuple
+from typing import cast, Any, Dict, List, Tuple
 
-Rule = Dict[str, Any]
-RuleList = List[Dict[str, Any]]
+Rule = List[Dict[str, Any]]
+# Rule help:
+# By default, a rule applies to all files within the extension for which it is specified (e.g. all .py files)
+# There are three operators we can use to manually include or exclude files from linting for a rule:
+# 'exclude': 'set([<path>, ...])' - if <path> is a filename, excludes that file.
+#                                   if <path> is a directory, excludes all files directly below the directory <path>.
+# 'exclude_line': 'set([(<path>, <line>), ...])' - excludes all lines matching <line> in the file <path> from linting.
+# 'include_only': 'set([<path>, ...])' - includes only those files where <path> is a substring of the filepath.
 LineTup = Tuple[int, str, str, str]
+
+PYDELIMS = r'''"'()\[\]{}#\\'''
+PYREG = r"[^{}]".format(PYDELIMS)
+PYSQ = r'"(?:[^"\\]|\\.)*"'
+PYDQ = r"'(?:[^'\\]|\\.)*'"
+PYLEFT = r"[(\[{]"
+PYRIGHT = r"[)\]}]"
+PYCODE = PYREG
+for depth in range(5):
+    PYGROUP = r"""(?:{}|{}|{}{}*{})""".format(PYSQ, PYDQ, PYLEFT, PYCODE, PYRIGHT)
+    PYCODE = r"""(?:{}|{})""".format(PYREG, PYGROUP)
 
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
@@ -40,63 +54,47 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/tests/test_narrow.py',
 }
 
-PYDELIMS = r'''"'()\[\]{}#\\'''
-PYREG = r"[^{}]".format(PYDELIMS)
-PYSQ = r'"(?:[^"\\]|\\.)*"'
-PYDQ = r"'(?:[^'\\]|\\.)*'"
-PYLEFT = r"[(\[{]"
-PYRIGHT = r"[)\]}]"
-PYCODE = PYREG
-for depth in range(5):
-    PYGROUP = r"""(?:{}|{}|{}{}*{})""".format(PYSQ, PYDQ, PYLEFT, PYCODE, PYRIGHT)
-    PYCODE = r"""(?:{}|{})""".format(PYREG, PYGROUP)
+trailing_whitespace_rule = {
+    'pattern': r'\s+$',
+    'strip': '\n',
+    'description': 'Fix trailing whitespace'
+}
+whitespace_rules = [
+    # This linter should be first since bash_rules depends on it.
+    trailing_whitespace_rule,
+    {'pattern': 'http://zulip.readthedocs.io',
+     'description': 'Use HTTPS when linking to ReadTheDocs',
+     },
+    {'pattern': '\t',
+     'strip': '\n',
+     'exclude': set(['tools/ci/success-http-headers.txt']),
+     'description': 'Fix tab-based whitespace'},
+]  # type: Rule
+comma_whitespace_rule = [
+    {'pattern': ', {2,}[^#/ ]',
+     'exclude': set(['zerver/tests', 'frontend_tests/node_tests', 'corporate/tests']),
+     'description': "Remove multiple whitespaces after ','",
+     'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
+     'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
+]  # type: Rule
+markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != r'\s+$']) + [
+    # Two spaces trailing a line with other content is okay--it's a markdown line break.
+    # This rule finds one space trailing a non-space, three or more trailing spaces, and
+    # spaces on an empty line.
+    {'pattern': r'((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
+     'strip': '\n',
+     'description': 'Fix trailing whitespace'},
+    {'pattern': '^#+[A-Za-z0-9]',
+     'strip': '\n',
+     'description': 'Missing space after # in heading',
+     'good_lines': ['### some heading', '# another heading'],
+     'bad_lines': ['###some heading', '#another heading']},
+]  # type: Rule
 
-def build_custom_checkers(by_lang):
-    # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
 
-    # By default, a rule applies to all files within the extension for which it is specified (e.g. all .py files)
-    # There are three operators we can use to manually include or exclude files from linting for a rule:
-    # 'exclude': 'set([<path>, ...])' - if <path> is a filename, excludes that file.
-    #                                   if <path> is a directory, excludes all files directly below the directory <path>.
-    # 'exclude_line': 'set([(<path>, <line>), ...])' - excludes all lines matching <line> in the file <path> from linting.
-    # 'include_only': 'set([<path>, ...])' - includes only those files where <path> is a substring of the filepath.
-    trailing_whitespace_rule = {
-        'pattern': r'\s+$',
-        'strip': '\n',
-        'description': 'Fix trailing whitespace'
-    }
-    whitespace_rules = [
-        # This linter should be first since bash_rules depends on it.
-        trailing_whitespace_rule,
-        {'pattern': 'http://zulip.readthedocs.io',
-         'description': 'Use HTTPS when linking to ReadTheDocs',
-         },
-        {'pattern': '\t',
-         'strip': '\n',
-         'exclude': set(['tools/ci/success-http-headers.txt']),
-         'description': 'Fix tab-based whitespace'},
-    ]  # type: RuleList
-    comma_whitespace_rule = [
-        {'pattern': ', {2,}[^#/ ]',
-         'exclude': set(['zerver/tests', 'frontend_tests/node_tests', 'corporate/tests']),
-         'description': "Remove multiple whitespaces after ','",
-         'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
-         'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
-    ]  # type: RuleList
-    markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != r'\s+$']) + [
-        # Two spaces trailing a line with other content is okay--it's a markdown line break.
-        # This rule finds one space trailing a non-space, three or more trailing spaces, and
-        # spaces on an empty line.
-        {'pattern': r'((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
-         'strip': '\n',
-         'description': 'Fix trailing whitespace'},
-        {'pattern': '^#+[A-Za-z0-9]',
-         'strip': '\n',
-         'description': 'Missing space after # in heading',
-         'good_lines': ['### some heading', '# another heading'],
-         'bad_lines': ['###some heading', '#another heading']},
-    ]  # type: RuleList
-    js_rules = cast(RuleList, [
+js_rules = RuleList(
+    langs=['js'],
+    rules=cast(Rule, [
         {'pattern': 'subject|SUBJECT',
          'exclude': set(['static/js/util.js',
                          'frontend_tests/']),
@@ -202,8 +200,12 @@ def build_custom_checkers(by_lang):
          ]),
          'good_lines': ['#my-style {color: blue;}'],
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
-    ]) + whitespace_rules + comma_whitespace_rule
-    python_rules = cast(RuleList, [
+    ]) + whitespace_rules + comma_whitespace_rule,
+)
+
+python_rules = RuleList(
+    langs=['py'],
+    rules=cast(Rule, [
         {'pattern': 'subject|SUBJECT',
          'exclude_pattern': 'subject to the|email|outbox',
          'description': 'avoid subject as a var',
@@ -501,8 +503,13 @@ def build_custom_checkers(by_lang):
          'include_only': set(["/management/commands/"]),
          'description': 'Raise CommandError to exit with failure in management commands',
          },
-    ]) + whitespace_rules + comma_whitespace_rule
-    bash_rules = cast(RuleList, [
+    ]) + whitespace_rules + comma_whitespace_rule,
+    max_length=110,
+)
+
+bash_rules = RuleList(
+    langs=['bash'],
+    rules=cast(Rule, [
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
@@ -513,8 +520,12 @@ def build_custom_checkers(by_lang):
              'scripts/lib/install',
              'scripts/setup/configure-rabbitmq'
          ]), },
-    ]) + whitespace_rules[0:1]
-    css_rules = cast(RuleList, [
+    ]) + whitespace_rules[0:1],
+)
+
+css_rules = RuleList(
+    langs=['css', 'scss'],
+    rules=cast(Rule, [
         {'pattern': r'calc\([^+]+\+[^+]+\)',
          'description': "Avoid using calc with '+' operator. See #8403 : in CSS.",
          'good_lines': ["width: calc(20% - -14px);"],
@@ -553,146 +564,150 @@ def build_custom_checkers(by_lang):
          'good_lines': ["border-width: 5px;"],
          'bad_lines': ["border-width: thick;", "border: thick solid black;"]},
     ]) + whitespace_rules + comma_whitespace_rule
-    prose_style_rules = cast(RuleList, [
-        {'pattern': r'[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs
-         'description': "javascript should be spelled JavaScript"},
-        {'pattern': r'''[^\/\-\."'\_\=\>]([gG]ithub)[^\.\-\_"\<]''',  # exclude usage in hrefs/divs
-         'description': "github should be spelled GitHub"},
-        {'pattern': '[oO]rganisation',  # exclude usage in hrefs/divs
-         'description': "Organization is spelled with a z",
-         'exclude_line': [('docs/translating/french.md', '* organization - **organisation**')]},
-        {'pattern': '!!! warning',
-         'description': "!!! warning is invalid; it's spelled '!!! warn'"},
-        {'pattern': 'Terms of service',
-         'description': "The S in Terms of Service is capitalized"},
-        {'pattern': '[^-_]botserver(?!rc)|bot server',
-         'description': "Use Botserver instead of botserver or bot server."},
-    ]) + comma_whitespace_rule
-    html_rules = whitespace_rules + prose_style_rules + [
-        {'pattern': 'subject|SUBJECT',
-         'exclude': set(['templates/zerver/email.html']),
-         'exclude_pattern': 'email subject',
-         'description': 'avoid subject in templates',
-         'good_lines': ['topic_name'],
-         'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN']},
-        {'pattern': r'placeholder="[^{#](?:(?!\.com).)+$',
-         'description': "`placeholder` value should be translatable.",
-         'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
-                          ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"')],
-         'exclude': set(["templates/analytics/support.html"]),
-         'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
-         'bad_lines': ['<input placeholder="foo">']},
-        {'pattern': "placeholder='[^{]",
-         'description': "`placeholder` value should be translatable.",
-         'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
-         'bad_lines': ["<input placeholder='foo'>"]},
-        {'pattern': "aria-label='[^{]",
-         'description': "`aria-label` value should be translatable.",
-         'good_lines': ['<button type="button" class="close close-alert-word-status" aria-label="{{t \'Close\' }}">'],
-         'bad_lines': ["<button aria-label='foo'></button>"]},
-        {'pattern': 'aria-label="[^{]',
-         'description': "`aria-label` value should be translatable.",
-         'good_lines': ['<button type="button" class="close close-alert-word-status" aria-label="{{t \'Close\' }}">'],
-         'bad_lines': ['<button aria-label="foo"></button>']},
-        {'pattern': 'script src="http',
-         'description': "Don't directly load dependencies from CDNs.  See docs/subsystems/front-end-build-process.md",
-         'exclude': set(["templates/corporate/billing.html", "templates/zerver/hello.html",
-                         "templates/corporate/upgrade.html"]),
-         'good_lines': ["{{ render_bundle('landing-page') }}"],
-         'bad_lines': ['<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>']},
-        {'pattern': "title='[^{]",
-         'description': "`title` value should be translatable.",
-         'good_lines': ['<link rel="author" title="{{ _(\'About these documents\') }}" />'],
-         'bad_lines': ["<p title='foo'></p>"],
-         },
-        {'pattern': r'title="[^{\:]',
-         'exclude_line': set([
-             ('templates/zerver/app/markdown_help.html',
-              '<td class="rendered_markdown"><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
-         ]),
-         'exclude': set(["templates/zerver/emails", "templates/analytics/support.html"]),
-         'description': "`title` value should be translatable."},
-        {'pattern': r'''\Walt=["'][^{"']''',
-         'description': "alt argument should be enclosed by _() or it should be an empty string.",
-         'exclude': set(['static/templates/settings/display-settings.handlebars',
-                         'templates/zerver/app/keyboard_shortcuts.html',
-                         'templates/zerver/app/markdown_help.html']),
-         'good_lines': ['<img src="{{source_url}}" alt="{{ _(name) }}" />', '<img alg="" />'],
-         'bad_lines': ['<img alt="Foo Image" />']},
-        {'pattern': r'''\Walt=["']{{ ?["']''',
-         'description': "alt argument should be enclosed by _().",
-         'good_lines': ['<img src="{{source_url}}" alt="{{ _(name) }}" />'],
-         'bad_lines': ['<img alt="{{ " />']},
-        {'pattern': r'\bon\w+ ?=',
-         'description': "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
-                        "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
-                        "the DOM is ready (inside a $(function () {...}) block).",
-         'exclude': set(['templates/zerver/dev_login.html', 'templates/corporate/upgrade.html']),
-         'good_lines': ["($('#foo').on('click', function () {}"],
-         'bad_lines': ["<button id='foo' onclick='myFunction()'>Foo</button>", "<input onchange='myFunction()'>"]},
-        {'pattern': 'style ?=',
-         'description': "Avoid using the `style=` attribute; we prefer styling in CSS files",
-         'exclude_pattern': r'.*style ?=["' + "'" + '](display: ?none|background: {{|color: {{|background-color: {{).*',
-         'exclude': set([
-             # KaTeX output uses style attribute
-             'templates/zerver/app/markdown_help.html',
-             # 5xx page doesn't have external CSS
-             'static/html/5xx.html',
-             # Group PMs color is dynamically calculated
-             'static/templates/group_pms.handlebars',
+)
 
-             # exclude_pattern above handles color, but have other issues:
-             'static/templates/draft.handlebars',
-             'static/templates/subscription.handlebars',
-             'static/templates/single_message.handlebars',
+prose_style_rules = cast(Rule, [
+    {'pattern': r'[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs
+     'description': "javascript should be spelled JavaScript"},
+    {'pattern': r'''[^\/\-\."'\_\=\>]([gG]ithub)[^\.\-\_"\<]''',  # exclude usage in hrefs/divs
+     'description': "github should be spelled GitHub"},
+    {'pattern': '[oO]rganisation',  # exclude usage in hrefs/divs
+     'description': "Organization is spelled with a z",
+     'exclude_line': [('docs/translating/french.md', '* organization - **organisation**')]},
+    {'pattern': '!!! warning',
+     'description': "!!! warning is invalid; it's spelled '!!! warn'"},
+    {'pattern': 'Terms of service',
+     'description': "The S in Terms of Service is capitalized"},
+    {'pattern': '[^-_]botserver(?!rc)|bot server',
+     'description': "Use Botserver instead of botserver or bot server."},
+]) + comma_whitespace_rule
+html_rules = whitespace_rules + prose_style_rules + cast(Rule, [
+    {'pattern': 'subject|SUBJECT',
+     'exclude': set(['templates/zerver/email.html']),
+     'exclude_pattern': 'email subject',
+     'description': 'avoid subject in templates',
+     'good_lines': ['topic_name'],
+     'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN']},
+    {'pattern': r'placeholder="[^{#](?:(?!\.com).)+$',
+     'description': "`placeholder` value should be translatable.",
+     'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
+                      ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"')],
+     'exclude': set(["templates/analytics/support.html"]),
+     'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
+     'bad_lines': ['<input placeholder="foo">']},
+    {'pattern': "placeholder='[^{]",
+     'description': "`placeholder` value should be translatable.",
+     'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
+     'bad_lines': ["<input placeholder='foo'>"]},
+    {'pattern': "aria-label='[^{]",
+     'description': "`aria-label` value should be translatable.",
+     'good_lines': ['<button type="button" class="close close-alert-word-status" aria-label="{{t \'Close\' }}">'],
+     'bad_lines': ["<button aria-label='foo'></button>"]},
+    {'pattern': 'aria-label="[^{]',
+     'description': "`aria-label` value should be translatable.",
+     'good_lines': ['<button type="button" class="close close-alert-word-status" aria-label="{{t \'Close\' }}">'],
+     'bad_lines': ['<button aria-label="foo"></button>']},
+    {'pattern': 'script src="http',
+     'description': "Don't directly load dependencies from CDNs.  See docs/subsystems/front-end-build-process.md",
+     'exclude': set(["templates/corporate/billing.html", "templates/zerver/hello.html",
+                     "templates/corporate/upgrade.html"]),
+     'good_lines': ["{{ render_bundle('landing-page') }}"],
+     'bad_lines': ['<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>']},
+    {'pattern': "title='[^{]",
+     'description': "`title` value should be translatable.",
+     'good_lines': ['<link rel="author" title="{{ _(\'About these documents\') }}" />'],
+     'bad_lines': ["<p title='foo'></p>"]},
+    {'pattern': r'title="[^{\:]',
+     'exclude_line': set([
+         ('templates/zerver/app/markdown_help.html',
+             '<td class="rendered_markdown"><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
+     ]),
+     'exclude': set(["templates/zerver/emails", "templates/analytics/support.html"]),
+     'description': "`title` value should be translatable."},
+    {'pattern': r'''\Walt=["'][^{"']''',
+     'description': "alt argument should be enclosed by _() or it should be an empty string.",
+     'exclude': set(['static/templates/settings/display-settings.handlebars',
+                     'templates/zerver/app/keyboard_shortcuts.html',
+                     'templates/zerver/app/markdown_help.html']),
+     'good_lines': ['<img src="{{source_url}}" alt="{{ _(name) }}" />', '<img alg="" />'],
+     'bad_lines': ['<img alt="Foo Image" />']},
+    {'pattern': r'''\Walt=["']{{ ?["']''',
+     'description': "alt argument should be enclosed by _().",
+     'good_lines': ['<img src="{{source_url}}" alt="{{ _(name) }}" />'],
+     'bad_lines': ['<img alt="{{ " />']},
+    {'pattern': r'\bon\w+ ?=',
+     'description': "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
+     "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
+     "the DOM is ready (inside a $(function () {...}) block).",
+     'exclude': set(['templates/zerver/dev_login.html', 'templates/corporate/upgrade.html']),
+     'good_lines': ["($('#foo').on('click', function () {}"],
+     'bad_lines': ["<button id='foo' onclick='myFunction()'>Foo</button>", "<input onchange='myFunction()'>"]},
+    {'pattern': 'style ?=',
+     'description': "Avoid using the `style=` attribute; we prefer styling in CSS files",
+     'exclude_pattern': r'.*style ?=["' + "'" + '](display: ?none|background: {{|color: {{|background-color: {{).*',
+     'exclude': set([
+         # KaTeX output uses style attribute
+         'templates/zerver/app/markdown_help.html',
+         # 5xx page doesn't have external CSS
+         'static/html/5xx.html',
+         # Group PMs color is dynamically calculated
+         'static/templates/group_pms.handlebars',
 
-             # Old-style email templates need to use inline style
-             # attributes; it should be possible to clean these up
-             # when we convert these templates to use premailer.
-             'templates/zerver/emails/email_base_messages.html',
+         # exclude_pattern above handles color, but have other issues:
+         'static/templates/draft.handlebars',
+         'static/templates/subscription.handlebars',
+         'static/templates/single_message.handlebars',
 
-             # Email log templates; should clean up.
-             'templates/zerver/email.html',
-             'templates/zerver/email_log.html',
+         # Old-style email templates need to use inline style
+         # attributes; it should be possible to clean these up
+         # when we convert these templates to use premailer.
+         'templates/zerver/emails/email_base_messages.html',
 
-             # Probably just needs to be changed to display: none so the exclude works
-             'templates/zerver/app/navbar.html',
+         # Email log templates; should clean up.
+         'templates/zerver/email.html',
+         'templates/zerver/email_log.html',
 
-             # Needs the width cleaned up; display: none is fine
-             'static/templates/settings/account-settings.handlebars',
+         # Probably just needs to be changed to display: none so the exclude works
+         'templates/zerver/app/navbar.html',
 
-             # background image property is dynamically generated
-             'static/templates/user_profile_modal.handlebars',
-             'static/templates/sidebar_private_message_list.handlebars',
+         # Needs the width cleaned up; display: none is fine
+         'static/templates/settings/account-settings.handlebars',
 
-             # Inline styling for an svg; could be moved to CSS files?
-             'templates/zerver/landing_nav.html',
-             'templates/zerver/billing_nav.html',
-             'templates/zerver/app/home.html',
-             'templates/zerver/features.html',
-             'templates/zerver/portico-header.html',
-             'templates/corporate/billing.html',
-             'templates/corporate/upgrade.html',
+         # background image property is dynamically generated
+         'static/templates/user_profile_modal.handlebars',
+         'static/templates/sidebar_private_message_list.handlebars',
 
-             # Miscellaneous violations to be cleaned up
-             'static/templates/user_info_popover_title.handlebars',
-             'static/templates/subscription_invites_warning_modal.handlebars',
-             'templates/zerver/reset_confirm.html',
-             'templates/zerver/config_error.html',
-             'templates/zerver/dev_env_email_access_details.html',
-             'templates/zerver/confirm_continue_registration.html',
-             'templates/zerver/register.html',
-             'templates/zerver/accounts_send_confirm.html',
-             'templates/zerver/integrations/index.html',
-             'templates/zerver/documentation_main.html',
-             'templates/analytics/realm_summary_table.html',
-             'templates/corporate/zephyr.html',
-             'templates/corporate/zephyr-mirror.html',
-         ]),
-         'good_lines': ['#my-style {color: blue;}', 'style="display: none"', "style='display: none"],
-         'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
-    ]  # type: RuleList
-    handlebars_rules = html_rules + [
+         # Inline styling for an svg; could be moved to CSS files?
+         'templates/zerver/landing_nav.html',
+         'templates/zerver/billing_nav.html',
+         'templates/zerver/app/home.html',
+         'templates/zerver/features.html',
+         'templates/zerver/portico-header.html',
+         'templates/corporate/billing.html',
+         'templates/corporate/upgrade.html',
+
+         # Miscellaneous violations to be cleaned up
+         'static/templates/user_info_popover_title.handlebars',
+         'static/templates/subscription_invites_warning_modal.handlebars',
+         'templates/zerver/reset_confirm.html',
+         'templates/zerver/config_error.html',
+         'templates/zerver/dev_env_email_access_details.html',
+         'templates/zerver/confirm_continue_registration.html',
+         'templates/zerver/register.html',
+         'templates/zerver/accounts_send_confirm.html',
+         'templates/zerver/integrations/index.html',
+         'templates/zerver/documentation_main.html',
+         'templates/analytics/realm_summary_table.html',
+         'templates/corporate/zephyr.html',
+         'templates/corporate/zephyr-mirror.html',
+     ]),
+     'good_lines': ['#my-style {color: blue;}', 'style="display: none"', "style='display: none"],
+     'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
+])
+
+handlebars_rules = RuleList(
+    langs=['handlebars'],
+    rules=html_rules + cast(Rule, [
         {'pattern': "[<]script",
          'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},
         {'pattern': '{{ t ("|\')',
@@ -709,14 +724,22 @@ def build_custom_checkers(by_lang):
          'description': 'Translatable strings should not have trailing spaces.'},
         {'pattern': '{{t "[^"]+ " }}',
          'description': 'Translatable strings should not have trailing spaces.'},
-    ]
-    jinja2_rules = html_rules + [
+    ]),
+)
+
+jinja2_rules = RuleList(
+    langs=['html'],
+    rules=html_rules + cast(Rule, [
         {'pattern': r"{% endtrans %}[\.\?!]",
          'description': "Period should be part of the translatable string."},
         {'pattern': r"{{ _(.+) }}[\.\?!]",
          'description': "Period should be part of the translatable string."},
-    ]
-    json_rules = [
+    ]),
+)
+
+json_rules = RuleList(
+    langs=['json'],
+    rules=cast(Rule, [
         # Here, we don't use `whitespace_rules`, because the tab-based
         # whitespace rule flags a lot of third-party JSON fixtures
         # under zerver/webhooks that we want preserved verbatim.  So
@@ -732,8 +755,32 @@ def build_custom_checkers(by_lang):
         {'pattern': r'":["\[\{]',
          'exclude': set(['zerver/webhooks/', 'zerver/tests/fixtures/']),
          'description': 'Require space after : in JSON'},
-    ]  # type: RuleList
-    markdown_rules = markdown_whitespace_rules + prose_style_rules + [
+    ])
+)
+
+markdown_docs_length_exclude = {
+    # Has some example Vagrant output that's very long
+    "docs/development/setup-vagrant.md",
+    # Have wide output in code blocks
+    "docs/subsystems/logging.md",
+    "docs/subsystems/migration-renumbering.md",
+    # Have curl commands with JSON that would be messy to wrap
+    "zerver/webhooks/helloworld/doc.md",
+    "zerver/webhooks/trello/doc.md",
+    # Has a very long configuration line
+    "templates/zerver/integrations/perforce.md",
+    # Has some example code that could perhaps be wrapped
+    "templates/zerver/api/incoming-webhooks-walkthrough.md",
+    # This macro has a long indented URL
+    "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
+    # These two are the same file and have some too-long lines for GitHub badges
+    "README.md",
+    "docs/overview/readme.md",
+}
+
+markdown_rules = RuleList(
+    langs=['md'],
+    rules=markdown_whitespace_rules + prose_style_rules + cast(Rule, [
         {'pattern': r'\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
@@ -753,108 +800,40 @@ def build_custom_checkers(by_lang):
          'include_only': set(['README.md', 'CONTRIBUTING.md']),
          'description': "Use absolute links from docs served by GitHub",
          },
-    ]
-    help_markdown_rules = markdown_rules + [
+    ]),
+    max_length=120,
+    length_exclude=markdown_docs_length_exclude,
+    exclude_files_in='templates/zerver/help/'
+)
+
+help_markdown_rules = RuleList(
+    langs=['md'],
+    rules=markdown_rules.rules + cast(Rule, [
         {'pattern': '[a-z][.][A-Z]',
-         'description': "Likely missing space after end of sentence"},
+         'description': "Likely missing space after end of sentence",
+         'include_only': set(['templates/zerver/help/']),
+         },
         {'pattern': r'\b[rR]ealm[s]?\b',
+         'include_only': set(['templates/zerver/help/']),
          'good_lines': ['Organization', 'deactivate_realm', 'realm_filter'],
          'bad_lines': ['Users are in a realm', 'Realm is the best model'],
          'description': "Realms are referred to as Organizations in user-facing docs."},
-    ]
-    txt_rules = whitespace_rules
+    ]),
+    length_exclude=markdown_docs_length_exclude,
+)
 
-    def check_custom_checks_py():
-        # type: () -> bool
-        failed = False
-        color = next(colors)
-
-        for fn in by_lang['py']:
-            if 'custom_check.py' in fn:
-                continue
-            if custom_check_file(fn, 'py', python_rules, color, max_length=110):
-                failed = True
-        return failed
-
-    def check_custom_checks_nonpy():
-        # type: () -> bool
-        failed = False
-
-        color = next(colors)
-        for fn in by_lang['js']:
-            if custom_check_file(fn, 'js', js_rules, color):
-                failed = True
-
-        color = next(colors)
-        for fn in by_lang['sh']:
-            if custom_check_file(fn, 'sh', bash_rules, color):
-                failed = True
-
-        color = next(colors)
-        for fn in by_lang['scss']:
-            if custom_check_file(fn, 'scss', css_rules, color):
-                failed = True
-
-        color = next(colors)
-        for fn in by_lang['handlebars']:
-            if custom_check_file(fn, 'handlebars', handlebars_rules, color):
-                failed = True
-
-        color = next(colors)
-        for fn in by_lang['html']:
-            if custom_check_file(fn, 'html', jinja2_rules, color):
-                failed = True
-
-        color = next(colors)
-        for fn in by_lang['json']:
-            if custom_check_file(fn, 'json', json_rules, color):
-                failed = True
-
-        color = next(colors)
-        markdown_docs_length_exclude = {
-            # Has some example Vagrant output that's very long
-            "docs/development/setup-vagrant.md",
-            # Have wide output in code blocks
-            "docs/subsystems/logging.md",
-            "docs/subsystems/migration-renumbering.md",
-            # Have curl commands with JSON that would be messy to wrap
-            "zerver/webhooks/helloworld/doc.md",
-            "zerver/webhooks/trello/doc.md",
-            # Has a very long configuration line
-            "templates/zerver/integrations/perforce.md",
-            # Has some example code that could perhaps be wrapped
-            "templates/zerver/api/incoming-webhooks-walkthrough.md",
-            # This macro has a long indented URL
-            "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
-            # These two are the same file and have some too-long lines for GitHub badges
-            "README.md",
-            "docs/overview/readme.md",
-        }
-        for fn in by_lang['md']:
-            max_length = None
-            if fn not in markdown_docs_length_exclude:
-                max_length = 120
-            rules = markdown_rules
-            if fn.startswith("templates/zerver/help"):
-                rules = help_markdown_rules
-            if custom_check_file(fn, 'md', rules, color, max_length=max_length):
-                failed = True
-
-        color = next(colors)
-        for fn in by_lang['txt'] + by_lang['text']:
-            if custom_check_file(fn, 'txt', txt_rules, color):
-                failed = True
-
-        color = next(colors)
-        for fn in by_lang['rst']:
-            if custom_check_file(fn, 'rst', txt_rules, color):
-                failed = True
-
-        color = next(colors)
-        for fn in by_lang['yaml']:
-            if custom_check_file(fn, 'yaml', txt_rules, color):
-                failed = True
-
-        return failed
-
-    return (check_custom_checks_py, check_custom_checks_nonpy)
+txt_rules = RuleList(
+    langs=['txt', 'text', 'yaml', 'rst'],
+    rules=whitespace_rules,
+)
+non_py_rules = [
+    handlebars_rules,
+    jinja2_rules,
+    css_rules,
+    js_rules,
+    json_rules,
+    markdown_rules,
+    help_markdown_rules,
+    bash_rules,
+    txt_rules,
+]
