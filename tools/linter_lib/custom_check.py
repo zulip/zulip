@@ -607,7 +607,7 @@ def build_custom_checkers(by_lang):
         {'pattern': r'title="[^{\:]',
          'exclude_line': set([
              ('templates/zerver/app/markdown_help.html',
-              '<td><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
+              '<td class="rendered_markdown"><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
          ]),
          'exclude': set(["templates/zerver/emails"]),
          'description': "`title` value should be translatable."},
