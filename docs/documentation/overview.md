@@ -104,7 +104,7 @@ To learn more about Zulip's integrations documentation,
 
 To learn more about Zulip's API documentation,
 [visit it on zulipchat.com](https://zulipchat.com/api/) or
-[read our tutorial on writing user documentation](../tutorials/documenting-api-endpoints.html).
+[read our tutorial on writing user documentation](../documentation/api.html).
 
 ## Automated testing
 

@@ -211,7 +211,7 @@ are clearly correct and that explain why they are correct.
 
 Fill in the gaps in Zulip's
 [REST API documentation](https://zulipchat.com/api).  Zulip has a
-[nice framework](../tutorials/documenting-api-endpoints.html) for
+[nice framework](../documentation/api.html) for
 writing API documentation built by a student last summer based on the
 OpenAPI standard with built-in automated tests, but there are dozens of
 endpoints that are missing, several of which are quite important.  See

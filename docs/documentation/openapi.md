@@ -1,4 +1,4 @@
-# OpenAPI REST API documentation
+# OpenAPI configuration
 
 The [OpenAPI](http://swagger.io/specification/) (formerly known as
 Swagger) specification is a standardized way to describe how an API

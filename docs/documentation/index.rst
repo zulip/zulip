@@ -8,5 +8,5 @@ Writing Documentation
    overview
    user
    integrations
+   api
    openapi
-
