@@ -42,8 +42,8 @@ function adjust_mac_shortcuts() {
     var keys_map = new Map([
         ['Backspace', 'Delete'],
         ['Enter', 'Return'],
-        ['Home', 'Fn + ⇽'],
-        ['End', 'Fn + ⇾'],
+        ['Home', 'Fn + ←'],
+        ['End', 'Fn + →'],
         ['PgUp', 'Fn + ↑'],
         ['PgDn', 'Fn + ↓'],
     ]);

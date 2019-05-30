@@ -110,7 +110,7 @@ below, and add more to your repertoire as needed.
 
 ## Message actions
 
-* **Edit last message**: `⇽` — Open the last editable message in the current
+* **Edit last message**: `←` — Open the last editable message in the current
   view (if any).
 
 ### For a selected message (outlined in blue)
@@ -165,7 +165,7 @@ Keyboard navigation (e.g. arrow keys) works as expected.
         Pressing `↑` from the first stream in the list moves
         you to the **Filter streams** input.
 
-* **Switch between tabs**: `⇽` and `⇾` — Switch between the
+* **Switch between tabs**: `←` and `→` — Switch between the
 **Subscribed** and **All streams** tabs.
 
 * **Create new stream**: `n`
