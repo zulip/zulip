@@ -10,6 +10,7 @@ import argparse
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
+from linter_lib.custom_check import python_rules, non_py_rules
 from zulint import lister
 from zulint.command import add_default_linter_arguments, LinterConfig
 from typing import cast, Dict, List
@@ -44,7 +45,6 @@ def run():
     root_dir = os.path.dirname(tools_dir)
     sys.path.insert(0, root_dir)
 
-    from tools.linter_lib.custom_check import build_custom_checkers
     from tools.linter_lib.exclude import EXCLUDED_FILES, PUPPET_CHECK_RULES_TO_EXCLUDE
     from tools.linter_lib.pyflakes import check_pyflakes
     from tools.linter_lib.pep8 import check_pep8
@@ -85,8 +85,6 @@ def run():
     else:
         logger.setLevel(logging.WARNING)
 
-    check_custom_checks_py, check_custom_checks_nonpy = build_custom_checkers(by_lang)
-
     linter_config = LinterConfig(by_lang)
     linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'])
     linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'])
@@ -111,13 +109,15 @@ def run():
     @linter_config.lint
     def custom_py():
         # type: () -> int
-        failed = check_custom_checks_py()
+        failed = python_rules.check(by_lang)
         return 1 if failed else 0
 
     @linter_config.lint
     def custom_nonpy():
         # type: () -> int
-        failed = check_custom_checks_nonpy()
+        failed = False
+        for rule in non_py_rules:
+            failed = failed or rule.check(by_lang)
         return 1 if failed else 0
 
     @linter_config.lint

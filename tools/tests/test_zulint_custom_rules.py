@@ -3,28 +3,18 @@ import os
 from mock import patch
 from unittest import TestCase
 
-from typing import Any, Dict, List
-
-from tools.linter_lib.custom_check import build_custom_checkers
-from tools.linter_lib.custom_check import custom_check_file
+from zulint.custom_rules import RuleList
+from linter_lib.custom_check import python_rules, non_py_rules
 
 ROOT_DIR = os.path.abspath(os.path.join(__file__, '..', '..', '..'))
-CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py`."
+CHECK_MESSAGE = "Fix the corresponding rule in `tools/zulint/custom_rules.py`."
 
-class TestCustomRules(TestCase):
+class TestRuleList(TestCase):
 
     def setUp(self) -> None:
-        self.all_rules = []  # type: List[Dict[str, Any]]
-        with patch('tools.linter_lib.custom_check.custom_check_file', return_value=False) as mock_custom_check_file:
-            by_lang = dict.fromkeys(['py', 'js', 'sh', 'scss', 'handlebars', 'html',
-                                     'json', 'md', 'txt', 'text', 'yaml', 'rst'],
-                                    ['foo/bar.baz'])
-            check_custom_checks_py, check_custom_checks_nonpy = build_custom_checkers(by_lang)
-            check_custom_checks_py()
-            check_custom_checks_nonpy()
-            for call_args in mock_custom_check_file.call_args_list:
-                rule_set = call_args[0][2]
-                self.all_rules.extend(rule_set)
+        self.all_rules = python_rules.rules
+        for rule in non_py_rules:
+            self.all_rules.extend(rule.rules)
 
     def test_paths_in_rules(self) -> None:
         """Verifies that the paths mentioned in linter rules actually exist"""
@@ -53,7 +43,7 @@ class TestCustomRules(TestCase):
             for line in rule.get('good_lines', []):
                 # create=True is superfluous when mocking built-ins in Python >= 3.5
                 with patch('builtins.open', return_value=iter((line+'\n\n').splitlines()), create=True, autospec=True):
-                    self.assertFalse(custom_check_file('foo.bar', 'baz', [rule], ''),
+                    self.assertFalse(RuleList([], [rule]).custom_check_file('foo.bar', 'baz', ''),
                                      "The pattern '{}' matched the line '{}' while it shouldn't.".format(pattern, line))
 
             for line in rule.get('bad_lines', []):
@@ -61,5 +51,5 @@ class TestCustomRules(TestCase):
                 with patch('builtins.open',
                            return_value=iter((line+'\n\n').splitlines()), create=True, autospec=True), patch('builtins.print'):
                     filename = list(rule.get('include_only', {'foo.bar'}))[0]
-                    self.assertTrue(custom_check_file(filename, 'baz', [rule], ''),
+                    self.assertTrue(RuleList([], [rule]).custom_check_file(filename, 'baz', ''),
                                     "The pattern '{}' didn't match the line '{}' while it should.".format(pattern, line))
