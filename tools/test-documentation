@@ -58,7 +58,7 @@ else
 fi
 
 result=$?
-if [ "$result" = 1 ]; then
+if [ "$result" -ne 0 ]; then
     color_message 91 "Failed!"
     exit 1
 else
