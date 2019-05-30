@@ -56,17 +56,17 @@ class BaseDocumentationSpider(scrapy.Spider):
             return False
         return True
 
-    def check_permalink(self, response: Response) -> None:
+    def check_fragment(self, response: Response) -> None:
         self.log(response)
-        xpath_template = "//*[@id='{permalink}' or @name='{permalink}']"
-        m = re.match(r".+\#(?P<permalink>.*)$", response.request.url)  # Get anchor value.
+        xpath_template = "//*[@id='{fragment}' or @name='{fragment}']"
+        m = re.match(r".+\#(?P<fragment>.*)$", response.request.url)  # Get fragment value.
         if not m:
             return
-        permalink = m.group('permalink')
-        # Check permalink existing on response page.
-        if not response.selector.xpath(xpath_template.format(permalink=permalink)):
+        fragment = m.group('fragment')
+        # Check fragment existing on response page.
+        if not response.selector.xpath(xpath_template.format(fragment=fragment)):
             self.logger.error(
-                "Permalink #%s is not found on page %s", permalink, response.request.url)
+                "Fragment #%s is not found on page %s", fragment, response.request.url)
 
     def _make_requests(self, url: str) -> Iterable[Request]:
         callback = self.parse  # type: Callable[[Response], Optional[Iterable[Request]]]
@@ -77,7 +77,7 @@ class BaseDocumentationSpider(scrapy.Spider):
             method = 'HEAD'
         elif '#' in url:
             dont_filter = True
-            callback = self.check_permalink
+            callback = self.check_fragment
         if getattr(self, 'skip_external', False) and self._is_external_link(url):
             return
         yield Request(url, method=method, callback=callback, dont_filter=dont_filter,
