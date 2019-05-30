@@ -39,7 +39,7 @@ else
     method(:usable?).owner == singleton_class or def self.usable?(raise_error=false)
       VagrantPlugins::DockerProvider::Driver.new.execute("docker", "version")
       true
-    rescue Vagrant::Errors::CommandUnavailable
+    rescue Vagrant::Errors::CommandUnavailable, VagrantPlugins::DockerProvider::Errors::ExecuteError
       raise if raise_error
       return false
     end
