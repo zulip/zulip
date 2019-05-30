@@ -20,7 +20,7 @@ from zerver.lib.retention import (
 ZULIP_REALM_DAYS = 30
 MIT_REALM_DAYS = 100
 
-class TestRetentionLib(ZulipTestCase):
+class RetentionTestingBase(ZulipTestCase):
     """
         Test receiving expired messages retention tool.
     """
@@ -113,6 +113,7 @@ class TestRetentionLib(ZulipTestCase):
         return {'expired_message_id': expired_message_id, 'actual_message_id': actual_message_id,
                 'other_user_message_id': other_message_id}
 
+class TestArchivingGeneral(RetentionTestingBase):
     def test_no_expired_messages(self) -> None:
         move_expired_to_archive()
 
