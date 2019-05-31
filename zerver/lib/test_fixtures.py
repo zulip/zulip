@@ -8,6 +8,7 @@ import sys
 from typing import Any, List, Optional
 from importlib import import_module
 from io import StringIO
+import glob
 
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.db.utils import OperationalError
@@ -17,7 +18,7 @@ from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from scripts.lib.zulip_tools import get_dev_uuid_var_path, run
+from scripts.lib.zulip_tools import get_dev_uuid_var_path, run, file_or_package_hash_updated
 
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile(r'[\W\-_]')
@@ -217,6 +218,16 @@ def template_database_status(
         hash_status = files_hash_status and settings_hash_status
         if not hash_status:
             return 'needs_rebuild'
+
+        # Here we hash and compare our migration files before doing
+        # the work of seeing what to do with them; if there are no
+        # changes, we can safely assume we don't need to run
+        # migrations without spending a few 100ms parsing all the
+        # Python migration code.
+        paths = glob.glob('*/migrations/*.py')
+        check_migrations = file_or_package_hash_updated(paths, "migrations_hash", is_force=False)
+        if not check_migrations:
+            return 'current'
 
         migration_op = what_to_do_with_migrations(migration_status, settings=settings)
         if migration_op == 'scrap':
