@@ -183,7 +183,7 @@ class Realm(models.Model):
 
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview = models.BooleanField(default=True)  # type: bool
-    inline_url_embed_preview = models.BooleanField(default=True)  # type: bool
+    inline_url_embed_preview = models.BooleanField(default=False)  # type: bool
 
     # Whether digest emails are enabled for the organization.
     digest_emails_enabled = models.BooleanField(default=False)  # type: bool

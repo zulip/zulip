@@ -514,6 +514,8 @@ class BugdownTest(ZulipTestCase):
         sender_user_profile = self.example_user('othello')
         message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
         realm = message.get_realm()
+        realm.inline_url_embed_preview = True  # off by default
+        realm.save(update_fields=['inline_url_embed_preview'])
 
         ret = bugdown.url_embed_preview_enabled()
         self.assertEqual(ret, False)
