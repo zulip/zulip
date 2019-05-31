@@ -274,7 +274,7 @@ FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 # Controls whether or not Zulip will provide inline previews of
 # websites that are referenced in links in messages.  Note: this feature
 # can also be disabled in a realm's organization settings.
-#INLINE_URL_EMBED_PREVIEW = False
+#INLINE_URL_EMBED_PREVIEW = True
 
 # Controls whether or not Zulip will parse links starting with
 # "file:///" as a hyperlink (useful if you have e.g. an NFS share).

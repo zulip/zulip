@@ -7,6 +7,19 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+**Upgrade notes:**
+
+- The defaults for Zulip's inline URL preview setting have changed.
+Previously, the server-level `INLINE_URL_EMBED_PREVIEW` setting was
+disabled, and organization-level setting was enabled.  Now, the
+server-level setting is enabled by default, and the organization-level
+setting is disabled.  As a result, organization administrators can
+configure this feature entirely in the UI.  However, servers that had
+previously [enabled previews of linked
+websites](https://zulipchat.com/help/allow-image-link-previews) will
+lose the setting and need to re-enable it.
+
+
 ### 2.0.3 -- 2019-04-23
 
 - Added documentation for upgrading the underlying OS version.
