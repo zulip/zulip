@@ -4,10 +4,10 @@ import * as _ from 'underscore';
  * Implementation detail of the Dict class. `key` is `k` converted to a string,
  * in lowercase if the `fold_case` option is enabled.
  */
-type KeyValue<K, V> = { k: K; v: V }
+type KeyValue<K, V> = { k: K; v: V };
 type Items<K, V> = {
     [key: string]: KeyValue<K, V>;
-}
+};
 
 /**
  * This class primarily exists to support the fold_case option, because so many

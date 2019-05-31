@@ -57,7 +57,7 @@
     "zxcvbn": "4.4.2"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "1.5.0",
+    "@typescript-eslint/eslint-plugin": "1.9.0",
     "@typescript-eslint/parser": "1.5.0",
     "casperjs": "casperjs/casperjs",
     "cssstyle": "0.2.29",
