@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Optional
 from requests.exceptions import ConnectionError
 from django.test import override_settings
 
-from zerver.models import Message
+from zerver.models import Message, Realm
 from zerver.lib.actions import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockPythonResponse
@@ -169,6 +169,10 @@ class PreviewTestCase(ZulipTestCase):
             </body>
           </html>
         """
+
+    def setUp(self) -> None:
+        super(PreviewTestCase, self).setUp()
+        Realm.objects.all().update(inline_url_embed_preview=True)
 
     @classmethod
     def create_mock_response(cls, url: str, relative_url: bool=False,
