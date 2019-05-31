@@ -19,3 +19,8 @@ class BuildbotHookTests(WebhookTestCase):
         expected_topic = "general"  # project key is empty
         expected_message = "Build [#34](http://exampleurl.com/#builders/1/builds/34) (result: failure) for **runtests** finished."
         self.send_and_test_stream_message("finished_failure", expected_topic, expected_message)
+
+    def test_build_cancelled(self) -> None:
+        expected_topic = "zulip/zulip-zapier"
+        expected_message = "Build [#10434](https://ci.example.org/#builders/79/builds/307) (result: cancelled) for **AMD64 Ubuntu 18.04 Python 3** finished."
+        self.send_and_test_stream_message("finished_cancelled", expected_topic, expected_message)
