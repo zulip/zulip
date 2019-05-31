@@ -21,7 +21,9 @@ def api_buildbot_webhook(request: HttpRequest, user_profile: UserProfile,
 
 def get_message(payload: Dict[str, Any]) -> str:
     if "results" in payload:
-        results = ("success", "warning", "failure", "exception", "retry", "cancelled")
+        # See http://docs.buildbot.net/latest/developer/results.html
+        results = ("success", "warnings", "failure", "skipped",
+                   "exception", "retry", "cancelled")
         status = results[payload["results"]]
 
     if payload["event"] == "new":
