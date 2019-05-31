@@ -160,6 +160,9 @@ export default (env?: string): webpack.Configuration => {
         // Out JS debugging tools
         config.entry['common'].push('./static/js/debug.js');  // eslint-disable-line dot-notation
 
+        // since we are using writeToDisk for webpack-dev-server
+        // change the output path to var/wepack-bundles
+        config.output.path = resolve(__dirname, '../var/webpack-dev-bundles');
         config.output.publicPath = '/webpack/';
         config.plugins = [
             new BundleTracker({filename: 'var/webpack-stats-dev.json'}),
@@ -174,6 +177,7 @@ export default (env?: string): webpack.Configuration => {
             }),
         ];
         config.devServer = {
+            writeToDisk: true,
             clientLogLevel: "error",
             stats: "errors-only",
             watchOptions: {
