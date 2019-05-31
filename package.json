@@ -62,7 +62,7 @@
     "casperjs": "casperjs/casperjs",
     "cssstyle": "0.2.29",
     "difflib": "0.2.4",
-    "eslint": "5.15.3",
+    "eslint": "5.16.0",
     "eslint-plugin-empty-returns": "1.0.2",
     "htmlparser2": "3.8.3",
     "jsdom": "11.10.0",
