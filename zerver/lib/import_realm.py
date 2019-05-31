@@ -243,7 +243,7 @@ def fix_message_rendered_content(realm: Realm,
             # However, we still need to update the data-user-id and
             # similar values stored on mentions, stream mentions, and
             # similar syntax in the rendered HTML.
-            soup = BeautifulSoup(message["rendered_content"], "lxml")
+            soup = BeautifulSoup(message["rendered_content"], "html.parser")
 
             user_mentions = soup.findAll("span", {"class": "user-mention"})
             if len(user_mentions) != 0:
