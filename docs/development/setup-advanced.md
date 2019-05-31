@@ -6,6 +6,7 @@ Contents:
 * [Installing manually on other Linux/UNIX](#installing-manually-on-unix)
 * [Installing directly on cloud9](#installing-on-cloud9)
 * [Using Docker (experimental)](#using-docker-experimental)
+* [Using Nix (experimental)](#using-nix-experimental)
 
 ## Installing directly on Ubuntu, Debian, Centos, or Fedora
 
@@ -363,6 +364,29 @@ Currently, the Docker workflow is substantially less convenient than
 the Vagrant workflow and less documented; please contribute to this
 guide and the Docker tooling if you are using Docker to develop Zulip!
 
+## Using Nix (experimental)
+If you use the [Nix](https://nixos.org/nix/) package manager, then Zulip includes a `shell.nix` that
+specifies all of the dependencies required to run the Vagrant environment with Docker.
+
+Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
+
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
+
+Then, you can run:
+
+```
+nix-shell tools/setup/shell.vagrant.nix
+```
+
+This will enter a new shell with all of the dependencies required for running and connecting to the
+Vagrant development environment available. You can continue from
+[Step 3 of the Vagrant setup guide.][vagrant-start-dev-env]
+
 [zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
 [zulip-rtd-git-connect]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
 [port-forward-setup]: ../development/remote.html#running-the-development-server
+[vagrant-start-dev-env]: ../development/setup-vagrant.html#step-3-start-the-development-environment
