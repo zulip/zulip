@@ -27,6 +27,7 @@ from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.backends.azuread import AzureADOAuth2
+from social_core.backends.facebook import FacebookOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
@@ -894,6 +895,10 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 return dict(auth_failed_reason="GitHub user is not member of required organization")
 
         raise AssertionError("Invalid configuration")
+
+class FacebookAuthBackend(SocialAuthMixin, FacebookOAuth2):
+    auth_backend_name = "Facebook"
+    REDIRECT_STATE = False
 
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50

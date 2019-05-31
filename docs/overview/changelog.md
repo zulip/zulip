@@ -7,6 +7,8 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+- Added Facebook Oauth2 integration.
+
 ### 2.0.3 -- 2019-04-23
 
 - Added documentation for upgrading the underlying OS version.
