@@ -58,18 +58,18 @@ def build_for_dev_server(host, port, minify, disable_host_check):
     if disable_host_check:
         webpack_args.append('--disable-host-check')
 
-    webpack_process = subprocess.Popen(webpack_args)
-
-    class WebpackConfigFileChangeHandler(pyinotify.ProcessEvent):
-        def process_default(self, event):
-            # type: (pyinotify.Event) -> None
-            nonlocal webpack_process
-            print('Restarting webpack-dev-server due to config changes...')
-            webpack_process.terminate()
-            webpack_process.wait()
-            webpack_process = subprocess.Popen(webpack_args)
-
     try:
+        webpack_process = subprocess.Popen(webpack_args)
+
+        class WebpackConfigFileChangeHandler(pyinotify.ProcessEvent):
+            def process_default(self, event):
+                # type: (pyinotify.Event) -> None
+                nonlocal webpack_process
+                print('Restarting webpack-dev-server due to config changes...')
+                webpack_process.terminate()
+                webpack_process.wait()
+                webpack_process = subprocess.Popen(webpack_args)
+
         watch_manager = pyinotify.WatchManager()
         event_notifier = pyinotify.Notifier(watch_manager, WebpackConfigFileChangeHandler())
         for file in ['webpack.config.ts', 'webpack-helpers.ts', 'webpack.assets.json']:
