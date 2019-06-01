@@ -116,7 +116,9 @@ To see changes on your remote development server, you need to do one of the foll
   on your remote Zulip development instance, sync with Git.
 * [Edit remotely](#editing-remotely): Edit code directly on your remote
   Zulip development instance using a [Web-based IDE](#web-based-ide) (recommended for
-  beginners) or a [command line editor](#command-line-editors).
+  beginners) or a [command line editor](#command-line-editors), or a
+  [desktop IDE](#desktop-gui-editors) using a plugin to sync your
+  changes to the server when you save.
 
 #### Editing locally
 
@@ -165,31 +167,27 @@ from your remote development instance:
 
 #### Editing remotely
 
-##### Web-based IDE
+There are a few good ways to edit code in your remote development
+environment:
 
-If you are relatively new to working on the command line, or just want to get
-started working quickly, we recommend web-based IDE
-[Codeanywhere][codeanywhere].
+* With a command-line editor like vim or emacs run over SSH.
+* With a desktop GUI editor like VS Code or Atom and a plugin for
+  syncing your changes to the remote server.
+* With a web-based IDE like CodeAnywhere.
 
-To setup Codeanywhere for Zulip:
+We document these options below; we recommend using whatever editor
+you prefer for development in general.
 
-1. Create a [Codeanywhere][codeanywhere] account and log in.
-2. Create a new **SFTP-SSH** project. Use *Public key* for authentication.
-3. Click **GET YOUR PUBLIC KEY** to get the new public key that
-   Codeanywhere generates when you create a new project. Add this public key to
-   `~/.ssh/authorized_keys` on your remote development instance.
-4. Once you've added the new public key to your remote development instance, click
-   *CONNECT*.
+##### Desktop GUI editors
 
-Now your workspace should look similar this:
-![Codeanywhere workspace][img-ca-workspace]
+If you use [TextMate](https://macromates.com), Atom, VS Code, or a
+similar GUI editor, tools like
+[rmate](https://github.com/textmate/rmate) that are designed to
+integrate that editor with remote development over SSH allow you to
+develop remotely from the comfort of your local machine.
 
-##### Locally installed GUI editors
-
-If you use [TextMate](https://macromates.com) or a similar GUI editor,
-tools like [rmate](https://github.com/textmate/rmate) that are designed to integrate
-that editor with remote development over SSH allow you to develop remotely
-from the comfort of your local machine.
+Similar packages/extensions exist for other popular code editors as
+well; contributions of precise documentation for them are welcome!
 
 To setup [rmate](https://github.com/textmate/rmate) for VS Code:
 1. Install the extension
@@ -209,8 +207,6 @@ $ ssh -R 52698:localhost:52698 user@example.org
 $ rmate [options] file
 ```
 and the file should open up in VS Code. Any changes you make now will be saved remotely.
-
-Similar packages/extensions exist for other popular code editors as well.
 
 ##### Command line editors
 
@@ -233,6 +229,25 @@ Other options include:
 
 * [emacs](https://www.gnu.org/software/emacs/)
 * [spacemacs](https://github.com/syl20bnr/spacemacs)
+
+##### Web-based IDE
+
+If you are relatively new to working on the command line, or just want to get
+started working quickly, we recommend web-based IDE
+[Codeanywhere][codeanywhere].
+
+To setup Codeanywhere for Zulip:
+
+1. Create a [Codeanywhere][codeanywhere] account and log in.
+2. Create a new **SFTP-SSH** project. Use *Public key* for authentication.
+3. Click **GET YOUR PUBLIC KEY** to get the new public key that
+   Codeanywhere generates when you create a new project. Add this public key to
+   `~/.ssh/authorized_keys` on your remote development instance.
+4. Once you've added the new public key to your remote development instance, click
+   *CONNECT*.
+
+Now your workspace should look similar this:
+![Codeanywhere workspace][img-ca-workspace]
 
 #### Next steps
 
