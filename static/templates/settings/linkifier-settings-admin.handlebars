@@ -41,13 +41,14 @@
         </p>
 
         <table class="table table-condensed table-striped admin_filters_table">
-            <tbody id="admin_filters_table">
+            <thead>
                 <th>{{t "Pattern" }}</th>
                 <th>{{t "URL format string" }}</th>
                 {{#if is_admin}}
                 <th class="actions">{{t "Actions" }}</th>
                 {{/if}}
-            </tbody>
+            </thead>
+            <tbody id="admin_filters_table" {{#if is_admin}}{{else}}class="required-text" data-empty="{{t 'No linkifiers set.' }}"{{/if}}></tbody>
         </table>
     </div>
     {{#if is_admin}}
