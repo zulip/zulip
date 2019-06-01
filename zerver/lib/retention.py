@@ -65,9 +65,8 @@ def move_expired_user_messages_to_archive(realm: Realm) -> None:
     INNER JOIN zerver_userprofile ON zerver_usermessage.user_profile_id = zerver_userprofile.id
     INNER JOIN zerver_archivedmessage ON zerver_archivedmessage.id = zerver_usermessage.message_id
     LEFT JOIN zerver_archivedusermessage ON zerver_archivedusermessage.id = zerver_usermessage.id
-    LEFT JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id
     WHERE zerver_userprofile.realm_id = {realm_id}
-        AND  zerver_message.pub_date < '{check_date}'
+        AND zerver_archivedmessage.pub_date < '{check_date}'
         AND zerver_archivedusermessage.id is NULL
     """
     assert realm.message_retention_days is not None
