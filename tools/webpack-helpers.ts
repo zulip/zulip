@@ -1,9 +1,5 @@
 import { basename } from 'path';
-
-interface Loader {
-    test: string;
-    use: string;
-}
+import { RuleSetRule } from 'webpack';
 
 /* Return imports-loader format to the config
     For example:
@@ -16,7 +12,7 @@ interface ImportLoaderOptions {
     path: string;
     args: string;
 }
-function getImportLoaders(optionsArr: ImportLoaderOptions[]): Loader[] {
+function getImportLoaders(optionsArr: ImportLoaderOptions[]): RuleSetRule[] {
     const importsLoaders = [];
     for (var loaderEntry of optionsArr) {
         importsLoaders.push({
@@ -43,7 +39,7 @@ interface ExportLoaderOptions {
     path: string;
     name?: string | string[];
 }
-function getExposeLoaders(optionsArr: ExportLoaderOptions[]): Loader[] {
+function getExposeLoaders(optionsArr: ExportLoaderOptions[]): RuleSetRule[] {
     const exposeLoaders = [];
     for (var loaderEntry of optionsArr) {
         const path = loaderEntry.path;
