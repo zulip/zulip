@@ -223,7 +223,7 @@ Other fields you may want to sync from LDAP include:
   [AUTH_LDAP_USER_FLAGS_BY_GROUP][django-auth-booleans] feature of
   `django-auth-ldap` to configure a group to get this permissions.
   (We don't recommend using this flags feature for managing
-  `is_active` because deactivating a user this would way not disable
+  `is_active` because deactivating a user this way would not disable
   any active sessions the user might have; see the above discussion of
   automatic deactivation for how to do that properly).
 * String fields like `default_language` (e.g. `en`) or `timezone`, if
