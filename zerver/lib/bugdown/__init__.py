@@ -1079,18 +1079,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 self.markdown.zulip_message.links_for_preview.add(url)
                 continue
             if extracted_data:
-                vm_id = self.vimeo_id(url)
-                if vm_id is not None:
-                    vimeo_image = extracted_data.get('image')
-                    vimeo_title = self.vimeo_title(extracted_data)
-                    if vimeo_image is not None:
-                        add_a(root, vimeo_image, url, vimeo_title,
-                              None, "vimeo-video message_inline_image", vm_id,
-                              already_thumbnailed=True)
-                    if vimeo_title is not None:
-                        found_url.family.child.text = vimeo_title
-                else:
-                    add_embed(root, url, extracted_data)
+                add_embed(root, url, extracted_data)
+                if self.vimeo_id(url):
+                    title = self.vimeo_title(extracted_data)
+                    if title:
+                        found_url.family.child.text = title
 
 class Avatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:

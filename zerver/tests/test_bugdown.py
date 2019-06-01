@@ -375,6 +375,7 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw" target="_blank" title="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw" target="_blank" title="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="https://i.ytimg.com/vi/nOJgD4fcZhI/default.jpg"></a></div>')
 
+    @override_settings(INLINE_URL_EMBED_PREVIEW=False)
     def test_inline_vimeo(self) -> None:
         msg = 'Check out the debate: https://vimeo.com/246979354'
         converted = bugdown_convert(msg)
