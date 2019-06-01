@@ -374,7 +374,10 @@ class Command(BaseCommand):
             ])
             do_update_user_custom_profile_data(hamlet, [
                 {"id": phone_number.id, "value": "+0-11-23-456-7890"},
-                {"id": biography.id, "value": "Prince of Denmark, and other things!"},
+                {
+                    "id": biography.id,
+                    "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
+                },
                 {"id": favorite_food.id, "value": "Dark chocolate"},
                 {"id": favorite_editor.id, "value": "vim"},
                 {"id": birthday.id, "value": "1900-1-1"},
@@ -470,12 +473,12 @@ class Command(BaseCommand):
 
                 zulip_stream_dict = {
                     "devel": {"description": "For developing"},
-                    "all": {"description": "For everything"},
+                    "all": {"description": "For **everything**"},
                     "announce": {"description": "For announcements", 'is_announcement_only': True},
                     "design": {"description": "For design"},
                     "support": {"description": "For support"},
                     "social": {"description": "For socializing"},
-                    "test": {"description": "For testing"},
+                    "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
                     "sales": {"description": "For sales discussion"}
                 }  # type: Dict[str, Dict[str, Any]]
