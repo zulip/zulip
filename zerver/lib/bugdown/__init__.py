@@ -369,16 +369,16 @@ def add_a(
         desc_div.set("class", "message_inline_image_desc")
 
 def add_oembed_data(root: Element, link: str, extracted_data: Dict[str, Any]) -> bool:
-    type_ = extracted_data.get('type', '')
+    oembed_resource_type = extracted_data.get('type', '')
     title = extracted_data.get('title', link)
 
-    if type_ == 'photo':
+    if oembed_resource_type == 'photo':
         image = extracted_data.get('image')
         if image:
             add_a(root, image, link, title=title)
             return True
 
-    elif type_ == 'video':
+    elif oembed_resource_type == 'video':
         html = extracted_data['html']
         image = extracted_data['image']
         title = extracted_data.get('title', link)

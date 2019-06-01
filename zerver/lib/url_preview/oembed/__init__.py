@@ -10,16 +10,16 @@ def get_oembed_data(url: str,
     except PyOembedException:
         return None
 
-    type_ = data.get('type', '')
+    oembed_resource_type = data.get('type', '')
     image = data.get('url', data.get('image'))
     thumbnail = data.get('thumbnail_url')
     html = data.pop('html', '')
-    if type_ == 'photo' and image:
+    if oembed_resource_type == 'photo' and image:
         data['image'] = image
         # Add a key to identify oembed metadata as opposed to other metadata
         data['oembed'] = True
 
-    elif type_ == 'video' and html and thumbnail:
+    elif oembed_resource_type == 'video' and html and thumbnail:
         data['html'] = get_safe_html(html)
         data['image'] = thumbnail
         # Add a key to identify oembed metadata as opposed to other metadata
