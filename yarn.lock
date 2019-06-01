@@ -8149,12 +8149,7 @@ numeric@^1.2.6:
   resolved "https://registry.yarnpkg.com/numeric/-/numeric-1.2.6.tgz#765b02bef97988fcf880d4eb3f36b80fa31335aa"
   integrity sha1-dlsCvvl5iPz4gNTrPza4D6MTNao=
 
-nwmatcher@1.3.6:
-  version "1.3.6"
-  resolved "https://registry.yarnpkg.com/nwmatcher/-/nwmatcher-1.3.6.tgz#db3bfdb01529af42c6c0162a0a38f6bf3300d3bd"
-  integrity sha1-2zv9sBUpr0LGwBYqCjj2vzMA070=
-
-"nwmatcher@>= 1.3.9 < 2.0.0", nwmatcher@^1.4.3:
+nwmatcher@1.4.4, "nwmatcher@>= 1.3.9 < 2.0.0", nwmatcher@^1.4.3:
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/nwmatcher/-/nwmatcher-1.4.4.tgz#2285631f34a95f0d0395cd900c96ed39b58f346e"
   integrity sha512-3iuY4N5dhgMpCUrOVnuAdGrgxVqV2cJpM+XNccjR2DKOB1RUP0aA+wGXEiNziG/UKboFyGBIoKOaNlJxx8bciQ==
