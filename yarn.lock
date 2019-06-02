@@ -11067,10 +11067,10 @@ source-map@~0.1.33:
   dependencies:
     amdefine ">=0.0.4"
 
-source-sans-pro@2.20.2:
-  version "2.20.2"
-  resolved "https://registry.yarnpkg.com/source-sans-pro/-/source-sans-pro-2.20.2.tgz#ee24a6f9680af4e05736be9c1afee3d714618782"
-  integrity sha512-/HW4xC0C9KjeyE/lmZxZKYaQgdde1QTBQG3ynNpvWJKb1l93dsiBF31OlGmxJAZH2oeLeWAn9v7g7z2aDkrEUw==
+source-sans-pro@2.45.0:
+  version "2.45.0"
+  resolved "https://registry.yarnpkg.com/source-sans-pro/-/source-sans-pro-2.45.0.tgz#1c013c404dfa48ed18ceaf3e904be21b5a0a124e"
+  integrity sha512-MBbmgyzlD0yCKAvJ4Q86s9BB8yXYld26joJh0DMD53j9aFJZYnFo/B7f4RKXDUfX9I4FyEfdr51lOaVioAOBHw==
 
 spawn-wrap@^1.4.2:
   version "1.4.2"
