@@ -661,8 +661,8 @@ class ImportExportTest(ZulipTestCase):
         user_group_mention_message = 'Hello @*hamletcharacters*'
         self.send_stream_message(self.example_email("othello"), "Verona", user_group_mention_message)
 
-        spacial_charcaters_message = "```\n'\n```\n@**Polonius**"
-        self.send_stream_message(self.example_email("iago"), "Denmark", spacial_charcaters_message)
+        special_characters_message = "```\n'\n```\n@**Polonius**"
+        self.send_stream_message(self.example_email("iago"), "Denmark", special_characters_message)
 
         # data to test import of hotspots
         sample_user = self.example_user('hamlet')
@@ -925,13 +925,13 @@ class ImportExportTest(ZulipTestCase):
         # sometimes. eg replacing <br> with </br>, &#39; with \' etc. The modifications doesn't
         # affect how the browser displays the rendered_content so we are okay with sing bs4 for this.
         # lxml package also has similar behavior.
-        original_msg = Message.objects.get(content=spacial_charcaters_message, sender__realm=original_realm)
+        original_msg = Message.objects.get(content=special_characters_message, sender__realm=original_realm)
         self.assertEqual(
             original_msg.rendered_content,
             ('<div class="codehilite"><pre><span></span>&#39;\n</pre></div>\n\n\n'
              '<p><span class="user-mention" data-user-id="7">@Polonius</span></p>')
         )
-        imported_msg = Message.objects.get(content=spacial_charcaters_message, sender__realm=imported_realm)
+        imported_msg = Message.objects.get(content=special_characters_message, sender__realm=imported_realm)
         self.assertEqual(
             imported_msg.rendered_content,
             ('<div class="codehilite"><pre><span></span>\'\n</pre></div>\n'
