@@ -5542,6 +5542,11 @@ def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
         # A ConfigError just means that there are no config entries for user_profile.
         except ConfigError:
             pass
+    elif user_profile.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+        try:
+            service_dicts = [{'config_data': get_bot_config(user_profile)}]
+        except ConfigError:
+            pass
     return service_dicts
 
 def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
@@ -5551,9 +5556,14 @@ def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
     for service in Service.objects.filter(user_profile_id__in=bot_profile_ids):
         bot_services_by_uid[service.user_profile_id].append(service)
 
-    embedded_bot_ids = [bot_dict['id'] for bot_dict in bot_dicts
-                        if bot_dict['bot_type'] == UserProfile.EMBEDDED_BOT]
-    embedded_bot_configs = get_bot_configs(embedded_bot_ids)
+    embedded_and_incoming_webhook_bot_ids = [bot_dict["id"] for bot_dict in bot_dicts
+                                             if bot_dict["bot_type"] in
+                                             [UserProfile.EMBEDDED_BOT,
+                                              UserProfile.INCOMING_WEBHOOK_BOT]]
+
+    embedded_and_incoming_webhook_bot_configs = get_bot_configs(
+        embedded_and_incoming_webhook_bot_ids
+    )
 
     service_dicts_by_uid = {}  # type: Dict[int, List[Dict[str, Any]]]
     for bot_dict in bot_dicts:
@@ -5567,12 +5577,14 @@ def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
                               'token': service.token,
                               }
                              for service in services]
-        elif bot_type == UserProfile.EMBEDDED_BOT:
-            if bot_profile_id in embedded_bot_configs.keys():
-                bot_config = embedded_bot_configs[bot_profile_id]
-                service_dicts = [{'config_data': bot_config,
-                                  'service_name': services[0].name
-                                  }]
+        elif bot_type in [UserProfile.EMBEDDED_BOT, UserProfile.INCOMING_WEBHOOK_BOT]:
+            if bot_profile_id in embedded_and_incoming_webhook_bot_configs.keys():
+                bot_config = embedded_and_incoming_webhook_bot_configs[bot_profile_id]
+                if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+                    service_dicts = [{'config_data': bot_config}]
+                else:
+                    service_dicts = [{'config_data': bot_config,
+                                      'service_name': services[0].name}]
         service_dicts_by_uid[bot_profile_id] = service_dicts
     return service_dicts_by_uid
 

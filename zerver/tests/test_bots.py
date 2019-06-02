@@ -8,7 +8,7 @@ from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Mapping
 
-from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user
+from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user, get_owned_bot_dicts
 from zerver.lib.bot_config import get_bot_config
 from zerver.models import get_realm, get_stream, \
     Realm, UserProfile, get_user, get_bot_services, Service, \
@@ -1300,6 +1300,23 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(result)
         config_data = ujson.loads(result.content)['config_data']
         self.assertEqual(config_data, ujson.loads(bot_info['config_data']))
+
+    def test_patch_incoming_webhook_bot_config_data(self) -> None:
+        self.create_test_bot('test', self.example_user("hamlet"),
+                             full_name=u'Test Bot',
+                             bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+                             config_data=ujson.dumps({'key': '12345678'}))
+        bot = UserProfile.objects.get(full_name=u'Test Bot')
+        new_bot_config = {'config_data': ujson.dumps({'key': 'asdfghjkl'})}
+        response = self.client_patch("/json/bots/{}".format(bot.id), new_bot_config)
+        new_value = ujson.loads(response.content.decode("ascii"))["config_data"]["key"]
+        self.assertEqual(new_value, "asdfghjkl")
+
+        # Also, make sure that this value shows up in `get_service_dicts_for_bots` which is called
+        # by `get_owned_bot_dicts`.
+        hamlet_bots = get_owned_bot_dicts(self.example_user("hamlet"))
+        new_config_data = hamlet_bots[0]["services"][0]["config_data"]
+        self.assertEqual(new_config_data, {"key": "asdfghjkl"})
 
     def test_outgoing_webhook_invalid_interface(self):
         # type: () -> None
