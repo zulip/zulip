@@ -1,6 +1,9 @@
 import { resolve } from 'path';
 import * as BundleTracker from 'webpack-bundle-tracker';
 import * as webpack from 'webpack';
+// The devServer member of webpack.Configuration is managed by the
+// webpack-dev-server package. We are only importing the type here.
+import * as _webpackDevServer from 'webpack-dev-server';
 import { getExposeLoaders, getImportLoaders } from './webpack-helpers';
 import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
