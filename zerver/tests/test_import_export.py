@@ -921,21 +921,29 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_user_group_mention)
 
-        # test to highlight that bs4 which we use to do data-**id replacements modifies the HTML
-        # sometimes. eg replacing <br> with </br>, &#39; with \' etc. The modifications doesn't
-        # affect how the browser displays the rendered_content so we are okay with sing bs4 for this.
-        # lxml package also has similar behavior.
+        # test to highlight that bs4 which we use to do data-**id
+        # replacements modifies the HTML sometimes. eg replacing <br>
+        # with </br>, &#39; with \' etc. The modifications doesn't
+        # affect how the browser displays the rendered_content so we
+        # are okay with using bs4 for this.  lxml package also has
+        # similar behavior.
+        orig_polonius_user = UserProfile.objects.get(email=self.example_email("polonius"),
+                                                     realm=original_realm)
         original_msg = Message.objects.get(content=special_characters_message, sender__realm=original_realm)
         self.assertEqual(
             original_msg.rendered_content,
             ('<div class="codehilite"><pre><span></span>&#39;\n</pre></div>\n\n\n'
-             '<p><span class="user-mention" data-user-id="7">@Polonius</span></p>')
+             '<p><span class="user-mention" data-user-id="%s">@Polonius</span></p>' %
+             (orig_polonius_user.id,))
         )
+        imported_polonius_user = UserProfile.objects.get(email=self.example_email("polonius"),
+                                                         realm=imported_realm)
         imported_msg = Message.objects.get(content=special_characters_message, sender__realm=imported_realm)
         self.assertEqual(
             imported_msg.rendered_content,
             ('<div class="codehilite"><pre><span></span>\'\n</pre></div>\n'
-             '<p><span class="user-mention" data-user-id="32">@Polonius</span></p>')
+             '<p><span class="user-mention" data-user-id="%s">@Polonius</span></p>' %
+             (imported_polonius_user.id,))
         )
 
     def test_import_files_from_local(self) -> None:
