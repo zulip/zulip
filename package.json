@@ -69,7 +69,7 @@
     "nyc": "11.8.0",
     "phantomjs-prebuilt": "2.1.16",
     "stylelint": "9.3.0",
-    "svgo": "1.0.5",
+    "svgo": "1.2.2",
     "swagger-parser": "3.4.1",
     "webpack-dev-server": "3.1.4",
     "xmlhttprequest": "1.8.0"
