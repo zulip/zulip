@@ -35,7 +35,7 @@
     "sass-loader": "7.1.0",
     "script-loader": "0.7.2",
     "simplebar": "^4.0.0",
-    "sortablejs": "^1.7.0",
+    "sortablejs": "1.9.0",
     "sorttable": "1.0.2",
     "source-map-loader": "0.2.3",
     "source-sans-pro": "2.20.2",
