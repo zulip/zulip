@@ -236,17 +236,17 @@
         &.large .ind-tab {
             width: 100%;
         }
-    }
-}
 
-.informational-overlays .tab-switcher {
-    display: flex;
+        &.allow-overflow {
+            display: flex;
 
-    .ind-tab {
-        display: flex;
-        text-overflow: initial;
-        white-space: initial;
-        vertical-align: middle;
+            .ind-tab {
+                display: flex;
+                text-overflow: initial;
+                white-space: initial;
+                vertical-align: middle;
+            }
+        }
     }
 }
 
