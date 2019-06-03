@@ -41,199 +41,201 @@
     visibility: hidden;
 }
 
-/* -- base button styling -- */
-.new-style .button {
-    padding: 7px 14px;
-    margin: 0;
-    min-width: 130px;
+.new-style {
+    /* -- base button styling -- */
+    .button {
+        padding: 7px 14px;
+        margin: 0;
+        min-width: 130px;
 
-    font-weight: 400;
-    line-height: normal;
-    text-align: center;
-
-    background-color: hsl(0, 0%, 100%);
-    color: inherit;
-    outline: none;
-    border: 1px solid hsl(0, 0%, 80%);
-    border-radius: 2px;
-
-    box-shadow: none;
-
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    /* -- button style variations -- */
-    &.no-style {
-        padding: 0px;
-        background-color: transparent;
-        border: none;
-        min-width: 0px;
-        width: auto;
-        outline: none;
-        box-shadow: none !important;
-    }
-
-    &.rounded {
-        border-radius: 4px;
-    }
-
-    &.green {
-        background-color: hsl(150, 31%, 53%);
-    }
-
-    &.grey {
-        background-color: hsl(0, 0%, 67%);
-    }
-
-    &.standalone {
-        margin-top: 10px;
-    }
-
-    &.small {
-        font-size: 0.8rem;
-        min-width: inherit;
-        padding: 6px 10px;
-    }
-
-    &.small-flex {
-        width: auto;
-        min-width: inherit;
-    }
-
-    &:hover,
-    &:focus {
-        border-color: hsl(0, 0%, 60%);
-    }
-
-    &:active {
-        border-color: hsl(0, 0%, 60%);
-        color: inherit;
-        background-color: hsl(0, 0%, 95%);
-    }
-
-    &.sea-green {
-        color: hsl(156, 41%, 40%);
-        border-color: hsl(156, 28%, 70%);
-
-        &:hover,
-        &:focus {
-            border-color: hsl(156, 30%, 50%);
-        }
-
-        &:active {
-            border-color: hsl(156, 30%, 40%);
-            color: hsl(156, 44%, 43%);
-            background-color: hsl(154, 33%, 96%);
-        }
-    }
-
-    &.btn-warning {
-        color: hsl(35, 70%, 56%);
-        border-color: hsl(35, 98%, 84%);
-
-        &:hover,
-        &:focus {
-            border-color: hsl(35, 55%, 70%);
-        }
-
-        &:active {
-            color: hsl(35, 82%, 40%);
-            border-color: hsl(35, 55%, 70%);
-            background-color: hsl(33, 48%, 96%);
-        }
-    }
-
-    &.btn-danger {
-        color: hsl(357, 64%, 72%);
-        border-color: hsl(4, 56%, 82%);
-
-        &:hover,
-        &:focus {
-            border-color: hsl(2, 46%, 68%);
-        }
-
-        &:active {
-            color: hsl(357, 55%, 63%);
-            border-color: hsl(2, 46%, 68%);
-            background-color: hsl(7, 82%, 98%);
-        }
-    }
-
-    &[disabled="disabled"] {
-        cursor: not-allowed;
-        -moz-filter: saturate(0);
-        filter: saturate(0);
-        background-color: hsl(0, 0%, 93%);
-        color: hsl(0, 3%, 52%);
-
-        &:hover {
-            background-color: hsl(0, 0%, 93%);
-            color: hsl(156, 39%, 54%);
-            border-color: hsl(156, 39%, 77%);
-        }
-    }
-}
-
-/* -- tab switcher -- */
-
-.new-style .tab-switcher {
-    font-weight: initial;
-    margin: 2px 4px;
-    display: inline-block;
-
-    .ind-tab {
-        display: inline-block;
-        width: 90px;
-        margin: 0px -0.5px;
+        font-weight: 400;
+        line-height: normal;
         text-align: center;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-        vertical-align: bottom; /* See http://stackoverflow.com/a/43266155/ */
-        padding: 3px 10px;
+
         background-color: hsl(0, 0%, 100%);
+        color: inherit;
+        outline: none;
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 2px;
+
+        box-shadow: none;
+
         cursor: pointer;
-        justify-content: center;
-        align-items: center;
+        transition: all 0.2s ease;
 
-        &:focus {
+        /* -- button style variations -- */
+        &.no-style {
+            padding: 0px;
+            background-color: transparent;
+            border: none;
+            min-width: 0px;
+            width: auto;
             outline: none;
+            box-shadow: none !important;
         }
 
-        &:not(.selected) {
-            border: 1px solid hsl(0, 0%, 80%);
+        &.rounded {
+            border-radius: 4px;
         }
 
-        &.first {
-            border-radius: 5px 0px 0px 5px;
-            border-right: 1px solid transparent;
+        &.green {
+            background-color: hsl(150, 31%, 53%);
         }
 
-        &.middle {
-            border-right: 1px solid transparent;
+        &.grey {
+            background-color: hsl(0, 0%, 67%);
         }
 
-        &.last {
-            border-radius: 0px 5px 5px 0px;
+        &.standalone {
+            margin-top: 10px;
         }
 
-        &.selected {
-            position: relative;
-            background-color: hsl(0, 0%, 53%);
-            color: hsl(0, 0%, 100%);
-            border: 1px solid hsl(0, 0%, 47%);
-            z-index: 2;
+        &.small {
+            font-size: 0.8rem;
+            min-width: inherit;
+            padding: 6px 10px;
         }
 
-        &.disabled {
-            pointer-events: none;
-            color: hsl(0, 0%, 80%);
-            border-color: hsl(0, 0%, 87%);
+        &.small-flex {
+            width: auto;
+            min-width: inherit;
+        }
+
+        &:hover,
+        &:focus {
+            border-color: hsl(0, 0%, 60%);
+        }
+
+        &:active {
+            border-color: hsl(0, 0%, 60%);
+            color: inherit;
+            background-color: hsl(0, 0%, 95%);
+        }
+
+        &.sea-green {
+            color: hsl(156, 41%, 40%);
+            border-color: hsl(156, 28%, 70%);
+
+            &:hover,
+            &:focus {
+                border-color: hsl(156, 30%, 50%);
+            }
+
+            &:active {
+                border-color: hsl(156, 30%, 40%);
+                color: hsl(156, 44%, 43%);
+                background-color: hsl(154, 33%, 96%);
+            }
+        }
+
+        &.btn-warning {
+            color: hsl(35, 70%, 56%);
+            border-color: hsl(35, 98%, 84%);
+
+            &:hover,
+            &:focus {
+                border-color: hsl(35, 55%, 70%);
+            }
+
+            &:active {
+                color: hsl(35, 82%, 40%);
+                border-color: hsl(35, 55%, 70%);
+                background-color: hsl(33, 48%, 96%);
+            }
+        }
+
+        &.btn-danger {
+            color: hsl(357, 64%, 72%);
+            border-color: hsl(4, 56%, 82%);
+
+            &:hover,
+            &:focus {
+                border-color: hsl(2, 46%, 68%);
+            }
+
+            &:active {
+                color: hsl(357, 55%, 63%);
+                border-color: hsl(2, 46%, 68%);
+                background-color: hsl(7, 82%, 98%);
+            }
+        }
+
+        &[disabled="disabled"] {
+            cursor: not-allowed;
+            -moz-filter: saturate(0);
+            filter: saturate(0);
+            background-color: hsl(0, 0%, 93%);
+            color: hsl(0, 3%, 52%);
+
+            &:hover {
+                background-color: hsl(0, 0%, 93%);
+                color: hsl(156, 39%, 54%);
+                border-color: hsl(156, 39%, 77%);
+            }
         }
     }
 
-    &.large .ind-tab {
-        width: 100%;
+    /* -- tab switcher -- */
+
+    .tab-switcher {
+        font-weight: initial;
+        margin: 2px 4px;
+        display: inline-block;
+
+        .ind-tab {
+            display: inline-block;
+            width: 90px;
+            margin: 0px -0.5px;
+            text-align: center;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            vertical-align: bottom; /* See http://stackoverflow.com/a/43266155/ */
+            padding: 3px 10px;
+            background-color: hsl(0, 0%, 100%);
+            cursor: pointer;
+            justify-content: center;
+            align-items: center;
+
+            &:focus {
+                outline: none;
+            }
+
+            &:not(.selected) {
+                border: 1px solid hsl(0, 0%, 80%);
+            }
+
+            &.first {
+                border-radius: 5px 0px 0px 5px;
+                border-right: 1px solid transparent;
+            }
+
+            &.middle {
+                border-right: 1px solid transparent;
+            }
+
+            &.last {
+                border-radius: 0px 5px 5px 0px;
+            }
+
+            &.selected {
+                position: relative;
+                background-color: hsl(0, 0%, 53%);
+                color: hsl(0, 0%, 100%);
+                border: 1px solid hsl(0, 0%, 47%);
+                z-index: 2;
+            }
+
+            &.disabled {
+                pointer-events: none;
+                color: hsl(0, 0%, 80%);
+                border-color: hsl(0, 0%, 87%);
+            }
+        }
+
+        &.large .ind-tab {
+            width: 100%;
+        }
     }
 }
 
