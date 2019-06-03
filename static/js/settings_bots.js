@@ -237,6 +237,7 @@ exports.set_up = function () {
 
     var create_avatar_widget = avatar.build_bot_create_widget();
     var OUTGOING_WEBHOOK_BOT_TYPE = '3';
+    var INCOMING_WEBHOOK_BOT_TYPE = '2';
     var GENERIC_BOT_TYPE = '1';
     var EMBEDDED_BOT_TYPE = '4';
 
@@ -409,6 +410,41 @@ exports.set_up = function () {
             $("#service_data").append(templates.render("edit-embedded-bot-service",
                                                        {service: service}));
         }
+        if (bot.bot_type.toString() === INCOMING_WEBHOOK_BOT_TYPE) {
+            var config_data = {};
+            if (service !== undefined) {
+                config_data = service.config_data;
+            }
+            $("#service_data").append(templates.render("edit-bot-config-data",
+                                                       {config_data: config_data}));
+
+            $("#add_new_bot_config_element").click(function () {
+                var new_key = $("#new_key").val();
+                var new_val = $("#new_value").val();
+                if (new_key === "") {
+                    return;
+                }
+
+                // Perform a check to see if the user is trying to duplicate a key. If so just
+                // update the new value instead of inserting a new row.
+                var existing_config_elements = $(".bot_config_element").toArray();
+                for (var i = 0; i < existing_config_elements.length; i += 1) {
+                    var key = existing_config_elements[i].children[0].children[0].value;
+                    if (key === new_key) {
+                        existing_config_elements[i].children[1].children[0].value = new_val;
+                        return;
+                    }
+                }
+
+                // This is a new key. So add a new row.
+                var new_index = $(".bot_config_element").toArray().length;
+                var new_row = $("#bot_config_table_tbody")[0].insertRow(new_index);
+                new_row.className = "bot_config_element";
+                var new_row_content = "<td><input type=\"text\" value=\"" + new_key + "\" /></td>";
+                new_row_content += "<td><input type=\"text\" value=\"" + new_val + "\" /></td>";
+                new_row.innerHTML = new_row_content;
+            });
+        }
 
         avatar_widget.clear();
 
@@ -443,6 +479,15 @@ exports.set_up = function () {
                         config_data[$(this).attr('name')] = $(this).val();
                     });
                     formData.append('config_data', JSON.stringify(config_data));
+                } else if (type === INCOMING_WEBHOOK_BOT_TYPE) {
+                    var conf_data = {};
+                    var config_elements = $(".bot_config_element").toArray();
+                    config_elements.forEach(function (config_element) {
+                        var key = config_element.children[0].children[0].value;
+                        var value = config_element.children[1].children[0].value;
+                        conf_data[key] = value;
+                    });
+                    formData.append('config_data', JSON.stringify(conf_data));
                 }
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-' + i, file);

@@ -1,0 +1,47 @@
+<br />
+
+<style>
+    #bot_config_table {
+    border: 1px solid #ddd;
+    width: 100%;
+    }
+    #bot_config_table > thead {
+    border-bottom: 1px solid #ddd;
+    }
+    #bot_config_table_container {
+    overflow-x:auto;
+    }
+    th {
+    border: 1px solid #ddd;
+    }
+    td {
+    width: 45%;
+    padding-left: 10px;
+    padding-right: 10px;
+    }
+</style>
+
+<div id="bot_config_table_container">
+    <label for="bot_config_table">{{t "Edit bot configuration data" }}</label>
+    <table id="bot_config_table">
+        <thead>
+            <th> Key </th>
+            <th> Value </th>
+        </thead>
+        <tbody id="bot_config_table_tbody">
+            {{#each config_data as |value key|}}
+            <tr class="bot_config_element" data-row="{{@index}}">
+                <td> <input type="text" value="{{key}}" /> </td>
+                <td> <input type="text" value="{{value}}" /> </td>
+            </tr>
+            {{/each}}
+            <tr>
+                <td> <input type="text" value="{{key}}" id="new_key"/> </td>
+                <td> <input type="text" value="{{value}}" id="new_value"/> </td>
+                <td> <a class="btn" id="add_new_bot_config_element"> <i class="fa fa-plus-circle" aria-hidden="true"></i> </a> </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<br />
