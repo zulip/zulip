@@ -965,7 +965,7 @@ def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
     if password_auth_enabled(user_profile.realm):
-        if not authenticate(username=user_profile.email, password=password,
+        if not authenticate(username=user_profile.delivery_email, password=password,
                             realm=realm):
             return json_error(_("Your username or password is incorrect."))
 

@@ -13,7 +13,7 @@ from django.conf import settings
 
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
-    do_reactivate_user, do_reactivate_realm
+    do_reactivate_user, do_reactivate_realm, do_set_realm_property
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
@@ -1012,6 +1012,17 @@ class FetchAPIKeyTest(ZulipTestCase):
 
         self.login(email)
         result = self.client_post("/json/fetch_api_key", {"password": initial_password(email)})
+        self.assert_json_success(result)
+
+    def test_fetch_api_key_email_address_visibility(self) -> None:
+        user_profile = self.example_user("cordelia")
+        email = user_profile.email
+        do_set_realm_property(user_profile.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+
+        self.login(email)
+        result = self.client_post("/json/fetch_api_key",
+                                  {"password": initial_password(email)})
         self.assert_json_success(result)
 
     def test_fetch_api_key_wrong_password(self) -> None:
