@@ -101,22 +101,6 @@
     min-width: inherit;
 }
 
-.new-style .button.sea-green {
-    color: hsl(156, 41%, 40%);
-    border-color: hsl(156, 28%, 70%);
-}
-
-.new-style .button.btn-warning {
-    color: hsl(35, 70%, 56%);
-    border-color: hsl(35, 98%, 84%);
-}
-
-.new-style .button.btn-danger {
-    color: hsl(357, 64%, 72%);
-    border-color: hsl(4, 56%, 82%);
-}
-
-/* -- button states -- */
 .new-style .button:hover,
 .new-style .button:focus {
     border-color: hsl(0, 0%, 60%);
@@ -126,6 +110,11 @@
     border-color: hsl(0, 0%, 60%);
     color: inherit;
     background-color: hsl(0, 0%, 95%);
+}
+
+.new-style .button.sea-green {
+    color: hsl(156, 41%, 40%);
+    border-color: hsl(156, 28%, 70%);
 }
 
 .new-style .button.sea-green:hover,
@@ -139,15 +128,9 @@
     background-color: hsl(154, 33%, 96%);
 }
 
-.new-style .button.btn-danger:hover,
-.new-style .button.btn-danger:focus {
-    border-color: hsl(2, 46%, 68%);
-}
-
-.new-style .button.btn-danger:active {
-    color: hsl(357, 55%, 63%);
-    border-color: hsl(2, 46%, 68%);
-    background-color: hsl(7, 82%, 98%);
+.new-style .button.btn-warning {
+    color: hsl(35, 70%, 56%);
+    border-color: hsl(35, 98%, 84%);
 }
 
 .new-style .button.btn-warning:hover {
@@ -158,6 +141,22 @@
     color: hsl(35, 82%, 40%);
     border-color: hsl(35, 55%, 70%);
     background-color: hsl(33, 48%, 96%);
+}
+
+.new-style .button.btn-danger {
+    color: hsl(357, 64%, 72%);
+    border-color: hsl(4, 56%, 82%);
+}
+
+.new-style .button.btn-danger:hover,
+.new-style .button.btn-danger:focus {
+    border-color: hsl(2, 46%, 68%);
+}
+
+.new-style .button.btn-danger:active {
+    color: hsl(357, 55%, 63%);
+    border-color: hsl(2, 46%, 68%);
+    background-color: hsl(7, 82%, 98%);
 }
 
 .new-style .button[disabled="disabled"] {
