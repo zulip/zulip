@@ -43,7 +43,7 @@ exports.set_up_toggler = function () {
 
     var toggler = components.toggle(opts);
     var elem = toggler.get();
-    elem.addClass('large');
+    elem.addClass('large allow-overflow');
 
     var modals = _.map(opts.values, function (item) {
         var key = item.key; // e.g. message-formatting
