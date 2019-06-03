@@ -183,7 +183,6 @@
     overflow-x: hidden;
     overflow-y: auto;
     display: block;
-    height: 250px;
     width: 247px;
     padding-left: 3px;
 }
@@ -196,6 +195,10 @@
         padding: 5px 3px 3px 5px;
         font-size: 17px;
     }
+}
+
+.emoji-popover-emoji-map {
+    height: 250px;
 }
 
 .emoji-popover-subheading {
