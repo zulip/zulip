@@ -953,7 +953,7 @@ a.bottom-signup-button {
 .team-profiles {
     /* Compensate for gutter width */
     margin: -10px;
-    margin-bottom: 20px;
+    margin-bottom: 3px;
 }
 
 .team .profile .profile-name {
@@ -1001,29 +1001,6 @@ a.bottom-signup-button {
         /* Avoid double-applying the 1.2em font-size here */
         font-size: 1em;
     }
-}
-
-.team .core-team {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-}
-
-.team .core-team .profile {
-    flex: 1;
-    min-width: 120px;
-    text-align: center;
-    align-content: center;
-    margin: 10px;
-}
-
-.team .core-team .profile .profile-picture {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    pointer-events: none;
-    box-shadow: 1px 2px 2px hsla(217, 47%, 17%, 0.03), 2px 2px 12px hsla(217, 47%, 17%, 0.09);
-    margin-bottom: 10px;
 }
 
 .team input {
