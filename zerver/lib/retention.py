@@ -108,7 +108,7 @@ def move_expired_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
                           archive_table_name=model['archive_table_name'],
                           message_ids=ids_list_to_sql_query_format(msg_ids))
 
-def move_expired_attachments_to_archive(realm: Realm, msg_ids: List[int]) -> None:
+def move_expired_attachments_to_archive(msg_ids: List[int]) -> None:
     if not msg_ids:
         return
 
@@ -120,16 +120,13 @@ def move_expired_attachments_to_archive(realm: Realm, msg_ids: List[int]) -> Non
            ON zerver_attachment_messages.attachment_id = zerver_attachment.id
        LEFT JOIN zerver_archivedattachment ON zerver_archivedattachment.id = zerver_attachment.id
        WHERE zerver_attachment_messages.message_id IN {message_ids}
-            AND zerver_attachment.realm_id = {realm_id}
             AND zerver_archivedattachment.id IS NULL
        GROUP BY zerver_attachment.id
     """
-    assert realm.message_retention_days is not None
-    move_expired_rows(Attachment, query, realm_id=realm.id,
-                      message_ids=ids_list_to_sql_query_format(msg_ids))
+    move_expired_rows(Attachment, query, message_ids=ids_list_to_sql_query_format(msg_ids))
 
 
-def move_expired_attachments_message_rows_to_archive(realm: Realm, msg_ids: List[int]) -> None:
+def move_expired_attachments_message_rows_to_archive(msg_ids: List[int]) -> None:
     if not msg_ids:
         return
 
@@ -143,13 +140,10 @@ def move_expired_attachments_message_rows_to_archive(realm: Realm, msg_ids: List
        LEFT JOIN zerver_archivedattachment_messages
            ON zerver_archivedattachment_messages.id = zerver_attachment_messages.id
        WHERE  zerver_attachment_messages.message_id IN {message_ids}
-            AND zerver_attachment.realm_id = {realm_id}
             AND  zerver_archivedattachment_messages.id IS NULL
     """
-    assert realm.message_retention_days is not None
     with connection.cursor() as cursor:
-        cursor.execute(query.format(realm_id=realm.id,
-                                    message_ids=ids_list_to_sql_query_format(msg_ids)))
+        cursor.execute(query.format(message_ids=ids_list_to_sql_query_format(msg_ids)))
 
 
 def delete_expired_messages(realm: Realm, msg_ids: List[int]) -> None:
@@ -182,8 +176,8 @@ def move_expired_to_archive() -> Dict[int, Dict[str, List[int]]]:
         msg_ids = move_expired_messages_to_archive(realm)
         usermsg_ids = move_expired_user_messages_to_archive(msg_ids)
         move_expired_models_with_message_key_to_archive(msg_ids)
-        move_expired_attachments_to_archive(realm, msg_ids)
-        move_expired_attachments_message_rows_to_archive(realm, msg_ids)
+        move_expired_attachments_to_archive(msg_ids)
+        move_expired_attachments_message_rows_to_archive(msg_ids)
 
         archived_data_info[realm.id] = {
             'message_ids': msg_ids,
