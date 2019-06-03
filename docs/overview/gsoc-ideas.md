@@ -23,7 +23,7 @@ source.
 
 Zulip has gained a considerable amount of traction since it was
 [released as open source software][oss-release] in late 2015, with
-code contributions from [over 450 people](https://zulipchat.com/team)
+code contributions from [over 500 people](https://zulipchat.com/team)
 from all around the world.  Thousands of people use Zulip every single
 day, and your work on Zulip will have impact on the daily experiences
 of a huge and rapidly growing number of people.
