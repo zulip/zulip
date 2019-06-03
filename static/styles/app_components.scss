@@ -131,7 +131,8 @@
         color: hsl(35, 70%, 56%);
         border-color: hsl(35, 98%, 84%);
 
-        &:hover {
+        &:hover,
+        &:focus {
             border-color: hsl(35, 55%, 70%);
         }
 
