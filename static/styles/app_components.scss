@@ -61,116 +61,116 @@
 
     cursor: pointer;
     transition: all 0.2s ease;
-}
 
-/* -- button style variations -- */
-.new-style .button.no-style {
-    padding: 0px;
-    background-color: transparent;
-    border: none;
-    min-width: 0px;
-    width: auto;
-    outline: none;
-    box-shadow: none !important;
-}
+    /* -- button style variations -- */
+    &.no-style {
+        padding: 0px;
+        background-color: transparent;
+        border: none;
+        min-width: 0px;
+        width: auto;
+        outline: none;
+        box-shadow: none !important;
+    }
 
-.new-style .button.rounded {
-    border-radius: 4px;
-}
+    &.rounded {
+        border-radius: 4px;
+    }
 
-.new-style .button.green {
-    background-color: hsl(150, 31%, 53%);
-}
+    &.green {
+        background-color: hsl(150, 31%, 53%);
+    }
 
-.new-style .button.grey {
-    background-color: hsl(0, 0%, 67%);
-}
+    &.grey {
+        background-color: hsl(0, 0%, 67%);
+    }
 
-.new-style .button.standalone {
-    margin-top: 10px;
-}
+    &.standalone {
+        margin-top: 10px;
+    }
 
-.new-style .button.small {
-    font-size: 0.8rem;
-    min-width: inherit;
-    padding: 6px 10px;
-}
+    &.small {
+        font-size: 0.8rem;
+        min-width: inherit;
+        padding: 6px 10px;
+    }
 
-.new-style .button.small-flex {
-    width: auto;
-    min-width: inherit;
-}
+    &.small-flex {
+        width: auto;
+        min-width: inherit;
+    }
 
-.new-style .button:hover,
-.new-style .button:focus {
-    border-color: hsl(0, 0%, 60%);
-}
+    &:hover,
+    &:focus {
+        border-color: hsl(0, 0%, 60%);
+    }
 
-.new-style .button:active {
-    border-color: hsl(0, 0%, 60%);
-    color: inherit;
-    background-color: hsl(0, 0%, 95%);
-}
+    &:active {
+        border-color: hsl(0, 0%, 60%);
+        color: inherit;
+        background-color: hsl(0, 0%, 95%);
+    }
 
-.new-style .button.sea-green {
-    color: hsl(156, 41%, 40%);
-    border-color: hsl(156, 28%, 70%);
-}
+    &.sea-green {
+        color: hsl(156, 41%, 40%);
+        border-color: hsl(156, 28%, 70%);
 
-.new-style .button.sea-green:hover,
-.new-style .button.sea-green:focus {
-    border-color: hsl(156, 30%, 50%);
-}
+        &:hover,
+        &:focus {
+            border-color: hsl(156, 30%, 50%);
+        }
 
-.new-style .button.sea-green:active {
-    border-color: hsl(156, 30%, 40%);
-    color: hsl(156, 44%, 43%);
-    background-color: hsl(154, 33%, 96%);
-}
+        &:active {
+            border-color: hsl(156, 30%, 40%);
+            color: hsl(156, 44%, 43%);
+            background-color: hsl(154, 33%, 96%);
+        }
+    }
 
-.new-style .button.btn-warning {
-    color: hsl(35, 70%, 56%);
-    border-color: hsl(35, 98%, 84%);
-}
+    &.btn-warning {
+        color: hsl(35, 70%, 56%);
+        border-color: hsl(35, 98%, 84%);
 
-.new-style .button.btn-warning:hover {
-    border-color: hsl(35, 55%, 70%);
-}
+        &:hover {
+            border-color: hsl(35, 55%, 70%);
+        }
 
-.new-style .button.btn-warning:active {
-    color: hsl(35, 82%, 40%);
-    border-color: hsl(35, 55%, 70%);
-    background-color: hsl(33, 48%, 96%);
-}
+        &:active {
+            color: hsl(35, 82%, 40%);
+            border-color: hsl(35, 55%, 70%);
+            background-color: hsl(33, 48%, 96%);
+        }
+    }
 
-.new-style .button.btn-danger {
-    color: hsl(357, 64%, 72%);
-    border-color: hsl(4, 56%, 82%);
-}
+    &.btn-danger {
+        color: hsl(357, 64%, 72%);
+        border-color: hsl(4, 56%, 82%);
 
-.new-style .button.btn-danger:hover,
-.new-style .button.btn-danger:focus {
-    border-color: hsl(2, 46%, 68%);
-}
+        &:hover,
+        &:focus {
+            border-color: hsl(2, 46%, 68%);
+        }
 
-.new-style .button.btn-danger:active {
-    color: hsl(357, 55%, 63%);
-    border-color: hsl(2, 46%, 68%);
-    background-color: hsl(7, 82%, 98%);
-}
+        &:active {
+            color: hsl(357, 55%, 63%);
+            border-color: hsl(2, 46%, 68%);
+            background-color: hsl(7, 82%, 98%);
+        }
+    }
 
-.new-style .button[disabled="disabled"] {
-    cursor: not-allowed;
-    -moz-filter: saturate(0);
-    filter: saturate(0);
-    background-color: hsl(0, 0%, 93%);
-    color: hsl(0, 3%, 52%);
-}
+    &[disabled="disabled"] {
+        cursor: not-allowed;
+        -moz-filter: saturate(0);
+        filter: saturate(0);
+        background-color: hsl(0, 0%, 93%);
+        color: hsl(0, 3%, 52%);
 
-.new-style .button[disabled="disabled"]:hover {
-    background-color: hsl(0, 0%, 93%);
-    color: hsl(156, 39%, 54%);
-    border-color: hsl(156, 39%, 77%);
+        &:hover {
+            background-color: hsl(0, 0%, 93%);
+            color: hsl(156, 39%, 54%);
+            border-color: hsl(156, 39%, 77%);
+        }
+    }
 }
 
 /* -- tab switcher -- */
