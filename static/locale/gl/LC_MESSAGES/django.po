@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-29 00:00+0000\n"
+"POT-Creation-Date: 2019-06-03 20:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: analytics/views.py:79 zerver/decorator.py:507 zerver/decorator.py:516
+#: analytics/views.py:79 zerver/decorator.py:506 zerver/decorator.py:515
 msgid "Not allowed for guest users"
 msgstr ""
 
@@ -122,7 +122,7 @@ msgid "Humans"
 msgstr ""
 
 #: templates/analytics/stats.html:44
-#: templates/zerver/app/settings_overlay.html:111
+#: templates/zerver/app/settings_overlay.html:112
 msgid "Bots"
 msgstr ""
 
@@ -171,7 +171,7 @@ msgid "Total users"
 msgstr ""
 
 #: templates/analytics/stats.html:99
-#: templates/zerver/app/settings_overlay.html:98
+#: templates/zerver/app/settings_overlay.html:97
 msgid "Users"
 msgstr ""
 
@@ -1067,7 +1067,7 @@ msgstr ""
 
 #: templates/zerver/app/navbar.html:101
 #: templates/zerver/app/settings_overlay.html:4
-#: templates/zerver/app/settings_overlay.html:150 zerver/lib/hotspots.py:27
+#: templates/zerver/app/settings_overlay.html:157 zerver/lib/hotspots.py:27
 msgid "Settings"
 msgstr ""
 
@@ -1304,12 +1304,11 @@ msgstr ""
 #: templates/zerver/app/settings_overlay.html:60
 #: templates/zerver/app/settings_overlay.html:67
 #: templates/zerver/app/settings_overlay.html:77
-#: templates/zerver/app/settings_overlay.html:93
-#: templates/zerver/app/settings_overlay.html:100
-#: templates/zerver/app/settings_overlay.html:113
-#: templates/zerver/app/settings_overlay.html:121
-#: templates/zerver/app/settings_overlay.html:129
-#: templates/zerver/app/settings_overlay.html:136
+#: templates/zerver/app/settings_overlay.html:91
+#: templates/zerver/app/settings_overlay.html:99
+#: templates/zerver/app/settings_overlay.html:114
+#: templates/zerver/app/settings_overlay.html:123
+#: templates/zerver/app/settings_overlay.html:131
 msgid "Only organization administrators can edit these settings."
 msgstr ""
 
@@ -1321,7 +1320,7 @@ msgstr ""
 msgid "Organization permissions"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1656
+#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1664
 msgid "Custom emoji"
 msgstr ""
 
@@ -1329,15 +1328,11 @@ msgstr ""
 msgid "Guest users cannot edit custom emoji."
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:83
+#: templates/zerver/app/settings_overlay.html:84
 msgid "User groups"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:86
-msgid "Only group members and organization administrators can modify a group."
-msgstr ""
-
-#: templates/zerver/app/settings_overlay.html:91
+#: templates/zerver/app/settings_overlay.html:89
 msgid "Authentication methods"
 msgstr ""
 
@@ -1345,20 +1340,24 @@ msgstr ""
 msgid "Deactivated users"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:119
+#: templates/zerver/app/settings_overlay.html:121
 msgid "Default streams"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:127
+#: templates/zerver/app/settings_overlay.html:129
 msgid "Linkifiers"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:134
+#: templates/zerver/app/settings_overlay.html:137
 msgid "Custom profile fields"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:142
+#: templates/zerver/app/settings_overlay.html:143
 msgid "Invitations"
+msgstr ""
+
+#: templates/zerver/app/settings_overlay.html:149
+msgid "Show more"
 msgstr ""
 
 #: templates/zerver/config_error.html:14
@@ -2783,7 +2782,7 @@ msgstr ""
 msgid "Check your email in a few minutes to finish the process."
 msgstr ""
 
-#: templates/zerver/team.html:168
+#: templates/zerver/team.html:135
 msgid "Avatar"
 msgstr ""
 
@@ -2850,64 +2849,64 @@ msgid ""
 "    "
 msgstr ""
 
-#: zerver/decorator.py:136 zerver/lib/emoji.py:93 zerver/lib/users.py:77
+#: zerver/decorator.py:135 zerver/lib/emoji.py:93 zerver/lib/users.py:77
 #: zerver/lib/users.py:80 zerver/views/invite.py:27 zerver/views/invite.py:31
 msgid "Must be an organization administrator"
 msgstr ""
 
-#: zerver/decorator.py:144
+#: zerver/decorator.py:143
 msgid "Must be a billing administrator or an organization administrator"
 msgstr ""
 
-#: zerver/decorator.py:226
+#: zerver/decorator.py:225
 msgid "Invalid subdomain for push notifications bouncer"
 msgstr ""
 
-#: zerver/decorator.py:236
+#: zerver/decorator.py:235
 msgid "This API is not available to incoming webhook bots."
 msgstr ""
 
-#: zerver/decorator.py:246
+#: zerver/decorator.py:245
 msgid "This organization has been deactivated"
 msgstr ""
 
-#: zerver/decorator.py:248
+#: zerver/decorator.py:247
 msgid "Account is deactivated"
 msgstr ""
 
-#: zerver/decorator.py:262
+#: zerver/decorator.py:261
 msgid "Account is not associated with this subdomain"
 msgstr ""
 
-#: zerver/decorator.py:456 zerver/decorator.py:518
+#: zerver/decorator.py:455 zerver/decorator.py:517
 msgid "This endpoint does not accept bot requests."
 msgstr ""
 
-#: zerver/decorator.py:498
+#: zerver/decorator.py:497
 msgid "Must be an server administrator"
 msgstr ""
 
-#: zerver/decorator.py:561
+#: zerver/decorator.py:560
 msgid "This endpoint requires HTTP basic authentication."
 msgstr ""
 
-#: zerver/decorator.py:564
+#: zerver/decorator.py:563
 msgid "Invalid authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:566
+#: zerver/decorator.py:565
 msgid "Missing authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:635
+#: zerver/decorator.py:634
 msgid "Not logged in"
 msgstr ""
 
-#: zerver/decorator.py:646
+#: zerver/decorator.py:645
 msgid "Webhook bots can only access webhooks"
 msgstr ""
 
-#: zerver/decorator.py:705
+#: zerver/decorator.py:704
 msgid "Access denied"
 msgstr ""
 
@@ -3312,7 +3311,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr ""
 
-#: zerver/lib/events.py:837
+#: zerver/lib/events.py:839
 msgid "Could not allocate event queue"
 msgstr ""
 
@@ -3739,7 +3738,7 @@ msgstr ""
 msgid "CSRF Error: {reason}"
 msgstr ""
 
-#: zerver/middleware.py:341
+#: zerver/middleware.py:343
 msgid "API usage exceeded rate limit"
 msgstr ""
 
@@ -3752,50 +3751,50 @@ msgstr ""
 msgid "Invalid URL format string."
 msgstr ""
 
-#: zerver/models.py:1655
+#: zerver/models.py:1663
 msgid "Unicode emoji"
 msgstr ""
 
-#: zerver/models.py:1657
+#: zerver/models.py:1665
 msgid "Zulip extra emoji"
 msgstr ""
 
-#: zerver/models.py:2487
+#: zerver/models.py:2503
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr ""
 
-#: zerver/models.py:2491
+#: zerver/models.py:2507
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr ""
 
-#: zerver/models.py:2494
+#: zerver/models.py:2510
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr ""
 
-#: zerver/models.py:2523
+#: zerver/models.py:2539
 msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:2526
+#: zerver/models.py:2542
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:2538
+#: zerver/models.py:2554
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:2539
+#: zerver/models.py:2555
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:2540
+#: zerver/models.py:2556
 msgid "Date picker"
 msgstr ""
 
-#: zerver/models.py:2541
+#: zerver/models.py:2557
 msgid "Link"
 msgstr ""
 

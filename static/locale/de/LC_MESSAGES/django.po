@@ -15,6 +15,7 @@
 # Greg Price <gnprice@gmail.com>, 2017
 # Harlan Lieberman-Berg <hlieberman@setec.io>, 2016,2018
 # Hauke Schmiegel <inactive+hauke82@transifex.com>, 2016
+# Keyhan Behbahani <behbahani@fb4.rwth-aachen.de>, 2019
 # BornToBeRoot, 2015
 # n3w2oo <kontakt@n3w2oo.net>, 2016
 # Niklas P <niklaspotthoff@gmail.com>, 2016
@@ -27,8 +28,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-05-20 03:25+0000\n"
-"PO-Revision-Date: 2019-05-27 20:39+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2019-06-03 14:15+0000\n"
+"Last-Translator: Keyhan Behbahani <behbahani@fb4.rwth-aachen.de>\n"
 "Language-Team: German (http://www.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -609,11 +610,11 @@ msgid ""
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
 "            here</a>.\n"
 "            "
-msgstr ""
+msgstr "\nErfahre mehr über Erwähnungen <a href=\"/help/mention-a-user-or-group\">\nhier</a>."
 
 #: templates/zerver/app/home.html:145
 msgid "No search results"
-msgstr ""
+msgstr "Keine Suchergebnisse"
 
 #: templates/zerver/app/home.html:148 templates/zerver/app/home.html:150
 msgid "Messages"
@@ -959,7 +960,7 @@ msgstr "Alle Streams"
 
 #: templates/zerver/app/left_sidebar.html:77
 msgid "Add streams"
-msgstr ""
+msgstr "Streams hinzufügen"
 
 #: templates/zerver/app/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
@@ -1455,7 +1456,7 @@ msgstr "Normale Benutzer"
 #: templates/zerver/emails/notify_new_login.source.html:8
 #: templates/zerver/emails/password_reset.source.html:4
 msgid "Zulip logo"
-msgstr ""
+msgstr "Zulip Logo"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:9
 #: templates/zerver/emails/compiled/find_team.html:9
@@ -1497,7 +1498,7 @@ msgstr "Falls Du diese Änderung nicht beantragt hast, kontaktiere uns bitte sof
 #: templates/zerver/emails/invitation.source.html:4
 #: templates/zerver/emails/realm_reactivation.source.html:4
 msgid "Turtle with envelope"
-msgstr ""
+msgstr "Schildkröte mit Umschlag"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.source.html:9
@@ -1533,7 +1534,7 @@ msgstr "Kontaktiere uns jeder Zeit\n    <a href=\"mailto:%(support_email)s\" sty
 #: templates/zerver/emails/compiled/email_base_default.html:87
 #: templates/zerver/emails/email_base_default.source.html:30
 msgid "Swimming fish"
-msgstr ""
+msgstr "Schwimmender Fisch"
 
 #: templates/zerver/emails/compiled/find_team.html:11
 #: templates/zerver/emails/find_team.source.html:10
@@ -1668,7 +1669,7 @@ msgstr "PS: Folge uns auf <a href=\"https://twitter.com/zulip\" style=\"color:#4
 #: templates/zerver/emails/compiled/followup_day2.html:4
 #: templates/zerver/emails/followup_day2.source.html:4
 msgid "Octopus box with heart"
-msgstr ""
+msgstr "Oktopus-Box mit Herz"
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.source.html:8
@@ -1687,7 +1688,7 @@ msgstr "Ich wollte noch eine letzte Sache mit Dir teilen: Ein paar Tips über Th
 #: templates/zerver/emails/compiled/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.source.html:12
 msgid "Examples of short topics"
-msgstr ""
+msgstr "Beispiele für kurze Themen"
 
 #: templates/zerver/emails/compiled/followup_day2.html:15
 msgid ""
@@ -1713,7 +1714,7 @@ msgstr "Nicht zu empfehlen: \"Was denken die anderen von diesem Designentwurf?\"
 #: templates/zerver/emails/compiled/followup_day2.html:22
 #: templates/zerver/emails/followup_day2.source.html:21
 msgid "Example of a topic that is too long"
-msgstr ""
+msgstr "Beispiel für ein zu langes Thema"
 
 #: templates/zerver/emails/compiled/followup_day2.html:24
 msgid ""
@@ -1781,7 +1782,7 @@ msgstr "Um loszulegen, klicke bitte hier:"
 #: templates/zerver/emails/compiled/invitation_reminder.html:4
 #: templates/zerver/emails/invitation_reminder.source.html:4
 msgid "Mailbox with envelope"
-msgstr ""
+msgstr "Briefkasten mit Umschlag"
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:9
 #: templates/zerver/emails/invitation_reminder.source.html:8
@@ -2510,12 +2511,12 @@ msgstr "Nach Kategorie filtern"
 #: templates/zerver/integrations/index.html:62
 #: templates/zerver/integrations/index.html:89
 msgid "Custom integrations"
-msgstr ""
+msgstr "Benutzerdefinierte Integrationen"
 
 #: templates/zerver/integrations/index.html:64
 #: templates/zerver/integrations/index.html:91
 msgid "Incoming webhooks"
-msgstr ""
+msgstr "Eingehende Webhooks"
 
 #: templates/zerver/integrations/index.html:67
 #: templates/zerver/integrations/index.html:94 zerver/lib/integrations.py:45
@@ -2525,7 +2526,7 @@ msgstr "Interaktive Bots"
 #: templates/zerver/integrations/index.html:70
 #: templates/zerver/integrations/index.html:97
 msgid "REST API"
-msgstr ""
+msgstr "REST API"
 
 #: templates/zerver/integrations/index.html:77
 msgid "Categories"
@@ -3160,7 +3161,7 @@ msgstr "Hat schon ein Konto."
 
 #: zerver/lib/actions.py:4830
 msgid "Account has been deactivated."
-msgstr ""
+msgstr "Account wurde deaktiviert."
 
 #: zerver/lib/actions.py:4836
 msgid "Invalid address."
@@ -4106,7 +4107,7 @@ msgstr "Ungültiger Status: %s"
 
 #: zerver/views/public_export.py:26
 msgid "Exceeded rate limit."
-msgstr ""
+msgstr "Überschreitung des Grenzwertes."
 
 #: zerver/views/push_notifications.py:14
 msgid "Empty or invalid length token"
@@ -4153,7 +4154,7 @@ msgstr "Es muss mindestens eine Authentifizierungs-Möglichkeit aktiviert sein."
 
 #: zerver/views/realm.py:89
 msgid "Invalid video chat provider {}"
-msgstr ""
+msgstr "Ungültiger Video-Chat-Anbieter {}"
 
 #: zerver/views/realm.py:94 zerver/views/realm_domains.py:28
 msgid "Invalid domain: {}"
@@ -4161,15 +4162,15 @@ msgstr "Ungültige Domain: {}"
 
 #: zerver/views/realm.py:100
 msgid "User ID cannot be empty"
-msgstr ""
+msgstr "Nutzer-ID darf nicht leer sein"
 
 #: zerver/views/realm.py:102
 msgid "API key cannot be empty"
-msgstr ""
+msgstr "API-Schlüssel darf nicht leer sein"
 
 #: zerver/views/realm.py:104
 msgid "API secret cannot be empty"
-msgstr ""
+msgstr "API-Geheimnis darf nicht leer sein"
 
 #: zerver/views/realm.py:116
 #, python-format
@@ -4286,7 +4287,7 @@ msgstr "Du kannst andere Zephyr-Mirroring Nutzer nur zu privater Streams einlade
 
 #: zerver/views/streams.py:335
 msgid "Only administrators can modify other users' subscriptions."
-msgstr ""
+msgstr "Nur Administratoren können die Abonnements anderer Benutzer ändern."
 
 #: zerver/views/streams.py:340
 msgid "Your account is too new to modify other users' subscriptions."
@@ -4351,7 +4352,7 @@ msgstr "Diese Gruppe enthält keinen Nutzer '%s'"
 
 #: zerver/views/user_settings.py:29
 msgid "Avatar changes are disabled in this organization."
-msgstr ""
+msgstr "Änderungen am Avatar sind in dieser Organisation deaktiviert."
 
 #: zerver/views/user_settings.py:42 zerver/views/user_settings.py:94
 msgid "Email address changes are disabled in this organization."
@@ -4490,7 +4491,7 @@ msgstr "Nachricht von Slack"
 #: zerver/webhooks/wordpress/view.py:45
 #, python-format
 msgid "Unknown WordPress webhook action: %s"
-msgstr ""
+msgstr "Unbekannte WordPress Webhook-Aktion: %s"
 
 #: zerver/webhooks/zabbix/view.py:45
 msgid "Invalid payload"
