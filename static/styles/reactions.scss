@@ -275,24 +275,24 @@
     background-color: hsl(0, 0%, 93%);
     min-height: 44px;
     width: 250px;
-}
 
-.emoji-preview {
-    position: absolute;
-    width: 32px;
-    height: 32px;
-    left: 5px;
-    top: 6px;
-    margin-top: 0px;
-}
+    .emoji-preview {
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        left: 5px;
+        top: 6px;
+        margin-top: 0px;
+    }
 
-.emoji-canonical-name {
-    position: relative;
-    top: 12px;
-    margin-left: 50px;
-    font-size: 16px;
-    font-weight: 600;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+    .emoji-canonical-name {
+        position: relative;
+        top: 12px;
+        margin-left: 50px;
+        font-size: 16px;
+        font-weight: 600;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
 }
