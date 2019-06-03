@@ -176,6 +176,31 @@
     }
 }
 
+.emoji-popover-category-tabs {
+    /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+    display: flex;
+    background-color: hsl(0, 0%, 93%);
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    .emoji-popover-tab-item {
+        display: inline-block;
+        padding-top: 8px;
+        width: 25px;
+        height: 25px;
+        text-align: center;
+        font-size: 16px;
+        cursor: pointer;
+        /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+        flex-grow: 1;
+
+        &.active {
+            background-color: hsla(0, 0%, 100%, 0.2);
+        }
+    }
+}
+
 .emoji-popover-emoji-map,
 .emoji-search-results-container {
     padding: 0px;
@@ -242,31 +267,6 @@
     vertical-align: top;
     margin: 0px 1px 0px 0px;
     line-height: 1em;
-}
-
-.emoji-popover-category-tabs {
-    /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
-    display: flex;
-    background-color: hsl(0, 0%, 93%);
-    width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
-
-    .emoji-popover-tab-item {
-        display: inline-block;
-        padding-top: 8px;
-        width: 25px;
-        height: 25px;
-        text-align: center;
-        font-size: 16px;
-        cursor: pointer;
-        /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
-        flex-grow: 1;
-
-        &.active {
-            background-color: hsla(0, 0%, 100%, 0.2);
-        }
-    }
 }
 
 .typeahead .emoji {
