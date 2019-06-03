@@ -259,20 +259,6 @@
     }
 }
 
-.emoji_alt_code {
-    position: relative;
-    top: 4px;
-    font-size: 0.8em;
-    display: inline-block;
-    vertical-align: top;
-    margin: 0px 1px 0px 0px;
-    line-height: 1em;
-}
-
-.typeahead .emoji {
-    top: 2px;
-}
-
 .emoji-showcase-container {
     position: relative;
     background-color: hsl(0, 0%, 93%);
@@ -298,4 +284,18 @@
         text-overflow: ellipsis;
         overflow: hidden;
     }
+}
+
+.emoji_alt_code {
+    position: relative;
+    top: 4px;
+    font-size: 0.8em;
+    display: inline-block;
+    vertical-align: top;
+    margin: 0px 1px 0px 0px;
+    line-height: 1em;
+}
+
+.typeahead .emoji {
+    top: 2px;
 }
