@@ -37,6 +37,17 @@
             padding-right: 0.3em;
             float: left;
         }
+
+        .emoji {
+            display: inline-block;
+            vertical-align: top;
+            top: 0px;
+            margin: 1px 3px;
+
+            height: 17px;
+            width: 17px;
+            position: relative;
+        }
     }
 
     .message_reaction_count {
@@ -104,17 +115,6 @@
         background-color: hsl(196, 51%, 93%);
         border-color: hsl(193, 38%, 70%);
     }
-}
-
-.message_reaction .emoji {
-    display: inline-block;
-    vertical-align: top;
-    top: 0px;
-    margin: 1px 3px;
-
-    height: 17px;
-    width: 17px;
-    position: relative;
 }
 
 .reaction_button_visible {
