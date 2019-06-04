@@ -48,6 +48,49 @@ migration.
 restart if it crashes, and `upgrade-zulip` will take care of running
 migrations and then cleanly restaring the server for you).
 
+## Accessing the Vagrant development environment from other systems
+
+If you want to access your Vagrant development environment from outside of it,
+then you'll need to follow a few extra steps.
+
+This is required when dealing with testing third-party services like Jira and
+Bitbucket Server which can be hosted locally if you want to allow these
+services to be able to directly post to your Zulip development enviroment.
+Or if you're testing the mobile app and need to use a locally hosted
+development version of the zulip server.
+
+To do either one of these you'll need to make sure that your Zulip development
+environment (notably the Vagrant virtual machine) is accessible externally.
+
+1. Get the Vagrant VM to listen on all available addresses.
+Open zulip/Vagrantfile. Replace the line `host_ip_addr = "127.0.0.1"` with
+`host_ip_addr = "0.0.0.0"`. This means that the VM is now listening on all IPv4
+addresses available on your local machine. This will allow other services like
+Jira or Bitbucket Server to now communicate with Zulip running on the
+development server.
+
+2. Figure out your IP address.
+If you're using Linux, this can be found by running `ifconfig`, or
+`ipconfig /all` if you're on Windows, outside of the Zulip development
+environment (on your local PC). In the output you should see a line resembling
+`inet 192.168.1.7`, in this case `192.168.1.7` would be your IP address.
+
+3. Set EXTERNAL_HOST.
+Like most complex web apps, the Zulip server has an idea internally of what
+base URL it's supposed to be accessed at; we call this setting `EXTERNAL_HOST`.
+In development, the setting is normally `localhost:9991`, and corresponds to a
+base URL of `http://localhost:9991/`.
+
+Set this to `IPADDRESS:9991`, where `IPADDRESS` is the address you identified
+in the previous step. In development, we can do this with an environment
+variable. For example, if your IP address is `192.168.1.7` then the environment
+variable can be set using the command: `export EXTERNAL_HOST="192.168.1.7:9991"`
+
+4. Running the development environment.
+Now, from the vagrant development environment, run the server by doing
+`./tools/run-dev.py --interface=''`.
+
+
 [django-runserver]: https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md
