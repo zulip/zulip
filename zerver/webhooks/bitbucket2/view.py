@@ -392,7 +392,10 @@ def get_user_display_name(payload: Dict[str, Any]) -> str:
     return payload['actor']['display_name']
 
 def get_user_username(payload: Dict[str, Any]) -> str:
-    return payload['actor']['username']
+    actor = payload['actor']
+    # Certain payloads may not contain a username, so we can
+    # return the user's display name or nickname instead.
+    return actor.get('username') or actor.get('display_name') or actor.get('nickname')
 
 def get_branch_name_for_push_event(payload: Dict[str, Any]) -> Optional[str]:
     change = payload['push']['changes'][-1]
