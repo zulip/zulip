@@ -639,3 +639,10 @@ raise UnexpectedWebhookEventType(webhook_name, event_type)
 
 `webhook_name` is the name of the integration that raises the exception.
 `event_type` is the name of the unexpected webhook event.
+
+### Working with a locally hosted third-party service
+
+If you're developing a webhook integration for a third-party hosted service and
+using the [Vagrant development environment](https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html),
+you'll want to read our guide for
+[remote network connections to a Vagrant guest](https://zulip.readthedocs.io/en/latest/development/using.html)
