@@ -16,7 +16,7 @@ from zerver.lib.actions import (try_add_realm_custom_profile_field,
 from zerver.lib.response import json_success, json_error
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.validator import (check_dict, check_list, check_int,
-                                  validate_field_data, check_capped_string)
+                                  validate_choice_field_data, check_capped_string)
 
 from zerver.models import (UserProfile,
                            CustomProfileField, custom_profile_fields_for_realm)
@@ -60,7 +60,7 @@ def create_realm_custom_profile_field(request: HttpRequest,
     if field_type == CustomProfileField.CHOICE and len(field_data) < 1:
         return json_error(_("Field must have at least one choice."))
 
-    error = validate_field_data(field_data)
+    error = validate_choice_field_data(field_data)
     if error:
         return json_error(error)
 
@@ -98,7 +98,7 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
                                                                        converter=ujson.loads),
                                       ) -> HttpResponse:
     validate_field_name_and_hint(name, hint)
-    error = validate_field_data(field_data)
+    error = validate_choice_field_data(field_data)
     if error:
         return json_error(error)
 

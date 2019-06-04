@@ -228,7 +228,7 @@ def check_url(var_name: str, val: object) -> Optional[str]:
     except ValidationError:
         return _('%s is not a URL') % (var_name,)
 
-def validate_field_data(field_data: ProfileFieldData) -> Optional[str]:
+def validate_choice_field_data(field_data: ProfileFieldData) -> Optional[str]:
     """
     This function is used to validate the data sent to the server while
     creating/editing choices of the choice field in Organization settings.
