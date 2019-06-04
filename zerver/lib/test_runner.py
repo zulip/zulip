@@ -35,7 +35,7 @@ from multiprocessing.sharedctypes import Synchronized
 # in this global so it can be used in init_worker; this is used to
 # ensure the database IDs we select are unique for each `test-backend`
 # run.  This probably should use a locking mechanism rather than the
-# below hack, which fails 1/10000000 of the itme.
+# below hack, which fails 1/10000000 of the time.
 random_id_range_start = random.randint(1, 10000000) * 100
 
 _worker_id = 0  # Used to identify the worker process.
