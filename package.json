@@ -77,6 +77,7 @@
     "xmlhttprequest": "1.8.0"
   },
   "scripts": {
+    "postinstall": "rm -rf ./var/webpack-cache",
     "lint": "eslint --quiet --cache",
     "lint-fix": "eslint --quiet --fix",
     "lint-loud": "eslint static/js frontend_tests --cache"
