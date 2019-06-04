@@ -58,6 +58,58 @@ curl -X POST {{ api_url }}/v1/messages/flags \
 
 {generate_api_arguments_table|zulip.yaml|/messages/flags:post}
 
+## Available Flags
+<div>
+    <table>
+        <thead>
+            <th style="width:30%"> Flag </th>
+            <th style="width:70%"> Purpose </th>
+        </thead>
+        <tbody>
+            <tr>
+                <td> `read` </td>
+                <td> Mark a message as read. </td>
+            </tr>
+            <tr>
+                <td> `starred` </td>
+                <td> Star a message. </td>
+            </tr>
+            <tr>
+                <td> `collapsed` </td>
+                <td>  </td>
+            </tr>
+            <tr>
+                <td> `mentioned` </td>
+                <td> </td>
+            </tr>
+            <tr>
+                <td> `wildcard_mentioned` </td>
+                <td>  </td>
+            </tr>
+            <tr>
+                <td> `summarize_in_home` </td>
+                <td>  </td>
+            </tr>
+            <tr>
+                <td> `summarize_in_stream` </td>
+                <td>  </td>
+            </tr>
+            <tr>
+                <td> `force_expand` </td>
+                <td>  </td>
+            </tr>
+            <tr>
+                <td> `force_collapse` </td>
+                <td>  </td>
+            </tr>
+            <tr>
+                <td> `historical` </td>
+                <td>  </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
 ## Response
 
 #### Return values
