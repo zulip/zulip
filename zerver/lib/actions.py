@@ -175,6 +175,8 @@ STREAM_ASSIGNMENT_COLORS = [
     "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
     "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
 
+ONBOARDING_MESSAGES = 80
+
 # Store an event in the log for re-importing messages
 def log_event(event: MutableMapping[str, Any]) -> None:
     if settings.EVENT_LOG_DIR is None:
@@ -310,6 +312,8 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     if len(message_ids_to_use) == 0:
         return
 
+    message_ids_to_flag_as_unread = message_ids_to_use[-ONBOARDING_MESSAGES:]
+
     # Handle the race condition where a message arrives between
     # bulk_add_subscriptions above and the Message query just above
     already_ids = set(UserMessage.objects.filter(message_id__in=message_ids_to_use,
@@ -321,6 +325,11 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
                      if message_id not in already_ids]
 
     UserMessage.objects.bulk_create(ums_to_create)
+
+    # For onboarding leave ONBOARDING_MESSAGES meassages to be read for the user.
+    UserMessage.objects.filter(message_id__in=message_ids_to_flag_as_unread,
+                               user_profile=user_profile).update(
+        flags=F('flags').bitand(~UserMessage.flags.read))
 
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
@@ -4015,6 +4024,8 @@ def do_update_user_status(user_profile: UserProfile,
     send_event(realm, event, active_user_ids(realm.id))
 
 def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
+    """Give you the last 80 messages on your public streams,
+    once you crossed bankruptcy limit."""
     log_statsd_event('bankruptcy')
 
     msgs = UserMessage.objects.filter(
@@ -4022,6 +4033,9 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     ).extra(
         where=[UserMessage.where_unread()]
     )
+
+    msg_ids = msgs.order_by('-id').values_list('message_id')[ONBOARDING_MESSAGES:]
+    msgs = UserMessage.objects.filter(message_id__in=msg_ids, user_profile=user_profile)
 
     count = msgs.update(
         flags=F('flags').bitor(UserMessage.flags.read)
