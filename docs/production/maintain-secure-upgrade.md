@@ -58,9 +58,21 @@ it would make. Using this list, you can save a copy of any files
 that you've modified, do the upgrade, and then restore your
 configuration.
 
-If you need to do this, please report the issue so
-that we can make the Zulip puppet configuration flexible enough to
-handle your setup.
+That said, Zulip's configuration files are designed to be flexible
+enough for a wide range of installations, from a small self-hosted
+system to Zulip Cloud.  Before making local changes to a configuration
+file, first check whether there's an option supported by
+`/etc/zulip/zulip.conf` for the customization you need.  And if you
+need to make local modifications, please report the issue so that we
+can make the Zulip puppet configuration flexible enough to handle your
+setup.
+
+#### nginx configuration changes
+
+If you need to modify Zulip's `nginx` configuration, we recommend
+first attempting to add configuration to `/etc/nginx/conf.d` or
+`/etc/nginx/zulip-include/app.d`; those directories are designed for
+custom configuration.
 
 ### Troubleshooting with the upgrade log
 
