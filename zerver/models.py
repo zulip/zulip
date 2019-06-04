@@ -1729,14 +1729,50 @@ class ArchivedReaction(AbstractReaction):
 # though each row is only 4 integers.
 class AbstractUserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
-    ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
-                 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
-                 'has_alert_word', "historical", "is_private", "active_mobile_push_notification"]
+    # The order here is important!  It's the order of fields in the bitfield.
+    ALL_FLAGS = [
+        'read',
+        'starred',
+        'collapsed',
+        'mentioned',
+        'wildcard_mentioned',
+        # These next 4 flags are from features that have since been removed.
+        'summarize_in_home',
+        'summarize_in_stream',
+        'force_expand',
+        'force_collapse',
+        # Whether the message contains any of the user's alert words.
+        'has_alert_word',
+        # The historical flag is used to mark messages which the user
+        # did not receive when they were sent, but later added to
+        # their history via e.g. starring the message.  This is
+        # important accounting for the "Subscribed to stream" dividers.
+        'historical',
+        # Whether the message is a private message; this flag is a
+        # denormalization of message.recipient.type to support an
+        # efficient index on UserMessage for a user's private messages.
+        'is_private',
+        # Whether we've sent a push notification to the user's mobile
+        # devices for this message that has not been revoked.
+        'active_mobile_push_notification',
+    ]
     # Certain flags are used only for internal accounting within the
-    # Zulip backend, and don't make sense to expose to the API.  A
-    # good example is is_private, which is just a denormalization of
-    # message.recipient_type for database query performance.
+    # Zulip backend, and don't make sense to expose to the API.
     NON_API_FLAGS = {"is_private", "active_mobile_push_notification"}
+    # Certain additional flags are just set once when the UserMessage
+    # row is created.
+    NON_EDITABLE_FLAGS = {
+        # These flags are bookkeeping and don't make sense to edit.
+        "has_alert_word",
+        "mentioned",
+        "wildcard_mentioned",
+        "historical",
+        # Unused flags can't be edited.
+        "force_expand",
+        "force_collapse",
+        "summarize_in_home",
+        "summarize_in_stream",
+    }
     flags = BitField(flags=ALL_FLAGS, default=0)  # type: BitHandler
 
     class Meta:

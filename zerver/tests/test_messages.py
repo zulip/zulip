@@ -3143,6 +3143,12 @@ class MessageAccessTests(ZulipTestCase):
                                    "flag": "active_mobile_push_notification"})
         self.assert_json_error(result, "Invalid flag: 'active_mobile_push_notification'")
 
+        result = self.client_post("/json/messages/flags",
+                                  {"messages": ujson.dumps([message]),
+                                   "op": "add",
+                                   "flag": "mentioned"})
+        self.assert_json_error(result, "Flag not editable: 'mentioned'")
+
     def change_star(self, messages: List[int], add: bool=True, **kwargs: Any) -> HttpResponse:
         return self.client_post("/json/messages/flags",
                                 {"messages": ujson.dumps(messages),
