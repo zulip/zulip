@@ -5,7 +5,6 @@ import os
 import sys
 import json
 import subprocess
-import pyinotify
 
 if False:
     from typing import NoReturn
@@ -58,6 +57,7 @@ def build_for_dev_server(host, port, minify, disable_host_check):
     if disable_host_check:
         webpack_args.append('--disable-host-check')
 
+    import pyinotify
     try:
         webpack_process = subprocess.Popen(webpack_args)
 
