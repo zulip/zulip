@@ -225,13 +225,20 @@ def _replacement_destroy_test_db(self: DatabaseCreation,
                        % (self.connection.ops.quote_name(test_database_name),))
 DatabaseCreation._destroy_test_db = _replacement_destroy_test_db
 
-def destroy_test_databases(worker_id: int) -> None:
-    """Modified from the Django original to """
-    database_id = random_id_range_start + worker_id
+def destroy_test_databases(worker_id: Optional[int]=None) -> None:
     for alias in connections:
         connection = connections[alias]
         try:
-            connection.creation.destroy_test_db(number=database_id)
+            if worker_id is not None:
+                """Modified from the Django original to """
+                database_id = random_id_range_start + worker_id
+                connection.creation.destroy_test_db(number=database_id)
+            else:
+                # In theory, this code path should be the same as the
+                # parallel one; but a bug results in that
+                # double-adding the database_id.  So we save that
+                # double-add by just passing nothing here.
+                connection.creation.destroy_test_db()
         except ProgrammingError:
             # DB doesn't exist. No need to do anything.
             pass
@@ -403,13 +410,18 @@ class Runner(DiscoverRunner):
         return super().setup_test_environment(*args, **kwargs)
 
     def teardown_test_environment(self, *args: Any, **kwargs: Any) -> Any:
-        # No need to pass the database id now. It will be picked up
-        # automatically through settings.
-        if self.parallel == 1:
-            # In parallel mode (parallel > 1), destroy_test_databases will
-            # destroy settings.BACKEND_DATABASE_TEMPLATE; we don't want that.
-            # So run this only in serial mode.
-            destroy_test_databases(_worker_id)
+        # The test environment setup clones the zulip_test_template
+        # database, creating databases with names:
+        #     'zulip_test_template_<N, N + self.parallel - 1>',
+        # where N is random_id_range_start.
+        #
+        # We need to delete those databases to avoid leaking disk
+        # (Django is smart and calls this on SIGINT too).
+        if self.parallel > 1:
+            for index in range(self.parallel):
+                destroy_test_databases(index + 1)
+        else:
+            destroy_test_databases()
         return super().teardown_test_environment(*args, **kwargs)
 
     def test_imports(self, test_labels: List[str], suite: unittest.TestSuite) -> None:
