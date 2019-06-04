@@ -58,6 +58,71 @@ curl -X POST {{ api_url }}/v1/messages/flags \
 
 {generate_api_arguments_table|zulip.yaml|/messages/flags:post}
 
+## Available Flags
+<div>
+    <table>
+        <thead>
+            <th style="width:30%">Flag</th>
+            <th style="width:70%">Purpose</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>`read`</td>
+                <td>
+                    Whether the user has read the message.  Messages
+                    start out unread (except for messages the user
+                    themself sent using a non-API client) and can
+                    later be marked as read.
+                </td>
+            </tr>
+            <tr>
+                <td>`starred`</td>
+                <td>Whether the user has [starred this message](/help/star-a-message).</td>
+            </tr>
+            <tr>
+                <td>`collapsed`</td>
+                <td>Whether the user has [collapsed this message](/help/collapse-a-message).</td>
+            </tr>
+            <tr>
+                <td>`mentioned`</td>
+                <td>
+                     Whether the current user [was
+                     mentioned](/help/mention-a-user-or-group)</a> by
+                     this message, either directly or via a user
+                     group.  Not editable.
+                </td>
+            </tr>
+            <tr>
+                <td>`wildcard_mentioned`</td>
+                <td>
+                     Whether this message contained [wildcard
+                     mention](/help/mention-a-user-or-group#mention-everyone-on-a-stream)
+                     like @**all**.  Not editable.
+                </td>
+            </tr>
+            <tr>
+                <td>`mentioned`</td>
+                <td>
+                     Whether the message contains any of the current
+                     user's [configured alert
+                     words](/help/add-an-alert-word).  Not editable.
+                </td>
+            </tr>
+            <tr>
+                <td>`historical`</td>
+                <td>
+                     True for messages that the user did not receive
+                     at the time they were sent but later was added to
+                     the user's history (E.g. because they starred or
+                     reacted to a message sent to a public stream
+                     before they subscribed to that stream).  Not
+                     editable.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
 ## Response
 
 #### Return values

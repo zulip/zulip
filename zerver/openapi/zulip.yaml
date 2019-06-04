@@ -785,18 +785,6 @@ paths:
         description: The flag that should be added/removed.
         schema:
           type: string
-          enum:
-          - read
-          - starred
-          - collapsed
-          - mentioned
-          - wildcard_mentioned
-          - summarize_in_home
-          - summarize_in_stream
-          - force_expand
-          - force_collapse
-          - has_alert_word
-          - historical
         example: read
         required: true
       security:
