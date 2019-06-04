@@ -163,34 +163,23 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
                 'content': [build_message_payload(message)]}
 
     def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+        narrow_link = get_narrow_url(user_profile, message)
         if message.recipient.type == Recipient.PERSONAL:
             header = "You and %s" % (message.sender.full_name,)
-            html_link = personal_narrow_url(
-                realm=user_profile.realm,
-                sender=message.sender,
-            )
-            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
+            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (narrow_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
             disp_recipient = get_display_recipient(message.recipient)
             assert not isinstance(disp_recipient, str)
             other_recipients = [r['full_name'] for r in disp_recipient
                                 if r['id'] != user_profile.id]
             header = "You and %s" % (", ".join(other_recipients),)
-            other_user_ids = [r['id'] for r in disp_recipient
-                              if r['id'] != user_profile.id]
-            html_link = huddle_narrow_url(
-                realm=user_profile.realm,
-                other_user_ids=other_user_ids,
-            )
-
-            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
+            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (narrow_link, header)
         else:
             stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
             header = "%s > %s" % (stream.name, message.topic_name())
             stream_link = stream_narrow_url(user_profile.realm, stream)
-            topic_link = topic_narrow_url(user_profile.realm, stream, message.topic_name())
             header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
-                stream_link, stream.name, topic_link, message.topic_name())
+                stream_link, stream.name, narrow_link, message.topic_name())
         return {"plain": header,
                 "html": header_html,
                 "stream_message": message.recipient.type_name() == "stream"}
@@ -244,6 +233,25 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
             messages_to_render.append(recipient_block)
 
     return messages_to_render
+
+def get_narrow_url(user_profile: UserProfile, message: Message) -> str:
+    if message.recipient.type == Recipient.PERSONAL:
+        return personal_narrow_url(
+            realm=user_profile.realm,
+            sender=message.sender,
+        )
+    elif message.recipient.type == Recipient.HUDDLE:
+        disp_recipient = get_display_recipient(message.recipient)
+        assert not isinstance(disp_recipient, str)
+        other_user_ids = [r['id'] for r in disp_recipient
+                          if r['id'] != user_profile.id]
+        return huddle_narrow_url(
+            realm=user_profile.realm,
+            other_user_ids=other_user_ids,
+        )
+    else:
+        stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
+        return topic_narrow_url(user_profile.realm, stream, message.topic_name())
 
 def message_content_allowed_in_missedmessage_emails(user_profile: UserProfile) -> bool:
     return user_profile.realm.message_content_allowed_in_email_notifications and \
