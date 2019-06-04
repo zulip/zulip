@@ -337,21 +337,29 @@ run_test('sort_recipients', () => {
             is_bot: false,
             user_id: 43,
         }, {
+            email: "a_user@zulip.net",
+            full_name: "A user",
+            is_admin: false,
+            is_bot: false,
+            user_id: 44,
+        }, {
             email: "all",
             full_name: "All 2",
             is_admin: false,
             is_bot: false,
-            user_id: 44,
+            user_id: 45,
         },
     ];
 
     recipients = th.sort_recipients(small_matches, "a", "Linux", "Linux Topic");
+
     recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
     expected = [
         'all',
         'all',
+        'a_user@zulip.net',
     ];
     assert.deepEqual(recipients_email, expected);
 
