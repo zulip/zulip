@@ -107,7 +107,7 @@ present in all Zulip API responses).
     * `display_recipient`: Data on the recipient of the message;
       either the name of a stream or a dictionary containing data on
       the users who received the message.
-    * `flags`: The user's message flags for the message.
+    * `flags`: The user's [message flags][message-flags] for the message.
     * `id`: The unique message ID.  Messages should always be
       displayed sorted by ID.
     * `is_me_message`: Whether the message is a [/me status message][status-messages]
@@ -142,3 +142,4 @@ A typical successful JSON response may look like:
 
 [status-messages]: /help/format-your-message-using-markdown#status-messages
 [linkification-filters]: /help/add-a-custom-linkification-filter
+[message-flags]: /api/update-message-flags#available-flags
