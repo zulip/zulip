@@ -225,13 +225,19 @@ def _replacement_destroy_test_db(self: DatabaseCreation,
                        % (self.connection.ops.quote_name(test_database_name),))
 DatabaseCreation._destroy_test_db = _replacement_destroy_test_db
 
-def destroy_test_databases(worker_id: int) -> None:
-    """Modified from the Django original to """
-    database_id = random_id_range_start + worker_id
+def destroy_test_databases(worker_id: Optional[int]=None) -> None:
     for alias in connections:
         connection = connections[alias]
         try:
-            connection.creation.destroy_test_db(number=database_id)
+            # We need this conditional otherwise the call to destroy_test_db gets
+            # confused on which db is being destroyed and tries to append
+            # `number` on to a clone.
+            if worker_id is not None:
+                """Modified from the Django original to """
+                database_id = random_id_range_start + worker_id
+                connection.creation.destroy_test_db(number=database_id)
+            else:
+                connection.creation.destroy_test_db(number=worker_id)
         except ProgrammingError:
             # DB doesn't exist. No need to do anything.
             pass
@@ -403,13 +409,21 @@ class Runner(DiscoverRunner):
         return super().setup_test_environment(*args, **kwargs)
 
     def teardown_test_environment(self, *args: Any, **kwargs: Any) -> Any:
-        # No need to pass the database id now. It will be picked up
-        # automatically through settings.
-        if self.parallel == 1:
-            # In parallel mode (parallel > 1), destroy_test_databases will
-            # destroy settings.BACKEND_DATABASE_TEMPLATE; we don't want that.
-            # So run this only in serial mode.
-            destroy_test_databases(_worker_id)
+        # N = self.parallel templates are created, and these templates were
+        # previously named 'zulip_test_template_<1, N>'.  However, to support
+        # running multiple instances of `test-backend`, a unique `random_id_range_start`
+        # was created for each template database.
+        #
+        # There was no problem prior because the templates would simply be
+        # used again and thus did not require any clean up. Now that there are
+        # unique database names being created, every time `test-backend` is run
+        # these templates can accumulate on disk.  Instead, we clean up our templates
+        # at the end of every complete run of the test suite, or upon a SIGINT.
+        if self.parallel > 1:
+            for index in range(self.parallel):
+                destroy_test_databases(index + 1)
+        else:
+            destroy_test_databases()
         return super().teardown_test_environment(*args, **kwargs)
 
     def test_imports(self, test_labels: List[str], suite: unittest.TestSuite) -> None:
