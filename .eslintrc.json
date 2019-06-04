@@ -4,6 +4,7 @@
         "es6": true
     },
     "parserOptions": {
+        "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "module"
     },
     "globals": {
