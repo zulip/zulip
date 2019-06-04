@@ -1,12 +1,5 @@
-import { basename, resolve } from 'path';
+import { basename } from 'path';
 import { RuleSetRule } from 'webpack';
-
-export const cacheLoader: RuleSetRule = {
-    loader: 'cache-loader',
-    options: {
-        cacheDirectory: resolve(__dirname, '../var/webpack-cache'),
-    },
-};
 
 /* Return imports-loader format to the config
     For example:
@@ -24,7 +17,7 @@ function getImportLoaders(optionsArr: ImportLoaderOptions[]): RuleSetRule[] {
     for (var loaderEntry of optionsArr) {
         importsLoaders.push({
             test: require.resolve(loaderEntry.path),
-            use: [cacheLoader, "imports-loader?" + loaderEntry.args],
+            use: "imports-loader?" + loaderEntry.args,
         });
     }
     return importsLoaders;
@@ -51,7 +44,7 @@ function getExposeLoaders(optionsArr: ExportLoaderOptions[]): RuleSetRule[] {
     for (var loaderEntry of optionsArr) {
         const path = loaderEntry.path;
         let name = "";
-        const useArr = [cacheLoader];
+        const useArr = [];
         // If no name is provided, infer it
         if (!loaderEntry.name) {
             name = basename(path, '.js');

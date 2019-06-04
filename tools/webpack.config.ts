@@ -4,7 +4,7 @@ import * as webpack from 'webpack';
 // The devServer member of webpack.Configuration is managed by the
 // webpack-dev-server package. We are only importing the type here.
 import * as _webpackDevServer from 'webpack-dev-server';
-import { getExposeLoaders, getImportLoaders, cacheLoader } from './webpack-helpers';
+import { getExposeLoaders, getImportLoaders } from './webpack-helpers';
 import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 const assets = require('./webpack.assets.json');
@@ -42,13 +42,12 @@ export default (env?: string): webpack.Configuration => {
                 {
                     // We dont want to match admin.js
                     test: /(\.min|min\.|zxcvbn)\.js/,
-                    use: [cacheLoader, 'script-loader'],
+                    use: ['script-loader'],
                 },
                 // regular css files
                 {
                     test: /\.css$/,
                     use: getHotCSS([
-                        cacheLoader,
                         MiniCssExtractPlugin.loader,
                         {
                             loader: 'css-loader',
@@ -62,7 +61,6 @@ export default (env?: string): webpack.Configuration => {
                 {
                     test: /\.(sass|scss)$/,
                     use: getHotCSS([
-                        cacheLoader,
                         MiniCssExtractPlugin.loader,
                         {
                             loader: 'css-loader',
