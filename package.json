@@ -25,7 +25,7 @@
     "handlebars": "4.1.2",
     "i18next": "3.4.4",
     "imports-loader": "0.8.0",
-    "jquery": "3.3.1",
+    "jquery": "3.4.1",
     "jquery-validation": "1.19.0",
     "katex": "0.8.3",
     "lazysizes": "4.1.6",
@@ -85,5 +85,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/zulip/zulip.git"
+  },
+  "resolutions": {
+    "//": "Awaiting jquery-validation/jquery-validation#2248 to be published on NPM.",
+    "jquery-validation/jquery": "3.4.1"
   }
 }
