@@ -31,18 +31,6 @@
     animation-iteration-count: infinite;
 }
 
-@keyframes pulsate {
-    0% {
-        -webkit-transform: scale(1.0, 1.0);
-        opacity: 0.8;
-    }
-
-    100% {
-        -webkit-transform: scale(2.2, 2.2);
-        opacity: 0.0;
-    }
-}
-
 .hotspot-icon .bounce {
     -moz-animation: bounce 0.75s infinite;
     -webkit-animation: bounce 0.75s infinite;
@@ -57,6 +45,18 @@
     color: hsl(215, 47%, 50%);
     font-size: 2.75em;
     font-weight: 600;
+}
+
+@keyframes pulsate {
+    0% {
+        -webkit-transform: scale(1.0, 1.0);
+        opacity: 0.8;
+    }
+
+    100% {
+        -webkit-transform: scale(2.2, 2.2);
+        opacity: 0.0;
+    }
 }
 
 @keyframes bounce {
