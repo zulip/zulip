@@ -127,10 +127,6 @@
     height: 83px;
 }
 
-.hotspot-inline .hotspot-img {
-    margin-left: 5px;
-}
-
 .hotspot-confirm {
     max-width: 125px;
     max-height: 70px;
@@ -147,10 +143,6 @@
 
 .hotspot-confirm:hover {
     background-color: hsl(164, 44%, 56%);
-}
-
-.hotspot-inline .hotspot-confirm {
-    display: block;
 }
 
 /* arrows */
@@ -251,6 +243,14 @@
     background-color: hsl(0, 0%, 98%);
     margin: 0 auto;
     position: relative;
+}
+
+.hotspot-inline .hotspot-img {
+    margin-left: 5px;
+}
+
+.hotspot-inline .hotspot-confirm {
+    display: block;
 }
 
 .hotspot-inline-top .hotspot-title {
