@@ -6,6 +6,7 @@ Translating Zulip
    :maxdepth: 3
 
    translating
+   internationalization
    chinese
    french
    german
