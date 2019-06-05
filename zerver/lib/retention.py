@@ -24,6 +24,12 @@ models_with_message_key = [
         'table_name': 'zerver_submessage',
         'archive_table_name': 'zerver_archivedsubmessage'
     },
+    {
+        'class': UserMessage,
+        'archive_class': ArchivedUserMessage,
+        'table_name': 'zerver_usermessage',
+        'archive_table_name': 'zerver_archivedusermessage'
+    },
 ]  # type: List[Dict[str, Any]]
 
 @transaction.atomic
@@ -104,23 +110,6 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm) -> List[i
     return move_rows(Message, query, returning_id=True, cross_realm_bot_ids=cross_realm_bot_ids,
                      realm_id=realm.id, recipient_types=recipient_types, check_date=check_date.isoformat())
 
-def move_user_messages_to_archive(msg_ids: List[int]) -> List[int]:
-    if not msg_ids:
-        return []
-
-    query = """
-    INSERT INTO zerver_archivedusermessage ({dst_fields}, archive_timestamp)
-    SELECT {src_fields}, '{archive_timestamp}'
-    FROM zerver_usermessage
-    LEFT JOIN zerver_archivedusermessage ON zerver_archivedusermessage.id = zerver_usermessage.id
-    WHERE zerver_usermessage.message_id IN {message_ids}
-        AND zerver_archivedusermessage.id is NULL
-    RETURNING id
-    """
-
-    return move_rows(UserMessage, query, returning_id=True,
-                     message_ids=ids_list_to_sql_query_format(msg_ids))
-
 def move_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
     if not msg_ids:
         return
@@ -176,42 +165,28 @@ def move_attachments_message_rows_to_archive(msg_ids: List[int]) -> None:
         cursor.execute(query.format(message_ids=ids_list_to_sql_query_format(msg_ids)))
 
 def delete_messages(msg_ids: List[int]) -> None:
-    Message.objects.filter(
-        usermessage__isnull=True, id__in=msg_ids
-    ).delete()
-
-
-def delete_user_messages(usermsg_ids: List[int]) -> None:
-    UserMessage.objects.filter(id__in=usermsg_ids).delete()
-
+    Message.objects.filter(id__in=msg_ids).delete()
 
 def delete_expired_attachments() -> None:
     Attachment.objects.filter(
         messages__isnull=True, id__in=ArchivedAttachment.objects.all(),
     ).delete()
 
-def move_related_objects_to_archive(msg_ids: List[int]) -> List[int]:
-    usermsg_ids = move_user_messages_to_archive(msg_ids)
+def move_related_objects_to_archive(msg_ids: List[int]) -> None:
     move_models_with_message_key_to_archive(msg_ids)
     move_attachments_to_archive(msg_ids)
     move_attachments_message_rows_to_archive(msg_ids)
 
-    return usermsg_ids
-
-def clean_expired(msg_ids: List[int], usermsg_ids: List[int]) -> None:
-    delete_user_messages(usermsg_ids)
-    delete_messages(msg_ids)
-
 def archive_messages_by_recipient(recipient: Recipient, message_retention_days: int) -> None:
     msg_ids = move_expired_messages_to_archive_by_recipient(recipient, message_retention_days)
-    usermsg_ids = move_related_objects_to_archive(msg_ids)
-    clean_expired(msg_ids, usermsg_ids)
+    move_related_objects_to_archive(msg_ids)
+    delete_messages(msg_ids)
 
 def archive_personal_and_huddle_messages() -> None:
     for realm in Realm.objects.filter(message_retention_days__isnull=False):
         msg_ids = move_expired_personal_and_huddle_messages_to_archive(realm)
-        usermsg_ids = move_related_objects_to_archive(msg_ids)
-        clean_expired(msg_ids, usermsg_ids)
+        move_related_objects_to_archive(msg_ids)
+        delete_messages(msg_ids)
 
 def archive_stream_messages() -> None:
     streams = Stream.objects.filter(message_retention_days__isnull=False)
