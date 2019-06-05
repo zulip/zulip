@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from types import SimpleNamespace
+from mock import MagicMock, patch
+from typing import Dict
+
 from django.http import HttpRequest
 
 from zerver.decorator import api_key_only_webhook_view
@@ -7,7 +11,7 @@ from zerver.lib.test_classes import ZulipTestCase, WebhookTestCase
 from zerver.lib.webhooks.common import \
     validate_extract_webhook_http_header, \
     MISSING_EVENT_HEADER_MESSAGE, MissingHTTPEventHeader, \
-    INVALID_JSON_MESSAGE
+    INVALID_JSON_MESSAGE, get_fixture_http_headers, parse_headers_dict
 from zerver.models import get_user, get_realm, UserProfile
 from zerver.lib.users import get_api_key
 from zerver.lib.send_email import FromAddress
@@ -84,6 +88,41 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertNotEqual(msg.id, last_message_id)
         self.assertEqual(msg.sender.email, self.notification_bot().email)
         self.assertEqual(msg.content, expected_msg.strip())
+
+    @patch("zerver.lib.webhooks.common.importlib.import_module")
+    def test_get_fixture_http_headers_for_success(self, import_module_mock: MagicMock) -> None:
+        def fixture_to_headers(fixture_name: str) -> Dict[str, str]:
+            # A sample function which would normally perform some
+            # extra operations before returning a dictionary
+            # corresponding to the fixture name passed. For this test,
+            # we just return a fixed dictionary.
+            return {"key": "value"}
+
+        fake_module = SimpleNamespace(fixture_to_headers=fixture_to_headers)
+        import_module_mock.return_value = fake_module
+
+        headers = get_fixture_http_headers("some_integration", "complex_fixture")
+        self.assertEqual(headers, {"key": "value"})
+
+    def test_get_fixture_http_headers_for_non_existant_integration(self) -> None:
+        headers = get_fixture_http_headers("some_random_nonexistant_integration", "fixture_name")
+        self.assertEqual(headers, {})
+
+    @patch("zerver.lib.webhooks.common.importlib.import_module")
+    def test_get_fixture_http_headers_for_error_handling(self, import_module_mock: MagicMock) -> None:
+        fake_module = SimpleNamespace()
+        import_module_mock.return_value = fake_module
+
+        with self.assertRaises(AttributeError):
+            get_fixture_http_headers("some_integration", "simple_fixture")
+
+    def test_parse_headers_dict(self) -> None:
+        self.assertEqual(parse_headers_dict({}), {})
+
+        raw_headers = {"Content-Type": "text/plain", "X-Event-Type": "ping"}
+        djangoified_headers = parse_headers_dict(raw_headers)
+        expected_djangoified_headers = {"CONTENT_TYPE": "text/plain", "HTTP_X_EVENT_TYPE": "ping"}
+        self.assertEqual(djangoified_headers, expected_djangoified_headers)
 
 class MissingEventHeaderTestCase(WebhookTestCase):
     STREAM_NAME = 'groove'

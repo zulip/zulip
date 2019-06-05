@@ -1,8 +1,9 @@
+import importlib
 from urllib.parse import unquote
 
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
-from typing import Optional
+from typing import Optional, Dict, Union, Any
 
 from zerver.lib.actions import check_send_stream_message, \
     check_send_private_message, send_rate_limited_pm_notification_to_bot_owner
@@ -96,6 +97,22 @@ def check_send_webhook_message(
             # webhook-errors.log
             pass
 
+def parse_headers_dict(custom_headers: Union[None, Dict[str, Any]]) -> Dict[str, str]:
+    headers = {}
+    if not custom_headers:
+        return {}
+    for header in custom_headers:
+        # Ensure what we return is in the Django HTTP headers format,
+        # with HTTP_ prefixes before most actual HTTP header names.
+        if header.startswith("HTTP_") or header.startswith("http_"):
+            headers[header.upper().replace("-", "_")] = str(custom_headers[header])
+        else:
+            new_header = header.upper().replace("-", "_")
+            if new_header not in ["CONTENT_TYPE", "CONTENT_LENGTH"]:
+                new_header = "HTTP_" + new_header
+            headers[new_header] = str(custom_headers[header])
+    return headers
+
 def validate_extract_webhook_http_header(request: HttpRequest, header: str,
                                          integration_name: str,
                                          fatal: Optional[bool]=True) -> Optional[str]:
@@ -114,3 +131,33 @@ def validate_extract_webhook_http_header(request: HttpRequest, header: str,
         raise MissingHTTPEventHeader(header)
 
     return extracted_header
+
+
+def get_fixture_http_headers(integration_name: str,
+                             fixture_name: str) -> Dict["str", "str"]:
+    """For integrations that require custom HTTP headers for some (or all)
+    of their test fixtures, this method will call a specially named
+    function from the target integration module to determine what set
+    of HTTP headers goes with the given test fixture.
+    """
+
+    headers_module_name = "zerver.webhooks.{integration_name}.headers".format(
+        integration_name=integration_name)
+    try:
+        # Try to import the headers.py file. If it does not exist,
+        # then that means that the integration does not have any
+        # special http headers registered.
+        #
+        # TODO: We may want to migrate to a more explicit registration
+        # strategy for this behavior rather than a try/except import.
+        headers_module = importlib.import_module(headers_module_name)
+    except ImportError:
+        return {}
+    try:
+        fixture_to_headers = headers_module.fixture_to_headers  # type: ignore # we do extra exception handling in case it does not exist below.
+    except AttributeError as e:
+        msg = ". The {module_name} module must contain a fixture_to_headers method.".format(
+            module_name=headers_module_name
+        )
+        raise AttributeError(str(e) + msg)
+    return fixture_to_headers(fixture_name)

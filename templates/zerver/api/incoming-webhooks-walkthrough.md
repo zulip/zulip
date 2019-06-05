@@ -43,6 +43,24 @@ the 3rd party service sends, your fixture may contain JSON, URL encoded text, or
 some other kind of data. See [Step 5: Create automated tests](#step-5-create-automated-tests) or
 [Testing](https://zulip.readthedocs.io/en/latest/testing/testing.html) for further details.
 
+### HTTP Headers
+
+Some third-party webhook APIs, such as GitHub's, don't encode all the
+information about an event in the JSON request body.  Instead, they
+put key details like the event type in a separate HTTP header
+(generally this is clear in their API documentation).  In order to
+test Zulip's handling of that integration, you will need to record
+which HTTP headers are used with each fixture you capture.
+
+Since this integration-dependent, Zulip offers a simple API for doing
+this, which is probably best explained by looking at the example for
+GitHub: `zerver/webhooks/github/headers.py`; basically, as part of
+writing your integration, you'll write a special function at that path
+that maps the filename of the fixture to the set of HTTP headers to
+use.  Most such functions will use the same strategy as the GitHub
+integration: encoding the third party variable header data (usually
+just an event type) in the fixture filename.
+
 ## Step 1: Initialize your webhook python package
 
 In the `zerver/webhooks/` directory, create new subdirectory that will
