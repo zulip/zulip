@@ -7,14 +7,12 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.actions import internal_send_private_message, do_add_submessage
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import create_attachment
-from zerver.models import (Message, Realm, UserProfile, ArchivedUserMessage, SubMessage,
+from zerver.models import (Message, Realm, UserProfile, Stream, ArchivedUserMessage, SubMessage,
                            ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
                            Reaction, ArchivedReaction, ArchivedSubMessage,
                            get_realm, get_user_profile_by_email, get_system_bot)
 from zerver.lib.retention import (
     archive_messages,
-    clean_expired,
-    move_expired_to_archive,
     move_messages_to_archive
 )
 
@@ -42,6 +40,11 @@ class RetentionTestingBase(ZulipTestCase):
     def _set_realm_message_retention_value(self, realm: Realm, retention_period: Optional[int]) -> None:
         realm.message_retention_days = retention_period
         realm.save()
+
+        for stream in Stream.objects.filter(realm=realm):
+            if not retention_period or not stream.message_retention_days:
+                stream.message_retention_days = retention_period
+                stream.save()
 
     def _change_messages_pub_date(self, msgs_ids: List[int], pub_date: datetime) -> None:
         Message.objects.filter(id__in=msgs_ids).update(pub_date=pub_date)
@@ -81,15 +84,19 @@ class RetentionTestingBase(ZulipTestCase):
 
         return msg_ids
 
-    def _verify_archive_data(self, expected_message_ids: List[int]) -> None:
+    def _get_usermessage_ids(self, message_ids: List[int]) -> List[int]:
+        return list(UserMessage.objects.filter(message_id__in=message_ids).values_list('id', flat=True))
+
+    def _verify_archive_data(self, expected_message_ids: List[int],
+                             expected_usermessage_ids: List[int]) -> None:
         self.assertEqual(
             set(ArchivedMessage.objects.values_list('id', flat=True)),
-            set(Message.objects.filter(id__in=expected_message_ids).values_list('id', flat=True))
+            set(expected_message_ids)
         )
 
         self.assertEqual(
             set(ArchivedUserMessage.objects.values_list('id', flat=True)),
-            set(UserMessage.objects.filter(message_id__in=expected_message_ids).values_list('id', flat=True))
+            set(expected_usermessage_ids)
         )
 
     def _send_messages_with_attachments(self) -> Dict[str, int]:
@@ -119,7 +126,7 @@ class RetentionTestingBase(ZulipTestCase):
 
 class TestArchivingGeneral(RetentionTestingBase):
     def test_no_expired_messages(self) -> None:
-        move_expired_to_archive()
+        archive_messages()
 
         self.assertEqual(ArchivedUserMessage.objects.count(), 0)
         self.assertEqual(ArchivedMessage.objects.count(), 0)
@@ -144,15 +151,10 @@ class TestArchivingGeneral(RetentionTestingBase):
         )
 
         expired_msg_ids = expired_mit_msg_ids + expired_zulip_msg_ids
-        move_expired_to_archive()
+        expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
-        self.assertEqual(ArchivedMessage.objects.count(), len(expired_msg_ids))
-        self.assertEqual(
-            ArchivedUserMessage.objects.count(),
-            UserMessage.objects.filter(message_id__in=expired_msg_ids).count()
-        )
-
-        self._verify_archive_data(expired_msg_ids)
+        archive_messages()
+        self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
     def test_expired_messages_in_one_realm(self) -> None:
         """Test with a retention policy set for only the MIT realm"""
@@ -177,56 +179,25 @@ class TestArchivingGeneral(RetentionTestingBase):
 
         # Only MIT has a retention policy:
         expired_msg_ids = expired_mit_msg_ids
-        move_expired_to_archive()
+        expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
-        self.assertEqual(ArchivedMessage.objects.count(), len(expired_msg_ids))
-        self.assertEqual(
-            ArchivedUserMessage.objects.count(),
-            UserMessage.objects.filter(message_id__in=expired_msg_ids).count()
-        )
-
-        self._verify_archive_data(expired_msg_ids)
+        archive_messages()
+        self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
         self._set_realm_message_retention_value(self.zulip_realm, ZULIP_REALM_DAYS)
 
-    """TODO: Cross realm message archiving and its testing  needs more work """
-
-    def test_cross_realm_messages_archiving_one_realm_expired(self) -> None:
-        """Test that a cross-realm message that is expired in only
-        one of the realms only has the UserMessage for that realm archived"""
-        msg_id = self._send_cross_realm_message()
-        # Make the message expired on Zulip only:
-        self._change_messages_pub_date([msg_id], timezone_now() - timedelta(ZULIP_REALM_DAYS+1))
-
-        archived_data_info = move_expired_to_archive()
-
-        self.assertEqual(ArchivedMessage.objects.count(), 1)
-        # Normally one should be archived, but we redundantly archive both usermessages,
-        # until we implement proper handling of cross-realm messages.
-        self.assertEqual(ArchivedUserMessage.objects.count(), 2)
-
-        clean_expired(archived_data_info)
-
-        self.assertEqual(UserMessage.objects.filter(message_id=msg_id).count(), 1)
-        self.assertTrue(Message.objects.filter(id=msg_id).exists())
-
-    def test_cross_realm_messages_archiving_two_realm_expired(self) -> None:
-        """Check that archiving a message that's expired in both
-        realms is archived both in Message and UserMessage."""
+    def test_cross_realm_messages_not_archived(self) -> None:
+        """Check that cross-realm messages don't get archived or deleted."""
         msg_id = self._send_cross_realm_message()
         # Make the message expired on both realms:
         self._change_messages_pub_date([msg_id], timezone_now() - timedelta(MIT_REALM_DAYS+1))
 
-        archived_data_info = move_expired_to_archive()
+        archive_messages()
 
-        self.assertEqual(ArchivedMessage.objects.count(), 1)
-        self.assertEqual(ArchivedUserMessage.objects.count(), 2)
+        self.assertEqual(ArchivedMessage.objects.count(), 0)
+        self.assertEqual(ArchivedUserMessage.objects.count(), 0)
 
-        clean_expired(archived_data_info)
-
-        # Recipient's usermessage will not be deleted in the current implementation:
-        leftover_usermessage = UserMessage.objects.get(message_id=msg_id)
-        self.assertEqual(leftover_usermessage.user_profile.realm_id, self.mit_realm.id)
+        self.assertEqual(UserMessage.objects.filter(message_id=msg_id).count(), 2)
         self.assertTrue(Message.objects.filter(id=msg_id).exists())
 
     def test_archive_message_tool(self) -> None:
@@ -250,36 +221,16 @@ class TestArchivingGeneral(RetentionTestingBase):
             timezone_now() - timedelta(MIT_REALM_DAYS+1)
         )
 
-        expired_msg_ids = expired_mit_msg_ids + expired_zulip_msg_ids + [expired_crossrealm_msg_id]
-        # We explicitly call list() because we need to force evaluation of the query, before the
-        # UserMessage objects get deleted from the database by archive_messages():
-        expired_usermsg_ids = list(UserMessage.objects.filter(
-            message_id__in=expired_msg_ids).values_list('id', flat=True))
+        expired_msg_ids = expired_mit_msg_ids + expired_zulip_msg_ids
+        expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
         archive_messages()
         # Make sure we archived what neeeded:
-        self.assertEqual(set(ArchivedMessage.objects.values_list('id', flat=True)),
-                         set(expired_msg_ids))
-        self.assertEqual(
-            set(ArchivedUserMessage.objects.values_list('id', flat=True)),
-            set(expired_usermsg_ids)
-        )
+        self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
         # Check that the archived messages were deleted:
-        # But the cross-realm message's recipient's usermessage will not be deleted
-        # in the current implementation:
-        self.assertEqual(
-            UserMessage.objects.get(id__in=expired_usermsg_ids).message_id,
-            expired_crossrealm_msg_id
-        )
-        self.assertEqual(
-            UserMessage.objects.get(id__in=expired_usermsg_ids).user_profile.realm_id,
-            self.mit_realm.id
-        )
-        self.assertEqual(
-            Message.objects.get(id__in=expired_msg_ids).id,
-            expired_crossrealm_msg_id
-        )
+        self.assertEqual(UserMessage.objects.filter(id__in=expired_usermsg_ids).count(), 0)
+        self.assertEqual(Message.objects.filter(id__in=expired_msg_ids).count(), 0)
 
     def test_archiving_attachments(self) -> None:
         """End-to-end test for the logic for archiving attachments.  This test
