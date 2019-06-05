@@ -251,30 +251,30 @@
     .hotspot-confirm {
         display: block;
     }
-}
 
-.hotspot-inline-top .hotspot-title {
-    background-color: hsl(168, 100%, 35%);
-    margin: 0;
-    color: hsl(0, 0%, 100%);
-    font-weight: 600;
-    line-height: 24px;
-    padding: 5px 13px;
-    font-size: 1.15em;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-}
+    .hotspot-inline-top .hotspot-title {
+        background-color: hsl(168, 100%, 35%);
+        margin: 0;
+        color: hsl(0, 0%, 100%);
+        font-weight: 600;
+        line-height: 24px;
+        padding: 5px 13px;
+        font-size: 1.15em;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+    }
 
-.hotspot-inline-left {
-    display: inline-block;
-    width: 90px;
-}
+    .hotspot-inline-left {
+        display: inline-block;
+        width: 90px;
+    }
 
-.hotspot-inline-right {
-    display: inline-block;
-    width: auto;
-    margin-left: 10px;
-    vertical-align: middle;
+    .hotspot-inline-right {
+        display: inline-block;
+        width: auto;
+        margin-left: 10px;
+        vertical-align: middle;
+    }
 }
 
 #hotspot_intro_reply_icon {
