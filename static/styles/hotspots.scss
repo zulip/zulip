@@ -82,6 +82,97 @@
         box-shadow: 0 5px 10px hsla(223, 4%, 54%, 0.2);
         border: 1px solid hsl(0, 0%, 80%);
         border-radius: 4px;
+
+        /* arrows */
+        &::after,
+        &::before {
+            border: solid transparent;
+            content: '';
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        &::after {
+            border-width: 12px;
+        }
+
+        &::before {
+            border-width: 13px;
+        }
+
+        &.arrow-top {
+            &::before,
+            &::after {
+                bottom: 100%;
+                right: 50%;
+            }
+
+            &::after {
+                border-bottom-color: hsl(164, 44%, 47%);
+                margin-right: -12px;
+            }
+
+            &::before {
+                border-bottom-color: hsl(0, 0%, 80%);
+                margin-right: -13px;
+            }
+        }
+
+        &.arrow-left {
+            &::before,
+            &::after {
+                right: 100%;
+                top: 50%;
+            }
+
+            &::after {
+                border-right-color: hsl(0, 0%, 100%);
+                margin-top: -12px;
+            }
+
+            &::before {
+                border-right-color: hsl(0, 0%, 80%);
+                margin-top: -13px;
+            }
+        }
+
+        &.arrow-bottom {
+            &::before,
+            &::after {
+                top: 100%;
+                right: 50%;
+            }
+
+            &::after {
+                border-top-color: hsl(0, 0%, 100%);
+                margin-right: -12px;
+            }
+
+            &::before {
+                border-top-color: hsl(0, 0%, 80%);
+                margin-right: -13px;
+            }
+        }
+
+        &.arrow-right {
+            &::before,
+            &::after {
+                left: 100%;
+                top: 50%;
+            }
+
+            &::after {
+                border-left-color: hsl(0, 0%, 100%);
+                margin-top: -12px;
+            }
+
+            &::before {
+                border-left-color: hsl(0, 0%, 80%);
+                margin-top: -13px;
+            }
+        }
     }
 
     .hotspot-popover-top {
@@ -142,99 +233,6 @@
 
     &:hover {
         background-color: hsl(164, 44%, 56%);
-    }
-}
-
-/* arrows */
-.hotspot-popover {
-    &::after,
-    &::before {
-        border: solid transparent;
-        content: '';
-        height: 0;
-        width: 0;
-        position: absolute;
-        pointer-events: none;
-    }
-
-    &::after {
-        border-width: 12px;
-    }
-
-    &::before {
-        border-width: 13px;
-    }
-
-    &.arrow-top {
-        &::before,
-        &::after {
-            bottom: 100%;
-            right: 50%;
-        }
-
-        &::after {
-            border-bottom-color: hsl(164, 44%, 47%);
-            margin-right: -12px;
-        }
-
-        &::before {
-            border-bottom-color: hsl(0, 0%, 80%);
-            margin-right: -13px;
-        }
-    }
-
-    &.arrow-left {
-        &::before,
-        &::after {
-            right: 100%;
-            top: 50%;
-        }
-
-        &::after {
-            border-right-color: hsl(0, 0%, 100%);
-            margin-top: -12px;
-        }
-
-        &::before {
-            border-right-color: hsl(0, 0%, 80%);
-            margin-top: -13px;
-        }
-    }
-
-    &.arrow-bottom {
-        &::before,
-        &::after {
-            top: 100%;
-            right: 50%;
-        }
-
-        &::after {
-            border-top-color: hsl(0, 0%, 100%);
-            margin-right: -12px;
-        }
-
-        &::before {
-            border-top-color: hsl(0, 0%, 80%);
-            margin-right: -13px;
-        }
-    }
-
-    &.arrow-right {
-        &::before,
-        &::after {
-            left: 100%;
-            top: 50%;
-        }
-
-        &::after {
-            border-left-color: hsl(0, 0%, 100%);
-            margin-top: -12px;
-        }
-
-        &::before {
-            border-left-color: hsl(0, 0%, 80%);
-            margin-top: -13px;
-        }
     }
 }
 
