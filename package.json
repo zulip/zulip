@@ -64,7 +64,7 @@
     "difflib": "0.2.4",
     "eslint": "5.16.0",
     "eslint-plugin-empty-returns": "1.0.2",
-    "jsdom": "11.10.0",
+    "jsdom": "15.1.1",
     "nyc": "11.8.0",
     "phantomjs-prebuilt": "2.1.16",
     "stylelint": "9.3.0",
