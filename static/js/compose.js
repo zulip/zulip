@@ -114,7 +114,7 @@ function update_conversation_button(btn_text, title) {
 exports.update_closed_compose_buttons_for_private = function () {
     var text_stream = i18n.t("New stream message");
     var title_stream = text_stream + " (c)";
-    var text_conversation = i18n.t("New conversation");
+    var text_conversation = i18n.t("New private message");
     var title_conversation = text_conversation + " (x)";
     update_stream_button(text_stream, title_stream);
     update_conversation_button(text_conversation, title_conversation);
