@@ -61,20 +61,16 @@
     "@typescript-eslint/eslint-plugin": "1.9.0",
     "@typescript-eslint/parser": "1.9.0",
     "casperjs": "casperjs/casperjs",
-    "cssstyle": "0.2.29",
     "difflib": "0.2.4",
     "eslint": "5.16.0",
     "eslint-plugin-empty-returns": "1.0.2",
-    "htmlparser2": "3.10.1",
     "jsdom": "11.10.0",
-    "nwmatcher": "1.4.4",
     "nyc": "11.8.0",
     "phantomjs-prebuilt": "2.1.16",
     "stylelint": "9.3.0",
     "svgo": "1.2.2",
     "swagger-parser": "3.4.1",
-    "webpack-dev-server": "3.5.1",
-    "xmlhttprequest": "1.8.0"
+    "webpack-dev-server": "3.5.1"
   },
   "scripts": {
     "postinstall": "rm -rf ./var/webpack-cache",
