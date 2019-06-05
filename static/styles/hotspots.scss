@@ -111,14 +111,20 @@
     border-bottom-right-radius: 4px;
 }
 
-.hotspot-img {
-    height: 83px;
-}
-
 .hotspot.overlay .hotspot-img {
     position: absolute;
     bottom: 10px;
     left: 4px;
+}
+
+.hotspot.overlay .hotspot-confirm {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
+
+.hotspot-img {
+    height: 83px;
 }
 
 .hotspot-inline .hotspot-img {
@@ -141,12 +147,6 @@
 
 .hotspot-confirm:hover {
     background-color: hsl(164, 44%, 56%);
-}
-
-.hotspot.overlay .hotspot-confirm {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
 }
 
 .hotspot-inline .hotspot-confirm {
