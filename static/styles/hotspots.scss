@@ -243,14 +243,14 @@
     background-color: hsl(0, 0%, 98%);
     margin: 0 auto;
     position: relative;
-}
 
-.hotspot-inline .hotspot-img {
-    margin-left: 5px;
-}
+    .hotspot-img {
+        margin-left: 5px;
+    }
 
-.hotspot-inline .hotspot-confirm {
-    display: block;
+    .hotspot-confirm {
+        display: block;
+    }
 }
 
 .hotspot-inline-top .hotspot-title {
