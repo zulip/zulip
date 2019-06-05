@@ -164,68 +164,76 @@
     border-width: 13px;
 }
 
-.hotspot-popover.arrow-top::before,
-.hotspot-popover.arrow-top::after {
-    bottom: 100%;
-    right: 50%;
+.hotspot-popover.arrow-top {
+    &::before,
+    &::after {
+        bottom: 100%;
+        right: 50%;
+    }
+
+    &::after {
+        border-bottom-color: hsl(164, 44%, 47%);
+        margin-right: -12px;
+    }
+
+    &::before {
+        border-bottom-color: hsl(0, 0%, 80%);
+        margin-right: -13px;
+    }
 }
 
-.hotspot-popover.arrow-top::after {
-    border-bottom-color: hsl(164, 44%, 47%);
-    margin-right: -12px;
+.hotspot-popover.arrow-left {
+    &::before,
+    &::after {
+        right: 100%;
+        top: 50%;
+    }
+
+    &::after {
+        border-right-color: hsl(0, 0%, 100%);
+        margin-top: -12px;
+    }
+
+    &::before {
+        border-right-color: hsl(0, 0%, 80%);
+        margin-top: -13px;
+    }
 }
 
-.hotspot-popover.arrow-top::before {
-    border-bottom-color: hsl(0, 0%, 80%);
-    margin-right: -13px;
+.hotspot-popover.arrow-bottom {
+    &::before,
+    &::after {
+        top: 100%;
+        right: 50%;
+    }
+
+    &::after {
+        border-top-color: hsl(0, 0%, 100%);
+        margin-right: -12px;
+    }
+
+    &::before {
+        border-top-color: hsl(0, 0%, 80%);
+        margin-right: -13px;
+    }
 }
 
-.hotspot-popover.arrow-left::before,
-.hotspot-popover.arrow-left::after {
-    right: 100%;
-    top: 50%;
-}
+.hotspot-popover.arrow-right {
+    &::before,
+    &::after {
+        left: 100%;
+        top: 50%;
+    }
 
-.hotspot-popover.arrow-left::after {
-    border-right-color: hsl(0, 0%, 100%);
-    margin-top: -12px;
-}
+    &::after {
+        border-left-color: hsl(0, 0%, 100%);
+        margin-top: -12px;
+    }
 
-.hotspot-popover.arrow-left::before {
-    border-right-color: hsl(0, 0%, 80%);
-    margin-top: -13px;
-}
-
-.hotspot-popover.arrow-bottom::before,
-.hotspot-popover.arrow-bottom::after {
-    top: 100%;
-    right: 50%;
-}
-
-.hotspot-popover.arrow-bottom::after {
-    border-top-color: hsl(0, 0%, 100%);
-    margin-right: -12px;
-}
-
-.hotspot-popover.arrow-bottom::before {
-    border-top-color: hsl(0, 0%, 80%);
-    margin-right: -13px;
-}
-
-.hotspot-popover.arrow-right::before,
-.hotspot-popover.arrow-right::after {
-    left: 100%;
-    top: 50%;
-}
-
-.hotspot-popover.arrow-right::after {
-    border-left-color: hsl(0, 0%, 100%);
-    margin-top: -12px;
-}
-
-.hotspot-popover.arrow-right::before {
-    border-left-color: hsl(0, 0%, 80%);
-    margin-top: -13px;
+    &::before {
+        border-left-color: hsl(0, 0%, 80%);
+        margin-top: -13px;
+    }
 }
 
 /* individual icon z-indexing */
