@@ -143,7 +143,7 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: transparent;
     }
 
-    .emoji-popover-category-tabs .emoji-popover-tab-item.active {
+    .emoji-info-popover .emoji-popover .emoji-popover-category-tabs .emoji-popover-tab-item.active {
         background-color: hsla(0, 0%, 0%, 0.5);
     }
 
@@ -207,7 +207,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     .overlay,
     #stream_creation_form #stream_creating_indicator:not(:empty),
-    .emoji-popover-emoji:not(.reacted):focus {
+    .emoji-info-popover .emoji-popover .emoji-popover-emoji:not(.reacted):focus {
         background-color: hsla(212, 28%, 8%, 0.75);
     }
 
@@ -323,9 +323,9 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .stream-row.active,
-    .emoji-showcase-container,
-    .emoji-popover-category-tabs,
-    .emoji-popover-top {
+    .emoji-info-popover .emoji-showcase-container,
+    .emoji-info-popover .emoji-popover .emoji-popover-category-tabs,
+    .emoji-info-popover .emoji-popover .emoji-popover-top {
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
