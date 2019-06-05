@@ -218,6 +218,8 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
   easier for both yourself and the next generation of Zulip developers. And then
   make those ideas reality!
 
+- Add Zulip to your resume on [LinkedIn](https://www.linkedin.com/company/zulip-project).
+
 - Have fun! Spending your summer coding on open source is an amazing life
   opportunity, and we hope you'll have a blast. With some luck and hard work,
   your contributions to the open source world this summer will be something you
