@@ -13,7 +13,7 @@
     "cache-loader": "3.0.1",
     "clipboard": "2.0.4",
     "css-hot-loader": "1.3.9",
-    "css-loader": "0.28.11",
+    "css-loader": "2.1.1",
     "emoji-datasource-google": "4.0.4",
     "emoji-datasource-google-blob": "npm:emoji-datasource-google@3.0.0",
     "emoji-datasource-twitter": "4.0.4",
