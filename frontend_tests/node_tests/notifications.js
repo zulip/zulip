@@ -12,6 +12,10 @@ set_global('page_params', {
     is_admin: false,
     realm_users: [],
 });
+const _navigator = {
+    userAgent: 'Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36',
+};
+set_global('navigator', _navigator);
 
 zrequire('muting');
 zrequire('stream_data');
@@ -208,7 +212,7 @@ run_test('basic_notifications', () => {
     };
 
     // Send notification.
-    notifications.process_notification({message: message_1, webkit_notify: true});
+    notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
     assert.equal('Jesse Pinkman to general > whatever' in n, true);
     assert.equal(Object.keys(n).length, 1);
@@ -223,7 +227,7 @@ run_test('basic_notifications', () => {
 
     // Send notification.
     message_1.id = 1001;
-    notifications.process_notification({message: message_1, webkit_notify: true});
+    notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
     assert.equal('Jesse Pinkman to general > whatever' in n, true);
     assert.equal(Object.keys(n).length, 1);
@@ -231,14 +235,14 @@ run_test('basic_notifications', () => {
 
     // Process same message again. Notification count shouldn't increase.
     message_1.id = 1002;
-    notifications.process_notification({message: message_1, webkit_notify: true});
+    notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
     assert.equal('Jesse Pinkman to general > whatever' in n, true);
     assert.equal(Object.keys(n).length, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Send another message. Notification count should increase.
-    notifications.process_notification({message: message_2, webkit_notify: true});
+    notifications.process_notification({message: message_2, desktop_notify: true});
     n = notifications.get_notifications();
     assert.equal('Gus Fring to general > lunch' in n, true);
     assert.equal('Jesse Pinkman to general > whatever' in n, true);

@@ -44,15 +44,6 @@ if (window.webkitNotifications) {
     };
 }
 
-
-function browser_desktop_notifications_on() {
-    return notifications_api &&
-            // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
-            /webkit/i.test(navigator.userAgent) &&
-            // 0 is PERMISSION_ALLOWED
-            notifications_api.checkPermission() === 0;
-}
-
 function cancel_notification_object(notification_object) {
     // We must remove the .onclose so that it does not trigger on .cancel
     notification_object.onclose = function () {};
@@ -364,7 +355,8 @@ function process_notification(notification) {
         ];
     }
 
-    if (notification.webkit_notify === true) {
+    // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
+    if (notification.desktop_notify && /webkit/i.test(navigator.userAgent)) {
         var icon_url = people.small_avatar_url(message);
         notice_memory[key] = {
             obj: notifications_api.createNotification(icon_url, title, content, message.id),
@@ -383,7 +375,7 @@ function process_notification(notification) {
             delete notice_memory[key];
         };
         notification_object.show();
-    } else if (notification.webkit_notify === false && typeof Notification !== "undefined" && /mozilla/i.test(navigator.userAgent) === true) {
+    } else if (notification.desktop_notify && typeof Notification !== "undefined" && /mozilla/i.test(navigator.userAgent)) {
         Notification.requestPermission(function (perm) {
             if (perm === 'granted') {
                 notification_object = new Notification(title, {
@@ -403,7 +395,7 @@ function process_notification(notification) {
                 in_browser_notify(message, title, content, raw_operators, opts);
             }
         });
-    } else if (notification.webkit_notify === false) {
+    } else {
         in_browser_notify(message, title, content, raw_operators, opts);
     }
 }
@@ -537,11 +529,10 @@ exports.received_messages = function (messages) {
         message.notification_sent = true;
 
         if (should_send_desktop_notification(message)) {
-            if (browser_desktop_notifications_on()) {
-                process_notification({message: message, webkit_notify: true});
-            } else {
-                process_notification({message: message, webkit_notify: false});
-            }
+            process_notification({
+                message: message,
+                desktop_notify: exports.granted_desktop_notifications_permission(),
+            });
         }
         if (should_send_audible_notification(message) && supports_sound) {
             $("#notifications-area").find("audio")[0].play();
