@@ -139,10 +139,10 @@
     white-space: normal;
     padding: 7px 20px;
     outline: none;
-}
 
-.hotspot-confirm:hover {
-    background-color: hsl(164, 44%, 56%);
+    &:hover {
+        background-color: hsl(164, 44%, 56%);
+    }
 }
 
 /* arrows */
