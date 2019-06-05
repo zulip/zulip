@@ -1710,7 +1710,7 @@ run_test('narrow_button_titles', () => {
 
     compose.update_closed_compose_buttons_for_private();
     assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New stream message"));
-    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New conversation"));
+    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
 
     compose.update_closed_compose_buttons_for_stream();
     assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
