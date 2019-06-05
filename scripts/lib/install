@@ -32,6 +32,7 @@ while true; do
         --hostname) EXTERNAL_HOST="$2"; shift; shift;;
         --email) ZULIP_ADMINISTRATOR="$2"; shift; shift;;
         --no-init-db) NO_INIT_DB=1; shift;;
+        --no-dist-upgrade) NO_DIST_UPGRADE=1; shift;;
         --) shift; break;;
     esac
 done
@@ -176,7 +177,12 @@ EOF
    exit 1
 fi
 
-apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+# don't run dist-upgrade in one click apps to make the
+# installation process more seamless.
+if [ -z "$NO_DIST_UPGRADE" ]; then
+    apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+fi
+
 if ! apt-get install -y \
     puppet git curl wget jq \
     python python3 python-six python3-six crudini \
