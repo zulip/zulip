@@ -1251,6 +1251,9 @@ class Stream(models.Model):
     email_token = models.CharField(
         max_length=32, default=generate_email_token_for_stream, unique=True)  # type: str
 
+    # For old messages being automatically deleted
+    message_retention_days = models.IntegerField(null=True, default=None)  # type: Optional[int]
+
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "more topics" for a
     # stream based on what messages they have cached.
