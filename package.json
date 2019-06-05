@@ -28,7 +28,7 @@
     "jquery": "3.4.1",
     "jquery-validation": "1.19.0",
     "katex": "0.10.2",
-    "lazysizes": "4.1.6",
+    "lazysizes": "5.1.0",
     "mini-css-extract-plugin": "0.4.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.25",
