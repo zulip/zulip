@@ -1,7 +1,7 @@
 import { basename, resolve } from 'path';
-import { RuleSetRule } from 'webpack';
+import { RuleSetRule, RuleSetUseItem } from 'webpack';
 
-export const cacheLoader: RuleSetRule = {
+export const cacheLoader: RuleSetUseItem = {
     loader: 'cache-loader',
     options: {
         cacheDirectory: resolve(__dirname, '../var/webpack-cache'),
