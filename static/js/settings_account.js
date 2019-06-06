@@ -82,25 +82,24 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         return;
     }
     var all_custom_fields = page_params.custom_profile_fields;
-    var field_types = page_params.custom_profile_field_types;
+    var all_field_types = page_params.custom_profile_field_types;
+
+    var all_field_template_types = {};
+    all_field_template_types[all_field_types.LONG_TEXT.id] = "text";
+    all_field_template_types[all_field_types.SHORT_TEXT.id] = "text";
+    all_field_template_types[all_field_types.CHOICE.id] = "choice";
+    all_field_template_types[all_field_types.USER.id] = "user";
+    all_field_template_types[all_field_types.DATE.id] = "date";
 
     all_custom_fields.forEach(function (field) {
-        var field_type = field.type;
-        var type;
         var field_value = people.get_custom_profile_data(user_id, field.id);
+        var is_choice_field = field.type === all_field_types.CHOICE.id;
+        var field_choices = [];
+
         if (field_value === undefined || field_value === null) {
             field_value = {value: "", rendered_value: ""};
         }
-        var is_long_text = field_type === field_types.LONG_TEXT.id;
-        var is_choice_field = field_type === field_types.CHOICE.id;
-        var is_user_field = field_type === field_types.USER.id;
-        var is_date_field = field_type === field_types.DATE.id;
-        var field_choices = [];
-
-        if (is_long_text || field_type === field_types.SHORT_TEXT.id) {
-            type = "text";
-        } else if (is_choice_field) {
-            type = "choice";
+        if (is_choice_field) {
             var field_choice_dict = JSON.parse(field.field_data);
             for (var choice in field_choice_dict) {
                 if (choice) {
@@ -111,24 +110,16 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
                     };
                 }
             }
-        } else if (is_date_field) {
-            type = "date";
-        } else if (field_type === field_types.URL.id) {
-            type = "url";
-        } else if (is_user_field) {
-            type = "user";
-        } else {
-            blueslip.error("Undefined field type.");
         }
 
         var html = templates.render("custom-user-profile-field", {
             field: field,
-            field_type: type,
+            field_type: all_field_template_types[field.type],
             field_value: field_value,
-            is_long_text_field: is_long_text,
+            is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
+            is_user_field: field.type === all_field_types.USER.id,
+            is_date_field: field.type === all_field_types.DATE.id,
             is_choice_field: is_choice_field,
-            is_user_field: is_user_field,
-            is_date_field: is_date_field,
             field_choices: field_choices,
         });
         $(element_id).append(html);
