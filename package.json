@@ -67,7 +67,7 @@
     "jsdom": "15.1.1",
     "nyc": "14.1.1",
     "phantomjs-prebuilt": "2.1.16",
-    "stylelint": "9.3.0",
+    "stylelint": "10.0.1",
     "svgo": "1.2.2",
     "swagger-parser": "3.4.1",
     "webpack-dev-server": "3.5.1"
