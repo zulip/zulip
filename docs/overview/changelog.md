@@ -20,6 +20,16 @@ websites](https://zulipchat.com/help/allow-image-link-previews) will
 lose the setting and need to re-enable it.
 
 
+### 2.0.4 -- 2019-06-29
+
+- Fixed several configuration-dependent bugs that caused
+  restore-backup to crash.
+- Fixed a table layout bug in "deactivated users" settings.
+- Fixed an exception when administrators edited bot users when custom
+  profile fields were configured in the organization.
+- Fixed a bug enabling the PGRoonga search backend with older postgres.
+- Fixed getting personal API key when passwords are disabled.
+
 ### 2.0.3 -- 2019-04-23
 
 - Added documentation for upgrading the underlying OS version.
