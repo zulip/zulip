@@ -357,6 +357,13 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
 
     return template.format(**kwargs)
 
+def get_star_body(payload: Dict[str, Any]) -> str:
+    template = "{user} {action} the repository."
+    return template.format(
+        user=payload['sender']['login'],
+        action='starred' if payload['action'] == 'created' else 'unstarred'
+    )
+
 def get_ping_body(payload: Dict[str, Any]) -> str:
     return get_setup_webhook_message('GitHub', get_sender_name(payload))
 
@@ -445,6 +452,7 @@ EVENT_FUNCTION_MAPPER = {
     'push_tags': get_push_tags_body,
     'release': get_release_body,
     'repository': get_repository_body,
+    'star': get_star_body,
     'status': get_status_body,
     'watch': get_watch_body,
 }
