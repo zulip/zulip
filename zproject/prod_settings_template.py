@@ -516,8 +516,8 @@ CAMO_URI = '/external_content/'
 #
 # By default, Zulip connects to rabbitmq running locally on the machine,
 # but Zulip also supports connecting to RabbitMQ over the network;
-# to use a remote RabbitMQ instance, set RABBITMQ_HOST here.
-# RABBITMQ_HOST = "localhost"
+# to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
+# RABBITMQ_HOST = "127.0.0.1"
 # To use another rabbitmq user than the default 'zulip', set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = 'zulip'
 
