@@ -185,12 +185,7 @@ function create_message_object() {
         // automatically created when you try to send a private
         // message to their email address.
         if (message.to_user_ids !== undefined) {
-            // to_user_ids is a string containing a comma-separated
-            // list of user IDs for the recipients; convert this into
-            // an array of integers.
-            message.to = _.map(message.to_user_ids.split(','), function (id) {
-                return Number(id);
-            });
+            message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
         }
 
     } else {
