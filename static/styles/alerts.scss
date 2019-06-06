@@ -41,60 +41,60 @@
         color: hsl(16, 60%, 45%);
         border: 1px solid hsl(16, 60%, 45%);
         box-shadow: 0 0 2px hsl(16, 60%, 45%);
-    }
 
-    .alert.show {
-        animation-name: fadeIn;
-        animation-duration: 0.3s;
-        animation-fill-mode: forwards;
-    }
+        &.show {
+            animation-name: fadeIn;
+            animation-duration: 0.3s;
+            animation-fill-mode: forwards;
+        }
 
-    .alert.fade-out {
-        animation-name: fadeOut;
-        animation-duration: 0.3s;
-        animation-fill-mode: forwards;
-    }
+        &.fade-out {
+            animation-name: fadeOut;
+            animation-duration: 0.3s;
+            animation-fill-mode: forwards;
+        }
 
-    .alert .faded {
-        opacity: 0.7;
-    }
+        .faded {
+            opacity: 0.7;
+        }
 
-    .alert::before {
-        position: absolute;
-        top: 10px;
-        left: 12px;
+        &::before {
+            position: absolute;
+            top: 10px;
+            left: 12px;
 
-        font-family: "FontAwesome";
-        font-size: 1.3em;
-        content: "\f071";
+            font-family: "FontAwesome";
+            font-size: 1.3em;
+            content: "\f071";
 
-        color: hsl(16, 60%, 55%);
-    }
+            color: hsl(16, 60%, 55%);
+        }
 
-    .alert.alert-error {
-        color: hsl(0, 80%, 40%);
-        border: 1px solid hsl(0, 80%, 40%);
-        box-shadow: 0 0 2px hsl(0, 80%, 40%);
-    }
+        &.alert-error {
+            color: hsl(0, 80%, 40%);
+            border: 1px solid hsl(0, 80%, 40%);
+            box-shadow: 0 0 2px hsl(0, 80%, 40%);
 
-    .alert.alert-error::before {
-        color: hsl(0, 80%, 40%);
-    }
+            &::before {
+                color: hsl(0, 80%, 40%);
+            }
+        }
 
-    .alert .exit {
-        position: absolute;
-        top: 10px;
-        right: 0px;
+        .exit {
+            position: absolute;
+            top: 10px;
+            right: 0px;
 
-        font-size: 2.5em;
-        font-weight: 300;
+            font-size: 2.5em;
+            font-weight: 300;
 
-        cursor: pointer;
-    }
+            cursor: pointer;
 
-    .alert .exit::after {
-        padding: 10px;
-        content: "\d7";
+            &::after {
+                padding: 10px;
+                content: "\d7";
+            }
+        }
     }
 
     .browser-alert .error::before {
