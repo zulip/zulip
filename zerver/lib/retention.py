@@ -166,6 +166,10 @@ def move_attachments_message_rows_to_archive(msg_ids: List[int]) -> None:
         cursor.execute(query.format(message_ids=ids_list_to_sql_query_format(msg_ids)))
 
 def delete_messages(msg_ids: List[int]) -> None:
+    # Important note: This also deletes related objects with a foreign
+    # key to Message (due to `on_delete=CASCADE` in our models
+    # configuration), so we need to be sure we've taken care of
+    # archiving the messages before doing this step.
     Message.objects.filter(id__in=msg_ids).delete()
 
 def delete_expired_attachments() -> None:
