@@ -91,7 +91,10 @@
         "./static/styles/integrations_dev_panel.css",
         "./static/js/channel.js"
       ],
-    "email-log": "./static/js/portico/email_log.js",
+    "email-log": [
+        "./static/js/portico/email_log.js",
+        "./static/js/channel.js"
+    ],
     "stats": [
         "./static/styles/stats.scss",
         "./static/js/stats/stats.js",
