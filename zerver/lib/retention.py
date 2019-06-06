@@ -25,8 +25,8 @@ models_with_message_key = [
 ]  # type: List[Dict[str, Any]]
 
 @transaction.atomic
-def move_expired_rows(src_model: Any, raw_query: str, returning_id: bool=False,
-                      **kwargs: Any) -> List[int]:
+def move_rows(src_model: Any, raw_query: str, returning_id: bool=False,
+              **kwargs: Any) -> List[int]:
     src_db_table = src_model._meta.db_table
     src_fields = ["{}.{}".format(src_db_table, field.column) for field in src_model._meta.fields]
     dst_fields = [field.column for field in src_model._meta.fields]
@@ -71,8 +71,8 @@ def move_expired_messages_to_archive(realm: Realm) -> List[int]:
     assert realm.message_retention_days is not None
     check_date = timezone_now() - timedelta(days=realm.message_retention_days)
 
-    return move_expired_rows(Message, query, returning_id=True,
-                             realm_id=realm.id, check_date=check_date.isoformat())
+    return move_rows(Message, query, returning_id=True,
+                     realm_id=realm.id, check_date=check_date.isoformat())
 
 def move_expired_user_messages_to_archive(msg_ids: List[int]) -> List[int]:
     if not msg_ids:
@@ -88,8 +88,8 @@ def move_expired_user_messages_to_archive(msg_ids: List[int]) -> List[int]:
     RETURNING id
     """
 
-    return move_expired_rows(UserMessage, query, returning_id=True,
-                             message_ids=ids_list_to_sql_query_format(msg_ids))
+    return move_rows(UserMessage, query, returning_id=True,
+                     message_ids=ids_list_to_sql_query_format(msg_ids))
 
 def move_expired_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
     if not msg_ids:
@@ -104,9 +104,9 @@ def move_expired_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
         WHERE {table_name}.message_id IN {message_ids}
             AND {archive_table_name}.id IS NULL
         """
-        move_expired_rows(model['class'], query, table_name=model['table_name'],
-                          archive_table_name=model['archive_table_name'],
-                          message_ids=ids_list_to_sql_query_format(msg_ids))
+        move_rows(model['class'], query, table_name=model['table_name'],
+                  archive_table_name=model['archive_table_name'],
+                  message_ids=ids_list_to_sql_query_format(msg_ids))
 
 def move_expired_attachments_to_archive(msg_ids: List[int]) -> None:
     if not msg_ids:
@@ -123,7 +123,7 @@ def move_expired_attachments_to_archive(msg_ids: List[int]) -> None:
             AND zerver_archivedattachment.id IS NULL
        GROUP BY zerver_attachment.id
     """
-    move_expired_rows(Attachment, query, message_ids=ids_list_to_sql_query_format(msg_ids))
+    move_rows(Attachment, query, message_ids=ids_list_to_sql_query_format(msg_ids))
 
 
 def move_expired_attachments_message_rows_to_archive(msg_ids: List[int]) -> None:
