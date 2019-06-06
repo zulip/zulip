@@ -1,18 +1,18 @@
 /* general alert styling changes */
 .alert {
     display: none;
-}
 
-.alert.show {
-    display: block;
-}
+    &.show {
+        display: block;
+    }
 
-.alert#organization-status {
-    margin: 20px;
-}
+    &#organization-status {
+        margin: 20px;
+    }
 
-.alert.stream_create_info {
-    margin: 10px 10px 0px 10px;
+    &.stream_create_info {
+        margin: 10px 10px 0px 10px;
+    }
 }
 
 /* alert box component changes */
