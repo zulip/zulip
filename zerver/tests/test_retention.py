@@ -10,7 +10,7 @@ from zerver.lib.upload import create_attachment
 from zerver.models import (Message, Realm, UserProfile, Stream, ArchivedUserMessage, SubMessage,
                            ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
                            Reaction, ArchivedReaction, ArchivedSubMessage,
-                           get_realm, get_user_profile_by_email, get_system_bot)
+                           get_realm, get_user_profile_by_email, get_stream, get_system_bot)
 from zerver.lib.retention import (
     archive_messages,
     move_messages_to_archive
@@ -41,10 +41,9 @@ class RetentionTestingBase(ZulipTestCase):
         realm.message_retention_days = retention_period
         realm.save()
 
-        for stream in Stream.objects.filter(realm=realm):
-            if not retention_period or not stream.message_retention_days:
-                stream.message_retention_days = retention_period
-                stream.save()
+    def _set_stream_message_retention_value(self, stream: Stream, retention_period: Optional[int]) -> None:
+        stream.message_retention_days = retention_period
+        stream.save()
 
     def _change_messages_pub_date(self, msgs_ids: List[int], pub_date: datetime) -> None:
         Message.objects.filter(id__in=msgs_ids).update(pub_date=pub_date)
@@ -185,6 +184,32 @@ class TestArchivingGeneral(RetentionTestingBase):
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
         self._set_realm_message_retention_value(self.zulip_realm, ZULIP_REALM_DAYS)
+
+    def test_different_stream_realm_policies(self) -> None:
+        verona = get_stream("Verona", self.zulip_realm)
+        hamlet = self.example_email("hamlet")
+
+        msg_id = self.send_stream_message(hamlet, "Verona", "test")
+        usermsg_ids = self._get_usermessage_ids([msg_id])
+        self._change_messages_pub_date([msg_id], timezone_now() - timedelta(days=2))
+
+        # Don't archive if stream's retention policy set to -1:
+        self._set_realm_message_retention_value(self.zulip_realm, 1)
+        self._set_stream_message_retention_value(verona, -1)
+        archive_messages()
+        self._verify_archive_data([], [])
+
+        # Don't archive if stream and realm have no retention policy:
+        self._set_realm_message_retention_value(self.zulip_realm, None)
+        self._set_stream_message_retention_value(verona, None)
+        archive_messages()
+        self._verify_archive_data([], [])
+
+        # Archive if stream has a retention policy set:
+        self._set_realm_message_retention_value(self.zulip_realm, None)
+        self._set_stream_message_retention_value(verona, 1)
+        archive_messages()
+        self._verify_archive_data([msg_id], usermsg_ids)
 
     def test_cross_realm_messages_not_archived(self) -> None:
         """Check that cross-realm messages don't get archived or deleted."""
