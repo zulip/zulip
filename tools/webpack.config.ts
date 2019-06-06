@@ -9,16 +9,6 @@ import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 const assets = require('./webpack.assets.json');
 
-// Adds on css-hot-loader in dev mode
-function getHotCSS(bundle: any[], isProd: boolean): any[] {
-    if (isProd) {
-        return bundle;
-    }
-    return [
-        'css-hot-loader',
-    ].concat(bundle);
-}
-
 export default (env?: string): webpack.Configuration => {
     const production: boolean = env === "production";
     const config: webpack.Configuration = {
@@ -47,8 +37,13 @@ export default (env?: string): webpack.Configuration => {
                 // regular css files
                 {
                     test: /\.css$/,
-                    use: getHotCSS([
-                        MiniCssExtractPlugin.loader,
+                    use: [
+                        {
+                            loader: MiniCssExtractPlugin.loader,
+                            options: {
+                                hmr: !production,
+                            },
+                        },
                         cacheLoader,
                         {
                             loader: 'css-loader',
@@ -56,13 +51,18 @@ export default (env?: string): webpack.Configuration => {
                                 sourceMap: true,
                             },
                         },
-                    ], production),
+                    ],
                 },
                 // sass / scss loader
                 {
                     test: /\.(sass|scss)$/,
-                    use: getHotCSS([
-                        MiniCssExtractPlugin.loader,
+                    use: [
+                        {
+                            loader: MiniCssExtractPlugin.loader,
+                            options: {
+                                hmr: !production,
+                            },
+                        },
                         cacheLoader,
                         {
                             loader: 'css-loader',
@@ -76,7 +76,7 @@ export default (env?: string): webpack.Configuration => {
                                 sourceMap: true,
                             },
                         },
-                    ], production),
+                    ],
                 },
                 // load fonts and files
                 {
