@@ -455,6 +455,7 @@ IGNORED_EVENTS = [
     'check_suite',
     'organization',
     'milestone',
+    'meta',
 ]
 
 @api_key_only_webhook_view('GitHub', notify_bot_owner_on_invalid_json=True)
