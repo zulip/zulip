@@ -69,7 +69,7 @@
     "phantomjs-prebuilt": "2.1.16",
     "stylelint": "10.0.1",
     "svgo": "1.2.2",
-    "swagger-parser": "3.4.1",
+    "swagger-parser": "6.0.5",
     "webpack-dev-server": "3.5.1"
   },
   "scripts": {
