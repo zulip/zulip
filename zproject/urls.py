@@ -203,7 +203,7 @@ v1_api_and_json_patterns = [
     url(r'^users/me/subscriptions/properties$', rest_dispatch,
         {'POST': 'zerver.views.streams.update_subscription_properties_backend'}),
 
-    url(r'users/me/subscriptions/(?P<stream_id>\d+)$', rest_dispatch,
+    url(r'^users/me/subscriptions/(?P<stream_id>\d+)$', rest_dispatch,
         {'PATCH': 'zerver.views.streams.update_subscriptions_property'}),
 
     url(r'^submessage$',
@@ -325,7 +325,7 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.streams.get_streams_backend'}),
 
     # GET returns `stream_id`, stream name should be encoded in the url query (in `stream` param)
-    url(r'^get_stream_id', rest_dispatch,
+    url(r'^get_stream_id$', rest_dispatch,
         {'GET': 'zerver.views.streams.json_get_stream_id'}),
 
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
@@ -384,7 +384,7 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.video_calls.get_zoom_url'}),
 
     # Used for public-only realm exporting
-    url(r'^export/realm', rest_dispatch,
+    url(r'^export/realm$', rest_dispatch,
         {'POST': 'zerver.views.public_export.public_only_realm_export'}),
 ]
 
