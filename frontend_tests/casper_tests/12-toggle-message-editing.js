@@ -42,7 +42,7 @@ casper.then(function () {
 // edit the last message just sent
 casper.then(function () {
     casper.evaluate(function () {
-        var msg = $('#zhome .message_row:last');
+        var msg = $('#zhome .message_row').last();
         msg.find('.info').click();
         $('.popover_edit_message').click();
     });
@@ -53,7 +53,7 @@ var edited_value = 'admin tests: test edit';
 casper.then(function () {
     casper.waitUntilVisible(".message_edit_content", function () {
         casper.evaluate(function (edited_value) {
-            var msg = $('#zhome .message_row:last');
+            var msg = $('#zhome .message_row').last();
             msg.find('.message_edit_content').val(edited_value);
             msg.find('.message_edit_save').click();
         }, edited_value);
@@ -130,14 +130,14 @@ casper.then(function () {
     // Note that this could have a false positive, e.g. if all the messages aren't
     // loaded yet. See Issue #1243
     casper.evaluate(function () {
-        var msg = $('#zhome .message_row:last');
+        var msg = $('#zhome .message_row').last();
         msg.find('.info').click();
     });
     casper.waitUntilVisible('.popover_edit_message', function () {
         casper.test.assertSelectorHasText('.popover_edit_message', 'View source');
     });
     casper.evaluate(function () {
-        var msg = $('#zhome .message_row:last');
+        var msg = $('#zhome .message_row').last();
         msg.find('.info').click();
     });
 });
