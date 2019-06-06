@@ -54,7 +54,7 @@ exports.make_menu = function (opts) {
 
     self.enter_panel = function () {
         var panel = self.get_panel();
-        var sel = 'input:visible:first,button:visible:first,select:visible:first';
+        var sel = 'input:visible,button:visible,select:visible';
         var panel_elem = panel.find(sel).first();
 
         panel_elem.focus();
