@@ -136,7 +136,7 @@ run_test('admin_default_streams_list', () => {
         html += render('admin_default_streams_list', args);
     });
     html += "</table>";
-    var span = $(html).find(".default_stream_name:first");
+    var span = $(html).find(".default_stream_name").first();
     assert.equal(span.text(), "devel");
 
     // When the logged in user is not admin
@@ -149,7 +149,7 @@ run_test('admin_default_streams_list', () => {
         html += render('admin_default_streams_list', args);
     });
     html += "</table>";
-    span = $(html).find(".default_stream_name:first");
+    span = $(html).find(".default_stream_name").first();
     assert.equal(span.text(), "devel");
 });
 
@@ -292,7 +292,7 @@ run_test('admin_invites_list', () => {
     assert($(buttons[3]).hasClass("resend"));
     assert.equal($(buttons[3]).attr("data-invite-id"), 1);
 
-    var span = $(html).find(".email:first");
+    var span = $(html).find(".email").first();
     assert.equal(span.text(), "alice@zulip.com");
 });
 
@@ -323,7 +323,7 @@ run_test('admin_user_group_list', () => {
     html += render('admin_user_group_list', args);
     html += '</div>';
 
-    var group_id = $(html).find('.user-group:first').prop('id');
+    var group_id = $(html).find('.user-group').first().prop('id');
     var group_pills_id = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
     var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
     var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
@@ -399,7 +399,7 @@ run_test('alert_word_settings_item', () => {
     html += render('alert_word_settings_item', args);
     html += "</ul>";
 
-    var li = $(html).find("li.alert-word-item:first");
+    var li = $(html).find("li.alert-word-item").first();
     var value = li.find('.value');
     var button = li.find('button');
     assert.equal(li.attr('data-word'), 'lunch');
@@ -504,7 +504,7 @@ run_test('bot_owner_select', () => {
         ],
     };
     var html = render('bot_owner_select', args);
-    var option = $(html).find("option:last");
+    var option = $(html).find("option").last();
     assert.equal(option.val(), "hamlet@zulip.com");
     assert.equal(option.text(), "Hamlet");
 });
@@ -517,12 +517,12 @@ run_test('compose_invite_users', () => {
         can_subscribe_other_users: true,
     };
     var html = render('compose-invite-users', args);
-    var button = $(html).find("button:first");
+    var button = $(html).find("button").first();
     assert.equal(button.text(), "translated: Subscribe");
 
     args.can_subscribe_other_users = false;
     html = render('compose-invite-users', args);
-    button = $(html).find("button:first");
+    button = $(html).find("button").first();
     assert.equal(button.length, 0);
 });
 
@@ -532,7 +532,7 @@ run_test('compose_all_everyone', () => {
         name: 'all',
     };
     var html = render('compose_all_everyone', args);
-    var button = $(html).find("button:first");
+    var button = $(html).find("button").first();
     assert.equal(button.text(), "translated: Yes, send");
     var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
     assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?");
@@ -543,7 +543,7 @@ run_test('compose_announce', () => {
         count: '101',
     };
     var html = render('compose_announce', args);
-    var button = $(html).find("button:first");
+    var button = $(html).find("button").first();
     assert.equal(button.text(), "translated: Yes, send");
     var error_msg = $(html).find('span.compose-announce-msg').text().trim();
     assert.equal(error_msg, "translated:         This stream is reserved for announcements.\n        \n        Are you sure you want to message all 101 people in this stream?");
@@ -551,10 +551,10 @@ run_test('compose_announce', () => {
 
 run_test('compose_not_subscribed', () => {
     var html = render('compose_not_subscribed', {should_display_sub_button: true});
-    var button = $(html).find("button:first");
+    var button = $(html).find("button").first();
     assert.equal(button.text(), "translated: Subscribe");
     html = render('compose_not_subscribed', {should_display_sub_button: false});
-    button = $(html).find("button:first");
+    button = $(html).find("button").first();
     assert.equal(button.length, 0);
 });
 
@@ -652,7 +652,7 @@ run_test('draft_table_body', () => {
 
 run_test('email_address_hint', () => {
     var html = render('email_address_hint');
-    var li = $(html).find("li:first");
+    var li = $(html).find("li").first();
     assert.equal(li.text(), 'translated: The email will be forwarded to this stream');
 });
 
@@ -769,7 +769,7 @@ run_test('group_pms', () => {
     };
     var html = render('group_pms', args);
 
-    var a = $(html).find("a:first");
+    var a = $(html).find("a").first();
     assert.equal(a.text(), 'Alice and Bob');
 });
 
@@ -820,7 +820,7 @@ run_test('invite_subscription', () => {
     };
     var html = render('invite_subscription', args);
 
-    var input = $(html).find("label:first");
+    var input = $(html).find("label").first();
     assert.equal(input.text().trim(), "devel");
 });
 
@@ -840,7 +840,7 @@ run_test('single_message', () => {
     var html = render('single_message', message);
     html = '<div class="message_table focused_table" id="zfilt">' + html + '</div>';
 
-    var first_message = $(html).find("div.messagebox:first");
+    var first_message = $(html).find("div.messagebox").first();
 
     var first_message_text = first_message.find(".message_content").text().trim();
     assert.equal(first_message_text, "This is message one.");
@@ -1023,7 +1023,7 @@ run_test('new_stream_users', () => {
 
     var html = render('new_stream_users', args);
 
-    var label = $(html).find("label:first");
+    var label = $(html).find("label").first();
     assert.equal(label.text().trim(), 'King Lear (lear@zulip.com)');
 });
 
@@ -1041,7 +1041,7 @@ run_test('non_editable_user_group', () => {
     html += render('non_editable_user_group', args);
     html += '</div>';
 
-    var group_id = $(html).find('.user-group:first').prop('id');
+    var group_id = $(html).find('.user-group').first().prop('id');
     var group_pills_id = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
     var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
     var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
@@ -1214,7 +1214,7 @@ run_test('stream_sidebar_actions', () => {
 
     var html = render('stream_sidebar_actions', args);
 
-    var li = $(html).find("li:first");
+    var li = $(html).find("li").first();
     assert.equal(li.text().trim(), 'translated: Stream settings');
 });
 
@@ -1266,7 +1266,7 @@ run_test('subscription_settings', () => {
     var div = $(html).find(".subscription-type");
     assert(div.text().indexOf('private stream') > 0);
 
-    var anchor = $(html).find(".change-stream-privacy:first");
+    var anchor = $(html).find(".change-stream-privacy").first();
     assert.equal(anchor.text(), "[translated: Change]");
 });
 
@@ -1329,7 +1329,7 @@ run_test('subscriptions', () => {
     html += render('subscriptions', args);
     html += '</div>';
 
-    var span = $(html).find(".stream-name:first");
+    var span = $(html).find(".stream-name").first();
     assert.equal(span.text(), 'devel');
 });
 
@@ -1354,14 +1354,14 @@ run_test('tab_bar', () => {
 
     var html = render('tab_bar', args);
 
-    var a = $(html).find("li:first");
+    var a = $(html).find("li").first();
     assert.equal(a.text().trim(), 'Home');
 });
 
 run_test('topic_edit_form', () => {
     var html = render('topic_edit_form');
 
-    var button = $(html).find("button:first");
+    var button = $(html).find("button").first();
     assert.equal(button.find("i").attr("class"), 'fa fa-check');
 });
 
@@ -1443,7 +1443,7 @@ run_test('typing_notifications', () => {
     html += render('typing_notifications', args);
     html += '</ul>';
 
-    var li = $(html).find('li:first');
+    var li = $(html).find('li').first();
     assert.equal(li.text(), 'Hamlet is typing...');
 
 });
@@ -1588,7 +1588,7 @@ run_test('user_presence_rows', () => {
     html += render('user_presence_rows', args);
     html += '</ul>';
 
-    var a = $(html).find("a:first");
+    var a = $(html).find("a").first();
     assert.equal(a.text().trim(), 'King Lear');
 });
 

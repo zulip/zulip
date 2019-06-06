@@ -54,12 +54,12 @@ $(function () {
         if ($('.help-inline:not(:empty)').length === 0) {
             // Find the first input field present in the form that is
             // not hidden and disabled and store it in a variable.
-            var firstInputElement = $("input:not(:hidden, :disabled):first");
+            var firstInputElement = $("input:not(:hidden, :disabled)").first();
             // Focus on the first input field in the form.
             common.autofocus(firstInputElement);
         } else { // If input field with errors is present.
             // Find the input field having errors and stores it in a variable.
-            var inputElementWithError = $('.help-inline:not(:empty):first').parent().find('input');
+            var inputElementWithError = $('.help-inline:not(:empty)').first().parent().find('input');
             // Focus on the input field having errors.
             common.autofocus(inputElementWithError);
         }

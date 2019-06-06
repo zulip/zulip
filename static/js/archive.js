@@ -110,7 +110,7 @@ var rows = {
         return $(message_row).parent('.recipient_row');
     },
     first_message_in_group: function (message_group) {
-        return $('div.message_row:first', message_group);
+        return $('div.message_row', message_group).first();
     },
     id: function (message_row) {
         return parseFloat(message_row.attr('zid'));

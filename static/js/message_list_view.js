@@ -753,7 +753,7 @@ MessageListView.prototype = {
 
         // Insert new messages in to the last message group
         if (message_actions.append_messages.length > 0) {
-            last_message_row = table.find('.message_row:last').expectOne();
+            last_message_row = table.find('.message_row').last().expectOne();
             last_group_row = rows.get_message_recipient_row(last_message_row);
             dom_messages = $(_.map(message_actions.append_messages, function (message_container) {
                 return self._get_message_template(message_container);

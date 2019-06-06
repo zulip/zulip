@@ -655,7 +655,7 @@ exports.switch_rows = function (event) {
         // Prevent switching stream rows when creating a new stream
         return false;
     } else if (!active_data.id || active_data.row.hasClass('notdisplayed')) {
-        switch_row = $('div.stream-row:not(.notdisplayed):first');
+        switch_row = $('div.stream-row:not(.notdisplayed)').first();
         if ($('#search_stream_name').is(":focus")) {
             $('#search_stream_name').blur();
         }

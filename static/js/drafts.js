@@ -393,12 +393,12 @@ function drafts_scroll(next_focus_draft_row) {
     activate_element(next_focus_draft_row[0].children[0]);
 
     // If focused draft is first draft, scroll to the top.
-    if ($(".draft-info-box:first")[0].parentElement === next_focus_draft_row[0]) {
+    if ($(".draft-info-box").first()[0].parentElement === next_focus_draft_row[0]) {
         $(".drafts-list")[0].scrollTop = 0;
     }
 
     // If focused draft is the last draft, scroll to the bottom.
-    if ($(".draft-info-box:last")[0].parentElement === next_focus_draft_row[0]) {
+    if ($(".draft-info-box").last()[0].parentElement === next_focus_draft_row[0]) {
         $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
     }
 
