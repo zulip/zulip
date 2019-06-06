@@ -18,7 +18,7 @@ exports.next_visible = function (message_row) {
     if (next_recipient_rows.length === 0) {
         return $();
     }
-    return $('.selectable_row:first', next_recipient_rows[0]);
+    return $('.selectable_row', next_recipient_rows[0]).first();
 };
 
 exports.prev_visible = function (message_row) {
@@ -34,15 +34,15 @@ exports.prev_visible = function (message_row) {
     if (prev_recipient_rows.length === 0) {
         return $();
     }
-    return $('.selectable_row:last', prev_recipient_rows[0]);
+    return $('.selectable_row', prev_recipient_rows[0]).last();
 };
 
 exports.first_visible = function () {
-    return $('.focused_table .selectable_row:first');
+    return $('.focused_table .selectable_row').first();
 };
 
 exports.last_visible = function () {
-    return $('.focused_table .selectable_row:last');
+    return $('.focused_table .selectable_row').last();
 };
 
 exports.id = function (message_row) {
@@ -79,7 +79,7 @@ exports.get_closest_group = function (element) {
 };
 
 exports.first_message_in_group = function (message_group) {
-    return $('div.message_row:first', message_group);
+    return $('div.message_row', message_group).first();
 };
 
 exports.get_message_recipient_row = function (message_row) {

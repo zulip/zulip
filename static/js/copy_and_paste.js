@@ -228,7 +228,7 @@ exports.analyze_selection = function (selection) {
         // the compose_close button when you go off the end of the
         // last message
         if (endc.attr('id') === "bottom_whitespace" || endc.attr('id') === "compose_close") {
-            initial_end_tr = $(".message_row:last");
+            initial_end_tr = $(".message_row").last();
             // The selection goes off the end of the message feed, so
             // this is a multi-message selection.
             skip_same_td_check = true;

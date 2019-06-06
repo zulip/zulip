@@ -177,8 +177,8 @@ function _visible_divs(selected_row, row_min_height, row_to_output, div_class,
     // We do this explicitly without merges and without recalculating
     // the feed bounds to keep this computation as cheap as possible.
     var visible = [];
-    var above_pointer = selected_row.prevAll("div." + div_class + ":lt(" + num_neighbors + ")");
-    var below_pointer = selected_row.nextAll("div." + div_class + ":lt(" + num_neighbors + ")");
+    var above_pointer = selected_row.prevAll("div." + div_class).slice(0, num_neighbors);
+    var below_pointer = selected_row.nextAll("div." + div_class).slice(0, num_neighbors);
     add_to_visible(selected_row, visible, top_of_feed.get(), bottom_of_feed.get(),
                    require_fully_visible, row_to_output);
     add_to_visible(above_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
