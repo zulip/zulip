@@ -55,6 +55,9 @@ method should take a fixture's name as it's first argument and return a
 dictionary of headers that you'd like to associate the fixture with. For
 example, it should return something like `{"X-Event_Type": "ping"}`.
 
+Check out our existing GitHub integration for an example of how to effeciently
+implement this.
+
 When writing your own incoming webhook integration, you'll want to write a test function
 for each distinct message condition your integration supports. You'll also need a
 corresponding fixture for each of these tests. Depending on the type of data
