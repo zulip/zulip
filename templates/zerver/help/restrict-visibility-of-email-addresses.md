@@ -21,7 +21,7 @@ can view other users' email addresses.
 ## Caveats
 
 There are a few places in the app where Zulip shows fake email addresses (like
-`Ada Starr <1234@zulipchat.com>`) rather than just `Ada Starr`. This might
+`Ada Starr <user1234@example.zulipchat.com>`) rather than just `Ada Starr`. This might
 cause some confusion for users. The fake email addresses do not work, and
 email sent to those addresses will bounce.
 
