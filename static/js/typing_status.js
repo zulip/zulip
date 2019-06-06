@@ -91,7 +91,9 @@ exports.handle_text_input = function (worker) {
     var current_recipient = exports.state.current_recipient;
 
     if (current_recipient) {
-        if (new_recipient === current_recipient) {
+        // We need to use _.isEqual for comparisons; === doesn't work
+        // on arrays.
+        if (_.isEqual(new_recipient, current_recipient)) {
             // Nothing has really changed, except we may need
             // to send a ping to the server.
             maybe_ping_server(worker, new_recipient);
@@ -106,7 +108,6 @@ exports.handle_text_input = function (worker) {
         // so we must stop the old notification.  Don't return
         // yet, because we may have a new recipient.
         stop_last_notification(worker);
-
     }
 
     if (!worker.is_valid_conversation(new_recipient)) {

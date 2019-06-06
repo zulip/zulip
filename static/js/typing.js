@@ -7,12 +7,11 @@ var exports = {};
 //
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
-function send_typing_notification_ajax(user_ids_string, operation) {
-    var typing_to = people.user_ids_string_to_emails_string(user_ids_string);
+function send_typing_notification_ajax(user_ids_array, operation) {
     channel.post({
         url: '/json/typing',
         data: {
-            to: typing_to,
+            to: JSON.stringify(user_ids_array),
             op: operation,
         },
         success: function () {},
@@ -22,13 +21,13 @@ function send_typing_notification_ajax(user_ids_string, operation) {
     });
 }
 
-function get_user_ids_string() {
+function get_user_ids_array() {
     var user_ids_string = compose_pm_pill.get_user_ids_string();
-
     if (user_ids_string === "") {
         return;
     }
-    return user_ids_string;
+
+    return people.user_ids_string_to_ids_array(user_ids_string);
 }
 
 function is_valid_conversation(user_ids_string) {
@@ -73,7 +72,7 @@ function notify_server_stop(user_ids_string) {
 
 exports.initialize = function () {
     var worker = {
-        get_recipient: get_user_ids_string,
+        get_recipient: get_user_ids_array,
         is_valid_conversation: is_valid_conversation,
         get_current_time: get_current_time,
         notify_server_start: notify_server_start,
