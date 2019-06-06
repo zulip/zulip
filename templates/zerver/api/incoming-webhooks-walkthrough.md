@@ -36,6 +36,25 @@ thing, it requires only one fixture,
 }
 ```
 
+### HTTP Headers
+
+If your integration depends on HTTP headers sent by the service you are
+integrating with, then it would be a good idea to store these too. An
+example of when you would need to do this would be if the service sends
+the event type as a custom http header, like with GitHub's webhooks.
+If your integration does not depend on HTTP headers, you don't need to
+follow these additional steps.
+
+To do this,
+
+1. In the folder where your integration's code lives, create a file callled
+`headers.py`.
+
+2. Inside this file, create a method with the name `fixture_to_headers`. This
+method should take a fixture's name as it's first argument and return a
+dictionary of headers that you'd like to associate the fixture with. For
+example, it should return something like `{"X-Event_Type": "ping"}`.
+
 When writing your own incoming webhook integration, you'll want to write a test function
 for each distinct message condition your integration supports. You'll also need a
 corresponding fixture for each of these tests. Depending on the type of data
