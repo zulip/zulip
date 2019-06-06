@@ -476,6 +476,8 @@ exports.initialize = function () {
         $("#stream_privacy_modal").remove();
         $("#subscriptions_table").append(change_privacy_modal);
         overlays.open_modal('stream_privacy_modal');
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     $("#subscriptions_table").on('click', '#change-stream-privacy-button',
