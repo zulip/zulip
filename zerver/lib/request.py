@@ -5,6 +5,7 @@
 #
 # Because request.pyi exists, the type annotations in this file are
 # mostly not processed by mypy.
+from collections import defaultdict
 from functools import wraps
 import ujson
 
@@ -16,7 +17,7 @@ from zerver.lib.types import ViewFuncT
 
 from django.http import HttpRequest, HttpResponse
 
-from typing import Any, Callable, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 class RequestConfusingParmsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
@@ -110,6 +111,8 @@ class REQ:
             # Not user-facing, so shouldn't be tagged for translation
             raise AssertionError('validator and str_validator are mutually exclusive')
 
+arguments_map = defaultdict(list)  # type: Dict[str, List[str]]
+
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
 # argument to the function.
@@ -139,12 +142,15 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
     post_params = []
 
+    view_func_full_name = '.'.join([view_func.__module__, view_func.__name__])
+
     for (name, value) in zip(default_param_names, default_param_values):
         if isinstance(value, REQ):
             value.func_var_name = name
             if value.post_var_name is None:
                 value.post_var_name = name
             post_params.append(value)
+            arguments_map[view_func_full_name].append(value.post_var_name)
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:

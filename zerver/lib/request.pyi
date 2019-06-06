@@ -6,7 +6,7 @@
 # scan the parameter list for REQ objects and patch the parameters as the true
 # types.
 
-from typing import Any, List, Callable, TypeVar, Optional, Union, Type
+from typing import Any, Dict, Callable, List, TypeVar, Optional, Union, Type
 from zerver.lib.types import ViewFuncT, Validator, ExtractRecipients
 from zerver.lib.exceptions import JsonableError as JsonableError
 
@@ -30,3 +30,4 @@ def REQ(whence: Optional[str] = None,
         aliases: Optional[List[str]] = None) -> ResultT: ...
 
 def has_request_variables(view_func: ViewFuncT) -> ViewFuncT: ...
+arguments_map = ...  # type: Dict[str, List[str]]
