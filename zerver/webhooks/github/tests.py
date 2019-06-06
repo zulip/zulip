@@ -19,6 +19,11 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"GitHub webhook has been successfully configured by TomaszKolek."
         self.send_and_test_stream_message('ping', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
+    def test_star_event(self) -> None:
+        expected_message = u"Codertocat starred the repository."
+        expected_topic = u"Hello-World"
+        self.send_and_test_stream_message('star', expected_topic, expected_message)
+
     def test_ping_organization_event(self) -> None:
         expected_message = u"GitHub webhook has been successfully configured by eeshangarg."
         self.send_and_test_stream_message('ping__organization', 'zulip-test-org', expected_message)
