@@ -43,7 +43,7 @@
     "string.prototype.codepointat": "0.2.1",
     "string.prototype.endswith": "0.2.0",
     "string.prototype.startswith": "0.2.0",
-    "style-loader": "0.21.0",
+    "style-loader": "0.23.1",
     "to-markdown": "3.1.0",
     "ts-loader": "5.3.3",
     "ts-node": "7.0.1",
