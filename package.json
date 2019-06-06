@@ -65,7 +65,7 @@
     "eslint": "5.16.0",
     "eslint-plugin-empty-returns": "1.0.2",
     "jsdom": "15.1.1",
-    "nyc": "11.8.0",
+    "nyc": "14.1.1",
     "phantomjs-prebuilt": "2.1.16",
     "stylelint": "9.3.0",
     "svgo": "1.2.2",
