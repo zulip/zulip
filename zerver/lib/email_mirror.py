@@ -153,11 +153,11 @@ def mark_missed_message_address_as_used(address: str) -> None:
         raise ZulipEmailForwardError('Missed message address has already been used')
 
 def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bool=False,
-                         include_quotations: bool=False, include_footers: bool=False) -> str:
+                         include_quotations: bool=False, include_footer: bool=False) -> str:
     body = extract_body(message, include_quotations)
     # Remove null characters, since Zulip will reject
     body = body.replace("\x00", "")
-    if not include_footers:
+    if not include_footer:
         body = filter_footer(body)
 
     body += extract_and_upload_attachments(message, realm)
