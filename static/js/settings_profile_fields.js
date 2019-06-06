@@ -184,6 +184,30 @@ exports.parse_field_choices_from_field_data = function (field_data) {
     return choices;
 };
 
+function set_up_choices_field_edit_form(profile_field, field_data) {
+    // Re-render field choices in edit form to load initial choice data
+    var choice_list = profile_field.form.find('.edit_profile_field_choices_container');
+    choice_list.off();
+    choice_list.html("");
+
+    var choices_data = exports.parse_field_choices_from_field_data(field_data);
+
+    _.each(choices_data, function (choice) {
+        choice_list.append(
+            templates.render("profile-field-choice", {
+                text: choice.text,
+            })
+        );
+    });
+
+    // Add blank choice at last
+    create_choice_row(choice_list);
+    update_choice_delete_btn(choice_list, false);
+    Sortable.create(choice_list[0], {
+        onUpdate: function () {},
+    });
+}
+
 function open_edit_form(e) {
     var field_id = $(e.currentTarget).attr("data-profile-field-id");
     var profile_field = get_profile_field_info(field_id);
@@ -194,33 +218,13 @@ function open_edit_form(e) {
     // Set initial value in edit form
     profile_field.form.find('input[name=name]').val(field.name);
     profile_field.form.find('input[name=hint]').val(field.hint);
+    var field_data = {};
+    if (field.field_data) {
+        field_data = JSON.parse(field.field_data);
+    }
 
     if (parseInt(field.type, 10) === field_types.CHOICE.id) {
-        // Re-render field choices in edit form to load initial choice data
-        var choice_list = profile_field.form.find('.edit_profile_field_choices_container');
-        choice_list.off();
-        choice_list.html("");
-
-        var field_data = {};
-        if (field.field_data !== "") {
-            field_data = JSON.parse(field.field_data);
-        }
-        var choices_data = exports.parse_field_choices_from_field_data(field_data);
-
-        _.each(choices_data, function (choice) {
-            choice_list.append(
-                templates.render("profile-field-choice", {
-                    text: choice.text,
-                })
-            );
-        });
-
-        // Add blank choice at last
-        create_choice_row(choice_list);
-        update_choice_delete_btn(choice_list, false);
-        Sortable.create(choice_list[0], {
-            onUpdate: function () {},
-        });
+        set_up_choices_field_edit_form(profile_field, field_data);
     }
 
     profile_field.form.find('.reset').on("click", function () {
