@@ -57,7 +57,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
         url = "/api/v1/external/github?api_key={key}&stream=Denmark&topic=GitHub Notifications".format(key=bot.api_key)
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
-        with open("zerver/webhooks/github/fixtures/ping_organization.json", "r") as f:
+        with open("zerver/webhooks/github/fixtures/ping__organization.json", "r") as f:
             body = f.read()
 
         data = {
