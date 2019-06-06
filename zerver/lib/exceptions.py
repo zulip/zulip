@@ -1,9 +1,10 @@
 from enum import Enum
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Type, Optional
 from mypy_extensions import NoReturn
 
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
+
 
 class AbstractEnum(Enum):
     '''An enumeration whose members are used strictly for their names.'''
@@ -200,3 +201,15 @@ class InvalidAPIKeyError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Invalid API key")
+
+class UnexpectedWebhookEventType(JsonableError):
+    code = ErrorCode.UNEXPECTED_WEBHOOK_EVENT_TYPE
+    data_fields = ['webhook_name', 'event_type']
+
+    def __init__(self, webhook_name: str, event_type: Optional[str]) -> None:
+        self.webhook_name = webhook_name
+        self.event_type = event_type
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")

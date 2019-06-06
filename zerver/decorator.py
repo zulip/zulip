@@ -18,6 +18,7 @@ from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
 
+from zerver.lib.exceptions import UnexpectedWebhookEventType
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
@@ -54,6 +55,10 @@ ReturnT = TypeVar('ReturnT')
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
+
+webhook_unexpected_events_logger = logging.getLogger("zulip.zerver.lib.webhooks.common")
+log_to_file(webhook_unexpected_events_logger,
+            settings.WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH)
 
 class _RespondAsynchronously:
     pass
@@ -275,8 +280,11 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
 
     return user_profile
 
-def log_exception_to_webhook_logger(request: HttpRequest, user_profile: UserProfile,
-                                    request_body: Optional[str]=None) -> None:
+def log_exception_to_webhook_logger(
+        request: HttpRequest, user_profile: UserProfile,
+        request_body: Optional[str]=None,
+        unexpected_event: Optional[bool]=False
+) -> None:
     if request_body is not None:
         payload = request_body
     else:
@@ -320,7 +328,11 @@ body:
         custom_headers=header_message,
     )
     message = message.strip(' ')
-    webhook_logger.exception(message)
+
+    if unexpected_event:
+        webhook_unexpected_events_logger.exception(message)
+    else:
+        webhook_logger.exception(message)
 
 def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[str]:
     if raw_client_name is None:
@@ -356,7 +368,11 @@ def api_key_only_webhook_view(
                     from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
                 else:
-                    log_exception_to_webhook_logger(request, user_profile)
+                    kwargs = {'request': request, 'user_profile': user_profile}
+                    if isinstance(err, UnexpectedWebhookEventType):
+                        kwargs['unexpected_event'] = True
+
+                    log_exception_to_webhook_logger(**kwargs)
                 raise err
 
         return _wrapped_func_arguments
@@ -583,8 +599,16 @@ def authenticated_rest_api_view(*, webhook_client_name: Optional[str]=None,
                 if is_webhook or webhook_client_name is not None:
                     request_body = request.POST.get('payload')
                     if request_body is not None:
-                        log_exception_to_webhook_logger(request, profile,
-                                                        request_body=request_body)
+                        kwargs = {
+                            'request_body': request_body,
+                            'request': request,
+                            'user_profile': profile,
+                        }
+                        if isinstance(err, UnexpectedWebhookEventType):
+                            kwargs['unexpected_event'] = True
+
+                        log_exception_to_webhook_logger(**kwargs)
+
                 raise err
         return _wrapped_func_arguments
     return _wrapped_view_func
