@@ -1027,6 +1027,7 @@ ZULIP_PATHS = [
     ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
     ("ANALYTICS_LOCK_DIR", "/home/zulip/deployments/analytics-lock-dir"),
     ("API_KEY_ONLY_WEBHOOK_LOG_PATH", "/var/log/zulip/webhooks_errors.log"),
+    ("WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH", "/var/log/zulip/webhooks_unexpected_events.log"),
     ("SOFT_DEACTIVATION_LOG_PATH", "/var/log/zulip/soft_deactivation.log"),
     ("TRACEMALLOC_DUMP_DIR", "/var/log/zulip/tracemalloc"),
     ("SCHEDULED_MESSAGE_DELIVERER_LOG_PATH",
@@ -1255,6 +1256,11 @@ LOGGING = {
             'propagate': False,
         },
         'zulip.soft_deactivation': {
+            'handlers': ['file', 'errors_file'],
+            'propagate': False,
+        },
+        'zulip.zerver.lib.webhooks.common': {
+            'level': 'DEBUG',
             'handlers': ['file', 'errors_file'],
             'propagate': False,
         },

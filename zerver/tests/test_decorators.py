@@ -28,6 +28,7 @@ from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, RequestConfusingParmsError
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType
 from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_json_view,
@@ -277,6 +278,11 @@ class DecoratorTestCase(TestCase):
         def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
             raise Exception("raised by webhook function")
 
+        @api_key_only_webhook_view('ClientName')
+        def my_webhook_raises_exception_unexpected_event(
+                request: HttpRequest, user_profile: UserProfile) -> None:
+            raise UnexpectedWebhookEventType("helloworld", "test_event")
+
         webhook_bot_email = 'webhook-bot@zulip.com'
         webhook_bot_realm = get_realm('zulip')
         webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
@@ -338,6 +344,37 @@ class DecoratorTestCase(TestCase):
                 request.content_type = 'application/json'
                 request.META['HTTP_X_CUSTOM_HEADER'] = 'custom_value'
                 my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
+
+            message = """
+user: {email} ({realm})
+client: {client_name}
+URL: {path_info}
+content_type: {content_type}
+custom_http_headers:
+{custom_headers}
+body:
+
+{body}
+                """
+            message = message.strip(' ')
+            mock_exception.assert_called_with(message.format(
+                email=webhook_bot_email,
+                realm=webhook_bot_realm.string_id,
+                client_name=webhook_client_name,
+                path_info=request.META.get('PATH_INFO'),
+                content_type=request.content_type,
+                custom_headers="HTTP_X_CUSTOM_HEADER: custom_value\n",
+                body=request.body,
+            ))
+
+        # Test when an unexpected webhook event occurs
+        with mock.patch('zerver.decorator.webhook_unexpected_events_logger.exception') as mock_exception:
+            exception_msg = "The 'test_event' event isn't currently supported by the helloworld webhook"
+            with self.assertRaisesRegex(UnexpectedWebhookEventType, exception_msg):
+                request.body = "invalidjson"
+                request.content_type = 'application/json'
+                request.META['HTTP_X_CUSTOM_HEADER'] = 'custom_value'
+                my_webhook_raises_exception_unexpected_event(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
             message = """
 user: {email} ({realm})
@@ -479,6 +516,50 @@ class DecoratorLoggingTestCase(ZulipTestCase):
 
         with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
+                my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
+
+            message = """
+user: {email} ({realm})
+client: {client_name}
+URL: {path_info}
+content_type: {content_type}
+custom_http_headers:
+{custom_headers}
+body:
+
+{body}
+                """
+            message = message.strip(' ')
+            mock_exception.assert_called_with(message.format(
+                email=webhook_bot_email,
+                realm=webhook_bot_realm.string_id,
+                client_name='ZulipClientNameWebhook',
+                path_info=request.META.get('PATH_INFO'),
+                content_type=request.content_type,
+                custom_headers=None,
+                body=request.body,
+            ))
+
+    def test_authenticated_rest_api_view_logging_unexpected_event(self) -> None:
+        @authenticated_rest_api_view(webhook_client_name="ClientName")
+        def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
+            raise UnexpectedWebhookEventType("helloworld", "test_event")
+
+        webhook_bot_email = 'webhook-bot@zulip.com'
+        webhook_bot_realm = get_realm('zulip')
+
+        request = HostRequestMock()
+        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials(webhook_bot_email)
+        request.method = 'POST'
+        request.host = "zulip.testserver"
+
+        request.body = '{}'
+        request.POST['payload'] = '{}'
+        request.content_type = 'text/plain'
+
+        with mock.patch('zerver.decorator.webhook_unexpected_events_logger.exception') as mock_exception:
+            exception_msg = "The 'test_event' event isn't currently supported by the helloworld webhook"
+            with self.assertRaisesRegex(UnexpectedWebhookEventType, exception_msg):
                 my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
             message = """

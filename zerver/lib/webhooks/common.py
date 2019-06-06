@@ -8,7 +8,7 @@ from typing import Optional, Dict, Union, Any, Callable
 from zerver.lib.actions import check_send_stream_message, \
     check_send_private_message, send_rate_limited_pm_notification_to_bot_owner
 from zerver.lib.exceptions import StreamDoesNotExistError, JsonableError, \
-    ErrorCode
+    ErrorCode, UnexpectedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
@@ -38,18 +38,6 @@ def notify_bot_owner_about_invalid_json(user_profile: UserProfile,
         user_profile, user_profile.realm,
         INVALID_JSON_MESSAGE.format(webhook_name=webhook_client_name).strip()
     )
-
-class UnexpectedWebhookEventType(JsonableError):
-    code = ErrorCode.UNEXPECTED_WEBHOOK_EVENT_TYPE
-    data_fields = ['webhook_name', 'event_type']
-
-    def __init__(self, webhook_name: str, event_type: Optional[str]) -> None:
-        self.webhook_name = webhook_name
-        self.event_type = event_type
-
-    @staticmethod
-    def msg_format() -> str:
-        return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")
 
 class MissingHTTPEventHeader(JsonableError):
     code = ErrorCode.MISSING_HTTP_EVENT_HEADER
