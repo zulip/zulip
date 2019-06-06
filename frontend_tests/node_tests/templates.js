@@ -167,8 +167,8 @@ run_test('admin_emoji_list', () => {
     html += render('admin_emoji_list', args);
     html += '</tbody>';
 
-    var emoji_name = $(html).find('tr.emoji_row:first span.emoji_name');
-    var emoji_url = $(html).find('tr.emoji_row:first span.emoji_image img');
+    var emoji_name = $(html).find('tr.emoji_row').first().find('span.emoji_name');
+    var emoji_url = $(html).find('tr.emoji_row').first().find('span.emoji_image img');
 
     assert.equal(emoji_name.text(), 'MouseFace');
     assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
@@ -190,9 +190,9 @@ run_test('admin_profile_field_list', () => {
     html += render('admin_profile_field_list', args);
     html += '</tbody>';
 
-    var field_name = $(html).find('tr.profile-field-row:first span.profile_field_name');
-    var field_type = $(html).find('tr.profile-field-row:first span.profile_field_type');
-    var td = $(html).find('tr.profile-field-row:first td');
+    var field_name = $(html).find('tr.profile-field-row').first().find('span.profile_field_name');
+    var field_type = $(html).find('tr.profile-field-row').first().find('span.profile_field_type');
+    var td = $(html).find('tr.profile-field-row').first().find('td');
 
     assert.equal(field_name.text(), 'teams');
     assert.equal(field_type.text(), 'Long text');
@@ -212,9 +212,9 @@ run_test('admin_profile_field_list', () => {
     html += render('admin_profile_field_list', args);
     html += '</tbody>';
 
-    field_name = $(html).find('tr.profile-field-row:first span.profile_field_name');
-    field_type = $(html).find('tr.profile-field-row:first span.profile_field_type');
-    td = $(html).find('tr.profile-field-row:first td');
+    field_name = $(html).find('tr.profile-field-row').first().find('span.profile_field_name');
+    field_type = $(html).find('tr.profile-field-row').first().find('span.profile_field_type');
+    td = $(html).find('tr.profile-field-row').first().find('td');
 
     assert.equal(field_name.text(), 'teams');
     assert.equal(field_type.text(), 'Long text');
@@ -237,8 +237,8 @@ run_test('admin_filter_list', () => {
     html += render('admin_filter_list', args);
     html += '</tbody>';
 
-    var filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
-    var filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
+    var filter_pattern = $(html).find('tr.filter_row').first().find('span.filter_pattern');
+    var filter_format = $(html).find('tr.filter_row').first().find('span.filter_url_format_string');
 
     assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
     assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
@@ -257,8 +257,8 @@ run_test('admin_filter_list', () => {
     html += render('admin_filter_list', args);
     html += '</tbody>';
 
-    filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
-    filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
+    filter_pattern = $(html).find('tr.filter_row').first().find('span.filter_pattern');
+    filter_format = $(html).find('tr.filter_row').first().find('span.filter_url_format_string');
 
     assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
     assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
@@ -324,9 +324,9 @@ run_test('admin_user_group_list', () => {
     html += '</div>';
 
     var group_id = $(html).find('.user-group').first().prop('id');
-    var group_pills_id = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
-    var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
-    var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
+    var group_pills_id = $(html).find('.user-group').first().find('.pill-container').attr('data-group-pills');
+    var group_name_display = $(html).find('.user-group').first().find('.name').text().trim().replace(/\s+/g, ' ');
+    var group_description = $(html).find('.user-group').first().find('.description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
     assert.equal(group_pills_id, '9');
@@ -450,7 +450,7 @@ run_test('admin_auth_methods_list', () => {
     html += render('admin_auth_methods_list', args);
     html += '</tbody>';
 
-    var method = $(html).find('tr.method_row:first span.method');
+    var method = $(html).find('tr.method_row').first().find('span.method');
     assert.equal(method.text(), 'Email');
     assert.equal(method.is("checked"), false);
 });
@@ -901,10 +901,10 @@ run_test('message_group', () => {
     render('loader');
     var html = render('message_group', {message_groups: groups, use_match_properties: true});
 
-    var first_message_text = $(html).next('.recipient_row').find('div.messagebox:first .message_content').text().trim();
+    var first_message_text = $(html).next('.recipient_row').find('div.messagebox').first().find('.message_content').text().trim();
     assert.equal(first_message_text, "This is message one.");
 
-    var last_message_html = $(html).next('.recipient_row').find('div.messagebox:last .message_content').html().trim();
+    var last_message_html = $(html).next('.recipient_row').find('div.messagebox').last().find('.message_content').html().trim();
     assert.equal(last_message_html, 'This is message <span class="highlight">two</span>.');
 
     var highlighted_topic_word = $(html).find('a.narrows_by_topic .highlight').text();
@@ -1042,9 +1042,9 @@ run_test('non_editable_user_group', () => {
     html += '</div>';
 
     var group_id = $(html).find('.user-group').first().prop('id');
-    var group_pills_id = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
-    var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
-    var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
+    var group_pills_id = $(html).find('.user-group').first().find('.pill-container').attr('data-group-pills');
+    var group_name_display = $(html).find('.user-group').first().find('.name').text().trim().replace(/\s+/g, ' ');
+    var group_description = $(html).find('.user-group').first().find('.description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
     assert.equal(group_pills_id, '9');
