@@ -180,6 +180,14 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
     return emails.join(',');
 };
 
+exports.user_ids_string_to_ids_array = function (user_ids_string) {
+    var user_ids = user_ids_string.split(',');
+    var ids = _.map(user_ids, function (id) {
+        return Number(id);
+    });
+    return ids;
+};
+
 exports.reply_to_to_user_ids_string = function (emails_string) {
     // This is basically emails_strings_to_user_ids_string
     // without blueslip warnings, since it can be called with
