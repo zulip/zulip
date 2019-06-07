@@ -582,6 +582,10 @@ on a dark background, and don't change the dark labels dark either. */
     .collapse-settings-btn:hover {
         color: hsl(200, 79%, 66%);
     }
+
+    #loading_more_messages_indicator path {
+        fill: rgb(255, 255, 255);
+    }
 }
 
 @-moz-document url-prefix() {
