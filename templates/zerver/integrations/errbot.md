@@ -1,4 +1,4 @@
-# Run your favorite chatbot in Zulip!
+Run your favorite chatbot in Zulip!
 
 0. [Install errbot](http://errbot.io/en/latest/user_guide/setup.html)
    and follow to instructions to setup a `config.py`.
@@ -43,7 +43,6 @@
 
 ![](/static/images/integrations/errbot/000.png)
 
-Tips
-----
+### Tips
 
 * Rooms in ErrBot are streams in Zulip.
