@@ -105,7 +105,9 @@ function load_fixture_body(fixture_name) {
     /* Given a fixture name, use the loaded_fixtures dictionary to set
      * the fixture body field. */
     var integration_name = get_selected_integration_name();
-    var fixture_body = loaded_fixtures[integration_name][fixture_name];
+    var fixture = loaded_fixtures[integration_name][fixture_name];
+    var fixture_body = fixture.body;
+    var headers = fixture.headers;
     if (fixture_body === undefined) {
         set_results_notice("Fixture does not have a body.", "warning");
         return;
@@ -115,6 +117,7 @@ function load_fixture_body(fixture_name) {
         fixture_body = JSON.stringify(fixture_body, null, 4);
     }
     $("#fixture_body")[0].value = fixture_body;
+    $("#custom_http_headers")[0].value = JSON.stringify(headers, null, 4);
 
     return;
 }

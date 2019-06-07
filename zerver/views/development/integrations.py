@@ -11,6 +11,7 @@ from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.models import UserProfile, get_realm
 from zerver.management.commands.send_webhook_fixture_message import parse_headers
+from zerver.lib.webhooks.common import get_http_headers
 
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
@@ -63,12 +64,20 @@ def get_fixtures(request: HttpResponse,
 
     for fixture in os.listdir(fixtures_dir):
         fixture_path = os.path.join(fixtures_dir, fixture)
-        content = open(fixture_path).read()
+        body = open(fixture_path).read()
         try:
-            content = ujson.loads(content)
+            body = ujson.loads(body)
         except ValueError:
             pass  # The file extension will be used to determine the type.
-        fixtures[fixture] = content
+        headers_raw = get_http_headers(integration_name, "".join(fixture.split(".")[:-1]))
+        # remove the file extention
+        headers = {}
+        for header in headers_raw:
+            if header.startswith("HTTP_"):  # HTTP_ is a prefix intended for Django.
+                headers[header.lstrip("HTTP_")] = headers_raw[header]
+            else:
+                headers[header] = headers_raw[header]
+        fixtures[fixture] = {"body": body, "headers": headers}
 
     return json_success({"fixtures": fixtures})
 
