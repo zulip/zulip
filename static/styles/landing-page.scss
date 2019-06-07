@@ -3206,6 +3206,12 @@ nav ul li.active::after {
     }
 }
 
+@media (min-width: 768px) {
+    .integration-instructions {
+        width: calc(100% - 200px);
+    }
+}
+
 @media (max-width: 1295px) {
     .portico-landing.hello .apps .right-side {
         display: none;
@@ -3273,10 +3279,6 @@ nav ul li.active::after {
 @media (max-width: 1024px) {
     .portico-landing.hello .gradients .gradient {
         height: 1400px;
-    }
-
-    nav {
-        padding-bottom: 110px;
     }
 
     nav.white {
@@ -3697,8 +3699,38 @@ nav ul li.active::after {
         font-size: 1em;
     }
 
+    #integration-instruction-block {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid hsl(206, 44%, 93%);
+    }
+
+    .portico-landing.integrations #integration-instructions-group {
+        flex-direction: column;
+    }
+
     #integration-instruction-block .integration-lozenge {
-        display: none !important;
+        order: 1;
+        border: none;
+
+        display: flex !important;
+        justify-content: space-between;
+        height: auto;
+        width: auto;
+        margin: unset;
+        padding: unset;
+    }
+
+    #integration-instruction-block .integration-lozenge .integration-logo {
+        margin: 0;
+    }
+
+    #integration-instruction-block .integration-lozenge .integration-name {
+        font-size: 1.2em !important;
+        margin-left: 20px;
     }
 
     #integration-list-link {
@@ -4132,10 +4164,6 @@ nav ul li.active::after {
     .pricing-model .pricing-container .bottom {
         position: static;
         height: auto;
-    }
-
-    nav {
-        padding-bottom: 105px;
     }
 
     .portico-landing.hello .hero {

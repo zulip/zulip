@@ -1135,15 +1135,12 @@ input#terminal:checked ~ #tab-terminal {
 }
 
 @media (min-width: 768px) {
-    .integration-instructions {
-        margin-left: 220px;
-    }
-
     #integration-list-link {
         top: 200px;
         left: 30px;
     }
 }
+
 .api-page-header,
 .authors-page-header,
 .integrations-page-header,
@@ -1223,6 +1220,18 @@ input#terminal:checked ~ #tab-terminal {
 #integration-list-link span {
     display: inline-block;
     margin-left: 5px;
+}
+
+@media (max-width: 768px) {
+    #integration-list-link {
+        order: 2;
+        position: unset;
+        font-size: 22px;
+    }
+
+    #integration-list-link span {
+        display: none;
+    }
 }
 
 .integrations-page-header .integrations-icon {
