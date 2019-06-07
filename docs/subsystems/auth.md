@@ -47,9 +47,9 @@ The steps to do this are a variation of the steps documented in
   Specify `http://zulipdev.com:9991/complete/github/` as the callback URL.
 
 * You should get a page with settings for your new application,
-  showing a client ID and a client secret.  In `dev_settings.py`, set
-  `SOCIAL_AUTH_GITHUB_KEY` to the client ID, and in
-  `dev-secrets.conf`, set `social_auth_github_secret` to the client secret.
+  showing a client ID and a client secret.  In `dev-secrets.conf`, set
+  `social_auth_github_key` to the client ID and `social_auth_github_secret`
+  to the client secret.
 
 ### When SSL is required
 

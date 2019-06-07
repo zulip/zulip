@@ -53,7 +53,11 @@
                     {% endif %}
 
                     {% if github_error %}
-                    {{ render_markdown_path('zerver/github-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
+                        {% if development_environment %}
+                        {{ render_markdown_path('zerver/github-error.md', {"root_domain_uri": root_domain_uri, "settings_path": secrets_path, "secrets_path": secrets_path, "client_id_key_name": "social_auth_github_key"}) }}
+                        {% else %}
+                        {{ render_markdown_path('zerver/github-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path, "client_id_key_name": "SOCIAL_AUTH_GITHUB_KEY"}) }}
+                        {% endif %}
                     {% endif %}
 
                     {% if google_error or github_error %}
