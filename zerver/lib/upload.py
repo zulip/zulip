@@ -197,7 +197,8 @@ class ZulipUploadBackend:
 
     def upload_avatar_image(self, user_file: File,
                             acting_user_profile: UserProfile,
-                            target_user_profile: UserProfile) -> None:
+                            target_user_profile: UserProfile,
+                            content_type: Optional[str]=None) -> None:
         raise NotImplementedError()
 
     def delete_avatar_image(self, user: UserProfile) -> None:
@@ -389,8 +390,10 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def upload_avatar_image(self, user_file: File,
                             acting_user_profile: UserProfile,
-                            target_user_profile: UserProfile) -> None:
-        content_type = guess_type(user_file.name)[0]
+                            target_user_profile: UserProfile,
+                            content_type: Optional[str] = None) -> None:
+        if content_type is None:
+            content_type = guess_type(user_file.name)[0]
         s3_file_name = user_avatar_path(target_user_profile)
 
         image_data = user_file.read()
@@ -631,7 +634,8 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def upload_avatar_image(self, user_file: File,
                             acting_user_profile: UserProfile,
-                            target_user_profile: UserProfile) -> None:
+                            target_user_profile: UserProfile,
+                            content_type: Optional[str] = None) -> None:
         file_path = user_avatar_path(target_user_profile)
 
         image_data = user_file.read()
@@ -756,8 +760,10 @@ def delete_message_image(path_id: str) -> bool:
     return upload_backend.delete_message_image(path_id)
 
 def upload_avatar_image(user_file: File, acting_user_profile: UserProfile,
-                        target_user_profile: UserProfile) -> None:
-    upload_backend.upload_avatar_image(user_file, acting_user_profile, target_user_profile)
+                        target_user_profile: UserProfile,
+                        content_type: Optional[str]=None) -> None:
+    upload_backend.upload_avatar_image(user_file, acting_user_profile,
+                                       target_user_profile, content_type=content_type)
 
 def delete_avatar_image(user_profile: UserProfile) -> None:
     upload_backend.delete_avatar_image(user_profile)

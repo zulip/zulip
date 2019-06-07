@@ -13,6 +13,7 @@
 # settings.AUTHENTICATION_BACKENDS that have a function signature
 # matching the args/kwargs passed in the authenticate() call.
 import logging
+import magic
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -343,8 +344,19 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 # If this specific user doesn't have e.g. a
                 # thumbnailPhoto set in LDAP, just skip that user.
                 return
-            upload_avatar_image(BytesIO(ldap_user.attrs[avatar_attr_name][0]), user, user)
-            do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
+
+            io = BytesIO(ldap_user.attrs[avatar_attr_name][0])
+            # Structurally, to make the S3 backend happy, we need to
+            # provide a Content-Type; since that isn't specified in
+            # any metadata, we auto-detect it.
+            import copy
+            content_type = magic.from_buffer(copy.deepcopy(io).read()[0:1024], mime=True)
+            if content_type.startswith("image/"):
+                upload_avatar_image(io, user, user, content_type=content_type)
+                do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
+            else:
+                logging.warning("Could not parse %s field for user %s" %
+                                (avatar_attr_name, user.id))
 
     def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:
         """Implements the userAccountControl check for whether a user has been
