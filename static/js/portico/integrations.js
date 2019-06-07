@@ -162,7 +162,7 @@ function hide_catalog_show_integration() {
         });
         $('#integration-instructions-group').css({
             opacity: 0,
-            display: 'block',
+            display: 'flex',
         });
         $('.integration-instructions').css('display', 'none');
         $('#' + state.integration + '.integration-instructions .help-content').html(doc);
