@@ -70,9 +70,10 @@ function notify_server_stop(user_ids_string) {
     send_typing_notification_ajax(user_ids_string, "stop");
 }
 
+exports.get_recipient = get_user_ids_array;
 exports.initialize = function () {
     var worker = {
-        get_recipient: get_user_ids_array,
+        get_recipient: exports.get_recipient,
         is_valid_conversation: is_valid_conversation,
         get_current_time: get_current_time,
         notify_server_start: notify_server_start,
