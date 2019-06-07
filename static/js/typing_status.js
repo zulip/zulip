@@ -42,23 +42,23 @@ exports.initialize_state = function () {
 
 exports.initialize_state();
 
-function stop_last_notification(worker) {
+exports.stop_last_notification = function stop_last_notification(worker) {
     var state = exports.state;
     if (state.idle_timer) {
         clearTimeout(state.idle_timer);
     }
     worker.notify_server_stop(state.current_recipient);
     exports.initialize_state();
-}
+};
 
-function start_or_extend_idle_timer(worker) {
+exports.start_or_extend_idle_timer = function start_or_extend_idle_timer(worker) {
     var state = exports.state;
     function on_idle_timeout() {
         // We don't do any real error checking here, because
         // if we've been idle, we need to tell folks, and if
         // our current recipient has changed, previous code will
         // have stopped the timer.
-        stop_last_notification(worker);
+        exports.stop_last_notification(worker);
     }
 
     if (state.idle_timer) {
@@ -68,7 +68,7 @@ function start_or_extend_idle_timer(worker) {
         on_idle_timeout,
         TYPING_STOPPED_WAIT_PERIOD
     );
-}
+};
 
 function set_next_start_time(current_time) {
     exports.state.next_send_start_time = current_time + TYPING_STARTED_WAIT_PERIOD;
@@ -79,12 +79,12 @@ function actually_ping_server(worker, recipient, current_time) {
     set_next_start_time(current_time);
 }
 
-function maybe_ping_server(worker, recipient) {
+exports.maybe_ping_server = function maybe_ping_server(worker, recipient) {
     var current_time = worker.get_current_time();
     if (current_time > exports.state.next_send_start_time) {
         actually_ping_server(worker, recipient, current_time);
     }
-}
+};
 
 exports.handle_text_input = function (worker) {
     var new_recipient = worker.get_recipient();
@@ -96,10 +96,10 @@ exports.handle_text_input = function (worker) {
         if (_.isEqual(new_recipient, current_recipient)) {
             // Nothing has really changed, except we may need
             // to send a ping to the server.
-            maybe_ping_server(worker, new_recipient);
+            exports.maybe_ping_server(worker, new_recipient);
 
             // We can also extend out our idle time.
-            start_or_extend_idle_timer(worker);
+            exports.start_or_extend_idle_timer(worker);
 
             return;
         }
@@ -107,7 +107,7 @@ exports.handle_text_input = function (worker) {
         // We apparently stopped talking to our old recipient,
         // so we must stop the old notification.  Don't return
         // yet, because we may have a new recipient.
-        stop_last_notification(worker);
+        exports.stop_last_notification(worker);
     }
 
     if (!worker.is_valid_conversation(new_recipient)) {
@@ -121,7 +121,7 @@ exports.handle_text_input = function (worker) {
     exports.state.current_recipient = new_recipient;
     var current_time = worker.get_current_time();
     actually_ping_server(worker, new_recipient, current_time);
-    start_or_extend_idle_timer(worker);
+    exports.start_or_extend_idle_timer(worker);
 };
 
 exports.stop = function (worker) {
@@ -129,7 +129,7 @@ exports.stop = function (worker) {
     // it doesn't necessarily mean we had typing indicators
     // active before this.
     if (exports.state.current_recipient) {
-        stop_last_notification(worker);
+        exports.stop_last_notification(worker);
     }
 };
 

@@ -1,3 +1,6 @@
+zrequire('typing');
+zrequire('people');
+zrequire('compose_pm_pill');
 zrequire('typing_status');
 
 function return_false() { return false; }
@@ -277,4 +280,44 @@ run_test('basics', () => {
     });
     assert(events.idle_callback);
 
+    // test that we correctly detect if worker.get_recipient
+    // and typing_status.state.current_recipient are the same
+    worker.get_recipient = typing.get_recipient;
+    worker.is_valid_conversation = () => false;
+    compose_pm_pill.get_user_ids_string = () => '1,2,3';
+    typing_status.state.current_recipient = typing.get_recipient();
+
+    const call_count = {
+        maybe_ping_server: 0,
+        start_or_extend_idle_timer: 0,
+        stop_last_notification: 0,
+    };
+
+    // stub functions to see how may time they are called
+    for (const method in call_count) {
+        if (!call_count.hasOwnProperty(method)) { continue; }
+        typing_status[method] = function () {
+            call_count[method] += 1;
+        };
+    }
+
+    // User ids of poeple in compose narrow doesn't change and is same as stat.current_recipent
+    // so counts of function should increase except stop_last_notification
+    typing_status.handle_text_input(worker);
+    assert.deepEqual(call_count.maybe_ping_server, 1);
+    assert.deepEqual(call_count.start_or_extend_idle_timer, 1);
+    assert.deepEqual(call_count.stop_last_notification, 0);
+
+    typing_status.handle_text_input(worker);
+    assert.deepEqual(call_count.maybe_ping_server, 2);
+    assert.deepEqual(call_count.start_or_extend_idle_timer, 2);
+    assert.deepEqual(call_count.stop_last_notification, 0);
+
+    // change in recipient and new_recipient should make us
+    // call typing_status.stop_last_notification
+    compose_pm_pill.get_user_ids_string = () => '2,3,4';
+    typing_status.handle_text_input(worker);
+    assert.deepEqual(call_count.maybe_ping_server, 2);
+    assert.deepEqual(call_count.start_or_extend_idle_timer, 2);
+    assert.deepEqual(call_count.stop_last_notification, 1);
 });
