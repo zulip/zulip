@@ -42,6 +42,19 @@ def validate_field_name_and_hint(name: str, hint: str) -> None:
     if error:
         raise JsonableError(error)
 
+def validate_custom_field_data(field_type: int,
+                               field_data: ProfileFieldData) -> None:
+    error = None
+    if field_type == CustomProfileField.CHOICE:
+        # Choice type field must have at least have one choice
+        if len(field_data) < 1:
+            raise JsonableError(_("Field must have at least one choice."))
+        error = validate_choice_field_data(field_data)
+
+    if error:
+        raise JsonableError(error)
+
+
 @require_realm_admin
 @has_request_variables
 def create_realm_custom_profile_field(request: HttpRequest,
@@ -56,14 +69,7 @@ def create_realm_custom_profile_field(request: HttpRequest,
     if field_type not in field_types:
         return json_error(_("Invalid field type."))
 
-    # Choice type field must have at least have one choice
-    if field_type == CustomProfileField.CHOICE and len(field_data) < 1:
-        return json_error(_("Field must have at least one choice."))
-
-    error = validate_choice_field_data(field_data)
-    if error:
-        return json_error(error)
-
+    validate_custom_field_data(field_type, field_data)
     try:
         field = try_add_realm_custom_profile_field(
             realm=user_profile.realm,
@@ -98,9 +104,6 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
                                                                        converter=ujson.loads),
                                       ) -> HttpResponse:
     validate_field_name_and_hint(name, hint)
-    error = validate_choice_field_data(field_data)
-    if error:
-        return json_error(error)
 
     realm = user_profile.realm
     try:
@@ -108,6 +111,7 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
     except CustomProfileField.DoesNotExist:
         return json_error(_('Field id {id} not found.').format(id=field_id))
 
+    validate_custom_field_data(field.field_type, field_data)
     try:
         try_update_realm_custom_profile_field(realm, field, name, hint=hint,
                                               field_data=field_data)
