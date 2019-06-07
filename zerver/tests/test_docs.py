@@ -342,7 +342,13 @@ class ConfigErrorTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/config-error/github')
         result = self.client_get(result.url)
-        self.assert_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
+        self.assert_in_success_response(["social_auth_github_key"], result)
+        self.assert_in_success_response(["social_auth_github_secret"], result)
+        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
+        self.assert_not_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
+        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
+        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
+        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
 
     @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
     @override_settings(DEVELOPMENT=False)
@@ -352,7 +358,13 @@ class ConfigErrorTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/config-error/github')
         result = self.client_get(result.url)
+        self.assert_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
+        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
+        self.assert_in_success_response(["social_auth_github_secret"], result)
         self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
+        self.assert_not_in_success_response(["social_auth_github_key"], result)
+        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
+        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
 
     def test_smtp_error(self) -> None:
         result = self.client_get("/config-error/smtp")

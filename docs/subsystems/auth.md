@@ -18,7 +18,13 @@ environment is to set up the real Google and GitHub to process auth
 requests for your development environment.
 
 The steps to do this are a variation of the steps documented in
-`prod_settings_template.py`. Here are the full procedures for dev:
+`prod_settings_template.py`.  The main differences here are driven by
+the fact that `dev_settings.py` is in Git, so it can be inconvenient
+to put secrets there.  In development, we allow providing those values
+in the untracked file `zproject/dev-secrets.conf`, using the standard
+lower-case naming convention for that file.
+
+Here are the full procedures for dev:
 
 ### Google
 
@@ -47,9 +53,9 @@ The steps to do this are a variation of the steps documented in
   Specify `http://zulipdev.com:9991/complete/github/` as the callback URL.
 
 * You should get a page with settings for your new application,
-  showing a client ID and a client secret.  In `dev_settings.py`, set
-  `SOCIAL_AUTH_GITHUB_KEY` to the client ID, and in
-  `dev-secrets.conf`, set `social_auth_github_secret` to the client secret.
+  showing a client ID and a client secret.  In `dev-secrets.conf`, set
+  `social_auth_github_key` to the client ID and `social_auth_github_secret`
+  to the client secret.
 
 ### When SSL is required
 
