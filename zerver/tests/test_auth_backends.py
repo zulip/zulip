@@ -30,12 +30,14 @@ from zerver.lib.actions import (
     validate_email,
 )
 from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
     check_bool, check_dict_only, check_string, Validator
 from zerver.lib.request import JsonableError
 from zerver.lib.users import get_all_api_keys
+from zerver.lib.upload import resize_avatar, MEDIUM_AVATAR_SIZE
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -67,7 +69,8 @@ from social_django.storage import BaseDjangoStorage
 import json
 import urllib
 import ujson
-from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
+from zerver.lib.test_helpers import MockLDAP, load_subdomain_token, \
+    use_s3_backend, create_s3_buckets, get_test_image_file
 
 class AuthBackendTest(ZulipTestCase):
     def get_username(self, email_to_username: Optional[Callable[[str], str]]=None) -> str:
@@ -2858,6 +2861,50 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             fn.assert_called_once()
             hamlet = self.example_user('hamlet')
             self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+    @use_s3_backend
+    def test_update_user_avatar_for_s3(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+        test_image_data = open(get_test_image_file('img.png').name, 'rb').read()
+
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'thumbnailPhoto': [test_image_data, ],
+            }
+        }
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'avatar': 'thumbnailPhoto'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+
+        hamlet = self.example_user('hamlet')
+        path_id = user_avatar_path(hamlet)
+        original_image_path_id = path_id + ".original"
+        medium_path_id = path_id + "-medium.png"
+
+        original_image_key = bucket.get_key(original_image_path_id)
+        medium_image_key = bucket.get_key(medium_path_id)
+
+        image_data = original_image_key.get_contents_as_string()
+        self.assertEqual(image_data, test_image_data)
+
+        test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
+        medium_image_data = medium_image_key.get_contents_as_string()
+        self.assertEqual(medium_image_data, test_medium_image_data)
+
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['Cordelia Lear', ],
+                # Submit invalid data for the thumbnailPhoto field
+                'thumbnailPhoto': [b'00' + test_image_data, ],
+            }
+        }
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'avatar': 'thumbnailPhoto'}):
+            with mock.patch('logging.warning') as mock_warning:
+                self.perform_ldap_sync(self.example_user('hamlet'))
+                mock_warning.assert_called_once_with(
+                    'Could not parse thumbnailPhoto field for user %s' % (hamlet.id,))
 
     def test_deactivate_non_matching_users(self) -> None:
         self.mock_ldap.directory = {}
