@@ -2,25 +2,6 @@ var info_overlay = (function () {
 
 var exports = {};
 
-function adjust_mac_shortcuts() {
-    var keys_map = [
-        ['Backspace', 'Delete'],
-        ['Enter', 'Return'],
-        ['Home', 'Fn + Left'],
-        ['End', 'Fn + Right'],
-        ['PgUp', 'Fn + Up'],
-        ['PgDn', 'Fn + Down'],
-    ];
-
-    $(".hotkeys_table").each(function () {
-        var html = $(this).html();
-        keys_map.forEach(function (pair) {
-            html = html.replace(new RegExp(pair[0]), pair[1]);
-        });
-        $(this).html(html);
-    });
-}
-
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 exports.toggler = undefined;
@@ -63,9 +44,7 @@ exports.set_up_toggler = function () {
 
     $(".informational-overlays .overlay-tabs").append(elem);
 
-    if (common.has_mac_keyboard()) {
-        adjust_mac_shortcuts();
-    }
+    common.adjust_mac_shortcuts(".hotkeys_table .hotkey kbd");
 
     exports.toggler = toggler;
 };

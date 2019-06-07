@@ -104,6 +104,33 @@ exports.has_mac_keyboard = function () {
     return /Mac/i.test(navigator.platform);
 };
 
+exports.adjust_mac_shortcuts = function (key_elem_class) {
+    if (!exports.has_mac_keyboard()) {
+        return;
+    }
+
+    var keys_map = new Map([
+        ['Backspace', 'Delete'],
+        ['Enter', 'Return'],
+        ['Home', 'Fn + ←'],
+        ['End', 'Fn + →'],
+        ['PgUp', 'Fn + ↑'],
+        ['PgDn', 'Fn + ↓'],
+    ]);
+
+    $(key_elem_class).each(function () {
+        var key_text = $(this).text();
+        var keys = key_text.match(/[^\s\+]+/g);
+
+        _.each(keys, function (key) {
+            if (keys_map.get(key)) {
+                key_text = key_text.replace(key, keys_map.get(key));
+            }
+        });
+        $(this).text(key_text);
+    });
+};
+
 return exports;
 
 }());

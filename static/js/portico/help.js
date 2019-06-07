@@ -38,34 +38,6 @@ function highlight_current_article() {
     article.addClass('highlighted');
 }
 
-function adjust_mac_shortcuts() {
-    var keys_map = new Map([
-        ['Backspace', 'Delete'],
-        ['Enter', 'Return'],
-        ['Home', 'Fn + ←'],
-        ['End', 'Fn + →'],
-        ['PgUp', 'Fn + ↑'],
-        ['PgDn', 'Fn + ↓'],
-    ]);
-
-    $(".markdown .content code").each(function () {
-        var text = $(this).text();
-
-        if (!keys_map.has(text)) {
-            return;
-        }
-
-        var key_string = keys_map.get(text);
-        var keys = key_string.match(/[^\s\+]+/g);
-
-        _.each(keys, function (key) {
-            key_string = key_string.replace(key, '<code>' + key + '</code>');
-        });
-
-        $(this).replaceWith(key_string);
-    });
-}
-
 function render_code_sections() {
     $(".code-section").each(function () {
         activate_correct_tab($(this));
@@ -74,9 +46,7 @@ function render_code_sections() {
 
     highlight_current_article();
 
-    if (common.has_mac_keyboard()) {
-        adjust_mac_shortcuts();
-    }
+    common.adjust_mac_shortcuts(".markdown .content code");
 
     $("table").each(function () {
         $(this).addClass("table table-striped");
