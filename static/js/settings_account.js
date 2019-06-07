@@ -223,8 +223,8 @@ exports.set_up = function () {
         if (page_params.realm_password_auth_enabled !== false) {
             $("#get_api_key_box").show();
         } else {
-            // Skip the password prompt step
-            $("#get_api_key_box form").submit();
+            // Skip the password prompt step, since the user doesn't have one.
+            $("#get_api_key_button").click();
         }
         $("#api_key_button_box").hide();
     });
