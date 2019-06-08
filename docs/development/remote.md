@@ -208,6 +208,21 @@ $ rmate [options] file
 ```
 and the file should open up in VS Code. Any changes you make now will be saved remotely.
 
+##### PyCharm
+
+[PyCharm](https://www.jetbrains.com/pycharm/) is an all-in-one tool for Python development,
+and the Professional version is free to use for students and core FOSS contributors.
+
+To work on a remote machine with PyCharm:
+
+1. Make sure that you're running PyCharm Professional.
+2. Navigate to Tools > Deployment > Configuration.
+3. Fill in details of your remote machine in the pop-up window. Add your machine's private key if required.
+4. Click on Tools > Deployment > Browse Remote Host.
+5. Choose a file from the explorer and begin work. Make sure to sync changes to save your work.
+6. To run or test your work, click on Deployment > Remote SSH session and
+PyCharm will open up a terminal to your remote machine.
+
 ##### Command line editors
 
 Another way to edit directly on the remote development server is with
