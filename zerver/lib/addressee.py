@@ -21,6 +21,15 @@ def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
 
     return emails
 
+def raw_pm_with_emails_by_ids(user_ids: Iterable[int], my_email: str,
+                              realm: Realm) -> List[str]:
+    user_profiles = get_user_profiles_by_ids(user_ids, realm)
+    emails = [user_profile.email for user_profile in user_profiles]
+    if len(emails) > 1:
+        emails = [email for email in emails if email != my_email.lower()]
+
+    return emails
+
 def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     user_profiles = []  # type: List[UserProfile]
     for email in emails:

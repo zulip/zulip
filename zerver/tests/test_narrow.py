@@ -1072,6 +1072,10 @@ class GetOldMessagesTest(ZulipTestCase):
             assert isinstance(dr, list)
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
+        def dr_ids(dr: Union[str, List[Dict[str, Any]]]) -> List[int]:
+            assert isinstance(dr, list)
+            return list(sorted(set([r['id'] for r in dr] + [self.example_user('hamlet').id])))
+
         self.send_personal_message(me, self.example_email("iago"))
         self.send_huddle_message(
             me,
@@ -1081,9 +1085,16 @@ class GetOldMessagesTest(ZulipTestCase):
                      if not m.is_stream_message()]
         for personal in personals:
             emails = dr_emails(get_display_recipient(personal.recipient))
-
             self.login(me)
-            narrow = [dict(operator='pm-with', operand=emails)]
+            narrow = [dict(operator='pm-with', operand=emails)]  # type: List[Dict[str, Any]]
+            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+
+            for message in result["messages"]:
+                self.assertEqual(dr_emails(message['display_recipient']), emails)
+
+            # check passing id is conistent with passing emails as operand
+            ids = dr_ids(get_display_recipient(personal.recipient))
+            narrow = [dict(operator='pm-with', operand=ids)]
             result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
             for message in result["messages"]:
@@ -2118,6 +2129,11 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@zulip.com'],
                                          "Invalid narrow operator: unknown user")
+
+    def test_bad_narrow_pm_with_id_list(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.exercise_bad_narrow_operand('pm-with', [-24],
+                                         "Bad value for 'narrow': [[\"pm-with\",-24]]")
 
     def test_message_without_rendered_content(self) -> None:
         """Older messages may not have rendered_content in the database"""

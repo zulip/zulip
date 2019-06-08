@@ -20,7 +20,7 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_messages, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, \
     get_user_info_for_message_updates, check_schedule_message
-from zerver.lib.addressee import raw_pm_with_emails
+from zerver.lib.addressee import raw_pm_with_emails, raw_pm_with_emails_by_ids
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.message import (
     access_message,
@@ -45,7 +45,7 @@ from zerver.lib.topic import (
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
-    check_list, check_int, check_dict, check_string, check_bool
+    check_list, check_int, check_dict, check_string, check_bool, check_string_or_int_list
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
@@ -300,13 +300,26 @@ class NarrowBuilder:
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
-    def by_pm_with(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_pm_with(self, query: Query, operand: Union[str, Iterable[int]],
+                   maybe_negate: ConditionTransform) -> Query:
         # This will strip our own email out of the operand
         # and do other munging.
-        emails = raw_pm_with_emails(
-            email_str=operand,
-            my_email=self.user_profile.email,
-        )
+        if isinstance(operand, str):
+            emails = raw_pm_with_emails(
+                email_str=operand,
+                my_email=self.user_profile.email,
+            )
+        else:
+            """
+            This is where we handle passing a list of user IDs for the narrow, which is the
+            preferred/cleaner API. Ideally, we'd refactor the below to natively use user IDs,
+            rather than having mapping user IDs to emails here.
+            """
+            emails = raw_pm_with_emails_by_ids(
+                user_ids=operand,
+                my_email=self.user_profile.email,
+                realm=self.user_realm
+            )
 
         if len(emails) == 0:
             raise BadNarrowOperator('empty pm-with clause')
@@ -317,7 +330,7 @@ class NarrowBuilder:
                 recipient = recipient_for_emails(emails, False,
                                                  self.user_profile, self.user_profile)
             except ValidationError:
-                raise BadNarrowOperator('unknown recipient ' + operand)
+                raise BadNarrowOperator('unknown recipient in ' + str(operand))
             cond = column("recipient_id") == recipient.id
             return query.where(maybe_negate(cond))
         else:
@@ -336,7 +349,7 @@ class NarrowBuilder:
             try:
                 narrow_profile = get_user_including_cross_realm(target_email, self.user_realm)
             except UserProfile.DoesNotExist:
-                raise BadNarrowOperator('unknown user ' + operand)
+                raise BadNarrowOperator('unknown user in ' + str(operand))
 
             narrow_recipient = get_personal_recipient(narrow_profile.id)
             cond = or_(and_(column("sender_id") == narrow_profile.id,
@@ -350,7 +363,7 @@ class NarrowBuilder:
         try:
             narrow_profile = get_user_including_cross_realm(operand, self.user_realm)
         except UserProfile.DoesNotExist:
-            raise BadNarrowOperator('unknown user ' + operand)
+            raise BadNarrowOperator('unknown user ' + str(operand))
 
         self_recipient_ids = [
             recipient_tuple['recipient_id'] for recipient_tuple
@@ -494,9 +507,15 @@ def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
             return dict(operator=elem[0], operand=elem[1])
 
         if isinstance(elem, dict):
+            user_ids_supported_operators = ['pm-with']
+            if elem.get('operator', '') in user_ids_supported_operators:
+                operand_validator = check_string_or_int_list
+            else:
+                operand_validator = check_string
+
             validator = check_dict([
                 ('operator', check_string),
-                ('operand', check_string),
+                ('operand', operand_validator),
             ])
 
             error = validator('elem', elem)
