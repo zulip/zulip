@@ -266,7 +266,7 @@ exports.initialize_kitchen_sink_stuff = function () {
 
     $('.copy_message[data-toggle="tooltip"]').tooltip();
 
-    $('#keyboard-icon').tooltip();
+    $('#keyboard-icon').tooltip({animation: false});
 
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
