@@ -39,3 +39,7 @@ as a list of simple objects, as follows:
 The full set of search/narrowing options supported by the Zulip API is
 documented in
 [the Zulip Help Center article on search](/help/search-for-messages).
+There are a few additional options that we don't document there
+because they are primarily useful to API clients:
+
+* `pm-with:1234`: Search 1-on-1 messages by user ID `1234`.
