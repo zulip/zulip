@@ -236,7 +236,8 @@ class TestSendWebhookFixtureMessage(TestCase):
     def test_parse_headers_method(self) -> None:
         command = Command()
         self.assertEqual(command.parse_headers(None), None)
-        self.assertEqual(command.parse_headers('{"X-Custom-Header": "value"}'), {"HTTP_X_CUSTOM_HEADER": "value"})
+        self.assertEqual(command.parse_headers('{"Content-Type": "text/plain", "X-Custom-Header": "value"}'),
+                         {"CONTENT_TYPE": "text/plain", "HTTP_X_CUSTOM_HEADER": "value"})
         with self.assertRaises(CommandError):
             command.parse_headers('{"X-Custom - Headers": "some_val"}')
 

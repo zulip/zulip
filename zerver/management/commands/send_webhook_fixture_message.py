@@ -20,7 +20,13 @@ def parse_headers(custom_headers: Union[None, str]) -> Union[None, Dict[str, str
     for header in custom_headers_dict:
         if len(header.split(" ")) > 1:
             raise ValueError("custom header '%s' contains a space." % (header,))
-        headers["HTTP_" + header.upper().replace("-", "_")] = str(custom_headers_dict[header])
+        new_header = header.upper().replace("-", "_")
+
+        if new_header not in ["CONTENT_TYPE", "CONTENT_LENGTH"]:
+            # See https://docs.djangoproject.com/en/2.2/ref/request-response/
+            # for how Django formats HTTP headers.
+            new_header = "HTTP_" + new_header
+        headers[new_header] = str(custom_headers_dict[header])
     return headers
 
 class Command(ZulipBaseCommand):
