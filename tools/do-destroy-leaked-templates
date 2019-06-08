@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e
+
+export DJANGO_SETTINGS_MODULE=zproject.test_settings
+
+commands=""
+for template in "$@"
+do
+    commands+="DROP DATABASE IF EXISTS ${template};"
+done
+
+psql -q -v ON_ERROR_STOP=1 -h localhost postgres zulip_test <<< "$commands"

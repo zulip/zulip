@@ -9,8 +9,9 @@ from typing import Any, List, Optional
 from importlib import import_module
 from io import StringIO
 import glob
+import time
 
-from django.db import connections, DEFAULT_DB_ALIAS
+from django.db import connections, DEFAULT_DB_ALIAS, ProgrammingError
 from django.db.utils import OperationalError
 from django.apps import apps
 from django.conf import settings
@@ -240,3 +241,46 @@ def template_database_status(
         return 'current'
 
     return 'needs_rebuild'
+
+def destroy_leaked_test_templates() -> bool:
+    files = glob.glob(UUID_VAR_DIR + "/zulip_test_template/" + ("[0-9]" * 7))
+    destroy_templates_command = ['tools/do-destroy-leaked-templates']
+
+    # Append every template database to a list. We check if each
+    # individual template belongs to a file, and that the file is
+    # less than an hour old. If these conditions are met, we remove
+    # the template from our destructor command's option list.
+    templates_to_drop = []  # type: List[str]
+    for alias in connections:
+        connection = connections[alias]
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT datname FROM pg_database;")
+                rows = cursor.fetchall()
+                for row in rows:
+                    if 'zulip_test_template_' in row[0]:
+                        templates_to_drop.append(row[0])
+        except ProgrammingError:
+            pass
+
+    accepted_templates = []  # type: List[str]
+    for file in files:
+        if round(time.time()) - os.path.getmtime(file) < 3600:
+            with open(file, "r") as f:
+                for line in f:
+                    accepted_templates.append('zulip_test_template_{}'.format(line).rstrip())
+        else:
+            # Any template more than an hour old shouldn't have a corresponding file.
+            os.remove(file)
+    templates_to_drop = [
+        template
+        for template in templates_to_drop
+        if template not in accepted_templates
+    ]
+
+    if not templates_to_drop:
+        return False
+
+    destroy_templates_command.extend(templates_to_drop)
+    run(destroy_templates_command)
+    return True
