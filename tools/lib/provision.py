@@ -526,7 +526,8 @@ def main(options):
         import django
         django.setup()
 
-        from zerver.lib.test_fixtures import template_database_status, run_db_migrations
+        from zerver.lib.test_fixtures import template_database_status, run_db_migrations, \
+            destroy_leaked_test_databases
 
         try:
             from zerver.lib.queue import SimpleQueueClient
@@ -573,6 +574,10 @@ def main(options):
             run(["./manage.py", "compilemessages"])
         else:
             print("No need to run `manage.py compilemessages`.")
+
+        destroyed = destroy_leaked_test_databases()
+        if destroyed:
+            print("Dropped %s stale test databases!" % (destroyed,))
 
     run(["scripts/lib/clean-unused-caches"])
 

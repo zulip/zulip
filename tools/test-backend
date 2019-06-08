@@ -461,6 +461,11 @@ def main() -> None:
         # an important clue as to why tests fail.
         report_slow_tests()
 
+    # Ideally, we'd check for any leaked test databases here;
+    # but that needs some hackery with database names.
+    #
+    # destroy_leaked_test_databases()
+
     # We'll have printed whether tests passed or failed above
     sys.exit(bool(failures))
 
