@@ -313,3 +313,12 @@ def to_non_negative_int(s: str, max_int_size: int=2**32-1) -> int:
     if x > max_int_size:
         raise ValueError('%s is too large (max %s)' % (x, max_int_size))
     return x
+
+def check_string_or_int_list(var_name: str, val: object) -> Optional[str]:
+    if isinstance(val, str):
+        return None
+
+    if not isinstance(val, list):
+        return _('%s is not a string or an integer list') % (var_name,)
+
+    return check_list(check_int)(var_name, val)

@@ -44,6 +44,7 @@ from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or, check_url, check_short_string,
     check_string_fixed_length, check_capped_string, check_color, to_non_negative_int,
+    check_string_or_int_list
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Realm
@@ -904,6 +905,20 @@ class ValidatorTestCase(TestCase):
 
         url = 99.3
         self.assertEqual(check_url('url', url), 'url is not a string')
+
+    def test_check_string_or_int_list(self) -> None:
+        x = "string"  # type: Any
+        self.assertEqual(check_string_or_int_list('x', x), None)
+
+        x = [1, 2, 4]
+        self.assertEqual(check_string_or_int_list('x', x), None)
+
+        x = None
+        self.assertEqual(check_string_or_int_list('x', x), 'x is not a string or an integer list')
+
+        x = [1, 2, '3']
+        self.assertEqual(check_string_or_int_list('x', x), 'x[2] is not an integer')
+
 
 class DeactivatedRealmTest(ZulipTestCase):
     def test_send_deactivated_realm(self) -> None:
