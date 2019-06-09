@@ -2,6 +2,9 @@ import itertools
 import ujson
 import random
 from typing import List, Dict, Any
+import os
+
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 
 def load_config() -> Dict[str, Any]:
     with open("zerver/tests/fixtures/config.generate_data.json", "r") as infile:
@@ -169,7 +172,8 @@ def create_test_data() -> None:
 
     paragraphs = parse_file(config, gens, config["corpus"]["filename"])
 
-    write_file(paragraphs, "var/test_messages.json")
+    write_file(paragraphs, os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
+                                        "test_messages.json"))
 
 config = load_config()  # type: Dict[str, Any]
 

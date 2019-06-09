@@ -30,6 +30,8 @@ from zerver.models import CustomProfileField, DefaultStream, Message, Realm, Rea
     email_to_username, get_client, get_huddle, get_realm, get_stream, \
     get_system_bot, get_user, get_user_profile_by_id
 
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+
 settings.TORNADO_SERVER = None
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
@@ -559,7 +561,8 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
     (tot_messages, personals_pairs, options, output, random_seed) = data
     random.seed(random_seed)
 
-    with open("var/test_messages.json", "r") as infile:
+    with open(os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
+                           "test_messages.json"), "r") as infile:
         dialog = ujson.load(infile)
     random.shuffle(dialog)
     texts = itertools.cycle(dialog)
