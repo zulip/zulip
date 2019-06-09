@@ -42,7 +42,7 @@ MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="mailto:support@zulipchat.com">contact us</a>.'
 WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
-                        "Please contact %s with any questions!" % (FromAddress.SUPPORT,)
+                        "Please contact your organization administrator with any questions."
 DEACTIVATED_ACCOUNT_ERROR = u"Your account is no longer active. " + \
                             u"Please contact your organization administrator to reactivate it."
 
