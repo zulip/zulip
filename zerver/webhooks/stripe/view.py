@@ -149,8 +149,19 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
     if category == 'invoice':
         if event == 'upcoming':  # nocoverage
             body = 'Upcoming invoice created'
+        elif (event == 'updated' and
+              payload['data']['previous_attributes'].get('paid', None) is False and
+              object_['paid'] is True and
+              object_["amount_paid"] != 0 and
+              object_["amount_remaining"] == 0):
+            # We are taking advantage of logical AND short circuiting here since we need the else
+            # statement below.
+            object_id = object_['id']
+            invoice_link = 'https://dashboard.stripe.com/invoices/{}'.format(object_id)
+            body = '[Invoice]({invoice_link}) is now paid'.format(invoice_link=invoice_link)
         else:
-            body = default_body(update_blacklist=['lines', 'description', 'number', 'finalized_at'])
+            body = default_body(update_blacklist=['lines', 'description', 'number', 'finalized_at',
+                                                  'status_transitions', 'payment_intent'])
         if event == 'created':  # nocoverage
             # Could potentially add link to invoice PDF here
             body += ' ({reason})\nBilling method: {method}\nTotal: {total}\nAmount due: {due}'.format(

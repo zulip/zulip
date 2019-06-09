@@ -129,6 +129,16 @@ Billing method: send invoice"""
             content_type="application/x-www-form-urlencoded"
         )
 
+    def test_invoice_paid(self) -> None:
+        expected_topic = u"cus_FDmrSwQt9Fck5M"
+        expected_message = u"[Invoice](https://dashboard.stripe.com/invoices/in_1EjLINHuGUuNWDDZjDf2WNqd) is now paid"
+        self.send_and_test_stream_message(
+            'invoice_updated__paid',
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded"
+        )
+
     @patch('zerver.webhooks.stripe.view.check_send_webhook_message')
     def test_account_updated_without_previous_attributes_ignore(
             self, check_send_webhook_message_mock: MagicMock) -> None:
