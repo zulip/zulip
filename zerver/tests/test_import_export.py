@@ -89,6 +89,10 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
 )
 
+from scripts.lib.zulip_tools import (
+    get_or_create_dev_uuid_var_path,
+)
+
 class QueryUtilTest(ZulipTestCase):
     def _create_messages(self) -> None:
         for email in [self.example_email('cordelia'),
@@ -223,7 +227,7 @@ class ImportExportTest(ZulipTestCase):
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
     def _make_output_dir(self) -> str:
-        output_dir = 'var/test-export'
+        output_dir = get_or_create_dev_uuid_var_path('test-backend/test-export')
         self.rm_tree(output_dir)
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
@@ -697,7 +701,8 @@ class ImportExportTest(ZulipTestCase):
 
         with patch('logging.info'):
             with self.settings(BILLING_ENABLED=False):
-                do_import_realm('var/test-export', 'test-zulip')
+                do_import_realm(get_or_create_dev_uuid_var_path('test-backend/test-export'),
+                                'test-zulip')
 
         # sanity checks
 
@@ -953,7 +958,8 @@ class ImportExportTest(ZulipTestCase):
         self._export_realm(realm)
 
         with patch('logging.info'):
-            do_import_realm('var/test-export', 'test-zulip')
+            do_import_realm(get_or_create_dev_uuid_var_path('test-backend/test-export'),
+                            'test-zulip')
         imported_realm = Realm.objects.get(string_id='test-zulip')
 
         # Test attachments
@@ -989,7 +995,8 @@ class ImportExportTest(ZulipTestCase):
         self._setup_export_files()
         self._export_realm(realm)
         with patch('logging.info'):
-            do_import_realm('var/test-export', 'test-zulip')
+            do_import_realm(get_or_create_dev_uuid_var_path('test-backend/test-export'),
+                            'test-zulip')
         imported_realm = Realm.objects.get(string_id='test-zulip')
         test_image_data = open(get_test_image_file('img.png').name, 'rb').read()
 
@@ -1045,12 +1052,14 @@ class ImportExportTest(ZulipTestCase):
 
         with patch('logging.info'):
             with self.settings(BILLING_ENABLED=True):
-                realm = do_import_realm('var/test-export', 'test-zulip-1')
+                realm = do_import_realm(get_or_create_dev_uuid_var_path('test-backend/test-export'),
+                                        'test-zulip-1')
                 self.assertTrue(realm.plan_type, Realm.LIMITED)
                 self.assertTrue(RealmAuditLog.objects.filter(
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED).exists())
             with self.settings(BILLING_ENABLED=False):
-                realm = do_import_realm('var/test-export', 'test-zulip-2')
+                realm = do_import_realm(get_or_create_dev_uuid_var_path('test-backend/test-export'),
+                                        'test-zulip-2')
                 self.assertTrue(realm.plan_type, Realm.SELF_HOSTED)
                 self.assertTrue(RealmAuditLog.objects.filter(
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED).exists())

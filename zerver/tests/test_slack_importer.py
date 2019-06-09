@@ -44,6 +44,10 @@ from zerver.models import (
     Recipient,
 )
 
+from scripts.lib.zulip_tools import (
+    get_or_create_dev_uuid_var_path,
+)
+
 import ujson
 import logging
 import shutil
@@ -480,7 +484,7 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
     def test_convert_slack_workspace_messages(self, mock_get_messages_iterator: mock.Mock,
                                               mock_message: mock.Mock) -> None:
-        os.makedirs('var/test-slack-import', exist_ok=True)
+        output_dir = get_or_create_dev_uuid_var_path('test-backend/test-slack-import')
         added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
 
         time = float(timezone_now().timestamp())
@@ -505,10 +509,10 @@ class SlackImporter(ZulipTestCase):
         # Hacky: We should include a zerver_userprofile, not the empty []
         test_reactions, uploads, zerver_attachment = convert_slack_workspace_messages(
             './random_path', user_list, 2, {}, {}, added_channels,
-            realm, [], [], 'domain', 'var/test-slack-import', chunk_size=1)
-        messages_file_1 = os.path.join('var', 'test-slack-import', 'messages-000001.json')
+            realm, [], [], 'domain', output_dir=output_dir, chunk_size=1)
+        messages_file_1 = os.path.join(output_dir, 'messages-000001.json')
         self.assertTrue(os.path.exists(messages_file_1))
-        messages_file_2 = os.path.join('var', 'test-slack-import', 'messages-000002.json')
+        messages_file_2 = os.path.join(output_dir, 'messages-000002.json')
         self.assertTrue(os.path.exists(messages_file_2))
 
         with open(messages_file_1) as f:

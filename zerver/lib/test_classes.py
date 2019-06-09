@@ -59,6 +59,8 @@ from zilencer.models import get_remote_server_by_uuid
 from zerver.decorator import do_two_factor_login
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+
 import base64
 import mock
 import os
@@ -705,7 +707,7 @@ class ZulipTestCase(TestCase):
             shutil.rmtree(path)
 
     def make_import_output_dir(self, exported_from: str) -> str:
-        output_dir = tempfile.mkdtemp(dir="var/",
+        output_dir = tempfile.mkdtemp(dir=get_or_create_dev_uuid_var_path('test-backend'),
                                       prefix="test-" + exported_from + "-import-")
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
