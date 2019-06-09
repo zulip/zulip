@@ -12,6 +12,7 @@ import ujson
 import httplib2
 import httpretty
 import requests
+import shutil
 
 # check for the venv
 from lib import sanity_check
@@ -465,6 +466,19 @@ def main() -> None:
     # but that needs some hackery with database names.
     #
     # destroy_leaked_test_databases()
+
+    # The majority of spam being written to var/<uuid>/test-backend/ is a result
+    # of test-mattermost-import-* and test-gitter-import-*
+    from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+    for path in glob.glob(os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
+                                       "test-*-import-*")):
+        try:
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
+        except FileNotFoundError:
+            pass
 
     # We'll have printed whether tests passed or failed above
     sys.exit(bool(failures))
