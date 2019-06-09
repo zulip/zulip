@@ -90,6 +90,45 @@ function calculate_info_popover_placement(size, elt) {
     }
 }
 
+function get_custom_profile_field_data(user, field, field_types, dateFormat) {
+    var field_value = people.get_custom_profile_data(user.user_id, field.id);
+    var field_type = field.type;
+    var profile_field = {};
+
+    if (!field_value) {
+        return profile_field;
+    }
+    if (!field_value.value) {
+        return profile_field;
+    }
+    profile_field.name = field.name;
+    profile_field.is_user_field = false;
+    profile_field.is_link = field_type === field_types.URL.id;
+    profile_field.type = field_type;
+
+    switch (field_type) {
+    case field_types.DATE.id:
+        profile_field.value = moment(field_value.value).format(dateFormat);
+        break;
+    case field_types.USER.id:
+        profile_field.id = field.id;
+        profile_field.is_user_field = true;
+        profile_field.value = field_value.value;
+        break;
+    case field_types.CHOICE.id:
+        var field_choice_dict = JSON.parse(field.field_data);
+        profile_field.value = field_choice_dict[field_value.value].text;
+        break;
+    case field_types.SHORT_TEXT.id:
+    case field_types.LONG_TEXT.id:
+        profile_field.value = field_value.value;
+        profile_field.rendered_value = field_value.rendered_value;
+        break;
+    default:
+        profile_field.value = field_value.value;
+    }
+    return profile_field;
+}
 
 function render_user_info_popover(user, popover_element, is_sender_popover, private_msg_class,
                                   template_class, popover_placement) {
@@ -231,49 +270,11 @@ exports.hide_user_profile = function () {
 exports.show_user_profile = function (user) {
     popovers.hide_all();
 
-    var profile_data = [];
-    var localFormat = moment.localeData().longDateFormat('LL');
+    var dateFormat = moment.localeData().longDateFormat('LL');
     var field_types = page_params.custom_profile_field_types;
-
-    page_params.custom_profile_fields.forEach(function (field) {
-        var field_value = people.get_custom_profile_data(user.user_id, field.id);
-        var field_type = field.type;
-        var profile_field = {};
-
-        profile_field.name = field.name;
-        profile_field.is_user_field = false;
-        profile_field.is_link = field_type === field_types.URL.id;
-        profile_field.type = field_type;
-
-        if (!field_value) {
-            return;
-        }
-        if (!field_value.value) {
-            return;
-        }
-        switch (field_type) {
-        case field_types.DATE.id:
-            profile_field.value = moment(field_value.value).format(localFormat);
-            break;
-        case field_types.USER.id:
-            profile_field.id = field.id;
-            profile_field.is_user_field = true;
-            profile_field.value = field_value.value;
-            break;
-        case field_types.CHOICE.id:
-            var field_choice_dict = JSON.parse(field.field_data);
-            profile_field.value = field_choice_dict[field_value.value].text;
-            break;
-        case field_types.SHORT_TEXT.id:
-        case field_types.LONG_TEXT.id:
-            profile_field.value = field_value.value;
-            profile_field.rendered_value = field_value.rendered_value;
-            break;
-        default:
-            profile_field.value = field_value.value;
-        }
-        profile_data.push(profile_field);
-    });
+    var profile_data = page_params.custom_profile_fields
+        .map(function (f) {return get_custom_profile_field_data(user, f, field_types, dateFormat);})
+        .filter(function (f) {return f.name !== undefined;});
 
     var args = {
         full_name: user.full_name,
@@ -281,7 +282,7 @@ exports.show_user_profile = function (user) {
         profile_data: profile_data,
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
-        date_joined: moment(user.date_joined).format(localFormat),
+        date_joined: moment(user.date_joined).format(dateFormat),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         show_email: settings_org.show_email(),
         user_time: people.get_user_time(user.user_id),
