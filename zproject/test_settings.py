@@ -18,6 +18,8 @@ if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 from .settings import *
 
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+
 # Clear out the REALM_HOSTS set in dev_settings.py
 REALM_HOSTS = {}
 
@@ -125,7 +127,7 @@ if not CASPER_TESTS:
 ENABLE_FILE_LINKS = True
 
 
-LOCAL_UPLOADS_DIR = 'var/test_uploads'
+LOCAL_UPLOADS_DIR = get_or_create_dev_uuid_var_path('test-backend/test_uploads')
 
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
