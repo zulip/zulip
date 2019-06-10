@@ -117,7 +117,6 @@
 * [GDPR Compliance](/help/gdpr-compliance)
 
 ## Organization settings
-* [Waiting period for full members](/help/configure-waiting-period-for-full-members)
 * [Restrict stream creation](/help/configure-who-can-create-streams)
 * [Restrict stream invitation](/help/configure-who-can-invite-to-streams)
 * [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
@@ -143,6 +142,7 @@
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)
+* [Restrict permissions of new members](/help/restrict-permissions-of-new-members)
 * [Change a user's role](/help/change-a-users-role)
 * [Change a user's name](/help/change-a-users-name)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
