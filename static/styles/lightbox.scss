@@ -269,16 +269,13 @@
     background-color: transparent;
     color: hsl(0, 0%, 100%);
     border-radius: 4px;
+    text-decoration: none;
 }
 
 #lightbox_overlay .image-actions .button:hover {
     background-color: hsl(0, 0%, 100%);
     border-color: hsl(0, 0%, 100%);
     color: hsl(227, 40%, 16%);
-}
-
-#lightbox_overlay .image-actions a.button {
-    text-decoration: none;
 }
 
 #lightbox_overlay .button .download {
