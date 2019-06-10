@@ -10,8 +10,8 @@ import shlex
 # In order to use remote casperjs debugging, pass the --remote-debug flag
 # This will start a remote debugging session listening on port 7777
 #
-# See https://wiki.zulip.net/wiki/Testing_the_app for more information
-# on how to use remote debugging
+# See https://zulip.readthedocs.io/en/latest/testing/testing-with-casper.html
+# for more information on how to use remote debugging
 #
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
