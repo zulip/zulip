@@ -108,6 +108,10 @@
     opacity: 1;
 }
 
+#lightbox_overlay .image-actions .lightbox-canvas-trigger .status {
+    margin-top: -7px;
+}
+
 #lightbox_overlay .image-actions .lightbox-canvas-trigger .status::after {
     content: attr(data-disabled);
     text-transform: uppercase;
@@ -121,10 +125,6 @@
 
 #lightbox_overlay .image-actions .lightbox-canvas-trigger .title {
     font-weight: 600;
-}
-
-#lightbox_overlay .image-actions .lightbox-canvas-trigger .status {
-    margin-top: -7px;
 }
 
 #lightbox_overlay .image-actions a {
@@ -147,6 +147,23 @@
 
 #lightbox_overlay .image-actions .open span:nth-of-type(2) {
     top: 2px;
+}
+
+#lightbox_overlay .image-actions .button {
+    font-size: 0.8rem;
+    min-width: inherit;
+    padding: 4px 10px;
+    border: 1px solid hsla(0, 0%, 100%, 0.6);
+    background-color: transparent;
+    color: hsl(0, 0%, 100%);
+    border-radius: 4px;
+    text-decoration: none;
+
+    &:hover {
+        background-color: hsl(0, 0%, 100%);
+        border-color: hsl(0, 0%, 100%);
+        color: hsl(227, 40%, 16%);
+    }
 }
 
 #lightbox_overlay .image-description {
@@ -258,23 +275,6 @@
                 opacity: 1;
             }
         }
-    }
-}
-
-#lightbox_overlay .image-actions .button {
-    font-size: 0.8rem;
-    min-width: inherit;
-    padding: 4px 10px;
-    border: 1px solid hsla(0, 0%, 100%, 0.6);
-    background-color: transparent;
-    color: hsl(0, 0%, 100%);
-    border-radius: 4px;
-    text-decoration: none;
-
-    &:hover {
-        background-color: hsl(0, 0%, 100%);
-        border-color: hsl(0, 0%, 100%);
-        color: hsl(227, 40%, 16%);
     }
 }
 
