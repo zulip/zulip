@@ -198,13 +198,13 @@
     text-align: center;
     justify-content: center;
     align-items: center;
-}
 
-#lightbox_overlay .player-container iframe {
-    /* maintain 16:9 ratio. */
-    width: calc((100vh - 65px - 95px) * 16 / 9);
-    height: 100%;
-    margin: auto;
+    iframe {
+        /* maintain 16:9 ratio. */
+        width: calc((100vh - 65px - 95px) * 16 / 9);
+        height: 100%;
+        margin: auto;
+    }
 }
 
 #lightbox_overlay .center .arrow {
