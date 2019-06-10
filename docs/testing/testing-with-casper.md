@@ -31,23 +31,9 @@ trying to use the Casper debugging tools are:
   PhantomJS browser, which doesn't support ES6 syntax, so use of
   non-transpiled ES6 syntax will generally be first discovered via the
   Casper tests failing..
-* Are there any errors in `var/casper/server.log` (from the root of
-  your `zulip` checkout?  That's where the `run-dev.py` console output
-  goes when running Casper tests.
-
-Casper.js (via PhantomJS) has support for remote debugging. However, it
-is not perfect. Here are some steps for using it and gotchas you might
-want to know; you'll likely also want to read the section on writing
-tests (below) if you get stuck, since the advice on how to write
-correct Casper selectors will likely be relevant.
-
-The first thing to do when debugging Casper tests is to check the
-additional debug output that our framework provides:
+* Are there any backend-errors (printed inline) while running the tests?
 * You can check the screenshots of what the UI looked like at the time
   of failures at `var/casper/casper-failure*.png`.
-* If it's possible there's a backend exception involved,
-  `var/casper/server.log` will contain the server logs from the casper
-  run; it's worth looking there for tracebacks if you get stuck.
 
 ### Print debugging
 
@@ -67,6 +53,12 @@ file the following:
 This can sometimes give insight into exactly what's happening.
 
 ### Remote debugging
+
+Casper.js (via PhantomJS) has support for remote debugging. However, it
+is not perfect. Here are some steps for using it and gotchas you might
+want to know; you'll likely also want to read the section on writing
+tests (below) if you get stuck, since the advice on how to write
+correct Casper selectors will likely be relevant.
 
 This is a pain to setup with Vagrant because port `7777` and `9981`
 aren't forwarded to the host by default, but can be pretty useful in
