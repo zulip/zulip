@@ -160,36 +160,36 @@
 
     font-size: 1.3rem;
     color: hsl(0, 0%, 100%);
-}
 
-#lightbox_overlay .image-description .title {
-    display: inline-block;
-    vertical-align: top;
+    .title {
+        display: inline-block;
+        vertical-align: top;
 
-    font-weight: 400;
-    line-height: normal;
-    max-width: calc(100% - 110px);
+        font-weight: 400;
+        line-height: normal;
+        max-width: calc(100% - 110px);
 
-    /* Required for text-overflow */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+        /* Required for text-overflow */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-#lightbox_overlay .image-description .user {
-    max-width: 200px;
-    display: inline-block;
-    vertical-align: top;
-    font-weight: 300;
-    line-height: normal;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: pre;
-}
+    .user {
+        max-width: 200px;
+        display: inline-block;
+        vertical-align: top;
+        font-weight: 300;
+        line-height: normal;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: pre;
 
-#lightbox_overlay .image-description .user::before {
-    margin-right: 5px;
-    content: "\2014";
+        &::before {
+            margin-right: 5px;
+            content: "\2014";
+        }
+    }
 }
 
 #lightbox_overlay .player-container {
