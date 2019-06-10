@@ -25,6 +25,8 @@ from zerver.lib.bot_lib import get_bot_handler
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+
 class BotTest(ZulipTestCase, UploadSerializeMixin):
     def get_bot_user(self, email: str) -> UserProfile:
         realm = get_realm("zulip")
@@ -892,7 +894,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(email, get_realm('zulip'))
         self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
 
-    @override_settings(LOCAL_UPLOADS_DIR='var/bot_avatar')
+    @override_settings(LOCAL_UPLOADS_DIR=get_or_create_dev_uuid_var_path('test-backend/bot_avatar'))
     def test_patch_bot_avatar(self) -> None:
         self.login(self.example_email('hamlet'))
         bot_info = {
