@@ -1065,6 +1065,7 @@ ZULIP_PATHS = [
     ("TRACEMALLOC_DUMP_DIR", "/var/log/zulip/tracemalloc"),
     ("SCHEDULED_MESSAGE_DELIVERER_LOG_PATH",
      "/var/log/zulip/scheduled_message_deliverer.log"),
+    ("RETENTION_LOG_PATH", "/var/log/zulip/message_retention.log"),
 ]
 
 # The Event log basically logs most significant database changes,
@@ -1282,6 +1283,10 @@ LOGGING = {
         },
         'zulip.queue': {
             'level': 'WARNING',
+        },
+        'zulip.retention': {
+            'handlers': ['file', 'errors_file'],
+            'propagate': False,
         },
         'zulip.soft_deactivation': {
             'handlers': ['file', 'errors_file'],
