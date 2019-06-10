@@ -41,16 +41,8 @@ If you need to use print debugging in casper, you can do using
 `casper.log`; see <http://docs.casperjs.org/en/latest/logging.html> for
 details.
 
-An additional debugging technique is to enable verbose mode in the
-Casper tests; you can do this by adding to the top of the relevant test
-file the following:
-
->     var casper = require('casper').create({
->        verbose: true,
->        logLevel: "debug"
->     });
-
-This can sometimes give insight into exactly what's happening.
+You can also enable casper's verbose logging mode using the `--verbose` flag. This
+can sometimes give insight into exactly what's happening.
 
 ### Remote debugging
 
