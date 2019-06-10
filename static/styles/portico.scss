@@ -916,25 +916,6 @@ a.bottom-signup-button {
     font-size: 16px;
 }
 
-.portico-page-header {
-    font-weight: 300;
-    font-size: 35px;
-    display: block;
-    padding-top: 40px;
-    margin-bottom: 20px;
-}
-
-.portico-page-header .portico-page-header-icon {
-    margin-right: 12px;
-}
-
-.portico-page-header a,
-.portico-page-header a:hover {
-    color: hsl(0, 0%, 0%);
-    text-decoration: none;
-    display: inline-block;
-}
-
 .portico-large-text {
     font-size: 16px;
     line-height: 20px;
@@ -1141,23 +1122,6 @@ input#terminal:checked ~ #tab-terminal {
     }
 }
 
-.api-page-header,
-.authors-page-header,
-.integrations-page-header,
-.register-page-header {
-    font-weight: 300;
-    font-size: 40px;
-    display: block;
-    margin: auto;
-    width: 360px;
-    text-align: center;
-    margin-bottom: 50px;
-}
-
-.register-page-header {
-    text-align: left;
-}
-
 .login-page-header {
     width: 100%;
 }
@@ -1173,20 +1137,6 @@ input#terminal:checked ~ #tab-terminal {
     margin-bottom: 50px;
 }
 
-.api-page-header,
-.authors-page-header,
-.integrations-page-header {
-    padding-top: 56px;
-}
-
-.integrations-page-header,
-.register-page-header,
-.api-page-header {
-    line-height: 42px;
-    width: auto;
-    margin-bottom: 10px;
-}
-
 .apps-muted {
     font-weight: 300;
     font-size: 20px;
@@ -1194,16 +1144,6 @@ input#terminal:checked ~ #tab-terminal {
     margin: auto;
     text-align: center;
     margin-bottom: 30px;
-}
-
-.integrations-page-header,
-.api-page-header {
-    text-align: left;
-}
-
-.integrations-page-header {
-    font-size: 25px;
-    padding-top: 20px;
 }
 
 .integration-instruction-block {
@@ -1232,11 +1172,6 @@ input#terminal:checked ~ #tab-terminal {
     #integration-list-link span {
         display: none;
     }
-}
-
-.integrations-page-header .integrations-icon {
-    font-size: 22px;
-    margin-right: 10px;
 }
 
 .apps-instructions-header {
