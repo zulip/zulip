@@ -1,28 +1,23 @@
-# Waiting period for full members
+# Restrict permissions of new members
 
 {!admin-only.md!}
 
-Some organization settings allow permissions to be limited to all members or just full members.
-Full members are members whose accounts are older than the configured waiting period which can be
-configured as:
+In large Zulips where
+[anyone can join](/help/allow-anyone-to-join-without-an-invitation), it can
+be useful to restrict what new members can do, to make it easier to cope
+with spammers and confused users.
 
-* **No waiting period**
-* **Members with accounts less than 3 days old**
-* **Members with accounts less than N days old**, for some `N`.
+Members are **new members** from when they join till when their account ages
+past a certain **waiting period** threshold. After that they are **full members**.
+You can configure how long the waiting period is, as well as which actions require
+being a full member.
 
-This functionality can be useful to limit what "disruptive features" a new user has access to
-until they are familiar with Zulip and the rules of your organization.
+Currently, the following actions support limiting access to full members.
 
-For large Zulips where anyone can join, we recommend setting the waiting period
-to at least a few days old (we suggest starting with `N = 3`), to make it easier to cope with
-spammers and confused users.
+- [Creating streams](/help/configure-who-can-create-streams)
+- [Adding users to streams](/help/configure-who-can-invite-to-streams)
 
-Currently, the following permissions support limiting access to only full members:
-
-- [**Configure who can create streams**](/help/configure-who-can-create-streams)
-- [**Configure who can invite to streams**](/help/configure-who-can-invite-to-streams)
-
-### Manage the waiting period
+### Set waiting period for new members
 
 {start_tabs}
 

@@ -2,24 +2,19 @@
 
 {!admin-only.md!}
 
-By default, anyone other than guests can invite others to streams. However, you can restrict stream
-invitation to:
+By default, anyone other than guests can add other users to streams. However, you can restrict this to:
 
-* **Organization administrators**
-* **Organization administrators and all members**
-* **Organization administrators and [full members](/help/restrict-permissions-of-new-members)**
+* Organization administrators
+* Organization administrators and all members
+* Organization administrators and [full members](/help/restrict-permissions-of-new-members)
 
-For corporations and other entities with controlled access, we highly
-recommend keeping stream invitation open. For entities with lots of streams with confidential
-contents, it may be desirable to limit invitations.
-
-### Manage who can create streams
+### Manage who can add users to streams
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-2. Under **Other permissions**, configure **Who can invite other users to streams**.
+2. Under **Other permissions**, configure **Who can add users to streams**.
 
 {!save-changes.md!}
 
