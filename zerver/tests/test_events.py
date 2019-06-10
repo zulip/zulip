@@ -147,6 +147,8 @@ from zerver.tornado.event_queue import (
 )
 from zerver.tornado.views import get_events
 
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+
 import mock
 import time
 import ujson
@@ -158,7 +160,7 @@ class LogEventsTest(ZulipTestCase):
             log_event(dict())
 
     def test_log_event_mkdir(self) -> None:
-        dir_name = 'var/test-log-dir'
+        dir_name = get_or_create_dev_uuid_var_path('test-backend/test-log-dir')
 
         try:
             shutil.rmtree(dir_name)
