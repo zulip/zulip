@@ -275,7 +275,8 @@ def setup_shell_profile(shell_profile):
 
     source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
     write_command(source_activate_command)
-    write_command('cd /srv/zulip')
+    if os.path.exists('/srv/zulip'):
+        write_command('cd /srv/zulip')
 
 def install_system_deps():
     # type: () -> None
