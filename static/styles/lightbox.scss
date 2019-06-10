@@ -127,21 +127,8 @@
     font-weight: 600;
 }
 
-#lightbox_overlay .image-actions a {
-    margin: 0px 5px;
-}
-
-#lightbox_overlay .image-actions .icon {
-    font-size: 1.1rem;
-    display: inline-block;
-}
-
-#lightbox_overlay .image-actions .icon .text {
-    font-size: 0.9rem;
-}
-
 #lightbox_overlay .image-actions .button {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     min-width: inherit;
     padding: 4px 10px;
     border: 1px solid hsla(0, 0%, 100%, 0.6);
@@ -149,6 +136,8 @@
     color: hsl(0, 0%, 100%);
     border-radius: 4px;
     text-decoration: none;
+    display: inline-block;
+    margin: 0px 5px;
 
     &:hover {
         background-color: hsl(0, 0%, 100%);
