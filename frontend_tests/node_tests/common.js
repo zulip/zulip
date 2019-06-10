@@ -69,6 +69,9 @@ run_test('adjust_mac_shortcuts', () => {
         ['X + Shift', 'X + Shift'],
         ['⌘ + Return', '⌘ + Return'],
         ['Enter or Backspace', "Return or Delete"],
+        ['Ctrl', '⌘'],
+        ['Ctrl + Shift', '⌘ + Shift'],
+        ['Ctrl + Backspace + End', '⌘ + Delete + Fn + →'],
     ]);
     const keys_to_test_non_mac = new Map([
         ['Backspace', 'Backspace'],
@@ -79,6 +82,8 @@ run_test('adjust_mac_shortcuts', () => {
         ['PgDn', 'PgDn'],
         ['X + Shift', 'X + Shift'],
         ['⌘ + Return', '⌘ + Return'],
+        ['Ctrl + Shift', 'Ctrl + Shift'],
+        ['Ctrl + Backspace + End', 'Ctrl + Backspace + End'],
     ]);
 
     var key_no;
@@ -113,4 +118,12 @@ run_test('adjust_mac_shortcuts', () => {
     keys_elem_list.forEach(function (key_elem) {
         assert.equal(key_elem.text(), key_elem.expected_key());
     });
+
+    var markdown_hotkey_1 = get_key_stub_html("Ctrl + Backspace", "⌘ + Delete", "markdown_hotkey_1");
+    $(".markdown_content").each = (f) => {
+        f.call(markdown_hotkey_1);
+    };
+    common.adjust_mac_shortcuts(".markdown_content", true);
+    assert.equal(markdown_hotkey_1.text(), markdown_hotkey_1.expected_key());
+    assert.equal(markdown_hotkey_1.hasClass("mac-cmd-key"), true);
 });

@@ -104,7 +104,7 @@ exports.has_mac_keyboard = function () {
     return /Mac/i.test(navigator.platform);
 };
 
-exports.adjust_mac_shortcuts = function (key_elem_class) {
+exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
     if (!exports.has_mac_keyboard()) {
         return;
     }
@@ -116,12 +116,16 @@ exports.adjust_mac_shortcuts = function (key_elem_class) {
         ['End', 'Fn + →'],
         ['PgUp', 'Fn + ↑'],
         ['PgDn', 'Fn + ↓'],
+        ['Ctrl', '⌘'],
     ]);
 
     $(key_elem_class).each(function () {
         var key_text = $(this).text();
         var keys = key_text.match(/[^\s\+]+/g);
 
+        if (key_text.indexOf('Ctrl') > -1 && require_cmd_style) {
+            $(this).addClass("mac-cmd-key");
+        }
         _.each(keys, function (key) {
             if (keys_map.get(key)) {
                 key_text = key_text.replace(key, keys_map.get(key));
