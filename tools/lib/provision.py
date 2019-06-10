@@ -7,6 +7,7 @@ import platform
 import subprocess
 import glob
 import hashlib
+import shutil
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -589,6 +590,21 @@ def main(options):
         # https://github.com/eslint/eslint/issues/11639 is fixed
         # upstream.
         os.remove('.eslintcache')
+
+    # Clean up the root of the `var/` directory for various
+    # testing-related files that we have migrated to
+    # `var/<uuid>/test-backend`.
+    print("Cleaning var/ directory files...")
+    var_paths = glob.glob('var/test*')
+    var_paths.append('var/bot_avatar')
+    for path in var_paths:
+        try:
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
+        except FileNotFoundError:
+            pass
 
     version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
     print('writing to %s\n' % (version_file,))
