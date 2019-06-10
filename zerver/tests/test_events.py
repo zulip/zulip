@@ -1098,6 +1098,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('hint', check_string),
                 ('field_data', check_string),
                 ('order', check_int),
+                ('display_on_small_profile', check_bool)
             ]))),
         ])
 

@@ -49,6 +49,25 @@
         {{else}}
             <li>{{ user_type }}</li>
         {{/if}}
+
+        {{#each displayed_custom_profile_fields}}
+        <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
+            {{#if this.is_user_field}}
+                <div class="pill-container not-editable" data-field-id="{{this.id}}" title="{{this.name}}">
+                    <div class="input" contenteditable="false" style="display: none;"></div>
+                </div>
+                {{else if this.is_link}}
+                <a href={{this.value}} target="_blank" class="value" title="{{this.name}}">{{this.value}}</a>
+            {{else}}
+                {{#if this.rendered_value}}
+                <div class="value" title="{{this.name}}">{{{this.rendered_value}}}</div>
+                {{else}}
+                <div class="value" title="{{this.name}}">{{this.value}}</div>
+                {{/if}}
+            {{/if}}
+        </div>
+        {{/each}}
+
     </div>
 
     {{#if is_me}}

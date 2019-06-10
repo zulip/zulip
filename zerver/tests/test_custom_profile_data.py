@@ -74,11 +74,13 @@ class CustomProfileFieldTest(ZulipTestCase):
         data["name"] = "Phone"
         data["hint"] = "Contact number"
         data["field_type"] = CustomProfileField.SHORT_TEXT
+        data["display_on_small_profile"] = "true"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
         field = CustomProfileField.objects.get(name="Phone", realm=realm)
         self.assertEqual(field.id, field.order)
+        self.assertTrue(field.display_on_small_profile)
 
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result,
@@ -179,6 +181,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_json_error(result, u'Field id 100 not found.')
 
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+        self.assertFalse(field.display_on_small_profile)
 
         self.assertEqual(CustomProfileField.objects.count(), self.original_count)
         result = self.client_patch(
@@ -211,6 +214,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             "/json/realm/profile_fields/{}".format(field.id),
             info={'name': 'New phone number',
                   'hint': 'New contact number',
+                  'display_on_small_profile': "true",
                   'field_type': CustomProfileField.SHORT_TEXT})
         self.assert_json_success(result)
 
@@ -219,6 +223,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assertEqual(field.name, 'New phone number')
         self.assertEqual(field.hint, 'New contact number')
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+        self.assertTrue(field.display_on_small_profile)
 
         field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
         result = self.client_patch(

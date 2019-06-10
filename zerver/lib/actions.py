@@ -5367,9 +5367,10 @@ def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
 
 def try_add_realm_custom_profile_field(realm: Realm, name: str, field_type: int,
                                        hint: str='',
-                                       field_data: Optional[ProfileFieldData]=None) -> CustomProfileField:
-    field = CustomProfileField(realm=realm, name=name, field_type=field_type)
-    field.hint = hint
+                                       field_data: Optional[ProfileFieldData]=None,
+                                       display_on_small_profile: bool=False) -> CustomProfileField:
+    field = CustomProfileField(realm=realm, name=name, field_type=field_type, hint=hint,
+                               display_on_small_profile=display_on_small_profile)
     if field.field_type == CustomProfileField.CHOICE:
         field.field_data = ujson.dumps(field_data or {})
 
@@ -5392,9 +5393,11 @@ def do_remove_realm_custom_profile_fields(realm: Realm) -> None:
 
 def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileField,
                                           name: str, hint: str='',
-                                          field_data: Optional[ProfileFieldData]=None) -> None:
+                                          field_data: Optional[ProfileFieldData]=None,
+                                          display_on_small_profile: bool=False) -> None:
     field.name = name
     field.hint = hint
+    field.display_on_small_profile = display_on_small_profile
     if field.field_type == CustomProfileField.CHOICE:
         field.field_data = ujson.dumps(field_data or {})
     field.save()

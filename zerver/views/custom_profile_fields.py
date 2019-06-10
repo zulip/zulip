@@ -15,7 +15,7 @@ from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 check_remove_custom_profile_field_value)
 from zerver.lib.response import json_success, json_error
 from zerver.lib.types import ProfileFieldData
-from zerver.lib.validator import (check_dict, check_list, check_int,
+from zerver.lib.validator import (check_dict, check_list, check_int, check_bool,
                                   validate_choice_field_data, check_capped_string)
 
 from zerver.models import (UserProfile,
@@ -63,7 +63,10 @@ def create_realm_custom_profile_field(request: HttpRequest,
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=ujson.loads),
-                                      field_type: int=REQ(validator=check_int)) -> HttpResponse:
+                                      field_type: int=REQ(validator=check_int),
+                                      display_on_small_profile: bool=REQ(default=False,
+                                                                         validator=check_bool)
+                                      ) -> HttpResponse:
     validate_field_name_and_hint(name, hint)
     field_types = [i[0] for i in CustomProfileField.FIELD_TYPE_CHOICES]
     if field_type not in field_types:
@@ -77,6 +80,7 @@ def create_realm_custom_profile_field(request: HttpRequest,
             field_data=field_data,
             field_type=field_type,
             hint=hint,
+            display_on_small_profile=display_on_small_profile,
         )
         return json_success({'id': field.id})
     except IntegrityError:
@@ -102,6 +106,8 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=ujson.loads),
+                                      display_on_small_profile: bool=REQ(default=False,
+                                                                         validator=check_bool),
                                       ) -> HttpResponse:
     validate_field_name_and_hint(name, hint)
 
@@ -114,7 +120,8 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
     validate_custom_field_data(field.field_type, field_data)
     try:
         try_update_realm_custom_profile_field(realm, field, name, hint=hint,
-                                              field_data=field_data)
+                                              field_data=field_data,
+                                              display_on_small_profile=display_on_small_profile)
     except IntegrityError:
         return json_error(_('A field with that name already exists.'))
     return json_success()

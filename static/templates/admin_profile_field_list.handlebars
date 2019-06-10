@@ -35,6 +35,14 @@
                 <label for="hint">{{t "Hint" }}</label>
                 <input type="text" name="hint" value="{{ hint }}" maxlength="80" />
             </div>
+            <div class="input-group display_on_small_profile_change_container">
+                <label class="checkbox">
+                    <input type="checkbox" name="display_on_small_profile"
+                      {{#if display_on_small_profile}}checked{{/if}} />
+                    <span></span>
+                    {{t "Display on small profile" }}
+                </label>
+            </div>
             {{#if is_choice_field }}
             <div class="input-group">
                 <label for="profile_field_choices_edit">{{t "Field choices" }}</label>

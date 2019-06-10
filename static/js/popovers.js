@@ -145,9 +145,17 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         }
     }
 
+    var dateFormat = moment.localeData().longDateFormat('LL');
+    var field_types = page_params.custom_profile_field_types;
+    var displayed_custom_profile_fields = page_params.custom_profile_fields
+        .filter(function (f) {return f.display_on_small_profile;})
+        .map(function (f) {return get_custom_profile_field_data(user, f, field_types, dateFormat);})
+        .filter(function (f) {return f.name !== undefined;});
+
     var args = {
         can_revoke_away: can_revoke_away,
         can_set_away: can_set_away,
+        displayed_custom_profile_fields: displayed_custom_profile_fields,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
         is_me: is_me,
@@ -194,6 +202,10 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         fix_positions: true,
     });
     popover_element.popover("show");
+    settings_account.initialize_custom_user_type_fields(".popover-content .info_popover_actions",
+                                                        user.user_id, false, false,
+                                                        displayed_custom_profile_fields);
+
 
     init_email_clipboard();
     load_medium_avatar(user, $(".popover-avatar"));

@@ -12,6 +12,7 @@ zrequire('settings_org');
 zrequire('feature_flags');
 zrequire('message_edit');
 zrequire('util');
+zrequire('settings_account');
 
 var noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code
@@ -21,7 +22,10 @@ popovers.hide_user_profile = noop;
 
 set_global('current_msg_list', {});
 set_global('page_params', {
-    custom_profile_fields: [],
+    custom_profile_fields: [{display_on_small_profile: true, id: 1, name: "GitHub", type: 1}],
+    custom_profile_field_types: {
+        URL: {id: 1}, DATE: {id: 2}, USER: {id: 3}, CHOICE: {id: 4},
+        SHORT_TEXT: {id: 5}, LONG_TEXT: {id: 6}},
 });
 set_global('rows', {});
 set_global('templates', {});
@@ -49,12 +53,19 @@ set_global('ClipboardJS', function (sel) {
     assert.equal(sel, '.copy_link');
 });
 
+set_global('moment', {
+    localeData: function () {
+        return { longDateFormat: function () {} };
+    },
+});
+
 var alice = {
     email: 'alice@example.com',
     full_name: 'Alice Smith',
     user_id: 42,
     is_guest: false,
     is_admin: false,
+    profile_data: {1: {value: "github.com/alice"}},
 };
 
 var me = {
@@ -62,6 +73,7 @@ var me = {
     user_id: 30,
     full_name: 'Me Myself',
     timezone: 'US/Pacific',
+    profile_data: {1: {value: "github.com/john"}},
 };
 
 var target = $.create('click target');
@@ -77,6 +89,8 @@ var e = {
 
 function initialize_people() {
     people.init();
+    people.add(me);
+    people.add(alice);
     people.add_in_realm(me);
     people.add_in_realm(alice);
     people.initialize_current_user(me.user_id);
@@ -161,6 +175,13 @@ run_test('sender_hover', () => {
             assert.deepEqual(opts, {
                 can_set_away: false,
                 can_revoke_away: false,
+                displayed_custom_profile_fields: [{
+                    is_link: true,
+                    is_user_field: false,
+                    name: 'GitHub',
+                    type: 1,
+                    value: 'github.com/alice',
+                }],
                 user_full_name: 'Alice Smith',
                 user_email: 'alice@example.com',
                 user_id: 42,
@@ -172,7 +193,7 @@ run_test('sender_hover', () => {
                 sent_by_uri: '#narrow/sender/42-alice',
                 private_message_class: 'respond_personal_button',
                 show_email: false,
-                show_user_profile: false,
+                show_user_profile: true,
                 is_me: false,
                 is_active: true,
                 is_bot: undefined,

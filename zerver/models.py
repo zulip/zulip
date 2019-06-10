@@ -2606,6 +2606,7 @@ class CustomProfileField(models.Model):
     name = models.CharField(max_length=NAME_MAX_LENGTH)  # type: str
     hint = models.CharField(max_length=HINT_MAX_LENGTH, default='', null=True)  # type: Optional[str]
     order = models.IntegerField(default=0)  # type: int
+    display_on_small_profile = models.BooleanField(default=False)  # type: bool
 
     SHORT_TEXT = 1
     LONG_TEXT = 2
@@ -2673,6 +2674,7 @@ class CustomProfileField(models.Model):
             'hint': self.hint,
             'field_data': self.field_data,
             'order': self.order,
+            'display_on_small_profile': self.display_on_small_profile,
         }
 
     def is_renderable(self) -> bool:

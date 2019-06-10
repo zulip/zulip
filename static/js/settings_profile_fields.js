@@ -129,6 +129,7 @@ function create_profile_field(e) {
         field_type: field_type,
         hint: $("#profile_field_hint").val(),
         field_data: JSON.stringify(field_data),
+        display_on_small_profile: $("#profile_field_display_on_small_profile").prop('checked'),
     };
 
     settings_ui.do_settings_change(channel.post, "/json/realm/profile_fields", form_data,
@@ -218,6 +219,7 @@ function open_edit_form(e) {
     // Set initial value in edit form
     profile_field.form.find('input[name=name]').val(field.name);
     profile_field.form.find('input[name=hint]').val(field.hint);
+    profile_field.form.find('input[name=display_on_small_profile]').prop('checked', field.display_on_small_profile);
     var field_data = {};
     if (field.field_data) {
         field_data = JSON.parse(field.field_data);
@@ -243,6 +245,8 @@ function open_edit_form(e) {
         var data = {};
         data.name = profile_field.form.find('input[name=name]').val();
         data.hint = profile_field.form.find('input[name=hint]').val();
+        data.display_on_small_profile = profile_field.form
+            .find('input[name=display_on_small_profile]').prop('checked');
         var selector = profile_field.form.find('div.choice-row');
         data.field_data = JSON.stringify(read_field_data_from_form(selector));
 
