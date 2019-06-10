@@ -100,6 +100,10 @@ exports.copy_data_attribute_value = function (elem, key) {
     elem.fadeIn(1000);
 };
 
+exports.has_mac_keyboard = function () {
+    return /Mac/i.test(navigator.userAgent);
+};
+
 return exports;
 
 }());

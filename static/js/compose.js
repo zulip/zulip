@@ -612,7 +612,7 @@ exports.handle_keydown = function (event, textarea) {
     var isLink = code === 76 && event.shiftKey;
 
     // detect command and ctrl key
-    var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? event.metaKey : event.ctrlKey;
+    var isCmdOrCtrl = common.has_mac_keyboard() ? event.metaKey : event.ctrlKey;
 
     if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
         var range = textarea.range();

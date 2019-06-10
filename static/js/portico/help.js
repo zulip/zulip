@@ -74,7 +74,7 @@ function render_code_sections() {
 
     highlight_current_article();
 
-    if (/Mac/i.test(navigator.userAgent)) {
+    if (common.has_mac_keyboard()) {
         adjust_mac_shortcuts();
     }
 

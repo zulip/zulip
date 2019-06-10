@@ -5,7 +5,7 @@ export function detect_user_os() {
     if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         return "ios";
     }
-    if (/Mac/i.test(navigator.userAgent)) {
+    if (common.has_mac_keyboard()) {
         return "mac";
     }
     if (/Win/i.test(navigator.userAgent)) {

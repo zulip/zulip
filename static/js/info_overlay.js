@@ -63,7 +63,7 @@ exports.set_up_toggler = function () {
 
     $(".informational-overlays .overlay-tabs").append(elem);
 
-    if (/Mac/i.test(navigator.userAgent)) {
+    if (common.has_mac_keyboard()) {
         adjust_mac_shortcuts();
     }
 

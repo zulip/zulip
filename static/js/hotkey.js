@@ -128,7 +128,7 @@ exports.get_keydown_hotkey = function (e) {
         }
     }
 
-    var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? e.metaKey : e.ctrlKey;
+    var isCmdOrCtrl = common.has_mac_keyboard() ? e.metaKey : e.ctrlKey;
     if (isCmdOrCtrl && !e.shiftKey) {
         hotkey = keydown_cmd_or_ctrl_mappings[e.which];
         if (hotkey) {

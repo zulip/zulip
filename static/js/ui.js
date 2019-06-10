@@ -139,7 +139,7 @@ exports.get_hotkey_deprecation_notice = function (originalHotkey, replacementHot
 var shown_deprecation_notices = [];
 exports.maybe_show_deprecation_notice = function (key) {
     var message;
-    var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? "Cmd" : "Ctrl";
+    var isCmdOrCtrl = common.has_mac_keyboard() ? "Cmd" : "Ctrl";
     if (key === 'C') {
         message = exports.get_hotkey_deprecation_notice('C', 'x');
     } else if (key === '*') {

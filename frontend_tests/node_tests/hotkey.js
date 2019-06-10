@@ -33,6 +33,7 @@ $.fn.keydown = noop;
 $.fn.keypress = noop;
 
 var hotkey = zrequire('hotkey');
+zrequire('common');
 
 set_global('list_util', {
 });
