@@ -221,22 +221,24 @@ def archive_personal_and_huddle_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> 
             delete_messages(chunk)
 
 def archive_stream_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
-    # We don't archive, if the stream has message_retention_days set to -1,
-    # or if neither the stream nor the realm have a retention policy.
-    streams = Stream.objects.exclude(message_retention_days=-1).filter(
-        Q(message_retention_days__isnull=False) | Q(realm__message_retention_days__isnull=False)
-    )
-    retention_policy_dict = {}  # type: Dict[int, int]
-    for stream in streams:
-        #  if stream.message_retention_days is null, use the realm's policy
-        if stream.message_retention_days:
-            retention_policy_dict[stream.id] = stream.message_retention_days
-        else:
-            retention_policy_dict[stream.id] = stream.realm.message_retention_days
+    for realm in Realm.objects.all():
+        # We don't archive, if the stream has message_retention_days set to -1,
+        # or if neither the stream nor the realm have a retention policy.
+        streams = Stream.objects.exclude(message_retention_days=-1).filter(
+            Q(message_retention_days__isnull=False) | Q(realm__message_retention_days__isnull=False),
+            realm_id=realm.id
+        )
+        retention_policy_dict = {}  # type: Dict[int, int]
+        for stream in streams:
+            #  if stream.message_retention_days is null, use the realm's policy
+            if stream.message_retention_days:
+                retention_policy_dict[stream.id] = stream.message_retention_days
+            else:
+                retention_policy_dict[stream.id] = stream.realm.message_retention_days
 
-    recipients = get_stream_recipients([stream.id for stream in streams])
-    for recipient in recipients:
-        archive_messages_by_recipient(recipient, retention_policy_dict[recipient.type_id], chunk_size)
+        recipients = get_stream_recipients([stream.id for stream in streams])
+        for recipient in recipients:
+            archive_messages_by_recipient(recipient, retention_policy_dict[recipient.type_id], chunk_size)
 
 def archive_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     archive_stream_messages(chunk_size)
