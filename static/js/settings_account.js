@@ -133,7 +133,10 @@ exports.initialize_custom_date_type_fields = function (element_id) {
 };
 
 exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
-                                                       set_handler_on_update) {
+                                                       set_handler_on_update,
+                                                       custom_profile_fields) {
+
+    custom_profile_fields = custom_profile_fields || page_params.custom_profile_fields;
     var field_types = page_params.custom_profile_field_types;
     var user_pills = {};
 
@@ -142,7 +145,7 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
         return [];
     }
 
-    page_params.custom_profile_fields.forEach(function (field) {
+    custom_profile_fields.forEach(function (field) {
         var field_value_raw = people.get_custom_profile_data(user_id, field.id);
 
         if (field_value_raw) {
