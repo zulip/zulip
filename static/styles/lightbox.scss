@@ -176,6 +176,17 @@
     text-overflow: ellipsis;
 }
 
+#lightbox_overlay .image-description .user {
+    max-width: 200px;
+    display: inline-block;
+    vertical-align: top;
+    font-weight: 300;
+    line-height: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: pre;
+}
+
 #lightbox_overlay .image-description .user::before {
     margin-right: 5px;
     content: "\2014";
@@ -194,17 +205,6 @@
     width: calc((100vh - 65px - 95px) * 16 / 9);
     height: 100%;
     margin: auto;
-}
-
-#lightbox_overlay .image-description .user {
-    max-width: 200px;
-    display: inline-block;
-    vertical-align: top;
-    font-weight: 300;
-    line-height: normal;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: pre;
 }
 
 #lightbox_overlay .center .arrow {
