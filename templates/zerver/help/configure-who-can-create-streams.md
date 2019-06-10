@@ -7,7 +7,7 @@ creation to:
 
 * **Organization administrators**
 * **Organization administrators and all members**
-* **Organization administrators and [full members](/help/configure-waiting-period-for-full-members)**
+* **Organization administrators and [full members](/help/restrict-permissions-of-new-members)**
 
 For corporations and other entities with controlled access, we highly
 recommend keeping stream creation open. A typical Zulip organization with

@@ -58,7 +58,7 @@ priority.
   [edit or delete messages](/help/configure-message-editing-and-deletion),
   and more.
 
-[waiting_period]: /help/configure-waiting-period-for-full-members
+[waiting_period]: /help/restrict-permissions-of-new-members
 [ldap-name]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
 
 ## Authentication
