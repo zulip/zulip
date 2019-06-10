@@ -1090,38 +1090,6 @@ input#terminal:checked ~ #tab-terminal {
     pointer-events: none;
 }
 
-.integration-instruction-block .integration-lozenge {
-    float: left;
-    margin-top: 5px;
-}
-
-.integration-lozenge .square-wrapper {
-    height: 80px;
-}
-
-.integration-lozenge-static:hover {
-    box-shadow: none;
-    background-color: hsl(0, 0%, 93%);
-}
-
-.integration-lozenge .integration-link:hover {
-    text-decoration: none;
-}
-
-.integration-lozenge .integration-label {
-    display: block;
-    text-align: center;
-    padding-bottom: 18px;
-    padding-top: 10px;
-}
-
-@media (min-width: 768px) {
-    #integration-list-link {
-        top: 200px;
-        left: 30px;
-    }
-}
-
 .login-page-header {
     width: 100%;
 }
@@ -1144,34 +1112,6 @@ input#terminal:checked ~ #tab-terminal {
     margin: auto;
     text-align: center;
     margin-bottom: 30px;
-}
-
-.integration-instruction-block {
-    position: relative;
-}
-
-#integration-list-link {
-    position: absolute;
-    text-align: center;
-    display: none;
-    margin-left: 5px;
-}
-
-#integration-list-link span {
-    display: inline-block;
-    margin-left: 5px;
-}
-
-@media (max-width: 768px) {
-    #integration-list-link {
-        order: 2;
-        position: unset;
-        font-size: 22px;
-    }
-
-    #integration-list-link span {
-        display: none;
-    }
 }
 
 .apps-instructions-header {

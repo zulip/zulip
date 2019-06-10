@@ -75,7 +75,8 @@
     ],
     "integrations": [
         "./static/js/portico/integrations.js",
-        "./static/styles/landing-page.scss"
+        "./static/styles/landing-page.scss",
+        "./static/styles/integrations.scss"
     ],
     "signup": [
         "./node_modules/jquery-validation/dist/jquery.validate.min.js",
