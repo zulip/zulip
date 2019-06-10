@@ -13,7 +13,7 @@ from zerver.models import (Message, Realm, UserProfile, Stream, ArchivedUserMess
                            get_realm, get_user_profile_by_email, get_stream, get_system_bot)
 from zerver.lib.retention import (
     archive_messages,
-    move_messages_to_archive
+    move_messages_to_archive,
 )
 
 # Class with helper functions useful for testing archiving of reactions:
@@ -21,6 +21,7 @@ from zerver.tests.test_reactions import EmojiReactionBase
 
 ZULIP_REALM_DAYS = 30
 MIT_REALM_DAYS = 100
+
 
 class RetentionTestingBase(ZulipTestCase):
     """
@@ -249,7 +250,7 @@ class TestArchivingGeneral(RetentionTestingBase):
         expired_msg_ids = expired_mit_msg_ids + expired_zulip_msg_ids
         expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
-        archive_messages()
+        archive_messages(chunk_size=2)  # Specify low chunk_size to test batching.
         # Make sure we archived what neeeded:
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
