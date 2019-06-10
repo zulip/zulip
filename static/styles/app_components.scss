@@ -160,6 +160,16 @@
             }
         }
 
+        &.btn-link {
+            color: hsl(208, 56%, 53%);
+            text-decoration: none;
+
+            &:hover,
+            &:focus {
+                color: hsl(208, 56%, 38%);
+            }
+        }
+
         &[disabled="disabled"] {
             cursor: not-allowed;
             -moz-filter: saturate(0);

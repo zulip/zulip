@@ -7,13 +7,11 @@
                 <div class="alert-notification" id="account-settings-status"></div>
                 <div class="input-group user-name-section">
                     <label class="inline-block title">{{t "Email" }}</label>
-                    <a id="change_email" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>
-                        <button type="button" class="button small rounded inline-block" id='email_value'
-                          {{#unless page_params.is_admin}}{{#if page_params.realm_email_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
-                            {{page_params.delivery_email}}
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                    </a>
+                    <button id='change_email' type="button" class="button btn-link small rounded inline-block" id='email_value'
+                      {{#unless page_params.is_admin}}{{#if page_params.realm_email_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
+                        {{page_params.delivery_email}}
+                        <i class="fa fa-pencil"></i>
+                    </button>
                     <i class="fa fa-question-circle change_email_tooltip settings-info-icon" {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_email_changes_disabled}}style="display:none"{{/unless}}{{/if}}  data-toggle="tooltip"
                       title="{{t 'Email address changes are disabled in this organization.' }}"></i>
                 </div>
@@ -49,15 +47,11 @@
                 <div class="input-group inline-block grid user-name-parent">
                     <div class="user-name-section inline-block">
                         <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
-                        <a id="change_full_name" {{#if user_can_change_name}}href="#change_email"{{/if}}>
-                            <button type="button" class="button small white rounded inline-block" id="full_name"
-                              {{#unless user_can_change_name}}disabled="disabled"{{/unless}}>
-                                {{~#if true~}}
-                                <span id="full_name_value">{{page_params.full_name}}</span>
-                                <i class="fa fa-pencil"></i>
-                                {{~/if~}}
-                            </button>
-                        </a>
+                        <button type="button" id='change_full_name' class="button btn-link small white rounded inline-block" id="full_name"
+                          {{#unless user_can_change_name}}disabled="disabled"{{/unless}}>
+                            <span id="full_name_value">{{page_params.full_name}}</span>
+                            <i class="fa fa-pencil"></i>
+                        </button>
                         <i class="fa fa-question-circle change_name_tooltip settings-info-icon" data-toggle="tooltip"
                           {{#if user_can_change_name}}style="display:none"{{/if}}
                           title="{{t 'Name changes are disabled in this organization. Contact an administrator to change your name.' }}"/>
@@ -87,12 +81,9 @@
                 {{#if page_params.realm_email_auth_enabled}}
                 <div class="user-name-section">
                     <label class="inline-block title">{{t "Password" }}</label>
-                    <a id="change_password" {{#if page_params.realm_email_auth_enabled}}href="#change_password"{{/if}}>
-                        <div class="input-group inline-block" id="pw_change_link">
-                            <button type="button" class="change_password_button small button rounded inline-block" data-dismiss="modal">********<i class="fa fa-pencil"></i>
-                            </button>
-                        </div>
-                    </a>
+                    <div class="input-group inline-block" id="pw_change_link">
+                        <button id="change_password" type="button" class="change_password_button btn-link small button rounded inline-block" data-dismiss="modal">********<i class="fa fa-pencil"></i></button>
+                    </div>
                 </div>
                 {{/if}}
 
