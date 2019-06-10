@@ -77,72 +77,72 @@
 
 #lightbox_overlay .image-actions {
     float: right;
-}
 
-#lightbox_overlay .image-actions .lightbox-canvas-trigger {
-    display: inline-block;
-    vertical-align: top;
+    .lightbox-canvas-trigger {
+        display: inline-block;
+        vertical-align: top;
 
-    min-width: 75px;
+        min-width: 75px;
 
-    margin: 0px;
-    margin-right: 5px;
-    padding: 0px 5px;
+        margin: 0px;
+        margin-right: 5px;
+        padding: 0px 5px;
 
-    border-radius: 4px;
+        border-radius: 4px;
 
-    border: 1px solid rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.6);
 
-    text-align: center;
-    color: hsl(0, 0%, 100%);
+        text-align: center;
+        color: hsl(0, 0%, 100%);
 
-    cursor: pointer;
+        cursor: pointer;
 
-    transition: all 0.3s ease;
-}
+        transition: all 0.3s ease;
 
-#lightbox_overlay .image-actions .lightbox-canvas-trigger:hover {
-    background-color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(0, 0%, 100%);
-    color: hsl(227, 40%, 16%);
-    opacity: 1;
-}
+        &:hover {
+            background-color: hsl(0, 0%, 100%);
+            border: 1px solid hsl(0, 0%, 100%);
+            color: hsl(227, 40%, 16%);
+            opacity: 1;
+        }
 
-#lightbox_overlay .image-actions .lightbox-canvas-trigger .status {
-    margin-top: -7px;
-}
+        .status {
+            margin-top: -7px;
 
-#lightbox_overlay .image-actions .lightbox-canvas-trigger .status::after {
-    content: attr(data-disabled);
-    text-transform: uppercase;
+            &::after {
+                content: attr(data-disabled);
+                text-transform: uppercase;
 
-    opacity: 0.7;
-}
+                opacity: 0.7;
+            }
+        }
 
-#lightbox_overlay .image-actions .lightbox-canvas-trigger.enabled .status::after {
-    content: attr(data-enabled);
-}
+        &.enabled .status::after {
+            content: attr(data-enabled);
+        }
 
-#lightbox_overlay .image-actions .lightbox-canvas-trigger .title {
-    font-weight: 600;
-}
+        .title {
+            font-weight: 600;
+        }
+    }
 
-#lightbox_overlay .image-actions .button {
-    font-size: 0.9rem;
-    min-width: inherit;
-    padding: 4px 10px;
-    border: 1px solid hsla(0, 0%, 100%, 0.6);
-    background-color: transparent;
-    color: hsl(0, 0%, 100%);
-    border-radius: 4px;
-    text-decoration: none;
-    display: inline-block;
-    margin: 0px 5px;
+    .button {
+        font-size: 0.9rem;
+        min-width: inherit;
+        padding: 4px 10px;
+        border: 1px solid hsla(0, 0%, 100%, 0.6);
+        background-color: transparent;
+        color: hsl(0, 0%, 100%);
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0px 5px;
 
-    &:hover {
-        background-color: hsl(0, 0%, 100%);
-        border-color: hsl(0, 0%, 100%);
-        color: hsl(227, 40%, 16%);
+        &:hover {
+            background-color: hsl(0, 0%, 100%);
+            border-color: hsl(0, 0%, 100%);
+            color: hsl(227, 40%, 16%);
+        }
     }
 }
 
