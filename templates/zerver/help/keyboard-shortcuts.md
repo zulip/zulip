@@ -105,6 +105,10 @@ below, and add more to your repertoire as needed.
   settings. See
   [enable enter to send](https://zulipchat.com/help/enable-enter-to-send).
 
+* **Insert italic text**: `*italic*` or `Ctrl + I`
+* **Insert bold text**: `**bold**` or `Ctrl + B`
+* **Insert link**: `[Zulip website](https://zulip.org)` or `Ctrl + Shift + L`
+
 * **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
   the unsent message as a draft.
 
