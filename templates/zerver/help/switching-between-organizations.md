@@ -6,7 +6,7 @@ This article assumes you've [logged in](/help/logging-in) to each organization a
 
 {tab|desktop}
 
-1. Open the **left sidebar** (`Ctrl+Shift+s` or `Cmd+Shift+s`).
+1. Open the **left sidebar** (`Ctrl+Shift+s`).
 
 1. Click on your organization's profile picture.
 

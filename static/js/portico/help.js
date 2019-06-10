@@ -46,7 +46,7 @@ function render_code_sections() {
 
     highlight_current_article();
 
-    common.adjust_mac_shortcuts(".markdown .content code");
+    common.adjust_mac_shortcuts(".markdown .content code", true);
 
     $("table").each(function () {
         $(this).addClass("table table-striped");
