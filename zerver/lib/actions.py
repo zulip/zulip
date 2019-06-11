@@ -3391,6 +3391,10 @@ def do_change_plan_type(realm: Realm, plan_type: int) -> None:
 
     realm.save(update_fields=['_max_invites', 'message_visibility_limit', 'upload_quota_gb'])
 
+    event = {'type': 'realm', 'op': 'update', 'property': 'plan_type', 'value': plan_type,
+             'extra_data': {'upload_quota': realm.upload_quota_bytes()}}
+    send_event(realm, event, active_user_ids(realm.id))
+
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
                                      log: bool=True) -> None:
     user_profile.default_sending_stream = stream

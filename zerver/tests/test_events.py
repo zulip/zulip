@@ -48,6 +48,7 @@ from zerver.lib.actions import (
     do_change_is_admin,
     do_change_is_guest,
     do_change_notification_settings,
+    do_change_plan_type,
     do_change_realm_domain,
     do_change_stream_description,
     do_change_stream_invite_only,
@@ -1908,6 +1909,10 @@ class EventsRegisterTest(ZulipTestCase):
             self.user_profile, notification_setting, 'ding', log=False))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
+
+    def test_realm_update_plan_type(self) -> None:
+        realm = self.user_profile.realm
+        self.do_test(lambda: do_change_plan_type(realm, Realm.LIMITED))
 
     def test_realm_emoji_events(self) -> None:
         schema_checker = self.check_events_dict([
