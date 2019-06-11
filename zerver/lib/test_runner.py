@@ -231,15 +231,22 @@ def destroy_test_databases(worker_id: Optional[int]=None) -> None:
     for alias in connections:
         connection = connections[alias]
         try:
+            # In parallel, our databases get created through the children and our
+            # parent processes `settings_dict` remains unchanged with the original
+            # template name.  Therefore calling `destroy_test_db` with a value
+            # passed as `number` occurs in the parent and appends the value correctly:
+            #   `zulip_test_template_<number>`
+            #
+            # However when we run in serial mode, both creation and destruction
+            # occur in the parent. This means when `settings_dict` gets updated,
+            # `destroy_test_db` fetches the updated name. If we make the call with
+            # `number` as in parallel we see:
+            #   `zulip_test_template_<number>_<number>
             if worker_id is not None:
                 """Modified from the Django original to """
                 database_id = random_id_range_start + worker_id
                 connection.creation.destroy_test_db(number=database_id)
             else:
-                # In theory, this code path should be the same as the
-                # parallel one; but a bug results in that
-                # double-adding the database_id.  So we save that
-                # double-add by just passing nothing here.
                 connection.creation.destroy_test_db()
         except ProgrammingError:
             # DB doesn't exist. No need to do anything.
