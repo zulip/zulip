@@ -573,6 +573,10 @@ def apply_event(state: Dict[str, Any],
             field = 'realm_' + event['property']
             state[field] = event['value']
 
+            if event['property'] == 'plan_type':
+                # Then there are some extra fields that also need to be set.
+                state['realm_upload_quota'] = event['extra_data']['upload_quota']
+
             # Tricky interaction: Whether we can create streams can get changed here.
             if (field in ['realm_create_stream_policy',
                           'realm_waiting_period_threshold']) and 'can_create_streams' in state:
