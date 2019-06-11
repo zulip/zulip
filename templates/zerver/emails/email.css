@@ -290,6 +290,15 @@ a.button:hover {
     color: #15c;
 }
 
+.missed_message {
+    padding-bottom: 10px;
+}
+
+.missed_message_sender {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
 @media only screen and (max-width: 620px) {
     table[class=body] h1 {
         font-size: 28px !important;

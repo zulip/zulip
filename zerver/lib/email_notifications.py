@@ -354,7 +354,13 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         # TODO: When we add wildcard mentions that send emails, we
         # should make sure the right logic applies here.
     elif ('stream_email_notify' in unique_triggers):
-        context.update({'stream_email_notify': True})
+        message = missed_messages[0]['message']
+        stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
+        stream_header = "%s > %s" % (stream.name, message.topic_name())
+        context.update({
+            'stream_email_notify': True,
+            'stream_header': stream_header,
+        })
     else:
         raise AssertionError("Invalid messages!")
 

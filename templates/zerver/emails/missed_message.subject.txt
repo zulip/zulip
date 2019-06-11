@@ -2,7 +2,7 @@
     {% if group_pm %} Group PMs with {{ huddle_display_name }}
     {% elif mention %} {{ sender_str }} mentioned you
     {% elif private_message %} PMs with {{ sender_str }}
-    {% elif stream_email_notify %} #{{ messages[0].header.plain }}
+    {% elif stream_email_notify %} #{{ stream_header }}
     {% endif %}
 {% else %}
     New missed messages

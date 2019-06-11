@@ -27,7 +27,7 @@ def huddle_narrow_url(realm: Realm, other_user_ids: List[int]) -> str:
     base_url = "%s/#narrow/pm-with/" % (realm.uri,)
     return base_url + pm_slug
 
-def stream_narrow_url(realm: Realm, stream: Stream) -> str:
+def stream_narrow_url(realm: Realm, stream: Stream) -> str:  # nocoverage
     base_url = "%s/#narrow/stream/" % (realm.uri,)
     return base_url + encode_stream(stream.id, stream.name)
 
