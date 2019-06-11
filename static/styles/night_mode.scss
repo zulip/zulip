@@ -2,6 +2,7 @@ body.night-mode {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
 
+    .new-style .button.btn-link:hover,
     a:hover {
         color: hsl(200, 79%, 66%);
     }
@@ -92,8 +93,17 @@ on a dark background, and don't change the dark labels dark either. */
         opacity: 0.5;
     }
 
-    .new-style .button:not(.save-status),
-    .new-style .button[disabled=disabled]:hover,
+    .new-style .button {
+        background-color: hsla(0, 0%, 0%, 0.2);
+        border-color: unset;
+
+        &:hover,
+        &:focus,
+        &:active {
+            background-color: hsla(0, 0%, 0%, 0.15);
+        }
+    }
+
     input[type="text"],
     input[type="email"],
     input[type="password"],
@@ -171,7 +181,6 @@ on a dark background, and don't change the dark labels dark either. */
         box-shadow: 0 0 1px hsl(0, 0%, 98%);
     }
 
-    .new-style .button:not(.save-status):focus,
     input[type="text"]:focus,
     input[type="email"]:focus,
     input[type="number"]:focus,
