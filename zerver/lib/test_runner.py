@@ -229,15 +229,26 @@ def destroy_test_databases(worker_id: Optional[int]=None) -> None:
     for alias in connections:
         connection = connections[alias]
         try:
+            # In the parallel mode, the test databases are created
+            # through the N=self.parallel child processes, and in the
+            # parent process (which calls `destroy_test_databases`),
+            # `settings_dict` remains unchanged, with the original
+            # template database name (zulip_test_template).  So to
+            # delete the database zulip_test_template_<number>, we
+            # need to pass `number` to `destroy_test_db`.
+            #
+            # When we run in serial mode (self.parallel=1), we don't
+            # fork and thus both creation and destruction occur in the
+            # same process, which means `settings_dict` has been
+            # updated to have `zulip_test_template_<number>` as its
+            # database name by the creation code.  As a result, to
+            # delete that database, we need to not pass a number
+            # argument to destroy_test_db.
             if worker_id is not None:
                 """Modified from the Django original to """
                 database_id = random_id_range_start + worker_id
                 connection.creation.destroy_test_db(number=database_id)
             else:
-                # In theory, this code path should be the same as the
-                # parallel one; but a bug results in that
-                # double-adding the database_id.  So we save that
-                # double-add by just passing nothing here.
                 connection.creation.destroy_test_db()
         except ProgrammingError:
             # DB doesn't exist. No need to do anything.
