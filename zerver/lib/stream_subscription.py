@@ -98,6 +98,4 @@ def handle_stream_notifications_compatibility(user_profile: UserProfile,
         if stream_dict[notification_type] is not None:
             continue
         target_attr = "enable_stream_" + notification_type
-        if notification_type == 'audible_notifications':
-            target_attr = "enable_stream_sounds"
         stream_dict[notification_type] = getattr(user_profile, target_attr)

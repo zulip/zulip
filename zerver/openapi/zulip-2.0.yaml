@@ -337,7 +337,7 @@ paths:
 
                        * `enable_stream_desktop_notifications`:
 
-                       * `enable_stream_sounds`:
+                       * `enable_stream_audible_notifications`:
 
                        * `left_side_userlist`:
 
@@ -864,7 +864,7 @@ definitions:
         type: boolean
       enable_stream_desktop_notifications:
         type: boolean
-      enable_stream_sounds:
+      enable_stream_audible_notifications:
         type: boolean
       left_side_userlist:
         type: boolean

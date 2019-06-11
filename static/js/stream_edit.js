@@ -333,7 +333,7 @@ function stream_desktop_notifications_clicked(e) {
 function stream_audible_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
     if (sub.audible_notifications === null) {
-        sub.audible_notifications = !page_params.enable_stream_sounds;
+        sub.audible_notifications = !page_params.enable_stream_audible_notifications;
     } else {
         sub.audible_notifications = !sub.audible_notifications;
     }

@@ -627,7 +627,7 @@ var event_fixtures = {
 
     update_global_notifications: {
         type: 'update_global_notifications',
-        notification_name: 'enable_stream_sounds',
+        notification_name: 'enable_stream_audible_notifications',
         setting: true,
     },
 

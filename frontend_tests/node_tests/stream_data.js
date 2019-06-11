@@ -609,12 +609,12 @@ run_test('notifications', () => {
     assert(!stream_data.receives_audible_notifications('Indiana'));
 
     page_params.enable_stream_desktop_notifications = true;
-    page_params.enable_stream_sounds = true;
+    page_params.enable_stream_audible_notifications = true;
     assert(stream_data.receives_desktop_notifications('India'));
     assert(stream_data.receives_audible_notifications('India'));
 
     page_params.enable_stream_desktop_notifications = false;
-    page_params.enable_stream_sounds = false;
+    page_params.enable_stream_audible_notifications = false;
     assert(!stream_data.receives_desktop_notifications('India'));
     assert(!stream_data.receives_audible_notifications('India'));
 
@@ -626,7 +626,7 @@ run_test('notifications', () => {
     india.desktop_notifications = false;
     india.audible_notifications = false;
     page_params.enable_stream_desktop_notifications = true;
-    page_params.enable_stream_sounds = true;
+    page_params.enable_stream_audible_notifications = true;
     assert(!stream_data.receives_desktop_notifications('India'));
     assert(!stream_data.receives_audible_notifications('India'));
 });

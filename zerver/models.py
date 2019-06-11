@@ -824,7 +824,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_stream_desktop_notifications = models.BooleanField(default=False)  # type: bool
     enable_stream_email_notifications = models.BooleanField(default=False)  # type: bool
     enable_stream_push_notifications = models.BooleanField(default=False)  # type: bool
-    enable_stream_sounds = models.BooleanField(default=False)  # type: bool
+    enable_stream_audible_notifications = models.BooleanField(default=False)  # type: bool
     notification_sound = models.CharField(max_length=20, default='zulip')  # type: str
 
     # PM + @-mention notifications.
@@ -962,7 +962,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_stream_desktop_notifications=bool,
         enable_stream_email_notifications=bool,
         enable_stream_push_notifications=bool,
-        enable_stream_sounds=bool,
+        enable_stream_audible_notifications=bool,
         message_content_in_email_notifications=bool,
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,

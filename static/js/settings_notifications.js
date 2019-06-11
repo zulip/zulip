@@ -5,7 +5,7 @@ var exports = {};
 var stream_notification_settings = [
     {setting: "enable_stream_desktop_notifications", notifications: "desktop_notifications"},
     {setting: "enable_stream_push_notifications", notifications: "push_notifications"},
-    {setting: "enable_stream_sounds", notifications: "audible_notifications"},
+    {setting: "enable_stream_audible_notifications", notifications: "audible_notifications"},
     {setting: "enable_stream_email_notifications", notifications: "email_notifications"},
 ];
 
@@ -84,8 +84,8 @@ exports.set_up = function () {
     var notification_sound_dropdown = $("#notification_sound");
     notification_sound_dropdown.val(page_params.notification_sound);
 
-    $("#enable_sounds, #enable_stream_sounds").change(function () {
-        if ($("#enable_stream_sounds").prop("checked") || $("#enable_sounds").prop("checked")) {
+    $("#enable_sounds, #enable_stream_audible_notifications").change(function () {
+        if ($("#enable_stream_audible_notifications").prop("checked") || $("#enable_sounds").prop("checked")) {
             notification_sound_dropdown.prop("disabled", false);
             notification_sound_dropdown.parent().removeClass("control-label-disabled");
         } else {

@@ -2949,7 +2949,7 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee_realm = user_profile.realm
         user_profile.enable_stream_desktop_notifications = True
         user_profile.enable_stream_push_notifications = True
-        user_profile.enable_stream_sounds = True
+        user_profile.enable_stream_audible_notifications = True
         user_profile.enable_stream_email_notifications = True
         user_profile.save()
         current_stream = self.get_streams(invitee_email, invitee_realm)[0]

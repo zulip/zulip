@@ -346,17 +346,17 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    // At the beginning, `#enable_sounds` will be on and `#enable_stream_sounds`
+    // At the beginning, `#enable_sounds` will be on and `#enable_stream_audible_notifications`
     // will be off by default.
     casper.test.assertVisible("#notification_sound:enabled", "Notification sound selector is enabled");
 
-    casper.click('#enable_stream_sounds');
+    casper.click('#enable_stream_audible_notifications');
     casper.test.assertVisible("#notification_sound:enabled", "Notification sound selector is enabled");
 
     casper.click('#enable_sounds');
     casper.test.assertVisible("#notification_sound:enabled", "Notification sound selector is enabled");
 
-    casper.click('#enable_stream_sounds');
+    casper.click('#enable_stream_audible_notifications');
     casper.test.assertVisible("#notification_sound:disabled", "Notification sound selector is disabled");
 });
 

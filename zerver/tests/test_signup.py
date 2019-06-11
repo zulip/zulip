@@ -2269,7 +2269,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(hamlet.default_language, "en")
         self.assertEqual(hamlet.emojiset, "google-blob")
         self.assertEqual(hamlet.high_contrast_mode, False)
-        self.assertEqual(hamlet.enable_stream_sounds, False)
+        self.assertEqual(hamlet.enable_stream_audible_notifications, False)
         self.assertEqual(hamlet.enter_sends, False)
         self.assertEqual(hamlet.tutorial_status, UserProfile.TUTORIAL_WAITING)
 
@@ -2319,7 +2319,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(hamlet_in_lear.emojiset, "twitter")
         self.assertEqual(hamlet_in_lear.high_contrast_mode, True)
         self.assertEqual(hamlet_in_lear.enter_sends, True)
-        self.assertEqual(hamlet_in_lear.enable_stream_sounds, False)
+        self.assertEqual(hamlet_in_lear.enable_stream_audible_notifications, False)
         self.assertEqual(hamlet_in_lear.tutorial_status, UserProfile.TUTORIAL_FINISHED)
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)
         hamlet_path_id = avatar_disk_path(hamlet_in_zulip)

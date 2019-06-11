@@ -331,7 +331,7 @@ exports.update_calculated_fields = function (sub) {
         sub.desktop_notifications_display = sub.desktop_notifications;
     }
     if (sub.audible_notifications === null) {
-        sub.audible_notifications_display = page_params.enable_stream_sounds;
+        sub.audible_notifications_display = page_params.enable_stream_audible_notifications;
     } else {
         sub.audible_notifications_display = sub.audible_notifications;
     }
@@ -601,7 +601,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         is_muted: false,
         invite_only: false,
         desktop_notifications: page_params.enable_stream_desktop_notifications,
-        audible_notifications: page_params.enable_stream_sounds,
+        audible_notifications: page_params.enable_stream_audible_notifications,
         push_notifications: page_params.enable_stream_push_notifications,
         email_notifications: page_params.enable_stream_email_notifications,
         description: '',
@@ -641,7 +641,7 @@ exports.receives_audible_notifications = function (stream_name) {
     if (sub.audible_notifications !== null) {
         return sub.audible_notifications;
     }
-    return page_params.enable_stream_sounds;
+    return page_params.enable_stream_audible_notifications;
 };
 
 exports.get_streams_for_settings_page = function () {

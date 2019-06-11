@@ -88,7 +88,7 @@ function setup_settings_label() {
         // settings_notification
         // stream_notification_settings
         enable_stream_desktop_notifications: i18n.t("Visual desktop notifications"),
-        enable_stream_sounds: i18n.t("Audible desktop notifications"),
+        enable_stream_audible_notifications: i18n.t("Audible desktop notifications"),
         enable_stream_push_notifications: i18n.t("Mobile notifications"),
         enable_stream_email_notifications: i18n.t("Email notifications"),
 
@@ -124,7 +124,8 @@ exports.build_page = function () {
     var rendered_settings_tab = templates.render('settings_tab', {
         full_name: people.my_full_name(),
         page_params: page_params,
-        enable_sound_select: page_params.enable_sounds || page_params.enable_stream_sounds,
+        enable_sound_select: page_params.enable_sounds ||
+            page_params.enable_stream_audible_notifications,
         zuliprc: 'zuliprc',
         botserverrc: 'botserverrc',
         timezones: moment.tz.names(),
