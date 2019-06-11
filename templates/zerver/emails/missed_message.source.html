@@ -11,36 +11,17 @@
 {% endblock %}
 
 {% block content %}
-    Hello {{ name }},
-
-    <p>
-        While you were away you received {{ message_count }} new{% if group_pm %} group private{% elif private_message %} private{% endif %} message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
-    </p>
-
     {% if show_message_content %}
-    <div class='messages'>
         {% for recipient_block in messages %}
-        {% if recipient_block.header.stream_message %}
-        <div class='recipient_block_with_messages'>
-            <div class='recipient_header_with_messages'>{{ recipient_block.header.html|safe }}</div>
-            <div class='message_content_with_messages'>
-        {% else %}
-        <div class='recipient_block_without_messages'>
-            <div class='recipient_header_without_messages'>{{ recipient_block.header.html|safe }}</div>
-            <div class='message_content_without_messages'>
-        {% endif %}
-                {% for sender_block in recipient_block.senders %}
-                    {% if sender_block.sender %} <div class="message_sender">{{ sender_block.sender }}</div>{% endif %}
+            {% for sender_block in recipient_block.senders %}
+                <div class="missed_message">
+                    {% if sender_block.sender %}<div class="missed_message_sender">{{ sender_block.sender }}</div>{% endif %}
                     {% for message_block in sender_block.content %}
-                    <div class='message_content_block'>
                         {{ message_block.html|safe }}
-                    </div>
                     {% endfor %}
-                {% endfor %}
-            </div>
-        </div>
+                </div>
+            {% endfor %}
         {% endfor %}
-    </div>
     {% endif %}
 
     <p>
