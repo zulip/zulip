@@ -145,6 +145,7 @@ if __name__ == '__main__':
     if cmd == 'make_deploy_path':
         print(make_deploy_path())
 
+TEMPLATE_DATABASE_DIR = "test-backend/databases"
 def get_dev_uuid_var_path(create_if_missing=False):
     # type: (bool) -> str
     zulip_path = get_deploy_root()

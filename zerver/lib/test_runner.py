@@ -31,6 +31,8 @@ import unittest
 
 from multiprocessing.sharedctypes import Synchronized
 
+from scripts.lib.zulip_tools import get_dev_uuid_var_path, TEMPLATE_DATABASE_DIR
+
 # We need to pick an ID for this test-backend invocation, and store it
 # in this global so it can be used in init_worker; this is used to
 # ensure the database IDs we select are unique for each `test-backend`
@@ -418,6 +420,19 @@ class Runner(DiscoverRunner):
         settings.DATABASES['default']['NAME'] = settings.BACKEND_DATABASE_TEMPLATE
         # We create/destroy the test databases in run_tests to avoid
         # duplicate work when running in parallel mode.
+
+        # Write the template database ids to a file that we can
+        # reference for cleaning them up if they leak.
+        filepath = os.path.join(get_dev_uuid_var_path(),
+                                TEMPLATE_DATABASE_DIR,
+                                str(random_id_range_start))
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        with open(filepath, "w") as f:
+            if self.parallel > 1:
+                for index in range(self.parallel):
+                    f.write(str(random_id_range_start + (index + 1)) + "\n")
+            else:
+                f.write(str(random_id_range_start) + "\n")
         return super().setup_test_environment(*args, **kwargs)
 
     def teardown_test_environment(self, *args: Any, **kwargs: Any) -> Any:
@@ -433,6 +448,13 @@ class Runner(DiscoverRunner):
                 destroy_test_databases(index + 1)
         else:
             destroy_test_databases()
+
+        # Clean up our record of which databases this process created.
+        filepath = os.path.join(get_dev_uuid_var_path(),
+                                TEMPLATE_DATABASE_DIR,
+                                str(random_id_range_start))
+        os.remove(filepath)
+
         return super().teardown_test_environment(*args, **kwargs)
 
     def test_imports(self, test_labels: List[str], suite: unittest.TestSuite) -> None:
