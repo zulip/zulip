@@ -31,6 +31,8 @@ import unittest
 
 from multiprocessing.sharedctypes import Synchronized
 
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
+
 # We need to pick an ID for this test-backend invocation, and store it
 # in this global so it can be used in init_worker; this is used to
 # ensure the database IDs we select are unique for each `test-backend`
@@ -407,6 +409,20 @@ class Runner(DiscoverRunner):
         settings.DATABASES['default']['NAME'] = settings.BACKEND_DATABASE_TEMPLATE
         # We create/destroy the test databases in run_tests to avoid
         # duplicate work when running in parallel mode.
+
+        # Write the template ids to a file for reference during clean up
+        os.makedirs(get_dev_uuid_var_path() + '/zulip_test_template', exist_ok=True)
+        filepath = "{root}{dir}{filename}".format(
+            root=get_dev_uuid_var_path(),
+            dir='/zulip_test_template/',
+            filename=str(random.randint(1000000, 9999999))
+        )
+        with open(filepath, "w") as f:
+            if self.parallel > 1:
+                for index in range(self.parallel):
+                    f.write(str(random_id_range_start + (index + 1)) + "\n")
+            else:
+                f.write(str(random_id_range_start) + "\n")
         return super().setup_test_environment(*args, **kwargs)
 
     def teardown_test_environment(self, *args: Any, **kwargs: Any) -> Any:
