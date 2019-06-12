@@ -195,9 +195,11 @@ def delete_messages(msg_ids: List[int]) -> None:
     # archiving the messages before doing this step.
     Message.objects.filter(id__in=msg_ids).delete()
 
-def delete_expired_attachments() -> None:
+def delete_expired_attachments(realm: Realm) -> None:
     Attachment.objects.filter(
-        messages__isnull=True, id__in=ArchivedAttachment.objects.all(),
+        messages__isnull=True,
+        realm_id=realm.id,
+        id__in=ArchivedAttachment.objects.filter(realm_id=realm.id),
     ).delete()
 
 def move_related_objects_to_archive(msg_ids: List[int]) -> None:
@@ -213,40 +215,39 @@ def archive_messages_by_recipient(recipient: Recipient, message_retention_days: 
         move_related_objects_to_archive(chunk)
         delete_messages(chunk)
 
-def archive_personal_and_huddle_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
-    for realm in Realm.objects.filter(message_retention_days__isnull=False):
-        message_id_chunks = move_expired_personal_and_huddle_messages_to_archive(realm, chunk_size)
-        for chunk in message_id_chunks:
-            move_related_objects_to_archive(chunk)
-            delete_messages(chunk)
+def archive_personal_and_huddle_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
+    message_id_chunks = move_expired_personal_and_huddle_messages_to_archive(realm, chunk_size)
+    for chunk in message_id_chunks:
+        move_related_objects_to_archive(chunk)
+        delete_messages(chunk)
 
-def archive_stream_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
-    for realm in Realm.objects.all():
-        # We don't archive, if the stream has message_retention_days set to -1,
-        # or if neither the stream nor the realm have a retention policy.
-        streams = Stream.objects.exclude(message_retention_days=-1).filter(
-            Q(message_retention_days__isnull=False) | Q(realm__message_retention_days__isnull=False),
-            realm_id=realm.id
-        )
-        retention_policy_dict = {}  # type: Dict[int, int]
-        for stream in streams:
-            #  if stream.message_retention_days is null, use the realm's policy
-            if stream.message_retention_days:
-                retention_policy_dict[stream.id] = stream.message_retention_days
-            else:
-                retention_policy_dict[stream.id] = stream.realm.message_retention_days
+def archive_stream_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
+    # We don't archive, if the stream has message_retention_days set to -1,
+    # or if neither the stream nor the realm have a retention policy.
+    streams = Stream.objects.exclude(message_retention_days=-1).filter(
+        Q(message_retention_days__isnull=False) | Q(realm__message_retention_days__isnull=False),
+        realm_id=realm.id
+    )
+    retention_policy_dict = {}  # type: Dict[int, int]
+    for stream in streams:
+        #  if stream.message_retention_days is null, use the realm's policy
+        if stream.message_retention_days:
+            retention_policy_dict[stream.id] = stream.message_retention_days
+        else:
+            retention_policy_dict[stream.id] = stream.realm.message_retention_days
 
-        recipients = get_stream_recipients([stream.id for stream in streams])
-        for recipient in recipients:
-            archive_messages_by_recipient(recipient, retention_policy_dict[recipient.type_id], chunk_size)
+    recipients = get_stream_recipients([stream.id for stream in streams])
+    for recipient in recipients:
+        archive_messages_by_recipient(recipient, retention_policy_dict[recipient.type_id], chunk_size)
 
 def archive_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
-    archive_stream_messages(chunk_size)
-    archive_personal_and_huddle_messages(chunk_size)
+    for realm in Realm.objects.all():
+        archive_stream_messages(realm, chunk_size)
+        if realm.message_retention_days:
+            archive_personal_and_huddle_messages(realm, chunk_size)
 
-    # Since figuring out which attachments can be deleted requires scanning the whole
-    # ArchivedAttachment table, we should do this just once, at the end of the archiving process:
-    delete_expired_attachments()
+        # Messages have been archived for the realm, now we can clean up attachments:
+        delete_expired_attachments(realm)
 
 def move_attachment_messages_to_archive_by_message(message_ids: List[int]) -> None:
     # Move attachments messages relation table data to archive.
