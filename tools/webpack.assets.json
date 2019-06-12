@@ -1,7 +1,7 @@
 {
     "activity": [
         "./node_modules/sorttable/sorttable.js",
-        "./static/styles/activity.scss"
+        "./static/styles/portico/activity.scss"
     ],
     "archive": [
         "./node_modules/xdate/src/xdate.js",
@@ -22,7 +22,7 @@
         "./static/js/templates.js",
         "./static/templates/compiled.js",
         "./static/js/loading.js",
-        "./static/styles/billing.scss"
+        "./static/styles/portico/billing.scss"
     ],
     "upgrade": [
         "./static/js/billing/helpers.js",
@@ -31,14 +31,14 @@
         "./static/js/templates.js",
         "./static/templates/compiled.js",
         "./static/js/loading.js",
-        "./static/styles/billing.scss"
+        "./static/styles/portico/billing.scss"
     ],
     "portico": [
         "./static/js/portico/header.js",
-        "./static/styles/portico-styles.scss"
+        "./static/styles/portico/portico-styles.scss"
     ],
     "error-styles": [
-        "./static/styles/portico-styles.scss"
+        "./static/styles/portico/portico-styles.scss"
     ],
     "common": [
         "string.prototype.endswith",
@@ -63,19 +63,19 @@
         "./static/styles/pygments.scss"
     ],
     "help": [
-            "./node_modules/simplebar/dist/simplebar.css",
-            "./node_modules/simplebar/dist/simplebar.js",
-            "./static/js/portico/help.js",
-            "./static/js/portico/tabbed-instructions.js"
+        "./node_modules/simplebar/dist/simplebar.css",
+        "./node_modules/simplebar/dist/simplebar.js",
+        "./static/js/portico/help.js",
+        "./static/js/portico/tabbed-instructions.js"
     ],
     "katex": "./node_modules/katex/dist/katex.min.js",
     "landing-page": [
         "./static/js/portico/landing-page.js",
-        "./static/styles/landing-page.scss"
+        "./static/styles/portico/landing-page.scss"
     ],
     "integrations": [
         "./static/js/portico/integrations.js",
-        "./static/styles/landing-page.scss"
+        "./static/styles/portico/landing-page.scss"
     ],
     "signup": [
         "./node_modules/jquery-validation/dist/jquery.validate.min.js",
@@ -88,15 +88,15 @@
     "dev-login": "./static/js/portico/dev-login.js",
     "integrations-dev-panel": [
         "./static/js/portico/integrations_dev_panel.js",
-        "./static/styles/integrations_dev_panel.css",
+        "./static/styles/portico/integrations_dev_panel.css",
         "./static/js/channel.js"
-      ],
+    ],
     "email-log": [
         "./static/js/portico/email_log.js",
         "./static/js/channel.js"
     ],
     "stats": [
-        "./static/styles/stats.scss",
+        "./static/styles/portico/stats.scss",
         "./static/js/stats/stats.js",
         "./node_modules/plotly.js/dist/plotly-basic.min.js"
     ],
@@ -107,6 +107,6 @@
         "./node_modules/katex/dist/katex.css",
         "./static/styles/zulip.scss",
         "./static/styles/media.scss",
-        "./static/styles/archive.scss"
+        "./static/styles/portico/archive.scss"
     ]
 }
