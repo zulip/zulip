@@ -9,6 +9,8 @@
     overflow: hidden;
     max-width: 1200px;
     max-height: 1000px;
+    display: flex;
+    flex-direction: column;
 }
 
 .drafts-header {
@@ -45,10 +47,8 @@
 }
 
 .drafts-list {
+    padding: 10px 0;
     overflow: auto;
-    height: calc(100% - 55px);
-    width: 100%;
-    margin-top: 15px;
 }
 
 .drafts-list .no-drafts {
