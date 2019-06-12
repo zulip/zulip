@@ -276,6 +276,7 @@ class Realm(models.Model):
     LIMITED = 2
     STANDARD = 3
     STANDARD_FREE = 4
+    UPGRADE_TEXT_STANDARD = _("Available on all paid plans. Upgrade ")
     plan_type = models.PositiveSmallIntegerField(default=SELF_HOSTED)  # type: int
 
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
