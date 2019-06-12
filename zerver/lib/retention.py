@@ -281,35 +281,9 @@ def move_messages_to_archive(message_ids: List[int]) -> None:
 
     ArchivedMessage.objects.bulk_create([ArchivedMessage(**message) for message in messages])
 
-    # Move user_messages to the archive.
-    user_messages = UserMessage.objects.filter(
-        message_id__in=message_ids).exclude(id__in=ArchivedUserMessage.objects.all()).values()
-    user_messages_ids = [user_message['id'] for user_message in user_messages]
-    ArchivedUserMessage.objects.bulk_create(
-        [ArchivedUserMessage(**user_message) for user_message in user_messages]
-    )
-
-    for model in models_with_message_key:
-        elements = model['class'].objects.filter(message_id__in=message_ids).exclude(
-            id__in=model['archive_class'].objects.all()
-        ).values()
-
-        model['archive_class'].objects.bulk_create(
-            [model['archive_class'](**element) for element in elements]
-        )
-
-    # Move attachments to archive
-    attachments = Attachment.objects.filter(messages__id__in=message_ids).exclude(
-        id__in=ArchivedAttachment.objects.all()).distinct().values()
-    ArchivedAttachment.objects.bulk_create(
-        [ArchivedAttachment(**attachment) for attachment in attachments]
-    )
-
-    move_attachment_messages_to_archive(message_ids)
-
+    move_related_objects_to_archive(message_ids)
     # Remove data from main tables
-    Message.objects.filter(id__in=message_ids).delete()
-    UserMessage.objects.filter(id__in=user_messages_ids, message_id__isnull=True).delete()
+    delete_messages(message_ids)
 
     archived_attachments = ArchivedAttachment.objects.filter(messages__id__in=message_ids).distinct()
     Attachment.objects.filter(messages__isnull=True, id__in=archived_attachments).delete()
