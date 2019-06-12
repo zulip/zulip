@@ -56,6 +56,15 @@
                     <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                 </a>
             </h3>
+            <div>
+                {{#unless plan_includes_wide_organization_logo}}
+                <p class="upgrade_realm_plan_type_suggestion">
+                    <a href="https://zulipchat.com/plans/" target="_blank">
+                        {{upgrade_text_for_wide_organization_logo}}
+                    </a>
+                </p>
+                {{/unless}}
+            </div>
         </div>
 
         <p>{{t "A wide image for the upper left corner of the app." }}</p>
@@ -67,6 +76,7 @@
             </div>
             <div class="inline-block avatar-controls">
                 <div id="realm_logo_file_input_error" class="alert text-error"></div>
+                {{#if plan_includes_wide_organization_logo}}
                 <button class="button rounded sea-green w-200 block input-size"
                   id="realm_logo_upload_button">
                     <span id="upload_logo_button_text">{{t 'Upload new logo' }}</span>
@@ -74,6 +84,7 @@
                 </button>
                 <button class="button rounded btn-danger w-200 m-t-10 block input-size"
                   id="realm_logo_delete_button">{{t 'Delete logo' }}</button>
+                {{/if}}
             </div>
         </div>
 
@@ -86,6 +97,7 @@
             </div>
             <div class="inline-block avatar-controls">
                 <div id="realm_night_logo_file_input_error" class="alert text-error"></div>
+                {{#if plan_includes_wide_organization_logo}}
                 <button class="button rounded sea-green w-200 block input-size"
                   id="realm_night_logo_upload_button">
                     <span id="upload_night_logo_button_text">{{t 'Upload new logo' }}</span>
@@ -93,6 +105,7 @@
                 </button>
                 <button class="button rounded btn-danger w-200 m-t-10 block input-size"
                   id="realm_night_logo_delete_button">{{t 'Delete logo' }}</button>
+                {{/if}}
             </div>
         </div>
 

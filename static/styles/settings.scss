@@ -114,6 +114,15 @@ label {
     margin-bottom: 10px;
 }
 
+.upgrade_realm_plan_type_suggestion {
+    font-size: 16px;
+}
+
+.upgrade_realm_plan_type_suggestion::after {
+    font-family: FontAwesome;
+    content: "\f135";
+}
+
 .user-avatar-section {
     float: right;
 }

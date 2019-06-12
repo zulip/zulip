@@ -1156,8 +1156,10 @@ exports.build_page = function () {
         });
     }
 
-    realm_logo.build_realm_logo_widget(upload_realm_logo, false);
-    realm_logo.build_realm_logo_widget(upload_realm_logo, true);
+    if (page_params.plan_includes_wide_organization_logo) {
+        realm_logo.build_realm_logo_widget(upload_realm_logo, false);
+        realm_logo.build_realm_logo_widget(upload_realm_logo, true);
+    }
 
 
     $('#deactivate_realm_button').on('click', function (e) {
