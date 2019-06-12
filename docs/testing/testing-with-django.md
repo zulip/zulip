@@ -110,6 +110,33 @@ Here are some example action methods that tests may use for data setup:
 - do_create_user
 - do_make_stream_private
 
+### Testing code that accesses the filesystem
+
+Some of our tests (e.g. `test_upload.py` tests for
+`LocalUploadBackend` and the data import tests) test code that needs
+to write and then read back files from the filesystem.  Doing this
+correctly requires care to avoid leaking files after every test (which
+are clutter and can eventually run the development environment out of
+disk) or interacting with other parallel processes of this
+`test-backend` run (or another `test-backend` run).  Generally, the
+best practices are for tests to:
+
+* Place any files created by the test under the dedicated directory
+  tree for `test-backend` that is managed by the current development
+  environment (`var/<uuid>/test-backend/`).
+* Delete any files created by the test in the test class's `tearDown`
+  method (which runs even if the test fails).
+
+Our common testing infrastructure handles some of this for you,
+e.g. it replaces `settings.LOCAL_UPLOADS_DIR` for each test process
+with a unique path under `/var/<uuid>/test-backend`.  And
+`UploadSerializeMixin` manages some of the cleanup work for
+`test_upload.py`.  But it's worth testing `find var/*/test-backend`
+before and after you run a new test to make sure we don't leak new
+files.
+
+(Eventually we'll move this into a check in CI).
+
 ### Testing with mocks
 
 This section is a beginner's guide to mocking with Python's `unittest.mock` library. It will give you answers
