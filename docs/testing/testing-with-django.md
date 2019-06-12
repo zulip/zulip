@@ -51,6 +51,13 @@ iterative development, but you can override this behavior with the
 the `--rerun` option, which will rerun just the tests that failed in
 the last test run.
 
+It's important to know that some of our tests create directory trees
+within `var/<uuid>/test-backend/`.  This is the preferred path to use
+whenever a test flow requires reads or writes involving generated data.
+In this regard, we also try to ensure that our tests clean up after
+themselves.  That is, any such data should be removed, when possible,
+to reduce the accumulation of unwanted files.
+
 **Webhook integrations**.  For performance, `test-backend` with no
 arguments will not run webhook integration tests (`zerver/webhooks/`),
 which would otherwise account for about 25% of the total runtime.
