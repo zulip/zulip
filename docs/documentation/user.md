@@ -188,6 +188,22 @@ The source for macros is the Markdown files under
 
 * **Start composing** `{!start-composing.md!}`: Open the compose box.
 
+### Tab Switcher
+
+**Tab Switcher** element provides an easy and interactive method for explaining 
+such features or functionalities for which content varies across diffrent platforms 
+of Zulip. Tabs can be easily switched by clicking on the tab identifiers available in 
+nav-bar. Visible tab contains an active class, this class is responsible for making 
+data visible of current tab.
+
+A nice example would be **logging-out** feature which has diffrent instructions for 
+all three platforms(android, desktop and web), available on `https://zulipchat.com/help/logging-out`.
+
+Tab switcher elements are also used for the purpose of giving diffrent UI to features
+which only applies to a single platform as we have done for **deactivate-your-account**
+functionality which applies to desktop only.
+
+
 ### Tips and warnings
 
 A **tip** is any suggestion for the user that is not part of the main set of
