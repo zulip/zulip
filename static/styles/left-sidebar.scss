@@ -150,7 +150,12 @@ li.show-more-topics a {
 }
 
 #add-stream-link i {
-    margin-right: 5px;
+    min-width: 19px;
+    text-align: center;
+}
+
+#add-stream-link i::before {
+    padding-right: 3px;
 }
 
 ul.filters {
