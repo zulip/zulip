@@ -177,7 +177,7 @@ def move_attachments_to_archive(msg_ids: List[int]) -> None:
     move_rows(Attachment, query, message_ids=ids_list_to_sql_query_format(msg_ids))
 
 
-def move_attachments_message_rows_to_archive(msg_ids: List[int]) -> None:
+def move_attachment_messages_to_archive(msg_ids: List[int]) -> None:
     assert len(msg_ids) > 0
 
     query = """
@@ -185,8 +185,6 @@ def move_attachments_message_rows_to_archive(msg_ids: List[int]) -> None:
        SELECT zerver_attachment_messages.id, zerver_attachment_messages.attachment_id,
            zerver_attachment_messages.message_id
        FROM zerver_attachment_messages
-       INNER JOIN zerver_attachment
-           ON zerver_attachment_messages.attachment_id = zerver_attachment.id
        LEFT JOIN zerver_archivedattachment_messages
            ON zerver_archivedattachment_messages.id = zerver_attachment_messages.id
        WHERE  zerver_attachment_messages.message_id IN {message_ids}
@@ -213,7 +211,7 @@ def delete_expired_attachments(realm: Realm) -> None:
 def move_related_objects_to_archive(msg_ids: List[int]) -> None:
     move_models_with_message_key_to_archive(msg_ids)
     move_attachments_to_archive(msg_ids)
-    move_attachments_message_rows_to_archive(msg_ids)
+    move_attachment_messages_to_archive(msg_ids)
 
 def archive_messages_by_recipient(recipient: Recipient, message_retention_days: int,
                                   chunk_size: int=MESSAGE_BATCH_SIZE) -> int:
@@ -275,25 +273,6 @@ def archive_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
         # Messages have been archived for the realm, now we can clean up attachments:
         delete_expired_attachments(realm)
 
-def move_attachment_messages_to_archive_by_message(message_ids: List[int]) -> None:
-    # Move attachments messages relation table data to archive.
-    id_list = ', '.join(str(message_id) for message_id in message_ids)
-
-    query = """
-        INSERT INTO zerver_archivedattachment_messages (id, archivedattachment_id,
-            archivedmessage_id)
-        SELECT zerver_attachment_messages.id, zerver_attachment_messages.attachment_id,
-            zerver_attachment_messages.message_id
-        FROM zerver_attachment_messages
-        LEFT JOIN zerver_archivedattachment_messages
-            ON zerver_archivedattachment_messages.id = zerver_attachment_messages.id
-        WHERE zerver_attachment_messages.message_id in ({message_ids})
-            AND  zerver_archivedattachment_messages.id IS NULL
-    """
-    with connection.cursor() as cursor:
-        cursor.execute(query.format(message_ids=id_list))
-
-
 @transaction.atomic
 def move_messages_to_archive(message_ids: List[int]) -> None:
     messages = list(Message.objects.filter(id__in=message_ids).values())
@@ -326,7 +305,7 @@ def move_messages_to_archive(message_ids: List[int]) -> None:
         [ArchivedAttachment(**attachment) for attachment in attachments]
     )
 
-    move_attachment_messages_to_archive_by_message(message_ids)
+    move_attachment_messages_to_archive(message_ids)
 
     # Remove data from main tables
     Message.objects.filter(id__in=message_ids).delete()
