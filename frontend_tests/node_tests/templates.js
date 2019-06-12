@@ -597,6 +597,7 @@ run_test('custom_user_profile_field', () => {
 run_test('deactivate_stream_modal', () => {
     var args = {
         stream_name: "Public stream",
+        stream_id: 1,
     };
     var html = render('deactivation-stream-modal', args);
 
@@ -605,6 +606,7 @@ run_test('deactivate_stream_modal', () => {
 
     var button = $(html).find("#do_deactivate_stream_button");
     assert.equal(button.text(), "translated: Yes, delete this stream");
+    assert.equal(button.data('stream-id'), args.stream_id);
 });
 
 run_test('dev_env_email_access', () => {
