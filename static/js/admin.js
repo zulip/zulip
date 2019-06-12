@@ -68,6 +68,9 @@ exports.build_page = function () {
         realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
         realm_digest_weekday: page_params.realm_digest_weekday,
         development: page_params.development_environment,
+        plan_includes_wide_organization_logo: page_params.plan_includes_wide_organization_logo,
+        upgrade_text_for_wide_organization_logo:
+            page_params.upgrade_text_for_wide_organization_logo,
     };
 
     options.admin_settings_label = admin_settings_label;
