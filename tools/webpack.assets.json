@@ -83,6 +83,7 @@
         "./static/js/portico/signup.js"
     ],
     "support": [
+        "./static/js/common.js",
         "./static/js/analytics/support.js",
         "./static/styles/app_components.scss"
     ],

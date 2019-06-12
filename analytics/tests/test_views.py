@@ -330,12 +330,14 @@ class TestGetChartData(ZulipTestCase):
 
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
-        def check_hamlet_user_result(result: HttpResponse) -> None:
+        def check_hamlet_user_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>King Hamlet</h3>',
                                              '<b>Email</b>: hamlet@zulip.com', '<b>Is active</b>: True<br>',
-                                             '<b>Admins</b>: iago@zulip.com <br>'], result)
+                                             '<b>Admins</b>: iago@zulip.com\n',
+                                             'class="copy-button" data-admin-emails="iago@zulip.com"'
+                                             ], result)
 
-        def check_zulip_realm_result(result: HttpResponse) -> None:
+        def check_zulip_realm_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<input type="hidden" name="realm_id" value="1"', 'Zulip Dev</h3>',
                                              '<option value="1" selected>Self Hosted</option>',
                                              '<option value="2" >Limited</option>',
@@ -345,7 +347,7 @@ class TestSupportEndpoint(ZulipTestCase):
                                              'scrub-realm-button">',
                                              'data-string-id="zulip"'], result)
 
-        def check_lear_realm_result(result: HttpResponse) -> None:
+        def check_lear_realm_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<input type="hidden" name="realm_id" value="3"', 'Lear &amp; Co.</h3>',
                                              '<option value="1" selected>Self Hosted</option>',
                                              '<option value="2" >Limited</option>',
@@ -369,28 +371,28 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assert_in_success_response(['<input type="text" name="q" class="input-xxlarge search-query"'], result)
 
         result = self.client_get("/activity/support", {"q": "hamlet@zulip.com"})
-        check_hamlet_user_result(result)
-        check_zulip_realm_result(result)
+        check_hamlet_user_query_result(result)
+        check_zulip_realm_query_result(result)
 
         result = self.client_get("/activity/support", {"q": "lear"})
-        check_lear_realm_result(result)
+        check_lear_realm_query_result(result)
 
         result = self.client_get("/activity/support", {"q": "http://lear.testserver"})
-        check_lear_realm_result(result)
+        check_lear_realm_query_result(result)
 
         with self.settings(REALM_HOSTS={'zulip': 'localhost'}):
             result = self.client_get("/activity/support", {"q": "http://localhost"})
-            check_zulip_realm_result(result)
+            check_zulip_realm_query_result(result)
 
         result = self.client_get("/activity/support", {"q": "hamlet@zulip.com, lear"})
-        check_hamlet_user_result(result)
-        check_zulip_realm_result(result)
-        check_lear_realm_result(result)
+        check_hamlet_user_query_result(result)
+        check_zulip_realm_query_result(result)
+        check_lear_realm_query_result(result)
 
         result = self.client_get("/activity/support", {"q": "lear, Hamlet <hamlet@zulip.com>"})
-        check_hamlet_user_result(result)
-        check_zulip_realm_result(result)
-        check_lear_realm_result(result)
+        check_hamlet_user_query_result(result)
+        check_zulip_realm_query_result(result)
+        check_lear_realm_query_result(result)
 
     def test_change_plan_type(self) -> None:
         cordelia_email = self.example_email("cordelia")
