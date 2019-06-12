@@ -132,6 +132,9 @@ exports.build_page = function () {
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label: settings.settings_label,
         demote_inactive_streams_values: settings_display.demote_inactive_streams_values,
+        notification_settings: settings_notifications.all_notifications.settings,
+        push_notification_tooltip:
+            settings_notifications.all_notifications.push_notification_tooltip,
     });
 
     $(".settings-box").html(rendered_settings_tab);

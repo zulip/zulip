@@ -1,5 +1,6 @@
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
+zrequire('settings_notifications');
 
 set_global('i18n', global.stub_i18n);
 
@@ -1123,7 +1124,10 @@ run_test('settings_tab', () => {
                         "realm_name_in_notifications"];
 
     // Render with all booleans set to true.
-    var html = render('settings_tab', {page_params: page_params});
+    var html = render('settings_tab', {
+        page_params: page_params,
+        notification_settings: settings_notifications.all_notifications.settings,
+    });
 
     // All checkboxes should be checked.
     _.each(checkbox_ids, function (checkbox) {
