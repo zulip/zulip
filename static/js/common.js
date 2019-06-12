@@ -88,6 +88,18 @@ exports.phrase_match = function (query, phrase) {
     return false;
 };
 
+exports.copy_data_attribute_value = function (elem, key) {
+    // function to copy the value of data-key
+    // attribute of the element to clipboard
+    var temp = $(document.createElement('input'));
+    $("body").append(temp);
+    temp.val(elem.data(key)).select();
+    document.execCommand("copy");
+    temp.remove();
+    elem.fadeOut(250);
+    elem.fadeIn(1000);
+};
+
 return exports;
 
 }());

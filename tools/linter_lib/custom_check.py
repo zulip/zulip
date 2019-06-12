@@ -603,13 +603,14 @@ def build_custom_checkers(by_lang):
         {'pattern': "title='[^{]",
          'description': "`title` value should be translatable.",
          'good_lines': ['<link rel="author" title="{{ _(\'About these documents\') }}" />'],
-         'bad_lines': ["<p title='foo'></p>"]},
+         'bad_lines': ["<p title='foo'></p>"],
+         },
         {'pattern': r'title="[^{\:]',
          'exclude_line': set([
              ('templates/zerver/app/markdown_help.html',
               '<td class="rendered_markdown"><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
          ]),
-         'exclude': set(["templates/zerver/emails"]),
+         'exclude': set(["templates/zerver/emails", "templates/analytics/support.html"]),
          'description': "`title` value should be translatable."},
         {'pattern': r'''\Walt=["'][^{"']''',
          'description': "alt argument should be enclosed by _() or it should be an empty string.",

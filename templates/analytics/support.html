@@ -46,7 +46,10 @@
                 <h3><img src="{{ user.realm.realm_icon_url }}" class="support-realm-icon"> {{ user.realm.name }}</h3>
                 <b>URL</b>: <a target="_blank" href="{{ user.realm.uri }}">{{ user.realm.uri }}</a><br>
                 <b>Date created</b>: {{ user.realm.date_created|timesince }} ago<br>
-                <b>Admins</b>: {% for admin in user.realm.admins %}{{ admin.email }} {% endfor %}<br>
+                <b>Admins</b>: {{ user.realm.admin_emails }}
+                <a title="Copy emails" class="copy-button" data-admin-emails="{{ user.realm.admin_emails }}">
+                    <i class="fa fa-copy"></i>
+                </a>
                 <form method="POST">
                     <b>Status</b>:<br>
                     {{ csrf_input }}
@@ -93,7 +96,10 @@
             <h3><img src="{{ realm.realm_icon_url }}" class="support-realm-icon"> {{ realm.name }}</h3>
             <b>URL</b>: <a target="_blank" href="{{ realm.uri }}">{{ realm.uri }}</a><br>
             <b>Date created</b>: {{ realm.date_created|timesince }} ago<br>
-            <b>Admins</b>: {% for admin in realm.admins %}{{ admin.email }} {% endfor %}<br>
+            <b>Admins</b>: {{ realm.admin_emails }}
+            <a title="Copy emails" class="copy-button" data-admin-emails="{{ realm.admin_emails }}">
+                <i class="fa fa-copy"></i>
+            </a>
             <form method="POST">
                 <b>Status</b>:<br>
                 {{ csrf_input }}

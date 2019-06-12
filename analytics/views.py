@@ -1077,7 +1077,8 @@ def support(request: HttpRequest) -> HttpResponse:
         if users:
             for user in users:
                 user.realm.realm_icon_url = realm_icon_url(user.realm)
-                user.realm.admins = UserProfile.objects.filter(realm=user.realm, is_realm_admin=True)
+                user.realm.admin_emails = ", ".join(user.realm.get_admin_users().values_list("email",
+                                                                                             flat=True))
                 user.realm.default_discount = get_discount_for_realm(user.realm)
             context["users"] = users
 
@@ -1101,7 +1102,7 @@ def support(request: HttpRequest) -> HttpResponse:
         if realms:
             for realm in realms:
                 realm.realm_icon_url = realm_icon_url(realm)
-                realm.admins = UserProfile.objects.filter(realm=realm, is_realm_admin=True)
+                realm.admin_emails = ", ".join(realm.get_admin_users().values_list("email", flat=True))
                 realm.default_discount = get_discount_for_realm(realm)
             context["realms"] = realms
     return render(request, 'analytics/support.html', context=context)
