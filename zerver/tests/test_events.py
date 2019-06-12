@@ -1912,7 +1912,27 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
-        self.do_test(lambda: do_change_plan_type(realm, Realm.LIMITED))
+
+        state_data = fetch_initial_state_data(self.user_profile, None, "", False)
+        self.assertEqual(state_data['realm_plan_type'], Realm.SELF_HOSTED)
+        self.assertEqual(state_data['plan_includes_wide_organization_logo'], True)
+
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('plan_type')),
+            ('value', equals(Realm.LIMITED)),
+            ('extra_data', check_dict_only([
+                ('upload_quota', check_int)
+            ])),
+        ])
+        events = self.do_test(lambda: do_change_plan_type(realm, Realm.LIMITED))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        state_data = fetch_initial_state_data(self.user_profile, None, "", False)
+        self.assertEqual(state_data['realm_plan_type'], Realm.LIMITED)
+        self.assertEqual(state_data['plan_includes_wide_organization_logo'], False)
 
     def test_realm_emoji_events(self) -> None:
         schema_checker = self.check_events_dict([
