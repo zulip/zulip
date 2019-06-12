@@ -54,6 +54,20 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/tests/test_narrow.py',
 }
 
+shebang_rules = [
+    {'pattern': '^#!',
+     'description': "zerver library code shouldn't have a shebang line.",
+     'include_only': set(['zerver/'])},
+    # /bin/sh and /usr/bin/env are the only two binaries
+    # that NixOS provides at a fixed path (outside a
+    # buildFHSUserEnv sandbox).
+    {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))',
+     'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo`"
+     " for interpreters other than sh."},
+    {'pattern': '^#!/usr/bin/env python$',
+     'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
+]  # type: Rule
+
 trailing_whitespace_rule = {
     'pattern': r'\s+$',
     'strip': '\n',
@@ -505,6 +519,7 @@ python_rules = RuleList(
          },
     ]) + whitespace_rules + comma_whitespace_rule,
     max_length=110,
+    shebang_rules=shebang_rules,
 )
 
 bash_rules = RuleList(
@@ -521,6 +536,7 @@ bash_rules = RuleList(
              'scripts/setup/configure-rabbitmq'
          ]), },
     ]) + whitespace_rules[0:1],
+    shebang_rules=shebang_rules,
 )
 
 css_rules = RuleList(
