@@ -191,7 +191,7 @@ The source for macros is the Markdown files under
 ### Tab Switcher
 
 **Tab Switcher** element provides an easy and interactive method for explaining 
-such features or functionalities for which content varies across diffrent platforms 
+features or functionalities for which content varies across diffrent platforms 
 of Zulip. Different tabs should be used for representing data related to different platform.
 Tabs can be easily switched by clicking on the tab identifiers available in 
 nav-bar. Visible tab contains an active class, this class is responsible for making 
