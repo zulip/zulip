@@ -18,12 +18,14 @@ if False:
 class RuleList:
     """Defines and runs custom linting rules for the specified language."""
 
-    def __init__(self, langs, rules, max_length=None, length_exclude=[], exclude_files_in=None):
+    def __init__(self, langs, rules, max_length=None, length_exclude=[], shebang_rules=[],
+                 exclude_files_in=None):
         # type: (List[str], Rule, Optional[int], List[str], Rule, Optional[str]) -> None
         self.langs = langs
         self.rules = rules
         self.max_length = max_length
         self.length_exclude = length_exclude
+        self.shebang_rules = shebang_rules
         # Exclude the files in this folder from rules
         self.exclude_files_in = "\\"
 
@@ -184,20 +186,7 @@ class RuleList:
                 failed = True
 
         if firstline:
-            shebang_rules = [
-                        {'pattern': '^#!',
-                         'description': "zerver library code shouldn't have a shebang line.",
-                         'include_only': set(['zerver/'])},
-                        # /bin/sh and /usr/bin/env are the only two binaries
-                        # that NixOS provides at a fixed path (outside a
-                        # buildFHSUserEnv sandbox).
-                        {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))',
-                         'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo`"
-                                        " for interpreters other than sh."},
-                        {'pattern': '^#!/usr/bin/env python$',
-                         'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
-            ]  # type: Rule
-            shebang_rules_to_apply = self.get_rules_applying_to_fn(fn=fn, rules=shebang_rules)
+            shebang_rules_to_apply = self.get_rules_applying_to_fn(fn=fn, rules=self.shebang_rules)
             for rule in shebang_rules_to_apply:
                 if re.search(rule['pattern'], firstline):
                     print_err(identifier, color,
