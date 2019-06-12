@@ -3,10 +3,10 @@ var settings_notifications = (function () {
 var exports = {};
 
 var stream_notification_settings = [
-    {setting: "enable_stream_desktop_notifications", notifications: "desktop_notifications"},
-    {setting: "enable_stream_push_notifications", notifications: "push_notifications"},
-    {setting: "enable_stream_audible_notifications", notifications: "audible_notifications"},
-    {setting: "enable_stream_email_notifications", notifications: "email_notifications"},
+    "enable_stream_desktop_notifications",
+    "enable_stream_push_notifications",
+    "enable_stream_audible_notifications",
+    "enable_stream_email_notifications",
 ];
 
 var pm_mention_notification_settings = [
@@ -26,9 +26,15 @@ var other_notification_settings = [
     "message_content_in_email_notifications",
 ];
 
-exports.notification_settings = other_notification_settings.concat(
+var notification_settings_status = [
+    {status_label: "pm-mention-notify-settings-status", settings: pm_mention_notification_settings},
+    {status_label: "other-notify-settings-status", settings: other_notification_settings},
+    {status_label: "stream-notify-settings-status", settings: stream_notification_settings},
+];
+
+exports.all_notification_settings_labels = other_notification_settings.concat(
     pm_mention_notification_settings,
-    _.pluck(stream_notification_settings, 'setting')
+    stream_notification_settings
 );
 
 function change_notification_setting(setting, setting_data, status_element) {
@@ -46,34 +52,20 @@ exports.set_enable_digest_emails_visibility = function () {
 };
 
 exports.set_up = function () {
-    _.each(pm_mention_notification_settings, function (setting) {
-        $("#" + setting).change(function () {
-            change_notification_setting(setting, $(this).prop('checked'),
-                                        "#pm-mention-notify-settings-status");
-        });
-    });
+    _.each(notification_settings_status, function (setting) {
+        _.each(setting.settings, function (sub_setting) {
+            $("#" + sub_setting).change(function () {
+                var value;
 
-    _.each(other_notification_settings, function (setting) {
-        $("#" + setting).change(function () {
-            var value;
-
-            if (setting === "notification_sound") {
-                // `notification_sound` is not a boolean.
-                value = $(this).val();
-            } else {
-                value = $(this).prop('checked');
-            }
-
-            change_notification_setting(setting, value,
-                                        "#other-notify-settings-status");
-        });
-    });
-
-    _.each(stream_notification_settings, function (stream_setting) {
-        var setting = stream_setting.setting;
-        $("#" + setting).change(function () {
-            var setting_data = $(this).prop('checked');
-            change_notification_setting(setting, setting_data, "#stream-notify-settings-status");
+                if (sub_setting === "notification_sound") {
+                    // `notification_sound` is not a boolean.
+                    value = $(this).val();
+                } else {
+                    value = $(this).prop('checked');
+                }
+                change_notification_setting(sub_setting, value,
+                                            "#" + setting.status_label);
+            });
         });
     });
 
@@ -97,7 +89,7 @@ exports.set_up = function () {
 };
 
 exports.update_page = function () {
-    _.each(exports.notification_settings, function (setting) {
+    _.each(exports.all_notification_settings_labels, function (setting) {
         if (setting === 'enable_offline_push_notifications'
             && !page_params.realm_push_notifications_enabled) {
             // If push notifications are disabled at the realm level,

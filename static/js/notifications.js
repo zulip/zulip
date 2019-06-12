@@ -692,7 +692,7 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // Update the global settings checked when determining if we should notify
     // for a given message. These settings do not affect whether or not a
     // particular stream should receive notifications.
-    if (settings_notifications.notification_settings.indexOf(notification_name) !== -1) {
+    if (settings_notifications.all_notification_settings_labels.indexOf(notification_name) !== -1) {
         page_params[notification_name] = setting;
     }
 
