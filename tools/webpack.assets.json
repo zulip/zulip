@@ -1,6 +1,7 @@
 {
     "activity": [
         "./node_modules/sorttable/sorttable.js",
+        "./static/js/analytics/activity.js",
         "./static/styles/portico/activity.scss"
     ],
     "archive": [

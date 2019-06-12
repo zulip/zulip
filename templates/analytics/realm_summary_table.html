@@ -6,17 +6,6 @@
     var now = moment('{{ now }}');
     $('#utctime')[0].innerHTML = moment.utc(now).format('YYYY-MM-DD HH:mm') + 'Z';
     $('#localtime')[0].innerHTML = '(' + now.format('YYYY-MM-DD HH:mm ZZ') + ')';
-    $(document).ready(function() {
-        $('a.envelope-link').click(function() {
-            var temp = $(document.createElement('input'));
-            $("body").append(temp);
-            temp.val($(this).data("value")).select();
-            document.execCommand("copy");
-            temp.remove();
-            $(this).fadeOut(250);
-            $(this).fadeIn(1000);
-        });
-    });
 </script>
 
 <ul>
@@ -79,7 +68,7 @@
 
             <td>
                 {% if not loop.last %}
-                <a class="envelope-link" data-value="{{ row.realm_admin_email }}">
+                <a class="envelope-link" data-admin-emails="{{ row.realm_admin_email }}">
                     <i class="fa fa-envelope"></i>
                 </a>
                 {% endif %}
