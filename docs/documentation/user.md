@@ -192,14 +192,15 @@ The source for macros is the Markdown files under
 
 **Tab Switcher** element provides an easy and interactive method for explaining 
 such features or functionalities for which content varies across diffrent platforms 
-of Zulip. Tabs can be easily switched by clicking on the tab identifiers available in 
+of Zulip. Different tabs should be used for representing data related to different platform.
+Tabs can be easily switched by clicking on the tab identifiers available in 
 nav-bar. Visible tab contains an active class, this class is responsible for making 
 data visible of current tab.
 
-A nice example of this would be **logging-out** feature which has diffrent instructions 
+A nice example of this would be **logging-out** feature which has different instructions 
 for all three platforms(android, desktop and web), available on `https://zulipchat.com/help/logging-out`.
 
-Tab switcher elements are also used for the purpose of giving diffrent UI to features
+Tab switcher elements are also used for the purpose of giving different UI to features
 which only applies to a single platform as we have done for **deactivate-your-account**
 functionality available on `https://zulipchat.com/help/deactivate-your-account` which 
 applies to desktop only.
