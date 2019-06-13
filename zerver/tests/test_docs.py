@@ -334,7 +334,28 @@ class ConfigErrorTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/config-error/google')
         result = self.client_get(result.url)
+        self.assert_in_success_response(["google_oauth2_client_id"], result)
+        self.assert_in_success_response(["google_oauth2_client_secret"], result)
+        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
+        self.assert_not_in_success_response(["GOOGLE_OAUTH2_CLIENT_ID"], result)
+        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
+        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
+        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
+
+    @override_settings(GOOGLE_OAUTH2_CLIENT_ID=None)
+    @override_settings(DEVELOPMENT=False)
+    def test_google_production_error(self) -> None:
+        result = self.client_get("/accounts/login/google/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/config-error/google')
+        result = self.client_get(result.url)
         self.assert_in_success_response(["GOOGLE_OAUTH2_CLIENT_ID"], result)
+        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
+        self.assert_in_success_response(["google_oauth2_client_secret"], result)
+        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
+        self.assert_not_in_success_response(["google_oauth2_client_id"], result)
+        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
+        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
 
     @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
     def test_github(self) -> None:

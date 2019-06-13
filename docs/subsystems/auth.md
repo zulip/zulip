@@ -41,9 +41,8 @@ Here are the full procedures for dev:
   `https://zulipdev.com:9991/accounts/login/google/done/` .
 
 * You should get a client ID and a client secret. Copy them. In
-  `dev_settings.py`, set `GOOGLE_OAUTH2_CLIENT_ID` to the client ID,
-  and in `dev-secrets.conf`, set `google_oauth2_client_secret` to the
-  client secret.
+  `dev-secrets.conf`, set `google_auth2_client_id` to the client ID
+  and `google_oauth2_client_secret` to the client secret.
 
 ### GitHub
 

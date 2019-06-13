@@ -49,7 +49,11 @@
                     {% endif %}
 
                     {% if google_error %}
-                    {{ render_markdown_path('zerver/google-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
+                        {% if development_environment %}
+                        {{ render_markdown_path('zerver/google-error.md', {"root_domain_uri": root_domain_uri, "settings_path": secrets_path, "secrets_path": secrets_path, "client_id_key_name": "google_oauth2_client_id"}) }}
+                        {% else %}
+                        {{ render_markdown_path('zerver/google-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path, "client_id_key_name": "GOOGLE_OAUTH2_CLIENT_ID"}) }}
+                        {% endif %}
                     {% endif %}
 
                     {% if github_error %}
