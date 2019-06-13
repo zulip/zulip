@@ -43,6 +43,23 @@ exports.demote_inactive_streams_values = {
     },
 };
 
+exports.all_display_settings = {
+    settings: {
+        user_display_settings: [
+            "dense_mode",
+            "night_mode",
+            "high_contrast_mode",
+            "left_side_userlist",
+            "starred_message_counts",
+            "fluid_layout_width",
+        ],
+    },
+    render_only: {
+        high_contrast_mode: page_params.development_environment,
+        dense_mode: page_params.development_environment,
+    },
+};
+
 exports.set_up = function () {
     meta.loaded = true;
     $("#display-settings-status").hide();

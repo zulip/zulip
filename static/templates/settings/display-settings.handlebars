@@ -23,39 +23,13 @@
             <h3 class="inline-block">{{t "Display settings" }}</h3>
             <div class="alert-notification" id="display-settings-status"></div>
 
-            {{#if page_params.development_environment}}
+            {{#each display_settings.settings.user_display_settings}}
             {{partial "settings_checkbox"
-              "setting_name" "dense_mode"
-              "is_checked" page_params.dense_mode
-              "label" settings_label.dense_mode}}
-            {{/if}}
-
-            {{partial "settings_checkbox"
-              "setting_name" "night_mode"
-              "is_checked" page_params.night_mode
-              "label" settings_label.night_mode}}
-
-            {{#if page_params.development_environment}}
-            {{partial "settings_checkbox"
-              "setting_name" "high_contrast_mode"
-              "is_checked" page_params.high_contrast_mode
-              "label" settings_label.high_contrast_mode}}
-            {{/if}}
-
-            {{partial "settings_checkbox"
-              "setting_name" "left_side_userlist"
-              "is_checked" page_params.left_side_userlist
-              "label" settings_label.left_side_userlist}}
-
-            {{partial "settings_checkbox"
-              "setting_name" "starred_message_counts"
-              "is_checked" page_params.starred_message_counts
-              "label" settings_label.starred_message_counts}}
-
-            {{partial "settings_checkbox"
-              "setting_name" "fluid_layout_width"
-              "is_checked" page_params.fluid_layout_width
-              "label" settings_label.fluid_layout_width}}
+              "setting_name" this
+              "is_checked" (lookup ../page_params this)
+              "label" (lookup ../settings_label this)
+              "render_only" (lookup ../display_settings.render_only this)}}
+            {{/each}}
 
             <div class="input-group">
                 <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
