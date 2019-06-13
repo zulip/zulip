@@ -880,14 +880,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     left_side_userlist = models.BooleanField(default=False)  # type: bool
 
     # display settings
-    twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH)  # type: str
+    dense_mode = models.BooleanField(default=True)  # type: bool
+    fluid_layout_width = models.BooleanField(default=False)  # type: bool
     high_contrast_mode = models.BooleanField(default=False)  # type: bool
     night_mode = models.BooleanField(default=False)  # type: bool
     translate_emoticons = models.BooleanField(default=False)  # type: bool
-    dense_mode = models.BooleanField(default=True)  # type: bool
+    twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
     starred_message_counts = models.BooleanField(default=False)  # type: bool
-    fluid_layout_width = models.BooleanField(default=False)  # type: bool
 
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
@@ -955,14 +955,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         demote_inactive_streams=int,
         dense_mode=bool,
         emojiset=str,
-        left_side_userlist=bool,
-        timezone=str,
-        twenty_four_hour_time=bool,
-        high_contrast_mode=bool,
-        night_mode=bool,
-        translate_emoticons=bool,
-        starred_message_counts=bool,
         fluid_layout_width=bool,
+        high_contrast_mode=bool,
+        left_side_userlist=bool,
+        night_mode=bool,
+        starred_message_counts=bool,
+        timezone=str,
+        translate_emoticons=bool,
+        twenty_four_hour_time=bool,
     )
 
     notification_setting_types = dict(

@@ -379,6 +379,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'demote_inactive_streams',
             'dense_mode',
             'emojiset',
+            'fluid_layout_width',
             'high_contrast_mode',
             'night_mode',
             'left_side_userlist',
@@ -386,7 +387,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'twenty_four_hour_time',
             'translate_emoticons',
             'starred_message_counts',
-            'fluid_layout_width',
         ];
         if (_.contains(user_display_settings, event.setting_name)) {
             page_params[event.setting_name] = event.setting;
