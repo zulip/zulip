@@ -135,6 +135,7 @@ exports.build_page = function () {
         notification_settings: settings_notifications.all_notifications.settings,
         push_notification_tooltip:
             settings_notifications.all_notifications.push_notification_tooltip,
+        display_settings: settings_display.all_display_settings,
     });
 
     $(".settings-box").html(rendered_settings_tab);

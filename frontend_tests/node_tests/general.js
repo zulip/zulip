@@ -54,6 +54,12 @@ const denmark_stream = {
 // We often use IIFEs (immediately invoked function expressions)
 // to make our tests more self-containted.
 
+// Some quick housekeeping:  Let's clear page_params, which is a data
+// structure that the server sends down to us when the app starts.  We
+// prefer to test with a clean slate.
+
+set_global('page_params', {});
+
 zrequire('stream_data');
 set_global('i18n', global.stub_i18n);
 zrequire('settings_display');
@@ -143,13 +149,6 @@ run_test('unread', () => {
 // sender, by PM recipient, by search keywords, etc.  We will discuss
 // narrows more broadly, but first let's test out a core piece of
 // code that makes things work.
-
-
-// Some quick housekeeping:  Let's clear page_params, which is a data
-// structure that the server sends down to us when the app starts.  We
-// prefer to test with a clean slate.
-
-set_global('page_params', {});
 
 // We use the second argument of zrequire to find the location of the
 // Filter class.

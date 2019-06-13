@@ -19,6 +19,10 @@ zrequire('stream_list');
 zrequire('topic_zoom');
 zrequire('ui');
 set_global('i18n', global.stub_i18n);
+set_global('page_params', {
+    is_admin: false,
+    realm_users: [],
+});
 zrequire('settings_display');
 
 stream_color.initialize();
@@ -33,11 +37,6 @@ set_global('popovers', {});
 
 set_global('keydown_util', {
     handle: noop,
-});
-
-set_global('page_params', {
-    is_admin: false,
-    realm_users: [],
 });
 
 run_test('create_sidebar_row', () => {
