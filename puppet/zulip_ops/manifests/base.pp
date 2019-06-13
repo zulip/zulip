@@ -27,7 +27,6 @@ class zulip_ops::base {
     # Popular editors
     'vim',
     'emacs-nox',
-    'puppet-el',
     # Prevent accidental reboots
     'molly-guard',
     # Useful tools in a production environment
