@@ -20,7 +20,7 @@ class zulip_ops::base {
     'dhcpcd5',
     'python3-six',
     'python-six',
-    # "python3-boto", # missing on trusty
+    # 'python3-boto', # missing on trusty
     'python-boto', # needed for postgres_common too
     'python3-netifaces',
     'python-netifaces',
