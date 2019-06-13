@@ -39,6 +39,7 @@ fi
 if [ -n "${zulip_confdir-}" ]; then
     zulipconf_file="$zulip_confdir/zulip.conf"
     secrets_file="$zulip_confdir/zulip-secrets.conf"
+    settings_file="$zulip_confdir/settings.py"
 fi
 if [ -z "$secrets_file" ]; then
     echo "Specify secrets_file via environment."
@@ -82,6 +83,9 @@ scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$secrets_file" root@"$server":/etc/z
 if [ -e "$zulipconf_file" ]; then
     scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$zulipconf_file" root@"$server":/etc/zulip/zulip.conf
 fi
+if [ -e "$settings_file" ]; then
+    scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$settings_file" root@"$server":/etc/zulip/settings.py
+fi
 
 # shellcheck disable=SC2029 disable=SC2087
 ssh "${SSH_OPTS[@]}" "$server" -i "$amazon_key_file" -lroot /bin/bash <<EOF
@@ -114,7 +118,7 @@ git fetch
 git checkout origin/$branch
 # The main Zulip production install script can take things from here!
 env VIRTUALENV_NEEDED=$VIRTUALENV_NEEDED PUPPET_CLASSES="$type" \
-  ./scripts/setup/install
+  ./scripts/setup/install --self-signed-cert --no-init-db --no-overwrite-settings
 EOF
 
 scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file" root@"$server":/home/zulip/.ssh/id_rsa
