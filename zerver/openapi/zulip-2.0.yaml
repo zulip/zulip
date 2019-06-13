@@ -1,5 +1,8 @@
 # THIS FILE IS DEPRECATED! Please refer to zulip.yaml, which contains the new
 # specification (using OpenAPI 3.0).
+#
+# The current contents of this file should be reviewed and migrated to the new
+# zulip.yaml.
 
 # This file contains the Swagger UI configuration and API definitions
 # for the Zulip REST API.
