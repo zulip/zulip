@@ -22,7 +22,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,no-init-db,no-dist-upgrade,self-signed-cert,certbot,hostname:,email:,cacert: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,no-init-db,no-dist-upgrade,no-overwrite-settings,self-signed-cert,certbot,hostname:,email:,cacert: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
