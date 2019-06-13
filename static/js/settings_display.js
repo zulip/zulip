@@ -22,12 +22,6 @@ function change_display_setting(data, status_element, success_msg, sticky) {
     settings_ui.do_settings_change(channel.patch, '/json/settings/display', data, status_element, opts);
 }
 
-exports.set_night_mode = function (bool) {
-    var night_mode = bool;
-    var data = {night_mode: JSON.stringify(night_mode)};
-    change_display_setting(data, '#display-settings-status');
-};
-
 exports.demote_inactive_streams_values = {
     automatic: {
         code: 1,
@@ -74,6 +68,22 @@ exports.set_up = function () {
         overlays.close_modal('default_language_modal');
     });
 
+    _.each(exports.all_display_settings.settings.user_display_settings, function (setting) {
+        $("#" + setting).change(function () {
+            var data = {};
+            data[setting] = JSON.stringify($(this).prop('checked'));
+
+            if (["left_side_userlist"].indexOf(setting) > -1) {
+                change_display_setting(
+                    data,
+                    "#display-settings-status",
+                    i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."), true);
+            } else {
+                change_display_setting(data, "#display-settings-status");
+            }
+        });
+    });
+
     $("#default_language_modal .language").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -97,43 +107,13 @@ exports.set_up = function () {
         overlays.open_modal('default_language_modal');
     });
 
-    $("#high_contrast_mode").change(function () {
-        var data = {high_contrast_mode: JSON.stringify(this.checked)};
-        change_display_setting(data, '#display-settings-status');
-    });
-
-    $("#dense_mode").change(function () {
-        var data = {dense_mode: JSON.stringify(this.checked)};
-        change_display_setting(data, '#display-settings-status');
-    });
-
-    $('#starred_message_counts').change(function () {
-        var data = {starred_message_counts: JSON.stringify(this.checked)};
-        change_display_setting(data, '#display-settings-status');
-    });
-
-    $('#fluid_layout_width').change(function () {
-        var data = {fluid_layout_width: JSON.stringify(this.checked)};
-        change_display_setting(data, '#display-settings-status');
-    });
-
     $('#demote_inactive_streams').change(function () {
         var data = {demote_inactive_streams: this.value};
         change_display_setting(data, '#display-settings-status');
     });
 
-    $("#night_mode").change(function () {
-        exports.set_night_mode(this.checked);
-    });
-
     $('body').on('click', '.reload_link', function () {
         window.location.reload();
-    });
-
-    $("#left_side_userlist").change(function () {
-        var data = {left_side_userlist: JSON.stringify(this.checked)};
-        change_display_setting(data, '#display-settings-status',
-                               i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."), true);
     });
 
     $("#twenty_four_hour_time").change(function () {
