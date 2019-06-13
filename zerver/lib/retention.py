@@ -216,27 +216,41 @@ def move_related_objects_to_archive(msg_ids: List[int]) -> None:
     move_attachments_to_archive(msg_ids)
     move_attachment_messages_to_archive(msg_ids)
 
+def run_archiving_in_chunks(message_id_chunks: Iterator[List[int]]) -> int:
+    # This function is carefully designed to achieve our
+    # transactionality goals: A batch of messages is either fully
+    # archived-and-deleted or not transactionally.
+    #
+    # We implement this design by calling `next()` explicitly inside
+    # the `transaction.atomic()` block, ensuring that the queries that
+    # populate message_id_chunks run inside the same transaction block
+    # as the code that handles archiving related objects like
+    # UserMessage, Reaction, and Attachment.
+    message_count = 0
+    while True:
+        with transaction.atomic():
+            try:
+                chunk = next(message_id_chunks)
+            except StopIteration:
+                break
+
+            move_related_objects_to_archive(chunk)
+            delete_messages(chunk)
+            message_count += len(chunk)
+
+    return message_count
+
 def archive_messages_by_recipient(recipient: Recipient, message_retention_days: int,
                                   chunk_size: int=MESSAGE_BATCH_SIZE) -> int:
     message_id_chunks = move_expired_messages_to_archive_by_recipient(recipient, message_retention_days,
                                                                       chunk_size)
-    message_count = 0
-    for chunk in message_id_chunks:
-        move_related_objects_to_archive(chunk)
-        delete_messages(chunk)
-        message_count += len(chunk)
-
-    return message_count
+    return run_archiving_in_chunks(message_id_chunks)
 
 def archive_personal_and_huddle_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     logger.info("Archiving personal and huddle messages for realm " + realm.string_id)
 
     message_id_chunks = move_expired_personal_and_huddle_messages_to_archive(realm, chunk_size)
-    message_count = 0
-    for chunk in message_id_chunks:
-        move_related_objects_to_archive(chunk)
-        delete_messages(chunk)
-        message_count += len(chunk)
+    message_count = run_archiving_in_chunks(message_id_chunks)
 
     logger.info("Done. Archived {} messages".format(message_count))
 

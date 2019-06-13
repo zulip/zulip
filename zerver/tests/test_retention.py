@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
+from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
@@ -225,6 +226,29 @@ class TestArchivingGeneral(RetentionTestingBase):
 
         self.assertEqual(UserMessage.objects.filter(message_id=msg_id).count(), 2)
         self.assertTrue(Message.objects.filter(id=msg_id).exists())
+
+    def test_archiving_interrupted(self) -> None:
+        """ Check that queries get rolled back to a consistent state
+        if archiving gets interrupted in the middle of processing a chunk. """
+        expired_msg_ids = self._make_expired_zulip_messages(7)
+        expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
+
+        # Insert an exception near the end of the archiving process of a chunk:
+        with mock.patch("zerver.lib.retention.delete_messages", side_effect=Exception):
+            with self.assertRaises(Exception):
+                archive_messages(chunk_size=1000)  # Specify large chunk_size to ensure things happen in a single batch
+
+            # Archiving code has been executed, but because we got an exception, things should have been rolled back:
+            self._verify_archive_data([], [])
+
+            self.assertEqual(
+                set(Message.objects.filter(id__in=expired_msg_ids).values_list('id', flat=True)),
+                set(expired_msg_ids)
+            )
+            self.assertEqual(
+                set(UserMessage.objects.filter(id__in=expired_usermsg_ids).values_list('id', flat=True)),
+                set(expired_usermsg_ids)
+            )
 
     def test_archive_message_tool(self) -> None:
         """End-to-end test of the archiving tool, directly calling
