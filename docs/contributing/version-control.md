@@ -112,8 +112,6 @@ Compare "*gather_subscriptions: Fix exception handling bad input.*" with:
   tell from the summary what part of the code is affected
 * "*gather_subscriptions: Fixing exception when given bad input.*",
   not in the imperative
-* "*gather_subscriptions: Fixed exception when given bad input.*",
-  not in the imperative
 
 The summary is followed by a blank line, and then the body of the
 commit message.
