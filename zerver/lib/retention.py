@@ -12,7 +12,7 @@ from zerver.models import (Message, UserMessage, ArchivedMessage, ArchivedUserMe
                            SubMessage, ArchivedSubMessage, Recipient, Stream,
                            get_stream_recipients, get_user_including_cross_realm)
 
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterator, List
 
 import logging
 
@@ -75,16 +75,15 @@ def ids_list_to_sql_query_format(ids: List[int]) -> str:
     return ids_string
 
 def run_message_batch_query(query: str, chunk_size: int=MESSAGE_BATCH_SIZE,
-                            **kwargs: Any) -> List[List[int]]:
-    id_chunks = []  # type: List[List[int]]
+                            **kwargs: Any) -> Iterator[List[int]]:
     while True:
         new_chunk = move_rows(Message, query, chunk_size=chunk_size, **kwargs)
         if new_chunk:
-            id_chunks.append(new_chunk)
+            yield new_chunk
 
         # We run the loop, until the query returns fewer results than chunk_size, which means we are done:
         if len(new_chunk) < chunk_size:
-            return id_chunks
+            break
 
 # Note about batching these Message archiving queries:
 # We can simply use LIMIT without worrying about OFFSETs and ordering
@@ -93,7 +92,9 @@ def run_message_batch_query(query: str, chunk_size: int=MESSAGE_BATCH_SIZE,
 
 def move_expired_messages_to_archive_by_recipient(recipient: Recipient,
                                                   message_retention_days: int,
-                                                  chunk_size: int=MESSAGE_BATCH_SIZE) -> List[List[int]]:
+                                                  chunk_size: int=MESSAGE_BATCH_SIZE) -> Iterator[List[int]]:
+    # Important: This function is a generator, and you need to iterate
+    # through the Iterator it returns to execute the queries.
     query = """
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_timestamp)
         SELECT {src_fields}, '{archive_timestamp}'
@@ -107,13 +108,15 @@ def move_expired_messages_to_archive_by_recipient(recipient: Recipient,
     """
     check_date = timezone_now() - timedelta(days=message_retention_days)
 
-    return run_message_batch_query(query, returning_id=True,
-                                   recipient_id=recipient.id, check_date=check_date.isoformat(),
-                                   chunk_size=chunk_size)
+    yield from run_message_batch_query(query, returning_id=True,
+                                       recipient_id=recipient.id, check_date=check_date.isoformat(),
+                                       chunk_size=chunk_size)
 
 def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
                                                          chunk_size: int=MESSAGE_BATCH_SIZE
-                                                         ) -> List[List[int]]:
+                                                         ) -> Iterator[List[int]]:
+    # Important: This function is a generator, and you need to iterate
+    # through the Iterator it returns to execute the queries.
     cross_realm_bot_ids_list = [get_user_including_cross_realm(email).id
                                 for email in settings.CROSS_REALM_BOT_EMAILS]
     cross_realm_bot_ids = str(tuple(cross_realm_bot_ids_list))
@@ -140,9 +143,9 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
     assert realm.message_retention_days is not None
     check_date = timezone_now() - timedelta(days=realm.message_retention_days)
 
-    return run_message_batch_query(query, returning_id=True, cross_realm_bot_ids=cross_realm_bot_ids,
-                                   realm_id=realm.id, recipient_types=recipient_types,
-                                   check_date=check_date.isoformat(), chunk_size=chunk_size)
+    yield from run_message_batch_query(query, returning_id=True, cross_realm_bot_ids=cross_realm_bot_ids,
+                                       realm_id=realm.id, recipient_types=recipient_types,
+                                       check_date=check_date.isoformat(), chunk_size=chunk_size)
 
 def move_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
     assert len(msg_ids) > 0
