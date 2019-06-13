@@ -4,27 +4,38 @@ var exports = {};
 
 var stream_notification_settings = [
     "enable_stream_desktop_notifications",
-    "enable_stream_push_notifications",
     "enable_stream_audible_notifications",
+    "enable_stream_push_notifications",
     "enable_stream_email_notifications",
 ];
 
 var pm_mention_notification_settings = [
     "enable_desktop_notifications",
-    "enable_offline_email_notifications",
-    "enable_offline_push_notifications",
     "enable_sounds",
+    "enable_offline_push_notifications",
+    "enable_offline_email_notifications",
 ];
 
-var other_notification_settings = [
+var desktop_notification_settings = [
     "pm_content_in_desktop_notifications",
+];
+
+var mobile_notification_settings = [
     "enable_online_push_notifications",
-    "notification_sound",
+];
+
+var email_notification_settings = [
     "enable_digest_emails",
     "enable_login_emails",
-    "realm_name_in_notifications",
     "message_content_in_email_notifications",
+    "realm_name_in_notifications",
 ];
+
+var other_notification_settings = desktop_notification_settings.concat(
+    mobile_notification_settings,
+    email_notification_settings,
+    ["notification_sound"]
+);
 
 var notification_settings_status = [
     {status_label: "pm-mention-notify-settings-status", settings: pm_mention_notification_settings},
@@ -36,6 +47,21 @@ exports.all_notification_settings_labels = other_notification_settings.concat(
     pm_mention_notification_settings,
     stream_notification_settings
 );
+
+exports.all_notifications = {
+    settings: {
+        stream_notification_settings: stream_notification_settings,
+        pm_mention_notification_settings: pm_mention_notification_settings,
+        desktop_notification_settings: desktop_notification_settings,
+        mobile_notification_settings: mobile_notification_settings,
+        email_notification_settings: email_notification_settings,
+    },
+    push_notification_tooltip: {
+        enable_stream_push_notifications: true,
+        enable_offline_push_notifications: true,
+        enable_online_push_notifications: true,
+    },
+};
 
 function change_notification_setting(setting, setting_data, status_element) {
     var data = {};
