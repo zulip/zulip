@@ -136,9 +136,6 @@ DEFAULT_SETTINGS = {
     # Other settings, like EMAIL_HOST_USER, EMAIL_PORT, and EMAIL_USE_TLS,
     # we leave up to Django's defaults.
 
-    # Google auth
-    'GOOGLE_OAUTH2_CLIENT_ID': None,
-
     # LDAP auth
     'AUTH_LDAP_SERVER_URI': "",
     'LDAP_EMAIL_ATTR': None,
@@ -157,6 +154,7 @@ DEFAULT_SETTINGS = {
     # Social auth; we support providing values for some of these
     # settings in zulip-secrets.conf instead of settings.py in development.
     'SOCIAL_AUTH_GITHUB_KEY': get_secret('social_auth_github_key', development_only=True),
+    'GOOGLE_OAUTH2_CLIENT_ID': get_secret('google_oauth2_client_id', development_only=True),
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
     'SOCIAL_AUTH_SUBDOMAIN': None,
