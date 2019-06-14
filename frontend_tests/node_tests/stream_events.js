@@ -124,7 +124,7 @@ run_test('update_property', () => {
     with_overrides(function (override) {
         override('stream_list.refresh_pinned_or_unpinned_stream', noop);
         stream_events.update_property(1, 'pin_to_top', true);
-        checkbox = $('#pinstream-1');
+        checkbox = $(".subscription_settings[data-stream-id='1'] #sub_pin_to_top_setting .sub_setting_control");
         assert.equal(checkbox.prop('checked'), true);
     });
 
