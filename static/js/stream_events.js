@@ -31,7 +31,7 @@ function update_stream_email_notifications(sub, value) {
 }
 
 function update_stream_pin(sub, value) {
-    var pin_checkbox = $('#pinstream-' + sub.stream_id);
+    var pin_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_pin_to_top_setting .sub_setting_control");
     pin_checkbox.prop('checked', value);
     sub.pin_to_top = value;
 }
