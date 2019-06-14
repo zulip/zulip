@@ -73,25 +73,25 @@ run_test('update_property', () => {
     // Test desktop notifications
     stream_events.update_property(1, 'desktop_notifications', true);
     assert.equal(frontend.desktop_notifications, true);
-    var checkbox = $(".subscription_settings[data-stream-id='1'] #sub_desktop_notifications_setting .sub_setting_control");
+    var checkbox = $("#desktop_notifications_1");
     assert.equal(checkbox.prop('checked'), true);
 
     // Tests audible notifications
     stream_events.update_property(1, 'audible_notifications', true);
     assert.equal(frontend.audible_notifications, true);
-    checkbox = $(".subscription_settings[data-stream-id='1'] #sub_audible_notifications_setting .sub_setting_control");
+    checkbox = $("#audible_notifications_1");
     assert.equal(checkbox.prop('checked'), true);
 
     // Tests push notifications
     stream_events.update_property(1, 'push_notifications', true);
     assert.equal(frontend.push_notifications, true);
-    checkbox = $(".subscription_settings[data-stream-id='1'] #sub_push_notifications_setting .sub_setting_control");
+    checkbox = $("#push_notifications_1");
     assert.equal(checkbox.prop('checked'), true);
 
     // Tests email notifications
     stream_events.update_property(1, 'email_notifications', true);
     assert.equal(frontend.email_notifications, true);
-    checkbox = $(".subscription_settings[data-stream-id='1'] #sub_email_notifications_setting .sub_setting_control");
+    checkbox = $("#email_notifications_1");
     assert.equal(checkbox.prop('checked'), true);
 
     // Test name change
@@ -124,7 +124,7 @@ run_test('update_property', () => {
     with_overrides(function (override) {
         override('stream_list.refresh_pinned_or_unpinned_stream', noop);
         stream_events.update_property(1, 'pin_to_top', true);
-        checkbox = $(".subscription_settings[data-stream-id='1'] #sub_pin_to_top_setting .sub_setting_control");
+        checkbox = $("#pin_to_top_1");
         assert.equal(checkbox.prop('checked'), true);
     });
 
