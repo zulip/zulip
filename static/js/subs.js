@@ -841,15 +841,6 @@ exports.initialize = function () {
         $(".subscriptions-header").removeClass("slide-left");
     });
 
-    $("#subscriptions_table").on("click", ".sub_setting_checkbox", function (e) {
-        var control = $(e.target).closest('.sub_setting_checkbox').find('.sub_setting_control');
-        // A hack.  Don't change the state of the checkbox if we
-        // clicked on the checkbox itself.
-        if (control[0] !== e.target) {
-            control.prop("checked", !control.prop("checked"));
-        }
-    });
-
     (function defocus_sub_settings() {
         var sel = ".search-container, .streams-list, .subscriptions-header";
 
