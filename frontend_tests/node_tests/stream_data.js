@@ -605,30 +605,30 @@ run_test('notifications', () => {
     stream_data.clear_subscriptions();
     stream_data.add_sub('India', india);
 
-    assert(!stream_data.receives_desktop_notifications('Indiana'));
-    assert(!stream_data.receives_audible_notifications('Indiana'));
+    assert(!stream_data.receives_notifications('Indiana', "desktop_notifications"));
+    assert(!stream_data.receives_notifications('Indiana', "audible_notifications"));
 
     page_params.enable_stream_desktop_notifications = true;
     page_params.enable_stream_audible_notifications = true;
-    assert(stream_data.receives_desktop_notifications('India'));
-    assert(stream_data.receives_audible_notifications('India'));
+    assert(stream_data.receives_notifications('India', "desktop_notifications"));
+    assert(stream_data.receives_notifications('India', "audible_notifications"));
 
     page_params.enable_stream_desktop_notifications = false;
     page_params.enable_stream_audible_notifications = false;
-    assert(!stream_data.receives_desktop_notifications('India'));
-    assert(!stream_data.receives_audible_notifications('India'));
+    assert(!stream_data.receives_notifications('India', "desktop_notifications"));
+    assert(!stream_data.receives_notifications('India', "audible_notifications"));
 
     india.desktop_notifications = true;
     india.audible_notifications = true;
-    assert(stream_data.receives_desktop_notifications('India'));
-    assert(stream_data.receives_audible_notifications('India'));
+    assert(stream_data.receives_notifications('India', "desktop_notifications"));
+    assert(stream_data.receives_notifications('India', "audible_notifications"));
 
     india.desktop_notifications = false;
     india.audible_notifications = false;
     page_params.enable_stream_desktop_notifications = true;
     page_params.enable_stream_audible_notifications = true;
-    assert(!stream_data.receives_desktop_notifications('India'));
-    assert(!stream_data.receives_audible_notifications('India'));
+    assert(!stream_data.receives_notifications('India', "desktop_notifications"));
+    assert(!stream_data.receives_notifications('India', "audible_notifications"));
 });
 
 run_test('is_muted', () => {
