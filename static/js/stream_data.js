@@ -289,6 +289,17 @@ exports.update_stream_privacy = function (sub, values) {
     sub.history_public_to_subscribers = values.history_public_to_subscribers;
 };
 
+exports.receives_notifications = function (stream_name, notification_name) {
+    var sub = exports.get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    if (sub[notification_name] !== null) {
+        return sub[notification_name];
+    }
+    return page_params["enable_stream_" + notification_name];
+};
+
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
     // Admin can change any stream's name & description either stream is public or
@@ -620,28 +631,6 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
     exports.add_sub(stream_name, sub);
 
     return sub;
-};
-
-exports.receives_desktop_notifications = function (stream_name) {
-    var sub = exports.get_sub(stream_name);
-    if (sub === undefined) {
-        return false;
-    }
-    if (sub.desktop_notifications !== null) {
-        return sub.desktop_notifications;
-    }
-    return page_params.enable_stream_desktop_notifications;
-};
-
-exports.receives_audible_notifications = function (stream_name) {
-    var sub = exports.get_sub(stream_name);
-    if (sub === undefined) {
-        return false;
-    }
-    if (sub.audible_notifications !== null) {
-        return sub.audible_notifications;
-    }
-    return page_params.enable_stream_audible_notifications;
 };
 
 exports.get_streams_for_settings_page = function () {
