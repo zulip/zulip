@@ -302,6 +302,28 @@ function stream_is_muted_clicked(e) {
     }
 }
 
+function stream_setting_clicked(e) {
+    var checkbox_div = $(e.target).closest(".sub_setting_checkbox");
+    var sub = get_sub_for_target(e.target);
+    var checkbox = checkbox_div.find('.sub_setting_control');
+    var setting = checkbox.attr('name');
+    if (!sub) {
+        blueslip.error('undefined sub in stream_setting_clicked()');
+        return;
+    }
+    if (exports.is_notification_setting(setting) && sub[setting] === null) {
+        sub[setting] = page_params["enable_stream_" + setting];
+    }
+    exports.set_stream_property(sub, setting, !sub[setting]);
+
+    // A hack.  Don't change the state of the checkbox if we
+    // clicked on the checkbox itself.
+    if (checkbox[0] !== e.target) {
+        checkbox.prop("checked", !checkbox.prop("checked"));
+    }
+}
+
+
 exports.bulk_set_stream_property = function (sub_data) {
     return channel.post({
         url: '/json/users/me/subscriptions/properties',
@@ -358,55 +380,6 @@ function change_stream_privacy(e) {
             $("#change-stream-privacy-button").text(i18n.t("Try again"));
         },
     });
-}
-
-function stream_desktop_notifications_clicked(e) {
-    var sub = get_sub_for_target(e.target);
-    if (sub.desktop_notifications === null) {
-        sub.desktop_notifications = !page_params.enable_stream_desktop_notifications;
-    } else {
-        sub.desktop_notifications = !sub.desktop_notifications;
-    }
-    exports.set_stream_property(sub, 'desktop_notifications', sub.desktop_notifications);
-}
-
-function stream_audible_notifications_clicked(e) {
-    var sub = get_sub_for_target(e.target);
-    if (sub.audible_notifications === null) {
-        sub.audible_notifications = !page_params.enable_stream_audible_notifications;
-    } else {
-        sub.audible_notifications = !sub.audible_notifications;
-    }
-    exports.set_stream_property(sub, 'audible_notifications', sub.audible_notifications);
-}
-
-function stream_push_notifications_clicked(e) {
-    var sub = get_sub_for_target(e.target);
-    if (sub.push_notifications === null) {
-        sub.push_notifications = !page_params.enable_stream_push_notifications;
-    } else {
-        sub.push_notifications = !sub.push_notifications;
-    }
-    exports.set_stream_property(sub, 'push_notifications', sub.push_notifications);
-}
-
-function stream_email_notifications_clicked(e) {
-    var sub = get_sub_for_target(e.target);
-    if (sub.email_notifications === null) {
-        sub.email_notifications = !page_params.enable_stream_email_notifications;
-    } else {
-        sub.email_notifications = !sub.email_notifications;
-    }
-    exports.set_stream_property(sub, 'email_notifications', sub.email_notifications);
-}
-
-function stream_pin_clicked(e) {
-    var sub = get_sub_for_target(e.target);
-    if (!sub) {
-        blueslip.error('stream_pin_clicked() fails');
-        return;
-    }
-    subs.toggle_pin_to_top_stream(sub);
 }
 
 exports.change_stream_name = function (e) {
@@ -531,16 +504,14 @@ exports.initialize = function () {
 
     $("#subscriptions_table").on("click", "#sub_is_muted_setting",
                                  stream_is_muted_clicked);
-    $("#subscriptions_table").on("click", "#sub_desktop_notifications_setting",
-                                 stream_desktop_notifications_clicked);
-    $("#subscriptions_table").on("click", "#sub_audible_notifications_setting",
-                                 stream_audible_notifications_clicked);
-    $("#subscriptions_table").on("click", "#sub_push_notifications_setting",
-                                 stream_push_notifications_clicked);
-    $("#subscriptions_table").on("click", "#sub_email_notifications_setting",
-                                 stream_email_notifications_clicked);
-    $("#subscriptions_table").on("click", "#sub_pin_to_top_setting",
-                                 stream_pin_clicked);
+
+    _.each(Object.keys(settings_labels), function (setting) {
+        if (setting === "is_muted") {
+            return;
+        }
+        $("#subscriptions_table").on("click", "#sub_" + setting + "_setting",
+                                     stream_setting_clicked);
+    });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
