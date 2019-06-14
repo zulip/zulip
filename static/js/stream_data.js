@@ -300,6 +300,13 @@ exports.receives_notifications = function (stream_name, notification_name) {
     return page_params["enable_stream_" + notification_name];
 };
 
+var stream_notification_settings = [
+    "desktop_notifications",
+    "audible_notifications",
+    "push_notifications",
+    "email_notifications",
+];
+
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
     // Admin can change any stream's name & description either stream is public or
@@ -326,26 +333,9 @@ exports.update_calculated_fields = function (sub) {
     exports.update_subscribers_count(sub);
 
     // Apply the defaults for our notification settings for rendering.
-    if (sub.email_notifications === null) {
-        sub.email_notifications_display = page_params.enable_stream_email_notifications;
-    } else {
-        sub.email_notifications_display = sub.email_notifications;
-    }
-    if (sub.push_notifications === null) {
-        sub.push_notifications_display = page_params.enable_stream_push_notifications;
-    } else {
-        sub.push_notifications_display = sub.push_notifications;
-    }
-    if (sub.desktop_notifications === null) {
-        sub.desktop_notifications_display = page_params.enable_stream_desktop_notifications;
-    } else {
-        sub.desktop_notifications_display = sub.desktop_notifications;
-    }
-    if (sub.audible_notifications === null) {
-        sub.audible_notifications_display = page_params.enable_stream_audible_notifications;
-    } else {
-        sub.audible_notifications_display = sub.audible_notifications;
-    }
+    _.each(stream_notification_settings, function (setting) {
+        sub[setting + "_display"] = exports.receives_notifications(sub.name, setting);
+    });
 };
 
 exports.all_subscribed_streams_are_in_home_view = function () {
