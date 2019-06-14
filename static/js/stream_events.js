@@ -6,34 +6,10 @@ var exports = {};
 // defaults, however, they are only called after a manual override, so
 // doing so is unnecessary with the current code.  Ideally, we'd do a
 // refactor to address that, however.
-function update_stream_desktop_notifications(sub, value) {
-    var desktop_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
-    desktop_notifications_checkbox.prop('checked', value);
-    sub.desktop_notifications = value;
-}
-
-function update_stream_audible_notifications(sub, value) {
-    var audible_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_audible_notifications_setting .sub_setting_control");
-    audible_notifications_checkbox.prop('checked', value);
-    sub.audible_notifications = value;
-}
-
-function update_stream_push_notifications(sub, value) {
-    var push_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_push_notifications_setting .sub_setting_control");
-    push_notifications_checkbox.prop('checked', value);
-    sub.push_notifications = value;
-}
-
-function update_stream_email_notifications(sub, value) {
-    var email_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_email_notifications_setting .sub_setting_control");
-    email_notifications_checkbox.prop('checked', value);
-    sub.email_notifications = value;
-}
-
-function update_stream_pin(sub, value) {
-    var pin_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_pin_to_top_setting .sub_setting_control");
-    pin_checkbox.prop('checked', value);
-    sub.pin_to_top = value;
+function update_stream_setting(sub, value, setting) {
+    var setting_checkbox = $("#" + setting + "_" + sub.stream_id);
+    setting_checkbox.prop("checked", value);
+    sub[setting] = value;
 }
 
 exports.update_property = function (stream_id, property, value, other_values) {
@@ -54,16 +30,10 @@ exports.update_property = function (stream_id, property, value, other_values) {
         stream_muting.update_is_muted(sub, !value);
         break;
     case 'desktop_notifications':
-        update_stream_desktop_notifications(sub, value);
-        break;
     case 'audible_notifications':
-        update_stream_audible_notifications(sub, value);
-        break;
     case 'push_notifications':
-        update_stream_push_notifications(sub, value);
-        break;
     case 'email_notifications':
-        update_stream_email_notifications(sub, value);
+        update_stream_setting(sub, value, property);
         break;
     case 'name':
         subs.update_stream_name(sub, value);
@@ -75,7 +45,7 @@ exports.update_property = function (stream_id, property, value, other_values) {
         sub.email_address = value;
         break;
     case 'pin_to_top':
-        update_stream_pin(sub, value);
+        update_stream_setting(sub, value, property);
         stream_list.refresh_pinned_or_unpinned_stream(sub);
         break;
     case 'invite_only':
