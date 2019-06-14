@@ -75,6 +75,15 @@ Handlebars.registerHelper('unless_a_not_b', function () {
     return options.fn(this);
 });
 
+Handlebars.registerHelper('if_equal', function () {
+    // Execute conditional code if both values are equal
+    var options = arguments[arguments.length - 1];
+    if (arguments[0] === arguments[1]) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+});
+
 Handlebars.registerHelper('if_not_a_or_b_and_not_c', function () {
     var options = arguments[arguments.length - 1];
     if (arguments[0] === false || arguments[1] === true && arguments[2] === false) {
