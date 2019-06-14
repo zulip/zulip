@@ -3,7 +3,8 @@ import argparse
 import os
 import subprocess
 import sys
-from typing import Dict, Any
+import glob
+from typing import Dict, Any, List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -102,6 +103,12 @@ parser.add_argument('--force', dest='force',
                     action="store_true",
                     default=False, help='Run tests despite possible problems.')
 parser.add_argument('args', nargs=argparse.REMAINDER)
+parser.add_argument('--parallel', dest='parallel',
+                    action='store',
+                    type=int,
+                    default=4,
+                    help='Specify the number of processes to run the tests in. '
+                         'Default is 4.')
 options = parser.parse_args()
 
 from tools.lib.test_script import get_provisioning_status
@@ -128,12 +135,23 @@ for index, arg in enumerate(options.args):
 
 individual_files = options.args
 
+# If no individual files are passed, split the list
+# of all node tests into N subsuites to be run in parallel.
+sub_tests = []  # type: List[List[str]]
+parallel = options.parallel
+if not individual_files:
+    tests = glob.glob('./frontend_tests/node_tests/*')
+    tests = [test.split('/', 3)[-1] for test in tests]
+    sub_tests = [tests[i::parallel] for i in range(parallel)]
+else:
+    sub_tests.extend([individual_files])
+
 # The index.js test runner is the real "driver" here, and we launch
 # with either nyc or node, depending on whether we want coverage
 # reports.  Running under nyc is slower and creates funny
 # tracebacks, so you generally want to get coverage reports only
 # after making sure tests will pass.
-node_tests_cmd = ['node', '--stack-trace-limit=100', INDEX_JS]
+node_tests_cmd = ['--stack-trace-limit=100', INDEX_JS]
 node_tests_cmd += individual_files
 if options.coverage:
     coverage_dir = os.path.join(ROOT_DIR, 'var/node-coverage')
@@ -155,7 +173,21 @@ print('Starting node tests...')
 
 # If we got this far, we can run the tests!
 try:
-    ret = subprocess.check_call(command)
+    # This is duplicate code of:
+    #   `def run_parallel(lint_functions)` via commands.py
+    # A possible TODO: Refactor the function to work for both cases.
+    pids = []
+    for tests in sub_tests:
+        pid = os.fork()
+        if pid == 0:
+            os.execvp('node', command + tests)
+        pids.append(pid)
+    ret = 0
+
+    for pid in pids:
+        (_, status) = os.waitpid(pid, 0)
+        if status != 0:
+            ret = status
 except OSError:
     print('Bad command: %s' % (command,))
     raise
