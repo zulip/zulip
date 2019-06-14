@@ -1,7 +1,7 @@
-{{#with this}}
-<div class="subscription_settings" data-stream-id="{{stream_id}}">
+<div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
     <div class="inner-box">
         <div class="alert stream_change_property_info"></div>
+        {{#with sub}}
         <div class="stream-header">
             {{#if invite_only}}
             <div class="large-icon lock" style="color: {{color}}">
@@ -45,68 +45,42 @@
             </div>
             <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
-        <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
+        {{/with}}
+        <div class="regular_subscription_settings collapse {{#sub.subscribed}}in{{/sub.subscribed}}">
             <div class="subscription-config">
                 <ul class="grey-box">
+                    {{#each settings}}
                     <li>
-                        <div id="sub_is_muted_setting" class="sub_setting_checkbox sub-mute-setting">
-                            <input id="is_muted_{{stream_id}}" name="is_muted" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if is_muted}}checked{{/if}} />
-                            <label class="subscription-control-label">{{t "Mute stream" }}</label>
-                            <p class="mute-note {{#unless is_muted}}hide-mute-note{{/unless}}">{{t "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned." }}</p>
-                        </div>
+                        {{partial "stream-settings-checkbox"
+                          "setting_name" name
+                          "prefix" "sub_"
+                          "suffix" "_setting"
+                          "is_checked" value
+                          "is_muted" (lookup ../sub "is_muted")
+                          "stream_id" (lookup ../sub "stream_id")
+                          "notification_setting" is_notification_setting
+                          "label" label}}
                     </li>
-                    <li>
-                        <div id="sub_desktop_notifications_setting"
-                          class="sub_setting_checkbox sub_notification_setting {{#if is_muted}}muted-sub{{/if}}">
-                            <input id="desktop_notifications_{{stream_id}}" name="desktop_notifications" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if desktop_notifications_display}}checked{{/if}} {{#if is_muted}}disabled="disabled"{{/if}}/>
-                            <label class="subscription-control-label">{{t "Visual desktop notifications" }}</label>
-                        </div>
-                    </li>
-                    <li>
-                        <div id="sub_audible_notifications_setting"
-                          class="sub_setting_checkbox sub_notification_setting {{#if is_muted}}muted-sub{{/if}}">
-                            <input id="audible_notifications_{{stream_id}}" name="audible_notifications" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications_display}}checked{{/if}} {{#if is_muted}}disabled="disabled"{{/if}}/>
-                            <label class="subscription-control-label">{{t "Audible desktop notifications" }}</label>
-                        </div>
-                    </li>
-                    <li>
-                        <div id="sub_push_notifications_setting"
-                          class="sub_setting_checkbox sub_notification_setting {{#if is_muted}}muted-sub{{/if}}">
-                            <input id="push_notifications_{{stream_id}}" name="push_notifications" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if push_notifications_display}}checked{{/if}} {{#if is_muted}}disabled="disabled"{{/if}}/>
-                            <label class="subscription-control-label">{{t "Mobile notifications" }}</label>
-                        </div>
-                    </li>
-                    <li>
-                        <div id="sub_email_notifications_setting"
-                          class="sub_setting_checkbox sub_notification_setting {{#if is_muted}}muted-sub{{/if}}">
-                            <input id="email_notifications_{{stream_id}}" name="email_notifications" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if email_notifications_display}}checked{{/if}} {{#if is_muted}}disabled="disabled"{{/if}}/>
-                            <label class="subscription-control-label">{{t "Email notifications" }}</label>
-                        </div>
-                    </li>
-                    <li>
-                        <div id="sub_pin_to_top_setting" class="sub_setting_checkbox">
-                            <input id="pin_to_top_{{stream_id}}" name="pin_to_top" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if pin_to_top}}checked{{/if}} />
-                            <label class="subscription-control-label">{{t "Pin stream to top of left sidebar" }}</label>
-                        </div>
-                    </li>
+                    {{/each}}
                     <li>
                         <label for="streamcolor" class="subscription-control-label">{{t "Stream color" }}</label>
                         <span class="sub_setting_control">
-                            <input stream_id="{{stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{color}}" tabindex="-1" />
+                            <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
                         </span>
                     </li>
                 </ul>
             </div>
-            <div class="stream-email-box" {{#unless email_address}}style="display: none;"{{/unless}}>
+            <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
                 <div class="sub_settings_title">{{t "Email address" }} <i class="fa fa-question-circle stream-email-hint" aria-hidden="true"></i></div>
                 <div class="stream-email">
-                    <span class="email-address">{{email_address}}</span>
+                    <span class="email-address">{{sub.email_address}}</span>
                 </div>
             </div>
         </div>
+        {{#with sub}}
         <div class="subscription-members-setting">
             {{partial "subscription_members"}}
         </div>
+        {{/with}}
     </div>
 </div>
-{{/with}}

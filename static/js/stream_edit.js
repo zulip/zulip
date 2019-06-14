@@ -222,12 +222,52 @@ function show_subscription_settings(sub_row) {
     });
 }
 
+exports.is_notification_setting = function (setting_label) {
+    if (setting_label.indexOf("_notifications") > -1) {
+        return true;
+    }
+    return false;
+};
+
+var settings_labels = {
+    is_muted: i18n.t("Mute stream"),
+    desktop_notifications: i18n.t("Visual desktop notifications"),
+    audible_notifications: i18n.t("Audible desktop notifications"),
+    push_notifications: i18n.t("Mobile notifications"),
+    email_notifications: i18n.t("Email notifications"),
+    pin_to_top: i18n.t("Pin stream to top of left sidebar"),
+};
+
+exports.stream_settings = function (sub) {
+    var settings = [];
+    _.each(Object.keys(settings_labels), function (setting) {
+        if (exports.is_notification_setting(setting)) {
+            settings.push({
+                name: setting,
+                label: settings_labels[setting],
+                value: sub[setting + "_display"],
+                is_notification_setting: true,
+            });
+        } else {
+            settings.push({
+                name: setting,
+                label: settings_labels[setting],
+                value: sub[setting],
+            });
+        }
+    });
+    return settings;
+};
+
 exports.show_settings_for = function (node) {
     var stream_id = get_stream_id(node);
     var sub = stream_data.get_sub_by_id(stream_id);
 
     stream_data.update_calculated_fields(sub);
-    var html = templates.render('subscription_settings', sub);
+    var html = templates.render('subscription_settings', {
+        sub: sub,
+        settings: exports.stream_settings(sub),
+    });
     ui.get_content_element($('.subscriptions .right .settings')).html(html);
 
     var sub_settings = exports.settings_for_sub(sub);
