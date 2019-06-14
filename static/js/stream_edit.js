@@ -489,7 +489,7 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", "#sub_setting_is_muted",
+    $("#subscriptions_table").on("click", "#sub_is_muted_setting",
                                  stream_is_muted_clicked);
     $("#subscriptions_table").on("click", "#sub_desktop_notifications_setting",
                                  stream_desktop_notifications_clicked);
@@ -499,7 +499,7 @@ exports.initialize = function () {
                                  stream_push_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_email_notifications_setting",
                                  stream_email_notifications_clicked);
-    $("#subscriptions_table").on("click", "#sub_pin_setting",
+    $("#subscriptions_table").on("click", "#sub_pin_to_top_setting",
                                  stream_pin_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
