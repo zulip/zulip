@@ -38,12 +38,19 @@ const weaving = {
     stream_id: 5,
     pin_to_top: false,
 };
+const infrastructure = {
+    subscribed: true,
+    name: 'fhir-infrastructure',
+    stream_id: 6,
+    pin_to_top: false,
+};
 
 stream_data.add_sub(scalene.name, scalene);
 stream_data.add_sub(fast_tortoise.name, fast_tortoise);
 stream_data.add_sub(pneumonia.name, pneumonia);
 stream_data.add_sub(clarinet.name, clarinet);
 stream_data.add_sub(weaving.name, weaving);
+stream_data.add_sub(infrastructure.name, infrastructure);
 
 with_overrides(function (override) {
     override('stream_data.is_active', function (sub) {
@@ -53,7 +60,7 @@ with_overrides(function (override) {
     // Test sorting into categories/alphabetized
     var sorted = stream_sort.sort_groups("");
     assert.deepEqual(sorted.pinned_streams, ['scalene']);
-    assert.deepEqual(sorted.normal_streams, ['clarinet', 'fast tortoise']);
+    assert.deepEqual(sorted.normal_streams, ['clarinet', 'fast tortoise', 'fhir-infrastructure']);
     assert.deepEqual(sorted.dormant_streams, ['pneumonia']);
 
     // Test cursor helpers.
@@ -62,7 +69,8 @@ with_overrides(function (override) {
     assert.equal(stream_sort.prev_stream_id(scalene.stream_id), undefined);
     assert.equal(stream_sort.prev_stream_id(clarinet.stream_id), scalene.stream_id);
 
-    assert.equal(stream_sort.next_stream_id(fast_tortoise.stream_id), pneumonia.stream_id);
+    assert.equal(stream_sort.next_stream_id(fast_tortoise.stream_id), infrastructure.stream_id);
+    assert.equal(stream_sort.next_stream_id(infrastructure.stream_id), pneumonia.stream_id);
     assert.equal(stream_sort.next_stream_id(pneumonia.stream_id), undefined);
 
     // Test filtering
@@ -85,6 +93,18 @@ with_overrides(function (override) {
     sorted = stream_sort.sort_groups("tortoise");
     assert.deepEqual(sorted.pinned_streams, []);
     assert.deepEqual(sorted.normal_streams, ['fast tortoise']);
+    assert.deepEqual(sorted.dormant_streams, []);
+
+    // Test searching part of hyphenated word
+    sorted = stream_sort.sort_groups("infra");
+    assert.deepEqual(sorted.pinned_streams, []);
+    assert.deepEqual(sorted.normal_streams, ['fhir-infrastructure']);
+    assert.deepEqual(sorted.dormant_streams, []);
+
+    // Test searching word that contains a hyphen
+    sorted = stream_sort.sort_groups("fhir-in");
+    assert.deepEqual(sorted.pinned_streams, []);
+    assert.deepEqual(sorted.normal_streams, ['fhir-infrastructure']);
     assert.deepEqual(sorted.dormant_streams, []);
 
     // Test searching stream with spaces
