@@ -3,6 +3,7 @@ zrequire('templates');
 zrequire('settings_notifications');
 
 set_global('i18n', global.stub_i18n);
+zrequire('stream_edit');
 
 const { JSDOM } = require("jsdom");
 const { window } = new JSDOM();
@@ -1267,7 +1268,10 @@ run_test('subscription_settings', () => {
     };
 
     var html = '';
-    html += render('subscription_settings', sub);
+    html += render('subscription_settings', {
+        sub: sub,
+        settings: stream_edit.stream_settings(sub),
+    });
 
     var div = $(html).find(".subscription-type");
     assert(div.text().indexOf('private stream') > 0);
