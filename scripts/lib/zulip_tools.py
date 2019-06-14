@@ -472,3 +472,8 @@ def get_config_file() -> configparser.RawConfigParser:
 def get_deploy_options(config_file):
     # type: (configparser.RawConfigParser) -> List[str]
     return get_config(config_file, 'deployment', 'deploy_options', "").strip().split()
+
+def get_or_create_dev_uuid_var_path(path: str) -> str:
+    absolute_path = '{}/{}'.format(get_dev_uuid_var_path(), path)
+    os.makedirs(absolute_path, exist_ok=True)
+    return absolute_path
