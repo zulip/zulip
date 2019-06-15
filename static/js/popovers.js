@@ -431,6 +431,10 @@ exports.toggle_actions_popover = function (element, id) {
                 editability === message_edit.editability_types.TOPIC_ONLY;
         var should_display_quote_and_reply = message.content !== '<p>(deleted)</p>';
 
+        var conversation_time_uri = hash_util.by_conversation_and_time_uri(message)
+            .replace(/\(/g, '%28')
+            .replace(/\)/g, '%29');
+
         var should_display_delete_option = message_edit.get_deletability(message);
         var args = {
             message_id: message.id,
@@ -445,7 +449,7 @@ exports.toggle_actions_popover = function (element, id) {
             should_display_uncollapse: should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option: should_display_edit_history_option,
-            conversation_time_uri: hash_util.by_conversation_and_time_uri(message),
+            conversation_time_uri: conversation_time_uri,
             narrowed: narrow_state.active(),
             should_display_delete_option: should_display_delete_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
