@@ -170,6 +170,20 @@ class DocPageTest(ZulipTestCase):
             url = '/integrations/doc-html/{}'.format(integration)
             self._test(url, '', doc_html_str=True)
 
+    def test_integration_pages_open_graph_metadata(self) -> None:
+        url = '/integrations/doc/github'
+        title = '<meta property="og:title" content="Connect GitHub to Zulip">'
+        description = '<meta property="og:description" content="Zulip comes with over'
+        self._test(url, title, doc_html_str=True)
+        self._test(url, description, doc_html_str=True)
+
+        # Test category pages
+        url = '/integrations/communication'
+        title = '<meta property="og:title" content="Connect your Communication tools to Zulip">'
+        description = '<meta property="og:description" content="Zulip comes with over'
+        self._test(url, title, doc_html_str=True)
+        self._test(url, description, doc_html_str=True)
+
     def test_email_integration(self) -> None:
         self._test('/integrations/doc-html/email',
                    'support+abcdefg@testserver', doc_html_str=True)

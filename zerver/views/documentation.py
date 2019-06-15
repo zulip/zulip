@@ -146,6 +146,21 @@ def add_integrations_context(context: Dict[str, Any]) -> None:
     context['integrations_dict'] = alphabetical_sorted_integration
     context['integrations_count_display'] = integrations_count_display
 
+def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRequest) -> None:
+    path_name = request.path.rstrip('/').split('/')[-1]
+    description = ('Zulip comes with over a hundred native integrations out of the box, '
+                   'and integrates with Zapier, IFTTT, and Hubot to provide hundreds more. '
+                   'Connect the apps you use everyday to Zulip.')
+
+    if path_name in INTEGRATIONS:
+        integration = INTEGRATIONS[path_name]
+        context['OPEN_GRAPH_TITLE'] = 'Connect {name} to Zulip'.format(name=integration.display_name)
+        context['OPEN_GRAPH_DESCRIPTION'] = description
+
+    elif path_name in CATEGORIES:
+        category = CATEGORIES[path_name]
+        context['OPEN_GRAPH_TITLE'] = 'Connect your {category} tools to Zulip'.format(category=category)
+        context['OPEN_GRAPH_DESCRIPTION'] = description
 
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations/index.html'
@@ -153,6 +168,7 @@ class IntegrationView(ApiURLView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)  # type: Dict[str, Any]
         add_integrations_context(context)
+        add_integrations_open_graph_context(context, self.request)
         return context
 
 
