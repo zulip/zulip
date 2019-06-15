@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import re
 import string
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
@@ -259,6 +259,12 @@ JIRA_CONTENT_FUNCTION_MAPPER = {
     "jira:issue_updated": handle_updated_issue_event,
 }
 
+def get_event_handler(event: Optional[str]) -> Optional[Callable[..., str]]:
+    if event is None:
+        return None
+
+    return JIRA_CONTENT_FUNCTION_MAPPER.get(event)
+
 @api_key_only_webhook_view("JIRA")
 @has_request_variables
 def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -270,8 +276,7 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
     if event in IGNORED_EVENTS:
         return json_success()
 
-    if event is not None:
-        content_func = JIRA_CONTENT_FUNCTION_MAPPER.get(event)  # type: Any
+    content_func = get_event_handler(event)
 
     if subject is None or content_func is None:
         raise UnexpectedWebhookEventType('Jira', event)
