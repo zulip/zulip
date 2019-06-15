@@ -9,6 +9,9 @@ zrequire('presence');
 zrequire('buddy_data');
 zrequire('user_status');
 zrequire('settings_org');
+zrequire('feature_flags');
+zrequire('message_edit');
+zrequire('util');
 
 var noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code
@@ -40,6 +43,8 @@ set_global('stream_popover', {
     restore_stream_list_size: noop,
 });
 
+set_global('stream_data', {});
+
 set_global('ClipboardJS', function (sel) {
     assert.equal(sel, '.copy_link');
 });
@@ -57,6 +62,17 @@ var me = {
     user_id: 30,
     full_name: 'Me Myself',
     timezone: 'US/Pacific',
+};
+
+var target = $.create('click target');
+target.offset = () => {
+    return {
+        top: 10,
+    };
+};
+
+var e = {
+    stopPropagation: noop,
 };
 
 function initialize_people() {
@@ -94,14 +110,11 @@ function make_image_stubber() {
     };
 }
 
-run_test('sender_hover', () => {
-    popovers.register_click_handlers();
+popovers.register_click_handlers();
 
+run_test('sender_hover', () => {
     var selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
     var handler = $('#main_div').get_on_handler('click', selection);
-    var e = {
-        stopPropagation: noop,
-    };
 
     var message = {
         id: 999,
@@ -112,14 +125,6 @@ run_test('sender_hover', () => {
         user_id: alice.user_id,
         status_text: 'on the beach',
     });
-
-    var target = $.create('click target');
-
-    target.offset = () => {
-        return {
-            top: 10,
-        };
-    };
 
     rows.id = () => message.id;
 
@@ -191,4 +196,55 @@ run_test('sender_hover', () => {
     assert.equal(avatar_img.src, 'avatar/42/medium');
 
     // todo: load image
+});
+
+run_test('actions_popover', () => {
+    var handler = $('#main_div').get_on_handler('click', '.actions_hover');
+
+    window.location = {
+        protocol: 'http:',
+        host: 'chat.zulip.org',
+        pathname: '/',
+    };
+
+    var message = {
+        id: 999,
+        topic: 'Actions (1)',
+        type: 'stream',
+        stream_id: 123,
+    };
+
+    current_msg_list.get = (msg_id) => {
+        assert.equal(msg_id, message.id);
+        return message;
+    };
+
+    message_edit.get_editability = () => 4;
+
+    stream_data.id_to_slug = (stream_id) => {
+        assert.equal(stream_id, 123);
+        return 'Bracket ( stream';
+    };
+
+    target.closest = (sel) => {
+        assert.equal(sel, '.message_row');
+        return {
+            toggleClass: noop,
+        };
+    };
+
+    templates.render = function (fn, opts) {
+        // TODO: Test all the properties of the popover
+        switch (fn) {
+        case 'actions_popover_content':
+            assert.equal(
+                opts.conversation_time_uri,
+                'http://chat.zulip.org/#narrow/stream/Bracket.20%28.20stream/topic/Actions.20%281%29/near/999');
+            return 'actions-content';
+        default:
+            throw Error('unrecognized template: ' + fn);
+        }
+    };
+
+    handler.call(target, e);
 });

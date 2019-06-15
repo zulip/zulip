@@ -41,6 +41,7 @@ enforce_fully_covered = {
     # 'static/js/composebox_typeahead.js',
     'static/js/dict.ts',
     'static/js/emoji.js',
+    'static/js/feature_flags.js',
     'static/js/fenced_code.js',
     'static/js/fetch_status.js',
     'static/js/filter.js',
