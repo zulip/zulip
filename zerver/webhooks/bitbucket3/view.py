@@ -46,6 +46,15 @@ def get_user_name(payload: Dict[str, Any]) -> str:
                                          url=payload["actor"]["links"]["self"][0]["href"])
     return user_name
 
+def ping_handler(payload: Dict[str, Any], include_title: Optional[str]=None
+                 ) -> List[Dict[str, str]]:
+    if include_title:
+        subject = include_title
+    else:
+        subject = "Bitbucket Server Ping"
+    body = "Congratulations! The Bitbucket Server webhook was configured successfully!"
+    return [{"subject": subject, "body": body}]
+
 def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str, str]]:
     repo_name = payload["repository"]["name"]
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
@@ -304,6 +313,7 @@ def pr_comment_handler(payload: Dict[str, Any], action: str,
     return [{"subject": subject, "body": body}]
 
 EVENT_HANDLER_MAP = {
+    "diagnostics:ping": ping_handler,
     "repo:comment:added": partial(repo_comment_handler, action="commented"),
     "repo:comment:edited": partial(repo_comment_handler, action="edited their comment"),
     "repo:comment:deleted": partial(repo_comment_handler, action="deleted their comment"),
@@ -338,7 +348,10 @@ def api_bitbucket3_webhook(request: HttpRequest, user_profile: UserProfile,
                            branches: Optional[str]=REQ(default=None),
                            user_specified_topic: Optional[str]=REQ("topic", default=None)
                            ) -> HttpResponse:
-    eventkey = payload["eventKey"]
+    try:
+        eventkey = payload["eventKey"]
+    except KeyError:
+        eventkey = request.META["HTTP_X_EVENT_KEY"]
     handler = get_event_handler(eventkey)
 
     if "branches" in signature(handler).parameters:
