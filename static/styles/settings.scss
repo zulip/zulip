@@ -1082,6 +1082,7 @@ input[type=checkbox].inline-block {
         position: absolute;
         top: 67px; // 31.5px + 5px + 30px
         right: 30px;
+        z-index: 99;
     }
 
     #user-avatar-source {
@@ -1104,8 +1105,14 @@ input[type=checkbox].inline-block {
     }
 
     &:hover {
-        #user-avatar-block {
-            -webkit-filter: brightness(0.4);
+        #user-avatar-block::after {
+            content: '';
+            background-color: hsl(0, 0%, 0%);
+            height: 200px;
+            width: 200px;
+            opacity: 0.6;
+            z-index: 99;
+            position: absolute;
         }
 
         #user_avatar_delete_button {
