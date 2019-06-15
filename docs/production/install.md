@@ -30,6 +30,12 @@ using code from our [repository on GitHub](https://github.com/zulip/zulip/).
 
 ## Step 2: Install Zulip
 
+<!---
+  The `.. only:: unreleased` syntax invokes an rST "directive"
+  called `only`, defined by Sphinx:
+    https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#including-content-based-on-tags
+  It's controlled by `docs/conf.py` through the `tags` object.
+-->
 ```eval_rst
 .. only:: unreleased
 
