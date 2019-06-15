@@ -10,44 +10,45 @@ relevant background as well.
 
 ## Primary build process
 
-Most of the existing JS in Zulip is written
-in [IIFE](https://www.google.com/#q=iife)-wrapped
-modules, one per file in the `static/js` directory. We will over time migrate
-this to Typescript modules. In development mode files are loaded using webpack
-eval with sourcemaps. In production mode (and when creating a release tarball
-using `tools/build-release-tarball`), JavaScript files are concatenated and
-minified. We use the
-[django pipeline extension](https://django-pipeline.readthedocs.io/en/latest/)
-to manage our static assets, webpack, and typescript.  The main
-internal tool that does all of this work is
-`tools/update-prod-static`, which is called by both
-`tools/build-release-tarball` and `tools/upgrade-zulip-from-git`.
+Most of the existing JS in Zulip is written in
+[IIFE](https://www.google.com/#q=iife)-wrapped modules, one per file in the
+`static/js` directory. We will over time migrate these to Typescript modules.
+Stylesheets are written in Sass (with the scss syntax), they are converted from
+plain CSS and we have yet to take full advantage of the features Sass offers.
+We use Webpack to transpile and build JS and CSS bundles that the browser can
+understand, one for each entry points specifed in `tools/webpack.assets.json`;
+source maps are generated in the process for better debugging experience.
+
+In development mode, bundles are built and served on the fly using
+webpack-dev-server with live reloading. In production mode (and when creating a
+release tarball using `tools/build-release-tarball`), the
+`tools/update-prod-static` tool (called by both `tools/build-release-tarball`
+and `tools/upgrade-zulip-from-git`) is responsible for orchestrating the
+webpack build, JS minification and a host of other steps for getting the assets
+ready for deployment.
 
 ## Adding static files
 
-To add a static file to the app (JavaScript, CSS, images, etc), first
-add it to the appropriate place under `static/`.
+To add a static file to the app (JavaScript, TypeScript, Sass, images, etc),
+first add it to the appropriate place under `static/`.
 
-- Third-party files that we haven't patched should be installed via
-  `yarn`, so that it's easy to upgrade them and third-party code
-  doesn't bloat the Zulip repository.  You can then access them in
-  `webpack.assets.json` via their paths under `node_modules`.
-  You'll want to add these to the `package.json` in the root of the
-  repository, and then provision (to have `yarn` download them) before
-  continuing.  Your commit should also update `PROVISION_VERSION` in
-  `version.py`.  When adding modules to `package.json`, please pin
-  specific versions of them (don't using carets `^`, tildes `~`, etc).
-  We prefer fixed versions so that when the upstream providers release
-  new versions with incompatible APIs, it can't break Zulip.  We
-  update those versions periodically to ensure we're running a recent
+- Third-party packages from the NPM repository should be added to
+  `package.json` for management by yarn, this allows them to be upgraded easily
+  and not bloat our codebase. Run `./tools/provision` for yarn to install the
+  new packages and update its lock file. You should also update
+  `PROVISION_VERSION` in `version.py` in the same commit. When adding modules
+  to `package.json`, please pin specific versions of them (don't using carets
+  `^`, tildes `~`, etc). We prefer fixed versions so that when the upstream
+  providers release new versions with incompatible APIs, it can't break Zulip.
+  We update those versions periodically to ensure we're running a recent
   version of third-party libraries.
 - Third-party files that we have patched should all go in
   `static/third/`. Tag the commit with "[third]" when adding or
   modifying a third-party package.  Our goal is to the extent possible
   to eliminate patched third-party code from the project.
-- Our own JavaScript lives under `static/js`.
-- Typescript files live under `static/ts`.
-- CSS lives under `static/styles`.
+- Our own JavaScript and TypeScript files lives under `static/js`. All new
+  modules should be written in TypeScript.
+- Sass files lives under `static/styles`.
 - Portico JavaScript ("portico" means for logged-out pages) lives under
   `static/js/portico`.
 - Custom SVG graphics living under `static/assets/icons` are compiled into
@@ -55,25 +56,20 @@ add it to the appropriate place under `static/`.
   `tools/setup/generate-custom-icon-webfont` according to the
   `static/icons/fonts/template.hbs` template.
 
-After you add a new JavaScript file, it needs to be imported by
-another file or specified in the `entries` dictionary defined in
-`tools/webpack.assets.json` to be included in the concatenated file;
-this will magically ensure it is available both in development and
-production.  CSS should be added to the `STYLESHEETS` section of
-`PIPELINE` in `zproject/settings.py`.  A few notes on doing this:
+For your asset to be included in a development/production bundle, it needs to
+be accessible from one of the entry points defined in
+`tools/webpack.assets.json`.
 
-* For new files you should generally import it from another file rather
-  than adding it to `tools/webpack.assets.json`
-* If you plan to only use the JS/CSS within the app proper, and not on
-  the login page or other standalone pages, put it in the `app`
-  bundle.
-* If you plan to use it in both, put it in the `common` bundle.
-* If it's just used on a single standalone page (e.g. `/stats`), give
-  it its own bundle.  To load a bundle in the relevant Jinja2 template
-  for that page, use `render_bundle` and `stylesheet` for JS and CSS,
-  respectively.
-* If you modify `tools/webpack.assets.json` you will need to restart
-  the server.
+* If you plan to only use the file within the app proper, and not on the login
+  page or other standalone pages, put it in the `app` bundle by importing it
+  in `static/js/bundles/app.js`.
+* If you plan to use it in both, add it to the `common` entry. Note that you
+  also need to import it to `static/js/bundles/commons.js` which in itself is
+  imported to the `app` bundle (this duplication dates back to the transition
+  from our legacy django-pipeline system and should be fixed).
+* If it's just used on a single standalone page (e.g. `/stats`), create a new
+  entry point to your file. Use the `render_bundle` function in the relevant
+  Jinja2 template to inject the compiled JS and CSS.
 
 If you want to test minified files in development, look for the
 `PIPELINE_ENABLED =` line in `zproject/settings.py` and set it to `True`
@@ -107,36 +103,24 @@ server is restarted, files are copied into that directory.
   without breaking the rendering of old messages (or doing a
   mass-rerender of old messages).
 
-## Webpack/CommonJS/ES6/Typescript modules
+## CommonJS/Typescript modules
 
-New JS written for Zulip can be written
-as [Typescript](http://www.typescriptlang.org/) or if a more incremental
-migration is required, CommonJS modules (bundled
-using [webpack](https://webpack.github.io/), though this will be taken care of
-automatically whenever `run-dev.py` is running). (CommonJS is the same module
-format that Node uses, so see
-the [Node documentation](https://nodejs.org/docs/latest/api/modules.html) for
-more information on the syntax.)
+Webpack provides seemless interoperability between different module systems
+such as CommonJS, AMD and ES6. Our JS files are written in the CommonJS format,
+which specifies public functions and variables as properties of the special
+`module.exports` object. We also assign said object to the global `window`
+variable, allowing us to use modules without importing them with the
+`require()` statement.
 
-All JavaScript we provide will eventually be migrated to Typescript,
-which will make refactoring the frontend code easier and allow static
-analyzers to reason about our code more easily.
+All new modules should be written in TypeScript. It provides more accurate
+information to development tools, allowing for better refactoring,
+auto-completion and static analysis. TypeScript uses an ES6-like module system.
+Any declartion can be made public by adding the `export` keyword. Consuming
+variables, functions, etc exported from another module should be done with the
+`import` statement as oppose to accessing them from the global `window` scope.
+Internally our typescript compiler is configured to transpile TS to the ES6
+module system.
 
-Declare entry points in `webpack.assets.json`. Any modules you add
-will need to be imported from this file (or one of its dependencies)
-in order to be included in the script bundle.
-
-### Hot Reloading
-
-Webpack support hot reloading. To enable it you will need to add
-
-```
-// This reloads the module in development rather than refreshing the page
-if (module.hot) {
-    module.hot.accept();
-}
-
-```
-
-To the entry point of any JavaScript file you want to hot reload
-rather than refeshing the page on a change.
+Read more about these module systems here:
+* [TypeScript modules](https://www.typescriptlang.org/docs/handbook/modules.html)
+* [CommonJS](https://nodejs.org/api/modules.html#modules_modules)
