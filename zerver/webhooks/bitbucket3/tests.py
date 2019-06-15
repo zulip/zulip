@@ -8,6 +8,22 @@ class Bitbucket3HookTests(WebhookTestCase):
     EXPECTED_TOPIC = "sandbox"
     EXPECTED_TOPIC_BRANCH_EVENTS = "sandbox / {branch}"
 
+    # Diagnostics Events:
+    def test_ping(self) -> None:
+        expected_message = "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        self.send_and_test_stream_message("diagnostics_ping",
+                                          "Bitbucket Server Ping",
+                                          expected_message,
+                                          HTTP_X_EVENT_KEY="diagnostics:ping")
+
+    def test_ping_with_user_defined_topic(self) -> None:
+        self.url = self.build_webhook_url(topic="my topic")
+        expected_message = "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        self.send_and_test_stream_message("diagnostics_ping",
+                                          "my topic",
+                                          expected_message,
+                                          HTTP_X_EVENT_KEY="diagnostics:ping")
+
     # Core Repo Events:
     def test_commit_comment_added(self) -> None:
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) commented on [508d1b6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\nJust an arbitrary comment on a commit.\n~~~"""
