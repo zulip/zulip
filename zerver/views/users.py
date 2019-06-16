@@ -322,10 +322,15 @@ def add_bot_backend(
     if bot_type == UserProfile.EMBEDDED_BOT:
         check_valid_bot_config(service_name, config_data)
 
+    is_realm_admin = False
+    if bot_type == UserProfile.ADMINISTRATOR_BOT and UserProfile.is_realm_admin:
+        is_realm_admin = True
+
     bot_profile = do_create_user(email=email, password='',
                                  realm=user_profile.realm, full_name=full_name,
                                  short_name=short_name,
                                  bot_type=bot_type,
+                                 is_realm_admin = is_realm_admin,
                                  bot_owner=user_profile,
                                  avatar_source=avatar_source,
                                  default_sending_stream=default_sending_stream,

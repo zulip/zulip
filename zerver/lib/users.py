@@ -70,7 +70,8 @@ def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
     # Realm administrators can always add bot
     if user_profile.is_realm_admin:
         return
-
+    if bot_type == UserProfile.ADMINISTRATOR_BOT and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_EVERYONE:
         return
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_ADMINS_ONLY:

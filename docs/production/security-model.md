@@ -184,6 +184,8 @@ strength allowed is controlled by two settings in
     non-administrator user can, with a few exceptions (e.g. a bot cannot
     login to the web application, register for mobile push
     notifications, or create other bots).
+  * Administrator bots are generic bots that are able to access
+    administrative API endpoints like creating new users.
   * API super user bots can send messages that appear to have been sent by
     another user. They also have the ability to see the names of all
     streams, including private streams.  This is important for implementing

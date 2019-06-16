@@ -620,6 +620,25 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params['max_message_id'], -1)
         self.assertEqual(page_params['have_initial_messages'], False)
 
+    def test_admin_bot_option_for_admins_only(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        self.login(email)
+        self.assertFalse(user_profile.is_realm_admin)
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        for bot_form_option in page_params["bot_types"]:
+            if bot_form_option['type_id'] == UserProfile.ADMINISTRATOR_BOT:
+                self.assertFalse(bot_form_option["allowed"])
+            else:
+                assert(bot_form_option["allowed"])
+        user_profile.is_realm_admin = True
+        user_profile.save()
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        for bot_form_option in page_params["bot_types"]:
+            assert(bot_form_option["allowed"])
+
     def test_invites_by_admins_only(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email

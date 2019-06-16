@@ -584,6 +584,32 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.bot_type, UserProfile.DEFAULT_BOT)
 
+    def test_add_bot_with_bot_type_administrator(self) -> None:
+        bot_email = 'adminbot-bot@zulip.testserver'
+        bot_realm = get_realm('zulip')
+
+        self.login(self.example_email('iago'))
+        self.assert_num_bots_equal(0)
+        self.create_bot(full_name="Bot of Iago", short_name="adminbot",
+                        bot_type=UserProfile.ADMINISTRATOR_BOT)
+        self.assert_num_bots_equal(1)
+
+        profile = get_user(bot_email, bot_realm)
+        assert(profile.is_realm_admin)
+        self.assertEqual(profile.bot_type, UserProfile.ADMINISTRATOR_BOT)
+
+    def test_no_administrator_bot_allowed_for_non_admin(self) -> None:
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hamadminbot',
+            'bot_type': 5,
+        }
+        self.login(self.example_email('hamlet'))
+        self.assert_num_bots_equal(0)
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_num_bots_equal(0)
+        self.assert_json_error(result, 'Must be an organization administrator')
+
     def test_add_bot_with_bot_type_incoming_webhook(self) -> None:
         bot_email = 'hambot-bot@zulip.testserver'
         bot_realm = get_realm('zulip')

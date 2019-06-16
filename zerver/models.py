@@ -754,11 +754,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     """
     EMBEDDED_BOT = 4
 
+    """
+    Administrator Bot" bot type, which only admins can create or own,
+    and otherwise works like a Generic Bot but has administrator permissions
+    (is_realm_admin=True) and thus can do things like create users etc.
+    """
+    ADMINISTRATOR_BOT = 5
+
     BOT_TYPES = {
         DEFAULT_BOT: 'Generic bot',
         INCOMING_WEBHOOK_BOT: 'Incoming webhook',
         OUTGOING_WEBHOOK_BOT: 'Outgoing webhook',
         EMBEDDED_BOT: 'Embedded bot',
+        ADMINISTRATOR_BOT: 'Administrator bot',
     }
 
     SERVICE_BOT_TYPES = [
@@ -1039,6 +1047,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         ]
         if settings.EMBEDDED_BOTS_ENABLED:
             allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        if self.is_realm_admin:
+            allowed_bot_types.append(UserProfile.ADMINISTRATOR_BOT)
         return allowed_bot_types
 
     @staticmethod
