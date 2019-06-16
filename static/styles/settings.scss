@@ -2,77 +2,73 @@ label {
     margin: 0;
 }
 
-.new-style .block {
-    display: block;
-}
-
-.new-style .center-block {
-    margin: 0 auto;
-}
-
-.new-style .center {
-    text-align: center;
-}
-
-.new-style .w-70 {
-    width: 70%;
-}
-
-.new-style .w-200 {
-    width: 200px;
-}
-
-.new-style .m-t-20 {
-    margin-top: 20px;
-}
-
-.new-style .m-t-10 {
-    margin-top: 10px;
-}
-
-.new-style .grid label {
-    min-width: 200px;
-}
-
-.new-style button.button i.fa.fa-pencil {
-    margin-left: 3px;
-}
-
-.new-style #account-settings .grid label {
-    min-width: 120px;
-}
-
-.new-style #account-settings .grid .warning {
-    display: block;
-    width: calc(100% - 20px - 5px);
-    text-align: right;
-}
-
-.new-style .grid .warning {
-    display: inline-block;
-    vertical-align: top;
-
-    width: 150px;
-    padding: 5px 10px;
-
-    text-align: left;
-}
-
-.new-style .warning #pw_strength {
-    width: 140px;
-    height: 8px;
-    margin: 6px 0px 0px 0px;
-}
-
-.new-style .button ul {
-    text-align: left;
-}
-
-/* this is because the input[type=text] is also 200px wide but has
-   12px of padding and 2px worth of borders. These don't apply to
-   buttons however. */
-.new-style .input-size {
-    width: 214px;
+.new-style {
+    .block {
+        display: block;
+    }
+    .center-block {
+        margin: 0 auto;
+    }
+    .center {
+        text-align: center;
+    }
+    .w-70 {
+        width: 70%;
+    }
+    .w-200 {
+        width: 200px;
+    }
+    .m-t-20 {
+        margin-top: 20px;
+    }
+    .m-t-10 {
+        margin-top: 10px;
+    }
+    .grid {
+        label {
+            min-width: 200px;
+        }
+        .warning {
+            display: inline-block;
+            vertical-align: top;
+            width: 150px;
+            padding: 5px 10px;
+            text-align: left;
+        }
+    }
+    #account-settings {
+        .grid {
+            label {
+                min-width: 120px;
+            }
+            .warning {
+                display: block;
+                width: calc(100% - 20px - 5px);
+                text-align: right;
+            }
+        }
+    }
+    .warning {
+        #pw_strength {
+            width: 140px;
+            height: 8px;
+            margin: 6px 0px 0px 0px;
+        }
+    }
+    .button {
+        ul {
+            text-align: left;
+        }
+        &.button i.fa.fa-pencil {
+            margin-left: 3px;
+        }
+    }
+    /* this is because the input[type=text] is also 200px wide but has
+    12px of padding and 2px worth of borders. These don't apply to
+    buttons however. */
+    .input-size {
+        width: 214px;
+    }
 }
 
 .settings-section label > a,
