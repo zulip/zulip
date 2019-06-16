@@ -252,10 +252,6 @@ td .button {
     margin: 20px;
 }
 
-#organization .settings-section {
-    display: inline-block;
-}
-
 .settings-wrapper {
     display: none;
 }
@@ -570,7 +566,6 @@ input[type=checkbox].inline-block {
         margin: auto;
     }
 
-    #organization .settings-section .organization-settings .admin-realm-form,
     #settings .settings-section .account-settings-form,
     #settings .settings-section .new-bot-form,
     #settings .settings-section .new-alert-word-form,
@@ -582,7 +577,6 @@ input[type=checkbox].inline-block {
         width: 100%;
     }
 
-    #organization .settings-section .admin-realm-form .control-label,
     #settings .settings-section .account-settings-form .control-label,
     #settings .settings-section .new-bot-form .control-label,
     #settings .settings-section .new-alert-word-form .control-label,
@@ -598,7 +592,6 @@ input[type=checkbox].inline-block {
         float: none;
     }
 
-    #organization .settings-section .admin-realm-form .controls,
     #settings .settings-section .account-settings-form .controls,
     #settings .settings-section .new-bot-form .controls,
     #settings .settings-section .new-alert-word-form button,
@@ -615,7 +608,6 @@ input[type=checkbox].inline-block {
     }
 }
 
-#organization .settings-section .settings-section-icon,
 #settings .settings-section .settings-section-icon {
     margin-right: 8px;
 }
@@ -1790,25 +1782,6 @@ input[type=text]#settings_search {
 
 #show_api_key_box {
     padding-bottom: 20px;
-}
-
-#organization #deactivation_stream_modal h3 {
-    overflow-wrap: break-word;
-}
-
-#organization .centered-footer {
-    text-align: center;
-    padding: 10px 15px;
-}
-
-#organization .new-realm-domain {
-    width: 130px;
-    margin-bottom: auto;
-    padding: 0px 2px;
-}
-
-#organization #submit-add-realm-domain {
-    width: 75px;
 }
 
 #muted_topics_table {
