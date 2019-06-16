@@ -1,8 +1,3 @@
-#settings {
-    margin-top: 55px;
-    margin-left: 15px;
-}
-
 label {
     margin: 0;
 }
@@ -566,23 +561,13 @@ input[type=checkbox].inline-block {
         margin: auto;
     }
 
-    #settings .settings-section .account-settings-form,
-    #settings .settings-section .new-bot-form,
-    #settings .settings-section .new-alert-word-form,
     #filter-settings .new-filter-form,
-    #profile-field-settings .new-profile-field-form,
-    #settings .settings-section .notification-settings-form,
-    #settings .settings-section .display-settings-form,
-    #settings .settings-section .edit-bot-form-box {
+    #profile-field-settings .new-profile-field-form {
         width: 100%;
     }
 
-    #settings .settings-section .account-settings-form .control-label,
-    #settings .settings-section .new-bot-form .control-label,
-    #settings .settings-section .new-alert-word-form .control-label,
     #filter-settings .new-filter-form .control-label,
-    #profile-field-settings .new-profile-field-form .control-label,
-    #settings .settings-section .edit-bot-form-box .control-label {
+    #profile-field-settings .new-profile-field-form .control-label {
         display: block;
         width: 120px;
         padding: 0px;
@@ -592,12 +577,8 @@ input[type=checkbox].inline-block {
         float: none;
     }
 
-    #settings .settings-section .account-settings-form .controls,
-    #settings .settings-section .new-bot-form .controls,
-    #settings .settings-section .new-alert-word-form button,
     #filter-settings .new-filter-form .controls,
-    #profile-field-settings .new-profile-field-form .controls,
-    #settings .settings-section .edit-bot-form-box .controls {
+    #profile-field-settings .new-profile-field-form .controls {
         margin: auto;
         text-align: center;
     }
@@ -606,10 +587,6 @@ input[type=checkbox].inline-block {
         display: block;
         margin: 10px 0 0 0;
     }
-}
-
-#settings .settings-section .settings-section-icon {
-    margin-right: 8px;
 }
 
 #settings_page .alert-notification:not(:empty) {
