@@ -31,11 +31,11 @@ We also highly recommend the following:
 
 ## Get a graphical client
 
-Even if you're comfortable using git on the command line, having a graphic
-client can be useful for viewing your repository. This is especially when doing
-a complicated rebases and similar operations because you can check the state of
-your repository after each command to see what changed. If something goes
-wrong, this helps you figure out when and why.
+Even if you're comfortable using git on the command line, having a graphical
+client can be useful for viewing your repository. This is especially true
+when doing complicated rebases and similar operations because you can check
+the state of your repository after each command to see what changed. If
+something goes wrong, this helps you figure out when and why.
 
 If you don't already have one installed, here are some suggestions:
 
