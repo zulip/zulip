@@ -18,7 +18,7 @@ stream:announce -sender:iago@zulip.com cool sunglasses
 This query would be JSON-encoded for use in the Zulip API using JSON
 as a list of simple objects, as follows:
 
-```
+```json
 [
     {
         "operator": "stream",
