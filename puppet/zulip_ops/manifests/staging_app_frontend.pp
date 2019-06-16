@@ -17,4 +17,13 @@ class zulip_ops::staging_app_frontend {
     target  => '/etc/nginx/sites-available/zulip-staging',
     notify  => Service['nginx'],
   }
+
+  # Eventually, this will go in a staging_app_frontend_once.pp
+  file { '/etc/cron.d/check_send_receive_time':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/cron.d/check_send_receive_time',
+  }
 }

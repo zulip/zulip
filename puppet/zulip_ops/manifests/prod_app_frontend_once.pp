@@ -16,4 +16,12 @@ class zulip_ops::prod_app_frontend_once {
     mode   => '0644',
     source => 'puppet:///modules/zulip/cron.d/invoice-plans',
   }
+
+  file { '/etc/cron.d/check_send_receive_time':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/cron.d/check_send_receive_time',
+  }
 }
