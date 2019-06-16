@@ -27,6 +27,7 @@ Here is the **full list of search operators**.
 * `stream:design topic:emoji+picker`: Search within the topic `emoji picker`.
 * `is:private`: Search all your private messages.
 * `pm-with:ada@zulip.com`: Search 1-on-1 messages with Ada.
+* `pm-with:1`: Search 1-on-1 messages by user ID `1`.
 * `group-pm-with:ada@zulip.com`: Search group private messages that
   include Ada.
 * `sender:ada@zulip.com`: Search messages sent by Ada.
