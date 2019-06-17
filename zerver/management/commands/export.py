@@ -145,7 +145,9 @@ class Command(ZulipBaseCommand):
             # the message through message.sender.realm.  So instead we
             # check the realm of the people who reacted to the message
             # (who must all be in the message's realm).
-            reactions = Reaction.objects.filter(message=message, emoji_code="1f44d",
+            reactions = Reaction.objects.filter(message=message,
+                                                # outbox = 1f4e4
+                                                emoji_code="1f4e4",
                                                 reaction_type="unicode_emoji")
             for reaction in reactions:
                 if reaction.user_profile.realm != realm:
@@ -153,7 +155,7 @@ class Command(ZulipBaseCommand):
 
             print("\n\033[94mMessage content:\033[0m\n{}\n".format(message.content))
 
-            print("\033[94mNumber of users that reacted +1:\033[0m {}\n".format(len(reactions)))
+            print("\033[94mNumber of users that reacted outbox:\033[0m {}\n".format(len(reactions)))
 
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(realm=realm, output_dir=output_dir,

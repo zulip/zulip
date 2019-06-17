@@ -1657,8 +1657,8 @@ def get_analytics_config() -> Config:
 def get_consented_user_ids(consent_message_id: int) -> Set[int]:
     return set(Reaction.objects.filter(message__id=consent_message_id,
                                        reaction_type="unicode_emoji",
-                                       # thumbsup = 1f44d
-                                       emoji_code="1f44d").
+                                       # outbox = 1f4e4
+                                       emoji_code="1f4e4").
                values_list("user_profile", flat=True))
 
 def export_realm_wrapper(realm: Realm, output_dir: str,

@@ -532,8 +532,8 @@ class ImportExportTest(ZulipTestCase):
                                  content="Thumbs up for export")
         message = Message.objects.last()
         consented_user_ids = [self.example_user(user).id for user in ["iago", "hamlet"]]
-        do_add_reaction(self.example_user("iago"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
-        do_add_reaction(self.example_user("hamlet"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
+        do_add_reaction(self.example_user("iago"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
+        do_add_reaction(self.example_user("hamlet"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()

@@ -413,8 +413,8 @@ class TestExport(ZulipTestCase):
                                  topic_name="Export",
                                  content="Thumbs up for export")
         message = Message.objects.last()
-        do_add_reaction(self.example_user("iago"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
-        do_add_reaction(self.example_user("hamlet"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
+        do_add_reaction(self.example_user("iago"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
+        do_add_reaction(self.example_user("hamlet"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
 
         with patch("zerver.management.commands.export.export_realm_wrapper") as m:
             call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
@@ -432,6 +432,6 @@ class TestExport(ZulipTestCase):
 
         message.last_edit_time = None
         message.save()
-        do_add_reaction(self.mit_user("sipbtest"), message, "+1", "1f44d",  Reaction.UNICODE_EMOJI)
+        do_add_reaction(self.mit_user("sipbtest"), message, "outbox", "1f4e4",  Reaction.UNICODE_EMOJI)
         with self.assertRaisesRegex(CommandError, "Users from a different realm reacted to message. Aborting..."):
             call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id={}".format(message.id))
