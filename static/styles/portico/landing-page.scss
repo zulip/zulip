@@ -147,6 +147,7 @@ ol a:hover {
 }
 
 /* -- component styling -- */
+.button,
 button {
     padding: 5px 12px;
 
@@ -155,26 +156,27 @@ button {
     background-color: hsl(0, 0%, 100%);
     color: hsl(0, 0%, 27%);
 
+    line-height: 20px;
     border-radius: 4px;
     border: 1px solid hsl(0, 0%, 80%);
     outline: none;
 
+    &:active {
+        background-color: hsl(0, 0%, 98%);
+        border-color: hsl(0, 0%, 73%);
+    }
+
     &.green {
         color: hsl(0, 0%, 100%);
         background-color: hsl(170, 47%, 53%);
-
-        border: 1px solid hsl(169, 45%, 43%);
+        border-color: hsl(169, 45%, 43%);
 
         &:hover {
-            -webkit-filter: brightness(1.05);
-            -moz-filter: brightness(1.05);
-            filter: brightness(1.05);
+            background-color: hsl(170, 47%, 58%);
         }
 
         &:active {
-            -webkit-filter: brightness(0.95);
-            -moz-filter: brightness(0.95);
-            filter: brightness(0.95);
+            background-color: hsl(170, 47%, 48%);
         }
     }
 
@@ -182,12 +184,7 @@ button {
         cursor: default;
         color: hsl(0, 0%, 20%);
         background-color: transparent;
-        border: 1px solid hsl(0, 0%, 53%);
-    }
-
-    &:active {
-        background-color: hsl(0, 0%, 98%);
-        border: 1px solid hsl(0, 0%, 73%);
+        border-color: hsl(0, 0%, 53%);
     }
 }
 
@@ -1970,8 +1967,8 @@ nav ul li.active::after {
     margin-top: 0px;
 }
 
-.portico-landing.hello .call-to-action-bottom button {
-    display: block;
+.portico-landing.hello .call-to-action-bottom .button {
+    display: table;
     margin: 20px auto 0 auto;
     padding: 11px 25px 11px 25px;
 
@@ -1984,7 +1981,7 @@ nav ul li.active::after {
     transition: all 0.2s ease;
 }
 
-.portico-landing.hello .call-to-action-bottom button:hover {
+.portico-landing.hello .call-to-action-bottom .button:hover {
     color: hsl(219, 23%, 33%);
     border: 1px solid hsl(220, 15%, 20%);
 }
@@ -2111,7 +2108,8 @@ nav ul li.active::after {
     width: 90%;
 }
 
-.portico-landing.apps .hero .info button {
+.portico-landing.apps .hero .info .button {
+    display: inline-block;
     padding: 10px 20px;
 
     font-size: 1em;
@@ -2668,9 +2666,10 @@ nav ul li.active::after {
     text-align: left;
 }
 
-.pricing-model .pricing-container .bottom button {
+.pricing-model .pricing-container .bottom .button {
     margin-top: 20px;
-    width: 100%;
+    display: block;
+    text-align: center;
 
     font-size: 0.9em;
 
@@ -2681,7 +2680,7 @@ nav ul li.active::after {
     outline: none;
 }
 
-.pricing-model .pricing-container .price-box:focus button {
+.pricing-model .pricing-container .price-box:focus .button {
     box-shadow: 0px 0px 25px hsl(169, 48%, 60%);
     animation: box-shadow-pulse 2s infinite;
 }
