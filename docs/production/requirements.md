@@ -77,9 +77,10 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
 #### Network and Security Specifications
 
 * Incoming HTTPS access (usually port 443, though this is
-  configurable) from the networks where your users are (usually, the
-  public Internet).  If you also open port 80, Zulip will redirect
-  users to HTTPS rather than not working when users type
+  [configurable](../production/deployment.html#using-an-alternate-port))
+  from the networks where your users are (usually, the public
+  Internet).  If you also open port 80, Zulip will redirect users to
+  HTTPS rather than not working when users type
   e.g. `http://zulip.example.com` in their browser.  If you are using
   Zulip's [incoming email integration][email-mirror-code] you may also
   need incoming port 25 open.

@@ -14,8 +14,8 @@ server {
     listen 80;
     listen [::]:80;
 <% else -%>
-    listen 443;
-    listen [::]:443;
+    listen <%= @nginx_listen_port %>;
+    listen [::]:<%= @nginx_listen_port %>;
 
     ssl on;
     ssl_certificate <%= @ssl_dir %>/certs/zulip.combined-chain.crt;

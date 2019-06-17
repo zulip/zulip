@@ -71,6 +71,31 @@ degraded experience.  Zulip let you choose one of two
 Neither is available in Amazon RDS.  As a result, if you use one of
 those providers, Zulip's full-text search will be unavailable.
 
+## Using an alternate port
+
+If you'd like your Zulip server to use an HTTPS port other than 443, you can
+configure that as follows:
+
+1. Edit `EXTERNAL_HOST` in `/etc/zulip/settings.py`, which controls how
+   the Zulip server reports its own URL, and restart the Zulip server
+   with `/home/zulip/deployments/current/scripts/restart-server`.
+1. Add the following block to `/etc/zulip/zulip.conf`:
+
+    ```
+    [application_server]
+    nginx_listen_port = 12345
+    ```
+
+1. As root, run
+  `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
+  will convert Zulip's main `nginx` configuration file to use your new
+  port.
+
+We also have documentation for a Zulip server [using HTTP][using-http] for use
+behind reverse proxies.
+
+[using-http]: ../production/deployment.html#configuring-zulip-to-allow-http
+
 ## Putting the Zulip application behind a reverse proxy
 
 Zulip is designed to support being run behind a reverse proxy server.
