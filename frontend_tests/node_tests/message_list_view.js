@@ -8,6 +8,7 @@ zrequire('FetchStatus', 'js/fetch_status');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
 zrequire('message_list');
+zrequire('stream_data');
 
 const noop = function () {};
 
@@ -160,6 +161,18 @@ run_test('merge_message_groups', () => {
         list.list = {
             unsubscribed_bookend_content: function () {},
             subscribed_bookend_content: function () {},
+            data: new MessageListData({filter: new Filter([
+                {
+                    negated: false,
+                    operator: 'stream',
+                    operand: 'Test Stream 1',
+                },
+                {
+                    negated: false,
+                    operator: 'topic',
+                    operand: 'Test Subject 1',
+                },
+            ])}),
         };
         return list;
     }

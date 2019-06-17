@@ -968,6 +968,10 @@ td.pointer {
     z-index: 1;
     bottom: 1px;
     transition: all 0.3s ease-out;
+
+    &.with_divider {
+        top: 28px;
+    }
 }
 
 .unread-marker-fill {
@@ -2316,6 +2320,25 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .date_row span::after {
     left: 0.5em;
     margin-right: -50%;
+}
+
+.date_row.unread_divider {
+    $UNREAD_DIVIDER_COLOR: hsl(0, 64%, 59%);
+
+    span {
+        opacity: 1;
+        color: $UNREAD_DIVIDER_COLOR;
+
+        &::after,
+        &::before {
+            border-top-color: $UNREAD_DIVIDER_COLOR;
+        }
+
+        .date-line {
+            width: 20%;
+            border-top-color: $UNREAD_DIVIDER_COLOR;
+        }
+    }
 }
 
 .include-sender .message_edit {

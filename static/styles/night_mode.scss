@@ -597,6 +597,17 @@ on a dark background, and don't change the dark labels dark either. */
         opacity: 0.2;
     }
 
+    .date_row.unread_divider span {
+        $UNREAD_DIVIDER_COLOR: hsl(0, 64%, 59%);
+
+        &::after,
+        &::before {
+            opacity: 1;
+            border-top-color: $UNREAD_DIVIDER_COLOR;
+            border-bottom-color: transparent;
+        }
+    }
+
     .star:not(.empty-star),
     .empty-star:hover {
         color: hsla(126, 66%, 72%, 0.75);

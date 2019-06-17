@@ -135,6 +135,62 @@ function update_message_date_divider(opts) {
         timerender.render_date(curr_time, prev_time, today)[0].outerHTML;
 }
 
+function clear_unread_messages_divider(msg) {
+    msg.want_unread_divider = false;
+    msg.unread_divider_html = undefined;
+}
+
+function add_unread_messages_divider(msg) {
+    msg.want_unread_divider = true;
+    msg.include_sender = true;
+
+    const NEW_MESSAGES_TEXT = 'NEW MESSAGES';
+    const unread_divider_html = $('<span></span>');
+
+    if (msg.want_date_divider) {
+        const date_divider_html = $(msg.date_divider_html);
+        const timerender_class = date_divider_html.attr('class');
+        unread_divider_html.attr('class', timerender_class);
+        unread_divider_html.append(date_divider_html.html());
+        unread_divider_html.find('.date-line').after(
+            NEW_MESSAGES_TEXT, '<hr class="date-line">');
+    } else {
+        unread_divider_html.text(NEW_MESSAGES_TEXT);
+    }
+
+    msg.unread_divider_html = unread_divider_html[0].outerHTML;
+}
+
+function update_unread_messages_divider(opts) {
+    const prev_msg_container = opts.prev_msg_container;
+    const curr_msg_container = opts.curr_msg_container;
+    const filter = opts.list.data.filter;
+
+    // Our unread message dividers, as currently conceived, don't really make sense in
+    // interleaved narrows, since we could have read messages after unread messages in
+    // those contexts.
+    // As a result, we currently don't offer these "New messages" notices in those views.
+    const is_topic = filter.has_operator('stream') && filter.has_operator('topic');
+    const is_pm = filter.has_operator('pm-with') || filter.has_operator('group-pm-with');
+
+    if (!(is_topic || is_pm)) {
+        clear_unread_messages_divider(curr_msg_container);
+        return;
+    }
+
+    if (!prev_msg_container) {
+        clear_unread_messages_divider(curr_msg_container);
+        return;
+    }
+
+    if (!prev_msg_container.msg.unread && curr_msg_container.msg.unread) {
+        add_unread_messages_divider(curr_msg_container);
+        return;
+    }
+
+    clear_unread_messages_divider(curr_msg_container);
+}
+
 function set_timestr(message_container) {
     const time = new XDate(message_container.msg.timestamp * 1000);
     message_container.timestr = timerender.stringify_time(time);
@@ -301,6 +357,11 @@ MessageListView.prototype = {
                     prev_msg_container: prev,
                     curr_msg_container: message_container,
                 });
+                update_unread_messages_divider({
+                    list: self.list,
+                    prev_msg_container: prev,
+                    curr_msg_container: message_container,
+                });
             } else {
                 finish_group();
                 current_group = start_group();
@@ -340,7 +401,8 @@ MessageListView.prototype = {
             if (!message_container.include_recipient &&
                 !prev.status_message &&
                 same_day(prev, message_container) &&
-                same_sender(prev, message_container)) {
+                same_sender(prev, message_container) &&
+                !message_container.want_unread_divider) {
                 message_container.include_sender = false;
             }
 
@@ -425,6 +487,7 @@ MessageListView.prototype = {
         let second_group;
         let curr_msg_container;
         let prev_msg_container;
+        const self = this;
 
         if (where === 'top') {
             first_group = _.last(new_message_groups);
@@ -448,8 +511,14 @@ MessageListView.prototype = {
                 prev_msg_container: prev_msg_container,
                 curr_msg_container: curr_msg_container,
             });
+            update_unread_messages_divider({
+                prev_msg_container: prev_msg_container,
+                curr_msg_container: curr_msg_container,
+                list: self.list,
+            });
         } else {
             clear_message_date_divider(curr_msg_container);
+            clear_unread_messages_divider(curr_msg_container);
         }
 
         if (where === 'top') {
