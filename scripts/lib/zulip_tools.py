@@ -140,11 +140,6 @@ def make_deploy_path():
     timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
     return os.path.join(DEPLOYMENTS_DIR, timestamp)
 
-if __name__ == '__main__':
-    cmd = sys.argv[1]
-    if cmd == 'make_deploy_path':
-        print(make_deploy_path())
-
 TEMPLATE_DATABASE_DIR = "test-backend/databases"
 def get_dev_uuid_var_path(create_if_missing=False):
     # type: (bool) -> str
@@ -477,3 +472,10 @@ def get_or_create_dev_uuid_var_path(path: str) -> str:
     absolute_path = '{}/{}'.format(get_dev_uuid_var_path(), path)
     os.makedirs(absolute_path, exist_ok=True)
     return absolute_path
+
+if __name__ == '__main__':
+    cmd = sys.argv[1]
+    if cmd == 'make_deploy_path':
+        print(make_deploy_path())
+    elif cmd == 'get_dev_uuid':
+        print(get_dev_uuid_var_path())

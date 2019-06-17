@@ -25,15 +25,17 @@ if [[ $# == 0 ]]; then
     PASSWORD=$("$(dirname "$0")/../../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)
     DBNAME=zulip
     SEARCH_PATH="$USERNAME",public
-elif [[ $# == 4 ]]; then
+    STATUS_FILE_NAME="migration_status_dev"
+elif [[ $# == 5 ]]; then
     USERNAME=$1
     PASSWORD=$2
     DBNAME=$3
     SEARCH_PATH=$4
+    STATUS_FILE_NAME=$5
 else
     echo "Usage Instructions"
     echo "Run with either no arguments (sets up devel db for local deploy--zulip with user zulip)"
-    echo "or specify <db-username> <password> <db-name> <user-schema-search-path>"
+    echo "or specify <db-username> <password> <db-name> <user-schema-search-path> <migration-status-path>"
     exit
 fi
 
@@ -48,6 +50,11 @@ if ! pg_isready -U "$POSTGRES_USER" -q; then
     echo "ERROR: You can easily test if you fixed it using: pg_isready -U \$POSTGRES_USER"
     exit 1
 fi
+
+# We need to remove the stamp file indicating that the database
+# is properly provisioned with migrations.
+uuid_var_path=$($(readlink -f "$(dirname "$0")/../../scripts/lib/zulip_tools.py") get_dev_uuid)
+rm -f "$uuid_var_path/$STATUS_FILE_NAME"
 
 "${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DEFAULT_DB" << EOF
 DO \$\$BEGIN
