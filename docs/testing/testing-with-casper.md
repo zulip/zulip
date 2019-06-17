@@ -19,6 +19,22 @@ from `frontend_tests/casper_tests/`.
 
 ## Debugging Casper.JS
 
+When a Casper test fails, the first things to check (before you bother
+trying to use the Casper debugging tools are:
+
+* Does your branch actually work if you just open the webapp and try
+  to follow the flow being tested?  Often the answer is no, and you'll
+  find the debugging experience in your browser to be a much more
+  convenient way to fix the issue.
+* Does your branch use ES6 syntax like arrow functions in a context
+  that isn't transpiled (i.e. non-TypeScript code)?  Casper uses the
+  PhantomJS browser, which doesn't support ES6 syntax, so use of
+  non-transpiled ES6 syntax will generally be first discovered via the
+  Casper tests failing..
+* Are there any errors in `var/casper/server.log` (from the root of
+  your `zulip` checkout?  That's where the `run-dev.py` console output
+  goes when running Casper tests.
+
 Casper.js (via PhantomJS) has support for remote debugging. However, it
 is not perfect. Here are some steps for using it and gotchas you might
 want to know; you'll likely also want to read the section on writing

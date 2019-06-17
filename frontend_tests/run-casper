@@ -106,9 +106,8 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
                 break
     if ret != 0:
         print("""
-Oops, the frontend tests failed. Tips for debugging:
- * Check the screenshots of failed tests at var/casper/casper-failure*.png
- * Try remote debugging the test web browser as described in docs/testing/testing-with-casper.md
+The Casper frontend tests failed!  For help debugging, read:
+  https://zulip.readthedocs.io/en/latest/testing/testing-with-casper.html
 """, file=sys.stderr)
 
         sys.exit(ret)
