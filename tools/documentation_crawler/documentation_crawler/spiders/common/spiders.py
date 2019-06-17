@@ -17,11 +17,11 @@ EXCLUDED_URLS = [
     'https://medium.freecodecamp.org/',
     # Returns 404 to HEAD requests unconditionally
     'https://www.git-tower.com/blog/command-line-cheat-sheet/',
+    'https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode',
     # Requires authentication
     'https://circleci.com/gh/zulip/zulip',
     'https://circleci.com/gh/zulip/zulip/16617',
-    # 500s because the site is semi-down
-    'http://citizencodeofconduct.org/',
+    'https://www.linkedin.com/company/zulip-project',
 ]
 
 
