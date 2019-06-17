@@ -107,6 +107,8 @@ FAKE_LDAP_MODE = None  # type: Optional[str]
 # FAKE_LDAP_NUM_USERS = 8
 
 if FAKE_LDAP_MODE:
+    # To understand these parameters, read the docs in
+    # prod_settings_template.py and on ReadTheDocs.
     LDAP_APPEND_DOMAIN = None
     AUTH_LDAP_USER_DN_TEMPLATE = 'uid=%(user)s,ou=users,dc=zulip,dc=com'
 
@@ -115,10 +117,27 @@ if FAKE_LDAP_MODE:
         from django_auth_ldap.config import LDAPSearch
         AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
                                            ldap.SCOPE_SUBTREE, "(email=%(user)s)")
+        AUTH_LDAP_USER_ATTR_MAP = {
+            "full_name": "cn",
+            "avatar": "thumbnailPhoto",
+            # This won't do much unless one changes the fact that
+            # all users have LDAP_USER_ACCOUNT_CONTROL_NORMAL in
+            # zerver/lib/dev_ldap_directory.py
+            "userAccountControl": "userAccountControl",
+        }
     elif FAKE_LDAP_MODE == 'b':
         LDAP_APPEND_DOMAIN = 'zulip.com'
+        AUTH_LDAP_USER_ATTR_MAP = {
+            "full_name": "cn",
+            "avatar": "jpegPhoto",
+            "custom_profile_field__birthday": "birthDate",
+            "custom_profile_field__phone_number": "phoneNumber",
+        }
     elif FAKE_LDAP_MODE == 'c':
         LDAP_EMAIL_ATTR = 'email'  # type: Optional[str]
+        AUTH_LDAP_USER_ATTR_MAP = {
+            "full_name": "cn",
+        }
     AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPAuthBackend',)  # type: ignore # tuple hackery
 
 THUMBOR_URL = 'http://127.0.0.1:9995'
