@@ -529,19 +529,18 @@
     <div class="padded-content call-to-action-bottom">
         <h1>Experience Zulip today!</h1>
         {% if root_domain_landing_page %}
-        <a href="{{ url('plans') }}">
-            <button href="" class="download-button" type="button"
-              name="button">{{ _('See plans and pricing') }}</button>
+        <a href="{{ url('plans') }}" class="download-button button">
+            {{ _('See plans and pricing') }}
         </a>
         {% endif %}
         {% if register_link_disabled %}
         {% elif only_sso %}
-        <a href="{{ url('login-sso') }}">
-            <button href="" type="button" name="button">{{ _('Log in now') }}</button>
+        <a href="{{ url('login-sso') }}" class="button">
+            {{ _('Log in now') }}
         </a>
         {% else %}
-        <a href="{{ url('register') }}">
-            <button href="" type="button" name="button">{{ _('Sign up now') }}</button>
+        <a href="{{ url('register') }}" class="button">
+            {{ _('Sign up now') }}
         </a>
         {% endif %}
         <div class="atlassian-migration">
