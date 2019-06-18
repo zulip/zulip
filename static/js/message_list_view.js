@@ -191,6 +191,17 @@ function update_unread_messages_divider(opts) {
     clear_unread_messages_divider(curr_msg_container);
 }
 
+function clear_message_divider(msg) {
+    clear_message_date_divider(msg);
+    clear_unread_messages_divider(msg);
+}
+
+function update_message_divider(opts) {
+    update_message_date_divider(opts);
+    // Unread messages divider should be updated once the date divider has been updated
+    update_unread_messages_divider(opts);
+}
+
 function set_timestr(message_container) {
     const time = new XDate(message_container.msg.timestamp * 1000);
     message_container.timestr = timerender.stringify_time(time);
@@ -353,11 +364,7 @@ MessageListView.prototype = {
             if (same_recipient(prev, message_container) && self.collapse_messages &&
                 prev.msg.historical === message_container.msg.historical) {
                 add_message_container_to_group(message_container);
-                update_message_date_divider({
-                    prev_msg_container: prev,
-                    curr_msg_container: message_container,
-                });
-                update_unread_messages_divider({
+                update_message_divider({
                     list: self.list,
                     prev_msg_container: prev,
                     curr_msg_container: message_container,
@@ -368,7 +375,7 @@ MessageListView.prototype = {
                 add_message_container_to_group(message_container);
 
                 update_group_date_divider(current_group, message_container, prev);
-                clear_message_date_divider(message_container);
+                clear_message_divider(message_container);
 
                 message_container.include_recipient = true;
                 message_container.subscribed = false;
@@ -507,18 +514,13 @@ MessageListView.prototype = {
 
         const was_joined = this.join_message_groups(first_group, second_group);
         if (was_joined) {
-            update_message_date_divider({
-                prev_msg_container: prev_msg_container,
-                curr_msg_container: curr_msg_container,
-            });
-            update_unread_messages_divider({
+            update_message_divider({
                 prev_msg_container: prev_msg_container,
                 curr_msg_container: curr_msg_container,
                 list: self.list,
             });
         } else {
-            clear_message_date_divider(curr_msg_container);
-            clear_unread_messages_divider(curr_msg_container);
+            clear_message_divider(curr_msg_container);
         }
 
         if (where === 'top') {
