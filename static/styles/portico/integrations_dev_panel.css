@@ -1,17 +1,17 @@
 circle {
-    fill: rgb(0, 0, 0);
+    fill: hsl(0, 0%, 0%);
     stroke-width: 1.93936479;
     stroke: transparent;
 }
 
 path {
-    fill: rgb(82, 194, 175);
-    stroke: rgb(82, 194, 175);
+    fill: hsl(170, 48%, 54%);
+    stroke: hsl(170, 48%, 54%);
 }
 
 button {
-    background-color: rgb(220, 244, 233);
-    color: rgb(46, 139, 87);
+    background-color: hsl(152, 52%, 91%);
+    color: hsl(146, 50%, 36%);
 }
 
 #custom_http_headers {
@@ -27,7 +27,7 @@ button {
     padding-top: 20px;
     padding-left: 10px;
     padding-right: 10px;
-    background-color: rgb(247, 255, 254);
+    background-color: hsl(173, 100%, 98%);
     box-shadow: 8px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
@@ -41,7 +41,7 @@ button {
     width: 100%;
     height: 500px;
     resize: vertical;
-    background-color: rgb(256, 256, 256);
+    background-color: hsl(0, 0%, 100%);
 }
 
 #top-navbar {
@@ -73,7 +73,7 @@ button {
 }
 
 .optional {
-    color: rgb(128, 128, 128);
+    color: hsl(0, 0%, 50%);
 }
 
 .pad-small {

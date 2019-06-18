@@ -619,7 +619,7 @@ run_test('draft_table_body', () => {
                 draft_id: '1',
                 is_stream: true,
                 stream: 'all',
-                stream_color: '#FF0000',  // rgb(255, 0, 0)
+                stream_color: '#FF0000',  // hsl(0, 100%, 50%)
                 topic: 'tests',
                 content: 'Public draft',
             },
@@ -639,7 +639,7 @@ run_test('draft_table_body', () => {
 
     var row_1 = $(html).find(".draft-row[data-draft-id='1']");
     assert.equal(row_1.find(".stream_label").text().trim(), "all");
-    assert.equal(row_1.find(".stream_label").css("background"), "rgb(255, 0, 0)");
+    assert.equal(row_1.find(".stream_label").css("background"), "hsl(0, 100%, 50%)");
     assert.equal(row_1.find(".stream_topic").text().trim(), "tests");
     assert(!row_1.find(".message_row").hasClass("private-message"));
     assert.equal(row_1.find(".message_content").text().trim(), "Public draft");
