@@ -104,20 +104,13 @@ exports.toggle_collapse = function (message) {
         return;
     }
     var condensed = row.find(".could-be-condensed");
-    var smalls = row.find("small");
+    // svar smalls = row.find("small");
     if (message.collapsed) {
-        if (smalls.hasClass("small")) {
-            message.collapse = false;
-            message.condense = false;
-            condensed.removeClass("condensed");
-            exports.hide_message_expander(row);
-        } else {
-            message.condensed = true;
-            condense.uncollapse(row);
-            condensed.addClass("condensed");
-            exports.show_message_expander(row);
-            row.find(".message_condenser").hide();
-        }
+        message.condensed = true;
+        condense.uncollapse(row);
+        condensed.addClass("condensed");
+        exports.show_message_expander(row);
+        row.find(".message_condenser").hide();
     } else if (!message.collapsed && condensed.hasClass("condensed")) {
         message.condensed = false;
         condensed.removeClass("condensed");
