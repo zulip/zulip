@@ -40,7 +40,7 @@ exports.uncollapse = function (row) {
         content.removeClass("collapsed");
 
         if (message.condensed === true) {
-            // This message is not long, so 
+            // This message is not long, so
             // hide the [More..]
             row.find(".message_expander").hide();
         } else if (message.condensed === false) {
