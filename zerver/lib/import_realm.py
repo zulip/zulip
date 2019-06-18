@@ -1001,9 +1001,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
 
     # Similarly, we need to recalculate the first_message_id for stream objects.
     for stream in Stream.objects.filter(realm=realm):
-        first_message = Message.objects.filter(
-            recipient__type_id=stream.id,
-            recipient__type=2).first()
+        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+        first_message = Message.objects.filter(recipient=recipient).first()
         if first_message is None:
             stream.first_message_id = None
         else:
