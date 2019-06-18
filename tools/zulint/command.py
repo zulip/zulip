@@ -30,6 +30,10 @@ def add_default_linter_arguments(parser):
                         default=[],
                         type=split_arg_into_list,
                         help='Specify linters to skip, eg: --skip=mypy,gitlint')
+    parser.add_argument('--only',
+                        default=[],
+                        type=split_arg_into_list,
+                        help='Specify linters to run, eg: --only=mypy,gitlint')
 
 def split_arg_into_list(arg):
     # type: (str) -> List[str]
@@ -107,7 +111,10 @@ class LinterConfig:
 
         self.lint_functions[name] = run_linter
 
-    def do_lint(self):
-        # type: () -> None
+    def do_lint(self, only=[]):
+        # type: (List[str]) -> None
+        if only:
+            self.lint_functions = {linter: self.lint_functions[linter] for linter in only}
+
         failed = run_parallel(self.lint_functions)
         sys.exit(1 if failed else 0)
