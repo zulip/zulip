@@ -247,6 +247,12 @@ def run_archiving_in_chunks(message_id_chunks: Iterator[List[int]], realm: Realm
                 type=ArchiveTransaction.RETENTION_POLICY_BASED, realm=realm
             )
             ArchivedMessage.objects.filter(id__in=chunk).update(archive_transaction=archive_transaction)
+            logger.info(
+                "Processing {} messages in transaction id {}, realm {}, timestamp {}".format(
+                    len(chunk), archive_transaction.id, realm.string_id,
+                    archive_transaction.archive_timestamp
+                )
+            )
 
             move_related_objects_to_archive(chunk)
             delete_messages(chunk)
@@ -311,6 +317,12 @@ def move_messages_to_archive(message_ids: List[int]) -> None:
         raise Message.DoesNotExist
 
     archive_transaction = ArchiveTransaction.objects.create(type=ArchiveTransaction.MANUAL)
+
+    logger.info(
+        "Processing {} messages in transaction id {}, type MANUAL, timestamp {}".format(
+            len(messages), archive_transaction.id, archive_transaction.archive_timestamp
+        )
+    )
     ArchivedMessage.objects.bulk_create([ArchivedMessage(archive_transaction=archive_transaction,
                                                          **message) for message in messages])
 
