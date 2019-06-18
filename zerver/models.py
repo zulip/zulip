@@ -1519,14 +1519,26 @@ class AbstractMessage(models.Model):
         return "<%s: %s / %s / %s>" % (self.__class__.__name__, display_recipient,
                                        self.subject, self.sender)
 
+class ArchiveTransaction(models.Model):
+    timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
+    # Marks if the data archived in this transaction has been restored:
+    restored = models.BooleanField(default=False, db_index=True)  # type: bool
+
+    type = models.PositiveSmallIntegerField(db_index=True)  # type: int
+    # Valid types:
+    RETENTION_POLICY_BASED = 1  # Archiving was executed due to automated retention policies
+    MANUAL = 2  # Archiving was run manually, via move_messages_to_archive function
+
+    # ForeignKey to the realm with which objects archived in this transaction are associated.
+    # If type is set to MANUAL, this should be null.
+    realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
 class ArchivedMessage(AbstractMessage):
     """Used as a temporary holding place for deleted messages before they
     are permanently deleted.  This is an important part of a robust
     'message retention' feature.
     """
-    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
-
+    archive_transaction = models.ForeignKey(ArchiveTransaction, on_delete=CASCADE, null=True)  # type: Optional[ArchiveTransaction]
 
 class Message(AbstractMessage):
 
@@ -1671,7 +1683,6 @@ class SubMessage(AbstractSubMessage):
 
 class ArchivedSubMessage(AbstractSubMessage):
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: ArchivedMessage
-    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
 
 post_save.connect(flush_submessage, sender=SubMessage)
 
@@ -1730,7 +1741,6 @@ class Reaction(AbstractReaction):
 
 class ArchivedReaction(AbstractReaction):
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: ArchivedMessage
-    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
 
 # Whenever a message is sent, for each user subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
@@ -1859,8 +1869,6 @@ class ArchivedUserMessage(AbstractUserMessage):
     a robust 'message retention' feature.
     """
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: Message
-    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
-
 
 class AbstractAttachment(models.Model):
     file_name = models.TextField(db_index=True)  # type: str
@@ -1895,9 +1903,7 @@ class ArchivedAttachment(AbstractAttachment):
     before they are permanently deleted.  This is an important part of
     a robust 'message retention' feature.
     """
-    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
     messages = models.ManyToManyField(ArchivedMessage)  # type: Manager
-
 
 class Attachment(AbstractAttachment):
     messages = models.ManyToManyField(Message)  # type: Manager
