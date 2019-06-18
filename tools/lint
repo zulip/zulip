@@ -25,12 +25,6 @@ def run():
     parser.add_argument('--full',
                         action='store_true',
                         help='Check some things we typically ignore')
-    parser.add_argument('--no-gitlint',
-                        action='store_true',
-                        help='Disable gitlint')
-    parser.add_argument('--no-mypy',
-                        action='store_true',
-                        help='Disable mypy')
     limited_tests_group = parser.add_mutually_exclusive_group()
     limited_tests_group.add_argument('--frontend',
                                      action='store_true',
@@ -96,14 +90,14 @@ def run():
     linter_config.external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
     linter_config.external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
     linter_config.external_linter('shellcheck', ['shellcheck', '-x'], ['sh'])
-    if not args.no_mypy:
+    if 'mypy' not in args.skip:
         command = ['tools/run-mypy']
         if args.force:
             command.append('--force')
         linter_config.external_linter('mypy', command, ['py'], pass_targets=False)
 
     # Disabled check for imperative mood until it is stabilized
-    if not args.no_gitlint:
+    if 'gitlint' not in args.skip:
         linter_config.external_linter('commit_messages', ['tools/commit-message-lint'])
 
     @linter_config.lint
