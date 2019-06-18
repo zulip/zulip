@@ -88,7 +88,9 @@ exports.activate = function (raw_operators, opts) {
             exports.narrow_title = filter.operands("stream")[0];
         }
     } else if (filter.has_operator("is")) {
-        exports.narrow_title = filter.operands("is")[0];
+        var title = filter.operands("is")[0];
+        title = title.charAt(0).toUpperCase() + title.slice(1) + " messages";
+        exports.narrow_title = title;
     } else if (filter.has_operator("pm-with") || filter.has_operator("group-pm-with")) {
         var emails = filter.public_operators()[0].operand;
         var names = people.get_recipients(people.emails_strings_to_user_ids_string(emails));
