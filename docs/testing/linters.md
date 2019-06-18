@@ -132,8 +132,9 @@ lint checks against files that are modified in your git repo.  Most of the
 Generally, a good workflow is to run with `--modified` when you are iterating on
 the code, and then run without that option right before committing new code.
 
-If you need to troubleshoot the linters, there is a `--verbose` option that
-can give you clues about which linters may be running slow, for example.
+If you need to troubleshoot the linters, there is a `--verbose-timing`
+option that can give you clues about which linters may be running
+slow, for example.
 
 ### Lint checks
 
