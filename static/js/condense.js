@@ -104,7 +104,7 @@ exports.toggle_collapse = function (message) {
         return;
     }
     var condensed = row.find(".could-be-condensed");
-    // svar smalls = row.find("small");
+    // var smalls = row.find("small");
     if (message.collapsed) {
         message.condensed = true;
         condense.uncollapse(row);
@@ -166,7 +166,7 @@ exports.condense_and_collapse = function (elems) {  // This runs on page reload
                 content.addClass("could-be-condensed");
             } else {
                 content.removeClass("could-be-condensed");
-                content.addClass("small");
+                // content.addClass("small");
             }
 
             // If message.condensed is defined, then the user has manually
