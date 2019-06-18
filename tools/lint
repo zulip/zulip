@@ -130,8 +130,7 @@ def run():
         # type: () -> int
         failed = check_pep8(list(python_part2))
         return 1 if failed else 0
-
-    linter_config.do_lint(skip=args.skip, only=args.only)
+    linter_config.do_lint(skip=args.skip, only=args.only, only_list=args.list)
 
 if __name__ == '__main__':
     run()

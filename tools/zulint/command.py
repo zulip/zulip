@@ -34,6 +34,9 @@ def add_default_linter_arguments(parser):
                         default=[],
                         type=split_arg_into_list,
                         help='Specify linters to run, eg: --only=mypy,gitlint')
+    parser.add_argument('--list', '-l',
+                        action='store_true',
+                        help='List all the registered linters')
 
 def split_arg_into_list(arg):
     # type: (str) -> List[str]
@@ -111,13 +114,16 @@ class LinterConfig:
 
         self.lint_functions[name] = run_linter
 
-    def do_lint(self, only=[], skip=[]):
-        # type: (List[str], List[str]) -> None
+    def do_lint(self, only=[], skip=[], only_list=False):
+        # type: (List[str], List[str], bool) -> None
         assert not only or not skip, "Only one of --only or --skip can be used at once."
         if only:
             self.lint_functions = {linter: self.lint_functions[linter] for linter in only}
         for linter in skip:
             del self.lint_functions[linter]
+        if only_list:
+            print("\n".join(self.lint_functions.keys()))
+            sys.exit()
 
         failed = run_parallel(self.lint_functions)
         sys.exit(1 if failed else 0)
