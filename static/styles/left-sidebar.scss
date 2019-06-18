@@ -91,14 +91,22 @@ li.show-more-topics a {
 
 .narrows_panel {
     margin-bottom: 4px;
+    margin-left: 0px ;
+    margin-top:-0.25px;
+    margin-bottom:-0.25px;
 }
 
 .narrows_panel li {
-    margin: 1px 0px;
+    margin-left: 0px ;
+    margin-top:-0.25px;
+    margin-bottom:-0.25px;
 }
 
 .narrows_panel li a:hover {
     text-decoration: none;
+    margin-left:0px;
+    margin-top:-0.25px;
+    margin-bottom:-0.10px;
 }
 
 #stream_filters li {
@@ -110,7 +118,7 @@ li.show-more-topics a {
 }
 
 #stream_filters li ul.topic-list li {
-    padding-top: 2px;
+    padding-top: 2px;  
     padding-right: 0px;
     padding-bottom: 2px;
     padding-left: $topic_indent;
@@ -134,6 +142,8 @@ li.show-more-topics a {
 #stream_filters li.highlighted_stream {
     background-color: hsl(93, 18%, 82%);
     border-radius: 4px;
+    margin-top:0px;
+    margin-bottom:0px;
 }
 
 #stream_filters li.active-sub-filter:hover {
@@ -195,6 +205,8 @@ li.top_left_starred_messages {
 .bottom_left_row,
 .top_left_private_messages {
     border-radius: 4px;
+    margin-top:0px;
+    margin-bottom:0px;
 }
 
 .conversation-partners {
@@ -208,7 +220,7 @@ li.top_left_starred_messages {
 
 .top_left_private_messages i.fa-envelope {
     position: relative;
-    top: -1px;
+    top:0px;
     font-size: 11px;
 }
 
@@ -465,6 +477,8 @@ li.expanded_private_message a {
 .zero-pm-unreads .pm-box,
 .zero-topic-unreads .topic-box {
     margin-right: 15px;
+    margin-top:1px;
+    margin-bottom:1px;
 }
 
 .zoom-out #topics_header {
@@ -512,6 +526,7 @@ li.expanded_private_message a {
 
 li.show-more-topics a {
     margin-left: 5px;
+    margin: 0px
 }
 
 .searching-for-more-topics {
