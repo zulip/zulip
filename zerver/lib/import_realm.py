@@ -249,6 +249,14 @@ def fix_message_rendered_content(realm: Realm,
             if len(user_mentions) != 0:
                 user_id_map = ID_MAP["user_profile"]
                 for mention in user_mentions:
+                    if 'data-user-id' not in mention:
+                        # Legacy mentions don't have a data-user-id
+                        # field; we should just import them
+                        # unmodified.
+                        continue
+                    if mention['data-user-id'] == "*":
+                        # No rewriting is required for wildcard mentions
+                        continue
                     old_user_id = int(mention["data-user-id"])
                     if old_user_id in user_id_map:
                         mention["data-user-id"] = str(user_id_map[old_user_id])
