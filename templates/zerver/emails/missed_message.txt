@@ -13,13 +13,6 @@ While you were away you received {{ message_count }} new{% if group_pm %} group 
 {% endfor %}
 {% endif %}
 
-Click here to log in to Zulip and view your new messages:
-
-{{ realm_uri }}
-
-{% if reply_to_zulip  %}
-Or just reply to this email.
-{% endif %}
 {% if reply_warning %}
 Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.
 {% endif %}
@@ -34,3 +27,17 @@ Manage email preferences:
 Unsubscribe from missed message emails:
 
 {{ unsubscribe_link }}
+
+{% if reply_to_zulip  %}
+Reply to this email directly, or view it in Zulip:
+
+{{ narrow_url }}
+{% else %}
+Do not reply to this message. This Zulip server is not configured to accept replies to missed message emails. Help:
+
+https://zulip.readthedocs.io/en/latest/production/settings.html#miscellaneous-server-settings
+
+Reply in Zulip:
+
+{{ narrow_url }}
+{% endif %}

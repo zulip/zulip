@@ -323,6 +323,11 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     else:
         reply_to_name = "Zulip"
 
+    narrow_url = get_narrow_url(user_profile, missed_messages[0]['message'])
+    context.update({
+        'narrow_url': narrow_url,
+    })
+
     senders = list(set(m['message'].sender for m in missed_messages))
     if (missed_messages[0]['message'].recipient.type == Recipient.HUDDLE):
         display_recipient = get_display_recipient(missed_messages[0]['message'].recipient)

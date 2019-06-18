@@ -250,7 +250,7 @@ class TestMissedMessages(ZulipTestCase):
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
                                             '1 2 3 4 5 6 7 8 9 10 @**King Hamlet**', 'private', 'group',
-                                            'Or just reply to this email.']
+                                            'Reply to this email directly, or view it in Zulip']
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include,
@@ -310,7 +310,7 @@ class TestMissedMessages(ZulipTestCase):
             body = 'While you were away you received 1 new private message!'
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Othello, the Moor of Venice', 'Extremely personal message!',
-                                            'mentioned', 'group', 'Or just reply to this email.']
+                                            'mentioned', 'group', 'Reply to this email directly, or view it in Zulip']
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include)
@@ -326,7 +326,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_email('hamlet'),
             'Extremely personal message!',
         )
-        body = 'Or just reply to this email.'
+        body = 'Reply to this email directly, or view it in Zulip'
         email_subject = 'PMs with Othello, the Moor of Venice'
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user)
 
@@ -371,7 +371,7 @@ class TestMissedMessages(ZulipTestCase):
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Iago', 'Othello, the Moor of Venice Othello, the Moor of Venice',
                                             'Group personal message!', 'mentioned',
-                                            'Or just reply to this email.']
+                                            'Reply to this email directly, or view it in Zulip']
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include)
