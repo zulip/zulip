@@ -21,8 +21,22 @@ sys.path.append(BASE_DIR)
 import scripts.lib.setup_path_on_import
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
+
+# It's common for a broken settings.py file to result in Django not starting,
+# thus never writing to /var/log/zulip/errors.log.  Such behavior can be
+# discouraging when the server 500s without a traceback to accompany it.  To
+# fix this, we simply catch the NameError, if raised, and log the exception
+# appropriately.
 import django
-django.setup()  # We need to call setup to load applications.
+try:
+    django.setup()  # We need to call setup to load applications.
+except NameError as e:
+    import logging
+    logging.basicConfig(filename='/var/log/zulip/errors.log', level=logging.DEBUG,
+                        format='%(asctime)s %(levelname)s %(name)s %(message)s')
+    logger = logging.getLogger(__name__)
+    logger.exception(e)
+    raise
 
 # Because import_module does not correctly handle safe circular imports we
 # need to import zerver.models first before the middleware tries to import it.
