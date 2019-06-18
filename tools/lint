@@ -98,7 +98,7 @@ def run():
 
     # Disabled check for imperative mood until it is stabilized
     if 'gitlint' not in args.skip:
-        linter_config.external_linter('commit_messages', ['tools/commit-message-lint'])
+        linter_config.external_linter('gitlint', ['tools/commit-message-lint'])
 
     @linter_config.lint
     def custom_py():
