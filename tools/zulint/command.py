@@ -111,10 +111,13 @@ class LinterConfig:
 
         self.lint_functions[name] = run_linter
 
-    def do_lint(self, only=[]):
-        # type: (List[str]) -> None
+    def do_lint(self, only=[], skip=[]):
+        # type: (List[str], List[str]) -> None
+        assert not only or not skip, "Only one of --only or --skip can be used at once."
         if only:
             self.lint_functions = {linter: self.lint_functions[linter] for linter in only}
+        for linter in skip:
+            del self.lint_functions[linter]
 
         failed = run_parallel(self.lint_functions)
         sys.exit(1 if failed else 0)
