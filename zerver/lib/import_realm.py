@@ -249,7 +249,7 @@ def fix_message_rendered_content(realm: Realm,
             if len(user_mentions) != 0:
                 user_id_map = ID_MAP["user_profile"]
                 for mention in user_mentions:
-                    if 'data-user-id' not in mention:
+                    if not mention.has_attr("data-user-id"):
                         # Legacy mentions don't have a data-user-id
                         # field; we should just import them
                         # unmodified.
