@@ -21,8 +21,23 @@ sys.path.append(BASE_DIR)
 import scripts.lib.setup_path_on_import
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
+
 import django
-django.setup()  # We need to call setup to load applications.
+try:
+    django.setup()
+except Exception as e:
+    # If /etc/zulip/settings.py contains invalid syntax, Django
+    # initialization will fail in django.setup().  In this case, our
+    # normal configuration to logs errors to /var/log/zulip/errors.log
+    # won't have been initialized.  Since it's really valuable for the
+    # debugging process for a Zulip 500 error to always be "check
+    # /var/log/zulip/errors.log", we log to that file directly here.
+    import logging
+    logging.basicConfig(filename='/var/log/zulip/errors.log', level=logging.INFO,
+                        format='%(asctime)s %(levelname)s %(name)s %(message)s')
+    logger = logging.getLogger(__name__)
+    logger.exception(e)
+    raise
 
 # Because import_module does not correctly handle safe circular imports we
 # need to import zerver.models first before the middleware tries to import it.
