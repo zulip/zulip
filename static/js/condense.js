@@ -40,9 +40,9 @@ exports.uncollapse = function (row) {
         content.removeClass("collapsed");
 
         if (message.condensed === true) {
-            // This message was condensed by the user, so re-show the
-            // [More] link.
-            condense_row(row);
+            // This message is not long, so 
+            // hide the [More..]
+            row.find(".message_expander").hide();
         } else if (message.condensed === false) {
             // This message was un-condensed by the user, so re-show the
             // [Condense] link.
@@ -104,12 +104,20 @@ exports.toggle_collapse = function (message) {
         return;
     }
     var condensed = row.find(".could-be-condensed");
+    var smalls = row.find("small");
     if (message.collapsed) {
-        message.condensed = true;
-        condense.uncollapse(row);
-        condensed.addClass("condensed");
-        exports.show_message_expander(row);
-        row.find(".message_condenser").hide();
+        if (smalls.hasClass("small")) {
+            message.collapse = false;
+            message.condense = false;
+            condensed.removeClass("condensed");
+            exports.hide_message_expander(row);
+        } else {
+            message.condensed = true;
+            condense.uncollapse(row);
+            condensed.addClass("condensed");
+            exports.show_message_expander(row);
+            row.find(".message_condenser").hide();
+        }
     } else if (!message.collapsed && condensed.hasClass("condensed")) {
         message.condensed = false;
         condensed.removeClass("condensed");
@@ -151,7 +159,7 @@ exports.show_message_expander = function (row) {
     }
 };
 
-exports.condense_and_collapse = function (elems) {
+exports.condense_and_collapse = function (elems) {  // This runs on page reload
     var height_cutoff = message_viewport.height() * 0.65;
 
     _.each(elems, function (elem) {
@@ -165,6 +173,7 @@ exports.condense_and_collapse = function (elems) {
                 content.addClass("could-be-condensed");
             } else {
                 content.removeClass("could-be-condensed");
+                content.addClass("small");
             }
 
             // If message.condensed is defined, then the user has manually
