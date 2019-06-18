@@ -282,6 +282,14 @@ a.button:hover {
     font-weight: normal;
 }
 
+.email-preferences {
+    color: #666;
+}
+
+.email-preferences a {
+    color: #15c;
+}
+
 @media only screen and (max-width: 620px) {
     table[class=body] h1 {
         font-size: 28px !important;
