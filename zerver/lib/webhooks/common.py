@@ -1,9 +1,11 @@
 import importlib
+import requests
+from requests.models import Response
 from urllib.parse import unquote
 
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
-from typing import Optional, Dict, Union, Any, Callable
+from typing import Any, Dict, Callable, List, Optional, Union
 
 from zerver.lib.actions import check_send_stream_message, \
     check_send_private_message, send_rate_limited_pm_notification_to_bot_owner
@@ -126,7 +128,6 @@ def validate_extract_webhook_http_header(request: HttpRequest, header: str,
 
     return extracted_header
 
-
 def get_fixture_http_headers(integration_name: str,
                              fixture_name: str) -> Dict["str", "str"]:
     """For integrations that require custom HTTP headers for some (or all)
@@ -146,7 +147,6 @@ def get_fixture_http_headers(integration_name: str,
         return {}
     return fixture_to_headers(fixture_name)
 
-
 def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict[str, str]]:
     """If an integration requires an event type kind of HTTP header which can
     be easily (statically) determined, then name the fixtures in the format
@@ -159,3 +159,89 @@ def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict
             event_type = filename
         return {http_header_key: event_type}
     return fixture_to_headers
+
+class ThirdPartyAPIAmbassador:
+    def __init__(
+        self, bot: UserProfile, root_url: str="",
+        authentication_handler: Optional[Callable[["ThirdPartyAPIAmbassador"],
+                                         None]]=None,
+        request_preprocessor: Optional[Callable[["ThirdPartyAPIAmbassador"],
+                                       None]]=None,
+        request_postprocessor: Optional[Callable[["ThirdPartyAPIAmbassador"],
+                                        None]]=None,
+    ) -> None:
+
+        if bot.is_bot is not True:
+            msg = "Ambassador must be a bot. {name} is not a bot".format(
+                name=bot.full_name
+            )
+            raise ValueError(msg)
+        self.bot = bot
+
+        self.root_url = root_url
+
+        # we pass these directly to the requests library when making HTTP calls.
+        # if we ever need to do stuff like send cookies and files, then this is where
+        # we need to begin adding support.
+        self._persistent_request_kwargs = {
+            "data": {},  # Used in POST requests with an application/x-www-form-urlencoded content type
+            "json": {},  # Used in POST requests with an application/json content type
+            "params": {},  # Used in a GET request
+            "headers": {}
+        }  # type: Dict[str, Dict[str, Any]]
+
+        self.request_preprocessor = request_preprocessor
+        self.request_postprocessor = request_postprocessor
+
+        self.response_log = []  # type: List[Response]
+
+        if authentication_handler:
+            authentication_handler(self)
+
+    @property
+    def result(self) -> Optional[Response]:
+        try:
+            return self.response_log[-1]
+        except IndexError:  # nocoverage
+            return None
+
+    def update_persistent_request_kwargs(self,
+                                         data: Dict[str, Any]={},
+                                         json: Dict[str, Any]={},
+                                         params: Dict[str, Any]={},
+                                         headers: Dict[str, Any]={}) -> None:
+        self._persistent_request_kwargs["data"].update(data)
+        self._persistent_request_kwargs["json"].update(json)
+        self._persistent_request_kwargs["params"].update(params)
+        self._persistent_request_kwargs["headers"].update(headers)
+
+    def http_api_callback(self, api_endpoint: str, method: str="post",
+                          data: Dict[str, Any]={},
+                          json: Dict[str, Any]={},
+                          params: Dict[str, Any]={},
+                          headers: Dict[str, Any]={}) -> Response:
+        data.update(self._persistent_request_kwargs["data"])
+        json.update(self._persistent_request_kwargs["json"])
+        params.update(self._persistent_request_kwargs["params"])
+        headers.update(self._persistent_request_kwargs["headers"])
+
+        if self.request_preprocessor:
+            self.request_preprocessor(self)
+
+        if api_endpoint.startswith("/"):
+            if self.root_url != "":
+                # Then allow relative addressing.
+                api_endpoint = self.root_url + api_endpoint
+            else:
+                raise ValueError("%s attempted to call a relative URL address without a root URL.")
+        # TODO: Improve error reporting in cases like this. Maybe notify the bot
+        #  owner about what just happened.
+
+        response = requests.request(method, api_endpoint, data=data, json=json,
+                                    params=params, headers=headers)
+        self.response_log.append(response)
+
+        if self.request_postprocessor:
+            self.request_postprocessor(self)
+
+        return response

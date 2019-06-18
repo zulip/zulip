@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import json
+import httpretty
 from types import SimpleNamespace
 from mock import MagicMock, patch
-from typing import Dict
+from typing import Dict, List
 
 from django.http import HttpRequest
 
@@ -11,7 +13,8 @@ from zerver.lib.test_classes import ZulipTestCase, WebhookTestCase
 from zerver.lib.webhooks.common import \
     validate_extract_webhook_http_header, \
     MISSING_EVENT_HEADER_MESSAGE, MissingHTTPEventHeader, \
-    INVALID_JSON_MESSAGE, get_fixture_http_headers, standardize_headers
+    INVALID_JSON_MESSAGE, get_fixture_http_headers, standardize_headers, \
+    ThirdPartyAPIAmbassador
 from zerver.models import get_user, get_realm, UserProfile
 from zerver.lib.users import get_api_key
 from zerver.lib.send_email import FromAddress
@@ -162,3 +165,89 @@ class MissingEventHeaderTestCase(WebhookTestCase):
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("groove", fixture_name, file_type="json")
+
+
+class ThirdPartyAPIAmbassadorTestCase(ZulipTestCase):
+    def test_only_bots_can_become_ambassabors(self) -> None:
+        hamlet = self.example_user("hamlet")
+        with self.assertRaises(ValueError):
+            ThirdPartyAPIAmbassador(hamlet)
+
+        webhook_bot = get_user('webhook-bot@zulip.com', get_realm('zulip'))
+        real_ambassador = ThirdPartyAPIAmbassador(webhook_bot)
+        self.assertIsNotNone(real_ambassador)
+
+    def test_auth_handler_called_during_initialization_and_persistent_request_kwargs_set(self) -> None:
+        webhook_bot = get_user('webhook-bot@zulip.com', get_realm('zulip'))
+        sample_params = {"sample_param": "val"}
+
+        def sample_auth_handler(ambassador: ThirdPartyAPIAmbassador) -> None:
+            # Do some calculations, read some config data, authenticate, etc.
+            ambassador.update_persistent_request_kwargs(params=sample_params)
+
+        ambassador_v1 = ThirdPartyAPIAmbassador(webhook_bot)
+        ambassador_v2 = ThirdPartyAPIAmbassador(
+            bot=webhook_bot,
+            authentication_handler=sample_auth_handler
+        )
+
+        self.assertEqual(ambassador_v1._persistent_request_kwargs, {'data': {}, 'json': {}, 'params': {}, 'headers': {}})
+        self.assertEqual(ambassador_v2._persistent_request_kwargs, {'data': {}, 'json': {}, 'params': {"sample_param": "val"}, 'headers': {}})
+
+    @httpretty.activate
+    def test_http_api_callback_method(self) -> None:
+
+        counter = 0
+        logs = ""
+
+        def sample_preprocessor(ambassador: ThirdPartyAPIAmbassador) -> None:
+            # For the sake of an example, we keep things simple
+            nonlocal counter
+            counter += 1
+
+        def sample_postprocessor(ambassador: ThirdPartyAPIAmbassador) -> None:
+            nonlocal logs
+            response = ambassador.result
+            assert response is not None
+            content = json.loads(response.content.decode("utf-8"))["msg"]
+            if counter < 3:
+                logs += "{}{}, ".format(response.status_code, content)
+            else:
+                logs += "{}{}".format(response.status_code, content)
+
+        def request_callback(request: HttpRequest, uri: str, response_headers: Dict[str, str]) -> List[object]:
+            number = json.loads(request.body.decode("utf-8"))["number"]
+            return [200, response_headers, json.dumps({"msg": number})]
+
+        httpretty.register_uri(httpretty.POST, "https://example.com/api", body=request_callback)
+        ambassador = ThirdPartyAPIAmbassador(bot=get_user('webhook-bot@zulip.com', get_realm('zulip')),
+                                             request_preprocessor=sample_preprocessor,
+                                             request_postprocessor=sample_postprocessor)
+
+        for i in range(1, 4):
+            ambassador.http_api_callback("https://example.com/api", json={"number": i})
+
+        self.assertEqual(counter, 3)
+        self.assertEqual(logs, "2001, 2002, 2003")
+        self.assertEqual(len(ambassador.response_log), 3)
+        recent_result = ambassador.result
+        assert recent_result is not None
+        self.assertEqual(json.loads(recent_result.content.decode("utf-8")), {"msg": 3})
+
+    @httpretty.activate
+    def test_http_api_callback_method_with_relative_addressing(self) -> None:
+        def request_callback(request: HttpRequest, uri: str, response_headers: Dict[str, str]) -> List[object]:
+            return [200, response_headers, json.dumps({"msg": "success"})]
+
+        httpretty.register_uri(httpretty.GET, "https://example.com/api", body=request_callback)
+
+        ambassador = ThirdPartyAPIAmbassador(bot=get_user('webhook-bot@zulip.com', get_realm('zulip')))
+
+        with self.assertRaises(ValueError):
+            ambassador.http_api_callback("/api", "get")
+
+        ambassador = ThirdPartyAPIAmbassador(bot=get_user('webhook-bot@zulip.com', get_realm('zulip')),
+                                             root_url="https://example.com")
+        result = ambassador.http_api_callback("/api", "get")
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(json.loads(result.content.decode("utf-8")), {"msg": "success"})
