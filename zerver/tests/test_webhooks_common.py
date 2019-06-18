@@ -8,13 +8,14 @@ from typing import Dict, List
 from django.http import HttpRequest
 
 from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.bot_config import ConfigError
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.test_classes import ZulipTestCase, WebhookTestCase
 from zerver.lib.webhooks.common import \
     validate_extract_webhook_http_header, \
     MISSING_EVENT_HEADER_MESSAGE, MissingHTTPEventHeader, \
     INVALID_JSON_MESSAGE, get_fixture_http_headers, standardize_headers, \
-    ThirdPartyAPIAmbassador
+    ThirdPartyAPIAmbassador, generate_api_token_auth_handler
 from zerver.models import get_user, get_realm, UserProfile
 from zerver.lib.users import get_api_key
 from zerver.lib.send_email import FromAddress
@@ -251,3 +252,37 @@ class ThirdPartyAPIAmbassadorTestCase(ZulipTestCase):
         result = ambassador.http_api_callback("/api", "get")
         self.assertEqual(result.status_code, 200)
         self.assertEqual(json.loads(result.content.decode("utf-8")), {"msg": "success"})
+
+
+class ApiTokenAuthHandlerTestCase(ZulipTestCase):
+    def test_api_token_auth_handler_with_invalid_mode_but_well_configured(self) -> None:
+        auth_handler = generate_api_token_auth_handler(mode="asdf", param_key="urltoken", config_element_key="my_config_key")
+        webhook_bot = get_user('webhook-bot@zulip.com', get_realm('zulip'))
+        webhook_bot.botconfigdata_set.create(key="my_config_key", value="val")
+        with self.assertRaises(ValueError):
+            ThirdPartyAPIAmbassador(webhook_bot, authentication_handler=auth_handler)
+
+    def test_api_token_auth_handler_with_valid_mode_but_misconfigured(self) -> None:
+        auth_handler = generate_api_token_auth_handler(mode="form", param_key="urltoken", config_element_key="my_config_key")
+        webhook_bot = get_user('webhook-bot@zulip.com', get_realm('zulip'))
+        with self.assertRaises(ConfigError):
+            ThirdPartyAPIAmbassador(webhook_bot, authentication_handler=auth_handler)
+        webhook_bot.botconfigdata_set.create(key="some_config_key", value="val")
+        with self.assertRaises(ConfigError):
+            ThirdPartyAPIAmbassador(webhook_bot, authentication_handler=auth_handler)
+
+    def test_api_token_auth_handler_with_valid_mode_and_well_configured(self) -> None:
+        webhook_bot = get_user('webhook-bot@zulip.com', get_realm('zulip'))
+        webhook_bot.botconfigdata_set.create(key="my_config_key", value="val")
+
+        options = {
+            "url": "params",
+            "form": "data",
+            "json": "json",
+            "headers": "headers"
+        }
+
+        for k, v in options.items():
+            auth_handler = generate_api_token_auth_handler(mode=k, param_key="urltoken", config_element_key="my_config_key")
+            ambassador = ThirdPartyAPIAmbassador(webhook_bot, authentication_handler=auth_handler)
+            self.assertEqual(ambassador._persistent_request_kwargs[v], {"urltoken": "val"})

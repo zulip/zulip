@@ -1,5 +1,6 @@
 import importlib
 import requests
+import functools
 from requests.models import Response
 from urllib.parse import unquote
 
@@ -9,11 +10,12 @@ from typing import Any, Dict, Callable, List, Optional, Union
 
 from zerver.lib.actions import check_send_stream_message, \
     check_send_private_message, send_rate_limited_pm_notification_to_bot_owner
+from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.exceptions import StreamDoesNotExistError, JsonableError, \
     ErrorCode, UnexpectedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
-from zerver.models import UserProfile
+from zerver.models import UserProfile, BotConfigData
 
 
 MISSING_EVENT_HEADER_MESSAGE = """
@@ -245,3 +247,42 @@ class ThirdPartyAPIAmbassador:
             self.request_postprocessor(self)
 
         return response
+
+def api_token_auth_handler(ambassador: ThirdPartyAPIAmbassador,
+                           mode: str="form",
+                           param_key: str="token",
+                           config_element_key: str="api_token") -> None:
+    # NOTE: Since this method can throw an exception if the bot config element
+    # doesn't exist, so if needed wrap the ThirdPartyAPIAmbassador
+    # instantiation inside a try/except block.
+    try:
+        bot_config = get_bot_config(bot_profile=ambassador.bot)
+        api_token = bot_config.get(config_element_key, None)
+        if api_token is None:
+            raise BotConfigData.DoesNotExist
+    except BotConfigData.DoesNotExist:
+        raise ConfigError("The \"{bot}\" bot is missing a configuration \
+element: \"{key}\"".format(bot=ambassador.bot.full_name,
+                           key=config_element_key))
+
+    auth = {param_key: api_token}
+    if mode == "url":
+        ambassador.update_persistent_request_kwargs(params=auth)
+    elif mode == "form":
+        ambassador.update_persistent_request_kwargs(data=auth)
+    elif mode == "json":
+        ambassador.update_persistent_request_kwargs(json=auth)
+    elif mode == "headers":
+        ambassador.update_persistent_request_kwargs(headers=auth)
+    else:  # nocoverage
+        raise ValueError('{mode} is an invalid mode for \
+api_token_auth_handler. The mode must be one one of "url", "form", "json", or\
+"headers".'.format(mode=mode))
+
+def generate_api_token_auth_handler(mode: str="form",
+                                    param_key: str="token",
+                                    config_element_key: str="api_token") -> Callable[..., None]:
+    return functools.partial(api_token_auth_handler,
+                             mode=mode,
+                             param_key=param_key,
+                             config_element_key=config_element_key)
