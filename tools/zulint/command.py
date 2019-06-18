@@ -20,7 +20,7 @@ def add_default_linter_arguments(parser):
     parser.add_argument('--modified', '-m',
                         action='store_true',
                         help='Only check modified files')
-    parser.add_argument('--verbose', '-v',
+    parser.add_argument('--verbose-timing', '-vt',
                         action='store_true',
                         help='Print verbose timing output')
     parser.add_argument('targets',

@@ -80,7 +80,7 @@ def run():
 
     logging.basicConfig(format="%(asctime)s %(message)s")
     logger = logging.getLogger()
-    if args.verbose:
+    if args.verbose_timing:
         logger.setLevel(logging.INFO)
     else:
         logger.setLevel(logging.WARNING)
