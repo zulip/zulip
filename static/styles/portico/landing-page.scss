@@ -160,6 +160,13 @@ button {
     outline: none;
 }
 
+button.green {
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(170, 47%, 53%);
+
+    border: 1px solid hsl(169, 45%, 43%);
+}
+
 button.green:hover {
     -webkit-filter: brightness(1.05);
     -moz-filter: brightness(1.05);
@@ -172,23 +179,16 @@ button.green:active {
     filter: brightness(0.95);
 }
 
-button:active {
-    background-color: hsl(0, 0%, 98%);
-    border: 1px solid hsl(0, 0%, 73%);
-}
-
-button.green {
-    color: hsl(0, 0%, 100%);
-    background-color: hsl(170, 47%, 53%);
-
-    border: 1px solid hsl(169, 45%, 43%);
-}
-
 button.black-disabled {
     cursor: default;
     color: hsl(0, 0%, 20%);
     background-color: transparent;
     border: 1px solid hsl(0, 0%, 53%);
+}
+
+button:active {
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid hsl(0, 0%, 73%);
 }
 
 /* -- navbar styling -- */
