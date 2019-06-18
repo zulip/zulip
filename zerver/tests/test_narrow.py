@@ -10,7 +10,7 @@ from sqlalchemy.sql import compiler
 
 from zerver.models import (
     Realm, Subscription,
-    get_display_recipient, get_personal_recipient, get_realm, get_stream,
+    get_display_recipient, get_personal_recipient, get_realm, get_client, get_stream,
     UserMessage, get_stream_recipient, Message
 )
 from zerver.lib.actions import do_set_realm_property
@@ -51,6 +51,9 @@ import mock
 import os
 import re
 import ujson
+import datetime
+from django.utils.timezone import now
+import pytz
 
 def get_sqlalchemy_query_params(query: str) -> Dict[str, str]:
     dialect = get_sqlalchemy_connection().dialect
@@ -352,6 +355,11 @@ class NarrowBuilderTest(ZulipTestCase):
         query = self._build_query(term)
         self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
 
+    def test_add_term_using_date_operator(self) -> None:
+        term = dict(operator='date', operand='2019-02-17t00:00:00.000+05:30')
+        query = self._build_query(term)
+        self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
+
     def _do_add_term_test(self, term: Dict[str, Any], where_clause: str,
                           params: Optional[Dict[str, Any]]=None) -> None:
         query = self._build_query(term)
@@ -393,6 +401,8 @@ class NarrowLibraryTest(TestCase):
                                                    "operand": "magic"}]))
         self.assertTrue(is_web_public_compatible([{"operator": "near",
                                                    "operand": "15"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "date",
+                                                   "operand": "2019-02-17t00:00:00.000+05:30"}]))
         self.assertTrue(is_web_public_compatible([{"operator": "id",
                                                    "operand": "15"},
                                                   {"operator": "has",
@@ -1394,6 +1404,7 @@ class GetOldMessagesTest(ZulipTestCase):
         messages sent by that person.
         """
         self.login(self.example_email("hamlet"))
+
         # We need to send a message here to ensure that we actually
         # have a stream message in this narrow view.
         self.send_stream_message(self.example_email("hamlet"), "Scotland")
@@ -1406,6 +1417,50 @@ class GetOldMessagesTest(ZulipTestCase):
 
         for message in result["messages"]:
             self.assertEqual(message["sender_email"], self.example_email("othello"))
+
+    def test_jump_to_date_operator(self) -> None:
+        """
+        Test request for anchor to message sent on a particular date.
+        """
+        # Save a message at a given date
+        zulip_realm = get_realm("zulip")
+        stream_id = get_stream("Verona", zulip_realm).id
+        message = Message(
+            sender=self.example_user("hamlet"),
+            recipient=get_stream_recipient(stream_id),
+            content='This is test content',
+            rendered_content='This is test content',
+            pub_date=datetime.datetime(2019, 4, 17, tzinfo=pytz.utc),
+            sending_client=get_client('test')
+        )
+        message.set_topic_name('Test Topic')
+        message.save()
+        # Get the id to match the anchor returned by the date narrow operator
+        msg_id = message.id
+        self.login(self.example_email("cordelia"))
+        narrow = [
+            dict(operator='stream', operand="Verona"),
+            dict(operator='date', operand="2019-04-17T00:00:00+00:00")
+        ]
+        result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow),
+            anchor=-1
+        ))
+        self.assertEqual(result["anchor"], msg_id)
+
+    def test_jump_to_date_operator_with_future_dates(self) -> None:
+        future_datetime = now() + datetime.timedelta(days=4)
+        operand_date = future_datetime.isoformat()
+        self.login(self.example_email("cordelia"))
+        narrow = [
+            dict(operator='stream', operand="Verona"),
+            dict(operator='date', operand=operand_date)
+        ]
+        result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow),
+            anchor=-1
+        ))
+        self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
 
     def _update_tsvector_index(self) -> None:
         # We use brute force here and update our text search index
@@ -2118,6 +2173,10 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@zulip.com'],
                                          "Invalid narrow operator: unknown user")
+
+    def test_invalid_narrow_date(self) -> None:
+        self.login(self.example_email("hamlet"))
+        self.exercise_bad_narrow_operand("date", "bad-date", "Invalid date")
 
     def test_message_without_rendered_content(self) -> None:
         """Older messages may not have rendered_content in the database"""

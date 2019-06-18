@@ -184,9 +184,9 @@ exports.load_messages_for_narrow = function (opts) {
         num_after: consts.narrow_after,
         msg_list: msg_list,
         use_first_unread_anchor: opts.use_first_unread_anchor,
-        cont: function () {
+        cont: function (data) {
             message_scroll.hide_indicators();
-            opts.cont();
+            opts.cont(data);
         },
     });
 };

@@ -285,6 +285,13 @@ Filter.parse = function (str) {
                 search_term.push(token);
                 return;
             }
+            if (operator === "date") {
+                // Convert date value to local time ISO string
+                var searched_date = moment(operand);
+                if (searched_date.isValid()) {
+                    operand = searched_date.toISOString(true);
+                }
+            }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
         }
@@ -319,6 +326,13 @@ Filter.unparse = function (operators) {
         var sign = elem.negated ? '-' : '';
         if (elem.operator === '') {
             return elem.operand;
+        }
+        if (elem.operator === "date") {
+            // Show date in YYYY-MM-DD format
+            var searched_date = moment(elem.operand);
+            if (searched_date.isValid()) {
+                elem.operand = searched_date.format("YYYY-MM-DD");
+            }
         }
         return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
     });
@@ -375,6 +389,10 @@ Filter.prototype = {
         return this.has_operator('search');
     },
 
+    is_date: function () {
+        return this.has_operator('date');
+    },
+
     can_apply_locally: function () {
         if (this.is_search()) {
             // The semantics for matching keywords are implemented
@@ -388,6 +406,11 @@ Filter.prototype = {
             // See #6186 to see why we currently punt on 'has:foo'
             // queries.  This can be fixed, there are just some random
             // complications that make it non-trivial.
+            return false;
+        }
+
+        if (this.is_date()) {
+            // TODO: Jump to date Currently supports server side fetching
             return false;
         }
 
@@ -619,6 +642,9 @@ Filter.operator_to_prefix = function (operator, negated) {
 
     case 'group-pm-with':
         return verb + 'group private messages including';
+
+    case 'date':
+        return verb + 'jump to date';
     }
     return '';
 };
@@ -659,6 +685,13 @@ function describe_unescaped(operators) {
 
     var more_parts = _.map(operators, function (elem) {
         var operand = elem.operand;
+        if (elem.operator === "date") {
+            // Convert date value to local time ISO string
+            var searched_date = moment(operand);
+            if (searched_date.isValid()) {
+                operand = searched_date.format("YYYY-MM-DD");
+            }
+        }
         var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator === 'is') {
             return describe_is_operator(elem);
