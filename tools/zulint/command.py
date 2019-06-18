@@ -26,6 +26,14 @@ def add_default_linter_arguments(parser):
     parser.add_argument('targets',
                         nargs='*',
                         help='Specify directories to check')
+    parser.add_argument('--skip',
+                        default=[],
+                        type=split_arg_into_list,
+                        help='Specify linters to skip, eg: --skip=mypy,gitlint')
+
+def split_arg_into_list(arg):
+    # type: (str) -> List[str]
+    return [linter for linter in arg.split(',')]
 
 def run_parallel(lint_functions):
     # type: (Dict[str, Callable[[], int]]) -> bool
