@@ -300,7 +300,7 @@ casper.thenClick('.top_left_private_messages a');
 
 expect_all_pm();
 
-casper.then(check_narrow_title('private - Zulip Dev - Zulip'));
+casper.then(check_narrow_title('Private messages - Zulip Dev - Zulip'));
 
 un_narrow();
 
