@@ -40,9 +40,8 @@ exports.uncollapse = function (row) {
         content.removeClass("collapsed");
 
         if (message.condensed === true) {
-            // This message was condensed by the user, so re-show the
-            // [More] link.
-            condense_row(row);
+            // hide the [More..] link
+            row.find(".message_expander").hide();
         } else if (message.condensed === false) {
             // This message was un-condensed by the user, so re-show the
             // [Condense] link.
