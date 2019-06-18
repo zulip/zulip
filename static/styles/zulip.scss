@@ -1010,8 +1010,8 @@ td.pointer {
 .private-message .date_row {
     background-color: hsla(192, 19%, 75%, 0.2);
     box-shadow:
-        inset 2px 0px 0px 0px rgb(68, 68, 68),
-        -1px 0px 0px 0px rgb(68, 68, 68);
+        inset 2px 0px 0px 0px hsl(0, 0%, 27%),
+        -1px 0px 0px 0px hsl(0, 0%, 27%);
 }
 
 .message-header-contents {

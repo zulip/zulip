@@ -1374,7 +1374,7 @@ nav ul li.active::after {
     font-weight: 400;
     color: hsl(0, 0%, 100%);
     background-color: hsl(185, 38%, 55%);
-    background: linear-gradient(145deg, rgb(76, 181, 205), rgb(37, 177, 151));
+    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
     border: 0;
     position: absolute;
@@ -1388,7 +1388,7 @@ nav ul li.active::after {
 }
 
 .tour .carousel-inner .start-button:hover {
-    background-color: rgb(37, 177, 151);
+    background-color: hsl(169, 65%, 42%);
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
 }
 
@@ -1548,13 +1548,13 @@ nav ul li.active::after {
     color: hsl(0, 0%, 100%);
 
     background-color: hsl(185, 38%, 55%);
-    background: linear-gradient(145deg, rgb(76, 181, 205), rgb(37, 177, 151));
+    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
     border: 0;
 }
 
 .tour .carousel-inner button.call-to-action:hover {
-    background-color: rgb(37, 177, 151);
+    background-color: hsl(169, 65%, 42%);
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
 }
 

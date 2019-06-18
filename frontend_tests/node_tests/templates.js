@@ -621,7 +621,7 @@ run_test('draft_table_body', () => {
                 draft_id: '1',
                 is_stream: true,
                 stream: 'all',
-                stream_color: '#FF0000',  // rgb(255, 0, 0)
+                stream_color: '#FF0000',  // hsl(0, 100%, 50%)
                 topic: 'tests',
                 content: 'Public draft',
             },
