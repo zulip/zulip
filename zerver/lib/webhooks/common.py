@@ -54,6 +54,21 @@ class MissingHTTPEventHeader(JsonableError):
     def msg_format() -> str:
         return _("Missing the HTTP event header '{header}'")
 
+class ThirdPartyAPICallbackError(JsonableError):
+    code = ErrorCode.THIRD_PARTY_API_RESPONSE_ERROR
+    data_fields = ['bot', 'http_status_code', 'endpoint']
+
+    def __init__(self, bot: UserProfile, endpoint: str,
+                 http_status_code: int) -> None:
+        self.bot = bot.full_name
+        self.endpoint = endpoint
+        self.http_status_code = http_status_code
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("API Callback to {endpoint} via. the \"{bot}\" bot failed \
+with status {http_status_code}.")
+
 @has_request_variables
 def check_send_webhook_message(
         request: HttpRequest, user_profile: UserProfile,
@@ -245,6 +260,10 @@ class ThirdPartyAPIAmbassador:
 
         if self.request_postprocessor:
             self.request_postprocessor(self)
+
+        status = response.status_code
+        if not status == 200:
+            raise ThirdPartyAPICallbackError(self.bot, api_endpoint, status)
 
         return response
 

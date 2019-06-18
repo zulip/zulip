@@ -15,7 +15,8 @@ from zerver.lib.webhooks.common import \
     validate_extract_webhook_http_header, \
     MISSING_EVENT_HEADER_MESSAGE, MissingHTTPEventHeader, \
     INVALID_JSON_MESSAGE, get_fixture_http_headers, standardize_headers, \
-    ThirdPartyAPIAmbassador, generate_api_token_auth_handler
+    ThirdPartyAPIAmbassador, generate_api_token_auth_handler, \
+    ThirdPartyAPICallbackError
 from zerver.models import get_user, get_realm, UserProfile
 from zerver.lib.users import get_api_key
 from zerver.lib.send_email import FromAddress
@@ -133,6 +134,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
         djangoified_headers = standardize_headers(raw_headers)
         expected_djangoified_headers = {"CONTENT_TYPE": "text/plain", "HTTP_X_EVENT_TYPE": "ping"}
         self.assertEqual(djangoified_headers, expected_djangoified_headers)
+
 
 class MissingEventHeaderTestCase(WebhookTestCase):
     STREAM_NAME = 'groove'
@@ -253,6 +255,21 @@ class ThirdPartyAPIAmbassadorTestCase(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertEqual(json.loads(result.content.decode("utf-8")), {"msg": "success"})
 
+    @httpretty.activate
+    def test_raise_third_party_api_callback_error(self) -> None:
+        def request_callback(request: HttpRequest, uri: str, response_headers: Dict[str, str]) -> List[object]:
+            return [500, response_headers, "Server-side error"]
+
+        httpretty.register_uri(httpretty.GET, "https://example.com/api", body=request_callback)
+        ambassador = ThirdPartyAPIAmbassador(bot=get_user('webhook-bot@zulip.com', get_realm('zulip')))
+
+        try:
+            ambassador.http_api_callback("https://example.com/api", method="get")
+            raise AssertionError("ThirdPartyAPICallbackError not raised.")
+        except ThirdPartyAPICallbackError as e:
+            self.assertEqual(str(e), "API Callback to https://example.com/api via. the \"Zulip Webhook Bot\" bot failed with status 500.")
+        except Exception:  # nocoverage
+            raise AssertionError("ThirdPartyAPICallbackError not raised.")
 
 class ApiTokenAuthHandlerTestCase(ZulipTestCase):
     def test_api_token_auth_handler_with_invalid_mode_but_well_configured(self) -> None:
