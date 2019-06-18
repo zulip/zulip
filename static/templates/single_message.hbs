@@ -1,11 +1,9 @@
 <div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
   class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row"
   role="listitem">
-    <div class="unread_marker{{#if want_unread_divider}} with_divider{{/if}}"><div class="unread-marker-fill"></div></div>
-    {{#if want_unread_divider}}
-    <div class="unread_divider date_row no-select" {{#if msg/is_stream}}style="box-shadow: inset 2px 0px 0px 0px {{background_color}}, -1px 0px 0px 0px {{background_color}};"{{/if}}>{{{unread_divider_html}}}</div>
-    {{else if want_date_divider}}
-    <div class="date_row no-select" {{#if msg/is_stream}}style="box-shadow: inset 2px 0px 0px 0px {{background_color}}, -1px 0px 0px 0px {{background_color}};"{{/if}}>{{{date_divider_html}}}</div>
+    <div class="unread_marker{{#if divider_properties.unread_marker}} with_divider{{/if}}"><div class="unread-marker-fill"></div></div>
+    {{#if want_divider}}
+    {{> "message_divider"}}
     {{/if}}
     <div class="messagebox {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
       {{#if msg/is_stream}}style="box-shadow: inset 2px 0px 0px 0px {{background_color}}, -1px 0px 0px 0px {{background_color}};"{{/if}}>

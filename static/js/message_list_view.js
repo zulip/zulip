@@ -110,61 +110,38 @@ function clear_group_date_divider(group) {
     group.group_date_divider_html = undefined;
 }
 
-function clear_message_date_divider(msg) {
-    // see update_message_date_divider for how
-    // these get set
-    msg.want_date_divider = false;
-    msg.date_divider_html = undefined;
+function clear_message_divider(msg) {
+    msg.want_divider = false;
+    msg.divider_properties = {
+        unread_marker: false,
+        time_above: undefined,
+        time_below: undefined,
+    };
 }
 
-function update_message_date_divider(opts) {
-    const prev_msg_container = opts.prev_msg_container;
-    const curr_msg_container = opts.curr_msg_container;
-
-    if (!prev_msg_container || same_day(curr_msg_container, prev_msg_container)) {
-        clear_message_date_divider(curr_msg_container);
-        return;
-    }
-
-    const prev_time = new XDate(prev_msg_container.msg.timestamp * 1000);
-    const curr_time = new XDate(curr_msg_container.msg.timestamp * 1000);
-    const today = new XDate();
-
-    curr_msg_container.want_date_divider = true;
-    curr_msg_container.date_divider_html =
-        timerender.render_date(curr_time, prev_time, today)[0].outerHTML;
-}
-
-function clear_unread_messages_divider(msg) {
-    msg.want_unread_divider = false;
-    msg.unread_divider_html = undefined;
-}
-
-function add_unread_messages_divider(msg) {
-    msg.want_unread_divider = true;
-    msg.include_sender = true;
-
-    const NEW_MESSAGES_TEXT = 'NEW MESSAGES';
-    const unread_divider_html = $('<span></span>');
-
-    if (msg.want_date_divider) {
-        const date_divider_html = $(msg.date_divider_html);
-        const timerender_class = date_divider_html.attr('class');
-        unread_divider_html.attr('class', timerender_class);
-        unread_divider_html.append(date_divider_html.html());
-        unread_divider_html.find('.date-line').after(
-            NEW_MESSAGES_TEXT, '<hr class="date-line">');
-    } else {
-        unread_divider_html.text(NEW_MESSAGES_TEXT);
-    }
-
-    msg.unread_divider_html = unread_divider_html[0].outerHTML;
-}
-
-function update_unread_messages_divider(opts) {
+function update_message_divider(opts) {
     const prev_msg_container = opts.prev_msg_container;
     const curr_msg_container = opts.curr_msg_container;
     const filter = opts.list.data.filter;
+
+    clear_message_divider(curr_msg_container); // Reset to defaults
+    let want_divider = curr_msg_container.want_divider; // false
+    const divider_properties = curr_msg_container.divider_properties; // default
+
+    if (!prev_msg_container) {
+        return;
+    }
+
+    if (!same_day(curr_msg_container, prev_msg_container)) {
+        want_divider = true;
+
+        const prev_time = new XDate(prev_msg_container.msg.timestamp * 1000);
+        const curr_time = new XDate(curr_msg_container.msg.timestamp * 1000);
+        const today = new XDate();
+
+        divider_properties.time_above = timerender.render_now(prev_time, today).time_str;
+        divider_properties.time_below = timerender.render_now(curr_time, today).time_str;
+    }
 
     // Our unread message dividers, as currently conceived, don't really make sense in
     // interleaved narrows, since we could have read messages after unread messages in
@@ -172,34 +149,15 @@ function update_unread_messages_divider(opts) {
     // As a result, we currently don't offer these "New messages" notices in those views.
     const is_topic = filter.has_operator('stream') && filter.has_operator('topic');
     const is_pm = filter.has_operator('pm-with') || filter.has_operator('group-pm-with');
-
-    if (!(is_topic || is_pm)) {
-        clear_unread_messages_divider(curr_msg_container);
-        return;
+    const should_have_unread_divider = !prev_msg_container.msg.unread &&
+                                     curr_msg_container.msg.unread;
+    if ((is_topic || is_pm) && should_have_unread_divider) {
+        want_divider = true;
+        divider_properties.unread_marker = true;
     }
 
-    if (!prev_msg_container) {
-        clear_unread_messages_divider(curr_msg_container);
-        return;
-    }
-
-    if (!prev_msg_container.msg.unread && curr_msg_container.msg.unread) {
-        add_unread_messages_divider(curr_msg_container);
-        return;
-    }
-
-    clear_unread_messages_divider(curr_msg_container);
-}
-
-function clear_message_divider(msg) {
-    clear_message_date_divider(msg);
-    clear_unread_messages_divider(msg);
-}
-
-function update_message_divider(opts) {
-    update_message_date_divider(opts);
-    // Unread messages divider should be updated once the date divider has been updated
-    update_unread_messages_divider(opts);
+    curr_msg_container.want_divider = want_divider;
+    curr_msg_container.divider_properties = divider_properties;
 }
 
 function set_timestr(message_container) {
@@ -407,9 +365,8 @@ MessageListView.prototype = {
             message_container.include_sender = true;
             if (!message_container.include_recipient &&
                 !prev.status_message &&
-                same_day(prev, message_container) &&
                 same_sender(prev, message_container) &&
-                !message_container.want_unread_divider) {
+                !message_container.want_divider) {
                 message_container.include_sender = false;
             }
 
