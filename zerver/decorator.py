@@ -507,7 +507,7 @@ def require_non_guest_user(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def require_non_guest_human_user(view_func: ViewFuncT) -> ViewFuncT:
+def require_member_or_admin(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, user_profile: UserProfile, *args: Any,
                            **kwargs: Any) -> HttpResponse:

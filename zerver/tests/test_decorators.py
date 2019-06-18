@@ -1569,7 +1569,7 @@ class TestRequireDecorators(ZulipTestCase):
         result = self.common_subscribe_to_streams(guest_user.email, ["Denmark"])
         self.assert_json_error(result, "Not allowed for guest users")
 
-    def test_require_non_guest_human_user_decorator(self) -> None:
+    def test_require_member_or_admin_decorator(self) -> None:
         result = self.api_get("outgoing-webhook@zulip.com", '/api/v1/bots')
         self.assert_json_error(result, "This endpoint does not accept bot requests.")
 

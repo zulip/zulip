@@ -75,7 +75,7 @@ def stats(request: HttpRequest) -> HttpResponse:
     realm = request.user.realm
     if request.user.is_guest:
         # TODO: Make @zulip_login_required pass the UserProfile so we
-        # can use @require_non_guest_human_user
+        # can use @require_member_or_admin
         raise JsonableError(_("Not allowed for guest users"))
     return render_stats(request, '', realm.name or realm.string_id)
 
