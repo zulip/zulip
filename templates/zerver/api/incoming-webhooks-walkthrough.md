@@ -269,7 +269,7 @@ Feel free to use 4-spaces as tabs for indentation if you'd like!
 
 Your sample notification may look like:
 
-<img class="screenshot" src="/static/images/api/helloworld-webhook.png" />
+<img class="screenshot" src="/static/images/api/helloworld-webhook.png" alt="screenshot" />
 
 
 

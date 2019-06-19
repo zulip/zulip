@@ -62,8 +62,10 @@ curl -X POST {{ api_url }}/v1/messages/flags \
 <div>
     <table>
         <thead>
-            <th style="width:30%">Flag</th>
-            <th style="width:70%">Purpose</th>
+            <tr>
+                <th style="width:30%">Flag</th>
+                <th style="width:70%">Purpose</th>
+            </tr>
         </thead>
         <tbody>
             <tr>
@@ -87,7 +89,7 @@ curl -X POST {{ api_url }}/v1/messages/flags \
                 <td>`mentioned`</td>
                 <td>
                      Whether the current user [was
-                     mentioned](/help/mention-a-user-or-group)</a> by
+                     mentioned](/help/mention-a-user-or-group) by
                      this message, either directly or via a user
                      group.  Not editable.
                 </td>
