@@ -461,7 +461,7 @@ nav ul li.active::after {
 .portico-landing.features-app section.hero .image {
     height: 400px;
     width: 40%;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: hsla(0, 0%, 0%, 0.05);
 }
 
 .portico-landing.features-app section.keyboard-shortcuts {
@@ -553,7 +553,7 @@ nav ul li.active::after {
     background-color: hsl(0, 0%, 100%);
     border-radius: 10px;
 
-    box-shadow: 10px 20px 80px rgba(0, 0, 0, 0.15);
+    box-shadow: 10px 20px 80px hsla(0, 0%, 0%, 0.15);
 }
 
 .portico-landing.features-app section.notifications .envelope {
@@ -621,7 +621,7 @@ nav ul li.active::after {
     width: 400px;
     height: 280px;
 
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.2));
+    background: linear-gradient(135deg, hsla(0, 0%, 0%, 0.05), hsla(0, 0%, 0%, 0.2));
     border-radius: 4px;
 
     background-image: url(/static/images/landing-page/notifications.jpg);
@@ -702,7 +702,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.hello .gradients .gradient.dark-blue {
-    background: linear-gradient(10deg, rgba(15, 46, 57, 0) 50%, rgba(15, 46, 57, 0.7));
+    background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
 }
 
 .portico-landing.hello .gradients .gradient.green {
@@ -818,7 +818,7 @@ nav ul li.active::after {
     font-size: 3em;
     font-weight: 400;
 
-    text-shadow: 0px 0px 20px rgba(255, 255, 255, 0.2);
+    text-shadow: 0px 0px 20px hsla(0, 0%, 100%, 0.2);
 }
 
 .portico-landing.hello .hero header p {
@@ -827,7 +827,7 @@ nav ul li.active::after {
     font-size: 1.5em;
     font-weight: 300;
     line-height: 1.4;
-    text-shadow: 0px 0px 5px rgba(10, 66, 51, 0.3), 0px 0px 20px rgba(255, 255, 255, 0.2);
+    text-shadow: 0px 0px 5px hsla(164, 74%, 15%, 0.3), 0px 0px 20px hsla(0, 0%, 100%, 0.2);
 }
 
 .portico-landing.hello .hero header a {
@@ -847,17 +847,17 @@ nav ul li.active::after {
     font-weight: 500;
     color: hsl(148, 23%, 51%);
 
-    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
 
     transition: all 0.2s ease;
 }
 
 .portico-landing.hello .hero header button:hover {
-    box-shadow: 0px 3px 10px rgba(255, 255, 255, 0.2);
+    box-shadow: 0px 3px 10px hsla(0, 0%, 100%, 0.2);
 }
 
 .portico-landing.hello .hero header button:active {
-    box-shadow: 0px 3px 20px rgba(255, 255, 255, 0.5);
+    box-shadow: 0px 3px 20px hsla(0, 0%, 100%, 0.5);
 }
 
 .portico-landing.hello .hero header .download-button {
@@ -1361,10 +1361,10 @@ nav ul li.active::after {
     height: 520px;
     margin: 20px auto;
     padding: 30px 20px;
-    background-color: rgba(246, 247, 249, 0.6);
-    background: linear-gradient(rgba(246, 247, 249, 0.4), rgba(246, 247, 249, 0.9));
+    background-color: hsla(220, 20%, 97%, 0.6);
+    background: linear-gradient(hsla(220, 20%, 97%, 0.4), hsla(220, 20%, 97%, 0.9));
     border-radius: 12px;
-    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.02);
+    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.02);
     position: relative;
 }
 
@@ -1375,7 +1375,7 @@ nav ul li.active::after {
     color: hsl(0, 0%, 100%);
     background-color: hsl(185, 38%, 55%);
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
-    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
     border: 0;
     position: absolute;
     left: 50%;
@@ -1389,7 +1389,7 @@ nav ul li.active::after {
 
 .tour .carousel-inner .start-button:hover {
     background-color: hsl(169, 65%, 42%);
-    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
 }
 
 .tour .carousel-inner .start-image {
@@ -1549,13 +1549,13 @@ nav ul li.active::after {
 
     background-color: hsl(185, 38%, 55%);
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
-    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
     border: 0;
 }
 
 .tour .carousel-inner button.call-to-action:hover {
     background-color: hsl(169, 65%, 42%);
-    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
 }
 
 .tour .carousel-control {
@@ -1716,7 +1716,7 @@ nav ul li.active::after {
     width: 60%;
     margin: 0 auto;
     border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid hsla(0, 0%, 100%, 0.2);
 }
 
 .portico-landing .testimonials .company-container {
@@ -2103,7 +2103,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.apps .hero .info .cta {
-    text-shadow: 0px 0px 60px rgba(0, 0, 0, 0.3);
+    text-shadow: 0px 0px 60px hsla(0, 0%, 0%, 0.3);
     max-width: 600px;
 }
 
@@ -2346,7 +2346,7 @@ nav ul li.active::after {
     top: 0;
     left: 0;
 
-    background-color: rgba(15, 24, 48, 0.7);
+    background-color: hsla(224, 52%, 12%, 0.7);
 
     z-index: 0;
 }
@@ -2501,7 +2501,7 @@ nav ul li.active::after {
 }
 
 .gradients .gradient.dark-blue {
-    background: linear-gradient(10deg, rgba(15, 46, 57, 0) 50%, rgba(15, 46, 57, 0.7));
+    background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
 }
 
 .gradients .gradient.green {
@@ -2571,7 +2571,7 @@ nav ul li.active::after {
     width: 300px;
     height: 500px;
 
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 
 
     text-align: left;
@@ -2741,7 +2741,7 @@ nav ul li.active::after {
 .pricing-overlay.pricing-model.active {
     opacity: 1;
     pointer-events: all;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: hsla(0, 0%, 0%, 0.6);
 }
 
 .pricing-overlay.pricing-model .price-box {
@@ -2842,15 +2842,15 @@ nav ul li.active::after {
 
 @keyframes box-shadow-pulse {
     0% {
-        box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
+        box-shadow: 0px 0px 0px hsla(170, 47%, 60%, 1);
     }
 
     50% {
-        box-shadow: 0px 0px 25px rgba(106, 201, 185, 0.8);
+        box-shadow: 0px 0px 25px hsla(170, 47%, 60%, 0.8);
     }
 
     100% {
-        box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
+        box-shadow: 0px 0px 0px hsla(170, 47%, 60%, 1);
     }
 }
 
@@ -3491,7 +3491,7 @@ nav ul li.active::after {
     }
 
     nav .content > ul.show {
-        outline-color: rgba(32, 62, 80, 0.7);
+        outline-color: hsla(203, 43%, 22%, 0.7);
     }
 
     nav ul .exit {
