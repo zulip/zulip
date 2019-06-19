@@ -52,7 +52,7 @@ body {
     height: 29px;
 
     background-color: hsl(0, 0%, 100%);
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
 
     z-index: 100;
 }
@@ -183,7 +183,7 @@ body {
 .app.help {
     display: inline-flex;
 
-    box-shadow: 0px -20px 50px rgba(0, 0, 0, 0.04);
+    box-shadow: 0px -20px 50px hsla(0, 0%, 0%, 0.04);
     overflow: auto;
 
     color: hsl(0, 0%, 27%);
@@ -776,7 +776,7 @@ input.text-error {
 
     border-radius: 4px;
     border: 1px solid hsl(0, 0%, 87%);
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 2px 5px hsla(0, 0%, 0%, 0.1);
 }
 
 .portico-header .dropdown.show ul {
@@ -835,7 +835,7 @@ input.text-error {
 }
 
 .portico-header .dropdown-pill {
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    border: 1px solid hsla(0, 0%, 0%, 0.2);
     border-radius: 4px;
     margin-left: 10px;
     font-weight: 400;
@@ -928,7 +928,7 @@ a.bottom-signup-button {
 
 .table.table-striped {
     background-color: hsl(0, 0%, 100%);
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
 }
 
 .team-profiles {

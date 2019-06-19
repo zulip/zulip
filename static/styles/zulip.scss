@@ -1579,7 +1579,7 @@ a:hover code {
         height: 80px;
         padding: 5px;
         z-index: 1;
-        text-shadow: rgba(0, 0, 0, .01) 0 0 1px;
+        text-shadow: hsla(0, 0%, 0%, 0.01) 0 0 1px;
 
         .message_embed_title {
             padding-top: 0px;
