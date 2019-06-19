@@ -554,3 +554,10 @@ li.show-more-topics a {
 .show-all-streams .fa-chevron-left {
     text-decoration: none;
 }
+
+li.top_left_all_messages a,
+li.top_left_private_messages a,
+li.top_left_mentions a,
+li.top_left_starred_messages a {
+    display: block;
+}
