@@ -579,6 +579,10 @@ css_rules = RuleList(
          'description': "thick CSS attribute is under-specified, please use pixels.",
          'good_lines': ["border-width: 5px;"],
          'bad_lines': ["border-width: thick;", "border: thick solid black;"]},
+        {'pattern': r'rgba?\(',
+         'description': 'Use of rgb(a) format is banned, Please use hsl(a) instead',
+         'good_lines': ['hsl(0, 0%, 0%)', 'hsla(0, 0%, 100%, 0.1)'],
+         'bad_lines': ['rgb(0, 0, 0)', 'rgba(255, 255, 255, 0.1)']},
     ]) + whitespace_rules + comma_whitespace_rule
 )
 
