@@ -1,4 +1,3 @@
-
 import argparse
 import sys
 from typing import Any
@@ -77,10 +76,10 @@ parameters, or specify no parameters for interactive user creation.""")
                 full_name = input("Full name: ")
 
         try:
-            if 'password' in options:
-                pw = options['password']
-            if 'password_file' in options:
+            if options['password_file']:
                 pw = open(options['password_file'], 'r').read()
+            elif options['password']:
+                pw = options['password']
             else:
                 user_initial_password = initial_password(email)
                 if user_initial_password is None:
