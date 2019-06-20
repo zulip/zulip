@@ -3,7 +3,7 @@ from urllib.parse import unquote
 
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
-from typing import Optional, Dict, Union, Any
+from typing import Optional, Dict, Union, Any, Callable
 
 from zerver.lib.actions import check_send_stream_message, \
     check_send_private_message, send_rate_limited_pm_notification_to_bot_owner
@@ -167,3 +167,17 @@ def get_fixture_http_headers(integration_name: str,
         )
         raise AttributeError(str(e) + msg)
     return fixture_to_headers(fixture_name)
+
+
+def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict[str, str]]:
+    """If an integration requires an event type kind of HTTP header which can
+    be easily (statically) determined, then name the fixtures in the format
+    of "header_value__other_details" or even "header_value" and the use this
+    method in the headers.py file for the integration."""
+    def fixture_to_headers(filename: str) -> Dict[str, str]:
+        if '__' in filename:
+            event_type = filename.split("__")[0]
+        else:
+            event_type = filename
+        return {http_header_key: event_type}
+    return fixture_to_headers

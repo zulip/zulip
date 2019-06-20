@@ -1,8 +1,4 @@
-from typing import Dict
+from zerver.lib.webhooks.common import get_http_headers_from_filename
 
-def fixture_to_headers(filename: str) -> Dict[str, str]:
-    if '__' in filename:
-        event_type = filename.split("__")[0]
-    else:
-        event_type = filename
-    return {"HTTP_X_GITHUB_EVENT": event_type}
+key = "HTTP_X_GITHUB_EVENT"
+fixture_to_headers = get_http_headers_from_filename(key)
