@@ -13,7 +13,7 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 
 sys.path.append(os.path.dirname(TOOLS_DIR))
-from lib.test_script import get_provisioning_status
+from lib.test_script import assert_provisioning_status_ok
 
 exclude = """
 stubs/
@@ -38,12 +38,7 @@ parser.add_argument('--force', action="store_true",
                     help="run tests despite possible provisioning problems")
 args = parser.parse_args()
 
-if not args.force:
-    ok, msg = get_provisioning_status()
-    if not ok:
-        print(msg)
-        print('If you really know what you are doing, use --force to run anyway.')
-        sys.exit(1)
+assert_provisioning_status_ok(args.force)
 
 command_name = "mypy" if (args.no_daemon or args.version) else "dmypy"
 

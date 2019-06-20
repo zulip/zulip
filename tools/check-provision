@@ -9,7 +9,7 @@ root_dir = os.path.dirname(tools_dir)
 sys.path.insert(0, root_dir)
 
 from tools.lib.test_script import (
-    get_provisioning_status,
+    assert_provisioning_status_ok,
 )
 
 def run():
@@ -20,12 +20,7 @@ def run():
                         help='Run tests despite possible problems.')
     options = parser.parse_args()
 
-    if not options.force:
-        ok, msg = get_provisioning_status()
-        if not ok:
-            print(msg)
-            print('If you really know what you are doing, use --force to run anyway.')
-            sys.exit(1)
+    assert_provisioning_status_ok(options.force)
 
 if __name__ == '__main__':
     run()
