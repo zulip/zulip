@@ -27,7 +27,7 @@ global.window = _.extend({}, windowObj, {
     },
 });
 
-global.Dict = require('js/dict').Dict;
+global.Dict = require('../../static/js/dict').Dict;
 
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {
