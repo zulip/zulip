@@ -12,7 +12,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # True because of required=True above
-        users = realm.get_admin_users()
+        users = realm.get_admin_users_and_bots()
 
         if users:
             print('Admins:\n')

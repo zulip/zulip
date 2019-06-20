@@ -203,7 +203,8 @@ def can_access_stream_user_ids(stream: Stream) -> Set[int]:
         return public_stream_user_ids(stream)
     else:
         # for a private stream, it's subscribers plus realm admins.
-        return private_stream_user_ids(stream.id) | {user.id for user in stream.realm.get_admin_users()}
+        return private_stream_user_ids(
+            stream.id) | {user.id for user in stream.realm.get_admin_users_and_bots()}
 
 def private_stream_user_ids(stream_id: int) -> Set[int]:
     # TODO: Find similar queries elsewhere and de-duplicate this code.
@@ -284,7 +285,8 @@ def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_st
 
 def notify_invites_changed(user_profile: UserProfile) -> None:
     event = dict(type="invites_changed")
-    admin_ids = [user.id for user in user_profile.realm.get_admin_users()]
+    admin_ids = [user.id for user in
+                 user_profile.realm.get_admin_users_and_bots()]
     send_event(user_profile.realm, event, admin_ids)
 
 def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
@@ -1792,7 +1794,8 @@ def create_stream_if_needed(realm: Realm,
         if stream.is_public():
             send_stream_creation_event(stream, active_non_guest_user_ids(stream.realm_id))
         else:
-            realm_admin_ids = [user.id for user in stream.realm.get_admin_users()]
+            realm_admin_ids = [user.id for user in
+                               stream.realm.get_admin_users_and_bots()]
             send_stream_creation_event(stream, realm_admin_ids)
     return stream, created
 
@@ -2714,7 +2717,7 @@ def get_peer_user_ids_for_stream_change(stream: Stream,
         # PRIVATE STREAMS
         # Realm admins can access all private stream subscribers. Send them an
         # event even if they aren't subscribed to stream.
-        realm_admin_ids = [user.id for user in stream.realm.get_admin_users()]
+        realm_admin_ids = [user.id for user in stream.realm.get_admin_users_and_bots()]
         user_ids_to_notify = []
         user_ids_to_notify.extend(realm_admin_ids)
         user_ids_to_notify.extend(subscribed_user_ids)
@@ -2885,7 +2888,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
             # they get the "subscribe" notification, and the latter so
             # they can manage the new stream.
             # Realm admins already have all created private streams.
-            realm_admin_ids = [user.id for user in realm.get_admin_users()]
+            realm_admin_ids = [user.id for user in realm.get_admin_users_and_bots()]
             new_users_ids = [user.id for user in users if (user.id, stream.id) in new_streams and
                              user.id not in realm_admin_ids]
             send_stream_creation_event(stream, new_users_ids)

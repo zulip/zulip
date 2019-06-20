@@ -724,7 +724,7 @@ class ImportExportTest(ZulipTestCase):
 
         # test users
         assert_realm_values(
-            lambda r: {user.email for user in r.get_admin_users()}
+            lambda r: {user.email for user in r.get_admin_users_and_bots()}
         )
 
         assert_realm_values(

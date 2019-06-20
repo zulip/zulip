@@ -74,13 +74,13 @@ class PermissionTest(ZulipTestCase):
         do_change_is_admin(user_profile, False)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertFalse(user_profile in admin_users)
-        admin_users = user_profile.realm.get_admin_users()
+        admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertFalse(user_profile in admin_users)
 
         do_change_is_admin(user_profile, True)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
-        admin_users = user_profile.realm.get_admin_users()
+        admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertTrue(user_profile in admin_users)
 
     def test_updating_non_existent_user(self) -> None:
