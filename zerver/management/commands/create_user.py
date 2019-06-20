@@ -85,7 +85,7 @@ parameters, or specify no parameters for interactive user creation.""")
                 user_initial_password = initial_password(email)
                 if user_initial_password is None:
                     raise CommandError("Password is unusable.")
-                pw = user_initial_password.encode()
+                pw = user_initial_password
             do_create_user(email, pw, realm, full_name, email_to_username(email))
         except IntegrityError:
             raise CommandError("User already exists.")
