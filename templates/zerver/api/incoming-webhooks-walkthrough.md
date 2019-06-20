@@ -57,9 +57,11 @@ this, which is probably best explained by looking at the example for
 GitHub: `zerver/webhooks/github/headers.py`; basically, as part of
 writing your integration, you'll write a special function at that path
 that maps the filename of the fixture to the set of HTTP headers to
-use.  Most such functions will use the same strategy as the GitHub
+use. Most such functions will use the same strategy as the GitHub
 integration: encoding the third party variable header data (usually
-just an event type) in the fixture filename.
+just an event type) in the fixture filename, in such a case, you
+won't need to explicitly write such a special function and can instead
+just use the same helper method that the GitHub integration uses.
 
 ## Step 1: Initialize your webhook python package
 
