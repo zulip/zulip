@@ -107,11 +107,6 @@ export default (env?: string): webpack.Configuration => {
             filename: production ? '[name].[chunkhash].js' : '[name].js',
         },
         resolve: {
-            modules: [
-                resolve(__dirname, "../static"),
-                "node_modules",
-                resolve(__dirname, "../"),
-            ],
             extensions: [".ts", ".js"],
         },
         // We prefer cheap-module-source-map over any eval-** options

@@ -21,7 +21,10 @@ exports.patch_builtin = function (name, val) {
 
 exports.zrequire = function (name, fn) {
     if (fn === undefined) {
-        fn = 'js/' + name;
+        fn = '../../static/js/' + name;
+    } else if (/generated\/|js\/|third\//.test(fn)) {
+        // FIXME: Stealing part of the NPM namespace is confusing.
+        fn = '../../static/' + fn;
     }
     delete require.cache[require.resolve(fn)];
     var obj = require(fn);

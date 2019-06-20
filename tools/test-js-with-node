@@ -107,7 +107,6 @@ from tools.lib.test_script import assert_provisioning_status_ok
 
 assert_provisioning_status_ok(options.force)
 
-os.environ['NODE_PATH'] = 'static'
 os.environ['TZ'] = 'UTC'
 
 INDEX_JS = 'frontend_tests/zjsunit/index.js'
