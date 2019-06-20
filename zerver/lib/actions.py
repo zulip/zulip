@@ -225,7 +225,7 @@ def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
     if is_private_bot:
         return {user_profile.bot_owner_id, }
     else:
-        users = {user.id for user in user_profile.realm.get_admin_users()}
+        users = {user.id for user in user_profile.realm.get_human_admin_users()}
         users.add(user_profile.bot_owner_id)
         return users
 

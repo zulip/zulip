@@ -54,8 +54,8 @@ def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile)
     return json_success()
 
 def check_last_admin(user_profile: UserProfile) -> bool:
-    admins = set(user_profile.realm.get_admin_users())
-    return user_profile.is_realm_admin and len(admins) == 1
+    admins = set(user_profile.realm.get_human_admin_users())
+    return user_profile.is_realm_admin and not user_profile.is_bot and len(admins) == 1
 
 def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
                            bot_id: int) -> HttpResponse:

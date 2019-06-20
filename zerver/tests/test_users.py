@@ -72,9 +72,14 @@ class PermissionTest(ZulipTestCase):
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, False)
+        admin_users = user_profile.realm.get_human_admin_users()
+        self.assertFalse(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users()
         self.assertFalse(user_profile in admin_users)
+
         do_change_is_admin(user_profile, True)
+        admin_users = user_profile.realm.get_human_admin_users()
+        self.assertTrue(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users()
         self.assertTrue(user_profile in admin_users)
 
@@ -110,7 +115,7 @@ class PermissionTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(self.example_user("othello").id), req)
         self.assert_json_success(result)
-        admin_users = realm.get_admin_users()
+        admin_users = realm.get_human_admin_users()
         self.assertTrue(user in admin_users)
         person = events[0]['event']['person']
         self.assertEqual(person['email'], self.example_email("othello"))
@@ -122,7 +127,7 @@ class PermissionTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(self.example_user("othello").id), req)
         self.assert_json_success(result)
-        admin_users = realm.get_admin_users()
+        admin_users = realm.get_human_admin_users()
         self.assertFalse(user in admin_users)
         person = events[0]['event']['person']
         self.assertEqual(person['email'], self.example_email("othello"))
@@ -135,7 +140,7 @@ class PermissionTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assert_json_success(result)
-        admin_users = realm.get_admin_users()
+        admin_users = realm.get_human_admin_users()
         self.assertFalse(admin in admin_users)
         person = events[0]['event']['person']
         self.assertEqual(person['email'], self.example_email("hamlet"))

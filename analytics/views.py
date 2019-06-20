@@ -1077,8 +1077,10 @@ def support(request: HttpRequest) -> HttpResponse:
         if users:
             for user in users:
                 user.realm.realm_icon_url = realm_icon_url(user.realm)
-                user.realm.admin_emails = ", ".join(user.realm.get_admin_users().values_list("email",
-                                                                                             flat=True))
+                user.realm.admin_emails = ", ".join(
+                    user.realm.get_human_admin_users().values_list(
+                        "email",
+                        flat=True))
                 user.realm.default_discount = get_discount_for_realm(user.realm)
             context["users"] = users
 
@@ -1102,7 +1104,7 @@ def support(request: HttpRequest) -> HttpResponse:
         if realms:
             for realm in realms:
                 realm.realm_icon_url = realm_icon_url(realm)
-                realm.admin_emails = ", ".join(realm.get_admin_users().values_list("email", flat=True))
+                realm.admin_emails = ", ".join(realm.get_human_admin_users().values_list("email", flat=True))
                 realm.default_discount = get_discount_for_realm(realm)
             context["realms"] = realms
     return render(request, 'analytics/support.html', context=context)
@@ -1383,7 +1385,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     all_user_records = {}  # type: Dict[str, Any]
 
     try:
-        admins = Realm.objects.get(string_id=realm_str).get_admin_users()
+        admins = Realm.objects.get(string_id=realm_str).get_human_admin_users()
     except Realm.DoesNotExist:
         return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
 
