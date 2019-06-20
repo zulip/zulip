@@ -1,3 +1,6 @@
+$alert-red: hsl(16, 60%, 45%);
+$alert-error-red: hsl(0, 80%, 40%);
+
 .alert-display {
     display: none;
 
@@ -62,9 +65,9 @@
 
         text-shadow: none;
 
-        color: hsl(16, 60%, 45%);
-        border: 1px solid hsl(16, 60%, 45%);
-        box-shadow: 0 0 2px hsl(16, 60%, 45%);
+        color: $alert-red;
+        border: 1px solid $alert-red;
+        box-shadow: 0 0 2px $alert-red;
 
         &::before {
             position: absolute;
@@ -79,12 +82,12 @@
         }
 
         &.alert-error {
-            color: hsl(0, 80%, 40%);
-            border: 1px solid hsl(0, 80%, 40%);
-            box-shadow: 0 0 2px hsl(0, 80%, 40%);
+            color: $alert-error-red;
+            border: 1px solid $alert-error-red;
+            box-shadow: 0 0 2px $alert-error-red;
 
             &::before {
-                color: hsl(0, 80%, 40%);
+                color: $alert-error-red;
             }
         }
 
