@@ -136,7 +136,11 @@ function populate_users(realm_people_data) {
     list_render.create($bots_table, bots, {
         name: "admin_bot_list",
         modifier: function (item) {
-            return render_admin_user_list({ user: item, can_modify: page_params.is_admin });
+            return render_admin_user_list({
+                can_modify: page_params.is_admin,
+                show_email: settings_org.show_email(),
+                user: item,
+            });
         },
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
@@ -173,9 +177,10 @@ function populate_users(realm_people_data) {
             }
 
             var $row = $(render_admin_user_list({
-                user: item,
                 can_modify: page_params.is_admin,
                 is_current_user: people.is_my_user_id(item.user_id),
+                show_email: settings_org.show_email(),
+                user: item,
             }));
             $row.find(".last_active").append(activity_rendered);
 

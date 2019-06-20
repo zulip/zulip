@@ -8,7 +8,9 @@
     <table class="table table-condensed table-striped wrapped-table">
         <thead>
             <th class="wrapped-cell">{{t "Name" }}</th>
+            {{#if show_email}}
             <th>{{t "Email" }}</th>
+            {{/if}}
             <th class="user_role">{{t "Role" }}</th>
             <th class="last_active">{{t "Last active" }}</th>
             {{#if is_admin}}

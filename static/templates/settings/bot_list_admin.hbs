@@ -7,7 +7,9 @@
     <table class="table table-condensed table-striped wrapped-table">
         <thead>
             <th class="wrapped-cell">{{t "Name" }}</th>
+            {{#if show_email}}
             <th>{{t "Email" }}</th>
+            {{/if}}
             <th>{{t "Owner" }}</th>
             <th>{{t "Bot type" }}</th>
             {{#if is_admin}}
