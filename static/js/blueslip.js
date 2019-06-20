@@ -4,6 +4,8 @@
 // in order to be able to report exceptions that occur during their
 // execution.
 
+var blueslip_stacktrace = require("./blueslip_stacktrace");
+
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
@@ -78,20 +80,6 @@ exports.get_log = function blueslip_get_log() {
     return logger.get_log();
 };
 
-// Format error stacks using the ErrorStackParser
-// external library
-function getErrorStack(stack) {
-    var ex = new Error();
-    ex.stack = stack;
-    return ErrorStackParser
-        .parse(ex)
-        .map(function (stackFrame) {
-            return stackFrame.lineNumber
-            + ': ' + stackFrame.fileName
-            + ' | ' + stackFrame.functionName;
-        }).join('\n');
-}
-
 var reported_errors = {};
 var last_report_attempt = {};
 
@@ -105,8 +93,7 @@ function report_error(msg, stack, opts) {
     if (page_params.debug_mode) {
         // In development, we display blueslip errors in the web UI,
         // to make them hard to miss.
-        stack = getErrorStack(stack);
-        exports.display_errors_on_screen(msg, stack);
+        blueslip_stacktrace.display_stacktrace(msg, stack);
     }
 
     var key = ':' + msg + stack;
@@ -251,15 +238,6 @@ exports.warn = function blueslip_warn (msg, more_info) {
     if (page_params.debug_mode) {
         console.trace();
     }
-};
-
-exports.display_errors_on_screen = function (error, stack) {
-    var $exit = "<div class='exit'></div>";
-    var $error = "<div class='error'>" + error + "</div>";
-    var $pre = "<pre>" + stack + "</pre>";
-    var $alert = $("<div class='alert browser-alert home-error-bar'></div>").html($error + $exit + $pre);
-
-    $(".app .alert-box").append($alert.addClass("show"));
 };
 
 exports.error = function blueslip_error (msg, more_info, stack) {

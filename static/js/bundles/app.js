@@ -18,7 +18,6 @@ import "handlebars/dist/cjs/handlebars.runtime.js";
 import "to-markdown/dist/to-markdown.js";
 import "flatpickr/dist/flatpickr.js";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.js";
-import "error-stack-parser/dist/error-stack-parser.min.js";
 import "sortablejs/Sortable.js";
 import "../../generated/emoji/emoji_codes.js";
 import "../../generated/pygments_data.js";

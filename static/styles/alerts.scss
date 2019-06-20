@@ -48,6 +48,104 @@ $alert-error-red: hsl(0, 80%, 40%);
     width: 900px;
     margin-left: calc(50% - 450px);
     z-index: 220;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    .stacktrace {
+        @extend .alert-display;
+    }
+    .stacktrace {
+        @extend .alert-animations;
+
+        font-size: 1rem;
+        color: hsl(0, 80%, 40%);
+
+        margin-top: 5px;
+        padding: 1rem 0;
+
+        background-color: hsl(0, 100%, 98%);
+        border-radius: 4px;
+        border: 1px solid hsl(0, 80%, 40%);
+        box-shadow: 0 0 2px hsl(0, 80%, 40%);
+
+        .stacktrace-header {
+            display: flex;
+            justify-content: space-between;
+
+            .message {
+                flex: 1 1 auto;
+            }
+
+            .warning-symbol,
+            .exit {
+                flex: 0 0 auto;
+                font-size: 1.3rem;
+                padding: 0 1rem;
+            }
+
+            .exit::after {
+                cursor: pointer;
+                font-size: 2.3rem;
+                content: "\d7";
+            }
+        }
+
+        .stacktrace-content {
+            font-family: monospace;
+            font-size: 0.85rem;
+
+            margin-top: 1rem;
+
+            .stackframe {
+                padding-left: calc(3.3rem - 14px);
+                padding-right: 1rem;
+            }
+        }
+
+        .expand {
+            cursor: pointer;
+            color: hsl(0, 32%, 83%);
+
+            &:hover {
+                color: hsl(0, 0%, 20%);
+            }
+        }
+
+        .subtle {
+            color: hsl(0, 7%, 45%);
+        }
+
+        .code-context {
+            color: hsl(0, 7%, 15%);
+            background-color: hsl(0, 7%, 98%);
+            background-color: hsl(0, 7%, 98%);
+            box-shadow:
+                inset 0px 11px 10px -10px hsl(0, 7%, 70%),
+                inset 0px -11px 10px -10px hsl(0, 7%, 70%);
+
+            margin-top: 1em;
+            margin-bottom: 1em;
+
+            .code-context-content {
+                padding: 1rem 0;
+                white-space: pre;
+                overflow-x: auto;
+            }
+
+            .line-number {
+                width: 3rem;
+                display: inline-block;
+                text-align: right;
+                color: hsl(0, 7%, 35%);
+            }
+
+            .focus-line {
+                background-color: hsl(0, 7%, 90%);
+                width: 100%;
+            }
+        }
+    }
 
     .alert {
         @extend .alert-animations;
@@ -106,11 +204,6 @@ $alert-error-red: hsl(0, 80%, 40%);
                 content: "\d7";
             }
         }
-    }
-
-    .browser-alert .error::before {
-        content: "Browser Error: ";
-        font-weight: 600;
     }
 }
 
