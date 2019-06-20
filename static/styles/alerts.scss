@@ -1,10 +1,32 @@
-/* general alert styling changes */
-.alert {
+.alert-display {
     display: none;
 
     &.show {
         display: block;
     }
+}
+
+.alert-animations {
+    &.show {
+        animation-name: fadeIn;
+        animation-duration: 0.3s;
+        animation-fill-mode: forwards;
+    }
+
+    &.fade-out {
+        animation-name: fadeOut;
+        animation-duration: 0.3s;
+        animation-fill-mode: forwards;
+    }
+
+    .faded {
+        opacity: 0.7;
+    }
+}
+
+/* general alert styling changes */
+.alert {
+    @extend .alert-display;
 
     &#organization-status {
         margin: 20px;
@@ -25,6 +47,8 @@
     z-index: 220;
 
     .alert {
+        @extend .alert-animations;
+
         font-size: 1rem;
         border-radius: 4px;
         background-color: hsl(0, 0%, 100%);
@@ -41,22 +65,6 @@
         color: hsl(16, 60%, 45%);
         border: 1px solid hsl(16, 60%, 45%);
         box-shadow: 0 0 2px hsl(16, 60%, 45%);
-
-        &.show {
-            animation-name: fadeIn;
-            animation-duration: 0.3s;
-            animation-fill-mode: forwards;
-        }
-
-        &.fade-out {
-            animation-name: fadeOut;
-            animation-duration: 0.3s;
-            animation-fill-mode: forwards;
-        }
-
-        .faded {
-            opacity: 0.7;
-        }
 
         &::before {
             position: absolute;
