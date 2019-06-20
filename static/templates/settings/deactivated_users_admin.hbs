@@ -12,7 +12,9 @@
         <table class="table table-condensed table-striped wrapped-table">
             <thead>
                 <th>{{t "Name" }}</th>
+                {{#if show_email}}
                 <th>{{t "Email" }}</th>
+                {{/if}}
                 <th class="user_role">{{t "Role" }}</th>
                 {{#if is_admin}}
                 <th class="actions">{{t "Actions" }}</th>
