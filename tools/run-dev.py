@@ -44,7 +44,7 @@ to this file.
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 from tools.lib.test_script import (
-    get_provisioning_status,
+    assert_provisioning_status_ok,
 )
 
 parser.add_argument('--test',
@@ -67,12 +67,7 @@ parser.add_argument('--enable-tornado-logging',
                     default=False, help='Enable access logs from tornado proxy server.')
 options = parser.parse_args()
 
-if not options.force:
-    ok, msg = get_provisioning_status()
-    if not ok:
-        print(msg)
-        print('If you really know what you are doing, use --force to run anyway.')
-        sys.exit(1)
+assert_provisioning_status_ok(options.force)
 
 if options.interface is None:
     user_id = os.getuid()

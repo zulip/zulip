@@ -49,17 +49,12 @@ sys.path.insert(0, ZULIP_PATH)
 from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
 
-from tools.lib.test_script import get_provisioning_status
+from tools.lib.test_script import assert_provisioning_status_ok
 from tools.lib.test_server import test_server_running
 
 from typing import Iterable, List
 
-if not options.force:
-    ok, msg = get_provisioning_status()
-    if not ok:
-        print(msg)
-        print('If you really know what you are doing, use --force to run anyway.')
-        sys.exit(1)
+assert_provisioning_status_ok(options.force)
 
 os.chdir(ZULIP_PATH)
 

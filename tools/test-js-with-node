@@ -105,14 +105,9 @@ parser.add_argument('--force', dest='force',
 parser.add_argument('args', nargs=argparse.REMAINDER)
 options = parser.parse_args()
 
-from tools.lib.test_script import get_provisioning_status
+from tools.lib.test_script import assert_provisioning_status_ok
 
-if not options.force:
-    ok, msg = get_provisioning_status()
-    if not ok:
-        print(msg)
-        print('If you really know what you are doing, use --force to run anyway.')
-        sys.exit(1)
+assert_provisioning_status_ok(options.force)
 
 os.environ['NODE_PATH'] = 'static'
 os.environ['TZ'] = 'UTC'

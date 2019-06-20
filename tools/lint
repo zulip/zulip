@@ -44,17 +44,12 @@ def run():
     from tools.linter_lib.pep8 import check_pep8
 
     from tools.lib.test_script import (
-        get_provisioning_status,
+        assert_provisioning_status_ok,
     )
 
     os.chdir(root_dir)
 
-    if not args.force:
-        ok, msg = get_provisioning_status()
-        if not ok:
-            print(msg)
-            print('If you really know what you are doing, use --force to run anyway.')
-            sys.exit(1)
+    assert_provisioning_status_ok(args.force)
 
     backend_file_types = ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst']
     frontend_file_types = ['js', 'ts', 'css', 'scss', 'handlebars', 'html']
