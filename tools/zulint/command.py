@@ -114,6 +114,15 @@ class LinterConfig:
 
         self.lint_functions[name] = run_linter
 
+    def set_logger(self, verbose_timing):
+        # type: (bool) -> None
+        logging.basicConfig(format="%(asctime)s %(message)s")
+        logger = logging.getLogger()
+        if verbose_timing:
+            logger.setLevel(logging.INFO)
+        else:
+            logger.setLevel(logging.WARNING)
+
     def do_lint(self, args):
         # type: (argparse.Namespace) -> None
         assert not args.only or not args.skip, "Only one of --only or --skip can be used at once."
@@ -124,6 +133,7 @@ class LinterConfig:
         if args.list:
             print("\n".join(self.lint_functions.keys()))
             sys.exit()
+        self.set_logger(args.verbose_timing)
 
         failed = run_parallel(self.lint_functions)
         sys.exit(1 if failed else 0)
