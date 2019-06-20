@@ -114,14 +114,14 @@ class LinterConfig:
 
         self.lint_functions[name] = run_linter
 
-    def do_lint(self, only=[], skip=[], only_list=False):
-        # type: (List[str], List[str], bool) -> None
-        assert not only or not skip, "Only one of --only or --skip can be used at once."
-        if only:
-            self.lint_functions = {linter: self.lint_functions[linter] for linter in only}
-        for linter in skip:
+    def do_lint(self, args):
+        # type: (argparse.Namespace) -> None
+        assert not args.only or not args.skip, "Only one of --only or --skip can be used at once."
+        if args.only:
+            self.lint_functions = {linter: self.lint_functions[linter] for linter in args.only}
+        for linter in args.skip:
             del self.lint_functions[linter]
-        if only_list:
+        if args.list:
             print("\n".join(self.lint_functions.keys()))
             sys.exit()
 
