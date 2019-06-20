@@ -158,6 +158,7 @@ class HomeTest(ZulipTestCase):
             "realm_invite_required",
             "realm_invite_to_stream_policy",
             "realm_is_zephyr_mirror_realm",
+            "realm_logo_favicon",
             "realm_logo_source",
             "realm_logo_url",
             "realm_mandatory_topics",

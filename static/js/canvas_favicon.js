@@ -1,4 +1,18 @@
-const ZULIP_LOGO = "static/favicon.ico";
+function set_favicon_image(meta, canvas, context) {
+    let ZULIP_LOGO = "static/favicon.ico";
+    if (page_params.realm_logo_favicon && page_params.realm_icon_source !== 'G') {
+        ZULIP_LOGO = page_params.realm_icon_url;
+    }
+    const img = new Image();
+    img.src = ZULIP_LOGO;
+    img.onload = function () {
+        meta.zulip_image = this;
+        if (canvas && context) {
+            meta.run_queue();
+        }
+    };
+}
+
 
 // source: http://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
 /*
@@ -171,15 +185,7 @@ function CanvasFavicon() {
         },
     };
 
-    const img = new Image();
-    img.src = ZULIP_LOGO;
-    img.onload = function () {
-        meta.zulip_image = this;
-
-        if (canvas && context) {
-            meta.run_queue();
-        }
-    };
+    set_favicon_image(meta, canvas, context);
 
     const prototype = {
         init: function (sel) {
@@ -236,6 +242,10 @@ function CanvasFavicon() {
         export_png: function () {
             // exports as a PNG in URL data form.
             return canvas.toDataURL();
+        },
+
+        change_favicon: function () {
+            set_favicon_image(meta, canvas, context);
         },
     };
 

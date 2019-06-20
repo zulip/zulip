@@ -51,6 +51,7 @@ exports.all_display_settings = {
             "night_mode",
             "high_contrast_mode",
             "left_side_userlist",
+            "realm_logo_favicon",
             "starred_message_counts",
             "fluid_layout_width",
         ],

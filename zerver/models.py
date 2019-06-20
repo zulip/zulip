@@ -944,9 +944,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     fluid_layout_width = models.BooleanField(default=False)  # type: bool
     high_contrast_mode = models.BooleanField(default=False)  # type: bool
     night_mode = models.BooleanField(default=False)  # type: bool
+    realm_logo_favicon = models.BooleanField(default=False)  # type: bool
+    starred_message_counts = models.BooleanField(default=False)  # type: bool
     translate_emoticons = models.BooleanField(default=False)  # type: bool
     twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
-    starred_message_counts = models.BooleanField(default=False)  # type: bool
 
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
@@ -1019,6 +1020,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         high_contrast_mode=bool,
         left_side_userlist=bool,
         night_mode=bool,
+        realm_logo_favicon = bool,
         starred_message_counts=bool,
         timezone=str,
         translate_emoticons=bool,
