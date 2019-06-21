@@ -51,31 +51,45 @@ def run():
         'frontend': ['js', 'ts', 'css', 'scss', 'handlebars', 'html'],
     }, exclude=EXCLUDED_FILES)
 
-    linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'])
-    linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'])
+    linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'], description="Complains"
+                                  " if it can't resolve the class for an addClass() call in js files.")
+    linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'],
+                                  description="Checks (s)css files for style errors.")
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
-                                             '--quiet', '--cache', '--ext', '.js,.ts'], ['js', 'ts'])
-    linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
+                                             '--quiet', '--cache', '--ext', '.js,.ts'], ['js', 'ts'],
+                                  description="Checks js files for patterns that don't adhere to eslint"
+                                              " style rules.")
+    linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'],
+                                  description="Checks puppet manifests for parsing errors.")
     linter_config.external_linter('puppet-lint',
-                                  ['puppet-lint'] + PUPPET_CHECK_RULES_TO_EXCLUDE, ['pp'])
-    linter_config.external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
-    linter_config.external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
-    linter_config.external_linter('shellcheck', ['shellcheck', '-x'], ['sh'])
+                                  ['puppet-lint'] + PUPPET_CHECK_RULES_TO_EXCLUDE, ['pp'],
+                                  description="Checks that puppet manifest conform to the style guide.")
+    linter_config.external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'],
+                                  description="Runs custom style checks on html files.")
+    linter_config.external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'],
+                                  description="Parses and validates yaml files using Swagger and OpenAPI"
+                                              " Schema.")
+    linter_config.external_linter('shellcheck', ['shellcheck', '-x'], ['sh'],
+                                  description="Checks .sh files for spelling errors.")
     command = ['tools/run-mypy']
     if args.force:
         command.append('--force')
-    linter_config.external_linter('mypy', command, ['py'], pass_targets=False)
-    linter_config.external_linter('gitlint', ['tools/commit-message-lint'])
+    linter_config.external_linter('mypy', command, ['py'], pass_targets=False,
+                                  description="Run mypy check on python files.")
+    linter_config.external_linter('gitlint', ['tools/commit-message-lint'],
+                                  description="Checks commit messages for style errors.")
 
     @linter_config.lint
     def custom_py():
         # type: () -> int
+        """Runs custom checks for python files"""
         failed = python_rules.check(by_lang)
         return 1 if failed else 0
 
     @linter_config.lint
     def custom_nonpy():
         # type: () -> int
+        """Runs custom checks for non-python files"""
         failed = False
         for rule in non_py_rules:
             failed = failed or rule.check(by_lang)
@@ -84,6 +98,7 @@ def run():
     @linter_config.lint
     def pyflakes():
         # type: () -> int
+        """Checks python files for errors using standard pyflakes rules"""
         failed = check_pyflakes(by_lang['py'], args)
         return 1 if failed else 0
 
@@ -93,12 +108,14 @@ def run():
     @linter_config.lint
     def pep8_1of2():
         # type: () -> int
+        """Checks python files for voilations of pep8 style rules."""
         failed = check_pep8(list(python_part1))
         return 1 if failed else 0
 
     @linter_config.lint
     def pep8_2of2():
         # type: () -> int
+        """Checks python files for voilations of pep8 style rules."""
         failed = check_pep8(list(python_part2))
         return 1 if failed else 0
 
