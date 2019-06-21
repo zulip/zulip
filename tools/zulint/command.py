@@ -66,9 +66,10 @@ def run_parallel(lint_functions):
 class LinterConfig:
     lint_functions = {}  # type: Dict[str, Callable[[], int]]
 
-    def __init__(self, by_lang):
-        # type: (Any) -> None
-        self.by_lang = by_lang
+    def __init__(self, args, by_lang):
+        # type: (argparse.Namespace, Any) -> None
+        self.args = args
+        self.by_lang = by_lang  # type: Dict[str, List[str]]
 
     def lint(self, func):
         # type: (Callable[[], int]) -> Callable[[], int]
@@ -114,26 +115,26 @@ class LinterConfig:
 
         self.lint_functions[name] = run_linter
 
-    def set_logger(self, verbose_timing):
-        # type: (bool) -> None
+    def set_logger(self):
+        # type: () -> None
         logging.basicConfig(format="%(asctime)s %(message)s")
         logger = logging.getLogger()
-        if verbose_timing:
+        if self.args.verbose_timing:
             logger.setLevel(logging.INFO)
         else:
             logger.setLevel(logging.WARNING)
 
-    def do_lint(self, args):
-        # type: (argparse.Namespace) -> None
-        assert not args.only or not args.skip, "Only one of --only or --skip can be used at once."
-        if args.only:
-            self.lint_functions = {linter: self.lint_functions[linter] for linter in args.only}
-        for linter in args.skip:
+    def do_lint(self):
+        # type: () -> None
+        assert not self.args.only or not self.args.skip, "Only one of --only or --skip can be used at once."
+        if self.args.only:
+            self.lint_functions = {linter: self.lint_functions[linter] for linter in self.args.only}
+        for linter in self.args.skip:
             del self.lint_functions[linter]
-        if args.list:
+        if self.args.list:
             print("\n".join(self.lint_functions.keys()))
             sys.exit()
-        self.set_logger(args.verbose_timing)
+        self.set_logger()
 
         failed = run_parallel(self.lint_functions)
         sys.exit(1 if failed else 0)
