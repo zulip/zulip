@@ -23,7 +23,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.utils import is_remote_server
 from zerver.lib.users import get_api_key
 from zerver.lib.sessions import get_session_dict_user
-from zerver.lib.webhooks.common import get_fixture_http_headers, parse_headers_dict
+from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
@@ -753,7 +753,7 @@ class WebhookTestCase(ZulipTestCase):
         if content_type is not None:
             kwargs['content_type'] = content_type
         headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
-        headers = parse_headers_dict(headers)
+        headers = standardize_headers(headers)
         kwargs.update(headers)
         msg = self.send_json_payload(self.test_user, self.url, payload,
                                      self.STREAM_NAME, **kwargs)
@@ -769,7 +769,7 @@ class WebhookTestCase(ZulipTestCase):
         if content_type is not None:
             kwargs['content_type'] = content_type
         headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
-        headers = parse_headers_dict(headers)
+        headers = standardize_headers(headers)
         kwargs.update(headers)
         sender = kwargs.get('sender', self.test_user)
         msg = self.send_json_payload(sender, self.url, payload,

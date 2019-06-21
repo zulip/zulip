@@ -11,7 +11,7 @@ from zerver.lib.test_classes import ZulipTestCase, WebhookTestCase
 from zerver.lib.webhooks.common import \
     validate_extract_webhook_http_header, \
     MISSING_EVENT_HEADER_MESSAGE, MissingHTTPEventHeader, \
-    INVALID_JSON_MESSAGE, get_fixture_http_headers, parse_headers_dict
+    INVALID_JSON_MESSAGE, get_fixture_http_headers, standardize_headers
 from zerver.models import get_user, get_realm, UserProfile
 from zerver.lib.users import get_api_key
 from zerver.lib.send_email import FromAddress
@@ -116,11 +116,11 @@ class WebhooksCommonTestCase(ZulipTestCase):
         with self.assertRaises(AttributeError):
             get_fixture_http_headers("some_integration", "simple_fixture")
 
-    def test_parse_headers_dict(self) -> None:
-        self.assertEqual(parse_headers_dict({}), {})
+    def test_standardize_headers(self) -> None:
+        self.assertEqual(standardize_headers({}), {})
 
         raw_headers = {"Content-Type": "text/plain", "X-Event-Type": "ping"}
-        djangoified_headers = parse_headers_dict(raw_headers)
+        djangoified_headers = standardize_headers(raw_headers)
         expected_djangoified_headers = {"CONTENT_TYPE": "text/plain", "HTTP_X_EVENT_TYPE": "ping"}
         self.assertEqual(djangoified_headers, expected_djangoified_headers)
 

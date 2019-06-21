@@ -16,7 +16,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         data = {
             "url": url,
             "body": body,
-            "custom_headers": "",
+            "custom_headers": "{}",
             "is_json": True
         }
 
@@ -36,7 +36,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         data = {
             "url": url,
             "body": body,
-            "custom_headers": "",
+            "custom_headers": "{}",
             "is_json": True
         }
 
@@ -134,7 +134,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
 
         data = {
             "url": url,
-            "custom_headers": "",
+            "custom_headers": "{}",
             "integration_name": "appfollow",
         }
 
@@ -156,8 +156,8 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             r["message"] = ujson.loads(r["message"])
         self.assertEqual(response.status_code, 200)
         for r in responses:
-            # We have to use this roundabout manner since the order may vary each time. This is not
-            # an issue.
+            # We have to use this roundabout manner since the order may vary each time.
+            # This is not an issue.
             self.assertTrue(r in expected_responses)
             expected_responses.remove(r)
 
@@ -178,7 +178,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
 
         data = {
             "url": url,
-            "custom_headers": "",
+            "custom_headers": "{}",
             "integration_name": "wordpress",
         }
 
@@ -246,7 +246,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         url = "/api/v1/external/appfollow?api_key={key}&stream=Denmark&topic=Appfollow Bulk Notifications".format(key=bot.api_key)
         data = {
             "url": url,
-            "custom_headers": "",
+            "custom_headers": "{}",
             "integration_name": "appfollow",
         }
         response = self.client_post("/devtools/integrations/send_all_webhook_fixture_messages", data)

@@ -7,27 +7,8 @@ from django.core.management.base import CommandParser
 from django.test import Client
 
 from zerver.lib.management import ZulipBaseCommand, CommandError
+from zerver.lib.webhooks.common import standardize_headers
 from zerver.models import get_realm
-
-def parse_headers(custom_headers: Union[None, str]) -> Union[None, Dict[str, str]]:
-    """ The main aim of this method is be to convert regular HTTP headers into a format that
-    Django prefers. Note: This function throws a ValueError and thus it should be used in a
-    try/except block. """
-    headers = {}
-    if not custom_headers:
-        return None
-    custom_headers_dict = ujson.loads(custom_headers)
-    for header in custom_headers_dict:
-        if len(header.split(" ")) > 1:
-            raise ValueError("custom header '%s' contains a space." % (header,))
-        new_header = header.upper().replace("-", "_")
-
-        if new_header not in ["CONTENT_TYPE", "CONTENT_LENGTH"]:
-            # See https://docs.djangoproject.com/en/2.2/ref/request-response/
-            # for how Django formats HTTP headers.
-            new_header = "HTTP_" + new_header
-        headers[new_header] = str(custom_headers_dict[header])
-    return headers
 
 class Command(ZulipBaseCommand):
     help = """
@@ -70,11 +51,14 @@ approach shown above.
         self.add_realm_args(parser, help="Specify which realm/subdomain to connect to; default is zulip")
 
     def parse_headers(self, custom_headers: Union[None, str]) -> Union[None, Dict[str, str]]:
+        if not custom_headers:
+            return {}
         try:
-            return parse_headers(custom_headers)
+            custom_headers_dict = ujson.loads(custom_headers)
         except ValueError as ve:
             raise CommandError('Encountered an error while attempting to parse custom headers: {}\n'
                                'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
+        return standardize_headers(custom_headers_dict)
 
     def handle(self, **options: str) -> None:
         if options['fixture'] is None or options['url'] is None:

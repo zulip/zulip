@@ -10,8 +10,8 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.models import UserProfile, get_realm
-from zerver.management.commands.send_webhook_fixture_message import parse_headers
-from zerver.lib.webhooks.common import get_fixture_http_headers
+from zerver.lib.webhooks.common import get_fixture_http_headers, \
+    standardize_headers
 
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
@@ -30,21 +30,21 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
 def send_webhook_fixture_message(url: str=REQ(),
                                  body: str=REQ(),
                                  is_json: bool=REQ(),
-                                 custom_headers: str=REQ()) -> HttpResponse:
+                                 custom_headers_str: str=REQ()) -> HttpResponse:
     client = Client()
     realm = get_realm("zulip")
     try:
-        headers = parse_headers(custom_headers)
+        custom_headers = ujson.loads(custom_headers_str)
     except ValueError as ve:
         return json_error("Custom HTTP headers are not in a valid JSON format. {}".format(ve))  # nolint
-    if not headers:
-        headers = {}
-    http_host = headers.pop("HTTP_HOST", realm.host)
+    standardized_headers = standardize_headers(custom_headers)
+    http_host = standardized_headers.pop("HTTP_HOST", realm.host)
     if is_json:
-        content_type = headers.pop("HTTP_CONTENT_TYPE", "application/json")
+        content_type = standardized_headers.pop("HTTP_CONTENT_TYPE", "application/json")
     else:
-        content_type = headers.pop("HTTP_CONTENT_TYPE", "text/plain")
-    return client.post(url, body, content_type=content_type, HTTP_HOST=http_host, **headers)
+        content_type = standardized_headers.pop("HTTP_CONTENT_TYPE", "text/plain")
+    return client.post(url, body, content_type=content_type, HTTP_HOST=http_host,
+                       **standardized_headers)
 
 @has_request_variables
 def get_fixtures(request: HttpResponse,

@@ -97,21 +97,27 @@ def check_send_webhook_message(
             # webhook-errors.log
             pass
 
-def parse_headers_dict(custom_headers: Union[None, Dict[str, Any]]) -> Dict[str, str]:
-    headers = {}
-    if not custom_headers:
+def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str, str]:
+    """ This method can be used to standardize a dictionary of headers with
+    the standard format that Django expects. For reference, refer to:
+    https://docs.djangoproject.com/en/2.2/ref/request-response/#django.http.HttpRequest.headers
+
+    NOTE: Historically, Django's headers were not case-insensitive. We're still
+    capitalizing our headers to make it easier to compare/search later if required.
+    """
+    canonical_headers = {}
+
+    if not input_headers:
         return {}
-    for header in custom_headers:
-        # Ensure what we return is in the Django HTTP headers format,
-        # with HTTP_ prefixes before most actual HTTP header names.
-        if header.startswith("HTTP_") or header.startswith("http_"):
-            headers[header.upper().replace("-", "_")] = str(custom_headers[header])
-        else:
-            new_header = header.upper().replace("-", "_")
-            if new_header not in ["CONTENT_TYPE", "CONTENT_LENGTH"]:
-                new_header = "HTTP_" + new_header
-            headers[new_header] = str(custom_headers[header])
-    return headers
+
+    for raw_header in input_headers:
+        polished_header = raw_header.upper().replace("-", "_")
+        if polished_header not in["CONTENT_TYPE", "CONTENT_LENGTH"]:
+            if not polished_header.startswith("HTTP_"):
+                polished_header = "HTTP_" + polished_header
+        canonical_headers[polished_header] = str(input_headers[raw_header])
+
+    return canonical_headers
 
 def validate_extract_webhook_http_header(request: HttpRequest, header: str,
                                          integration_name: str,
