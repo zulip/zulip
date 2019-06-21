@@ -1711,3 +1711,17 @@ run_test('archive_message_group', () => {
     assert.equal(last_message_text, 'This is message two.');
 
 });
+
+run_test('recipient_row', () => {
+    // Assert HTML escaping in topic links.
+    const data = {
+        is_stream: true,
+        topic_links: [
+            'https://google.com',
+            'https://<script>alert("Hello")</script>',
+        ],
+    };
+    var html = render('recipient_row', data);
+    assert(html.indexOf('<script>alert("Hello")</script>') === -1);
+    assert(html.indexOf('&lt;script&gt;alert(&quot;Hello&quot;)&lt;/script&gt;') !== -1);
+});
