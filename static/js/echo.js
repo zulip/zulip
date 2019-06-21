@@ -216,6 +216,7 @@ exports.process_from_server = function process_from_server(messages) {
         // the backend.
         client_message.timestamp = message.timestamp;
 
+        client_message.is_me_message = message.is_me_message;
         client_message.submessages = message.submessages;
 
         msgs_to_rerender.push(client_message);
