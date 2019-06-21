@@ -236,6 +236,13 @@ td .button {
     opacity: 0.9;
 }
 
+.email-change-form .settings-info-icon,
+.user-name-section .settings-info-icon {
+    position: relative;
+    top: 2px;
+    left: 1px;
+}
+
 .settings-section {
     display: none;
 
