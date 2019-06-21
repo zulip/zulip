@@ -1969,6 +1969,10 @@ def build_engine(realm_filters: List[Tuple[str, str, int]],
         ])
     return engine
 
+# Security note: We don't do any HTML escaping in this
+# function on the URLs; they are expected to be HTML-escaped when
+# rendered by clients (just as links rendered into message bodies
+# are validated and escaped inside `url_to_a`).
 def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
     matches = []  # type: List[str]
 
