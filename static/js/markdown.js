@@ -225,7 +225,18 @@ function handleStream(streamName) {
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
         'href="' + href + '"' +
         '>' + '#' + escape(stream.name) + '</a>';
+}
 
+function handleStreamTopic(streamName, topic) {
+    var stream = stream_data.get_sub(streamName);
+    if (stream === undefined || !topic) {
+        return;
+    }
+    var href = window.location.origin + '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
+    href += '/topic/' + hash_util.encodeHashComponent(topic);
+    var text = '#' + escape(stream.name) + ' > ' + escape(topic);
+    return '<a class="stream-topic" data-stream-id="' + stream.stream_id + '" ' +
+        'href="' + href + '"' + '>' + text + '</a>';
 }
 
 function handleRealmFilter(pattern, matches) {
@@ -498,6 +509,7 @@ exports.initialize = function () {
         avatarHandler: handleAvatar,
         unicodeEmojiHandler: handleUnicodeEmoji,
         streamHandler: handleStream,
+        streamTopicHandler: handleStreamTopic,
         realmFilterHandler: handleRealmFilter,
         texHandler: handleTex,
         renderer: r,

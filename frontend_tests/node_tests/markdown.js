@@ -147,9 +147,19 @@ var edgecase_stream = {
     stream_id: 3,
     is_muted: false,
 };
+var edgecase_stream_2 = {
+    subscribed: true,
+    color: 'yellow',
+    name: 'Bobby <h1',
+    stream_id: 4,
+    is_muted: false,
+};
 stream_data.add_sub('Denmark', denmark);
 stream_data.add_sub('social', social);
 stream_data.add_sub('Bobby <h1>Tables</h1>', edgecase_stream);
+stream_data.add_sub('Bobby <h1', edgecase_stream_2);
+// Note: edgecase_stream cannot be mentioned because it is caught by
+// streamTopicHandler and it would be parsed as edgecase_stream_2.
 
 // Check the default behavior of fenced code blocks
 // works properly before markdown is initialized.
@@ -294,6 +304,12 @@ run_test('marked', () => {
          expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/2-social">#social</a> stream links</p>'},
         {input: 'And this is a #**wrong** stream link',
          expected: '<p>And this is a #**wrong** stream link</p>'},
+        {input: 'This is a #**Denmark>some topic** stream_topic link',
+         expected: '<p>This is a <a class="stream-topic" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark > some topic</a> stream_topic link</p>'},
+        {input: 'This has two links: #**Denmark>some topic** and #**social>other topic**.',
+         expected: '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark > some topic</a> and <a class="stream-topic" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/2-social/topic/other.20topic">#social > other topic</a>.</p>'},
+        {input: 'This is not a #**Denmark>** stream_topic link',
+         expected: '<p>This is not a #**Denmark&gt;** stream_topic link</p>'},
         {input: 'mmm...:burrito:s',
          expected: '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>'},
         {input: 'This is an :poop: message',
@@ -371,7 +387,7 @@ run_test('marked', () => {
         {input: '@**Bobby <h1>Tables</h1>**',
          expected: '<p><span class="user-mention" data-user-id="103">@Bobby &lt;h1&gt;Tables&lt;/h1&gt;</span></p>'},
         {input: '#**Bobby <h1>Tables</h1>**',
-         expected: '<p><a class="stream" data-stream-id="3" href="http://zulip.zulipdev.com/#narrow/stream/3-Bobby-.3Ch1.3ETables.3C.2Fh1.3E">#Bobby &lt;h1&gt;Tables&lt;/h1&gt;</a></p>'},
+         expected: '<p><a class="stream-topic" data-stream-id="4" href="http://zulip.zulipdev.com/#narrow/stream/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 > Tables&lt;/h1&gt;</a></p>'},
     ];
 
     // We remove one of the unicode emoji we put as input in one of the test

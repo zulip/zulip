@@ -511,6 +511,7 @@ inline.zulip = merge({}, inline.breaks, {
                        '[\u3000-\u303F]|[\u3200-\u32FF])'),
   usermention: /^(@(_?)(?:\*\*([^\*]+)\*\*))/, // Match potentially multi-word string between @** **
   groupmention: /^@\*([^\*]+)\*/, // Match multi-word string between @* *
+  stream_topic: /^#\*\*([^\*>]+)>([^\*]+)\*\*/,
   stream: /^#\*\*([^\*]+)\*\*/,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
@@ -712,6 +713,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // stream_topic (zulip)
+    if (cap = this.rules.stream_topic.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.stream_topic(cap[1], cap[2], cap[0]);
+      continue;
+    }
+
     // stream (zulip)
     if (cap = this.rules.stream.exec(src)) {
       src = src.substring(cap[0].length);
@@ -898,6 +906,18 @@ InlineLexer.prototype.stream = function (streamName, orig) {
     return orig;
 
   var handled = this.options.streamHandler(streamName);
+  if (handled !== undefined) {
+    return handled;
+  }
+  return orig;
+};
+
+InlineLexer.prototype.stream_topic = function (streamName, topic, orig) {
+  orig = escape(orig);
+  if (typeof this.options.streamHandler !== 'function')
+    return orig;
+
+  var handled = this.options.streamTopicHandler(streamName, topic);
   if (handled !== undefined) {
     return handled;
   }
