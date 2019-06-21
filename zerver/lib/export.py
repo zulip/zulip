@@ -1396,7 +1396,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
 def do_export_realm(realm: Realm, output_dir: Path, threads: int,
                     exportable_user_ids: Optional[Set[int]]=None,
                     public_only: bool=False,
-                    consent_message_id: Optional[int]=None) -> None:
+                    consent_message_id: Optional[int]=None) -> str:
     response = {}  # type: TableData
 
     # We need at least one thread running to export
@@ -1456,6 +1456,18 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
 
     logging.info("Finished exporting %s" % (realm.string_id,))
     create_soft_link(source=output_dir, in_progress=False)
+
+    do_write_stats_file_for_realm_export(output_dir)
+
+    # We need to change back to the current working directory after writing
+    # the tarball to the output directory, otherwise the state is compromised
+    # for our unit tests.
+    reset_dir = os.getcwd()
+    tarball_path = output_dir.rstrip('/') + '.tar.gz'
+    os.chdir(os.path.dirname(output_dir))
+    subprocess.check_call(["tar", "-czf", tarball_path, os.path.basename(output_dir)])
+    os.chdir(reset_dir)
+    return tarball_path
 
 def export_attachment_table(realm: Realm, output_dir: Path, message_ids: Set[int]) -> None:
     response = {}  # type: TableData
@@ -1668,15 +1680,10 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
                          public_only: bool,
                          delete_after_upload: bool,
                          consent_message_id: Optional[int]=None) -> Optional[str]:
-    do_export_realm(realm=realm, output_dir=output_dir, threads=threads,
-                    public_only=public_only, consent_message_id=consent_message_id)
-    print("Finished exporting to %s; tarring" % (output_dir,))
-
-    do_write_stats_file_for_realm_export(output_dir)
-
-    tarball_path = output_dir.rstrip('/') + '.tar.gz'
-    os.chdir(os.path.dirname(output_dir))
-    subprocess.check_call(["tar", "-czf", tarball_path, os.path.basename(output_dir)])
+    tarball_path = do_export_realm(realm=realm, output_dir=output_dir,
+                                   threads=threads, public_only=public_only,
+                                   consent_message_id=consent_message_id)
+    print("Finished exporting to %s" % (output_dir,))
     print("Tarball written to %s" % (tarball_path,))
 
     if not upload:
