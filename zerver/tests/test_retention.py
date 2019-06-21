@@ -23,12 +23,51 @@ from zerver.tests.test_reactions import EmojiReactionBase
 ZULIP_REALM_DAYS = 30
 MIT_REALM_DAYS = 100
 
-
 class RetentionTestingBase(ZulipTestCase):
-    """
-        Test receiving expired messages retention tool.
-    """
+    def _get_usermessage_ids(self, message_ids: List[int]) -> List[int]:
+        return list(UserMessage.objects.filter(message_id__in=message_ids).values_list('id', flat=True))
 
+    def _verify_archive_data(self, expected_message_ids: List[int],
+                             expected_usermessage_ids: List[int]) -> None:
+        self.assertEqual(
+            set(ArchivedMessage.objects.values_list('id', flat=True)),
+            set(expected_message_ids)
+        )
+
+        self.assertEqual(
+            set(ArchivedUserMessage.objects.values_list('id', flat=True)),
+            set(expected_usermessage_ids)
+        )
+
+        # Archived Messages and UserMessages should have been removed from the normal tables:
+        self.assertEqual(Message.objects.filter(id__in=expected_message_ids).count(), 0)
+        self.assertEqual(UserMessage.objects.filter(id__in=expected_usermessage_ids).count(), 0)
+
+    def _verify_restored_data(self, expected_message_ids: List[int],
+                              expected_usermessage_ids: List[int]) -> None:
+        # Check that the data was restored:
+        self.assertEqual(
+            set(Message.objects.filter(id__in=expected_message_ids).values_list('id', flat=True)),
+            set(expected_message_ids)
+        )
+
+        self.assertEqual(
+            set(UserMessage.objects.filter(id__in=expected_usermessage_ids).values_list('id', flat=True)),
+            set(expected_usermessage_ids)
+        )
+
+        # The Messages and UserMessages should still be in the archive - we don't delete them.
+        self.assertEqual(
+            set(ArchivedMessage.objects.values_list('id', flat=True)),
+            set(expected_message_ids)
+        )
+
+        self.assertEqual(
+            set(ArchivedUserMessage.objects.values_list('id', flat=True)),
+            set(expected_usermessage_ids)
+        )
+
+class ArchiveMessagesTestingBase(RetentionTestingBase):
     def setUp(self) -> None:
         self.zulip_realm = get_realm('zulip')
         self.mit_realm = get_realm('zephyr')
@@ -85,25 +124,6 @@ class RetentionTestingBase(ZulipTestCase):
 
         return msg_ids
 
-    def _get_usermessage_ids(self, message_ids: List[int]) -> List[int]:
-        return list(UserMessage.objects.filter(message_id__in=message_ids).values_list('id', flat=True))
-
-    def _verify_archive_data(self, expected_message_ids: List[int],
-                             expected_usermessage_ids: List[int]) -> None:
-        self.assertEqual(
-            set(ArchivedMessage.objects.values_list('id', flat=True)),
-            set(expected_message_ids)
-        )
-
-        self.assertEqual(
-            set(ArchivedUserMessage.objects.values_list('id', flat=True)),
-            set(expected_usermessage_ids)
-        )
-
-        # Archived Messages and UserMessages should have been removed from the normal tables:
-        self.assertEqual(Message.objects.filter(id__in=expected_message_ids).count(), 0)
-        self.assertEqual(UserMessage.objects.filter(id__in=expected_usermessage_ids).count(), 0)
-
     def _send_messages_with_attachments(self) -> Dict[str, int]:
         user_profile = self.example_user("hamlet")
         sender_email = user_profile.email
@@ -129,7 +149,7 @@ class RetentionTestingBase(ZulipTestCase):
         return {'expired_message_id': expired_message_id, 'actual_message_id': actual_message_id,
                 'other_user_message_id': other_message_id}
 
-class TestArchivingGeneral(RetentionTestingBase):
+class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
     def test_no_expired_messages(self) -> None:
         archive_messages()
 
@@ -322,7 +342,7 @@ class TestArchivingGeneral(RetentionTestingBase):
             sorted(msgs_ids.values())
         )
 
-class TestArchivingSubMessages(RetentionTestingBase):
+class TestArchivingSubMessages(ArchiveMessagesTestingBase):
     def test_archiving_submessages(self) -> None:
         expired_msg_ids = self._make_expired_zulip_messages(2)
         cordelia = self.example_user('cordelia')
@@ -365,7 +385,7 @@ class TestArchivingSubMessages(RetentionTestingBase):
             set(submessage_ids)
         )
 
-class TestArchivingReactions(RetentionTestingBase, EmojiReactionBase):
+class TestArchivingReactions(ArchiveMessagesTestingBase, EmojiReactionBase):
     def test_archiving_reactions(self) -> None:
         expired_msg_ids = self._make_expired_zulip_messages(2)
 
@@ -388,7 +408,7 @@ class TestArchivingReactions(RetentionTestingBase, EmojiReactionBase):
             set(reaction_ids)
         )
 
-class MoveMessageToArchiveBase(ZulipTestCase):
+class MoveMessageToArchiveBase(RetentionTestingBase):
     def setUp(self) -> None:
         self.sender = 'hamlet@zulip.com'
         self.recipient = 'cordelia@zulip.com'
@@ -406,55 +426,38 @@ class MoveMessageToArchiveBase(ZulipTestCase):
         for file_name, path_id, size in dummy_files:
             create_attachment(file_name, path_id, user_profile, size)
 
-    def _get_usermsg_ids(self, msg_ids: List[int]) -> List[int]:
-        return list(UserMessage.objects.filter(
-                    message_id__in=msg_ids).order_by('id').values_list('id', flat=True))
-
     def _assert_archive_empty(self) -> None:
         self.assertFalse(ArchivedUserMessage.objects.exists())
         self.assertFalse(ArchivedMessage.objects.exists())
         self.assertFalse(ArchivedAttachment.objects.exists())
 
-    def _check_messages_after_archiving(self, msg_ids: List[int], usermsg_ids: List[int]) -> None:
-        self.assertEqual(
-            set(ArchivedMessage.objects.filter(id__in=msg_ids).values_list('id', flat=True)),
-            set(msg_ids)
-        )
-        self.assertEqual(
-            set(ArchivedUserMessage.objects.filter(id__in=usermsg_ids).values_list('id', flat=True)),
-            set(usermsg_ids)
-        )
-
-        self.assertFalse(Message.objects.filter(id__in=msg_ids).exists())
-        self.assertFalse(UserMessage.objects.filter(id__in=usermsg_ids).exists())
-
 class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
     def test_personal_messages_archiving(self) -> None:
         msg_ids = [self.send_personal_message(self.sender, self.recipient)
                    for i in range(0, 3)]
-        usermsg_ids = self._get_usermsg_ids(msg_ids)
+        usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
         move_messages_to_archive(message_ids=msg_ids)
-        self._check_messages_after_archiving(msg_ids, usermsg_ids)
+        self._verify_archive_data(msg_ids, usermsg_ids)
 
     def test_stream_messages_archiving(self) -> None:
         msg_ids = [self.send_stream_message(self.sender, "Verona")
                    for i in range(0, 3)]
-        usermsg_ids = self._get_usermsg_ids(msg_ids)
+        usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
         move_messages_to_archive(message_ids=msg_ids)
-        self._check_messages_after_archiving(msg_ids, usermsg_ids)
+        self._verify_archive_data(msg_ids, usermsg_ids)
 
     def test_archiving_messages_second_time(self) -> None:
         msg_ids = [self.send_stream_message(self.sender, "Verona")
                    for i in range(0, 3)]
-        usermsg_ids = self._get_usermsg_ids(msg_ids)
+        usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
         move_messages_to_archive(message_ids=msg_ids)
-        self._check_messages_after_archiving(msg_ids, usermsg_ids)
+        self._verify_archive_data(msg_ids, usermsg_ids)
 
         with self.assertRaises(Message.DoesNotExist):
             move_messages_to_archive(message_ids=msg_ids)
@@ -487,11 +490,11 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
                 Message.objects.filter(attachment__id=attachment_id).values_list("id", flat=True)
             )
 
-        usermsg_ids = self._get_usermsg_ids(msg_ids)
+        usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
         move_messages_to_archive(message_ids=msg_ids)
-        self._check_messages_after_archiving(msg_ids, usermsg_ids)
+        self._verify_archive_data(msg_ids, usermsg_ids)
 
         self.assertFalse(Attachment.objects.exists())
         archived_attachment_ids = list(
@@ -526,14 +529,14 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             content=body,
         )
 
-        usermsg_ids = self._get_usermsg_ids([msg_id])
+        usermsg_ids = self._get_usermessage_ids([msg_id])
         attachment_ids = list(
             Attachment.objects.filter(messages__id=msg_id).values_list("id", flat=True)
         )
 
         self._assert_archive_empty()
         move_messages_to_archive(message_ids=[msg_id])
-        self._check_messages_after_archiving([msg_id], usermsg_ids)
+        self._verify_archive_data([msg_id], usermsg_ids)
         self.assertEqual(Attachment.objects.count(), 5)
 
         self.assertEqual(
