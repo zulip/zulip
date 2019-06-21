@@ -66,7 +66,7 @@ def run():
     # Invoke the appropriate lint checker for each language,
     # and also check files for extra whitespace.
 
-    linter_config = LinterConfig(by_lang)
+    linter_config = LinterConfig(args, by_lang)
     linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'])
     linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'])
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
@@ -117,7 +117,8 @@ def run():
         # type: () -> int
         failed = check_pep8(list(python_part2))
         return 1 if failed else 0
-    linter_config.do_lint(args)
+
+    linter_config.do_lint()
 
 if __name__ == '__main__':
     run()
