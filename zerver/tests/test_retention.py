@@ -100,6 +100,10 @@ class RetentionTestingBase(ZulipTestCase):
             set(expected_usermessage_ids)
         )
 
+        # Archived Messages and UserMessages should have been removed from the normal tables:
+        self.assertEqual(Message.objects.filter(id__in=expected_message_ids).count(), 0)
+        self.assertEqual(UserMessage.objects.filter(id__in=expected_usermessage_ids).count(), 0)
+
     def _send_messages_with_attachments(self) -> Dict[str, int]:
         user_profile = self.example_user("hamlet")
         sender_email = user_profile.email
@@ -277,10 +281,6 @@ class TestArchivingGeneral(RetentionTestingBase):
         archive_messages(chunk_size=2)  # Specify low chunk_size to test batching.
         # Make sure we archived what neeeded:
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
-
-        # Check that the archived messages were deleted:
-        self.assertEqual(UserMessage.objects.filter(id__in=expired_usermsg_ids).count(), 0)
-        self.assertEqual(Message.objects.filter(id__in=expired_msg_ids).count(), 0)
 
     def test_archiving_attachments(self) -> None:
         """End-to-end test for the logic for archiving attachments.  This test
