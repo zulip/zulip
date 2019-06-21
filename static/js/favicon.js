@@ -31,6 +31,19 @@ exports.set = function () {
 
 exports.change_favicon = function () {
     exports.canvas.change_favicon();
+    setTimeout(function () {
+        exports.update_favicon();
+    }, 500);
+};
+
+exports.update_favicon = function () {
+    const unread_count = unread.get_counts();
+    const default_count = {
+        unread_count: unread_count.home_unread_messages,
+        has_pm: unread_count.private_message_count > 0,
+    };
+    favicon.canvas.default(default_count);
+    exports.set();
 };
 
 window.favicon = exports;

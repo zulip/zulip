@@ -191,20 +191,33 @@ exports.hide_or_show_history_limit_message = function (msg_list) {
 
 (function flash_pms() {
     let counter = 0;
+    // we use previous count to ensure that the count has actually edited
+    // this reduces lag by preventing unnecessary calls to favicon.set()
+    let previous_counts = {};
     setInterval(function () {
         const private_message_count = unread.get_counts().private_message_count;
-
-        if (private_message_count > 0 && (counter + 1) % 2) {
+        const toggle = (counter + 1) % 2;
+        let update_image = false;
+        if (private_message_count > 0 && toggle) {
             favicon.canvas.pm({
                 unread_count: private_message_count,
             });
+            previous_counts = {};
+            update_image = true;
         } else {
-            favicon.canvas.default({
+            const default_count = {
                 unread_count: unread.get_counts().home_unread_messages,
-            });
-        }
-        favicon.set();
+            };
 
+            if (!_.isEqual(previous_counts, default_count)) {
+                previous_counts = Object.assign({}, default_count);
+                favicon.canvas.default(default_count);
+                update_image = true;
+            }
+        }
+        if (update_image) {
+            favicon.set();
+        }
         counter += 1;
     }, 2000);
 }());

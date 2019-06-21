@@ -957,6 +957,8 @@ with_overrides(function (override) {
 
     event = event_fixtures.realm__update_dict__icon;
     override('realm_icon.rerender', noop);
+    page_params.realm_logo_favicon = true;
+    override('favicon.change_favicon', noop);
 
     called = false;
     set_global('electron_bridge', {
