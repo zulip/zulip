@@ -71,6 +71,7 @@ def run_parallel(lint_functions):
 
 class LinterConfig:
     lint_functions = {}  # type: Dict[str, Callable[[], int]]
+    lint_descriptions = {}  # type: Dict[str, str]
 
     def __init__(self, args):
         # type: (argparse.Namespace) -> None
@@ -94,9 +95,10 @@ class LinterConfig:
     def lint(self, func):
         # type: (Callable[[], int]) -> Callable[[], int]
         self.lint_functions[func.__name__] = func
+        self.lint_descriptions[func.__name__] = func.__doc__ if func.__doc__ else "External Linter"
         return func
 
-    def external_linter(self, name, command, target_langs=[], pass_targets=True):
+    def external_linter(self, name, command, target_langs=[], pass_targets=True, description="External Linter"):
         # type: (str, List[str], List[str], bool) -> None
         """Registers an external linter program to be run as part of the
         linter.  This program will be passed the subset of files being
@@ -105,6 +107,7 @@ class LinterConfig:
 
         If target_langs is empty, just runs the linter unconditionally.
         """
+        self.lint_descriptions[name] = description
         color = next(colors)
 
         def run_linter():
