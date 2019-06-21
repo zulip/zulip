@@ -23,7 +23,8 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_file, upload_emoji_image, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
     resize_emoji, BadImageError, get_realm_for_filename, \
-    DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, exif_rotate
+    DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, exif_rotate, \
+    upload_export_tarball
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     Message, UserProfile, Realm, \
@@ -40,6 +41,8 @@ from zerver.lib.actions import (
 from zerver.lib.cache import get_realm_used_upload_space_cache_key, cache_get
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.users import get_api_key
+
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 
 import urllib
 import ujson
@@ -1440,6 +1443,28 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         expected_url = "/user_avatars/{emoji_path}".format(emoji_path=emoji_path)
         self.assertEqual(expected_url, url)
 
+    def test_tarball_upload_local(self) -> None:
+        user_profile = self.example_user("iago")
+        self.assertTrue(user_profile.is_realm_admin)
+
+        tarball_path = os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
+                                    'tarball.tar.gz')
+        with open(tarball_path, 'w') as f:
+            f.write('dummy')
+
+        uri = upload_export_tarball(user_profile.realm, tarball_path)
+        self.assertTrue(os.path.isfile(os.path.join(settings.LOCAL_UPLOADS_DIR,
+                                                    'avatars',
+                                                    tarball_path)))
+
+        result = re.search(re.compile(r"([A-Za-z0-9\-_]{24})"), uri)
+        if result is not None:
+            random_name = result.group(1)
+        expected_url = "http://zulip.testserver/user_avatars/exports/1/{random_name}/tarball.tar.gz".format(
+            random_name=random_name,
+        )
+        self.assertEqual(expected_url, uri)
+
     def tearDown(self) -> None:
         destroy_uploads()
 
@@ -1708,6 +1733,29 @@ class S3Test(ZulipTestCase):
 
         expected_url = "https://{bucket}.s3.amazonaws.com/{path}".format(bucket=bucket, path=path)
         self.assertEqual(expected_url, url)
+
+    @use_s3_backend
+    def test_tarball_upload(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("iago")
+        self.assertTrue(user_profile.is_realm_admin)
+
+        tarball_path = os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
+                                    'tarball.tar.gz')
+        with open(tarball_path, 'w') as f:
+            f.write('dummy')
+
+        uri = upload_export_tarball(user_profile.realm, tarball_path)
+
+        result = re.search(re.compile(r"([0-9a-fA-F]{32})"), uri)
+        if result is not None:
+            hex_value = result.group(1)
+        expected_url = "https://{bucket}.s3.amazonaws.com:443/exports/{hex_value}/{path}".format(
+            bucket=bucket.name,
+            hex_value=hex_value,
+            path=os.path.basename(tarball_path))
+        self.assertEqual(uri, expected_url)
 
 
 class UploadTitleTests(TestCase):

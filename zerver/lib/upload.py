@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Any
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -19,6 +19,8 @@ from zerver.models import get_user_profile_by_id
 from zerver.models import Attachment
 from zerver.models import Realm, RealmEmoji, UserProfile, Message
 
+from zerver.lib.utils import generate_random_token
+
 import urllib
 import base64
 import os
@@ -29,6 +31,8 @@ from PIL.GifImagePlugin import GifImageFile
 import io
 import random
 import logging
+import shutil
+import sys
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -236,6 +240,9 @@ class ZulipUploadBackend:
         raise NotImplementedError()
 
     def get_emoji_url(self, emoji_file_name: str, realm_id: int) -> str:
+        raise NotImplementedError()
+
+    def upload_export_tarball(self, realm: Realm, tarball_path: str) -> str:
         raise NotImplementedError()
 
 
@@ -573,6 +580,24 @@ class S3UploadBackend(ZulipUploadBackend):
                                                         emoji_file_name=emoji_file_name)
         return "https://%s.s3.amazonaws.com/%s" % (bucket, emoji_path)
 
+    def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str) -> str:
+        def percent_callback(complete: Any, total: Any) -> None:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        # We use the avatar bucket, because it's world-readable.
+        bucket = get_bucket(conn, settings.S3_AVATAR_BUCKET)
+        key = Key(bucket)
+        key.key = os.path.join("exports", generate_random_token(32), os.path.basename(tarball_path))
+        key.set_contents_from_filename(tarball_path, cb=percent_callback, num_cb=40)
+
+        public_url = 'https://{bucket}.{host}/{key}'.format(
+            host=conn.server_name(),
+            bucket=bucket.name,
+            key=key.key)
+        return public_url
+
 
 ### Local
 
@@ -750,6 +775,19 @@ class LocalUploadBackend(ZulipUploadBackend):
             "/user_avatars",
             RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id, emoji_file_name=emoji_file_name))
 
+    def upload_export_tarball(self, realm: Realm, tarball_path: str) -> str:
+        path = os.path.join(
+            'exports',
+            str(realm.id),
+            random_name(18),
+            os.path.basename(tarball_path),
+        )
+        abs_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'avatars', path)
+        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+        shutil.copy(tarball_path, abs_path)
+        public_url = realm.uri + '/user_avatars/' + path
+        return public_url
+
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:
     upload_backend = LocalUploadBackend()  # type: ZulipUploadBackend
@@ -810,3 +848,6 @@ def upload_message_image_from_request(request: HttpRequest, user_file: File,
     uploaded_file_name, uploaded_file_size, content_type = get_file_info(request, user_file)
     return upload_message_file(uploaded_file_name, uploaded_file_size,
                                content_type, user_file.read(), user_profile)
+
+def upload_export_tarball(realm: Realm, tarball_path: str) -> str:
+    return upload_backend.upload_export_tarball(realm, tarball_path)
