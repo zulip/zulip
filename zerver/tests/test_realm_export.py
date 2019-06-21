@@ -1,15 +1,26 @@
 from mock import patch
 
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from django.conf import settings
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.test_helpers import use_s3_backend
+from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets
 
 from zerver.models import RealmAuditLog
 from zerver.views.public_export import public_only_realm_export
-from zerver.worker.queue_processors import DeferredWorker
+
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+
+import os
+import re
+
+def create_tarball_path() -> str:
+    tarball_path = os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
+                                'test-export.tar.gz')
+    with open(tarball_path, 'w') as f:
+        f.write('zulip!')
+    return tarball_path
 
 class RealmExportTest(ZulipTestCase):
     def test_export_as_not_admin(self) -> None:
@@ -22,53 +33,53 @@ class RealmExportTest(ZulipTestCase):
     def test_endpoint_s3(self) -> None:
         admin = self.example_user('iago')
         self.login(admin.email)
-
-        with patch('zerver.views.public_export.queue_json_publish') as mock_publish:
-            result = self.client_post('/json/export/realm')
-        self.assert_json_success(result)
-        mock_publish.assert_called_once()
-        event = mock_publish.call_args_list[0][0][1]
-        self.assertEqual(mock_publish.call_args_list[0][0][0], 'deferred_work')
-        self.assertEqual(event['realm_id'], 1)
-        self.assertEqual(event['user_profile_id'], 5)
-        self.assertEqual(event['type'], 'realm_exported')
-        self.assertTrue(type(event['id']), int)
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+        tarball_path = create_tarball_path()
 
         with patch('zerver.lib.export.do_export_realm',
-                   side_effect=FileNotFoundError) as mock_export:
-            with self.assertRaises(FileNotFoundError):
-                DeferredWorker().consume(event)
-            args = mock_export.call_args_list[0][1]
-            self.assertEqual(args['realm'], admin.realm)
-            self.assertEqual(args['public_only'], True)
-            self.assertIn('/tmp/zulip-export-', args['output_dir'])
-            self.assertEqual(args['threads'], 6)
+                   return_value=tarball_path) as mock_export:
+            with self.settings(LOCAL_UPLOADS_DIR=None):
+                result = self.client_post('/json/export/realm')
+            self.assert_json_success(result)
+            self.assertFalse(os.path.exists(tarball_path))
 
-    @override_settings(LOCAL_UPLOADS_DIR='/var/uploads')
+        args = mock_export.call_args_list[0][1]
+        self.assertEqual(args['realm'], admin.realm)
+        self.assertEqual(args['public_only'], True)
+        self.assertIn('/tmp/zulip-export-', args['output_dir'])
+        self.assertEqual(args['threads'], 6)
+
+        export_object = RealmAuditLog.objects.filter(
+            event_type='realm_exported').first()
+        uri = getattr(export_object, 'extra_data')
+        self.assertIsNotNone(uri)
+        path_id = re.sub('https://test-avatar-bucket.s3.amazonaws.com:443/', '', uri)
+        self.assertEqual(bucket.get_key(path_id).get_contents_as_string(),
+                         b'zulip!')
+
     def test_endpoint_local_uploads(self) -> None:
         admin = self.example_user('iago')
         self.login(admin.email)
-
-        with patch('zerver.views.public_export.queue_json_publish') as mock_publish:
-            result = self.client_post('/json/export/realm')
-        self.assert_json_success(result)
-        mock_publish.assert_called_once()
-        event = mock_publish.call_args_list[0][0][1]
-        self.assertEqual(mock_publish.call_args_list[0][0][0], 'deferred_work')
-        self.assertEqual(event['realm_id'], 1)
-        self.assertEqual(event['user_profile_id'], 5)
-        self.assertEqual(event['type'], 'realm_exported')
-        self.assertEqual(type(event['id']), int)
+        tarball_path = create_tarball_path()
 
         with patch('zerver.lib.export.do_export_realm',
-                   side_effect=FileNotFoundError) as mock_export:
-            with self.assertRaises(FileNotFoundError):
-                DeferredWorker().consume(event)
-            args = mock_export.call_args_list[0][1]
-            self.assertEqual(args['realm'], admin.realm)
-            self.assertEqual(args['public_only'], True)
-            self.assertIn('/tmp/zulip-export-', args['output_dir'])
-            self.assertEqual(args['threads'], 6)
+                   return_value=tarball_path) as mock_export:
+            result = self.client_post('/json/export/realm')
+        self.assert_json_success(result)
+        self.assertFalse(os.path.exists(tarball_path))
+
+        args = mock_export.call_args_list[0][1]
+        self.assertEqual(args['realm'], admin.realm)
+        self.assertEqual(args['public_only'], True)
+        self.assertIn('/tmp/zulip-export-', args['output_dir'])
+        self.assertEqual(args['threads'], 6)
+
+        export_object = RealmAuditLog.objects.filter(
+            event_type='realm_exported').first()
+        uri = getattr(export_object, 'extra_data')
+        response = self.client_get(uri)
+        self.assertEqual(response.status_code, 200)
+        self.assert_url_serves_contents_of_file(uri, b'zulip!')
 
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user('iago')
