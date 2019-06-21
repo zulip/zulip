@@ -13,7 +13,7 @@ if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Callable, Dict, List
 
-from zulint.printer import print_err, colors
+from zulint.printer import print_err, colors, BOLDRED, BLUE, GREEN, ENDC
 from zulint import lister
 
 def add_default_linter_arguments(parser):
@@ -98,8 +98,9 @@ class LinterConfig:
         self.lint_descriptions[func.__name__] = func.__doc__ if func.__doc__ else "External Linter"
         return func
 
-    def external_linter(self, name, command, target_langs=[], pass_targets=True, description="External Linter"):
-        # type: (str, List[str], List[str], bool) -> None
+    def external_linter(self, name, command, target_langs=[], pass_targets=True,
+                        description="External Linter"):
+        # type: (str, List[str], List[str], bool, str) -> None
         """Registers an external linter program to be run as part of the
         linter.  This program will be passed the subset of files being
         linted that have extensions in target_langs.  If there are no
@@ -155,7 +156,9 @@ class LinterConfig:
         for linter in self.args.skip:
             del self.lint_functions[linter]
         if self.args.list:
-            print("\n".join(self.lint_functions.keys()))
+            print("{}{:<15} {} {}".format(BOLDRED, 'Linter', 'Description', ENDC))
+            for linter, desc in self.lint_descriptions.items():
+                print("{}{:<15} {}{}".format(BLUE, linter, GREEN, desc, ENDC))
             sys.exit()
         self.set_logger()
 
