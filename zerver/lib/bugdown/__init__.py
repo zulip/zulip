@@ -33,7 +33,7 @@ from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import translate_emoticons, emoticon_regex
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
-from zerver.lib.url_encoding import encode_stream
+from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, NotFoundInCache
@@ -112,6 +112,19 @@ STREAM_LINK_REGEX = r"""
 @one_time
 def get_compiled_stream_link_regex() -> Pattern:
     return verbose_compile(STREAM_LINK_REGEX)
+
+STREAM_TOPIC_LINK_REGEX = r"""
+                     (?<![^\s'"\(,:<])             # Start after whitespace or specified chars
+                     \#\*\*                        # and after hash sign followed by double asterisks
+                         (?P<stream_name>[^\*>]+)  # stream name can contain anything except >
+                         >                         # > acts as separator
+                         (?P<topic_name>[^\*]+)     # topic name can contain anything
+                     \*\*                          # ends by double asterisks
+                   """
+
+@one_time
+def get_compiled_stream_topic_link_regex() -> Pattern:
+    return verbose_compile(STREAM_TOPIC_LINK_REGEX)
 
 LINK_REGEX = None  # type: Pattern
 
@@ -1684,14 +1697,45 @@ class StreamPattern(CompiledPattern):
             # href here and instead having the browser auto-add the
             # href when it processes a message with one of these, to
             # provide more clarity to API clients.
+            # Also do the same for StreamTopicPattern.
             stream_url = encode_stream(stream['id'], name)
             el.set('href', '/#narrow/stream/{stream_url}'.format(stream_url=stream_url))
             el.text = '#{stream_name}'.format(stream_name=name)
             return el
         return None
 
+class StreamTopicPattern(CompiledPattern):
+    def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
+        db_data = self.markdown.zulip_db_data
+        if db_data is None:
+            return None
+        stream = db_data['stream_names'].get(name)
+        return stream
+
+    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+        stream_name = m.group('stream_name')
+        topic_name = m.group('topic_name')
+
+        if self.markdown.zulip_message:
+            stream = self.find_stream_by_name(stream_name)
+            if stream is None or topic_name is None:
+                return None
+            el = markdown.util.etree.Element('a')
+            el.set('class', 'stream-topic')
+            el.set('data-stream-id', str(stream['id']))
+            stream_url = encode_stream(stream['id'], stream_name)
+            topic_url = hash_util_encode(topic_name)
+            link = '/#narrow/stream/{stream_url}/topic/{topic_url}'.format(stream_url=stream_url,
+                                                                           topic_url=topic_url)
+            el.set('href', link)
+            el.text = '#{stream_name} > {topic_name}'.format(stream_name=stream_name, topic_name=topic_name)
+            return el
+        return None
+
 def possible_linked_stream_names(content: str) -> Set[str]:
     matches = re.findall(STREAM_LINK_REGEX, content, re.VERBOSE)
+    for match in re.finditer(STREAM_TOPIC_LINK_REGEX, content, re.VERBOSE):
+        matches.append(match.group('stream_name'))
     return set(matches)
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
@@ -1880,6 +1924,7 @@ class Bugdown(markdown.Markdown):
         reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 100)
         reg.register(UserMentionPattern(mention.find_mentions, self), 'usermention', 95)
         reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 90)
+        reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), 'topic', 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 85)
         reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
         reg.register(ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'), 'modal_link', 75)

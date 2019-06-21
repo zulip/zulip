@@ -1535,6 +1535,35 @@ class BugdownTest(ZulipTestCase):
             render_markdown(msg, content),
             '<p>#<strong>casesens</strong></p>')
 
+    def test_topic_single(self) -> None:
+        denmark = get_stream('Denmark', get_realm('zulip'))
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Denmark>some topic**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/some.20topic">#{d.name} &gt; some topic</a></p>'.format(
+                d=denmark
+            ))
+
+    def test_topic_multiple(self) -> None:
+        denmark = get_stream('Denmark', get_realm('zulip'))
+        scotland = get_stream('Scotland', get_realm('zulip'))
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "This has two links: #**Denmark>some topic** and #**Scotland>other topic**."
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>This has two links: '
+            '<a class="stream-topic" data-stream-id="{denmark.id}" '
+            'href="/#narrow/stream/{denmark.id}-{denmark.name}/topic/some.20topic">'
+            '#{denmark.name} &gt; some topic</a>'
+            ' and '
+            '<a class="stream-topic" data-stream-id="{scotland.id}" '
+            'href="/#narrow/stream/{scotland.id}-{scotland.name}/topic/other.20topic">'
+            '#{scotland.name} &gt; other topic</a>'
+            '.</p>'.format(denmark=denmark, scotland=scotland))
+
     def test_possible_stream_names(self) -> None:
         content = '''#**test here**
             This mentions #**Denmark** too.
