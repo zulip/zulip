@@ -101,7 +101,7 @@ export default (env?: string): webpack.Configuration => {
                 "node_modules",
                 resolve(__dirname, "../"),
             ],
-            extensions: [".tsx", ".ts", ".js", ".json", ".scss", ".css"],
+            extensions: [".ts", ".js"],
         },
         // We prefer cheap-module-source-map over any eval-** options
         // because the eval-options currently don't support being
