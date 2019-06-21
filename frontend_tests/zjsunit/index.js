@@ -12,9 +12,9 @@ var path = require('path');
 var fs = require('fs');
 
 global.assert = require('assert');
-require('node_modules/string.prototype.codepointat/codepointat.js');
+require('string.prototype.codepointat/codepointat.js');
 
-global._ = require('node_modules/underscore/underscore.js');
+global._ = require('underscore/underscore.js');
 var _ = global._;
 const windowObj = {
     location: {

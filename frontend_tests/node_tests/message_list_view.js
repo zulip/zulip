@@ -2,7 +2,7 @@ set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
 
 zrequire('util');
-zrequire('XDate', 'node_modules/xdate/src/xdate');
+zrequire('XDate', 'xdate/src/xdate');
 zrequire('Filter', 'js/filter');
 zrequire('FetchStatus', 'js/fetch_status');
 zrequire('MessageListData', 'js/message_list_data');

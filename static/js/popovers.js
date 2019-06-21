@@ -1,4 +1,4 @@
-var confirmDatePlugin = require("node_modules/flatpickr/dist/plugins/confirmDate/confirmDate.js");
+var confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
 
 var popovers = (function () {
 

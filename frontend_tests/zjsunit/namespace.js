@@ -1,6 +1,6 @@
 var namespace = (function () {
 
-var _ = require('node_modules/underscore/underscore.js');
+var _ = require('underscore/underscore.js');
 var exports = {};
 
 var dependencies = [];

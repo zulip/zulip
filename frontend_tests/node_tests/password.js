@@ -1,4 +1,4 @@
-zrequire('zxcvbn', 'node_modules/zxcvbn/dist/zxcvbn');
+zrequire('zxcvbn', 'zxcvbn/dist/zxcvbn');
 zrequire('common');
 
 set_global('i18n', global.stub_i18n);

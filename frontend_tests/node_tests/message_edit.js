@@ -3,7 +3,7 @@ set_global('page_params', {});
 
 global.stub_out_jquery();
 
-zrequire('XDate', 'node_modules/xdate/src/xdate');
+zrequire('XDate', 'xdate/src/xdate');
 zrequire('message_edit');
 
 var get_editability = message_edit.get_editability;

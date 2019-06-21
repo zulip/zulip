@@ -1,6 +1,6 @@
 var stub = (function () {
 
-var _ = require('node_modules/underscore/underscore.js');
+var _ = require('underscore/underscore.js');
 var exports = {};
 
 // Stubs don't do any magical modifications to your namespace.  They

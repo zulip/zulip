@@ -125,22 +125,22 @@ export default (env?: string): webpack.Configuration => {
     // Use the unminified versions of jquery and underscore so that
     // Good error messages show up in production and development in the source maps
     var exposeOptions = [
-        { path: "../node_modules/blueimp-md5/js/md5.js" },
-        { path: "../node_modules/clipboard/dist/clipboard.js", name: "ClipboardJS" },
-        { path: "../node_modules/xdate/src/xdate.js", name: "XDate" },
-        { path: "../node_modules/simplebar/dist/simplebar.js"},
+        { path: "blueimp-md5/js/md5.js" },
+        { path: "clipboard/dist/clipboard.js", name: "ClipboardJS" },
+        { path: "xdate/src/xdate.js", name: "XDate" },
+        { path: "simplebar/dist/simplebar.js"},
         { path: "../static/third/marked/lib/marked.js" },
         { path: "../static/generated/emoji/emoji_codes.js" },
         { path: "../static/generated/pygments_data.js" },
         { path: "../static/js/debug.js" },
         { path: "../static/js/blueslip.js" },
         { path: "../static/js/common.js" },
-        { path: "../node_modules/jquery/dist/jquery.js", name: ['$', 'jQuery'] },
-        { path: "../node_modules/underscore/underscore.js", name: '_' },
-        { path: "../node_modules/handlebars/dist/handlebars.runtime.js", name: 'Handlebars' },
-        { path: "../node_modules/to-markdown/dist/to-markdown.js", name: 'toMarkdown' },
-        { path: "../node_modules/sortablejs/Sortable.js"},
-        { path: "../node_modules/winchan/winchan.js", name: 'WinChan'},
+        { path: "jquery/dist/jquery.js", name: ['$', 'jQuery'] },
+        { path: "underscore/underscore.js", name: '_' },
+        { path: "handlebars/dist/handlebars.runtime.js", name: 'Handlebars' },
+        { path: "to-markdown/dist/to-markdown.js", name: 'toMarkdown' },
+        { path: "sortablejs/Sortable.js"},
+        { path: "winchan/winchan.js", name: 'WinChan'},
     ];
     config.module.rules.push(...getExposeLoaders(exposeOptions));
 
