@@ -45,7 +45,7 @@ deb http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
 EOF
-elif [ "$release" = "cosmic" ]; then
+elif [ "$release" = "cosmic" ] || [ "$release" = "disco" ]; then
     # This case will eventually merge with the above, if/when we add
     # tsearch_extras packages to the Zulip PPA.
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc

@@ -36,6 +36,7 @@ SUPPORTED_PLATFORMS = {
         "xenial",
         "bionic",
         "cosmic",
+        "disco",
     ],
     "Debian": [
         "stretch",
@@ -143,6 +144,7 @@ POSTGRES_VERSION_MAP = {
     "xenial": "9.5",
     "bionic": "10",
     "cosmic": "10",
+    "disco": "11",
     "centos7": "10",
     "fedora29": "10",
     "rhel7": "10",
@@ -187,7 +189,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
 BUILD_TSEARCH_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
 if vendor in ["Ubuntu", "Debian"]:
-    if codename == "cosmic":
+    if codename in ("cosmic", "disco"):
         # For platforms without a tsearch-extras package distributed
         # from our PPA, we need to build from source.
         BUILD_TSEARCH_FROM_SOURCE = True
