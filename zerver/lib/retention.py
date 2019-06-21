@@ -42,7 +42,7 @@ models_with_message_key = [
     },
 ]  # type: List[Dict[str, Any]]
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def move_rows(src_model: Any, raw_query: str, returning_id: bool=False,
               **kwargs: Any) -> List[int]:
     src_db_table = src_model._meta.db_table
