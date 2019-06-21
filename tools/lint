@@ -10,9 +10,7 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 from linter_lib.custom_check import python_rules, non_py_rules
-from zulint import lister
 from zulint.command import add_default_linter_arguments, LinterConfig
-from typing import cast, Dict, List
 import random
 
 def run():
@@ -24,13 +22,6 @@ def run():
     parser.add_argument('--full',
                         action='store_true',
                         help='Check some things we typically ignore')
-    limited_tests_group = parser.add_mutually_exclusive_group()
-    limited_tests_group.add_argument('--frontend',
-                                     action='store_true',
-                                     help='Only check files relevant to frontend')
-    limited_tests_group.add_argument('--backend',
-                                     action='store_true',
-                                     help='Only check files relevant to backend')
     add_default_linter_arguments(parser)
     args = parser.parse_args()
 
@@ -50,23 +41,16 @@ def run():
 
     assert_provisioning_status_ok(args.force)
 
-    backend_file_types = ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst']
-    frontend_file_types = ['js', 'ts', 'css', 'scss', 'handlebars', 'html']
-    file_types = backend_file_types + frontend_file_types
-    if args.backend:
-        file_types = backend_file_types
-    if args.frontend:
-        file_types = frontend_file_types
-
-    by_lang = cast(Dict[str, List[str]],
-                   lister.list_files(args.targets, modified_only=args.modified,
-                                     ftypes=file_types,
-                                     use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
-
     # Invoke the appropriate lint checker for each language,
     # and also check files for extra whitespace.
 
-    linter_config = LinterConfig(args, by_lang)
+    linter_config = LinterConfig(args)
+
+    by_lang = linter_config.list_files(groups={
+        'backend': ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst'],
+        'frontend': ['js', 'ts', 'css', 'scss', 'handlebars', 'html'],
+    }, exclude=EXCLUDED_FILES)
+
     linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'])
     linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'])
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',

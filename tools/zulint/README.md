@@ -60,8 +60,8 @@ script with at least the following options:
 
 ```
 (zulip-py3-venv) tabbott@coset:~/zulip$ ./tools/lint --help
-usage: lint [-h] [--force] [--full] [--frontend | --backend] [--modified]
-            [--verbose-timing] [--skip SKIP] [--only ONLY] [--list]
+usage: lint [-h] [--force] [--full] [--modified] [--verbose-timing]
+            [--skip SKIP] [--only ONLY] [--list] [--groups GROUPS]
             [targets [targets ...]]
 
 positional arguments:
@@ -76,6 +76,9 @@ optional arguments:
   --skip SKIP           Specify linters to skip, eg: --skip=mypy,gitlint
   --only ONLY           Specify linters to run, eg: --only=mypy,gitlint
   --list, -l            List all the registered linters
+  --groups GROUPS, -g GROUPS
+                        Only run linter for languages in the group(s), e.g.:
+                        --groups=backend,other_group
 ```
 
 ### pre-commit hook mode

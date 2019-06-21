@@ -11,9 +11,10 @@ import sys
 
 if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Any, Callable, Dict, List
+    from typing import Callable, Dict, List
 
 from zulint.printer import print_err, colors
+from zulint import lister
 
 def add_default_linter_arguments(parser):
     # type: (argparse.ArgumentParser) -> None
@@ -37,6 +38,11 @@ def add_default_linter_arguments(parser):
     parser.add_argument('--list', '-l',
                         action='store_true',
                         help='List all the registered linters')
+    parser.add_argument('--groups', '-g',
+                        default=[],
+                        type=split_arg_into_list,
+                        help='Only run linter for languages in the group(s), e.g.: '
+                        '--groups=backend,frontend')
 
 def split_arg_into_list(arg):
     # type: (str) -> List[str]
@@ -66,10 +72,24 @@ def run_parallel(lint_functions):
 class LinterConfig:
     lint_functions = {}  # type: Dict[str, Callable[[], int]]
 
-    def __init__(self, args, by_lang):
-        # type: (argparse.Namespace, Any) -> None
+    def __init__(self, args):
+        # type: (argparse.Namespace) -> None
         self.args = args
-        self.by_lang = by_lang  # type: Dict[str, List[str]]
+        self.by_lang = {}  # type: Dict[str, List[str]]
+
+    def list_files(self, file_types=[], groups={}, use_shebang=True, group_by_ftype=True, exclude=[]):
+        # type: (List[str], Dict[str, List[str]], bool, bool, List[str]) -> Dict[str, List[str]]
+        assert file_types or groups, "Atleast one of `file_types` or `groups` must be specified."
+
+        if self.args.groups:
+            file_types = [ft for group in self.args.groups for ft in groups[group]]
+        else:
+            file_types.extend({ft for group in groups.values() for ft in group})
+
+        self.by_lang = lister.list_files(self.args.targets, modified_only=self.args.modified,
+                                         ftypes=file_types, use_shebang=use_shebang,
+                                         group_by_ftype=group_by_ftype, exclude=exclude)
+        return self.by_lang
 
     def lint(self, func):
         # type: (Callable[[], int]) -> Callable[[], int]

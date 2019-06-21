@@ -39,7 +39,7 @@ run ./tools/check-provision $FORCEARG
 run ./tools/clean-repo
 
 # ci/backend
-run ./tools/lint --backend $FORCEARG
+run ./tools/lint --groups=backend $FORCEARG
 run ./tools/test-tools
 run ./tools/test-backend --include-webhooks $FORCEARG
 run ./tools/test-migrations
@@ -57,7 +57,7 @@ run ./tools/test-api
 # run ./tools/test-queue-worker-reload
 
 # ci/frontend
-run ./tools/lint --frontend $FORCEARG
+run ./tools/lint --groups=frontend $FORCEARG
 run ./tools/test-js-with-node
 run ./manage.py makemessages --locale en
 run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
