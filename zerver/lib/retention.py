@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import connection, transaction
-from django.db.models import Q
+from django.db.models import Model, Q
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.logging_util import log_to_file
@@ -43,11 +43,14 @@ models_with_message_key = [
 ]  # type: List[Dict[str, Any]]
 
 @transaction.atomic(savepoint=False)
-def move_rows(src_model: Any, raw_query: str, returning_id: bool=False,
+def move_rows(base_model: Model, raw_query: str, src_db_table: str='', returning_id: bool=False,
               **kwargs: Any) -> List[int]:
-    src_db_table = src_model._meta.db_table
-    src_fields = ["{}.{}".format(src_db_table, field.column) for field in src_model._meta.fields]
-    dst_fields = [field.column for field in src_model._meta.fields]
+    if not src_db_table:
+        # Use base_model's db_table unless otherwise specified.
+        src_db_table = base_model._meta.db_table
+
+    src_fields = ["{}.{}".format(src_db_table, field.column) for field in base_model._meta.fields]
+    dst_fields = [field.column for field in base_model._meta.fields]
     sql_args = {
         'src_fields': ','.join(src_fields),
         'dst_fields': ','.join(dst_fields),
