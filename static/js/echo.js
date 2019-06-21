@@ -185,7 +185,6 @@ exports.process_from_server = function process_from_server(messages) {
         // In case we get the sent message before we get the send ACK, reify here
 
         var client_message = waiting_for_ack[message.local_id];
-
         if (client_message === undefined) {
             // For messages that weren't locally echoed, we go through
             // the "main" codepath that doesn't have to id reconciliation.
@@ -235,6 +234,11 @@ exports.process_from_server = function process_from_server(messages) {
     }
 
     return non_echo_messages;
+};
+
+exports._patch_waiting_for_awk = function _patch_waiting_for_awk(data) {
+    // Only for testing
+    waiting_for_ack = data;
 };
 
 exports.message_send_error = function message_send_error(local_id, error_response) {
