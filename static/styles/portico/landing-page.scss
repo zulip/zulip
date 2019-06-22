@@ -191,30 +191,6 @@ button.black-disabled {
     border: 1px solid hsl(0, 0%, 53%);
 }
 
-button.button.grey-transparent {
-    display: block;
-    margin: 0 auto;
-    padding: 8px 20px;
-
-    font-size: 1.1rem;
-    font-weight: 400;
-
-    color: hsl(0, 0%, 100%);
-    background-color: transparent;
-    border: 1px solid hsl(0, 0%, 100%);
-
-    transition: all 0.2s ease;
-}
-
-button.button.grey-transparent:hover {
-    background-color: hsla(0, 0%, 100%, 0.2);
-}
-
-button.button.grey-transparent:active {
-    background-color: hsl(0, 0%, 100%);
-    color: hsl(0, 0%, 40%);
-}
-
 /* -- navbar styling -- */
 
 nav {
