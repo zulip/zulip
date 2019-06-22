@@ -117,6 +117,14 @@ class Bitbucket2HookTests(WebhookTestCase):
         }
         self.send_and_test_stream_message('pull_request_created_or_updated', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
+    def test_bitbucket2_on_pull_request_created_without_reviewer_username_event(self) -> None:
+        expected_message = u"kolaszek created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:created'
+        }
+        self.send_and_test_stream_message('pull_request_created_or_updated_without_username',
+                                          self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
+
     def test_bitbucket2_on_pull_request_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = u"notifications"
