@@ -35,7 +35,7 @@ the backend host for the working examples, list supported schemes and
 types of authentication, and configure other settings. Once defined,
 information in this section rarely changes.
 
-For example, the `swagger` and `info` objects look like this:
+For example, the `openapi`, `info` and `server` objects look like this:
 ```
 openapi: 3.0.1
 info:
