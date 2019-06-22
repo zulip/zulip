@@ -109,12 +109,18 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertEqual(headers, {})
 
     @patch("zerver.lib.webhooks.common.importlib.import_module")
-    def test_get_fixture_http_headers_for_error_handling(self, import_module_mock: MagicMock) -> None:
+    def test_get_fixture_http_headers_with_no_fixtures_to_headers_function(
+        self,
+        import_module_mock: MagicMock
+    ) -> None:
+
         fake_module = SimpleNamespace()
         import_module_mock.return_value = fake_module
 
-        with self.assertRaises(AttributeError):
-            get_fixture_http_headers("some_integration", "simple_fixture")
+        self.assertEqual(
+            get_fixture_http_headers("some_integration", "simple_fixture"),
+            {}
+        )
 
     def test_standardize_headers(self) -> None:
         self.assertEqual(standardize_headers({}), {})

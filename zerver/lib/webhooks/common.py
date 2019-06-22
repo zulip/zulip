@@ -146,26 +146,16 @@ def get_fixture_http_headers(integration_name: str,
     function from the target integration module to determine what set
     of HTTP headers goes with the given test fixture.
     """
-
-    headers_module_name = "zerver.webhooks.{integration_name}.headers".format(
-        integration_name=integration_name)
+    view_module_name = "zerver.webhooks.{integration_name}.view".format(
+        integration_name=integration_name
+    )
     try:
-        # Try to import the headers.py file. If it does not exist,
-        # then that means that the integration does not have any
-        # special http headers registered.
-        #
         # TODO: We may want to migrate to a more explicit registration
         # strategy for this behavior rather than a try/except import.
-        headers_module = importlib.import_module(headers_module_name)
-    except ImportError:
+        view_module = importlib.import_module(view_module_name)
+        fixture_to_headers = view_module.fixture_to_headers  # type: ignore # we do extra exception handling in case it does not exist below.
+    except (ImportError, AttributeError):
         return {}
-    try:
-        fixture_to_headers = headers_module.fixture_to_headers  # type: ignore # we do extra exception handling in case it does not exist below.
-    except AttributeError as e:
-        msg = ". The {module_name} module must contain a fixture_to_headers method.".format(
-            module_name=headers_module_name
-        )
-        raise AttributeError(str(e) + msg)
     return fixture_to_headers(fixture_name)
 
 
