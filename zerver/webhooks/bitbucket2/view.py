@@ -286,7 +286,11 @@ def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: st
     pull_request = payload['pullrequest']
     assignee = None
     if pull_request.get('reviewers'):
-        assignee = pull_request.get('reviewers')[0]['username']
+        assignee = pull_request.get('reviewers')[0]
+        # Certain payloads may not contain a username, so we
+        # return the user's display name or nickname instead.
+        assignee = (assignee.get('username') or assignee.get('display_name') or
+                    assignee.get('nickname'))
 
     return get_pull_request_event_message(
         get_user_username(payload),
