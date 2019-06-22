@@ -229,8 +229,10 @@ def get_stream_id(client):
 def delete_stream(client, stream_id):
     # type: (Client, int) -> None
 
+    # {code_example|start}
+    # Delete the stream by a given ID
     result = client.delete_stream(stream_id)
-
+    # {code_example|end}
     validate_against_openapi_schema(result, '/streams/{stream_id}', 'delete', '200')
 
     assert result['result'] == 'success'

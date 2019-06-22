@@ -23,6 +23,7 @@
 * [Topic muting](/api/mute-topics)
 * [Create a stream](/api/create-stream)
 * [Get stream ID](/api/get-stream-id)
+* [Delete Stream](/api/delete-stream)
 
 #### Users
 
