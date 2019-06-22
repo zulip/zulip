@@ -2049,7 +2049,8 @@ paths:
         description: The ID of the stream to be deleted.
         schema:
           type: integer
-          required: true
+        example: 42
+        required: true
       security:
       - basicAuth: []
       responses:
@@ -2058,12 +2059,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JsonSuccess'
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                      {
+                          "msg": "",
+                          "result": "success"
+                      }
         '400':
           description: Bad request.
           content:
             application/json:
               schema:
+                allOf:
                 - $ref: '#/components/schemas/JsonError'
                 - example:
                     {
