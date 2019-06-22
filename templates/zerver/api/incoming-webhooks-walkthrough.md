@@ -52,16 +52,18 @@ put key details like the event type in a separate HTTP header
 test Zulip's handling of that integration, you will need to record
 which HTTP headers are used with each fixture you capture.
 
-Since this integration-dependent, Zulip offers a simple API for doing
-this, which is probably best explained by looking at the example for
-GitHub: `zerver/webhooks/github/headers.py`; basically, as part of
-writing your integration, you'll write a special function at that path
-that maps the filename of the fixture to the set of HTTP headers to
-use. Most such functions will use the same strategy as the GitHub
-integration: encoding the third party variable header data (usually
-just an event type) in the fixture filename, in such a case, you
-won't need to explicitly write such a special function and can instead
-just use the same helper method that the GitHub integration uses.
+Since this is integration-dependent, Zulip offers a simple API for
+doing this, which is probably best explained by looking at the example
+for GitHub: `zerver/webhooks/github/view.py`; basically, as part of
+writing your integration, you'll write a special function in your
+view.py file that maps the filename of the fixture to the set of HTTP
+headers to use. This function must be named "fixture_to_headers". Most
+integrations will use the same strategy as the GitHub integration:
+encoding the third party variable header data (usually just an event
+type) in the fixture filename, in such a case, you won't need to
+explicitly write the logic for such a special function again,
+instead you can just use the same helper method that the GitHub
+integration uses.
 
 ## Step 1: Initialize your webhook python package
 

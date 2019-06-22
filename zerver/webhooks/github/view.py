@@ -16,6 +16,8 @@ from zerver.lib.webhooks.git import CONTENT_MESSAGE_TEMPLATE, \
     get_pull_request_event_message, get_push_commits_event_message, \
     get_push_tag_event_message, get_setup_webhook_message
 from zerver.models import UserProfile
+from zerver.lib.webhooks.common import \
+    get_http_headers_from_filename
 
 class UnknownEventType(Exception):
     pass
@@ -511,3 +513,7 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> O
 
 def get_body_function_based_on_type(type: str) -> Any:
     return EVENT_FUNCTION_MAPPER.get(type)
+
+fixture_to_headers = get_http_headers_from_filename(
+    "HTTP_X_GITHUB_EVENT"
+)
