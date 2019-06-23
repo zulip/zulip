@@ -24,6 +24,7 @@
 * [Create a stream](/api/create-stream)
 * [Get stream ID](/api/get-stream-id)
 * [Delete Stream](/api/delete-stream)
+* [Update Stream](/api/update-stream)
 
 #### Users
 

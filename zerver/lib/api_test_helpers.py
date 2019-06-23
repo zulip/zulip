@@ -260,14 +260,19 @@ def get_streams(client):
 
 def update_stream(client, stream_id):
     # type: (Client, int) -> None
+
+    # {code_example|start}
+    # Update the stream by a given ID
     request = {
         'stream_id': stream_id,
-        'content': 'Venice is the capital of Italy',
-        'subject': 'Italy'
+        'is_announcement_only': True,
+        'is_private': True
     }
 
     result = client.update_stream(request)
+    # {code_example|end}
 
+    validate_against_openapi_schema(result, '/streams/{stream_id}', 'patch', '200')
     assert result['result'] == 'success'
 
 def get_user_groups(client):
