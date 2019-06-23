@@ -87,7 +87,11 @@ function insert_local_message(message_request, local_id) {
                         unknown_local_echo_user: true};
             }
             // NORMAL PATH
-            return person;
+            return {
+                id: person.user_id,
+                email: person.email,
+                full_name: person.full_name,
+            };
         });
     }
 
