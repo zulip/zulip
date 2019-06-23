@@ -8,6 +8,7 @@ from zerver.decorator import require_realm_admin
 from zerver.models import RealmAuditLog, UserProfile
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_success
+from zerver.lib.export import get_public_exports_serialized
 
 @require_realm_admin
 def public_only_realm_export(request: HttpRequest, user: UserProfile) -> HttpResponse:
@@ -38,3 +39,8 @@ def public_only_realm_export(request: HttpRequest, user: UserProfile) -> HttpRes
              'id': row.id}
     queue_json_publish('deferred_work', event)
     return json_success()
+
+@require_realm_admin
+def get_public_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    public_exports = get_public_exports_serialized(user)
+    return json_success({"public_exports": public_exports})

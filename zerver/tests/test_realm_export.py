@@ -53,6 +53,17 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(bucket.get_key(path_id).get_contents_as_string(),
                          b'zulip!')
 
+        result = self.client_get('/json/export/realm')
+        self.assert_json_success(result)
+
+        export_dict = result.json()['public_exports']
+        self.assertEqual(export_dict[0]['path'], path_id)
+        self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
+        self.assert_length(export_dict,
+                           RealmAuditLog.objects.filter(
+                               realm=admin.realm,
+                               event_type=RealmAuditLog.REALM_EXPORTED).count())
+
     def test_endpoint_local_uploads(self) -> None:
         admin = self.example_user('iago')
         self.login(admin.email)
@@ -78,6 +89,17 @@ class RealmExportTest(ZulipTestCase):
         response = self.client_get(path_id)
         self.assertEqual(response.status_code, 200)
         self.assert_url_serves_contents_of_file(path_id, b'zulip!')
+
+        result = self.client_get('/json/export/realm')
+        self.assert_json_success(result)
+
+        export_dict = result.json()['public_exports']
+        self.assertEqual(export_dict[0]['path'], path_id)
+        self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
+        self.assert_length(export_dict,
+                           RealmAuditLog.objects.filter(
+                               realm=admin.realm,
+                               event_type=RealmAuditLog.REALM_EXPORTED).count())
 
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user('iago')

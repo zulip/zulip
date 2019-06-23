@@ -400,7 +400,8 @@ v1_api_and_json_patterns = [
 
     # Used for public-only realm exporting
     url(r'^export/realm$', rest_dispatch,
-        {'POST': 'zerver.views.public_export.public_only_realm_export'}),
+        {'POST': 'zerver.views.public_export.public_only_realm_export',
+         'GET': 'zerver.views.public_export.get_public_exports'}),
 ]
 
 # These views serve pages (HTML). As such, their internationalization
