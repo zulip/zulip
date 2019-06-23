@@ -2079,6 +2079,80 @@ paths:
                         "msg": "Invalid stream id",
                         "result": "error"
                     }
+    patch:
+      description: Update the stream with the given ID.
+      parameters:
+      - name: stream_id
+        in: path
+        description: The ID of the stream to be updated.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      - name: description
+        in: query
+        description: The new description for the stream.
+        schema:
+          type: string
+        example: "This stream is related to football dicsussions."
+        required: false
+      - name: new_name
+        in: query
+        description: The new name for the stream.
+        schema:
+          type: string
+        example: "Italy"
+        required: false
+      - name: is_private
+        in: query
+        description: The new state of the stream.
+        schema:
+          type: boolean
+        example: true
+        required: false
+      - name: is_announcement_only
+        in: query
+        description: The new state for the announcements.
+        schema:
+          type: boolean
+        example: true
+        required: false
+      - name: history_public_to_subscribers
+        in: query
+        description: The new state for the history_public_to_subscribers.
+        schema:
+          type: boolean
+        example: true
+        required: false
+
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                      {
+                          "msg": "",
+                          "result": "success"
+                      }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream id",
+                        "result": "error"
+                    }
   /typing:
     post:
       description: Send an event indicating that the user has started or
