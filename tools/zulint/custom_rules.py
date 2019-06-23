@@ -6,7 +6,7 @@ from __future__ import absolute_import
 import re
 import traceback
 
-from zulint.printer import print_err, colors
+from zulint.printer import print_err, colors, GREEN, BOLDRED, ENDC, MAGENTA
 
 if False:
     from typing import Any, Dict, List, Optional, Tuple, Iterable
@@ -28,6 +28,7 @@ class RuleList:
         self.shebang_rules = shebang_rules
         # Exclude the files in this folder from rules
         self.exclude_files_in = "\\"
+        self.verbose = False
 
     def get_line_info_from_file(self, fn):
         # type: (str) -> List[LineTup]
@@ -125,6 +126,13 @@ class RuleList:
         print_err(identifier, color, '{} at {} line {}:'.format(
             rule['description'], fn, line_number))
         print_err(identifier, color, line)
+        if self.verbose:
+            if rule.get('good_lines'):
+                print_err(identifier, color, GREEN + "  Good code: {}{}".format(
+                    (MAGENTA + " | " + GREEN).join(rule['good_lines']), ENDC))
+            if rule.get('bad_lines'):
+                print_err(identifier, color, BOLDRED + "  Bad code: {}{}".format(
+                    (MAGENTA + " | " + BOLDRED).join(rule['bad_lines']), ENDC))
 
     def check_file_for_long_lines(self,
                                   fn,
@@ -202,8 +210,8 @@ class RuleList:
 
         return failed
 
-    def check(self, by_lang):
-        # type: (Dict[str, List[str]]) -> bool
+    def check(self, by_lang, verbose=False):
+        # type: (Dict[str, List[str]], bool) -> bool
         # By default, a rule applies to all files within the extension for
         # which it is specified (e.g. all .py files)
         # There are three operators we can use to manually include or exclude files from linting for a rule:
@@ -215,6 +223,7 @@ class RuleList:
         # 'include_only': 'set([<path>, ...])' - includes only those files where <path> is a
         #                                        substring of the filepath.
         failed = False
+        self.verbose = verbose
         for lang in self.langs:
             color = next(colors)
             for fn in by_lang[lang]:
