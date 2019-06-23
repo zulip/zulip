@@ -395,22 +395,25 @@ def add_embed(root: Element, link: str, extracted_data: Dict[str, Any]) -> None:
     if oembed and add_oembed_data(root, link, extracted_data):
         return
 
+    img_link = extracted_data.get('image')
+    if not img_link:
+        # Don't add an embed if an image is not found
+        return
+
     container = markdown.util.etree.SubElement(root, "div")
     container.set("class", "message_embed")
 
-    img_link = extracted_data.get('image')
-    if img_link:
-        parsed_img_link = urllib.parse.urlparse(img_link)
-        # Append domain where relative img_link url is given
-        if not parsed_img_link.netloc:
-            parsed_url = urllib.parse.urlparse(link)
-            domain = '{url.scheme}://{url.netloc}/'.format(url=parsed_url)
-            img_link = urllib.parse.urljoin(domain, img_link)
-        img = markdown.util.etree.SubElement(container, "a")
-        img.set("style", "background-image: url(" + img_link + ")")
-        img.set("href", link)
-        img.set("target", "_blank")
-        img.set("class", "message_embed_image")
+    parsed_img_link = urllib.parse.urlparse(img_link)
+    # Append domain where relative img_link url is given
+    if not parsed_img_link.netloc:
+        parsed_url = urllib.parse.urlparse(link)
+        domain = '{url.scheme}://{url.netloc}/'.format(url=parsed_url)
+        img_link = urllib.parse.urljoin(domain, img_link)
+    img = markdown.util.etree.SubElement(container, "a")
+    img.set("style", "background-image: url(" + img_link + ")")
+    img.set("href", link)
+    img.set("target", "_blank")
+    img.set("class", "message_embed_image")
 
     data_container = markdown.util.etree.SubElement(container, "div")
     data_container.set("class", "data-container")

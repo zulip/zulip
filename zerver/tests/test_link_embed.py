@@ -242,8 +242,10 @@ class PreviewTestCase(ZulipTestCase):
 
     @classmethod
     def create_mock_response(cls, url: str, relative_url: bool=False,
-                             headers: Optional[Dict[str, str]]=None) -> Callable[..., MockPythonResponse]:
-        html = cls.open_graph_html
+                             headers: Optional[Dict[str, str]]=None,
+                             html: Optional[str]=None) -> Callable[..., MockPythonResponse]:
+        if html is None:
+            html = cls.open_graph_html
         if relative_url is True:
             html = html.replace('http://ia.media-imdb.com', '')
         response = MockPythonResponse(html, 200, headers)
@@ -472,6 +474,34 @@ class PreviewTestCase(ZulipTestCase):
         self.assertEqual(
             ('<p><a href="http://test.org/audio.mp3" target="_blank" title="http://test.org/audio.mp3">'
              'http://test.org/audio.mp3</a></p>'),
+            msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_link_preview_no_open_graph_image(self) -> None:
+        email = self.example_email('hamlet')
+        self.login(email)
+        url = 'http://test.org/foo.html'
+        with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
+            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        # HTML without the og:image metadata
+        html = '\n'.join(line for line in self.open_graph_html.splitlines() if 'og:image' not in line)
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url, html=html))
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch('requests.get', mocked_response):
+                FetchLinksEmbedData().consume(event)
+                cached_data = link_embed_data_from_cache(url)
+
+        self.assertIn('title', cached_data)
+        self.assertNotIn('image', cached_data)
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        self.assertEqual(
+            ('<p><a href="http://test.org/foo.html" target="_blank" title="http://test.org/foo.html">'
+             'http://test.org/foo.html</a></p>'),
             msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
