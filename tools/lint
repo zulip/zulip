@@ -83,7 +83,7 @@ def run():
     def custom_py():
         # type: () -> int
         """Runs custom checks for python files"""
-        failed = python_rules.check(by_lang)
+        failed = python_rules.check(by_lang, verbose=args.verbose)
         return 1 if failed else 0
 
     @linter_config.lint
@@ -92,7 +92,7 @@ def run():
         """Runs custom checks for non-python files"""
         failed = False
         for rule in non_py_rules:
-            failed = failed or rule.check(by_lang)
+            failed = failed or rule.check(by_lang, verbose=args.verbose)
         return 1 if failed else 0
 
     @linter_config.lint

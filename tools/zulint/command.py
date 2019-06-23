@@ -42,6 +42,9 @@ def add_default_linter_arguments(parser):
                         default=[],
                         type=split_arg_into_list,
                         help='Only run linter for languages in the group(s), eg: -g=backend,other_group')
+    parser.add_argument('--verbose', '-v',
+                        action='store_true',
+                        help='Print verbose output')
 
 def split_arg_into_list(arg):
     # type: (str) -> List[str]
