@@ -109,9 +109,7 @@ class RuleList:
                     if rule.get("exclude_pattern"):
                         if re.search(rule['exclude_pattern'], line_to_check):
                             continue
-                    print_err(identifier, color, '{} at {} line {}:'.format(
-                        rule['description'], fn, i+1))
-                    print_err(identifier, color, line)
+                    self.print_error(rule, line, identifier, color, fn, i+1)
                     ok = False
             except Exception:
                 print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
@@ -121,6 +119,12 @@ class RuleList:
             print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
 
         return ok
+
+    def print_error(self, rule, line, identifier, color, fn, line_number):
+        # type: (Dict[str, Any], str, str, Optional[Iterable[str]], str, int) -> None
+        print_err(identifier, color, '{} at {} line {}:'.format(
+            rule['description'], fn, line_number))
+        print_err(identifier, color, line)
 
     def check_file_for_long_lines(self,
                                   fn,
@@ -189,9 +193,7 @@ class RuleList:
             shebang_rules_to_apply = self.get_rules_applying_to_fn(fn=fn, rules=self.shebang_rules)
             for rule in shebang_rules_to_apply:
                 if re.search(rule['pattern'], firstline):
-                    print_err(identifier, color,
-                              '{} at {} line 1:'.format(rule['description'], fn))
-                    print_err(identifier, color, firstline)
+                    self.print_error(rule, firstline, identifier, color, fn, 1)
                     failed = True
 
         if lastLine and ('\n' not in lastLine):
