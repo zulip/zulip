@@ -146,6 +146,13 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     return profile_field;
 }
 
+function get_visible_email(user) {
+    if (user.delivery_email) {
+        return user.delivery_email;
+    }
+    return user.email;
+}
+
 function render_user_info_popover(user, popover_element, is_sender_popover, private_msg_class,
                                   template_class, popover_placement) {
     var is_me = people.is_my_user_id(user.user_id);
@@ -174,7 +181,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         sent_by_uri: hash_util.by_sender_uri(user.email),
         show_email: settings_org.show_email(),
         show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
-        user_email: user.email,
+        user_email: get_visible_email(user),
         user_full_name: user.full_name,
         user_id: user.user_id,
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
