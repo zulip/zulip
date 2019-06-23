@@ -278,6 +278,14 @@ def setup_shell_profile(shell_profile):
     if os.path.exists('/srv/zulip'):
         write_command('cd /srv/zulip')
 
+def set_inotify_sysctl():
+    # type: () -> None
+    current_inotify_watches = subprocess.check_output(["sysctl", "-n",
+                                                       "fs.inotify.max_user_watches"])
+    if int(current_inotify_watches) <= 8192 and not os.path.exists("/etc/sysctl.d/90-zulip.conf"):
+        run_as_root(["cp", "./tools/setup/90-zulip.conf", "/etc/sysctl.d/90-zulip.conf"])
+        run_as_root(["sysctl", "-p", "/etc/sysctl.d/90-zulip.conf"])
+
 def install_system_deps():
     # type: () -> None
 
@@ -377,6 +385,8 @@ def main(options):
     # yarn and management commands expect to be run from the root of the
     # project.
     os.chdir(ZULIP_PATH)
+
+    set_inotify_sysctl()
 
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
