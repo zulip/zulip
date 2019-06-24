@@ -135,25 +135,23 @@ Basic authentication, and returns a JSON response object containing the presence
 The
 [Definitions Object](http://swagger.io/specification/#definitionsObject)
 contains schemas referenced by other objects. For example,
-`MessageResponse`, the response from the `/messages` endpoint,
-contains three required parameters.  Two are strings, and one is an
-integer.
+`InvalidMessageError`, response from the ` /messages/{message_id}/history` endpoint,
+in case of `400 Bad Request` error.
 
 ```
-MessageResponse:
-  type: object
-  required:
-    - msg
-    - result
-    - id
-  properties:
-    msg:
-      type: string
-    result:
-      type: string
-    id:
-      type: integer
-      format: int64
+InvalidMessageError:
+      allOf:
+      - $ref: '#/components/schemas/JsonSuccess'
+      - properties:
+          raw_content:
+            type: string
+            description: The raw content of the message.
+      - example:
+          {
+              "msg": "Invalid message(s)",
+              "code": "BAD_REQUEST",
+              "result": "error"
+          }
 ```
 
 You can find more examples, including GET requests and nested objects, in
