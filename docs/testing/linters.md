@@ -37,7 +37,16 @@ You can also run them individually or pass specific files:
     ./tools/lint
     ./tools/lint static/js/compose.js
     ./tools/lint static/js/
-    ./tools/run-mypy
+
+`./tools/lint` has many useful options; you can read about them in its
+internal documentation using `./tools/lint --help`.  Of particular
+note are:
+* `--fix`: Several of our linters support automatically fixing basic
+  issues; this option will ask `tools/lint` to run those.
+* `--verbose`: Provides detailed information on how to fix many common
+  linter errors not covered by `--fix`.
+* `--skip` and `--only`: Only run certain linters.
+* `-m`: Only check modified files.
 
 Finally, you can rely on our Travis CI setup to run linters for you, but
 it is good practice to run lint checks locally.
@@ -55,11 +64,6 @@ new files before running lint checks.
 Our linting tools generally support the ability to lint files
 individually--with some caveats--and those options will be described
 later in this document.
-
-We may eventually bundle `run-mypy` into `lint`, but mypy is pretty
-resource intensive compared to the rest of the linters, because it does
-static code analysis.  So we keep mypy separate to allow folks to quickly run
-the other lint checks.
 
 ## General considerations
 
