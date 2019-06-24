@@ -751,6 +751,10 @@ def apply_event(state: Dict[str, Any],
                                       if realm_domain['domain'] != event['domain']]
     elif event['type'] == "realm_emoji":
         state['realm_emoji'] = event['realm_emoji']
+    elif event['type'] == 'realm_export':
+        # These realm export events are only available to
+        # administrators, and aren't included in page_params.
+        pass
     elif event['type'] == "alert_words":
         state['alert_words'] = event['alert_words']
     elif event['type'] == "muted_topics":
@@ -812,8 +816,6 @@ def apply_event(state: Dict[str, Any],
             user_status.pop(user_id, None)
 
         state['user_status'] = user_status
-    elif event['type'] == 'realm_exported':
-        pass
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 

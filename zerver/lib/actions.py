@@ -38,6 +38,7 @@ from zerver.lib.email_mirror_helpers import encode_email_address, encode_email_a
 from zerver.lib.emoji import emoji_name_to_emoji_code, get_emoji_file_name
 from zerver.lib.exceptions import StreamDoesNotExistError, \
     StreamWithIDDoesNotExistError
+from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.message import (
     access_message,
@@ -5670,8 +5671,8 @@ def get_zoom_video_call_url(realm: Realm) -> str:
 
     return response['join_url']
 
-def notify_export_completed(user_profile: UserProfile, public_url: str) -> None:
+def notify_export_completed(user_profile: UserProfile) -> None:
     # In the future, we may want to send this event to all realm admins.
-    event = dict(type='realm_exported',
-                 public_url=public_url)
+    event = dict(type='realm_export',
+                 exports=get_realm_exports_serialized(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])

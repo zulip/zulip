@@ -1702,7 +1702,7 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
         print("Successfully deleted the tarball at %s" % (tarball_path,))
     return public_url
 
-def get_public_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
+def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
     all_exports = RealmAuditLog.objects.filter(realm=user.realm,
                                                event_type=RealmAuditLog.REALM_EXPORTED)
     exports_dict = {}

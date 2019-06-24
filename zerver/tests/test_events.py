@@ -2759,19 +2759,26 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-    def test_public_export_notify_admins(self) -> None:
+    def test_realm_export_notify_admins(self) -> None:
+        # TODO: This test is completely busted because the
+        # RealmAuditLog table is empty in it, so it's testing an event
+        # containing an empty list.
         schema_checker = self.check_events_dict([
-            ('type', equals('realm_exported')),
-            ('public_url', check_string),
+            ('type', equals('realm_export')),
+            ('exports', check_list(check_dict_only([
+                ('id', check_string),
+                ('event_time', check_string),
+                ('acting_user_id', check_int),
+                ('path', check_string),
+            ])))
         ])
 
         # Traditionally, we'd be testing the endpoint, but that
         # requires somewhat annoying mocking setup for what to do with
         # the export tarball.
         events = self.do_test(
-            lambda: notify_export_completed(self.user_profile,
-                                            "http://localhost:9991/path/to/export.tar.gz"),
-            state_change_expected=False)
+            lambda: notify_export_completed(self.user_profile),
+            state_change_expected=False, num_events=1)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

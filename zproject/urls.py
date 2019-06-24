@@ -36,7 +36,7 @@ import zerver.views.realm
 import zerver.views.digest
 import zerver.views.messages
 from zerver.context_processors import latest_info_context
-import zerver.views.public_export
+import zerver.views.realm_export
 
 from zerver.lib.rest import rest_dispatch
 
@@ -398,10 +398,10 @@ v1_api_and_json_patterns = [
     url(r'^calls/create$', rest_dispatch,
         {'GET': 'zerver.views.video_calls.get_zoom_url'}),
 
-    # Used for public-only realm exporting
+    # Used realm data exporting
     url(r'^export/realm$', rest_dispatch,
-        {'POST': 'zerver.views.public_export.public_only_realm_export',
-         'GET': 'zerver.views.public_export.get_public_exports'}),
+        {'POST': 'zerver.views.realm_export.export_realm',
+         'GET': 'zerver.views.realm_export.get_realm_exports'}),
 ]
 
 # These views serve pages (HTML). As such, their internationalization

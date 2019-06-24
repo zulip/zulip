@@ -8,7 +8,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets
 
 from zerver.models import RealmAuditLog
-from zerver.views.public_export import public_only_realm_export
+from zerver.views.realm_export import export_realm
 import zerver.lib.upload
 
 import os
@@ -24,7 +24,7 @@ class RealmExportTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.login(user.email)
         with self.assertRaises(JsonableError):
-            public_only_realm_export(self.client_post, user)
+            export_realm(self.client_post, user)
 
     @use_s3_backend
     def test_endpoint_s3(self) -> None:
@@ -57,7 +57,7 @@ class RealmExportTest(ZulipTestCase):
         result = self.client_get('/json/export/realm')
         self.assert_json_success(result)
 
-        export_dict = result.json()['public_exports']
+        export_dict = result.json()['exports']
         self.assertEqual(export_dict[0]['path'], path_id)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
@@ -98,7 +98,7 @@ class RealmExportTest(ZulipTestCase):
         result = self.client_get('/json/export/realm')
         self.assert_json_success(result)
 
-        export_dict = result.json()['public_exports']
+        export_dict = result.json()['exports']
         self.assertEqual(export_dict[0]['path'], path_id)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
@@ -126,5 +126,5 @@ class RealmExportTest(ZulipTestCase):
                                          event_time=timezone_now()))
         RealmAuditLog.objects.bulk_create(exports)
 
-        result = public_only_realm_export(self.client_post, admin)
+        result = export_realm(self.client_post, admin)
         self.assert_json_error(result, 'Exceeded rate limit.')

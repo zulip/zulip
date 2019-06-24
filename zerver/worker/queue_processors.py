@@ -610,7 +610,7 @@ class DeferredWorker(QueueProcessingWorker):
                 (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                                require_active=False)
                 do_mark_stream_messages_as_read(user_profile, client, stream)
-        elif event['type'] == 'realm_exported':
+        elif event['type'] == 'realm_export':
             realm = Realm.objects.get(id=event['realm_id'])
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
 
@@ -637,6 +637,5 @@ class DeferredWorker(QueueProcessingWorker):
             )
 
             # For future frontend use, also notify administrator
-            # clients that the export happened, including sending the
-            # url.
-            notify_export_completed(user_profile, public_url)
+            # clients that the export happened.
+            notify_export_completed(user_profile)

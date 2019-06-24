@@ -8,10 +8,11 @@ from zerver.decorator import require_realm_admin
 from zerver.models import RealmAuditLog, UserProfile
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_success
-from zerver.lib.export import get_public_exports_serialized
+from zerver.lib.export import get_realm_exports_serialized
 
 @require_realm_admin
-def public_only_realm_export(request: HttpRequest, user: UserProfile) -> HttpResponse:
+def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    # Currently only supports public-data-only exports.
     event_type = RealmAuditLog.REALM_EXPORTED
     event_time = timezone_now()
     realm = user.realm
@@ -32,7 +33,7 @@ def public_only_realm_export(request: HttpRequest, user: UserProfile) -> HttpRes
                                        acting_user=user)
     # Using the deferred_work queue processor to avoid
     # killing the process after 60s
-    event = {'type': event_type,
+    event = {'type': "realm_export",
              'time': event_time,
              'realm_id': realm.id,
              'user_profile_id': user.id,
@@ -41,6 +42,6 @@ def public_only_realm_export(request: HttpRequest, user: UserProfile) -> HttpRes
     return json_success()
 
 @require_realm_admin
-def get_public_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
-    public_exports = get_public_exports_serialized(user)
-    return json_success({"public_exports": public_exports})
+def get_realm_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    realm_exports = get_realm_exports_serialized(user)
+    return json_success({"exports": realm_exports})
