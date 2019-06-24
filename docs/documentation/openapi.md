@@ -70,42 +70,64 @@ below.)
 
 Example:
 
-The `/users/{user}/presence` endpoint (defined in a
+The `/users/{email}/presence` endpoint (defined in a
 [Path Item Object](http://swagger.io/specification/#pathItemObject))
 expects a GET request with one
 [parameter](http://swagger.io/specification/#parameterObject), HTTP
-Basic authentication, and returns a JSON response containing `msg`,
-`result`, and `presence` values.
+Basic authentication, and returns a JSON response object containing the presence details for every client the user has logged into.
 
 ```
-/users/{user}/presence:
-  get:
-    description: Get presence data for another user.
-    operationId: getPresence
-    parameters:
-    - name: user
-      in: path
-      description: Enter email address
-      required: true
-      type: string
-    security:
-    - basicAuth: []
-    responses:
-      '200':
-        description: The response from a successful call
+ /users/{email}/presence:
+    get:
+      description: Get the presence status for a specific user.
+      parameters:
+      - name: email
+        in: path
+        description: The email address of the user whose presence you want to
+          fetch.
         schema:
-          type: object
-          required:
-          - msg
-          - result
-          - presence
-          properties:
-            msg:
-              type: string
-            result:
-              type: string
-            presence:
-              type: array
+          type: string
+        example: iago@zulip.com
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    presence:
+                      type: object
+                      description: An object containing the presence details
+                        for every client the user has logged into.
+                - example:
+                    {
+                        "presence": {
+                            "website": {
+                                "timestamp": 1532697622,
+                                "status": "active",
+                                "pushable": false,
+                                "client": "website"
+                            },
+                            "ZulipMobile": {
+                                "timestamp": 1522687421,
+                                "status": "active",
+                                "pushable": false,
+                                "client": "ZulipMobile"
+                            },
+                            "aggregated": {
+                                "timestamp": 1532697622,
+                                "status": "active",
+                                "client": "website"
+                            }
+                        },
+                        "result": "success",
+                        "msg": ""
+                    }
 ```
 
 ### Schemas
