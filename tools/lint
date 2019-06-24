@@ -22,6 +22,9 @@ def run():
     parser.add_argument('--full',
                         action='store_true',
                         help='Check some things we typically ignore')
+    parser.add_argument('--fix',
+                        action='store_true',
+                        help='Automatically fix problems where supported')
     add_default_linter_arguments(parser)
     args = parser.parse_args()
 
@@ -54,10 +57,12 @@ def run():
     linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'],
                                   description="Compares addClass() between JavaSsript and CSS.")
     linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'],
+                                  fix_arg='--fix',
                                   description="Standard CSS style and formatting linter "
                                   "(config: .stylelintrc)")
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
                                              '--quiet', '--cache', '--ext', '.js,.ts'], ['js', 'ts'],
+                                  fix_arg='--fix',
                                   description="Standard JavaScript style and formatting linter"
                                   "(config: .eslintrc).")
     linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'],
@@ -65,6 +70,7 @@ def run():
                                   "checking for syntax errors.")
     linter_config.external_linter('puppet-lint',
                                   ['puppet-lint'] + PUPPET_CHECK_RULES_TO_EXCLUDE, ['pp'],
+                                  fix_arg='--fix',
                                   description="Standard puppet linter"
                                   "(config: tools/linter_lib/exclude.py)")
     linter_config.external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'],

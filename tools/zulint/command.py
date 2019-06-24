@@ -11,7 +11,7 @@ import sys
 
 if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Callable, Dict, List
+    from typing import Callable, Dict, List, Optional
 
 from zulint.printer import print_err, colors, BOLDRED, BLUE, GREEN, ENDC
 from zulint import lister
@@ -101,9 +101,9 @@ class LinterConfig:
         self.lint_descriptions[func.__name__] = func.__doc__ if func.__doc__ else "External Linter"
         return func
 
-    def external_linter(self, name, command, target_langs=[], pass_targets=True,
+    def external_linter(self, name, command, target_langs=[], pass_targets=True, fix_arg=None,
                         description="External Linter"):
-        # type: (str, List[str], List[str], bool, str) -> None
+        # type: (str, List[str], List[str], bool, Optional[str], str) -> None
         """Registers an external linter program to be run as part of the
         linter.  This program will be passed the subset of files being
         linted that have extensions in target_langs.  If there are no
@@ -125,6 +125,9 @@ class LinterConfig:
                     # then we can safely return success without
                     # invoking the external linter.
                     return 0
+
+            if self.args.fix and fix_arg:
+                command.append(fix_arg)
 
             if pass_targets:
                 full_command = command + targets
