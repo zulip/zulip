@@ -192,23 +192,3 @@ correct.
 * Descriptions do not need to be in quotes, and may use common
   Markdown format options like inline code \` (backtick) and `#`
   headings.
-
-* A single `|` (pipe) character begins a multi-line description on the
-  next line.  Single spaced lines (one newline at the end of each) are
-  joined. Use an extra blank line for a paragraph break.
-
-### Examples:
-
-```
-Description: This is a single line description.
-```
-
-```
-Description: |
-             This description has multiple lines.
-             Sometimes descriptions can go on for
-             several sentences.
-
-             A description might have multiple paragraphs
-             as well.
-```
