@@ -15,6 +15,7 @@ from zerver.models import (Message, Realm, UserProfile, Stream, ArchivedUserMess
 from zerver.lib.retention import (
     archive_messages,
     move_messages_to_archive,
+    restore_all_data_from_archive
 )
 
 # Class with helper functions useful for testing archiving of reactions:
@@ -181,6 +182,9 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         archive_messages()
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
+        restore_all_data_from_archive()
+        self._verify_restored_data(expired_msg_ids, expired_usermsg_ids)
+
     def test_expired_messages_in_one_realm(self) -> None:
         """Test with a retention policy set for only the MIT realm"""
         self._set_realm_message_retention_value(self.zulip_realm, None)
@@ -208,6 +212,9 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
         archive_messages()
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
+
+        restore_all_data_from_archive()
+        self._verify_restored_data(expired_msg_ids, expired_usermsg_ids)
 
         self._set_realm_message_retention_value(self.zulip_realm, ZULIP_REALM_DAYS)
 
@@ -302,6 +309,9 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # Make sure we archived what neeeded:
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
+        restore_all_data_from_archive()
+        self._verify_restored_data(expired_msg_ids, expired_usermsg_ids)
+
     def test_archiving_attachments(self) -> None:
         """End-to-end test for the logic for archiving attachments.  This test
         is hard to read without first reading _send_messages_with_attachments"""
@@ -338,6 +348,16 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self.assertEqual(ArchivedAttachment.objects.count(), 3)
         self.assertEqual(
             list(ArchivedAttachment.objects.distinct('messages__id').order_by('messages__id').values_list(
+                'messages__id', flat=True)),
+            sorted(msgs_ids.values())
+        )
+
+        restore_all_data_from_archive()
+        # Attachments should have been restored:
+        self.assertEqual(Attachment.objects.count(), 3)
+        self.assertEqual(ArchivedAttachment.objects.count(), 3)  # Archived data doesn't get deleted by restoring.
+        self.assertEqual(
+            list(Attachment.objects.distinct('messages__id').order_by('messages__id').values_list(
                 'messages__id', flat=True)),
             sorted(msgs_ids.values())
         )
@@ -385,6 +405,12 @@ class TestArchivingSubMessages(ArchiveMessagesTestingBase):
             set(submessage_ids)
         )
 
+        restore_all_data_from_archive()
+        self.assertEqual(
+            set(SubMessage.objects.filter(id__in=submessage_ids).values_list('id', flat=True)),
+            set(submessage_ids)
+        )
+
 class TestArchivingReactions(ArchiveMessagesTestingBase, EmojiReactionBase):
     def test_archiving_reactions(self) -> None:
         expired_msg_ids = self._make_expired_zulip_messages(2)
@@ -405,6 +431,12 @@ class TestArchivingReactions(ArchiveMessagesTestingBase, EmojiReactionBase):
 
         self.assertEqual(
             set(ArchivedReaction.objects.filter(id__in=reaction_ids).values_list('id', flat=True)),
+            set(reaction_ids)
+        )
+
+        restore_all_data_from_archive()
+        self.assertEqual(
+            set(Reaction.objects.filter(id__in=reaction_ids).values_list('id', flat=True)),
             set(reaction_ids)
         )
 
@@ -441,6 +473,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         move_messages_to_archive(message_ids=msg_ids)
         self._verify_archive_data(msg_ids, usermsg_ids)
 
+        restore_all_data_from_archive()
+        self._verify_restored_data(msg_ids, usermsg_ids)
+
     def test_stream_messages_archiving(self) -> None:
         msg_ids = [self.send_stream_message(self.sender, "Verona")
                    for i in range(0, 3)]
@@ -449,6 +484,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self._assert_archive_empty()
         move_messages_to_archive(message_ids=msg_ids)
         self._verify_archive_data(msg_ids, usermsg_ids)
+
+        restore_all_data_from_archive()
+        self._verify_restored_data(msg_ids, usermsg_ids)
 
     def test_archiving_messages_second_time(self) -> None:
         msg_ids = [self.send_stream_message(self.sender, "Verona")
@@ -512,6 +550,20 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
                     archivedattachment__id=attachment_id).values_list("id", flat=True))
             )
 
+        restore_all_data_from_archive()
+        self._verify_restored_data(msg_ids, usermsg_ids)
+
+        restored_attachment_ids = list(
+            Attachment.objects.filter(messages__id__in=msg_ids).values_list("id", flat=True)
+        )
+
+        self.assertEqual(set(attachment_ids), set(restored_attachment_ids))
+        for attachment_id in restored_attachment_ids:
+            self.assertEqual(
+                set(attachment_id_to_message_ids[attachment_id]),
+                set(Message.objects.filter(attachment__id=attachment_id).values_list("id", flat=True))
+            )
+
     def test_archiving_message_with_shared_attachment(self) -> None:
         # Make sure that attachments still in use in other messages don't get deleted:
         self._create_attachments()
@@ -551,6 +603,13 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         # Now the attachment should have been deleted:
         self.assertEqual(Attachment.objects.count(), 0)
 
+        # Restore everything:
+        restore_all_data_from_archive()
+        self.assertEqual(
+            set(Attachment.objects.filter(messages__id=msg_id).values_list("id", flat=True)),
+            set(attachment_ids)
+        )
+
 class MoveMessageToArchiveWithSubMessages(MoveMessageToArchiveBase):
     def test_archiving_message_with_submessages(self) -> None:
         msg_id = self.send_stream_message(self.sender, "Verona")
@@ -585,6 +644,12 @@ class MoveMessageToArchiveWithSubMessages(MoveMessageToArchiveBase):
         )
         self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 0)
 
+        restore_all_data_from_archive()
+        self.assertEqual(
+            set(SubMessage.objects.filter(id__in=submessage_ids).values_list('id', flat=True)),
+            set(submessage_ids)
+        )
+
 class MoveMessageToArchiveWithReactions(MoveMessageToArchiveBase, EmojiReactionBase):
     def test_archiving_message_with_reactions(self) -> None:
         msg_id = self.send_stream_message(self.sender, "Verona")
@@ -604,3 +669,9 @@ class MoveMessageToArchiveWithReactions(MoveMessageToArchiveBase, EmojiReactionB
             set(reaction_ids)
         )
         self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 0)
+
+        restore_all_data_from_archive()
+        self.assertEqual(
+            set(Reaction.objects.filter(id__in=reaction_ids).values_list('id', flat=True)),
+            set(reaction_ids)
+        )
