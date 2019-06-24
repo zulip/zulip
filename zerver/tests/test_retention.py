@@ -10,7 +10,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import create_attachment
 from zerver.models import (Message, Realm, UserProfile, Stream, ArchivedUserMessage, SubMessage,
                            ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
-                           Reaction, ArchivedReaction, ArchivedSubMessage,
+                           Reaction, ArchivedReaction, ArchivedSubMessage, ArchiveTransaction,
                            get_realm, get_user_profile_by_email, get_stream, get_system_bot)
 from zerver.lib.retention import (
     archive_messages,
@@ -362,6 +362,36 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
             sorted(msgs_ids.values())
         )
 
+    def test_restoring_and_rearchiving(self) -> None:
+        expired_msg_ids = self._make_mit_messages(
+            7,
+            timezone_now() - timedelta(days=MIT_REALM_DAYS+1)
+        )
+        expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
+
+        archive_messages(chunk_size=4)
+        self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
+
+        transactions = ArchiveTransaction.objects.all()
+        self.assertEqual(len(transactions), 2)  # With chunk_size 4, there should be 2 transactions
+
+        restore_all_data_from_archive()
+        transactions[0].refresh_from_db()
+        transactions[1].refresh_from_db()
+        self.assertTrue(transactions[0].restored)
+        self.assertTrue(transactions[1].restored)
+
+        archive_messages(chunk_size=10)
+        self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
+
+        transactions = ArchiveTransaction.objects.order_by("id")
+        self.assertEqual(len(transactions), 3)
+
+        archived_messages = ArchivedMessage.objects.filter(id__in=expired_msg_ids)
+        # Check that the re-archived messages are correctly assigned to the new transaction:
+        for message in archived_messages:
+            self.assertEqual(message.archive_transaction_id, transactions[2].id)
+
 class TestArchivingSubMessages(ArchiveMessagesTestingBase):
     def test_archiving_submessages(self) -> None:
         expired_msg_ids = self._make_expired_zulip_messages(2)
@@ -497,11 +527,8 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         move_messages_to_archive(message_ids=msg_ids)
         self._verify_archive_data(msg_ids, usermsg_ids)
 
-        """
-        TODO: Temporarily broken, uncomment in upcoming commits:
         with self.assertRaises(Message.DoesNotExist):
             move_messages_to_archive(message_ids=msg_ids)
-        """
 
     def test_archiving_messages_with_attachment(self) -> None:
         self._create_attachments()
@@ -590,8 +617,10 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         )
 
         self._assert_archive_empty()
+        # Archive one of the messages:
         move_messages_to_archive(message_ids=[msg_id])
         self._verify_archive_data([msg_id], usermsg_ids)
+        # Attachments shouldn't have been deleted, as the second message links to them:
         self.assertEqual(Attachment.objects.count(), 5)
 
         self.assertEqual(
@@ -599,7 +628,15 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             set(attachment_ids)
         )
 
+        # Restore the first message:
+        restore_all_data_from_archive()
+        # Archive the second:
         move_messages_to_archive(message_ids=[reply_msg_id])
+        # The restored messages links to the Attachments, so they shouldn't be deleted:
+        self.assertEqual(Attachment.objects.count(), 5)
+
+        # Archive the first message again:
+        move_messages_to_archive(message_ids=[msg_id])
         # Now the attachment should have been deleted:
         self.assertEqual(Attachment.objects.count(), 0)
 
