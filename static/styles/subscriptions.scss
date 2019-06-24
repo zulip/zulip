@@ -148,6 +148,11 @@
     color: hsl(0, 0%, 64%);
 }
 
+.sub_setting_checkbox .muted-sub label,
+.sub_setting_checkbox .control-label-disabled label {
+    cursor: not-allowed;
+}
+
 .mute-note {
     font-size: 90%;
     opacity: 0.5;
