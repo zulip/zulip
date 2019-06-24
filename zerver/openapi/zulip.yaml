@@ -2189,6 +2189,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JsonSuccess'
+
+  /user_groups/create:
+    post:
+      description: Create a user group.
+      parameters:
+      - name: name
+        in: query
+        description: The name of the user group.
+        schema:
+          type: string
+        example: Sameer
+        required: true
+      - name: description
+        in: query
+        description: The description of the user group.
+        schema:
+          type: string
+        example: Related to technical dicsussions.
+        required: true
+      - name: members
+        in: query
+        description: The list of members to be included in the user group.
+        schema:
+          type: string
+        example: [1,2,3,4]
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                      {
+                          "msg": "",
+                          "result": "success"
+                      }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                      "result": "error",
+                      "code": "BAD_REQUEST",
+                      "msg": "Invalid user ID: 500"
+                    }
+
   /user_groups:
     get:
       description: Get all user groups of the realm.

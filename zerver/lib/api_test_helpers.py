@@ -877,13 +877,16 @@ def remove_alert_words(client):
 
 def create_user_group(client):
     # type: (Client) -> None
+    # {code_example|start}
     request = {
         'name': 'Manchester United',
-        'description': "Ole's at the Wheel.",
+        'description': 'Ole is at the Wheel.',
         'members': [1, 2, 3, 4]
     }
 
     result = client.create_user_group(request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/user_groups/create', 'post', '200')
 
     assert result['result'] == 'success'
 

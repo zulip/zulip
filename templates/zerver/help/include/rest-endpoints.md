@@ -35,6 +35,7 @@
 * [Get user presence](/api/get-presence)
 * [Get all user groups](/api/get-user-groups)
 * [Update notification settings](/api/update-notification-settings)
+* [Create user group](/api/create-user-group)
 
 #### Server & organizations
 
