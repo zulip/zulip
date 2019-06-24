@@ -101,7 +101,7 @@ exports.copy_data_attribute_value = function (elem, key) {
 };
 
 exports.has_mac_keyboard = function () {
-    return /Mac/i.test(navigator.userAgent);
+    return /Mac/i.test(navigator.platform);
 };
 
 return exports;

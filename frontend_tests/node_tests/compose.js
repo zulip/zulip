@@ -12,7 +12,7 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
 const _navigator = {
-    userAgent: '',
+    platform: '',
 };
 
 const _document = {
@@ -525,8 +525,8 @@ run_test('markdown_shortcuts', () => {
     // The Cmd + markdown shortcuts should do nothing on Linux/Windows
     os_specific_markdown_test(false, true);
 
-    // Setting following userAgent to test in mac env
-    _navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
+    // Setting following platform to test in mac env
+    _navigator.platform = "MacIntel";
 
     // Mac userAgent tests:
     test_i_typed(false, false);
