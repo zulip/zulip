@@ -1533,6 +1533,14 @@ class ArchiveTransaction(models.Model):
     # If type is set to MANUAL, this should be null.
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
+    def __str__(self) -> str:
+        return "ArchiveTransaction id: {id}, type: {type}, realm: {realm}, timestamp: {timestamp}".format(
+            id=self.id,
+            type="MANUAL" if self.type == self.MANUAL else "RETENTION_POLICY_BASED",
+            realm=self.realm.string_id if self.realm else None,
+            timestamp=self.timestamp
+        )
+
 class ArchivedMessage(AbstractMessage):
     """Used as a temporary holding place for deleted messages before they
     are permanently deleted.  This is an important part of a robust
