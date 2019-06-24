@@ -311,6 +311,9 @@ function stream_setting_clicked(e) {
         blueslip.error('undefined sub in stream_setting_clicked()');
         return;
     }
+    if (checkbox.prop('disabled')) {
+        return false;
+    }
     if (exports.is_notification_setting(setting) && sub[setting] === null) {
         sub[setting] = page_params["enable_stream_" + setting];
     }
