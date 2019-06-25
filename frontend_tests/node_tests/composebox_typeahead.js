@@ -1109,6 +1109,7 @@ run_test('begins_typeahead', () => {
         slash: true,
         stream: true,
         syntax: true,
+        topic: true,
     }}};
 
     function get_values(input, rest) {
@@ -1281,6 +1282,18 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("~~~ f", lang_list);
     assert_typeahead_equals("test\n~~~ p", lang_list);
     assert_typeahead_equals("test\n~~~  p", lang_list);
+
+    // topic_jump
+    assert_typeahead_equals("@**a person**>", false);
+    assert_typeahead_equals("@**a person** >", false);
+    assert_typeahead_equals("#**stream**>", ['']); // this is deliberately a blank choice.
+    assert_typeahead_equals("#**stream** >", ['']);
+
+    // topic_list
+    var sweden_topics_to_show = topic_data.get_recent_names(1); //includes "more ice"
+    assert_typeahead_equals("#**Sweden>more ice", sweden_topics_to_show);
+    sweden_topics_to_show.push('totally new topic');
+    assert_typeahead_equals("#**Sweden>totally new topic", sweden_topics_to_show);
 
     // Following tests place the cursor before the second string
     assert_typeahead_equals("#test", "ing", false);

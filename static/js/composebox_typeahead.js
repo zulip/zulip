@@ -134,6 +134,14 @@ function query_matches_emoji(query, emoji) {
     return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
 }
 
+function query_matches_topic(query, topic) {
+    var obj = {
+        topic: topic,
+    };
+    query = query.toLowerCase();
+    return query_matches_source_attrs(query, obj, ['topic'], ' ');
+}
+
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
 // We can't focus at the time of keydown because we need to wait for typeahead.
 // And we can't compute where to focus at the time of keyup because only the keydown
@@ -347,6 +355,15 @@ exports.tokenize_compose_str = function (s) {
             } else if (/[\s(){}\[\]]/.test(s[i - 1])) {
                 return s.slice(i);
             }
+            break;
+        case '>':
+            // topic_jump
+            if (s.substring(i - 2, i) === '**' || s.substring(i - 3, i) === '** ') {
+                // return any string as long as its not ''.
+                return '>topic_jump';
+            }
+            // maybe topic_list; let's let the stream_topic_regex decide later.
+            return '>topic_list';
         }
     }
 
@@ -393,6 +410,21 @@ function filter_mention_name(current_token) {
     return current_token;
 }
 
+function should_show_custom_query(query, items) {
+    // returns true if the custom query doesn't match one of the
+    // choices in the items list.
+    if (!query) {
+        return false;
+    }
+    var matched = _.reduce(items, function (matched, elem) {
+        if (elem.toLowerCase() === query.toLowerCase()) {
+            return true;
+        }
+        return matched;
+    }, false);
+    return !matched;
+}
+
 exports.slash_commands = [
     {
         text: i18n.t("/me is excited (Display action text)"),
@@ -419,7 +451,7 @@ exports.compose_content_begins_typeahead = function (query) {
 
     // We will likely want to extend this list to be more i18n-friendly.
     var terminal_symbols = ',.;?!()[] "\'\n\t';
-    if (rest !== '' && terminal_symbols.indexOf(rest[0]) === -1) {
+    if (rest !== '' && terminal_symbols.indexOf(rest[0]) === -1 && current_token !== '>topic_list') {
         return false;
     }
 
@@ -516,6 +548,34 @@ exports.compose_content_begins_typeahead = function (query) {
         this.token = current_token;
         return stream_data.get_unsorted_subs();
     }
+
+    if (this.options.completions.topic) {
+        // Stream regex modified from marked.js
+        // Matches '#**stream name** >' at the end of a split.
+        var stream_regex =  /#\*\*([^\*]+)\*\*\s?>$/;
+        var should_jump_inside_typeahead = stream_regex.test(split[0]);
+        if (should_jump_inside_typeahead) {
+            this.completing = 'topic_jump';
+            this.token = '>';
+            return ['']; // return something so that the typeahead is shown.
+        }
+        // Matches '#**stream name>some text' at the end of a split.
+        var stream_topic_regex = /#\*\*([^\*>]+)>([^\*]*)$/;
+        var should_begin_typeahead = stream_topic_regex.test(split[0]);
+        if (should_begin_typeahead) {
+            this.completing = 'topic_list';
+            var tokens = stream_topic_regex.exec(split[0]);
+            if (tokens[1]) {
+                var stream_name = tokens[1];
+                this.token = tokens[2] || '';
+                var topic_list = exports.topics_seen_for(stream_name);
+                if (should_show_custom_query(this.token, topic_list)) {
+                    topic_list.push(this.token);
+                }
+                return topic_list;
+            }
+        }
+    }
     return false;
 };
 
@@ -532,10 +592,14 @@ exports.content_highlighter = function (item) {
         return typeahead_helper.render_stream(item);
     } else if (this.completing === 'syntax') {
         return typeahead_helper.render_typeahead_item({ primary: item });
+    } else if (this.completing === 'topic_jump') {
+        return typeahead_helper.render_typeahead_item({ primary: item });
+    } else if (this.completing === 'topic_list') {
+        return typeahead_helper.render_typeahead_item({ primary: item });
     }
 };
 
-exports.content_typeahead_selected = function (item) {
+exports.content_typeahead_selected = function (item, event) {
     var pieces = exports.split_at_cursor(this.query, this.$element);
     var beginning = pieces[0];
     var rest = pieces[1];
@@ -576,7 +640,12 @@ exports.content_typeahead_selected = function (item) {
         if (beginning.endsWith('#*')) {
             beginning = beginning.substring(0, beginning.length - 2);
         }
-        beginning += '#**' + item.name + '** ';
+        beginning += '#**' + item.name;
+        if (event && event.key === '>') {
+            beginning += '>';
+        } else {
+            beginning += '** ';
+        }
         $(document).trigger('streamname_completed.zulip', {stream: item});
     } else if (this.completing === 'syntax') {
         // Isolate the end index of the triple backticks/tildes, including
@@ -593,6 +662,15 @@ exports.content_typeahead_selected = function (item) {
             // "rest" (i.e. do not add a closing fence)
             beginning = beginning.substring(0, backticks) + item;
         }
+    } else if (this.completing === 'topic_jump') {
+        // Put the cursor at the end of the previous stream typeahead's content.
+        var index = beginning.lastIndexOf('**'); // index where the stream completion closes.
+        if (index !== -1) {
+            beginning = beginning.substring(0, index) + '>';
+        }
+    } else if (this.completing === 'topic_list') {
+        var start = beginning.length - this.token.length;
+        beginning = beginning.substring(0, start) + item + '** ';
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
@@ -616,6 +694,10 @@ exports.compose_content_matcher = function (item) {
         return query_matches_user_group_or_stream(this.token, item);
     } else if (this.completing === 'syntax') {
         return query_matches_language(this.token, item);
+    } else if (this.completing === 'topic_jump') {
+        return true;
+    } else if (this.completing === 'topic_list') {
+        return query_matches_topic(this.token, item);
     }
 };
 
@@ -630,7 +712,27 @@ exports.compose_matches_sorter = function (matches) {
         return typeahead_helper.sort_streams(matches, this.token);
     } else if (this.completing === 'syntax') {
         return typeahead_helper.sort_languages(matches, this.token);
+    } else if (this.completing === 'topic_jump') {
+        return matches;
+    } else if (this.completing === 'topic_list') {
+        return typeahead_helper.sorter(this.token, matches, function (x) {return x;});
     }
+};
+
+exports.compose_automated_selection = function () {
+    if (this.completing === 'topic_jump') {
+        // automatically jump inside stream mention on typing >
+        return true;
+    }
+    return false;
+};
+
+exports.compose_trigger_selection = function (event) {
+    if (this.completing === 'stream' && event.key === '>') {
+        // complete stream typeahead partially to immediately start the topic_list typeahead.
+        return true;
+    }
+    return false;
 };
 
 exports.initialize_compose_typeahead = function (selector) {
@@ -641,6 +743,7 @@ exports.initialize_compose_typeahead = function (selector) {
         slash: true,
         stream: true,
         syntax: true,
+        topic: true,
     };
 
     $(selector).typeahead({
@@ -654,6 +757,8 @@ exports.initialize_compose_typeahead = function (selector) {
         updater: exports.content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a tab or enter
         completions: completions,
+        automated: exports.compose_automated_selection,
+        trigger_selection: exports.compose_trigger_selection,
     });
 };
 
