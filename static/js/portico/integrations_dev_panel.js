@@ -283,12 +283,10 @@ function send_all_fixture_messages() {
         return;
     }
 
-    var custom_headers = get_custom_http_headers();
-
     var csrftoken = $("#csrftoken").val();
     channel.post({
         url: "/devtools/integrations/send_all_webhook_fixture_messages",
-        data: {url: url, custom_headers: custom_headers, integration_name: integration},
+        data: {url: url, integration_name: integration},
         beforeSend: function (xhr) {xhr.setRequestHeader('X-CSRFToken', csrftoken);},
         success: function (response) {set_results(response);},
         error: handle_unsuccessful_response,
