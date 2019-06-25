@@ -1,6 +1,6 @@
 import os
 import ujson
-from typing import List
+from typing import Any, Dict, List
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -30,13 +30,9 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
 def send_webhook_fixture_message(url: str=REQ(),
                                  body: str=REQ(),
                                  is_json: bool=REQ(),
-                                 custom_headers_str: str=REQ()) -> HttpResponse:
+                                 custom_headers: Dict[str, Any]=REQ()) -> HttpResponse:
     client = Client()
     realm = get_realm("zulip")
-    try:
-        custom_headers = ujson.loads(custom_headers_str)
-    except ValueError as ve:
-        return json_error("Custom HTTP headers are not in a valid JSON format. {}".format(ve))  # nolint
     standardized_headers = standardize_headers(custom_headers)
     http_host = standardized_headers.pop("HTTP_HOST", realm.host)
     if is_json:
@@ -90,7 +86,13 @@ def check_send_webhook_fixture_message(request: HttpRequest,
                                        body: str=REQ(),
                                        is_json: bool=REQ(),
                                        custom_headers: str=REQ()) -> HttpResponse:
-    response = send_webhook_fixture_message(url, body, is_json, custom_headers)
+    try:
+        custom_headers_dict = ujson.loads(custom_headers)
+    except ValueError as ve:
+        return json_error("Custom HTTP headers are not in a valid JSON format. {}".format(ve))  # nolint
+
+    response = send_webhook_fixture_message(url, body, is_json,
+                                            custom_headers_dict)
     if response.status_code == 200:
         responses = [{"status_code": response.status_code,
                       "message": response.content}]
@@ -102,7 +104,6 @@ def check_send_webhook_fixture_message(request: HttpRequest,
 @has_request_variables
 def send_all_webhook_fixture_messages(request: HttpRequest,
                                       url: str=REQ(),
-                                      custom_headers: str=REQ(),
                                       integration_name: str=REQ()) -> HttpResponse:
     fixtures_dir = os.path.join(ZULIP_PATH, "zerver/webhooks/{integration_name}/fixtures".format(
         integration_name=integration_name))
@@ -115,12 +116,14 @@ def send_all_webhook_fixture_messages(request: HttpRequest,
     for fixture in os.listdir(fixtures_dir):
         fixture_path = os.path.join(fixtures_dir, fixture)
         content = open(fixture_path).read()
-        fixture_format = fixture.split(".")[-1]
+        x = fixture.split(".")
+        fixture_name, fixture_format = "".join(_ for _ in x[:-1]), x[-1]
+        headers = get_fixture_http_headers(integration_name, fixture_name)
         if fixture_format == "json":
             is_json = True
         else:
             is_json = False
-        response = send_webhook_fixture_message(url, content, is_json, custom_headers)
+        response = send_webhook_fixture_message(url, content, is_json, headers)
         responses.append({"status_code": response.status_code,
                           "fixture_name": fixture,
                           "message": response.content})
