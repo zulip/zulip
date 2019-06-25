@@ -406,3 +406,8 @@ def restore_all_data_from_archive(restore_manual_transactions: bool=True) -> Non
         restore_data_from_archive_by_transactions(
             ArchiveTransaction.objects.exclude(restored=True).filter(type=ArchiveTransaction.MANUAL)
         )
+
+def clean_archived_data() -> None:
+    check_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS)
+    #  Appropriate archived objects will get deleted through the on_delete=CASCADE property:
+    ArchiveTransaction.objects.filter(timestamp__lt=check_date).delete()

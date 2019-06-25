@@ -1417,6 +1417,9 @@ AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password', '')
 if SERVER_EMAIL is None:
     SERVER_EMAIL = ZULIP_ADMINISTRATOR
 
+# How many days archived data should be kept before being deleted:
+ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 14
+
 ########################################################################
 # MISC SETTINGS
 ########################################################################

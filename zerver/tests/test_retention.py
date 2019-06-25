@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from unittest import mock
 
+from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import internal_send_private_message, do_add_submessage
@@ -15,7 +16,8 @@ from zerver.models import (Message, Realm, UserProfile, Stream, ArchivedUserMess
 from zerver.lib.retention import (
     archive_messages,
     move_messages_to_archive,
-    restore_all_data_from_archive
+    restore_all_data_from_archive,
+    clean_archived_data,
 )
 
 # Class with helper functions useful for testing archiving of reactions:
@@ -712,3 +714,29 @@ class MoveMessageToArchiveWithReactions(MoveMessageToArchiveBase, EmojiReactionB
             set(Reaction.objects.filter(id__in=reaction_ids).values_list('id', flat=True)),
             set(reaction_ids)
         )
+
+class TestCleaningArchive(ArchiveMessagesTestingBase):
+    def test_clean_archived_data(self) -> None:
+        self._make_expired_zulip_messages(7)
+        archive_messages(chunk_size=2)  # Small chunk size to have multiple transactions
+
+        transactions = list(ArchiveTransaction.objects.all())
+        for transaction in transactions[0:-1]:
+            transaction.timestamp = timezone_now() - timedelta(
+                days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS + 1)
+            transaction.save()
+
+        message_ids_to_clean = list(ArchivedMessage.objects.filter(
+            archive_transaction__in=transactions[0:-1]).values_list('id', flat=True))
+
+        clean_archived_data()
+        remaining_transactions = list(ArchiveTransaction.objects.all())
+        self.assertEqual(len(remaining_transactions), 1)
+        # All transactions except the last one were deleted:
+        self.assertEqual(remaining_transactions[0].id, transactions[-1].id)
+        # And corresponding ArchivedMessages should have been deleted:
+        self.assertFalse(ArchivedMessage.objects.filter(id__in=message_ids_to_clean).exists())
+        self.assertFalse(ArchivedUserMessage.objects.filter(message_id__in=message_ids_to_clean).exists())
+
+        for message in ArchivedMessage.objects.all():
+            self.assertEqual(message.archive_transaction_id, remaining_transactions[0].id)
