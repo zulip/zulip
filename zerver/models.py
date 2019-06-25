@@ -1546,7 +1546,7 @@ class ArchivedMessage(AbstractMessage):
     are permanently deleted.  This is an important part of a robust
     'message retention' feature.
     """
-    archive_transaction = models.ForeignKey(ArchiveTransaction, on_delete=CASCADE, null=True)  # type: Optional[ArchiveTransaction]
+    archive_transaction = models.ForeignKey(ArchiveTransaction, on_delete=CASCADE)  # type: ArchiveTransaction
 
 class Message(AbstractMessage):
 
