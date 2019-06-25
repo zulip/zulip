@@ -46,74 +46,35 @@ Handlebars.registerHelper('plural', function (condition, one, other) {
     return condition === 1 ? one : other;
 });
 
-Handlebars.registerHelper('if_and', function () {
-    // Execute the conditional code if all conditions are true.
-    // Example usage:
-    //     {{#if_and cond1 cond2 cond3}}
-    //         <p>All true</p>
-    //     {{/if_and}}
-    var options = arguments[arguments.length - 1];
-    var i;
-    for (i = 0; i < arguments.length - 1; i += 1) {
-        if (!arguments[i]) {
-            return options.inverse(this);
+Handlebars.registerHelper({
+    eq: function (a, b) { return a === b; },
+    and: function () {
+        // last argument is Handlebars options
+        if (arguments.length < 2) {
+            return true;
         }
-    }
-    return options.fn(this);
-});
-
-Handlebars.registerHelper('unless_a_not_b', function () {
-    // Execute the conditional code if at least one condition is false.
-    // Example usage:
-    //     {{#unless_a_not_b cond1 cond2}}
-    //         <p>a is false or b is true</p>
-    //     {{/unless_a_not_b}}
-    var options = arguments[arguments.length - 1];
-    if (arguments[0] && !arguments[1]) {
-        return options.inverse(this);
-    }
-    return options.fn(this);
-});
-
-Handlebars.registerHelper('if_equal', function () {
-    // Execute conditional code if both values are equal
-    var options = arguments[arguments.length - 1];
-    if (arguments[0] === arguments[1]) {
-        return options.fn(this);
-    }
-    return options.inverse(this);
-});
-
-Handlebars.registerHelper('if_not_a_or_b_and_not_c', function () {
-    var options = arguments[arguments.length - 1];
-    if (arguments[0] === false || arguments[1] === true && arguments[2] === false) {
-        return options.fn(this);
-    }
-    return options.inverse(this);
-});
-
-Handlebars.registerHelper('if_or', function () {
-    // Execute the conditional code if any of the conditions are true.
-    // Example usage:
-    //     {{#if_or cond1 cond2 cond3}}
-    //         <p>At least one is true</p>
-    //     {{/if_or}}
-    var options = arguments[arguments.length - 1];
-    var i;
-    for (i = 0; i < arguments.length - 1; i += 1) {
-        if (arguments[i]) {
-            return options.fn(this);
-
+        var i;
+        for (i = 0; i < arguments.length - 2; i += 1) {
+            if (!arguments[i] || Handlebars.Utils.isEmpty(arguments[i])) {
+                return arguments[i];
+            }
         }
-    }
-    return options.inverse(this);
-});
-
-Handlebars.registerHelper('is_false', function (variable, options) {
-    if (variable === false) {
-        return options.fn(this);
-    }
-    return options.inverse(this);
+        return arguments[i];
+    },
+    or: function () {
+        // last argument is Handlebars options
+        if (arguments.length < 2) {
+            return false;
+        }
+        var i;
+        for (i = 0; i < arguments.length - 2; i += 1) {
+            if (arguments[i] && !Handlebars.Utils.isEmpty(arguments[i])) {
+                return arguments[i];
+            }
+        }
+        return arguments[i];
+    },
+    not: function (a) { return !a || Handlebars.Utils.isEmpty(a); },
 });
 
 Handlebars.registerHelper('t', function (i18n_key) {
