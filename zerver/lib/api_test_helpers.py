@@ -906,8 +906,11 @@ def update_user_group(client, group_id):
 
 def remove_user_group(client, group_id):
     # type: (Client, int) -> None
+    # {code_example|start}
     result = client.remove_user_group(group_id)
+    # {code_example|end}
 
+    validate_against_openapi_schema(result, '/user_groups/{group_id}', 'delete', '200')
     assert result['result'] == 'success'
 
 def update_user_group_members(client, group_id):

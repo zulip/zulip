@@ -37,6 +37,7 @@
 * [Update notification settings](/api/update-notification-settings)
 * [Create a user group](/api/create-user-group)
 * [Update a user group](/api/update-user-group)
+* [Delete a user group](/api/delete-user-group)
 
 #### Server & organizations
 
