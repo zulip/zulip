@@ -2243,7 +2243,62 @@ paths:
                       "code": "BAD_REQUEST",
                       "msg": "Invalid user ID: 500"
                     }
+  /user_groups/{group_id}:
+    patch:
+      description: Update the user group.
+      parameters:
+      - name: group_id
+        in: path
+        description: The ID of the group.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      - name: name
+        in: query
+        description: The new name of the group.
+        schema:
+          type: string
+        example: marketing
+        required: true
+      - name: description
+        in: query
+        description: The new description of the group.
+        schema:
+          type: string
+        example: The marketing team.
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                      {
+                          "description": "Description successfully updated.",
+                          "result": "success",
+                          "msg": "",
+                          "name": "Name successfully updated."
+                      }
 
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid user group",
+                        "result": "error"
+                    }
   /user_groups:
     get:
       description: Get all user groups of the realm.

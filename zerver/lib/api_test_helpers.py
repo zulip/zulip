@@ -893,14 +893,15 @@ def create_user_group(client):
 
 def update_user_group(client, group_id):
     # type: (Client, int) -> None
+    # {code_example|start}
     request = {
         'group_id': group_id,
-        'name': 'MUFC',
-        'description': "Greatest of English football."
+        'name': 'marketing',
+        'description': 'The marketing team.',
     }
 
     result = client.update_user_group(request)
-
+    # {code_example|end}
     assert result['result'] == 'success'
 
 def remove_user_group(client, group_id):
