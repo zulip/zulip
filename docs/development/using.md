@@ -21,12 +21,10 @@ interactive console.
 When you make a change, here's a guide for what you need to do in
 order to see your change take effect in Development:
 
-* If you change JavaScript, CSS, or Jinja2 backend templates (under
-`templates/`), you'll just need to reload the browser window to see
-changes take effect.  The Handlebars frontend HTML templates
-(`static/templates`) are automatically recompiled by the
-`tools/compile-handlebars-templates` job, which runs as part of
-`tools/run-dev.py`.
+* If you change CSS files, your changes will appear immediately via hot module
+replacement. If you change JavaScript or Handlebars templates, the browser
+window will be reloaded automatically. For Jinja2 backend templates, you'll
+need to reload the browser manually to see changes take effect.
 
 * If you change Python code used by the main Django/Tornado server
 processes, these services are run on top of Django's [manage.py

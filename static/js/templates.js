@@ -2,23 +2,26 @@ var templates = (function () {
 
 var exports = {};
 
-exports.render = function (name, arg) {
-    if (Handlebars.templates === undefined) {
-        throw new Error("Cannot find compiled templates!");
-    }
-    if (Handlebars.templates[name] === undefined) {
-        throw new Error("Cannot find a template with this name: " + name
-              + ". If you are developing a new feature, this likely "
-              + "means you need to add the file static/templates/"
-              + name + ".handlebars");
-    }
+var template_context = require.context('../templates', true, /\.handlebars$/);
+var template_paths = ['./', './settings/', './widgets/'];
 
-    // The templates should be compiled into compiled.js.  In
-    // prod we build compiled.js as part of the deployment process,
-    // and for devs we have run_dev.py build compiled.js when templates
-    // change.
-    return Handlebars.templates[name](arg);
+exports.render = function (name, arg) {
+    for (var i = 0; i < template_paths.length; i += 1) {
+        var template;
+        try {
+            template = template_context(template_paths[i] + name + '.handlebars');
+        } catch (_e) {
+            continue;
+        }
+        return template(arg);
+    }
+    throw new Error('Cannot find template ' + name + '.handlebars anywhere '
+        + 'under the static/templates/ folder.');
 };
+
+// When adding a new handlebars helper, update the knownHelpers array in
+// the webpack config so that webpack knows your helper is registered at
+// runtime and don't try to require them when bundling.
 
 // We don't want to wait for DOM ready to register the Handlebars helpers
 // below. There's no need to, as they do not access the DOM.

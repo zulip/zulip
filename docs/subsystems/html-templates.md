@@ -77,11 +77,10 @@ The second argument to `templates.render` is the context.
 
 ### Toolchain
 
-Handlebars is in our `package.json` and thus ends up in
-`node_modules`; and then we have a script,
-`tools/compile-handlebars-templates`, which is responsible for
-compiling the templates, both in production and as they change in a
-development environment.
+Handlebars is in our `package.json` and thus ends up in `node_modules`; We use
+handlebars-loader to load and compile templates during the webpack bundling
+stage. In the development environment, webpack will trigger a browser reload
+whenever a template is changed.
 
 ### Translation
 

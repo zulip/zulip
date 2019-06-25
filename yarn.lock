@@ -1011,6 +1011,11 @@ async@^1.4.0, async@^1.5.2:
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
   integrity sha1-7GphrlZIDAw8skHJVhjiCJL5Zyo=
 
+async@~0.2.10:
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/async/-/async-0.2.10.tgz#b6bbe0b0674b9d719708ca38de8c237cb526c3d1"
+  integrity sha1-trvgsGdLnXGXCMo43owjfLUmw9E=
+
 asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
@@ -3641,6 +3646,11 @@ fast-levenshtein@~2.0.4:
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
   integrity sha1-PYpcZog6FqMMqGQ+hR8Zuqd5eRc=
 
+fastparse@^1.0.0:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/fastparse/-/fastparse-1.1.2.tgz#91728c5a5942eced8531283c79441ee4122c35a9"
+  integrity sha512-483XLLxTVIwWK3QTrMGRqUfUpoOs/0hbQrl2oz4J0pAcm3A3bu84wxTFqGqkJzewCLdME38xJLJAxBABfQT8sQ==
+
 faye-websocket@^0.10.0:
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/faye-websocket/-/faye-websocket-0.10.0.tgz#4e492f8d04dfb6f89003507f6edbf2d501e7c6f4"
@@ -4810,6 +4820,16 @@ handle-thing@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/handle-thing/-/handle-thing-2.0.0.tgz#0e039695ff50c93fc288557d696f3c1dc6776754"
   integrity sha512-d4sze1JNC454Wdo2fkuyzCr6aHcbL6PGGuFAz0Li/NcOm1tCHGnWDRmJP85dh9IhQErTc2svWFEX5xHIOo//kQ==
+
+handlebars-loader@1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/handlebars-loader/-/handlebars-loader-1.7.1.tgz#07088f09d8a559344908f7c88c68c0ffdacc555d"
+  integrity sha512-Q+Z/hDPQzU8ZTlVnAe/0T1LHABlyhL7opNcSKcQDhmUXK2ByGTqib1Z2Tfv4Ic50WqDcLFWQcOb3mhjcBRbscQ==
+  dependencies:
+    async "~0.2.10"
+    fastparse "^1.0.0"
+    loader-utils "1.0.x"
+    object-assign "^4.1.0"
 
 handlebars@4.1.2, handlebars@^4.1.2:
   version "4.1.2"
@@ -6081,6 +6101,15 @@ loader-runner@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/loader-runner/-/loader-runner-2.3.0.tgz#f482aea82d543e07921700d5a46ef26fdac6b8a2"
   integrity sha1-9IKuqC1UPgeSFwDVpG7yb9rGuKI=
+
+loader-utils@1.0.x:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/loader-utils/-/loader-utils-1.0.4.tgz#13f56197f1523a305891248b4c7244540848426c"
+  integrity sha1-E/Vhl/FSOjBYkSSLTHJEVAhIQmw=
+  dependencies:
+    big.js "^3.1.3"
+    emojis-list "^2.0.0"
+    json5 "^0.5.0"
 
 loader-utils@^1.0.1, loader-utils@^1.0.2, loader-utils@^1.1.0:
   version "1.1.0"

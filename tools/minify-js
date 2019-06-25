@@ -28,9 +28,6 @@ os.chdir(settings.DEPLOY_ROOT)
 
 STATIC_PATH = 'static/'
 
-# Compile Handlebars templates
-subprocess.check_call(['tools/compile-handlebars-templates'])
-
 # Create webpack bundle
 subprocess.check_call(['tools/webpack'])
 
@@ -80,10 +77,6 @@ if prev_deploy:
         prev_deploy = None
     else:
         changed_files = changed_files_tmp
-
-# Always use the newly compiled handlebars templates and webpack bundle.
-if prev_deploy:
-    changed_files.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
 
 JS_SPECS = settings.JS_SPECS
 CLOSURE_BINARY = '/usr/bin/closure-compiler'

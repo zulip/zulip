@@ -150,15 +150,12 @@ cmds = [['./manage.py', 'runserver'] +
         ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
          '-p', '%s' % (thumbor_port,)]]
 if options.test:
-    # We just need to compile handlebars templates and webpack assets
-    # once at startup, not run a daemon, in test mode.  Additionally,
-    # webpack-dev-server doesn't support running 2 copies on the same
-    # system, so this model lets us run the casper tests with a running
-    # development server.
-    subprocess.check_call(['./tools/compile-handlebars-templates'])
+    # We just need to compile webpack assets once at startup, not run a daemon,
+    # in test mode.  Additionally, webpack-dev-server doesn't support running 2
+    # copies on the same system, so this model lets us run the casper tests
+    # with a running development server.
     subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
 else:
-    cmds.append(['./tools/compile-handlebars-templates', 'forever'])
     webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
     if options.minify:
         webpack_cmd.append('--minify')

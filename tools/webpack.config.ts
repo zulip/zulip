@@ -78,6 +78,17 @@ export default (env?: string): webpack.Configuration => {
                         },
                     ],
                 },
+                {
+                    test: /\.handlebars$/,
+                    loader: 'handlebars-loader',
+                    options: {
+                        // Tell webpack not to explicitly require these.
+                        knownHelpers: ['if', 'unless', 'each', 'with',
+                            // The ones below are defined in static/js/templates.js
+                            'partial', 'plural', 'eq', 'and', 'or', 'not',
+                            't', 'tr'],
+                    },
+                },
                 // load fonts and files
                 {
                     test: /\.(woff(2)?|ttf|eot|svg|otf|png)(\?v=\d+\.\d+\.\d+)?$/,
@@ -137,7 +148,7 @@ export default (env?: string): webpack.Configuration => {
         { path: "../static/js/common.js" },
         { path: "jquery/dist/jquery.js", name: ['$', 'jQuery'] },
         { path: "underscore/underscore.js", name: '_' },
-        { path: "handlebars/dist/handlebars.runtime.js", name: 'Handlebars' },
+        { path: "handlebars/dist/cjs/handlebars.runtime.js", name: 'Handlebars' },
         { path: "to-markdown/dist/to-markdown.js", name: 'toMarkdown' },
         { path: "sortablejs/Sortable.js"},
         { path: "winchan/winchan.js", name: 'WinChan'},
