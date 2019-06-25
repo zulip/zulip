@@ -116,7 +116,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       d.build_args += ["--build-arg", "UBUNTU_MIRROR=#{ubuntu_mirror}"]
     end
     d.has_ssh = true
-    d.create_args = ["--ulimit", "nofile=1024:65536"]
+    d.create_args = [
+      "--stop-signal", "SIGRTMIN+3",
+      "--tmpfs", "/run",
+      "--tmpfs", "/run/lock",
+      "--tmpfs", "/var/log/journal",
+      "--volume", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
+      "--ulimit", "nofile=1024:65536",
+    ]
   end
 
   config.vm.provider "virtualbox" do |vb, override|
