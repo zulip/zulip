@@ -268,11 +268,18 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     if not ldap_auth_enabled(realm):
         return False
 
+    if settings.LDAP_EMAIL_ATTR:
+        return True
+
     # If we don't have an LDAP domain, it's impossible to tell which
     # accounts are LDAP accounts, so treat all of them as LDAP
     # accounts
     if not settings.LDAP_APPEND_DOMAIN:
-        return True
+        backend = next((backend for backend in get_backends() if
+                        isinstance(backend, LDAPBackend)), None)
+        if backend is not None:
+            ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
+        return ldap_attrs is not None
 
     # Otherwise, check if the email ends with LDAP_APPEND_DOMAIN
     return email.strip().lower().endswith("@" + settings.LDAP_APPEND_DOMAIN)
