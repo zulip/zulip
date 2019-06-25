@@ -32,14 +32,13 @@ RUN \
     # managed by systemd start within Docker, which breaks normal
     # operation of systemd.
     dpkg-divert --add --rename /bin/systemctl \
-    && curl -so /bin/systemctl 'https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/b0588e003562f9a8eb76c98512c6d61146a81980/files/docker/systemctl3.py' \
+    && curl -so /bin/systemctl 'https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/73b5aff2ba6abfd254d236f1df22ff4971d44660/files/docker/systemctl3.py' \
     && chmod +x /bin/systemctl \
     && ln -nsf /bin/true /usr/sbin/policy-rc.d \
     && mkdir -p /run/sshd \
     # docker-systemctl-replacement doesn’t work with template units yet:
     # https://github.com/gdraheim/docker-systemctl-replacement/issues/62
-    && ln -ns /lib/systemd/system/postgresql@.service /etc/systemd/system/postgresql@10-main.service \
-    && ln -s /etc/systemd/system/postgresql@10-main.service /etc/systemd/system/multi-user.target.wants/ \
+    && ln -ns /lib/systemd/system/postgresql@.service /etc/systemd/system/multi-user.target.wants/postgresql@10-main.service \
     # redis fails to start with the default configuration if IPv6 is disabled:
     # https://github.com/antirez/redis/pull/5598
     && dpkg-divert --add --rename /etc/default/redis-server \
