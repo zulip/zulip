@@ -2299,6 +2299,46 @@ paths:
                         "msg": "Invalid user group",
                         "result": "error"
                     }
+    delete:
+      description: Delete the user group.
+      parameters:
+      - name: group_id
+        in: path
+        description: The ID of the group.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                      {
+                          "result": "success",
+                          "msg": "",
+                      }
+
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid user group",
+                        "result": "error"
+                    }
+
   /user_groups:
     get:
       description: Get all user groups of the realm.
