@@ -38,6 +38,9 @@ def add_default_linter_arguments(parser):
     parser.add_argument('--list', '-l',
                         action='store_true',
                         help='List all the registered linters')
+    parser.add_argument('--list-groups', '-lg',
+                        action='store_true',
+                        help='List all the registered linter groups')
     parser.add_argument('--groups', '-g',
                         default=[],
                         type=split_arg_into_list,
@@ -80,11 +83,13 @@ class LinterConfig:
         # type: (argparse.Namespace) -> None
         self.args = args
         self.by_lang = {}  # type: Dict[str, List[str]]
+        self.groups = {}  # type: Dict[str, List[str]]
 
     def list_files(self, file_types=[], groups={}, use_shebang=True, group_by_ftype=True, exclude=[]):
         # type: (List[str], Dict[str, List[str]], bool, bool, List[str]) -> Dict[str, List[str]]
         assert file_types or groups, "Atleast one of `file_types` or `groups` must be specified."
 
+        self.groups = groups
         if self.args.groups:
             file_types = [ft for group in self.args.groups for ft in groups[group]]
         else:
@@ -165,6 +170,11 @@ class LinterConfig:
             print("{}{:<15} {} {}".format(BOLDRED, 'Linter', 'Description', ENDC))
             for linter, desc in self.lint_descriptions.items():
                 print("{}{:<15} {}{}{}".format(BLUE, linter, GREEN, desc, ENDC))
+            sys.exit()
+        if self.args.list_groups:
+            print("{}{:<15} {} {}".format(BOLDRED, 'Linter Group', 'File types', ENDC))
+            for group, file_types in self.groups.items():
+                print("{}{:<15} {}{}{}".format(BLUE, group, GREEN, ", ".join(file_types), ENDC))
             sys.exit()
         self.set_logger()
 
