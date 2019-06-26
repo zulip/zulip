@@ -511,12 +511,6 @@ def main(options):
         for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "memcached", "redis"]:
             run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
             run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
-    elif options.is_docker:
-        run_as_root(["service", "rabbitmq-server", "restart"])
-        run_as_root(["pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
-        run_as_root(["pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
-        run_as_root(["service", "redis-server", "restart"])
-        run_as_root(["service", "memcached", "restart"])
     if not options.is_production_travis:
         # The following block is skipped for the production Travis
         # suite, because that suite doesn't make use of these elements
@@ -625,11 +619,6 @@ if __name__ == "__main__":
                         dest='is_production_travis',
                         default=False,
                         help="Provision for Travis with production settings.")
-
-    parser.add_argument('--docker', action='store_true',
-                        dest='is_docker',
-                        default=False,
-                        help="Provision for Docker.")
 
     options = parser.parse_args()
     sys.exit(main(options))
