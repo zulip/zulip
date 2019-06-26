@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import sys
 import bitfield.models
 from django.db import migrations
-from zerver.lib.migrate import create_index_if_not_exist  # nolint
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import F
@@ -65,12 +64,11 @@ class Migration(migrations.Migration):
             field=bitfield.models.BitField(['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned', 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse', 'has_alert_word', 'historical', 'is_private'], default=0),
         ),
         migrations.RunSQL(
-            create_index_if_not_exist(
-                index_name='zerver_usermessage_is_private_message_id',
-                table_name='zerver_usermessage',
-                column_string='user_profile_id, message_id',
-                where_clause='WHERE (flags & 2048) != 0',
-            ),
+            '''
+            CREATE INDEX IF NOT EXISTS zerver_usermessage_is_private_message_id
+                ON zerver_usermessage (user_profile_id, message_id)
+                WHERE (flags & 2048) != 0;
+            ''',
             reverse_sql='DROP INDEX zerver_usermessage_is_private_message_id;'
         ),
         migrations.RunPython(reset_is_private_flag,
