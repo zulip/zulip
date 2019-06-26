@@ -17,7 +17,6 @@ class zulip_ops::base {
     # For managing our current Debian packages
     'debian-goodies',
     # Needed for zulip-ec2-configure-network-interfaces
-    'dhcpcd5',
     'python3-six',
     'python-six',
     'python3-boto',
@@ -113,8 +112,13 @@ class zulip_ops::base {
     require => User['zulip'],
   }
 
-  if $zulip::base::release_name == 'xenial' {
-    # TODO: Change this condition to something more coherent.
+  $hosting_provider = zulipconf('machine', 'hosting_provider', 'ec2')
+  if $hosting_provider == 'ec2' {
+    # This conditional block is for for whether it's not
+    # chat.zulip.org, which uses a different hosting provider.
+    package { 'dhcpcd5':
+      ensure => 'installed',
+    }
     file { '/root/.ssh/authorized_keys':
       ensure => file,
       mode   => '0600',
@@ -140,9 +144,7 @@ class zulip_ops::base {
     }
   }
 
-  if $zulip::base::release_name == 'xenial' {
-    # This is a proxy for the fact that our xenial machines are the
-    # ones in EC2.
+  if $hosting_provider == 'ec2' {
     file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
       ensure => file,
       mode   => '0755',
