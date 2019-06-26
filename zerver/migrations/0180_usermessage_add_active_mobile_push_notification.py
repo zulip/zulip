@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 import bitfield.models
 from django.db import migrations
-from zerver.lib.migrate import create_index_if_not_exist  # nolint
 
 
 class Migration(migrations.Migration):
@@ -25,12 +24,11 @@ class Migration(migrations.Migration):
             field=bitfield.models.BitField(['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned', 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse', 'has_alert_word', 'historical', 'is_private', 'active_mobile_push_notification'], default=0),
         ),
         migrations.RunSQL(
-            create_index_if_not_exist(
-                index_name='zerver_usermessage_active_mobile_push_notification_id',
-                table_name='zerver_usermessage',
-                column_string='user_profile_id, message_id',
-                where_clause='WHERE (flags & 4096) != 0',
-            ),
+            '''
+            CREATE INDEX IF NOT EXISTS zerver_usermessage_active_mobile_push_notification_id
+                ON zerver_usermessage (user_profile_id, message_id)
+                WHERE (flags & 4096) != 0;
+            ''',
             reverse_sql='DROP INDEX zerver_usermessage_active_mobile_push_notification_id;'
         ),
     ]
