@@ -22,7 +22,7 @@ config.read("/etc/zulip/zulip.conf")
 
 if not os.path.exists("/etc/puppet/hiera.yaml"):
     codename = parse_lsb_release()['DISTRIB_CODENAME']
-    if codename in ["trusty", "stretch", "xenial"]:
+    if codename in ["stretch", "xenial"]:
         # Suppress warnings in old puppet about hiera.yaml not existing.
         open("/etc/puppet/hiera.yaml", "a").close()
 
