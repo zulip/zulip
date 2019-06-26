@@ -33,8 +33,6 @@ development environment:
   **[install without using Vagrant][install-direct]**.
 * On **other Linux/UNIX** distributions, you'll need to follow slightly different
   instructions to **[install manually][install-generic]**.
-* On **macOS and Linux** (Ubuntu recommended), you can install **[using
-  Docker][install-docker]**, though support for this remains experimental.
 
 Unfortunately, the only supported method to install on Windows is the [Vagrant
 method][install-vagrant].
@@ -84,7 +82,6 @@ machine, take a look at our tips for
 
 [dev-remote]: remote.html
 [install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
-[install-docker]: ../development/setup-advanced.html#using-docker-experimental
 [install-generic]: ../development/setup-advanced.html#installing-manually-on-unix
 [install-vagrant]: ../development/setup-vagrant.html
 [self-install-remote]: #installing-remotely
