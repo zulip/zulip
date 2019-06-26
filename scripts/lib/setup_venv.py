@@ -4,7 +4,7 @@ import os
 import shutil
 import subprocess
 import sys
-from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING, parse_lsb_release
+from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING
 from scripts.lib.hash_reqs import expand_reqs
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -30,9 +30,7 @@ VENV_DEPENDENCIES = [
     "python-dev",
     "python3-pip",
     "python-pip",
-    "python-virtualenv",    # Trusty lacks `python3-virtualenv`.
-                            # Fortunately we don't need the library,
-                            # only the command, and this suffices.
+    "virtualenv",
     "python3-six",
     "python-six",
     "libxml2-dev",          # Used for installing talon
@@ -77,12 +75,6 @@ FEDORA_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
     "python3-six",
     "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
 ]
-
-codename = parse_lsb_release()["DISTRIB_CODENAME"]
-
-if codename != "trusty":
-    # Workaround for the fact that trusty has a different package name here.
-    VENV_DEPENDENCIES.append("virtualenv")
 
 THUMBOR_VENV_DEPENDENCIES = [
     "libcurl4-openssl-dev",

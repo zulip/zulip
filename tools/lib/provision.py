@@ -33,7 +33,6 @@ from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_sta
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
-        "trusty",
         "xenial",
         "bionic",
         "cosmic",
@@ -134,7 +133,6 @@ if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor
 POSTGRES_VERSION_MAP = {
     "stretch": "9.6",
     "buster": "11",
-    "trusty": "9.3",
     "xenial": "9.5",
     "bionic": "10",
     "cosmic": "10",
