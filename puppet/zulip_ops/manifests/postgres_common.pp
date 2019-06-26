@@ -6,7 +6,7 @@ class zulip_ops::postgres_common {
     'pv',
     'python3-pip',
     'python-pip',
-    # "python3-gevent", # missing on trusty
+    'python3-gevent',
     'python-gevent',
   ]
   package { $internal_postgres_packages: ensure => 'installed' }
