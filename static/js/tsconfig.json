@@ -13,6 +13,8 @@
         "jsx": "preserve",
         "sourceMap": true,
         "removeComments": false,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
 
         /* Strict type-checking */
         "strict": true,
@@ -26,5 +28,7 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
+
+        "typeRoots": ["../../node_modules/@types", "js_typings"],
     }
 }
