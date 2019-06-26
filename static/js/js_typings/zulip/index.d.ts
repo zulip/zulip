@@ -1,3 +1,4 @@
+// JS modules
 declare var activity: any;
 declare var admin: any;
 declare var alert_words: any;
@@ -179,3 +180,8 @@ declare var widgetize: any;
 declare var zcommand: any;
 declare var zform: any;
 declare var zulip: any;
+
+// Global variables
+declare var page_params: any;
+declare var i18n: any;
+declare var moment: any
