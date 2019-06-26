@@ -227,21 +227,11 @@ strength allowed is controlled by two settings in
   possessing a URL to a secret file in Zulip does not provide
   unauthorized users with access to that file.
 
-  We have a similar protection for the `LOCAL_UPLOADS_DIR` backend,
-  that is only unavailable on Ubuntu Trusty (this is the one place
-  in Zulip where behavior is currently different between different OS
-  versions).  For platforms that are not Ubuntu Trusty, every access
+  We have a similar protection for the `LOCAL_UPLOADS_DIR` backend.
+  Every access
   to an uploaded file has access control verified (confirming that the
   browser is logged into a Zulip account that has received the
   uploaded file in question).
-
-  On Ubuntu Trusty, because the older version of `nginx` available
-  there doesn't have proper Unicode support for the `X-Accel-Redirect`
-  feature, the `LOCAL_UPLOADS_DIR` backend only has the single layer
-  of security described at the beginning of this section (long,
-  randomly generated secret URLs).  This could be fixed with further
-  engineering, but given the upcoming end-of-life of Ubuntu Trusty, we
-  have no plans to do that further work.
 
 * Zulip supports using the Camo image proxy to proxy content like
   inline image previews that can be inserted into the Zulip message
