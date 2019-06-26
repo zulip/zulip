@@ -48,7 +48,7 @@ a proxy to access the internet.)
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
-- **Ubuntu LTS**: 18.04, 16.04, or 14.04 64-bit
+- **Ubuntu LTS**: 18.04 or 16.04 64-bit
   - or **Debian**: 9.0 "stretch" 64-bit
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-X or AMD-V), administrator access.
@@ -260,7 +260,7 @@ $ vagrant up
 The first time you run this command it will take some time because vagrant
 does the following:
 
-- downloads the base Ubuntu 14.04 virtual machine image (for macOS and Windows)
+- downloads the base Ubuntu 18.04 virtual machine image (for macOS and Windows)
   or container (for Ubuntu)
 - configures this virtual machine/container for use with Zulip,
 - creates a shared directory mapping your clone of the Zulip code inside the

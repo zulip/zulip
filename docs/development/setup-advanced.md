@@ -11,7 +11,7 @@ Contents:
 If you'd like to install a Zulip development environment on a computer
 that's running one of:
 
-* Ubuntu 18.10 Cosmic, 18.04 Bionic, 16.04 Xenial, 14.04 Trusty
+* Ubuntu 18.10 Cosmic, 18.04 Bionic, 16.04 Xenial
 * Debian 9 Stretch or 10 Buster
 * Centos 7 (beta)
 * Fedora 29 (beta)
