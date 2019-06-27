@@ -176,11 +176,10 @@ def move_to_archive_and_delete_models_with_message_key(msg_ids: List[int]) -> No
         query = """
         WITH archived_data AS (
             INSERT INTO {archive_table_name} ({dst_fields})
-            SELECT {src_fields}
-            FROM {table_name}
-            LEFT JOIN {archive_table_name} ON {archive_table_name}.id = {table_name}.id
-            WHERE {table_name}.message_id IN {message_ids}
-                AND {archive_table_name}.id IS NULL
+                SELECT {src_fields}
+                FROM {table_name}
+                WHERE {table_name}.message_id IN {message_ids}
+            ON CONFLICT (id) DO NOTHING
             RETURNING id
         )
         DELETE FROM {table_name}
@@ -194,15 +193,14 @@ def move_attachments_to_archive(msg_ids: List[int]) -> None:
     assert len(msg_ids) > 0
 
     query = """
-       INSERT INTO zerver_archivedattachment ({dst_fields})
-       SELECT {src_fields}
-       FROM zerver_attachment
-       INNER JOIN zerver_attachment_messages
-           ON zerver_attachment_messages.attachment_id = zerver_attachment.id
-       LEFT JOIN zerver_archivedattachment ON zerver_archivedattachment.id = zerver_attachment.id
-       WHERE zerver_attachment_messages.message_id IN {message_ids}
-            AND zerver_archivedattachment.id IS NULL
-       GROUP BY zerver_attachment.id
+    INSERT INTO zerver_archivedattachment ({dst_fields})
+        SELECT {src_fields}
+        FROM zerver_attachment
+        INNER JOIN zerver_attachment_messages
+            ON zerver_attachment_messages.attachment_id = zerver_attachment.id
+        WHERE zerver_attachment_messages.message_id IN {message_ids}
+        GROUP BY zerver_attachment.id
+    ON CONFLICT (id) DO NOTHING
     """
     move_rows(Attachment, query, message_ids=ids_list_to_sql_query_format(msg_ids))
 
@@ -211,19 +209,17 @@ def move_attachment_messages_to_archive(msg_ids: List[int]) -> None:
     assert len(msg_ids) > 0
 
     query = """
-        WITH archived_data AS (
-            INSERT INTO zerver_archivedattachment_messages (id, archivedattachment_id, archivedmessage_id)
+    WITH archived_data AS (
+        INSERT INTO zerver_archivedattachment_messages (id, archivedattachment_id, archivedmessage_id)
             SELECT zerver_attachment_messages.id, zerver_attachment_messages.attachment_id,
                 zerver_attachment_messages.message_id
             FROM zerver_attachment_messages
-            LEFT JOIN zerver_archivedattachment_messages
-                ON zerver_archivedattachment_messages.id = zerver_attachment_messages.id
             WHERE  zerver_attachment_messages.message_id IN {message_ids}
-                    AND  zerver_archivedattachment_messages.id IS NULL
-            RETURNING id
-        )
-        DELETE FROM zerver_attachment_messages
-        WHERE id IN (SELECT id FROM archived_data)
+        ON CONFLICT (id) DO NOTHING
+        RETURNING id
+    )
+    DELETE FROM zerver_attachment_messages
+    WHERE id IN (SELECT id FROM archived_data)
     """
     with connection.cursor() as cursor:
         cursor.execute(query.format(message_ids=ids_list_to_sql_query_format(msg_ids)))
@@ -319,9 +315,8 @@ def restore_messages_from_archive(archive_transaction_id: int) -> List[int]:
         INSERT INTO zerver_message ({dst_fields})
             SELECT {src_fields}
             FROM zerver_archivedmessage
-            LEFT JOIN zerver_message ON zerver_archivedmessage.id = zerver_message.id
             WHERE zerver_archivedmessage.archive_transaction_id = {archive_transaction_id}
-                AND zerver_message.id is NULL
+        ON CONFLICT (id) DO NOTHING
         RETURNING id
         """
     return move_rows(Message, query, src_db_table='zerver_archivedmessage', returning_id=True,
@@ -331,12 +326,11 @@ def restore_models_with_message_key_from_archive(archive_transaction_id: int) ->
     for model in models_with_message_key:
         query = """
         INSERT INTO {table_name} ({dst_fields})
-        SELECT {src_fields}
-        FROM {archive_table_name}
-        INNER JOIN zerver_archivedmessage ON {archive_table_name}.message_id = zerver_archivedmessage.id
-        LEFT JOIN {table_name} ON {archive_table_name}.id = {table_name}.id
-        WHERE zerver_archivedmessage.archive_transaction_id = {archive_transaction_id}
-            AND {table_name}.id IS NULL
+            SELECT {src_fields}
+            FROM {archive_table_name}
+            INNER JOIN zerver_archivedmessage ON {archive_table_name}.message_id = zerver_archivedmessage.id
+            WHERE zerver_archivedmessage.archive_transaction_id = {archive_transaction_id}
+        ON CONFLICT (id) DO NOTHING
         """
 
         move_rows(model['class'], query, src_db_table=model['archive_table_name'],
@@ -346,34 +340,31 @@ def restore_models_with_message_key_from_archive(archive_transaction_id: int) ->
 
 def restore_attachments_from_archive(archive_transaction_id: int) -> None:
     query = """
-        INSERT INTO zerver_attachment ({dst_fields})
+    INSERT INTO zerver_attachment ({dst_fields})
         SELECT {src_fields}
         FROM zerver_archivedattachment
         INNER JOIN zerver_archivedattachment_messages
             ON zerver_archivedattachment_messages.archivedattachment_id = zerver_archivedattachment.id
         INNER JOIN zerver_archivedmessage
             ON  zerver_archivedattachment_messages.archivedmessage_id = zerver_archivedmessage.id
-        LEFT JOIN zerver_attachment ON zerver_archivedattachment.id = zerver_attachment.id
         WHERE zerver_archivedmessage.archive_transaction_id = {archive_transaction_id}
-            AND zerver_attachment.id IS NULL
         GROUP BY zerver_archivedattachment.id
+    ON CONFLICT (id) DO NOTHING
     """
     move_rows(Attachment, query, src_db_table='zerver_archivedattachment',
               archive_transaction_id=archive_transaction_id)
 
 def restore_attachment_messages_from_archive(archive_transaction_id: int) -> None:
     query = """
-        INSERT INTO zerver_attachment_messages (id, attachment_id, message_id)
+    INSERT INTO zerver_attachment_messages (id, attachment_id, message_id)
         SELECT zerver_archivedattachment_messages.id,
             zerver_archivedattachment_messages.archivedattachment_id,
             zerver_archivedattachment_messages.archivedmessage_id
         FROM zerver_archivedattachment_messages
         INNER JOIN zerver_archivedmessage
             ON  zerver_archivedattachment_messages.archivedmessage_id = zerver_archivedmessage.id
-        LEFT JOIN zerver_attachment_messages
-            ON zerver_archivedattachment_messages.id = zerver_attachment_messages.id
         WHERE zerver_archivedmessage.archive_transaction_id = {archive_transaction_id}
-                AND  zerver_attachment_messages.id IS NULL
+    ON CONFLICT (id) DO NOTHING
     """
     with connection.cursor() as cursor:
         cursor.execute(query.format(archive_transaction_id=archive_transaction_id))
