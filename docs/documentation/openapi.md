@@ -30,24 +30,25 @@ compose a larger definition from individual objects with `allOf:`
 
 ### Configuration
 
-These objects, at the top of `zulip.yaml`, identify the API, define
-the backend host for the working examples, list supported schemes and
-types of authentication, and configure other settings. Once defined,
-information in this section rarely changes.
+These objects, at the top of zulip.yaml, identify the API, define the backend host for the working examples, list supported schemes and types of authentication, and configure other settings. Once defined, information in this section rarely changes.
 
-For example, the `swagger` and `info` objects look like this:
+
+For example, the `openapi`,`info` and `server` objects look like this:
 ```
 # Basic Swagger UI info
-swagger: '2.0'
+openapi: 3.0.1
 info:
-  version: '1.0.0'
+  version: 1.0.0
   title: Zulip REST API
   description: Powerful open source group chat
   contact:
-    url: https://zulip.org/
+    url: https://zulipchat.com
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+- url: 'https://your.zulip.server/api/v1'
+
 ```
 
 ### Endpoint definitions
@@ -68,42 +69,64 @@ below.)
 
 Example:
 
-The `/users/{user}/presence` endpoint (defined in a
+The `/users/{email}/presence` endpoint (defined in a
 [Path Item Object](http://swagger.io/specification/#pathItemObject))
 expects a GET request with one
 [parameter](http://swagger.io/specification/#parameterObject), HTTP
-Basic authentication, and returns a JSON response containing `msg`,
-`result`, and `presence` values.
+Basic authentication, and returns a JSON response containing the presence details for every client user has logged into
 
 ```
-/users/{user}/presence:
-  get:
-    description: Get presence data for another user.
-    operationId: getPresence
-    parameters:
-    - name: user
-      in: path
-      description: Enter email address
-      required: true
-      type: string
-    security:
-    - basicAuth: []
-    responses:
-      '200':
-        description: The response from a successful call
+   /users/{email}/presence:
+    get:
+      description: Get the presence status for a specific user.
+      parameters:
+      - name: email
+        in: path
+        description: The email address of the user whose presence you want to
+          fetch.
         schema:
-          type: object
-          required:
-          - msg
-          - result
-          - presence
-          properties:
-            msg:
-              type: string
-            result:
-              type: string
-            presence:
-              type: array
+          type: string
+        example: iago@zulip.com
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    presence:
+                      type: object
+                      description: An object containing the presence details
+                        for every client the user has logged into.
+                - example:
+                    {
+                        "presence": {
+                            "website": {
+                                "timestamp": 1532697622,
+                                "status": "active",
+                                "pushable": false,
+                                "client": "website"
+                            },
+                            "ZulipMobile": {
+                                "timestamp": 1522687421,
+                                "status": "active",
+                                "pushable": false,
+                                "client": "ZulipMobile"
+                            },
+                            "aggregated": {
+                                "timestamp": 1532697622,
+                                "status": "active",
+                                "client": "website"
+                            }
+                        },
+                        "result": "success",
+                        "msg": ""
+                    }
 ```
 
 ### Schemas
@@ -111,25 +134,22 @@ Basic authentication, and returns a JSON response containing `msg`,
 The
 [Definitions Object](http://swagger.io/specification/#definitionsObject)
 contains schemas referenced by other objects. For example,
-`MessageResponse`, the response from the `/messages` endpoint,
-contains three required parameters.  Two are strings, and one is an
-integer.
+`InvalidMessageError`, the `/messages/{message_id}/history` endpoint, in case of 400 Bad Request error.
 
 ```
-MessageResponse:
-  type: object
-  required:
-    - msg
-    - result
-    - id
-  properties:
-    msg:
-      type: string
-    result:
-      type: string
-    id:
-      type: integer
-      format: int64
+InvalidMessageError:
+      allOf:
+      - $ref: '#/components/schemas/JsonSuccess'
+      - properties:
+          raw_content:
+            type: string
+            description: The raw content of the message.
+      - example:
+          {
+              "msg": "Invalid message(s)",
+              "code": "BAD_REQUEST",
+              "result": "error"
+          }
 ```
 
 You can find more examples, including GET requests and nested objects, in
@@ -171,22 +191,3 @@ correct.
   Markdown format options like inline code \` (backtick) and `#`
   headings.
 
-* A single `|` (pipe) character begins a multi-line description on the
-  next line.  Single spaced lines (one newline at the end of each) are
-  joined. Use an extra blank line for a paragraph break.
-
-### Examples:
-
-```
-Description: This is a single line description.
-```
-
-```
-Description: |
-             This description has multiple lines.
-             Sometimes descriptions can go on for
-             several sentences.
-
-             A description might have multiple paragraphs
-             as well.
-```
