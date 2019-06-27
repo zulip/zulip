@@ -372,7 +372,7 @@ exports.set_up = function () {
         });
     });
 
-    $('#new_password').on('change keyup', function () {
+    $('#new_password').on('input', function () {
         var field = $('#new_password');
         common.password_quality(field.val(), $('#pw_strength .bar'), field);
     });

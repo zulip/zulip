@@ -13,7 +13,7 @@ $(function () {
         // was just reloaded due to a validation failure on the backend.
         common.password_quality(password_field.val(), $('#pw_strength .bar'), password_field);
 
-        password_field.on('change keyup', function () {
+        password_field.on('input', function () {
             // Update the password strength bar even if we aren't validating
             // the field yet.
             common.password_quality($(this).val(), $('#pw_strength .bar'), $(this));
