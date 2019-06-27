@@ -637,7 +637,7 @@ Then Vagrant was not able to create a symbolic link.
 
 First, if you are using Windows, **make sure you have run Git BASH (or Cygwin)
 as an administrator**. By default, only administrators can create symbolic
-links on Windows.
+links on Windows, but sometimes they restrict admin accounts from creating symlinks, [turning off UAC](https://stackoverflow.com/questions/15320550/why-is-secreatesymboliclinkprivilege-ignored-on-windows-8) will allow you to create new symlinks (Note: This might expose your system to vulnerabilities.). You can also try some of the solutions mentioned [here](https://superuser.com/questions/124679/how-do-i-create-a-link-in-windows-7-home-premium-as-a-regular-user).
 
 Second, VirtualBox does not enable symbolic links by default. Vagrant
 starting with version 1.6.0 enables symbolic links for VirtualBox shared
