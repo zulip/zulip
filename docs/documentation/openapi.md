@@ -30,7 +30,10 @@ compose a larger definition from individual objects with `allOf:`
 
 ### Configuration
 
-These objects, at the top of zulip.yaml, identify the API, define the backend host for the working examples, list supported schemes and types of authentication, and configure other settings. Once defined, information in this section rarely changes.
+These objects, at the top of zulip.yaml, identify the API, define the
+ backend host for the working examples, list supported schemes and 
+types of authentication, and configure other settings. Once defined, 
+information in this section rarely changes.
 
 
 For example, the `openapi`,`info` and `server` objects look like this:
@@ -73,7 +76,8 @@ The `/users/{email}/presence` endpoint (defined in a
 [Path Item Object](http://swagger.io/specification/#pathItemObject))
 expects a GET request with one
 [parameter](http://swagger.io/specification/#parameterObject), HTTP
-Basic authentication, and returns a JSON response containing the presence details for every client user has logged into
+Basic authentication, and returns a JSON response containing the 
+presence details for every client user has logged into
 
 ```
    /users/{email}/presence:
@@ -134,7 +138,8 @@ Basic authentication, and returns a JSON response containing the presence detail
 The
 [Definitions Object](http://swagger.io/specification/#definitionsObject)
 contains schemas referenced by other objects. For example,
-`InvalidMessageError`, the `/messages/{message_id}/history` endpoint, in case of 400 Bad Request error.
+`InvalidMessageError`, the `/messages/{message_id}/history` endpoint, 
+in case of 400 Bad Request error.
 
 ```
 InvalidMessageError:
