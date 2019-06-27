@@ -932,6 +932,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
     avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1)  # type: str
     avatar_version = models.PositiveSmallIntegerField(default=1)  # type: int
+    avatar_hash = models.CharField(null=True, max_length=64)  # type: Optional[str]
 
     TUTORIAL_WAITING  = u'W'
     TUTORIAL_STARTED  = u'S'

@@ -2,7 +2,7 @@ from django.conf import settings
 
 from typing import Any, Dict, Optional
 
-from zerver.lib.avatar_hash import gravatar_hash, user_avatar_path_from_ids
+from zerver.lib.avatar_hash import gravatar_hash, user_avatar_path_from_ids, user_avatar_content_hash
 from zerver.lib.upload import upload_backend, MEDIUM_AVATAR_SIZE
 from zerver.models import UserProfile
 import urllib
@@ -117,3 +117,14 @@ def absolute_avatar_url(user_profile: UserProfile) -> str:
     # avatar_url can return None if client_gravatar=True, however here we use the default value of False
     assert avatar is not None
     return urllib.parse.urljoin(user_profile.realm.uri, avatar)
+
+def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
+    new_avatar_hash = user_avatar_content_hash(ldap_avatar)
+
+    if user_profile.avatar_hash:
+        if user_profile.avatar_hash == new_avatar_hash:
+            # If an avatar exists and is the same as the new avatar,
+            # then, no need to change the avatar.
+            return False
+
+    return True

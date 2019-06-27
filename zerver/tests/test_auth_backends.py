@@ -3037,6 +3037,28 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             hamlet = self.example_user('hamlet')
             self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
 
+            # Verify that the next time we do an LDAP sync, we don't
+            # end up updating this user's avatar again if the LDAP
+            # data hasn't changed.
+            self.perform_ldap_sync(self.example_user('hamlet'))
+            fn.assert_called_once()
+
+        # Now verify that if we do change the thumbnailPhoto image, we
+        # will upload a new avatar.
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'thumbnailPhoto': [open(os.path.join(settings.STATIC_ROOT, "images/logo/zulip-icon-512x512.png"), "rb").read()]
+            }
+        }
+        with mock.patch('zerver.lib.upload.upload_avatar_image') as fn, \
+            self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                   'avatar': 'thumbnailPhoto'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+            fn.assert_called_once()
+            hamlet = self.example_user('hamlet')
+            self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+
     @use_s3_backend
     def test_update_user_avatar_for_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
