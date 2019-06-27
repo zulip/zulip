@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.actions import internal_send_private_message, do_add_submessage
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import create_attachment
-from zerver.models import (Message, Realm, UserProfile, Stream, ArchivedUserMessage, SubMessage,
+from zerver.models import (Message, Realm, Stream, ArchivedUserMessage, SubMessage,
                            ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
                            Reaction, ArchivedReaction, ArchivedSubMessage, ArchiveTransaction,
                            get_realm, get_user_profile_by_email, get_stream, get_system_bot)
@@ -103,15 +103,15 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         self._change_messages_pub_date(msg_ids, pub_date)
         return msg_ids
 
-    def _send_cross_realm_message(self) -> int:
+    def _send_cross_realm_personal_message(self) -> int:
         # Send message from bot to users from different realm.
         bot_email = 'notification-bot@zulip.com'
         get_user_profile_by_email(bot_email)
-        mit_user = UserProfile.objects.filter(realm=self.mit_realm).first()
+        zulip_user = self.example_user("hamlet")
         msg_id = internal_send_private_message(
-            realm=mit_user.realm,
+            realm=self.zulip_realm,
             sender=get_system_bot(bot_email),
-            recipient_user=mit_user,
+            recipient_user=zulip_user,
             content='test message',
         )
         assert msg_id is not None
@@ -246,19 +246,15 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         archive_messages()
         self._verify_archive_data([msg_id], usermsg_ids)
 
-    def test_cross_realm_messages_not_archived(self) -> None:
-        """Check that cross-realm messages don't get archived or deleted."""
-        msg_id = self._send_cross_realm_message()
-        # Make the message expired on both realms:
-        self._change_messages_pub_date([msg_id], timezone_now() - timedelta(MIT_REALM_DAYS+1))
+    def test_cross_realm_personal_message_archiving(self) -> None:
+        """Check that cross-realm personal messages get correctly archived. """
+        msg_ids = [self._send_cross_realm_personal_message() for i in range(1, 7)]
+        usermsg_ids = self._get_usermessage_ids(msg_ids)
+        # Make the message expired on the recipient's realm:
+        self._change_messages_pub_date(msg_ids, timezone_now() - timedelta(ZULIP_REALM_DAYS+1))
 
         archive_messages()
-
-        self.assertEqual(ArchivedMessage.objects.count(), 0)
-        self.assertEqual(ArchivedUserMessage.objects.count(), 0)
-
-        self.assertEqual(UserMessage.objects.filter(message_id=msg_id).count(), 2)
-        self.assertTrue(Message.objects.filter(id=msg_id).exists())
+        self._verify_archive_data(msg_ids, usermsg_ids)
 
     def test_archiving_interrupted(self) -> None:
         """ Check that queries get rolled back to a consistent state
@@ -297,14 +293,14 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # Change some Zulip messages to be expired:
         expired_zulip_msg_ids = self._make_expired_zulip_messages(7)
 
-        expired_crossrealm_msg_id = self._send_cross_realm_message()
-        # Make the message expired on both realms:
+        expired_crossrealm_msg_id = self._send_cross_realm_personal_message()
+        # Make the message expired in the recipient's realm:
         self._change_messages_pub_date(
             [expired_crossrealm_msg_id],
-            timezone_now() - timedelta(MIT_REALM_DAYS+1)
+            timezone_now() - timedelta(ZULIP_REALM_DAYS+1)
         )
 
-        expired_msg_ids = expired_mit_msg_ids + expired_zulip_msg_ids
+        expired_msg_ids = expired_mit_msg_ids + expired_zulip_msg_ids + [expired_crossrealm_msg_id]
         expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
         archive_messages(chunk_size=2)  # Specify low chunk_size to test batching.
