@@ -104,6 +104,9 @@ fi
 # Check for a supported OS release.
 apt-get install -y lsb-release sudo
 os_info="$(lsb_release --short --id --release --codename)"
+if [ "$os_distro" == "rhel" ]; then
+    os_info="$(echo $os_info | sed -r 's/^(\S+)\s+(\S+)\s+\S+$/\1\n\2\n\2/')"
+fi
 { read -r os_id; read -r os_release; read -r os_codename; } <<< "$os_info"
 
 case "$os_codename" in
