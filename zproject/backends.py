@@ -37,6 +37,8 @@ from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
     do_update_user_custom_profile_data, validate_email_for_realm
+from zerver.lib.avatar import is_avatar_new
+from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
@@ -348,7 +350,15 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 # thumbnailPhoto set in LDAP, just skip that user.
                 return
 
-            io = BytesIO(ldap_user.attrs[avatar_attr_name][0])
+            ldap_avatar = ldap_user.attrs[avatar_attr_name][0]
+
+            change_avatar = is_avatar_new(ldap_avatar, user)
+            if change_avatar is False:
+                # If this specific user's avatar is unchanged,
+                # then no need to update it.
+                return
+
+            io = BytesIO(ldap_avatar)
             # Structurally, to make the S3 backend happy, we need to
             # provide a Content-Type; since that isn't specified in
             # any metadata, we auto-detect it.
@@ -356,6 +366,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             if content_type.startswith("image/"):
                 upload_avatar_image(io, user, user, content_type=content_type)
                 do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
+                # Update avatar hash.
+                user.avatar_hash = user_avatar_content_hash(ldap_avatar)
+                user.save(update_fields=["avatar_hash"])
             else:
                 logging.warning("Could not parse %s field for user %s" %
                                 (avatar_attr_name, user.id))

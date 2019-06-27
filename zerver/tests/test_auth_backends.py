@@ -3037,6 +3037,9 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             hamlet = self.example_user('hamlet')
             self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
 
+            self.perform_ldap_sync(self.example_user('hamlet'))
+            fn.assert_called_once()
+
     @use_s3_backend
     def test_update_user_avatar_for_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
