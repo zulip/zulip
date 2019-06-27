@@ -378,25 +378,39 @@ def restore_attachment_messages_from_archive(archive_transaction_id: int) -> Non
     with connection.cursor() as cursor:
         cursor.execute(query.format(archive_transaction_id=archive_transaction_id))
 
-@transaction.atomic
-def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> None:
-    restore_messages_from_archive(archive_transaction.id)
-    restore_models_with_message_key_from_archive(archive_transaction.id)
-    restore_attachments_from_archive(archive_transaction.id)
-    restore_attachment_messages_from_archive(archive_transaction.id)
+def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
+    logger.info("Restoring {}".format(archive_transaction))
+    # transaction.atomic needs to be used here, rather than being a wrapper on the whole function,
+    # so that when we log "Finished", the process has indeed finished - and that happens only after
+    # leaving the atomic block - Django does work committing the changes to the database when
+    # the block ends.
+    with transaction.atomic():
+        msg_ids = restore_messages_from_archive(archive_transaction.id)
+        restore_models_with_message_key_from_archive(archive_transaction.id)
+        restore_attachments_from_archive(archive_transaction.id)
+        restore_attachment_messages_from_archive(archive_transaction.id)
 
-    archive_transaction.restored = True
-    archive_transaction.save()
+        archive_transaction.restored = True
+        archive_transaction.save()
 
-def restore_data_from_archive_by_transactions(archive_transactions: List[ArchiveTransaction]) -> None:
+    logger.info("Finished. Restored {} messages".format(len(msg_ids)))
+    return len(msg_ids)
+
+def restore_data_from_archive_by_transactions(archive_transactions: List[ArchiveTransaction]) -> int:
     # Looping over the list of ids means we're batching the restoration process by the size of the
     # transactions:
+    message_count = 0
     for archive_transaction in archive_transactions:
-        restore_data_from_archive(archive_transaction)
+        message_count += restore_data_from_archive(archive_transaction)
+
+    return message_count
 
 def restore_data_from_archive_by_realm(realm: Realm) -> None:
     transactions = ArchiveTransaction.objects.exclude(restored=True).filter(realm=realm)
-    restore_data_from_archive_by_transactions(transactions)
+    logger.info("Restoring {} transactions from realm {}".format(len(transactions), realm.string_id))
+    message_count = restore_data_from_archive_by_transactions(transactions)
+
+    logger.info("Finished. Restored {} messages from realm {}".format(message_count, realm.string_id))
 
 def restore_all_data_from_archive(restore_manual_transactions: bool=True) -> None:
     for realm in Realm.objects.all():
@@ -408,6 +422,11 @@ def restore_all_data_from_archive(restore_manual_transactions: bool=True) -> Non
         )
 
 def clean_archived_data() -> None:
+    logger.info("Cleaning old archive data.")
     check_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS)
     #  Appropriate archived objects will get deleted through the on_delete=CASCADE property:
-    ArchiveTransaction.objects.filter(timestamp__lt=check_date).delete()
+    transactions = ArchiveTransaction.objects.filter(timestamp__lt=check_date)
+    count = transactions.count()
+    transactions.delete()
+
+    logger.info("Deleted {} old ArchiveTransactions.".format(count))
