@@ -24,7 +24,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
     resize_emoji, BadImageError, get_realm_for_filename, \
     DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, exif_rotate, \
-    upload_export_tarball
+    upload_export_tarball, delete_export_tarball
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     Message, UserProfile, Realm, \
@@ -1448,7 +1448,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         expected_url = "/user_avatars/{emoji_path}".format(emoji_path=emoji_path)
         self.assertEqual(expected_url, url)
 
-    def test_tarball_upload_local(self) -> None:
+    def test_tarball_upload_and_deletion_local(self) -> None:
         user_profile = self.example_user("iago")
         self.assertTrue(user_profile.is_realm_admin)
 
@@ -1470,6 +1470,11 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             random_name=random_name,
         )
         self.assertEqual(expected_url, uri)
+
+        # Delete the tarball.
+        self.assertIsNone(delete_export_tarball('not_a_file'))
+        path_id = urllib.parse.urlparse(uri).path
+        self.assertEqual(delete_export_tarball(path_id), path_id)
 
     def tearDown(self) -> None:
         destroy_uploads()
@@ -1742,7 +1747,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(expected_url, url)
 
     @use_s3_backend
-    def test_tarball_upload(self) -> None:
+    def test_tarball_upload_and_deletion(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("iago")
@@ -1764,6 +1769,10 @@ class S3Test(ZulipTestCase):
             path=os.path.basename(tarball_path))
         self.assertEqual(uri, expected_url)
 
+        # Delete the tarball.
+        self.assertIsNone(delete_export_tarball('not_a_file'))
+        path_id = urllib.parse.urlparse(uri).path
+        self.assertEqual(delete_export_tarball(path_id), path_id)
 
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:

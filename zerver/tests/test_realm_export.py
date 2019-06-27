@@ -9,6 +9,7 @@ from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets
 
 from zerver.models import RealmAuditLog
 from zerver.views.public_export import public_only_realm_export
+import zerver.lib.upload
 
 import os
 
@@ -64,6 +65,10 @@ class RealmExportTest(ZulipTestCase):
                                realm=admin.realm,
                                event_type=RealmAuditLog.REALM_EXPORTED).count())
 
+        result = zerver.lib.upload.upload_backend.delete_export_tarball(path_id)
+        self.assertEqual(result, path_id)
+        self.assertIsNone(bucket.get_key(path_id))
+
     def test_endpoint_local_uploads(self) -> None:
         admin = self.example_user('iago')
         self.login(admin.email)
@@ -100,6 +105,11 @@ class RealmExportTest(ZulipTestCase):
                            RealmAuditLog.objects.filter(
                                realm=admin.realm,
                                event_type=RealmAuditLog.REALM_EXPORTED).count())
+
+        result = zerver.lib.upload.upload_backend.delete_export_tarball(path_id)
+        self.assertEqual(result, path_id)
+        response = self.client_get(path_id)
+        self.assertEqual(response.status_code, 404)
 
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user('iago')

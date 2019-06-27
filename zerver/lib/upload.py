@@ -245,6 +245,8 @@ class ZulipUploadBackend:
     def upload_export_tarball(self, realm: Realm, tarball_path: str) -> str:
         raise NotImplementedError()
 
+    def delete_export_tarball(self, path_id: str) -> Optional[str]:
+        raise NotImplementedError()
 
 ### S3
 
@@ -598,6 +600,10 @@ class S3UploadBackend(ZulipUploadBackend):
             key=key.key)
         return public_url
 
+    def delete_export_tarball(self, path_id: str) -> Optional[str]:
+        if self.delete_file_from_s3(path_id, settings.S3_AVATAR_BUCKET):
+            return path_id
+        return None
 
 ### Local
 
@@ -790,6 +796,13 @@ class LocalUploadBackend(ZulipUploadBackend):
         public_url = realm.uri + '/user_avatars/' + path
         return public_url
 
+    def delete_export_tarball(self, path_id: str) -> Optional[str]:
+        # Get the last element of a list in the form ['user_avatars', '<file_path>']
+        file_path = path_id.strip('/').split('/', 1)[-1]
+        if delete_local_file('avatars', file_path):
+            return path_id
+        return None
+
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:
     upload_backend = LocalUploadBackend()  # type: ZulipUploadBackend
@@ -853,3 +866,6 @@ def upload_message_image_from_request(request: HttpRequest, user_file: File,
 
 def upload_export_tarball(realm: Realm, tarball_path: str) -> str:
     return upload_backend.upload_export_tarball(realm, tarball_path)
+
+def delete_export_tarball(path_id: str) -> Optional[str]:
+    return upload_backend.delete_export_tarball(path_id)
