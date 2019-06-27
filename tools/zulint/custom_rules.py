@@ -6,7 +6,7 @@ from __future__ import absolute_import
 import re
 import traceback
 
-from zulint.printer import print_err, colors, GREEN, BOLDRED, ENDC, MAGENTA
+from zulint.printer import print_err, colors, GREEN, ENDC, MAGENTA, BLUE, YELLOW
 
 if False:
     from typing import Any, Dict, List, Optional, Tuple, Iterable
@@ -123,16 +123,17 @@ class RuleList:
 
     def print_error(self, rule, line, identifier, color, fn, line_number):
         # type: (Dict[str, Any], str, str, Optional[Iterable[str]], str, int) -> None
-        print_err(identifier, color, '{} at {} line {}:'.format(
-            rule['description'], fn, line_number))
+        print_err(identifier, color, '{} {}at {} line {}:'.format(
+            YELLOW + rule['description'], BLUE, fn, line_number))
         print_err(identifier, color, line)
         if self.verbose:
             if rule.get('good_lines'):
                 print_err(identifier, color, GREEN + "  Good code: {}{}".format(
-                    (MAGENTA + " | " + GREEN).join(rule['good_lines']), ENDC))
+                    (YELLOW + " | " + GREEN).join(rule['good_lines']), ENDC))
             if rule.get('bad_lines'):
-                print_err(identifier, color, BOLDRED + "  Bad code: {}{}".format(
-                    (MAGENTA + " | " + BOLDRED).join(rule['bad_lines']), ENDC))
+                print_err(identifier, color, MAGENTA + "  Bad code:  {}{}".format(
+                    (YELLOW + " | " + MAGENTA).join(rule['bad_lines']), ENDC))
+            print_err(identifier, color, "")
 
     def check_file_for_long_lines(self,
                                   fn,
