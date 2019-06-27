@@ -164,7 +164,7 @@ class LinterConfig:
         if self.args.list:
             print("{}{:<15} {} {}".format(BOLDRED, 'Linter', 'Description', ENDC))
             for linter, desc in self.lint_descriptions.items():
-                print("{}{:<15} {}{}".format(BLUE, linter, GREEN, desc, ENDC))
+                print("{}{:<15} {}{}{}".format(BLUE, linter, GREEN, desc, ENDC))
             sys.exit()
         self.set_logger()
 
