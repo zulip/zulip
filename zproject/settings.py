@@ -934,7 +934,7 @@ JS_SPECS = {
     # for bundling KaTeX.
     'katex': {
         'source_filenames': [
-            'node_modules/katex/dist/katex.js',
+            '../node_modules/katex/dist/katex.js',
         ],
         'output_filename': 'min/katex.js',
     },
@@ -943,7 +943,7 @@ JS_SPECS = {
     # good way to look up the path to the file).
     'zxcvbn': {
         'source_filenames': [
-            'node_modules/zxcvbn/dist/zxcvbn.js',
+            '../node_modules/zxcvbn/dist/zxcvbn.js',
         ],
         'output_filename': 'min/zxcvbn.js'
     },

@@ -312,7 +312,7 @@ exports.set_up = function () {
             if (page_params.development_environment) {
                 // Usually the Django templates handle this path stuff
                 // for us, but in this case we need to hardcode it.
-                zxcvbn_path = '/static/node_modules/zxcvbn/dist/zxcvbn.js';
+                zxcvbn_path = '/webpack/zxcvbn.js';
             }
             $.getScript(zxcvbn_path, function () {
                 $('#pw_strength .bar').removeClass("fade");
