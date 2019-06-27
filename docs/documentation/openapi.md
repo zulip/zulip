@@ -31,7 +31,7 @@ compose a larger definition from individual objects with `allOf:`
 ### Configuration
 
 These objects, at the top of zulip.yaml, identify the API, define the
- backend host for the working examples, list supported schemes and 
+ backend host for the working examples, list supported schemes and
 types of authentication, and configure other settings. Once defined, 
 information in this section rarely changes.
 
@@ -76,7 +76,7 @@ The `/users/{email}/presence` endpoint (defined in a
 [Path Item Object](http://swagger.io/specification/#pathItemObject))
 expects a GET request with one
 [parameter](http://swagger.io/specification/#parameterObject), HTTP
-Basic authentication, and returns a JSON response containing the 
+Basic authentication, and returns a JSON response containing the
 presence details for every client user has logged into
 
 ```
