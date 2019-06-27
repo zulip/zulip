@@ -422,6 +422,13 @@ run_test('group_suggestions', () => {
         "pm-with:jeff@zulip.com,ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
+
+    query = "pm-with:jeff@zulip.com,ted@zulip.com hi";
+    suggestions = search.get_suggestions("", query);
+    expected = [
+        "pm-with:jeff@zulip.com,ted@zulip.com hi",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 });
 
 init();

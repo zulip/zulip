@@ -588,7 +588,7 @@ exports.get_suggestions = function (base_query, query) {
         last.operator === 'search' &&
         person_suggestion_ops.indexOf(query_operators[query_operators_len - 2].operator) !== -1) {
         var person_op = query_operators[query_operators_len - 2];
-        if (!people.get_by_email(person_op.operand)) {
+        if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
                 operand: person_op.operand + ' ' + last.operand,
@@ -713,7 +713,7 @@ exports.get_suggestions_legacy = function (query) {
         last.operator === 'search' &&
         person_suggestion_ops.indexOf(operators[operators_len - 2].operator) !== -1) {
         var person_op = operators[operators_len - 2];
-        if (!people.get_by_email(person_op.operand)) {
+        if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
                 operand: person_op.operand + ' ' + last.operand,
