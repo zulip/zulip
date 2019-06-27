@@ -93,6 +93,14 @@ export LC_ALL="en_US.UTF-8"
 export LANG="en_US.UTF-8"
 export LANGUAGE="en_US.UTF-8"
 
+# Detect OS distro
+os_distro="debian"
+if [ -f "/etc/debian_version" ]; then
+    os_distro="debian"
+elif [ -f "/etc/redhat-release" ]; then
+    os_distro="rhel"
+fi
+
 # Check for a supported OS release.
 apt-get install -y lsb-release sudo
 os_info="$(lsb_release --short --id --release --codename)"
