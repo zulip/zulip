@@ -102,7 +102,15 @@ elif [ -f "/etc/redhat-release" ]; then
 fi
 
 # Check for a supported OS release.
-apt-get install -y lsb-release sudo
+case $os_distro in
+    debian)
+        apt-get install -y lsb-release sudo
+        ;;
+    rhel)
+        yum -y install redhat-lsb-core sudo
+        ;;
+esac
+
 os_info="$(lsb_release --short --id --release --codename)"
 if [ "$os_distro" == "rhel" ]; then
     os_info="$(echo $os_info | sed -r 's/^(\S+)\s+(\S+)\s+\S+$/\1\n\2\n\2/')"
@@ -162,8 +170,15 @@ if [ "$mem_kb" -lt 1900000 ]; then
     exit 1
 fi
 
-# setup-apt-repo does an `apt-get update`
-"$ZULIP_PATH"/scripts/lib/setup-apt-repo
+case $os_distro in
+    debian)
+        # setup-apt-repo does an `apt-get update`
+        "$ZULIP_PATH"/scripts/lib/setup-apt-repo
+        ;;
+    rhel)
+        "$ZULIP_PATH"/scripts/lib/setup-yum-repo
+        ;;
+esac
 
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
@@ -195,13 +210,35 @@ fi
 # don't run dist-upgrade in one click apps to make the
 # installation process more seamless.
 if [ -z "$NO_DIST_UPGRADE" ]; then
-    apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+    case $os_distro in
+        debian)
+            apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+            ;;
+        *)
+            echo "OS major upgraded not supported on $os_id. Skippin"
+            ;;
+    esac
 fi
 
-if ! apt-get install -y \
-    puppet git curl wget jq \
-    python python3 python-six python3-six crudini \
-    "${ADDITIONAL_PACKAGES[@]}"; then
+pkginstall_status=0
+case $os_distro in
+    debian)
+        apt-get install -y \
+            puppet git curl wget jq \
+            python python3 python-six python3-six crudini \
+            "${ADDITIONAL_PACKAGES[@]}"
+            pkginstall_status="$?"
+        ;;
+    rhel)
+        yum -y install \
+            puppet git curl wget jq \
+            python python36 python-six python36-six crudini \
+            "${ADDITIONAL_PACKAGES[@]}"
+            pkginstall_status="$?"
+        ;;
+esac
+
+if [ "$pkginstall_status" != "0" ] ; then
     set +x
     echo -e '\033[0;31m' >&2
     echo "Installing packages failed; is network working and (on Ubuntu) the universe repository enabled?" >&2
@@ -289,7 +326,11 @@ if [ "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
 fi
 
 # These server restarting bits should be moveable into puppet-land, ideally
-apt-get -y upgrade
+case $os_distro in
+    debian)
+        apt-get -y upgrade
+        ;;
+esac
 
 if [ "$has_nginx" = 0 ]; then
     # Check nginx was configured properly now that we've installed it.
