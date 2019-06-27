@@ -1866,7 +1866,8 @@ def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
         return get_personal_recipient(list(recipient_profile_ids)[0])
 
 def validate_recipient_user_profiles(user_profiles: List[UserProfile],
-                                     sender: UserProfile) -> Set[int]:
+                                     sender: UserProfile,
+                                     allow_deactivated: bool=False) -> Set[int]:
     recipient_profile_ids = set()
 
     # We exempt cross-realm bots from the check that all the recipients
@@ -1876,8 +1877,8 @@ def validate_recipient_user_profiles(user_profiles: List[UserProfile],
         realms.add(sender.realm_id)
 
     for user_profile in user_profiles:
-        if (not user_profile.is_active and not user_profile.is_mirror_dummy) or \
-                user_profile.realm.deactivated:
+        if (not user_profile.is_active and not user_profile.is_mirror_dummy and
+                not allow_deactivated) or user_profile.realm.deactivated:
             raise ValidationError(_("'%s' is no longer using Zulip.") % (user_profile.email,))
         recipient_profile_ids.add(user_profile.id)
         if not is_cross_realm_bot_email(user_profile.email):
@@ -1928,9 +1929,10 @@ def recipient_for_user_ids(user_ids: Iterable[int], sender: UserProfile) -> Reci
 
 def recipient_for_user_profiles(user_profiles: List[UserProfile], forwarded_mirror_message: bool,
                                 forwarder_user_profile: Optional[UserProfile],
-                                sender: UserProfile) -> Recipient:
+                                sender: UserProfile, allow_deactivated: bool=False) -> Recipient:
 
-    recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender)
+    recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender,
+                                                             allow_deactivated=allow_deactivated)
 
     return get_recipient_from_user_ids(recipient_profile_ids, forwarded_mirror_message,
                                        forwarder_user_profile, sender)
