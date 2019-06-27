@@ -32,7 +32,7 @@ compose a larger definition from individual objects with `allOf:`
 
 These objects, at the top of zulip.yaml, identify the API, define the
  backend host for the working examples, list supported schemes and
-types of authentication, and configure other settings. Once defined, 
+types of authentication, and configure other settings. Once defined,
 information in this section rarely changes.
 
 
@@ -138,7 +138,7 @@ presence details for every client user has logged into
 The
 [Definitions Object](http://swagger.io/specification/#definitionsObject)
 contains schemas referenced by other objects. For example,
-`InvalidMessageError`, the `/messages/{message_id}/history` endpoint, 
+`InvalidMessageError`, the `/messages/{message_id}/history` endpoint,
 in case of 400 Bad Request error.
 
 ```
