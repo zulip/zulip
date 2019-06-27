@@ -109,8 +109,9 @@ if [ "$os_distro" == "rhel" ]; then
 fi
 { read -r os_id; read -r os_release; read -r os_codename; } <<< "$os_info"
 
-case "$os_codename" in
-    trusty|xenial|stretch|bionic) ;;
+case "$os_id-$os_codename" in
+    Ubuntu-trusty|Ubuntu-xenial|Debian-stretch|Ubuntu-bionic) ;;
+    RHEL-7.*|CentOS-7.*) ;;
     *)
         set +x
         cat <<EOF
@@ -122,6 +123,8 @@ Zulip in production is supported only on:
  - Ubuntu 14.04 LTS "trusty" (deprecated)
  - Ubuntu 16.04 LTS "xenial"
  - Ubuntu 18.04 LTS "bionic"
+ - RedHat Enterprise Linux 7.x
+ - CentOS 7.x
 
 For more information, see:
   https://zulip.readthedocs.io/en/latest/production/requirements.html
