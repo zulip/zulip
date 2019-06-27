@@ -166,10 +166,37 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
     assert realm.message_retention_days is not None
     check_date = timezone_now() - timedelta(days=realm.message_retention_days)
 
-    return run_archiving_in_chunks(query, type=ArchiveTransaction.RETENTION_POLICY_BASED, realm=realm,
-                                   cross_realm_bot_ids=cross_realm_bot_ids,
-                                   realm_id=realm.id, recipient_types=recipient_types,
-                                   check_date=check_date.isoformat(), chunk_size=chunk_size)
+    message_count = run_archiving_in_chunks(query, type=ArchiveTransaction.RETENTION_POLICY_BASED,
+                                            realm=realm,
+                                            cross_realm_bot_ids=cross_realm_bot_ids,
+                                            realm_id=realm.id, recipient_types=recipient_types,
+                                            check_date=check_date.isoformat(), chunk_size=chunk_size)
+
+    # Archive cross-realm personal messages to users in the realm:
+    # Note: Cross-realm huddle message aren't handled yet, they remain an issue
+    # that should be addressed.
+    query = """
+    INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
+        SELECT {src_fields}, {archive_transaction_id}
+        FROM zerver_message
+        INNER JOIN zerver_recipient ON zerver_recipient.id = zerver_message.recipient_id
+        INNER JOIN zerver_userprofile recipient_profile ON recipient_profile.id = zerver_recipient.type_id
+        INNER JOIN zerver_userprofile sender_profile ON sender_profile.id = zerver_message.sender_id
+        WHERE sender_profile.id IN {cross_realm_bot_ids}
+            AND recipient_profile.realm_id = {realm_id}
+            AND zerver_recipient.type = {recipient_personal}
+            AND zerver_message.pub_date < '{check_date}'
+        LIMIT {chunk_size}
+    ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
+    RETURNING id
+    """
+    message_count += run_archiving_in_chunks(query, type=ArchiveTransaction.RETENTION_POLICY_BASED,
+                                             realm=realm,
+                                             cross_realm_bot_ids=cross_realm_bot_ids,
+                                             realm_id=realm.id, recipient_personal=Recipient.PERSONAL,
+                                             check_date=check_date.isoformat(), chunk_size=chunk_size)
+
+    return message_count
 
 def move_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
     assert len(msg_ids) > 0
