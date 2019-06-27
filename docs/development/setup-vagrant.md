@@ -635,9 +635,17 @@ If you receive the following error while running `vagrant up`:
 
 Then Vagrant was not able to create a symbolic link.
 
-First, if you are using Windows, **make sure you have run Git BASH (or Cygwin)
-as an administrator**. By default, only administrators can create symbolic
-links on Windows.
+First, if you are using Windows, **make sure you have run Git BASH (or
+Cygwin) as an administrator**. By default, only administrators can
+create symbolic links on Windows.  Additionally [UAC][windows-uac], a
+Windows feature intended to limit the impact of malware, can prevent
+even administrator accounts from creating symlinks.  [Turning off
+UAC][disable-uac] will allow you to create symlinks. You can also try
+some of the solutions mentioned
+[here](https://superuser.com/questions/124679/how-do-i-create-a-link-in-windows-7-home-premium-as-a-regular-user).
+
+[windows-uac]: https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
+[disable-uac]: https://stackoverflow.com/questions/15320550/why-is-secreatesymboliclinkprivilege-ignored-on-windows-8
 
 Second, VirtualBox does not enable symbolic links by default. Vagrant
 starting with version 1.6.0 enables symbolic links for VirtualBox shared
