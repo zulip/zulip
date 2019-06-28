@@ -97,6 +97,12 @@ vm.dirty_background_ratio = 5
       group  => 'postgres',
       mode   => '0644',
     }
+    # ...and has no snake oil cert
+    exec { 'make_dummy_cert':
+      command =>
+        'cd /etc/ssl/certs && ./make-dummy-cert ssl-cert-snakeoil.pem && cp ssl-cert-snakeoil.pem ssl-cert-snakeoil.key',
+      unless  => 'test -f /etc/ssl/certs/ssl-cert-snakeoil.pem'
+    }
   }
 
   exec { $postgres_restart:
