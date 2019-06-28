@@ -106,11 +106,28 @@ vm.dirty_background_ratio = 5
       group  => 'postgres',
       mode   => '0644',
     }
-    # ...and has no snake oil cert
+    # ...and has no snake oil cert...
     exec { 'make_dummy_cert':
       command =>
-        'cd /etc/ssl/certs && ./make-dummy-cert ssl-cert-snakeoil.pem && cp ssl-cert-snakeoil.pem ssl-cert-snakeoil.key',
+        'cd /etc/ssl/certs && ./make-dummy-cert ssl-cert-snakeoil.pem',
       unless  => 'test -f /etc/ssl/certs/ssl-cert-snakeoil.pem'
+    }
+    file { "/etc/ssl/private":
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0755',
+    }
+    exec { 'make_dummy_key':
+      command =>
+        'cp /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/private/ssl-cert-snakeoil.key',
+      unless  => 'test -f /etc/ssl/private/ssl-cert-snakeoil.key',
+    }
+    file { "/etc/ssl/private/ssl-cert-snakeoil.key":
+      ensure => 'file',
+      owner  => 'root',
+      group  => 'postgres',
+      mode   => '0640',
     }
   }
 
