@@ -3,9 +3,9 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
-$postgres_conf = $::osfamily ? {
-  'debian' => "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
-  'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data/postgresql.conf",
+$postgres_conf_dir = $::osfamily ? {
+  'debian' => "/etc/postgresql/${zulip::base::postgres_version}/main",
+  'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data",
 }
 $postgres_restart = $::osfamily ? {
   'debian' => "pg_ctlcluster ${zulip::base::postgres_version} main restart",
@@ -19,6 +19,7 @@ $postgres_data_dir = $::osfamily ? {
   'debian' => "/var/lib/postgresql/${zulip::base::postgres_version}/main",
   'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data/",
 }
+$postgres_conf = "$postgres_conf_dir/postgresql.conf"
 if $zulip::base::release_name == 'trusty' {
   # tools for database setup
   $postgres_appdb_tuned_packages = ['pgtune']
@@ -99,7 +100,7 @@ vm.dirty_background_ratio = 5
 
   if $::osfamily == 'redhat' {
     # conf.d doesn't exist on redhat...
-    file { "/var/lib/pgsql/${zulip::base::postgres_version}/data/conf.d":
+    file { "$postgres_conf_dir/conf.d":
       ensure => 'directory',
       owner  => 'postgres',
       group  => 'postgres',
