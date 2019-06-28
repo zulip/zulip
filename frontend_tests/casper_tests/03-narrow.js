@@ -157,6 +157,17 @@ function expect_all_pm() {
     });
 }
 
+function expect_non_existing_user() {
+    casper.then(function () {
+        casper.waitUntilVisible('#non_existing_user', function () {
+            casper.test.info("Empty feed for non existing user visible.");
+            var expected_message = "\n        This user does not exist!" +
+                "\n    ";
+            this.test.assertEquals(casper.fetchText('#non_existing_user'), expected_message);
+        });
+    });
+}
+
 function check_narrow_title(title) {
     return function () {
         // need to get title tag from HTML
@@ -193,14 +204,7 @@ function search_silent_user(str, item) {
 
 function search_non_existing_user(str, item) {
     common.select_item_via_typeahead('#search_query', str, item);
-    casper.then(function () {
-        casper.waitUntilVisible('#non_existing_user', function () {
-            casper.test.info("Empty feed for non existing user visible.");
-            var expected_message = "\n        This user does not exist!" +
-                                    "\n    ";
-            this.test.assertEquals(casper.fetchText('#non_existing_user'), expected_message);
-        });
-    });
+    expect_non_existing_user();
     un_narrow();
 }
 
