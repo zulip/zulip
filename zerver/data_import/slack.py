@@ -30,6 +30,7 @@ from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
 AddedUsersT = Dict[str, int]
 AddedChannelsT = Dict[str, Tuple[str, int]]
 AddedMPIMsT = Dict[str, Tuple[str, int]]
+DMMembersT = Dict[str, Tuple[str, str]]
 AddedRecipientsT = Dict[str, int]
 
 def rm_tree(path: str) -> None:
@@ -42,6 +43,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
                                                                         AddedRecipientsT,
                                                                         AddedChannelsT,
                                                                         AddedMPIMsT,
+                                                                        DMMembersT,
                                                                         List[ZerverFieldsT],
                                                                         ZerverFieldsT]:
     """
@@ -51,8 +53,9 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     3. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
     4. added_channels, which is a dictionary to map from channel name to channel id, zulip stream_id
     5. added_mpims, which is a dictionary to map from MPIM name to MPIM id, zulip huddle_id
-    6. avatars, which is list to map avatars to zulip avatar records.json
-    7. emoji_url_map, which is maps emoji name to its slack url
+    6. dm_members, which is a dictionary to map from DM id to tuple of DM participants.
+    7. avatars, which is list to map avatars to zulip avatar records.json
+    8. emoji_url_map, which is maps emoji name to its slack url
     """
     NOW = float(timezone_now().timestamp())
 
@@ -80,13 +83,15 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     realm['zerver_defaultstream'] = channels_to_zerver_stream_fields[0]
     realm['zerver_stream'] = channels_to_zerver_stream_fields[1]
     realm['zerver_huddle'] = channels_to_zerver_stream_fields[2]
-    realm['zerver_subscription'] = channels_to_zerver_stream_fields[5]
-    realm['zerver_recipient'] = channels_to_zerver_stream_fields[6]
+    realm['zerver_subscription'] = channels_to_zerver_stream_fields[6]
+    realm['zerver_recipient'] = channels_to_zerver_stream_fields[7]
     added_channels = channels_to_zerver_stream_fields[3]
     added_mpims = channels_to_zerver_stream_fields[4]
-    added_recipient = channels_to_zerver_stream_fields[7]
+    dm_members = channels_to_zerver_stream_fields[5]
+    added_recipient = channels_to_zerver_stream_fields[8]
 
-    return realm, added_users, added_recipient, added_channels, added_mpims, avatars, emoji_url_map
+    return realm, added_users, added_recipient, added_channels, added_mpims, \
+        dm_members, avatars, emoji_url_map
 
 def build_realmemoji(custom_emoji_list: ZerverFieldsT,
                      realm_id: int) -> Tuple[List[ZerverFieldsT],
@@ -330,6 +335,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
                                                                                 List[ZerverFieldsT],
                                                                                 AddedChannelsT,
                                                                                 AddedMPIMsT,
+                                                                                DMMembersT,
                                                                                 List[ZerverFieldsT],
                                                                                 List[ZerverFieldsT],
                                                                                 AddedRecipientsT]:
@@ -340,14 +346,16 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     3. zerver_huddle, while is a list of all huddles
     3. added_channels, which is a dictionary to map from channel name to channel id, zulip stream_id
     4. added_mpims, which is a dictionary to map from MPIM(multiparty IM) name to MPIM id, zulip huddle_id
-    5. zerver_subscription, which is a list of the subscriptions
-    6. zerver_recipient, which is a list of the recipients
-    7. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
+    5. dm_members, which is a dictionary to map from DM id to tuple of DM participants.
+    6. zerver_subscription, which is a list of the subscriptions
+    7. zerver_recipient, which is a list of the recipients
+    8. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
     """
     logging.info('######### IMPORTING CHANNELS STARTED #########\n')
 
     added_channels = {}
     added_mpims = {}
+    dm_members = {}
     added_recipient = {}
 
     zerver_stream = []
@@ -463,21 +471,33 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         mpims = []
     process_mpims(mpims)
 
-    for user in zerver_userprofile:
-        # this maps the recipients and subscriptions
-        # related to private messages
-        recipient = build_recipient(user['id'], recipient_id_count, Recipient.PERSONAL)
-        sub = build_subscription(recipient_id_count, user['id'], subscription_id_count)
-
+    for username in added_users:
+        recipient = build_recipient(added_users[username], recipient_id_count, Recipient.PERSONAL)
+        added_recipient[username] = recipient_id_count
+        sub = build_subscription(recipient_id_count, added_users[username], subscription_id_count)
         zerver_recipient.append(recipient)
         zerver_subscription.append(sub)
-
-        subscription_id_count += 1
         recipient_id_count += 1
+        subscription_id_count += 1
+
+    def process_dms(dms: List[Dict[str, Any]]) -> None:
+        nonlocal recipient_id_count
+        nonlocal subscription_id_count
+
+        for dm in dms:
+            user_a = dm["members"][0]
+            user_b = dm["members"][1]
+            dm_members[dm["id"]] = (user_a, user_b)
+
+    try:
+        dms = get_data_file(slack_data_dir + '/dms.json')
+    except FileNotFoundError:
+        dms = []
+    process_dms(dms)
 
     logging.info('######### IMPORTING STREAMS FINISHED #########\n')
     return zerver_defaultstream, zerver_stream, zerver_huddle, added_channels, added_mpims, \
-        zerver_subscription, zerver_recipient, added_recipient
+        dm_members, zerver_subscription, zerver_recipient, added_recipient
 
 def get_subscription(channel_members: List[str], zerver_subscription: List[ZerverFieldsT],
                      recipient_id: int, added_users: AddedUsersT,
@@ -491,7 +511,7 @@ def get_subscription(channel_members: List[str], zerver_subscription: List[Zerve
 
 def process_long_term_idle_users(slack_data_dir: str, users: List[ZerverFieldsT],
                                  added_users: AddedUsersT, added_channels: AddedChannelsT,
-                                 added_mpims: AddedChannelsT,
+                                 added_mpims: AddedMPIMsT, dm_members: DMMembersT,
                                  zerver_userprofile: List[ZerverFieldsT]) -> Set[int]:
     """Algorithmically, we treat users who have sent at least 10 messages
     or have sent a message within the last 60 days as active.
@@ -499,7 +519,7 @@ def process_long_term_idle_users(slack_data_dir: str, users: List[ZerverFieldsT]
     have a slighly slower first page load when coming back to
     Zulip.
     """
-    all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims)
+    all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, dm_members)
 
     sender_counts = defaultdict(int)  # type: Dict[str, int]
     recent_senders = set()  # type: Set[str]
@@ -545,6 +565,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                      added_channels: AddedChannelsT,
                                      added_mpims: AddedMPIMsT,
+                                     dm_members: DMMembersT,
                                      realm: ZerverFieldsT,
                                      zerver_userprofile: List[ZerverFieldsT],
                                      zerver_realmemoji: List[ZerverFieldsT], domain_name: str,
@@ -559,11 +580,11 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     3. attachment, which is a list of the attachments
     """
 
-    long_term_idle = process_long_term_idle_users(slack_data_dir, users, added_users,
-                                                  added_channels, added_mpims, zerver_userprofile)
+    long_term_idle = process_long_term_idle_users(slack_data_dir, users, added_users, added_channels,
+                                                  added_mpims, dm_members, zerver_userprofile)
 
     # Now, we actually import the messages.
-    all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims)
+    all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, dm_members)
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
 
     total_reactions = []  # type: List[ZerverFieldsT]
@@ -591,7 +612,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
         zerver_message, zerver_usermessage, attachment, uploads, reactions = \
             channel_message_to_zerver_message(
                 realm_id, users, added_users, added_recipient, message_data,
-                zerver_realmemoji, subscriber_map, added_channels,
+                zerver_realmemoji, subscriber_map, added_channels, dm_members,
                 domain_name, long_term_idle)
 
         message_json = dict(
@@ -612,13 +633,13 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     return total_reactions, total_uploads, total_attachments
 
 def get_messages_iterator(slack_data_dir: str, added_channels: AddedChannelsT,
-                          added_mpims: AddedMPIMsT) -> Iterator[ZerverFieldsT]:
+                          added_mpims: AddedMPIMsT, dm_members: DMMembersT) -> Iterator[ZerverFieldsT]:
     """This function is an iterator that returns all the messages across
        all Slack channels, in order by timestamp.  It's important to
        not read all the messages into memory at once, because for
        large imports that can OOM kill."""
 
-    dir_names = list(added_channels.keys()) + list(added_mpims.keys())
+    dir_names = list(added_channels.keys()) + list(added_mpims.keys()) + list(dm_members.keys())
     all_json_names = defaultdict(list)  # type: Dict[str, List[str]]
     for dir_name in dir_names:
         dir_path = os.path.join(slack_data_dir, dir_name)
@@ -637,8 +658,10 @@ def get_messages_iterator(slack_data_dir: str, added_channels: AddedChannelsT,
                 # To give every message the channel information
                 if dir_name in added_channels.keys():
                     message['channel_name'] = dir_name
-                if dir_name in added_mpims.keys():
+                elif dir_name in added_mpims.keys():
                     message['mpim_name'] = dir_name
+                elif dir_name in dm_members.keys():
+                    message['pm_name'] = dir_name
             messages_for_one_day += messages
 
         # we sort the messages according to the timestamp to show messages with
@@ -654,6 +677,7 @@ def channel_message_to_zerver_message(realm_id: int,
                                       zerver_realmemoji: List[ZerverFieldsT],
                                       subscriber_map: Dict[int, Set[int]],
                                       added_channels: AddedChannelsT,
+                                      dm_members: DMMembersT,
                                       domain_name: str,
                                       long_term_idle: Set[int]) -> Tuple[List[ZerverFieldsT],
                                                                          List[ZerverFieldsT],
@@ -714,6 +738,16 @@ def channel_message_to_zerver_message(realm_id: int,
         elif "mpim_name" in message:
             is_private = True
             recipient_id = added_recipient[message['mpim_name']]
+        elif "pm_name" in message:
+            is_private = True
+            sender = get_message_sending_user(message)
+            members = dm_members[message['pm_name']]
+            if sender == members[0]:
+                recipient_id = added_recipient[members[1]]
+                sender_recipient_id = added_recipient[members[0]]
+            else:
+                recipient_id = added_recipient[members[0]]
+                sender_recipient_id = added_recipient[members[1]]
 
         message_id = NEXT_ID('message')
 
@@ -774,6 +808,19 @@ def channel_message_to_zerver_message(realm_id: int,
         )
         total_user_messages += num_created
         total_skipped_user_messages += num_skipped
+
+        if "pm_name" in message and recipient_id != sender_recipient_id:
+            (num_created, num_skipped) = build_usermessages(
+                zerver_usermessage=zerver_usermessage,
+                subscriber_map=subscriber_map,
+                recipient_id=sender_recipient_id,
+                mentioned_user_ids=mentioned_user_ids,
+                message_id=message_id,
+                is_private=is_private,
+                long_term_idle=long_term_idle,
+            )
+            total_user_messages += num_created
+            total_skipped_user_messages += num_skipped
 
     logging.debug("Created %s UserMessages; deferred %s due to long-term idle" % (
         total_user_messages, total_skipped_user_messages))
@@ -951,14 +998,14 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     # Get custom emoji from slack api
     custom_emoji_list = get_slack_api_data(token, "https://slack.com/api/emoji.list", "emoji")
 
-    realm, added_users, added_recipient, added_channels, added_mpims, avatar_list, \
+    realm, added_users, added_recipient, added_channels, added_mpims, dm_members, avatar_list, \
         emoji_url_map = slack_workspace_to_realm(domain_name, realm_id, user_list,
                                                  realm_subdomain,
                                                  slack_data_dir, custom_emoji_list)
 
     reactions, uploads_list, zerver_attachment = convert_slack_workspace_messages(
         slack_data_dir, user_list, realm_id, added_users, added_recipient, added_channels, added_mpims,
-        realm, realm['zerver_userprofile'], realm['zerver_realmemoji'], domain_name, output_dir)
+        dm_members, realm, realm['zerver_userprofile'], realm['zerver_realmemoji'], domain_name, output_dir)
 
     # Move zerver_reactions to realm.json file
     realm['zerver_reaction'] = reactions

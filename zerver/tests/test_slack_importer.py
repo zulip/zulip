@@ -17,6 +17,7 @@ from zerver.data_import.slack import (
     process_message_files,
     AddedChannelsT,
     AddedMPIMsT,
+    DMMembersT,
     ZerverFieldsT,
 )
 from zerver.data_import.import_util import (
@@ -268,26 +269,32 @@ class SlackImporter(ZulipTestCase):
         zerver_huddle = channel_to_zerver_stream_output[2]
         added_channels = channel_to_zerver_stream_output[3]
         added_mpims = channel_to_zerver_stream_output[4]
-        zerver_subscription = channel_to_zerver_stream_output[5]
-        zerver_recipient = channel_to_zerver_stream_output[6]
-        added_recipient = channel_to_zerver_stream_output[7]
+        dm_members = channel_to_zerver_stream_output[5]
+        zerver_subscription = channel_to_zerver_stream_output[6]
+        zerver_recipient = channel_to_zerver_stream_output[7]
+        added_recipient = channel_to_zerver_stream_output[8]
 
         test_added_channels = {'feedback': ("C061A0HJG", 3), 'general': ("C061A0YJG", 1),
                                'general1': ("C061A0YJP", 2), 'random': ("C061A0WJG", 0)}
         test_added_mpims = {'mpdm-user9--user2--user10-1': ('G9HBG2A5D', 0),
                             'mpdm-user6--user7--user4-1': ('G6H1Z0ZPS', 1),
                             'mpdm-user4--user1--user5-1': ('G6N944JPL', 2)}
-        test_added_recipient = {'feedback': 3, 'general': 1, 'general1': 2, 'random': 0,
-                                'mpdm-user9--user2--user10-1': 4, 'mpdm-user6--user7--user4-1': 5,
-                                'mpdm-user4--user1--user5-1': 6}
+        test_dm_members = {'DJ47BL849': ('U061A1R2R', 'U061A5N1G'), 'DHX1UP7EG': ('U061A5N1G', 'U064KUGRJ'),
+                           'DK8HSJDHS': ('U061A1R2R', 'U064KUGRJ'), 'DRS3PSLDK': ('U064KUGRJ', 'U064KUGRJ')}
+        test_added_recipient_keys = set(added_users.keys()) | set(test_added_channels.keys()) | set(test_added_mpims.keys())
 
+        self.assertDictEqual(test_added_channels, added_channels)
         # zerver defaultstream already tested in helper functions
         self.assertEqual(zerver_defaultstream, [{'id': 0, 'realm': 3, 'stream': 0},
                                                 {'id': 1, 'realm': 3, 'stream': 1}])
 
-        self.assertDictEqual(test_added_channels, added_channels)
         self.assertDictEqual(test_added_mpims, added_mpims)
-        self.assertDictEqual(test_added_recipient, added_recipient)
+        self.assertDictEqual(test_dm_members, dm_members)
+
+        # We can't do an assertDictEqual since during the construction of Personal
+        # recipients, added_users are iterated in diffrent order in Python 3.5 and 3.6.
+        self.assertEqual(set(added_recipient.keys()), test_added_recipient_keys)
+        self.assertEqual(set(added_recipient.values()), set(i for i in range(11)))
 
         # functioning of zerver subscriptions are already tested in the helper functions
         # This is to check the concatenation of the output lists from the helper functions
@@ -313,13 +320,13 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.users_to_zerver_userprofile",
                 return_value=[[], [], {}, [], []])
     @mock.patch("zerver.data_import.slack.channels_to_zerver_stream",
-                return_value=[[], [], [], {}, {}, [], [], {}])
+                return_value=[[], [], [], {}, {}, {}, [], [], {}])
     def test_slack_workspace_to_realm(self, mock_channels_to_zerver_stream: mock.Mock,
                                       mock_users_to_zerver_userprofile: mock.Mock) -> None:
 
         realm_id = 1
         user_list = []  # type: List[Dict[str, Any]]
-        realm, added_users, added_recipient, added_channels, added_mpims, avatar_list, em = slack_workspace_to_realm(
+        realm, added_users, added_recipient, added_channels, added_mpims, dm_members, avatar_list, em = slack_workspace_to_realm(
             'testdomain', realm_id, user_list, 'test-realm', './random_path', {})
         test_zerver_realmdomain = [{'realm': realm_id, 'allow_subdomains': False,
                                     'domain': 'testdomain', 'id': realm_id}]
@@ -420,10 +427,18 @@ class SlackImporter(ZulipTestCase):
                         {"text": "Hello everyone", "user": "U061A1R2R", "type": "message",
                          "ts": "1433868669.000015", "mpim_name": "mpdm-user9--user2--user10-1"},
                         {"text": "Who is watching the World Cup", "user": "U061A5N1G", "type": "message",
-                         "ts": "1433868949.000015", "mpim_name": "mpdm-user6--user7--user4-1"}]  # type: List[Dict[str, Any]]
+                         "ts": "1433868949.000015", "mpim_name": "mpdm-user6--user7--user4-1"},
+                        {'client_msg_id': '998d9229-35aa-424f-8d87-99e00df27dc9', 'type': 'message',
+                         'text': 'Who is coming for camping this weekend?', 'user': 'U061A1R2R',
+                         'ts': '1553607595.000700', 'pm_name': 'DHX1UP7EG'},
+                        {"client_msg_id": "998d9229-35aa-424f-8d87-99e00df27dc9", "type": "message",
+                         "text": "<@U061A5N1G>: Are you in Kochi?", "user": "U066MTL5U",
+                         "ts": "1553607595.000700", "pm_name": "DJ47BL849"}]  # type: List[Dict[str, Any]]
 
         added_recipient = {'random': 2, 'general': 1, 'mpdm-user9--user2--user10-1': 5,
-                           'mpdm-user6--user7--user4-1': 6}
+                           'mpdm-user6--user7--user4-1': 6, 'U066MTL5U': 7, 'U061A5N1G': 8,
+                           'U061A1R2R': 8}
+        dm_members = {'DJ47BL849': ('U066MTL5U', 'U061A5N1G'), 'DHX1UP7EG': ('U061A5N1G', 'U061A1R2R')}
 
         zerver_usermessage = []  # type: List[Dict[str, Any]]
         subscriber_map = dict()  # type: Dict[int, Set[int]]
@@ -433,11 +448,11 @@ class SlackImporter(ZulipTestCase):
             channel_message_to_zerver_message(
                 1, user_data, added_users, added_recipient,
                 all_messages, [], subscriber_map,
-                added_channels, 'domain', set())
+                added_channels, dm_members, 'domain', set())
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assertEqual(len(zerver_message), 7)
+        self.assertEqual(len(zerver_message), 9)
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
@@ -452,6 +467,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2]['content'], 'http://journals.plos.org/plosone/article')
         self.assertEqual(zerver_message[2]['has_link'], True)
         self.assertEqual(zerver_message[5]['has_link'], False)
+        self.assertEqual(zerver_message[7]['has_link'], False)
 
         self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], 'imported from slack')
         self.assertEqual(zerver_message[3]['content'], '/me added bot')
@@ -460,10 +476,13 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[1]['recipient'], added_recipient['random'])
         self.assertEqual(zerver_message[5]['recipient'], added_recipient['mpdm-user9--user2--user10-1'])
         self.assertEqual(zerver_message[6]['recipient'], added_recipient['mpdm-user6--user7--user4-1'])
+        self.assertEqual(zerver_message[7]['recipient'], added_recipient['U061A5N1G'])
+        self.assertEqual(zerver_message[7]['recipient'], added_recipient['U061A5N1G'])
 
         self.assertEqual(zerver_message[3]['id'], zerver_message[0]['id'] + 3)
         self.assertEqual(zerver_message[4]['id'], zerver_message[0]['id'] + 4)
         self.assertEqual(zerver_message[5]['id'], zerver_message[0]['id'] + 5)
+        self.assertEqual(zerver_message[7]['id'], zerver_message[0]['id'] + 7)
 
         self.assertIsNone(zerver_message[3]['rendered_content'])
         self.assertEqual(zerver_message[0]['has_image'], False)
@@ -474,6 +493,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[3]['sender'], 24)
         self.assertEqual(zerver_message[5]['sender'], 43)
         self.assertEqual(zerver_message[6]['sender'], 24)
+        self.assertEqual(zerver_message[7]['sender'], 43)
+        self.assertEqual(zerver_message[8]['sender'], 5)
 
     @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
@@ -488,7 +509,7 @@ class SlackImporter(ZulipTestCase):
         zerver_message = [{'id': 1, 'ts': time}, {'id': 5, 'ts': time}]
 
         def fake_get_messages_iter(slack_data_dir: str, added_channels: AddedChannelsT,
-                                   added_mpims: AddedMPIMsT) -> Iterator[ZerverFieldsT]:
+                                   added_mpims: AddedMPIMsT, dm_members: DMMembersT) -> Iterator[ZerverFieldsT]:
             import copy
             return iter(copy.deepcopy(zerver_message))
 
@@ -506,7 +527,7 @@ class SlackImporter(ZulipTestCase):
                                      attachments, uploads, reactions[1:1]]]
         # Hacky: We should include a zerver_userprofile, not the empty []
         test_reactions, uploads, zerver_attachment = convert_slack_workspace_messages(
-            './random_path', user_list, 2, {}, {}, added_channels, {},
+            './random_path', user_list, 2, {}, {}, added_channels, {}, {},
             realm, [], [], 'domain', output_dir=output_dir, chunk_size=1)
         messages_file_1 = os.path.join(output_dir, 'messages-000001.json')
         self.assertTrue(os.path.exists(messages_file_1))
