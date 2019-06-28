@@ -129,6 +129,13 @@ vm.dirty_background_ratio = 5
       group  => 'postgres',
       mode   => '0640',
     }
+    # ...and no log directory
+    file { "/var/log/postgresql/":
+      ensure => 'directory',
+      owner  => 'postgres',
+      group  => 'postgres',
+      mode   => '0644',
+    }
   }
 
   exec { $postgres_restart:
