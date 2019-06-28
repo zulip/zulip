@@ -1846,7 +1846,7 @@ class Bugdown(markdown.Markdown):
         # ---------------------------------------------------
         # strong_em -       for these three patterns,
         # strong2 -         we have our own versions where
-        # emphasis2 -       we disable _ for bold and emphasis
+        # emphasis2 -       we disable _ for bold
 
         # Declare regexes for clean single line calls to .register().
         NOT_STRONG_RE = markdown.inlinepatterns.NOT_STRONG_RE
@@ -1855,7 +1855,7 @@ class Bugdown(markdown.Markdown):
         # Custom bold syntax: **foo** but not __foo__
         # str inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
-        EMPHASIS_RE = r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*'
+        EMPHASIS_RE = r'(\*|\_)(?!\s+)([^\*^\n]+)(?<!\s)\2'
         ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
         STRONG_EM_RE = r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*'
         # Inline code block without whitespace stripping
