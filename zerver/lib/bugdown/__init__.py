@@ -1857,7 +1857,7 @@ class Bugdown(markdown.Markdown):
         EMPHASIS_RE = r'(\*|\_)(?!\s+)([^\*^\n]+)(?<!\s)\2'
         STRONG_RE = r'(\*\*|\_\_)(?!\s+)([^\*^\n]+)(?<!\s)\2'
         ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
-        STRONG_EM_RE = r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*'
+        STRONG_EM_RE = r'(\*\*\*|\_\*\*|\_\_\*|\_\_\_|\*\_\_|\*\*\_)(?!\s+)([^\*^\n]+)(?<!\s)\2'
         # Inline code block without whitespace stripping
         BACKTICK_RE = r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'
 
