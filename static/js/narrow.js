@@ -93,11 +93,20 @@ exports.activate = function (raw_operators, opts) {
         exports.narrow_title = title;
     } else if (filter.has_operator("pm-with") || filter.has_operator("group-pm-with")) {
         var emails = filter.public_operators()[0].operand;
-        var names = people.get_recipients(people.emails_strings_to_user_ids_string(emails));
-        if (filter.has_operator("pm-with")) {
-            exports.narrow_title = names;
+        var user_ids = people.emails_strings_to_user_ids_string(emails);
+        if (user_ids !== undefined) {
+            var names = people.get_recipients(user_ids);
+            if (filter.has_operator("pm-with")) {
+                exports.narrow_title = names;
+            } else {
+                exports.narrow_title = names + " and others";
+            }
         } else {
-            exports.narrow_title = names + " and others";
+            if (emails.indexOf(',') > -1) {
+                exports.narrow_title = "Invalid users";
+            } else {
+                exports.narrow_title = "Invalid user";
+            }
         }
     }
 
