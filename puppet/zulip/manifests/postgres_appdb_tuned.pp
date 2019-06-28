@@ -11,6 +11,10 @@ $postgres_restart = $::osfamily ? {
   'debian' => "pg_ctlcluster ${zulip::base::postgres_version} main restart",
   'redhat' => "systemctl restart postgresql-${zulip::base::postgres_version}",
 }
+$postgres_locale = $::osfamily ? {
+  'debian' => "C.UTF-8",
+  'redhat' => "en_US.UTF-8",
+}
 if $zulip::base::release_name == 'trusty' {
   # tools for database setup
   $postgres_appdb_tuned_packages = ['pgtune']

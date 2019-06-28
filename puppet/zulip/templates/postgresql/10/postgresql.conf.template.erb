@@ -577,11 +577,11 @@ timezone = 'UTC'
 					# encoding
 
 # These settings are initialized by initdb, but they can be changed.
-lc_messages = 'C.UTF-8'			# locale for system error message
+lc_messages = '<%= scope["zulip::postgres_appdb_tuned::postgres_locale"] %>'			# locale for system error message
 					# strings
-lc_monetary = 'C.UTF-8'			# locale for monetary formatting
-lc_numeric = 'C.UTF-8'			# locale for number formatting
-lc_time = 'C.UTF-8'				# locale for time formatting
+lc_monetary = '<%= scope["zulip::postgres_appdb_tuned::postgres_locale"] %>'			# locale for monetary formatting
+lc_numeric = '<%= scope["zulip::postgres_appdb_tuned::postgres_locale"] %>'			# locale for number formatting
+lc_time = '<%= scope["zulip::postgres_appdb_tuned::postgres_locale"] %>'				# locale for time formatting
 
 # default configuration for text search
 default_text_search_config = 'pg_catalog.english'
