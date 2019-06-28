@@ -89,6 +89,16 @@ vm.dirty_background_ratio = 5
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
+  if $::osfamily == 'redhat' {
+    # conf.d doesn't exist on redhat...
+    file { "/var/lib/pgsql/${zulip::base::postgres_version}/data/conf.d":
+      ensure => 'directory',
+      owner  => 'postgres',
+      group  => 'postgres',
+      mode   => '0644',
+    }
+  }
+
   exec { $postgres_restart:
     require     => Package[$zulip::postgres_appdb_base::postgresql],
     refreshonly => true,
