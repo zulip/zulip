@@ -336,7 +336,6 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     6. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
     """
     logging.info('######### IMPORTING CHANNELS STARTED #########\n')
-    channels = get_data_file(slack_data_dir + '/channels.json')
 
     added_channels = {}
     added_recipient = {}
@@ -348,63 +347,72 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
 
     stream_id_count = subscription_id_count = recipient_id_count = defaultstream_id = 0
 
-    for channel in channels:
-        # slack_channel_id = channel['id']
+    def process_channels(channels: List[Dict[str, Any]]) -> None:
+        nonlocal stream_id_count
+        nonlocal recipient_id_count
+        nonlocal defaultstream_id
+        nonlocal subscription_id_count
 
-        # map Slack's topic and purpose content into Zulip's stream description.
-        # WARN This mapping is lossy since the topic.creator, topic.last_set,
-        # purpose.creator, purpose.last_set fields are not preserved.
-        description = channel["purpose"]["value"]
-        stream_id = stream_id_count
-        recipient_id = recipient_id_count
+        for channel in channels:
+            # slack_channel_id = channel['id']
 
-        # construct the stream object and append it to zerver_stream
-        stream = build_stream(float(channel["created"]), realm_id, channel["name"],
-                              description, stream_id, channel["is_archived"])
-        zerver_stream.append(stream)
+            # map Slack's topic and purpose content into Zulip's stream description.
+            # WARN This mapping is lossy since the topic.creator, topic.last_set,
+            # purpose.creator, purpose.last_set fields are not preserved.
+            description = channel["purpose"]["value"]
+            stream_id = stream_id_count
+            recipient_id = recipient_id_count
 
-        # construct defaultstream object
-        # slack has the default channel 'general' and 'random'
-        # where every user is subscribed
-        default_channels = ['general', 'random']  # Slack specific
-        if channel['name'] in default_channels:
-            defaultstream = build_defaultstream(realm_id, stream_id,
-                                                defaultstream_id)
-            zerver_defaultstream.append(defaultstream)
-            defaultstream_id += 1
+            # construct the stream object and append it to zerver_stream
+            stream = build_stream(float(channel["created"]), realm_id, channel["name"],
+                                  description, stream_id, channel["is_archived"])
+            zerver_stream.append(stream)
 
-        added_channels[stream['name']] = (channel['id'], stream_id)
+            # construct defaultstream object
+            # slack has the default channel 'general' and 'random'
+            # where every user is subscribed
+            default_channels = ['general', 'random']  # Slack specific
+            if channel['name'] in default_channels:
+                defaultstream = build_defaultstream(realm_id, stream_id,
+                                                    defaultstream_id)
+                zerver_defaultstream.append(defaultstream)
+                defaultstream_id += 1
 
-        recipient = build_recipient(stream_id, recipient_id, Recipient.STREAM)
-        zerver_recipient.append(recipient)
-        added_recipient[stream['name']] = recipient_id
-        # TODO add recipients for private message and huddles
+            added_channels[stream['name']] = (channel['id'], stream_id)
 
-        # construct the subscription object and append it to zerver_subscription
-        subscription_id_count = get_subscription(channel['members'], zerver_subscription,
-                                                 recipient_id, added_users,
-                                                 subscription_id_count)
-        # TODO add zerver_subscription which correspond to
-        # huddles type recipient
-        # For huddles:
-        # sub['recipient']=recipient['id'] where recipient['type_id']=added_users[member]
+            recipient = build_recipient(stream_id, recipient_id, Recipient.STREAM)
+            zerver_recipient.append(recipient)
+            added_recipient[stream['name']] = recipient_id
+            # TODO add recipients for private message and huddles
 
-        stream_id_count += 1
-        recipient_id_count += 1
-        logging.info(u"{} -> created".format(channel['name']))
+            # construct the subscription object and append it to zerver_subscription
+            subscription_id_count = get_subscription(channel['members'], zerver_subscription,
+                                                     recipient_id, added_users,
+                                                     subscription_id_count)
+            # TODO add zerver_subscription which correspond to
+            # huddles type recipient
+            # For huddles:
+            # sub['recipient']=recipient['id'] where recipient['type_id']=added_users[member]
 
-        # TODO map Slack's pins to Zulip's stars
-        # There is the security model that Slack's pins are known to the team owner
-        # as evident from where it is stored at (channels)
-        # "pins": [
-        #         {
-        #             "id": "1444755381.000003",
-        #             "type": "C",
-        #             "user": "U061A5N1G",
-        #             "owner": "U061A5N1G",
-        #             "created": "1444755463"
-        #         }
-        #         ],
+            stream_id_count += 1
+            recipient_id_count += 1
+            logging.info(u"{} -> created".format(channel['name']))
+
+            # TODO map Slack's pins to Zulip's stars
+            # There is the security model that Slack's pins are known to the team owner
+            # as evident from where it is stored at (channels)
+            # "pins": [
+            #         {
+            #             "id": "1444755381.000003",
+            #             "type": "C",
+            #             "user": "U061A5N1G",
+            #             "owner": "U061A5N1G",
+            #             "created": "1444755463"
+            #         }
+            #         ],
+
+    channels = get_data_file(slack_data_dir + '/channels.json')
+    process_channels(channels)
 
     for user in zerver_userprofile:
         # this maps the recipients and subscriptions
