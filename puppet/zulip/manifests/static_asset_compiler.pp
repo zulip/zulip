@@ -17,10 +17,13 @@ class zulip::static_asset_compiler {
     }
     'redhat': {
       $static_asset_compiler_packages = [
-        # TODO CentOS doesn't have closure-compiler
         'yuicompressor',
         'gettext',
       ]
+      $setup_closure_compiler_file = "${::zulip_scripts_path}/lib/setup-closure-compiler"
+      exec{'setup_closure_compiler':
+        command => "bash -c '${setup_closure_compiler_file}'",
+      }
     }
     default: {
       fail('osfamily not supported')

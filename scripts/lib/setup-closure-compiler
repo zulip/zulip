@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -e
+
+PREFIX="/usr"
+
+# Check for closure-compiler
+if [ ! -f "$PREFIX/bin/closure-compiler" ]; then
+    zip_file="$(mktemp -u)"
+    wget "https://dl.google.com/closure-compiler/compiler-latest.zip" -O $zip_file
+
+    mkdir -p $PREFIX/share/closure-compiler
+    unzip -px $zip_file 'closure-compiler-v[0-9]*.jar' > \
+        $PREFIX/share/closure-compiler/closure-compiler.jar
+
+    cat <<EOF > $PREFIX/bin/closure-compiler
+#!/bin/sh
+
+java -jar $PREFIX/share/closure-compiler/closure-compiler.jar \$@
+EOF
+    chmod a+x $PREFIX/bin/closure-compiler
+fi
