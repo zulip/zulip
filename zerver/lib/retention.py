@@ -397,7 +397,8 @@ def restore_data_from_archive_by_transactions(archive_transactions: List[Archive
     return message_count
 
 def restore_data_from_archive_by_realm(realm: Realm) -> None:
-    transactions = ArchiveTransaction.objects.exclude(restored=True).filter(realm=realm)
+    transactions = ArchiveTransaction.objects.exclude(restored=True).filter(
+        realm=realm, type=ArchiveTransaction.RETENTION_POLICY_BASED)
     logger.info("Restoring {} transactions from realm {}".format(len(transactions), realm.string_id))
     message_count = restore_data_from_archive_by_transactions(transactions)
 
