@@ -91,6 +91,7 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
     all_field_template_types[all_field_types.USER.id] = "user";
     all_field_template_types[all_field_types.DATE.id] = "date";
     all_field_template_types[all_field_types.EXTERNAL_ACCOUNT.id] = "text";
+    all_field_template_types[all_field_types.URL.id] = "url";
 
     all_custom_fields.forEach(function (field) {
         var field_value = people.get_custom_profile_data(user_id, field.id);
