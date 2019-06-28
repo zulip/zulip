@@ -311,7 +311,8 @@ EOF
 set +e
 [ -e "/etc/init.d/camo" ]; has_camo=$?
 [ -e "/etc/init.d/nginx" ]; has_nginx=$?
-[ -e "/etc/supervisor/conf.d/zulip.conf" ]; has_appserver=$?
+[ -e "/etc/supervisor/conf.d/zulip.conf" ]; has_appserver=$?    # Debian
+[ -e "/etc/supervisord.d/conf.d/zulip.conf" ]; has_appserver=$? # RHEL
 [ -e "/etc/cron.d/rabbitmq-numconsumers" ]; has_rabbit=$?
 [ -e "/etc/init.d/postgresql" ]; has_postgres=$?
 set -e
