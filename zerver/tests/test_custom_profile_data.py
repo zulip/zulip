@@ -386,7 +386,7 @@ class CustomProfileFieldTest(ZulipTestCase):
                                                u"{} is not a string".format(field_name))
 
     def test_update_invalid_url(self) -> None:
-        field_name = "GitHub profile"
+        field_name = "Favorite website"
         self.assert_error_update_invalid_value(field_name, u"not URL",
                                                u"{} is not a URL".format(field_name))
 
@@ -414,7 +414,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             ('Favorite food', 'long short text data'),
             ('Favorite editor', 'vim'),
             ('Birthday', '1909-3-5'),
-            ('GitHub profile', 'https://github.com/ABC'),
+            ('Favorite website', 'https://zulipchat.com'),
             ('Mentor', [self.example_user("cordelia").id]),
         ]
 

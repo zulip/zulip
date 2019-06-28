@@ -414,7 +414,7 @@ class PermissionTest(ZulipTestCase):
             'Favorite food': 'short text data',
             'Favorite editor': 'vim',
             'Birthday': '1909-3-5',
-            'GitHub profile': 'https://github.com/ABC',
+            'Favorite website': 'https://zulipchat.com',
             'Mentor': [cordelia.id],
         }
 
@@ -439,7 +439,7 @@ class PermissionTest(ZulipTestCase):
         invalid_fields = [
             ('Favorite editor', 'invalid choice', "'invalid choice' is not a valid choice for 'Favorite editor'."),
             ('Birthday', '1909-34-55', "Birthday is not a date"),
-            ('GitHub profile', 'not url', "GitHub profile is not a URL"),
+            ('Favorite website', 'not url', "Favorite website is not a URL"),
             ('Mentor', "not list of user ids", "User IDs is not a list"),
         ]
 
@@ -499,7 +499,7 @@ class PermissionTest(ZulipTestCase):
             'Favorite food': None,
             'Favorite editor': None,
             'Birthday': None,
-            'GitHub profile': 'https://github.com/DEF',
+            'Favorite website': 'https://zulip.github.io',
             'Mentor': [hamlet.id]
         }
         new_profile_data = []
