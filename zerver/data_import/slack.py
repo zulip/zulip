@@ -347,7 +347,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
 
     stream_id_count = subscription_id_count = recipient_id_count = defaultstream_id = 0
 
-    def process_channels(channels: List[Dict[str, Any]]) -> None:
+    def process_channels(channels: List[Dict[str, Any]], invite_only: bool=False) -> None:
         nonlocal stream_id_count
         nonlocal recipient_id_count
         nonlocal defaultstream_id
@@ -365,7 +365,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
 
             # construct the stream object and append it to zerver_stream
             stream = build_stream(float(channel["created"]), realm_id, channel["name"],
-                                  description, stream_id, channel["is_archived"])
+                                  description, stream_id, channel["is_archived"], invite_only)
             zerver_stream.append(stream)
 
             # construct defaultstream object
@@ -411,8 +411,14 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
             #         }
             #         ],
 
-    channels = get_data_file(slack_data_dir + '/channels.json')
-    process_channels(channels)
+    public_channels = get_data_file(slack_data_dir + '/channels.json')
+    process_channels(public_channels)
+
+    try:
+        private_channels = get_data_file(slack_data_dir + '/groups.json')
+    except FileNotFoundError:
+        private_channels = []
+    process_channels(private_channels, True)
 
     for user in zerver_userprofile:
         # this maps the recipients and subscriptions

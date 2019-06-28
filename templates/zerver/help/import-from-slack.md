@@ -85,8 +85,8 @@ root domain. Replace the last line above with the following, after replacing
   [Slack's documentation](https://get.slack.help/hc/en-us/articles/204897248-Guide-to-Slack-import-and-export-tools)
   for more details.
 
-- (Slack Plus import) Private channels and direct messages are currently
-  not imported. We expect to address this in a future revision.
+- (Slack Plus import) Direct messages are currently not imported. We
+  expect to address this in a future revision.
 
 - (Slack Plus import) Message edit history is currently not imported.
 

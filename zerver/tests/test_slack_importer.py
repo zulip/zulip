@@ -280,7 +280,7 @@ class SlackImporter(ZulipTestCase):
                         {'id': "C061A0HJG", 'name': 'feedback', 'created': '1433558359',
                          'is_general': False, 'members': ['U061A3E0G'], 'is_archived': False,
                          'topic': {'value': ''}, 'purpose': {'value': ''}}]
-        mock_get_data_file.return_value = channel_data
+        mock_get_data_file.side_effect = [channel_data, []]
 
         channel_to_zerver_stream_output = channels_to_zerver_stream('./random_path', realm_id, added_users,
                                                                     zerver_userprofile)
