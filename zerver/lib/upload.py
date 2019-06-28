@@ -339,9 +339,11 @@ def get_realm_for_filename(path: str) -> Optional[int]:
     return get_user_profile_by_id(key.metadata["user_profile_id"]).realm_id
 
 class S3UploadBackend(ZulipUploadBackend):
+    def __init__(self) -> None:
+        self.connection = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+
     def delete_file_from_s3(self, path_id: str, bucket_name: str) -> bool:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = get_bucket(conn, bucket_name)
+        bucket = get_bucket(self.connection, bucket_name)
 
         # check if file exists
         key = bucket.get_key(path_id)  # type: Optional[Key]
@@ -434,9 +436,7 @@ class S3UploadBackend(ZulipUploadBackend):
         self.delete_file_from_s3(path_id, bucket_name)
 
     def get_avatar_key(self, file_name: str) -> Key:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket_name = settings.S3_AVATAR_BUCKET
-        bucket = get_bucket(conn, bucket_name)
+        bucket = get_bucket(self.connection, settings.S3_AVATAR_BUCKET)
 
         key = bucket.get_key(file_name)
         return key
@@ -536,8 +536,7 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = file_path
 
         bucket_name = settings.S3_AVATAR_BUCKET
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = get_bucket(conn, bucket_name)
+        bucket = get_bucket(self.connection, bucket_name)
         key = bucket.get_key(file_path + ".original")
         image_data = key.get_contents_as_string()
 
@@ -557,8 +556,7 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = file_path
 
         bucket_name = settings.S3_AVATAR_BUCKET
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = get_bucket(conn, bucket_name)
+        bucket = get_bucket(self.connection, bucket_name)
         key = bucket.get_key(file_path + ".original")
         image_data = key.get_contents_as_string()
 
