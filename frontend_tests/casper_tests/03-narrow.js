@@ -168,6 +168,17 @@ function expect_non_existing_user() {
     });
 }
 
+function expect_non_existing_users() {
+    casper.then(function () {
+        casper.waitUntilVisible('#non_existing_users', function () {
+            casper.test.info("Empty feed for non existing user visible.");
+            var expected_message = "\n        One or more of these users do not exist!" +
+                "\n    ";
+            this.test.assertEquals(casper.fetchText('#non_existing_users'), expected_message);
+        });
+    });
+}
+
 function check_narrow_title(title) {
     return function () {
         // need to get title tag from HTML
@@ -283,6 +294,11 @@ search_and_check('subject:frontend+test', '', expect_subject,
 search_silent_user('sender:emailgateway@zulip.com', '');
 
 search_non_existing_user('sender:dummyuser@zulip.com', '');
+
+search_and_check('pm-with:dummyuser@zulip.com', '', expect_non_existing_user, 'Non existing user');
+
+search_and_check('pm-with:dummyuser@zulip.com,dummyuser2@zulip.com', '', expect_non_existing_users,
+                 'Non existing users');
 
 // Narrow by clicking the left sidebar.
 casper.then(function () {
