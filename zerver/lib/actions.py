@@ -1832,7 +1832,7 @@ def create_streams_if_needed(realm: Realm,
 
 
 def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
-                                not_forged_mirror_message: bool,
+                                forwarded_mirror_message: bool,
                                 forwarder_user_profile: Optional[UserProfile],
                                 sender: UserProfile) -> Recipient:
 
@@ -1842,7 +1842,15 @@ def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
     # If the private message is just between the sender and
     # another person, force it to be a personal internally
 
-    if not_forged_mirror_message:
+    if forwarded_mirror_message:
+        # In our mirroring integrations with some third-party
+        # protocols, bots subscribed to the third-party protocol
+        # forward to Zulip messages that they received in the
+        # third-party service.  The permissions model for that
+        # forwarding is that users can only submit to Zulip private
+        # messages they personally received, and here we do the check
+        # for whether forwarder_user_profile is among the private
+        # message recipients of the message.
         assert forwarder_user_profile is not None
         if forwarder_user_profile.id not in recipient_profile_ids:
             raise ValidationError(_("User not authorized for this query"))
@@ -1880,7 +1888,7 @@ def validate_recipient_user_profiles(user_profiles: List[UserProfile],
 
     return recipient_profile_ids
 
-def recipient_for_emails(emails: Iterable[str], not_forged_mirror_message: bool,
+def recipient_for_emails(emails: Iterable[str], forwarded_mirror_message: bool,
                          forwarder_user_profile: Optional[UserProfile],
                          sender: UserProfile) -> Recipient:
 
@@ -1896,7 +1904,7 @@ def recipient_for_emails(emails: Iterable[str], not_forged_mirror_message: bool,
 
     return recipient_for_user_profiles(
         user_profiles=user_profiles,
-        not_forged_mirror_message=not_forged_mirror_message,
+        forwarded_mirror_message=forwarded_mirror_message,
         forwarder_user_profile=forwarder_user_profile,
         sender=sender
     )
@@ -1913,18 +1921,18 @@ def recipient_for_user_ids(user_ids: Iterable[int], sender: UserProfile) -> Reci
 
     return recipient_for_user_profiles(
         user_profiles=user_profiles,
-        not_forged_mirror_message=False,
+        forwarded_mirror_message=False,
         forwarder_user_profile=None,
         sender=sender
     )
 
-def recipient_for_user_profiles(user_profiles: List[UserProfile], not_forged_mirror_message: bool,
+def recipient_for_user_profiles(user_profiles: List[UserProfile], forwarded_mirror_message: bool,
                                 forwarder_user_profile: Optional[UserProfile],
                                 sender: UserProfile) -> Recipient:
 
     recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender)
 
-    return get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message,
+    return get_recipient_from_user_ids(recipient_profile_ids, forwarded_mirror_message,
                                        forwarder_user_profile, sender)
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
@@ -2283,9 +2291,14 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         user_profiles = addressee.user_profiles()
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror",
                                                     "jabber_mirror", "JabberMirror"]
-        not_forged_mirror_message = mirror_message and not forged
+
+        # API Super-users who set the `forged` flag are allowed to
+        # forge messages sent by any user, so we disable the
+        # `forwarded_mirror_message` security check in that case.
+        forwarded_mirror_message = mirror_message and not forged
         try:
-            recipient = recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
+            recipient = recipient_for_user_profiles(user_profiles,
+                                                    forwarded_mirror_message,
                                                     forwarder_user_profile, sender)
         except ValidationError as e:
             assert isinstance(e.messages[0], str)
