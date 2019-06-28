@@ -15,6 +15,10 @@ $postgres_locale = $::osfamily ? {
   'debian' => "C.UTF-8",
   'redhat' => "en_US.UTF-8",
 }
+$postgres_data_dir = $::osfamily ? {
+  'debian' => "/var/lib/postgresql/${zulip::base::postgres_version}/main",
+  'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data/",
+}
 if $zulip::base::release_name == 'trusty' {
   # tools for database setup
   $postgres_appdb_tuned_packages = ['pgtune']
