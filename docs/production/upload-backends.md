@@ -12,8 +12,8 @@ running quickly. You can later migrate the uploads to S3 by
 [following the instructions here](#migrating-from-local-uploads-to-amazon-s3-backend).
 
 We also support an `S3` backend, which uses the Python `boto` library
-to upload files to Amazon S3 (and, with some work, it should be
-possible to use any other storage provider compatible with `boto`).
+to upload files to Amazon S3 (or an S3-compatible block storage
+provider supported by the `boto` library).
 
 ## S3 backend configuration
 
@@ -27,24 +27,26 @@ two buckets because the "user avatars" bucket is generally configured
 as world-readable, whereas the "uploaded files" one is not.
 
 1. Set `s3_key` and `s3_secret_key` in /etc/zulip/zulip-secrets.conf
-to be the S3 access and secret keys for the IAM account.
+   to be the S3 access and secret keys for the IAM account.
 
 1. Set the `S3_AUTH_UPLOADS_BUCKET` and `S3_AVATAR_BUCKET` settings in
-`/etc/zulip/settings.py` to be the names of the S3 buckets you
-created (e.g. `exampleinc-zulip-uploads`).
+   `/etc/zulip/settings.py` to be the names of the S3 buckets you
+   created (e.g. `exampleinc-zulip-uploads`).
 
 1. Comment out the `LOCAL_UPLOADS_DIR` setting in
-`/etc/zulip/settings.py` (add a `#` at the start of the line).
+   `/etc/zulip/settings.py` (add a `#` at the start of the line).
 
-1. In some AWS regions, you need to explicitly
-    [configure boto](http://boto.cloudhackers.com/en/latest/boto_config_tut.html)
-    to use AWS's SIGv4 signature format (because AWS has stopped
-    supporting the older v3 format in those regions).  You can do this
+1. If you are using a non-AWS block storage provider, or certain AWS
+   regions, you may need to explicitly
+   [configure boto](http://boto.cloudhackers.com/en/latest/boto_config_tut.html).
+   For AWS, you may need to use AWS's SIGv4 signature format (because AWS has stopped
+    supporting the older v3 format in those regions); for other
+   providers, you may just need to set the hostname.  You can do this
     by adding an `/etc/zulip/boto.cfg` containing the following:
     ```
     [s3]
     use-sigv4 = True
-    # Edit to provide your S3 bucket's AWS region here.
+    # Edit to provide your bucket's AWS region or hostname here.
     host = s3.eu-central-1.amazonaws.com
     ```
 

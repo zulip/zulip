@@ -455,7 +455,8 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         medium_suffix = "-medium.png" if medium else ""
         # ?x=x allows templates to append additional parameters with &s
-        return "https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, hash_key, medium_suffix)
+        return "https://%s.%s/%s%s?x=x" % (bucket, self.connection.DefaultHost,
+                                           hash_key, medium_suffix)
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         bucket = settings.S3_AVATAR_BUCKET
@@ -490,7 +491,8 @@ class S3UploadBackend(ZulipUploadBackend):
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         bucket = settings.S3_AVATAR_BUCKET
         # ?x=x allows templates to append additional parameters with &s
-        return "https://%s.s3.amazonaws.com/%s/realm/icon.png?version=%s" % (bucket, realm_id, version)
+        return "https://%s.%s/%s/realm/icon.png?version=%s" % (
+            bucket, self.connection.DefaultHost, realm_id, version)
 
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
@@ -529,7 +531,8 @@ class S3UploadBackend(ZulipUploadBackend):
             file_name = 'logo.png'
         else:
             file_name = 'night_logo.png'
-        return "https://%s.s3.amazonaws.com/%s/realm/%s?version=%s" % (bucket, realm_id, file_name, version)
+        return "https://%s.%s/%s/realm/%s?version=%s" % (
+            bucket, self.connection.DefaultHost, realm_id, file_name, version)
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
@@ -599,7 +602,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id,
                                                         emoji_file_name=emoji_file_name)
-        return "https://%s.s3.amazonaws.com/%s" % (bucket, emoji_path)
+        return "https://%s.%s/%s" % (bucket, self.connection.DefaultHost, emoji_path)
 
     def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str) -> str:
         def percent_callback(complete: Any, total: Any) -> None:
