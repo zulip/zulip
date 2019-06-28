@@ -16,7 +16,6 @@ import ujson
 import httplib2
 import httpretty
 import requests
-import shutil
 
 import django
 from django.conf import settings
@@ -456,21 +455,6 @@ def main() -> None:
         # We do this even with failures, since slowness can be
         # an important clue as to why tests fail.
         report_slow_tests()
-
-    # We now cleanup files leaked by certain tests that don't clean up
-    # after themselves.  Ideally, this cleanup would happen in in the
-    # tearDown() methods for the relevant test classes, but this at least
-    # prevents a disk leak.
-    from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
-    for path in glob.glob(os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
-                                       "test-*-import-*")):
-        try:
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            else:
-                os.remove(path)
-        except FileNotFoundError:
-            pass
 
     # Ideally, we'd check for any leaked test databases here;
     # but that needs some hackery with database names.
