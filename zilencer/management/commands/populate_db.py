@@ -355,7 +355,7 @@ class Command(BaseCommand):
                                                                  field_data=field_data)
             birthday = try_add_realm_custom_profile_field(zulip_realm, "Birthday",
                                                           CustomProfileField.DATE)
-            favorite_website = try_add_realm_custom_profile_field(zulip_realm, "GitHub profile",
+            favorite_website = try_add_realm_custom_profile_field(zulip_realm, "Favorite website",
                                                                   CustomProfileField.URL,
                                                                   hint="Or your personal blog's URL")
             mentor = try_add_realm_custom_profile_field(zulip_realm, "Mentor",
@@ -369,7 +369,7 @@ class Command(BaseCommand):
                 {"id": favorite_food.id, "value": "Apples"},
                 {"id": favorite_editor.id, "value": "emacs"},
                 {"id": birthday.id, "value": "2000-1-1"},
-                {"id": favorite_website.id, "value": "https://github.com/zulip/zulip"},
+                {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
                 {"id": mentor.id, "value": [hamlet.id]},
             ])
             do_update_user_custom_profile_data(hamlet, [
