@@ -90,23 +90,25 @@ def run_archiving_in_chunks(query: str, type: int, realm: Optional[Realm]=None,
     while True:
         with transaction.atomic():
             archive_transaction = ArchiveTransaction.objects.create(type=type, realm=realm)
+            logger.info("Archiving in {}".format(archive_transaction))
             new_chunk = move_rows(Message, query, chunk_size=chunk_size, returning_id=True,
                                   archive_transaction_id=archive_transaction.id, **kwargs)
             if new_chunk:
-                logger.info(
-                    "Processing {} messages in {}".format(len(new_chunk), archive_transaction)
-                )
-
                 move_related_objects_to_archive(new_chunk)
                 delete_messages(new_chunk)
                 message_count += len(new_chunk)
             else:
                 archive_transaction.delete()  # Nothing was archived
 
-            # We run the loop, until the query returns fewer results than chunk_size,
-            # which means we are done:
-            if len(new_chunk) < chunk_size:
-                break
+        # This line needs to be outside of the atomic block, to capture the actual moment
+        # archiving of the chunk is finished (since Django does some significant additional work
+        # when leaving the block).
+        logger.info("Finished. Archived {} messages in this transaction.".format(len(new_chunk)))
+
+        # We run the loop, until the query returns fewer results than chunk_size,
+        # which means we are done:
+        if len(new_chunk) < chunk_size:
+            break
 
     return message_count
 
