@@ -55,6 +55,8 @@
     &.not-editable {
         cursor: not-allowed;
         border: none;
+        background-color: transparent;
+        padding: 0px;
 
         .pill {
             padding-right: 4px;
