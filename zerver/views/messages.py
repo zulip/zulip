@@ -14,13 +14,13 @@ from zerver.decorator import has_request_variables, \
 from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
 from zerver.lib.zcommand import process_zcommands
-from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
+from zerver.lib.actions import recipient_for_user_profiles, do_update_message_flags, \
     compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_messages, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, \
     get_user_info_for_message_updates, check_schedule_message
-from zerver.lib.addressee import raw_pm_with_emails, raw_pm_with_emails_by_ids
+from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.message import (
     access_message,
@@ -302,61 +302,63 @@ class NarrowBuilder:
 
     def by_pm_with(self, query: Query, operand: Union[str, Iterable[int]],
                    maybe_negate: ConditionTransform) -> Query:
-        # This will strip our own email out of the operand
-        # and do other munging.
-        if isinstance(operand, str):
-            emails = raw_pm_with_emails(
-                email_str=operand,
-                my_email=self.user_profile.email,
-            )
-        else:
-            """
-            This is where we handle passing a list of user IDs for the narrow, which is the
-            preferred/cleaner API. Ideally, we'd refactor the below to natively use user IDs,
-            rather than having mapping user IDs to emails here.
-            """
-            emails = raw_pm_with_emails_by_ids(
-                user_ids=operand,
-                my_email=self.user_profile.email,
-                realm=self.user_realm
-            )
 
-        if len(emails) == 0:
-            raise BadNarrowOperator('empty pm-with clause')
+        try:
+            if isinstance(operand, str):
+                email_list = operand.split(",")
+                user_profiles = get_user_profiles(
+                    emails=email_list,
+                    realm=self.user_realm
+                )
+            else:
+                """
+                This is where we handle passing a list of user IDs for the narrow, which is the
+                preferred/cleaner API.
+                """
+                user_profiles = get_user_profiles_by_ids(
+                    user_ids=operand,
+                    realm=self.user_realm
+                )
 
-        if len(emails) >= 2:
-            # Huddle
-            try:
-                recipient = recipient_for_emails(emails, False,
-                                                 self.user_profile, self.user_profile)
-            except ValidationError:
-                raise BadNarrowOperator('unknown recipient in ' + str(operand))
+            recipient = recipient_for_user_profiles(user_profiles=user_profiles,
+                                                    forwarded_mirror_message=False,
+                                                    forwarder_user_profile=None,
+                                                    sender=self.user_profile)
+        except (JsonableError, ValidationError):
+            raise BadNarrowOperator('unknown user in ' + str(operand))
+
+        # Group DM
+        if recipient.type == Recipient.HUDDLE:
             cond = column("recipient_id") == recipient.id
             return query.where(maybe_negate(cond))
-        else:
-            # Personal message
-            target_email = emails[0]
+
+        # 1:1 PM
+        other_participant = None
+
+        # Find if another person is in PM
+        for user in user_profiles:
+            if user.id != self.user_profile.id:
+                other_participant = user
+
+        # PM with another person
+        if other_participant:
+            # We need bidirectional messages PM with another person.
+            # But Recipient.PERSONAL objects only encode the person who
+            # received the message, and not the other participant in
+            # the thread (the sender), we need to do a somewhat
+            # complex query to get messages between these two users
+            # with either of them as the sender.
             self_recipient = get_personal_recipient(self.user_profile.id)
-
-            # PM with self
-            if target_email == self.user_profile.email:
-                # Personals with self
-                cond = and_(column("sender_id") == self.user_profile.id,
-                            column("recipient_id") == self_recipient.id)
-                return query.where(maybe_negate(cond))
-
-            # Personals with other user; include both directions.
-            try:
-                narrow_profile = get_user_including_cross_realm(target_email, self.user_realm)
-            except UserProfile.DoesNotExist:
-                raise BadNarrowOperator('unknown user in ' + str(operand))
-
-            narrow_recipient = get_personal_recipient(narrow_profile.id)
-            cond = or_(and_(column("sender_id") == narrow_profile.id,
+            cond = or_(and_(column("sender_id") == other_participant.id,
                             column("recipient_id") == self_recipient.id),
                        and_(column("sender_id") == self.user_profile.id,
-                            column("recipient_id") == narrow_recipient.id))
+                            column("recipient_id") == recipient.id))
             return query.where(maybe_negate(cond))
+
+        # PM with self
+        cond = and_(column("sender_id") == self.user_profile.id,
+                    column("recipient_id") == recipient.id)
+        return query.where(maybe_negate(cond))
 
     def by_group_pm_with(self, query: Query, operand: str,
                          maybe_negate: ConditionTransform) -> Query:
