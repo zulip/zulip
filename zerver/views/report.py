@@ -28,7 +28,6 @@ def get_js_source_map() -> Optional[SourceMap]:
     global js_source_map
     if not js_source_map and not (settings.DEVELOPMENT or settings.TEST_SUITE):
         js_source_map = SourceMap([
-            os.path.join(settings.DEPLOY_ROOT, 'prod-static/source-map'),
             os.path.join(settings.STATIC_ROOT, 'webpack-bundles')
         ])
     return js_source_map

@@ -52,9 +52,8 @@ run(['./tools/setup/generate-custom-icon-webfont'], stdout=fp, stderr=fp)
 # Build pygment data
 run(['./tools/setup/build_pygments_data'], stdout=fp, stderr=fp)
 
-# Compile Handlebars templates and minify JavaScript.
-run(['./tools/minify-js'] + (['--prev-deploy', prev_deploy] if prev_deploy else []),
-    stdout=fp, stderr=fp)
+# Create webpack bundle
+run(['./tools/webpack'], stdout=fp, stderr=fp)
 
 # Copy the KaTeX files outside node_modules
 os.makedirs(os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/'),
@@ -90,15 +89,8 @@ if not settings.PRODUCTION:
 # Compile translation strings to generate `.mo` files.
 run(['./manage.py', 'compilemessages'], stdout=fp, stderr=fp)
 
-# Move the source maps out of the serve/ directory and into their
-# proper place.
-if os.path.exists('prod-static/source-map'):
-    shutil.rmtree('prod-static/source-map')
-
 # Needed if PRODUCTION
 os.makedirs('prod-static', exist_ok=True)
-
-shutil.move(os.path.join(settings.STATIC_ROOT, 'source-map'), 'prod-static/source-map')
 
 # Generate /team page markdown for authors
 authors_cmd = ['./tools/update-authors-json']

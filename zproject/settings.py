@@ -914,20 +914,6 @@ PIPELINE = {
     'JAVASCRIPT': {},
 }
 
-# Useful reading on how this works is in
-# https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
-JS_SPECS = {
-    # One of the main reason we are treating the following bundles separately
-    # from webpack is we want to reduce the webpack compile time since These
-    # files are very large in size and are already minified or being minified
-    # in the pipeline itself
-    # We also want to minify sockjs separately for the sockjs iframe transport
-    'sockjs': {
-        'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
-        'output_filename': 'min/sockjs-0.3.4.min.js'
-    },
-}
-
 if DEVELOPMENT:
     WEBPACK_STATS_FILE = os.path.join('var', 'webpack-stats-dev.json')
 else:
