@@ -19,13 +19,17 @@ def render_tex(tex: str, is_inline: bool=True) -> Optional[str]:
                  (default True)
     """
 
-    katex_path = os.path.join(settings.STATIC_ROOT, 'third/katex/cli.js')
+    katex_path = (
+        os.path.join(settings.STATIC_ROOT, "webpack-bundles/katex-cli.js")
+        if settings.PRODUCTION
+        else os.path.join(settings.DEPLOY_ROOT, "node_modules/katex/cli.js")
+    )
     if not os.path.isfile(katex_path):
         logging.error("Cannot find KaTeX for latex rendering!")
         return None
     command = ['node', katex_path]
     if not is_inline:
-        command.extend(['--', '--display-mode'])
+        command.extend(['--display-mode'])
     katex = subprocess.Popen(command,
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,

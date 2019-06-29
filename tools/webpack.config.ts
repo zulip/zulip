@@ -9,7 +9,7 @@ import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 const assets = require('./webpack.assets.json');
 
-export default (env?: string): webpack.Configuration => {
+export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";
     const config: webpack.Configuration = {
         mode: production ? "production" : "development",
@@ -193,5 +193,19 @@ export default (env?: string): webpack.Configuration => {
             },
         };
     }
-    return config;
+
+    const serverConfig: webpack.Configuration = {
+        mode: production ? "production" : "development",
+        target: "node",
+        context: resolve(__dirname, "../"),
+        entry: {
+            "katex-cli": "shebang-loader!katex/cli",
+        },
+        output: {
+            path: resolve(__dirname, "../static/webpack-bundles"),
+            filename: "[name].js",
+        },
+    };
+
+    return [config, serverConfig];
 };

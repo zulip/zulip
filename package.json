@@ -39,6 +39,7 @@
     "plotly.js": "1.48.1",
     "sass-loader": "7.1.0",
     "script-loader": "0.7.2",
+    "shebang-loader": "^0.0.1",
     "simplebar": "^4.0.0",
     "sortablejs": "1.9.0",
     "sorttable": "1.0.2",

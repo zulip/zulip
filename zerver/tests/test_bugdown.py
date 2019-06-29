@@ -243,7 +243,7 @@ class BugdownMiscTest(ZulipTestCase):
         self.assertEqual(user['email'], hamlet.email)
 
     def test_invalid_katex_path(self) -> None:
-        with self.settings(STATIC_ROOT="/invalid/path"):
+        with self.settings(DEPLOY_ROOT="/nonexistent"):
             with mock.patch('logging.error') as mock_logger:
                 render_tex("random text")
                 mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")

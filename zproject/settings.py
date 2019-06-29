@@ -926,18 +926,6 @@ JS_SPECS = {
         'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
         'output_filename': 'min/sockjs-0.3.4.min.js'
     },
-    # Even though we've moved the main KaTeX copy into Webpack, we
-    # also need KaTeX to be runnable directly via Node (Called from
-    # zerver/lib/tex.py which calls static/third/katex/cli.js.  Since
-    # our Webpack setup doesn't provide a good way to name the current
-    # version of a module, we use the legacy django-pipeline system
-    # for bundling KaTeX.
-    'katex': {
-        'source_filenames': [
-            '../node_modules/katex/dist/katex.js',
-        ],
-        'output_filename': 'min/katex.js',
-    },
 }
 
 if DEVELOPMENT:
