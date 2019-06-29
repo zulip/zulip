@@ -1,5 +1,7 @@
 from typing import Dict, List, Optional, Union, cast
 
+import unicodedata
+
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 
@@ -19,8 +21,10 @@ def check_full_name(full_name_raw: str) -> str:
         raise JsonableError(_("Name too long!"))
     if len(full_name) < UserProfile.MIN_NAME_LENGTH:
         raise JsonableError(_("Name too short!"))
-    if list(set(full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
-        raise JsonableError(_("Invalid characters in name!"))
+    for character in full_name:
+        if (unicodedata.category(character)[0] == 'C' or
+                character in UserProfile.NAME_INVALID_CHARS):
+            raise JsonableError(_("Invalid characters in name!"))
     return full_name
 
 # NOTE: We don't try to absolutely prevent 2 bots from having the same
