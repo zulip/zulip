@@ -140,6 +140,7 @@ function populate_users(realm_people_data) {
             },
             onupdate: reset_scrollbar($bots_table),
         },
+        parent_container: $('#admin-user-list').expectOne(),
     }).init();
 
     var $users_table = $("#admin_users_table");
