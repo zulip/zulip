@@ -938,15 +938,6 @@ JS_SPECS = {
         ],
         'output_filename': 'min/katex.js',
     },
-    # The same legacy treatment is required for zxcvbn, in order to
-    # support the settings_account.js use case (where we don't have a
-    # good way to look up the path to the file).
-    'zxcvbn': {
-        'source_filenames': [
-            '../node_modules/zxcvbn/dist/zxcvbn.js',
-        ],
-        'output_filename': 'min/zxcvbn.js'
-    },
 }
 
 if DEVELOPMENT:

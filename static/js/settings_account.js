@@ -308,13 +308,8 @@ exports.set_up = function () {
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            var zxcvbn_path = '/static/min/zxcvbn.js';
-            if (page_params.development_environment) {
-                // Usually the Django templates handle this path stuff
-                // for us, but in this case we need to hardcode it.
-                zxcvbn_path = '/webpack/zxcvbn.js';
-            }
-            $.getScript(zxcvbn_path, function () {
+            require(['zxcvbn'], function (zxcvbn) {
+                window.zxcvbn = zxcvbn;
                 $('#pw_strength .bar').removeClass("fade");
             });
         }
