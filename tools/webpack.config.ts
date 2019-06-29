@@ -104,6 +104,7 @@ export default (env?: string): webpack.Configuration => {
         },
         output: {
             path: resolve(__dirname, '../static/webpack-bundles'),
+            publicPath: '/static/webpack-bundles/',
             filename: production ? '[name].[chunkhash].js' : '[name].js',
         },
         resolve: {
