@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from email.utils import parseaddr
+
 from typing import (Any, Dict, Iterable, List, Mapping,
                     Optional, TypeVar, Union)
 
@@ -979,7 +981,8 @@ class ActivateTest(ZulipTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
         for message in outbox:
-            self.assertEqual(set([hamlet.delivery_email, iago.delivery_email]), set(message.to))
+            to_fields = [parseaddr(to_field)[1] for to_field in message.to]
+            self.assertEqual(set([hamlet.delivery_email, iago.delivery_email]), set(to_fields))
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
 class RecipientInfoTest(ZulipTestCase):

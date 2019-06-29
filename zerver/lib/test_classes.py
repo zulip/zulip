@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from email.utils import parseaddr
 from typing import (cast, Any, Dict, Iterable, Iterator, List, Optional,
                     Tuple, Union, Set)
 
@@ -360,6 +361,7 @@ class ZulipTestCase(TestCase):
         """
         if full_name is None:
             full_name = email.replace("@", "_")
+
         payload = {
             'full_name': full_name,
             'password': password,
@@ -383,7 +385,7 @@ class ZulipTestCase(TestCase):
             # This is a bit of a crude heuristic, but good enough for most tests.
             url_pattern = settings.EXTERNAL_HOST + r"(\S+)>"
         for message in reversed(outbox):
-            if email_address in message.to:
+            if email_address in parseaddr(message.to)[1]:
                 return re.search(url_pattern, message.body).groups()[0]
         else:
             raise AssertionError("Couldn't find a confirmation email.")
