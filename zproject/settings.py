@@ -895,7 +895,6 @@ LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, 'locale'),)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 STATICFILES_DIRS = ['static/']
-STATIC_HEADER_FILE = 'zerver/static_header.txt'
 
 # To use minified files in dev, set PIPELINE_ENABLED = True.  For the full
 # cache-busting behavior, you must also set DEBUG = False.
