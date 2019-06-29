@@ -12,7 +12,7 @@ var path = require('path');
 var fs = require('fs');
 
 global.assert = require('assert');
-require('string.prototype.codepointat/codepointat.js');
+require('core-js/features/string/code-point-at');
 
 global._ = require('underscore/underscore.js');
 var _ = global._;
