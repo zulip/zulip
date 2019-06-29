@@ -850,6 +850,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_offline_push_notifications = models.BooleanField(default=True)  # type: bool
     enable_online_push_notifications = models.BooleanField(default=False)  # type: bool
 
+    DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
+    DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
+    desktop_icon_count_display = models.PositiveSmallIntegerField(
+        default=DESKTOP_ICON_COUNT_DISPLAY_MESSAGES)  # type: int
+
     enable_digest_emails = models.BooleanField(default=True)  # type: bool
     enable_login_emails = models.BooleanField(default=True)  # type: bool
     realm_name_in_notifications = models.BooleanField(default=False)  # type: bool
@@ -981,6 +986,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         message_content_in_email_notifications=bool,
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
+        desktop_icon_count_display=int,
         realm_name_in_notifications=bool,
     )
 

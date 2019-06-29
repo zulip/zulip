@@ -62,6 +62,7 @@ class HomeTest(ZulipTestCase):
             "delivery_email",
             "demote_inactive_streams",
             "dense_mode",
+            "desktop_icon_count_display",
             "development_environment",
             "email",
             "emojiset",

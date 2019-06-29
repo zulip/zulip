@@ -3670,8 +3670,8 @@ def do_create_realm(string_id: str, name: str,
                               "signups", realm.display_subdomain, signup_message)
     return realm
 
-def do_change_notification_settings(user_profile: UserProfile, name: str, value: Union[bool, str],
-                                    log: bool=True) -> None:
+def do_change_notification_settings(user_profile: UserProfile, name: str,
+                                    value: Union[bool, int, str], log: bool=True) -> None:
     """Takes in a UserProfile object, the name of a global notification
     preference to update, and the value to update to
     """
