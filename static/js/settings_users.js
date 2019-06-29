@@ -229,6 +229,7 @@ function populate_users(realm_people_data) {
             },
             onupdate: reset_scrollbar($deactivated_users_table),
         },
+        parent_container: $('#admin-user-list').expectOne(),
     }).init();
 
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));

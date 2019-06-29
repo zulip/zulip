@@ -4,11 +4,11 @@
     <div class="alert-notification" id="deactivated-user-field-status"></div>
     <div class="clear-float"></div>
 
-    <div class="progressive-table-wrapper" data-simplebar>
+    <div class="progressive-table-wrapper" data-simplebar data-list-render="deactivated_users_table_list">
         <table class="table table-condensed table-striped">
             <thead>
-                <th>{{t "Name" }}</th>
-                <th>{{t "Email" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="email">{{t "Email" }}</th>
                 <th class="user_role">{{t "Role" }}</th>
                 <th class="actions">{{t "Actions" }}</th>
             </thead>
