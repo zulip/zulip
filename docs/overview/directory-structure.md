@@ -160,11 +160,6 @@ This is used to deploy essentially all configuration in production.
 
 * `zproject/jinja2/__init__.py` Jinja2 environment.
 
-* `zproject/jinja2/backends.py` Jinja2 backend.
-
-* `zproject/jinja2/compressors.py` Jinja2 compatible functions of
-   Django-Pipeline.
-
 -----------------------------------------------------------------------
 
 ### Translation files
