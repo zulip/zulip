@@ -262,15 +262,25 @@ exports.update_huddles = function () {
 };
 
 function send_presence_to_server(want_redraw) {
+    var status;
     if (reload_state.is_in_progress()) {
         blueslip.log("Skipping querying presence because reload in progress");
         return;
     }
+
+    if (exports.client_is_active) {
+        status = exports.ACTIVE;
+    } else {
+        status = exports.IDLE;
+    }
+
     channel.post({
         url: '/json/users/me/presence',
-        data: {status: exports.client_is_active ? exports.ACTIVE : exports.IDLE,
-               ping_only: !want_redraw,
-               new_user_input: exports.new_user_input},
+        data: {
+            status: status,
+            ping_only: !want_redraw,
+            new_user_input: exports.new_user_input,
+        },
         idempotent: true,
         success: function (data) {
 
