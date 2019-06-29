@@ -261,7 +261,7 @@ exports.update_huddles = function () {
     show_huddles();
 };
 
-function focus_ping(want_redraw) {
+function send_presence_to_server(want_redraw) {
     if (reload_state.is_in_progress()) {
         blueslip.log("Skipping querying presence because reload in progress");
         return;
@@ -307,7 +307,7 @@ function focus_ping(want_redraw) {
 function mark_client_active() {
     if (!exports.client_is_active) {
         exports.client_is_active = true;
-        focus_ping(false);
+        send_presence_to_server(false);
     }
 }
 
@@ -335,10 +335,10 @@ exports.initialize = function () {
 
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
-    focus_ping(false);
+    send_presence_to_server(false);
 
     function get_full_presence_list_update() {
-        focus_ping(true);
+        send_presence_to_server(true);
     }
 
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
