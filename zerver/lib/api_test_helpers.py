@@ -228,10 +228,18 @@ def get_stream_id(client):
 
 def delete_stream(client, stream_id):
     # type: (Client, int) -> None
+    result = client.add_subscriptions(
+        streams=[
+            {
+                'name': 'stream to be deleted',
+                'description': 'New stream for testing'
+            }
+        ]
+    )
 
     # {code_example|start}
     # Delete the stream named 'new stream'
-    stream_id = client.get_stream_id('new stream')['stream_id']
+    stream_id = client.get_stream_id('stream to be deleted')['stream_id']
     result = client.delete_stream(stream_id)
     # {code_example|end}
     validate_against_openapi_schema(result, '/streams/{stream_id}', 'delete', '200')
@@ -285,11 +293,13 @@ def get_user_groups(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/user_groups', 'get', '200')
-    user_groups = [u for u in result['user_groups'] if u['name'] == "hamletcharacters"]
-    assert user_groups[0]['description'] == 'Characters of Hamlet'
+    hamlet_user_group = [u for u in result['user_groups']
+                         if u['name'] == "hamletcharacters"][0]
+    assert hamlet_user_group['description'] == 'Characters of Hamlet'
 
-    result = result['user_groups'][0]
-    return result['id']
+    marketing_user_group = [u for u in result['user_groups']
+                            if u['name'] == "marketing"][0]
+    return marketing_user_group['id']
 
 def test_user_not_authorized_error(nonadmin_client):
     # type: (Client) -> None
@@ -918,7 +928,7 @@ def update_user_group_members(client, group_id):
     request = {
         'group_id': group_id,
         'delete': [3, 4],
-        'add': [1, 2]
+        'add': [5]
     }
 
     result = client.update_user_group_members(request)
@@ -1073,8 +1083,8 @@ def test_users(client):
     set_typing_status(client)
     get_user_presence(client)
     update_presence(client)
-    group_id = get_user_groups(client)
     create_user_group(client)
+    group_id = get_user_groups(client)
     update_user_group(client, group_id)
     update_user_group_members(client, group_id)
     remove_user_group(client, group_id)
