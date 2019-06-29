@@ -66,11 +66,9 @@ needs to be accessible from one of the entry points defined in
   page or other standalone pages, put it in the `app` bundle by importing it
   in `static/js/bundles/app.js`.
 * If it needs to be available both in the app and all
-  logged-out/portico pages, add it to the `common` entry. Note that
-  you also need to import it to `static/js/bundles/commons.js` which
-  in itself is imported to the `app` bundle (this duplication dates
-  back to the transition from our legacy django-pipeline system and
-  should be fixed).
+  logged-out/portico pages, import it to
+  `static/js/bundles/commons.js` which itself is imported to the
+  `app` and `common` bundles.
 * If it's just used on a single standalone page (e.g. `/stats`),
   create a new entry point in `tools/webpack.assets.json`. Use the
   `render_bundle` function in the relevant Jinja2 template to inject
