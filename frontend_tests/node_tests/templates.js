@@ -1,9 +1,9 @@
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
-zrequire('settings_notifications');
 
 set_global('i18n', global.stub_i18n);
 set_global('page_params', {});
+zrequire('settings_notifications');
 zrequire('stream_edit');
 
 const { JSDOM } = require("jsdom");

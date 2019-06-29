@@ -32,6 +32,7 @@ var email_notification_settings = [
 ];
 
 var other_notification_settings = desktop_notification_settings.concat(
+    ["desktop_icon_count_display"],
     mobile_notification_settings,
     email_notification_settings,
     ["notification_sound"]
@@ -63,10 +64,27 @@ exports.all_notifications = {
     },
 };
 
+exports.desktop_icon_count_display_values = {
+    messages: {
+        code: 1,
+        description: i18n.t("All unreads"),
+    },
+    notifiable: {
+        code: 2,
+        description: i18n.t("Private messages and mentions"),
+    },
+};
+
 function change_notification_setting(setting, setting_data, status_element) {
     var data = {};
     data[setting] = JSON.stringify(setting_data);
     settings_ui.do_settings_change(channel.patch, '/json/settings/notifications', data, status_element);
+}
+
+function update_desktop_icon_count_display() {
+    $("#desktop_icon_count_display").val(page_params.desktop_icon_count_display);
+    var res = unread.get_counts();
+    notifications.update_title_count(res);
 }
 
 exports.set_enable_digest_emails_visibility = function () {
@@ -83,9 +101,11 @@ exports.set_up = function () {
             $("#" + sub_setting).change(function () {
                 var value;
 
+                // `notification_sound` and `desktop_icon_count_display` are not booleans.
                 if (sub_setting === "notification_sound") {
-                    // `notification_sound` is not a boolean.
                     value = $(this).val();
+                } else if (sub_setting === "desktop_icon_count_display") {
+                    value = parseInt($(this).val(), 10);
                 } else {
                     value = $(this).prop('checked');
                 }
@@ -94,6 +114,8 @@ exports.set_up = function () {
             });
         });
     });
+
+    update_desktop_icon_count_display();
 
     $("#play_notification_sound").click(function () {
         $("#notifications-area").find("audio")[0].play();
@@ -121,7 +143,11 @@ exports.update_page = function () {
             // If push notifications are disabled at the realm level,
             // we should just leave the checkbox always off.
             return;
+        } else if (setting === 'desktop_icon_count_display') {
+            update_desktop_icon_count_display();
+            return;
         }
+
         $("#" + setting).prop('checked', page_params[setting]);
     });
 };

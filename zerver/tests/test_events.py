@@ -1869,8 +1869,8 @@ class EventsRegisterTest(ZulipTestCase):
     @slow("Actually runs several full-stack fetching tests")
     def test_change_notification_settings(self) -> None:
         for notification_setting, v in self.user_profile.notification_setting_types.items():
-            if notification_setting == "notification_sound":
-                # notification_sound is tested in its own test
+            if notification_setting in ["notification_sound", "desktop_icon_count_display"]:
+                # These settings are tested in their own tests.
                 continue
 
             schema_checker = self.check_events_dict([
@@ -1907,6 +1907,32 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(lambda: do_change_notification_settings(
             self.user_profile, notification_setting, 'ding', log=False))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_desktop_icon_count_display(self) -> None:
+        notification_setting = "desktop_icon_count_display"
+        schema_checker = self.check_events_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals(notification_setting)),
+            ('user', check_string),
+            ('setting', equals(2)),
+        ])
+
+        events = self.do_test(lambda: do_change_notification_settings(
+            self.user_profile, notification_setting, 2, log=False))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        schema_checker = self.check_events_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals(notification_setting)),
+            ('user', check_string),
+            ('setting', equals(1)),
+        ])
+
+        events = self.do_test(lambda: do_change_notification_settings(
+            self.user_profile, notification_setting, 1, log=False))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
