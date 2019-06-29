@@ -159,7 +159,7 @@ exports.short_huddle_name = function (huddle) {
     return names.join(', ');
 };
 
-function focus_lost() {
+function mark_client_idle() {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
     // this data is fundamentally not timely.
@@ -301,7 +301,7 @@ function focus_ping(want_redraw) {
     });
 }
 
-function focus_gained() {
+function mark_client_active() {
     if (!exports.has_focus) {
         exports.has_focus = true;
         focus_ping(false);
@@ -313,10 +313,10 @@ exports.initialize = function () {
         exports.new_user_input = true;
     });
 
-    $(window).focus(focus_gained);
+    $(window).focus(mark_client_active);
     $(window).idle({idle: DEFAULT_IDLE_TIMEOUT_MS,
-                    onIdle: focus_lost,
-                    onActive: focus_gained,
+                    onIdle: mark_client_idle,
+                    onActive: mark_client_active,
                     keepTracking: true});
 
     presence.set_info(page_params.presences,
