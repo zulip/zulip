@@ -44,6 +44,7 @@ def vnu_servlet() -> Iterator[None]:
             os.path.dirname(__file__),
             '../node_modules/vnu-jar/build/dist/vnu.jar',
         ),
+        '-Dnu.validator.servlet.bind-address=127.0.0.1',
         'nu.validator.servlet.Main',
         '9988',
     ]) as proc:

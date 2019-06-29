@@ -122,7 +122,7 @@ class BaseDocumentationSpider(scrapy.Spider):
 
         if getattr(self, 'validate_html', False):
             yield Request(
-                'http://localhost:9988/?out=json',
+                'http://127.0.0.1:9988/?out=json',
                 method='POST',
                 headers={'Content-Type': response.headers['Content-Type']},
                 body=response.body,
