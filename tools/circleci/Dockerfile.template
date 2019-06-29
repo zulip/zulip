@@ -89,7 +89,7 @@ RUN DOCKERIZE_URL="https://circle-downloads.s3.amazonaws.com/circleci-images/cac
 # Extra packages used by Zulip.
 RUN apt-get update \
   && apt-get install --no-install-recommends \
-    closure-compiler memcached rabbitmq-server redis-server \
+    memcached rabbitmq-server redis-server \
     hunspell-en-us supervisor libssl-dev yui-compressor puppet \
     gettext libffi-dev libfreetype6-dev zlib1g-dev libjpeg-dev \
     libldap2-dev libmemcached-dev python-dev python-pip \

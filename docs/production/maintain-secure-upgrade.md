@@ -215,8 +215,8 @@ git_repo_url = https://github.com/zulip/zulip.git
 **Systems with limited RAM**: If you are running a minimal Zulip
   server with 2GB of RAM or less, the upgrade can fail due to the
   system running out of RAM running both the Zulip server and Zulip's
-  static asset build process (`tools/minify-js`, which calls
-  `webpack`, is usually the step that fails).  If you encounter this,
+  static asset build process (`tools/webpack`
+  is usually the step that fails).  If you encounter this,
   you can run `supervisorctl stop all` to shut down the Zulip server
   while you run the upgrade (this will, of course, add some downtime,
   which is part of we already recommend more RAM for organizations of

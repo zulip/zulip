@@ -143,7 +143,6 @@ POSTGRES_VERSION_MAP = {
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
 COMMON_DEPENDENCIES = [
-    "closure-compiler",
     "memcached",
     "rabbitmq-server",
     "supervisor",

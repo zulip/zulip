@@ -78,10 +78,6 @@ If you want to test minified files in development, look for the
 `PIPELINE_ENABLED =` line in `zproject/settings.py` and set it to `True`
 -- or just set `DEBUG = False`.
 
-Note that `static/html/5xx.html` will only render properly if
-minification is enabled, since they, by nature, hardcode the path
-`static/min/portico.css`.
-
 ## How it works in production
 
 You can learn a lot from reading about django-pipeline, but a few
