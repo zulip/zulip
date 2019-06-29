@@ -13,7 +13,7 @@ from zerver.models import (
     get_display_recipient, get_personal_recipient, get_realm, get_stream,
     UserMessage, get_stream_recipient, Message
 )
-from zerver.lib.actions import do_set_realm_property
+from zerver.lib.actions import do_set_realm_property, do_deactivate_user
 from zerver.lib.message import (
     MessageDict,
 )
@@ -1077,10 +1077,24 @@ class GetOldMessagesTest(ZulipTestCase):
             return list(sorted(set([r['id'] for r in dr] + [self.example_user('hamlet').id])))
 
         self.send_personal_message(me, self.example_email("iago"))
+
         self.send_huddle_message(
             me,
             [self.example_email("iago"), self.example_email("cordelia")],
         )
+
+        # Send a 1:1 and group PM containing Aaron.
+        # Then deactivate aaron to test pm-with narrow includes messages
+        # from deactivated users also.
+        self.send_personal_message(me, self.example_email("aaron"))
+        self.send_huddle_message(
+            me,
+            [self.example_email("iago"), self.example_email("aaron")],
+        )
+        aaron = self.example_user("aaron")
+        do_deactivate_user(aaron)
+        self.assertFalse(aaron.is_active)
+
         personals = [m for m in get_user_messages(self.example_user('hamlet'))
                      if not m.is_stream_message()]
         for personal in personals:

@@ -323,7 +323,8 @@ class NarrowBuilder:
             recipient = recipient_for_user_profiles(user_profiles=user_profiles,
                                                     forwarded_mirror_message=False,
                                                     forwarder_user_profile=None,
-                                                    sender=self.user_profile)
+                                                    sender=self.user_profile,
+                                                    allow_deactivated=True)
         except (JsonableError, ValidationError):
             raise BadNarrowOperator('unknown user in ' + str(operand))
 
