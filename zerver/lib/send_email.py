@@ -43,9 +43,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     assert (to_user_ids is None) ^ (to_emails is None)
     if to_user_ids is not None:
         to_users = [get_user_profile_by_id(to_user_id) for to_user_id in to_user_ids]
-        # Change to formataddr((to_user.full_name, to_user.email)) once
-        # https://github.com/zulip/zulip/issues/4676 is resolved
-        to_emails = [to_user.delivery_email for to_user in to_users]
+        to_emails = [formataddr((to_user.full_name, to_user.delivery_email)) for to_user in to_users]
 
     if context is None:
         context = {}
