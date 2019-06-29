@@ -39,26 +39,7 @@
         "./static/styles/portico/portico-styles.scss"
     ],
     "common": [
-        "string.prototype.endswith",
-        "string.prototype.startswith",
-        "string.prototype.codepointat",
-        "jquery/dist/jquery.js",
-        "underscore/underscore.js",
-        "./static/js/csrf.js",
-        "./static/js/blueslip.js",
-        "./static/third/bootstrap/js/bootstrap.js",
-        "./static/js/common.js",
-        "moment/min/moment.min.js",
-        "moment-timezone/builds/moment-timezone-with-data.min.js",
-        "sortablejs/Sortable.js",
-        "./static/third/bootstrap/css/bootstrap.css",
-        "./static/third/bootstrap/css/bootstrap-btn.css",
-        "./static/third/bootstrap/css/bootstrap-responsive.css",
-        "simplebar/dist/simplebar.css",
-        "font-awesome/css/font-awesome.css",
-        "./static/generated/icons/style.css",
-        "source-sans-pro/source-sans-pro.css",
-        "./static/styles/pygments.scss"
+        "./static/js/bundles/commons.js"
     ],
     "help": [
         "simplebar/dist/simplebar.css",

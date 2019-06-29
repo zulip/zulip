@@ -2,6 +2,7 @@ import "./commons.js";
 
 // Import Third party libraries
 import "../../third/bootstrap-notify/js/bootstrap-notify.js";
+import "../../third/bootstrap-typeahead/typeahead.js";
 import "../../third/jquery-filedrop/jquery.filedrop.js";
 import "jquery-caret-plugin/src/jquery.caret.js";
 import "../../third/jquery-idle/jquery.idle.js";
@@ -44,7 +45,6 @@ import "../input_pill.js";
 import "../user_pill.js";
 import "../compose_pm_pill.js";
 import "../channel.js";
-import "../csrf.js";
 import "../setup.js";
 import "../unread_ui.js";
 import "../unread_ops.js";
