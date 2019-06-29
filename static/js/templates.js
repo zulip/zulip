@@ -2,21 +2,16 @@ var templates = (function () {
 
 var exports = {};
 
-var template_context = require.context('../templates', true, /\.handlebars$/);
-var template_paths = ['./', './settings/', './widgets/'];
-
 exports.render = function (name, arg) {
-    for (var i = 0; i < template_paths.length; i += 1) {
-        var template;
-        try {
-            template = template_context(template_paths[i] + name + '.handlebars');
-        } catch (_e) {
-            continue;
-        }
-        return template(arg);
+    var template;
+    try {
+        template = require('../templates/' + name + '.handlebars');
+    } catch (_e) {
+        throw new Error('Cannot find template static/templates/' + name
+            + '.handlebars.');
     }
-    throw new Error('Cannot find template ' + name + '.handlebars anywhere '
-        + 'under the static/templates/ folder.');
+
+    return template(arg);
 };
 
 // When adding a new handlebars helper, update the knownHelpers array in

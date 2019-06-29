@@ -122,7 +122,7 @@ exports.activate = function (opts) {
     var task_data = exports.task_data_holder();
 
     function render() {
-        var html = templates.render('todo-widget');
+        var html = templates.render('widgets/todo-widget');
         elem.html(html);
 
         elem.find("button.add-task").on('click', function (e) {
@@ -149,7 +149,7 @@ exports.activate = function (opts) {
 
     function render_results() {
         var widget_data = task_data.get_widget_data();
-        var html = templates.render('todo-widget-tasks', widget_data);
+        var html = templates.render('widgets/todo-widget-tasks', widget_data);
         elem.find('ul.todo-widget').html(html);
         elem.find(".widget-error").text('');
 

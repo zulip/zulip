@@ -20,13 +20,13 @@ function render(template_name, args) {
 run_test('finding_partials', () => {
     var fns = global.find_included_partials('settings_tab');
     assert.deepEqual(fns, [
-        'account-settings',
-        'display-settings',
-        'notification-settings',
-        'bot-settings',
-        'alert-word-settings',
-        'attachments-settings',
-        'muted-topics-settings',
+        'settings/account-settings',
+        'settings/display-settings',
+        'settings/notification-settings',
+        'settings/bot-settings',
+        'settings/alert-word-settings',
+        'settings/attachments-settings',
+        'settings/muted-topics-settings',
     ]);
 });
 
@@ -91,7 +91,7 @@ run_test('admin_realm_domains_list', () => {
             allow_subdomains: true,
         },
     };
-    html += render("admin-realm-domains-list", args);
+    html += render("settings/admin-realm-domains-list", args);
     html += "</table>";
 
     var button = $(html).find('.button');
@@ -115,7 +115,7 @@ run_test('admin_realm_dropdown_stream_list', () => {
             stream_id: 18,
         },
     };
-    html += render("admin-realm-dropdown-stream-list", args);
+    html += render("settings/admin-realm-dropdown-stream-list", args);
     html += "</ul>";
 
     var link = $(html).find("a");
@@ -442,7 +442,7 @@ run_test('bankruptcy_modal', () => {
     assert.equal(count.text(), 99);
 });
 
-run_test('admin_auth_methods_list', () => {
+run_test('settings/admin_auth_methods_list', () => {
     var args = {
         method: "Email",
         enabled: false,
@@ -450,7 +450,7 @@ run_test('admin_auth_methods_list', () => {
 
     var html = '';
     html += '<tbody>';
-    html += render('admin_auth_methods_list', args);
+    html += render('settings/admin_auth_methods_list', args);
     html += '</tbody>';
 
     var method = $(html).find('tr.method_row').first().find('span.method');
@@ -590,7 +590,7 @@ run_test('compose_private_stream_alert', () => {
 run_test('custom_user_profile_field', () => {
     var field = {name: "GitHub user name", id: 2, hint: "Or link to profile"};
     var args = {field: field, field_value: {value: "@GitHub", rendered_value: "<p>@GitHub</p>"}, field_type: "text"};
-    var html = render('custom-user-profile-field', args);
+    var html = render('settings/custom-user-profile-field', args);
     assert.equal($(html).attr('data-field-id'), 2);
     assert.equal($(html).find('.custom_user_field_value').val(), "@GitHub");
     assert.equal($(html).find('.field_hint').text(), "Or link to profile");
@@ -602,7 +602,7 @@ run_test('deactivate_stream_modal', () => {
         stream_name: "Public stream",
         stream_id: 1,
     };
-    var html = render('deactivation-stream-modal', args);
+    var html = render('settings/deactivation-stream-modal', args);
 
     var modal_header = $(html).find("#deactivation_stream_modal_label");
     assert.equal(modal_header.text(), "translated: Delete stream " + args.stream_name);
@@ -612,8 +612,8 @@ run_test('deactivate_stream_modal', () => {
     assert.equal(button.data('stream-id'), args.stream_id);
 });
 
-run_test('dev_env_email_access', () => {
-    render('dev_env_email_access');
+run_test('settings/dev_env_email_access', () => {
+    render('settings/dev_env_email_access');
 });
 
 run_test('draft_table_body', () => {
@@ -1097,7 +1097,7 @@ run_test('revoke_invite_modal', () => {
     };
 
     var html = "<div>";
-    html += render('revoke-invite-modal', args);
+    html += render('settings/revoke-invite-modal', args);
     html += "</div>";
     assert.equal($(html).find("p strong").text(), "iago@zulip.com");
 });
@@ -1471,7 +1471,7 @@ run_test('upload_space_stats', () => {
         percent_used: 50,
         upload_quota: "1 GB",
     };
-    var html = render('upload-space-stats', args);
+    var html = render('settings/upload-space-stats', args);
     assert.equal($(html).text().trim(), "translated: Organization using 50% of 1 GB.\n    translated: Upgrade for more space.");
 
     args = {
@@ -1479,7 +1479,7 @@ run_test('upload_space_stats', () => {
         percent_used: 10,
         upload_quota: "5 GB",
     };
-    html = render('upload-space-stats', args);
+    html = render('settings/upload-space-stats', args);
     assert.equal($(html).text().trim(), "translated: Organization using 10% of 5 GB.");
 });
 
@@ -1678,7 +1678,7 @@ run_test('edit_outgoing_webhook_service', () => {
         service: {base_url: "http://www.foo.bar",
                   interface: "1"},
     };
-    var html = render('edit-outgoing-webhook-service', args);
+    var html = render('settings/edit-outgoing-webhook-service', args);
     assert.equal($(html).find('#edit_service_base_url').val(), args.service.base_url);
     assert.equal($(html).find('#edit_service_interface').val(), args.service.interface);
 });
@@ -1688,7 +1688,7 @@ run_test('edit_embedded_bot_service', () => {
         service: {service_name: "giphy",
                   config_data: {key: "abcd1234"}},
     };
-    var html = render('edit-embedded-bot-service', args);
+    var html = render('settings/edit-embedded-bot-service', args);
     assert.equal($(html).find('#embedded_bot_key_edit').attr('name'), 'key');
     assert.equal($(html).find('#embedded_bot_key_edit').val(), 'abcd1234');
 });

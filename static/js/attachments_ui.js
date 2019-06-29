@@ -38,7 +38,7 @@ function set_upload_space_stats() {
         percent_used: exports.percentage_used_space(upload_space_used),
         upload_quota: attachments_ui.bytes_to_size(page_params.realm_upload_quota, true),
     };
-    var rendered_upload_stats_html = templates.render("upload-space-stats", args);
+    var rendered_upload_stats_html = templates.render("settings/upload-space-stats", args);
     $("#attachment-stats-holder").html(rendered_upload_stats_html);
 }
 

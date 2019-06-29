@@ -24,7 +24,7 @@
             <div class="alert-notification" id="display-settings-status"></div>
 
             {{#each display_settings.settings.user_display_settings}}
-            {{partial "settings_checkbox"
+            {{partial "settings/settings_checkbox"
               "setting_name" this
               "is_checked" (lookup ../page_params this)
               "label" (lookup ../settings_label this)
@@ -49,7 +49,7 @@
             <h3 class="inline-block">{{t "Time settings" }}</h3>
             <div class="alert-notification" id="time-settings-status"></div>
 
-            {{partial "settings_checkbox"
+            {{partial "settings/settings_checkbox"
               "setting_name" "twenty_four_hour_time"
               "is_checked" page_params.twenty_four_hour_time
               "label" settings_label.twenty_four_hour_time}}
@@ -93,7 +93,7 @@
                 </div>
             </div>
 
-            {{partial "settings_checkbox"
+            {{partial "settings/settings_checkbox"
               "setting_name" "translate_emoticons"
               "is_checked" page_params.translate_emoticons
               "label" settings_label.translate_emoticons}}
