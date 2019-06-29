@@ -285,7 +285,7 @@ exports.activate = function (opts) {
     }
 
     function build_widget() {
-        var html = templates.render('poll-widget');
+        var html = templates.render('widgets/poll-widget');
         elem.html(html);
 
         elem.find('input.poll-question').on('keyup', function (e) {
@@ -346,7 +346,7 @@ exports.activate = function (opts) {
     function render_results() {
         var widget_data = poll_data.get_widget_data();
 
-        var html = templates.render('poll-widget-results', widget_data);
+        var html = templates.render('widgets/poll-widget-results', widget_data);
         elem.find('ul.poll-widget').html(html);
 
         elem.find("button.poll-vote").off('click').on('click', function (e) {

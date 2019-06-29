@@ -7,7 +7,7 @@ var _ = require('underscore/underscore.js');
 var Handlebars = require('handlebars');
 
 function template_dir() {
-    return __dirname + '/../../static/templates/';
+    return __dirname + '/../../static/templates';
 }
 
 exports.init = function () {
@@ -53,10 +53,10 @@ exports.walk = function (dir, filelist) {
         if (fs.statSync(dir + "/" + file).isDirectory()) {
             filelist = exports.walk(dir + "/" + file, filelist);
         } else {
-            filelist.push({
-                url: dir + "/" + file,
-                name: file,
-            });
+            var url = dir + "/" + file;
+            // Get the file path starting after static/templates/
+            var name = url.replace(/^.+static\/templates\//, '');
+            filelist.push({ url, name });
         }
     });
 

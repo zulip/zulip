@@ -8,7 +8,7 @@
             <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
 
             {{#each notification_settings.stream_notification_settings}}
-            {{partial "settings_checkbox"
+            {{partial "settings/settings_checkbox"
               "setting_name" this
               "is_checked" (lookup ../page_params this)
               "label" (lookup ../settings_label this)
@@ -26,7 +26,7 @@
             <div class="alert-notification" id="pm-mention-notify-settings-status"></div>
 
             {{#each notification_settings.pm_mention_notification_settings}}
-            {{partial "settings_checkbox"
+            {{partial "settings/settings_checkbox"
               "setting_name" this
               "is_checked" (lookup ../page_params this)
               "label" (lookup ../settings_label this)
@@ -43,7 +43,7 @@
             <h5>{{t "Desktop" }}</h5>
 
             {{#each notification_settings.desktop_notification_settings}}
-            {{partial "settings_checkbox"
+            {{partial "settings/settings_checkbox"
               "setting_name" this
               "is_checked" (lookup ../page_params this)
               "label" (lookup ../settings_label this)}}
@@ -70,7 +70,7 @@
             <h5>{{t "Mobile" }}</h5>
 
             {{#each notification_settings.mobile_notification_settings}}
-            {{partial "settings_checkbox"
+            {{partial "settings/settings_checkbox"
               "setting_name" this
               "is_checked" (lookup ../page_params this)
               "label" (lookup ../settings_label this)
@@ -81,7 +81,7 @@
             <h5>{{t "Email" }}</h5>
 
             {{#each notification_settings.email_notification_settings}}
-            {{partial "settings_checkbox"
+            {{partial "settings/settings_checkbox"
               "setting_name" this
               "is_checked" (lookup ../page_params this)
               "label" (lookup ../settings_label this)}}

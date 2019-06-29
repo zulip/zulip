@@ -34,7 +34,7 @@ function can_admin_emoji(emoji) {
 }
 
 exports.update_custom_emoji_ui = function () {
-    var rendered_tip = templates.render("emoji-settings-tip", {
+    var rendered_tip = templates.render("settings/emoji-settings-tip", {
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
     });
     $('#emoji-settings').find('.emoji-settings-tip-container').html(rendered_tip);

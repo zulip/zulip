@@ -56,7 +56,7 @@ function submit_invitation_form() {
             invitee_emails.val('');
 
             if (page_params.development_environment) {
-                var rendered_email_msg = templates.render('dev_env_email_access');
+                var rendered_email_msg = templates.render('settings/dev_env_email_access');
                 $('#dev_env_msg').html(rendered_email_msg).addClass('alert-info').show();
             }
 
