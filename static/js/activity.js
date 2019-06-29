@@ -16,14 +16,17 @@ var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 exports.ACTIVE = "active";
 exports.IDLE = "idle";
 
-// When you start Zulip, has_focus should be true, but it might not be the
-// case after a server-initiated reload.
-exports.has_focus = document.hasFocus && document.hasFocus();
+// When you open Zulip in a new browser window, client_is_active
+// should be true.  When a server-initiated reload happens, however,
+// it should be initialized to false.  We handle this with a check for
+// whether the window is focused at initialization time.
+exports.client_is_active = document.hasFocus && document.hasFocus();
 
-// We initialize this to true, to count new page loads, but set it to
-// false in the onload function in reload.js if this was a
-// server-initiated-reload to avoid counting a server-initiated reload
-// as user activity.
+// new_user_input is a more strict version of client_is_active used
+// primarily for analytics.  We initialize this to true, to count new
+// page loads, but set it to false in the onload function in reload.js
+// if this was a server-initiated-reload to avoid counting a
+// server-initiated reload as user activity.
 exports.new_user_input = true;
 
 var huddle_timestamps = new Dict();
@@ -163,7 +166,7 @@ function mark_client_idle() {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
     // this data is fundamentally not timely.
-    exports.has_focus = false;
+    exports.client_is_active = false;
 }
 
 exports.redraw_user = function (user_id) {
@@ -265,7 +268,7 @@ function focus_ping(want_redraw) {
     }
     channel.post({
         url: '/json/users/me/presence',
-        data: {status: exports.has_focus ? exports.ACTIVE : exports.IDLE,
+        data: {status: exports.client_is_active ? exports.ACTIVE : exports.IDLE,
                ping_only: !want_redraw,
                new_user_input: exports.new_user_input},
         idempotent: true,
@@ -302,8 +305,8 @@ function focus_ping(want_redraw) {
 }
 
 function mark_client_active() {
-    if (!exports.has_focus) {
-        exports.has_focus = true;
+    if (!exports.client_is_active) {
+        exports.client_is_active = true;
         focus_ping(false);
     }
 }

@@ -854,7 +854,7 @@ run_test('initialize', () => {
         scroll_handler_started = true;
     };
 
-    activity.has_focus = false;
+    activity.client_is_active = false;
 
     activity.initialize();
     clear();
@@ -863,7 +863,7 @@ run_test('initialize', () => {
     assert(!activity.new_user_input);
     assert(!$('#zephyr-mirror-error').hasClass('show'));
     assert.equal(page_params.presences, undefined);
-    assert(activity.has_focus);
+    assert(activity.client_is_active);
     $(window).idle = function (params) {
         params.onIdle();
     };
@@ -878,7 +878,7 @@ run_test('initialize', () => {
 
     assert($('#zephyr-mirror-error').hasClass('show'));
     assert(!activity.new_user_input);
-    assert(!activity.has_focus);
+    assert(!activity.client_is_active);
 
     clear();
 

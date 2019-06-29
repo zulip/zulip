@@ -939,7 +939,7 @@ MessageListView.prototype = {
             return false;
         }
 
-        if (!activity.has_focus) {
+        if (!activity.client_is_active) {
             // Don't autoscroll if the window hasn't had focus
             // recently.  This in intended to help protect us from
             // auto-scrolling downwards when the window is in the
