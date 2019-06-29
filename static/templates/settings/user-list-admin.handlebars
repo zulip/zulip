@@ -7,16 +7,16 @@
 
     <table class="table table-condensed table-striped wrapped-table">
         <thead>
-            <th class="wrapped-cell">{{t "Name" }}</th>
-            <th>{{t "Email" }}</th>
-            <th class="user_role">{{t "Role" }}</th>
-            <th class="last_active">{{t "Last active" }}</th>
+            <th class="wrapped-cell" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
+            <th data-sort="alphabetic" data-sort-prop="email">{{t "Email" }}</th>
+            <th class="user_role" data-sort="role">{{t "Role" }}</th>
+            <th class="last_active" data-sort="numeric" data-sort-prop="last_active">{{t "Last active" }}</th>
             {{#if is_admin}}
             <th class="actions">{{t "Actions" }}</th>
             {{/if}}
         </thead>
     </table>
-    <div class="progressive-table-wrapper" data-simplebar>
+    <div class="progressive-table-wrapper" data-simplebar data-list-render="users_table_list">
         <table class="table table-condensed table-striped wrapped-table">
             <tbody id="admin_users_table" class="admin_user_table required-text thick"
               data-empty="{{t 'No users match your current filter.' }}"></tbody>

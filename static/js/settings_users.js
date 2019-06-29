@@ -143,7 +143,7 @@ function populate_users(realm_people_data) {
     }).init();
 
     var $users_table = $("#admin_users_table");
-    list_render.create($users_table, active_users, {
+    var list = list_render.create($users_table, active_users, {
         name: "users_table_list",
         modifier: function (item) {
             var activity_rendered;
@@ -188,7 +188,24 @@ function populate_users(realm_people_data) {
             },
             onupdate: reset_scrollbar($users_table),
         },
+        parent_container: $('#admin-user-list').expectOne(),
     }).init();
+
+    list.add_sort_function("role", function (a,b,c) {
+        if(page_params.is_admin) {
+            a == 1;
+        } else if (page_params.is_guest) {
+            a == 2;
+        } else {
+            c == 3;
+        }
+
+        var str = [a];
+        str.sort(function(obj1, obj2) {
+            return obj1.value - obj2.value;
+        });
+        console.log(str);
+    });
 
     var $deactivated_users_table = $("#admin_deactivated_users_table");
     list_render.create($deactivated_users_table, deactivated_users, {
