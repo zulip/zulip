@@ -34,6 +34,7 @@ import zerver.views.muting
 import zerver.views.streams
 import zerver.views.realm
 import zerver.views.digest
+import zerver.views.messages
 from zerver.context_processors import latest_info_context
 import zerver.views.public_export
 

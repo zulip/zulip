@@ -67,6 +67,7 @@ class REQ:
                  default: Any=NotSpecified, validator: Callable[[Any], Any]=None,
                  str_validator: Callable[[Any], Any]=None,
                  argument_type: str=None, type: Type=None,
+                 intentionally_undocumented=False,
                  aliases: Optional[List[str]]=None) -> None:
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
@@ -103,6 +104,7 @@ class REQ:
         self.default = default
         self.argument_type = argument_type
         self.aliases = aliases
+        self.intentionally_undocumented = intentionally_undocumented
 
         if converter and (validator or str_validator):
             # Not user-facing, so shouldn't be tagged for translation
@@ -150,7 +152,11 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             if value.post_var_name is None:
                 value.post_var_name = name
             post_params.append(value)
-            arguments_map[view_func_full_name].append(value.post_var_name)
+
+            # Record arguments that should be documented so that our
+            # automated OpenAPI docs tests can compare these against the code.
+            if not value.intentionally_undocumented:
+                arguments_map[view_func_full_name].append(value.post_var_name)
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:

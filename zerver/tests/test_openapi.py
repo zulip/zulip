@@ -215,11 +215,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         BUGGY_DOCUMENTATION_ENDPOINTS = set([
             '/events',
             '/register',
-            '/mark_stream_as_read',
-            '/mark_topic_as_read',
             '/messages',
-            '/messages/flags',
-            '/messages/render',
             '/typing',
             '/users/me/subscriptions/muted_topics',
         ])
