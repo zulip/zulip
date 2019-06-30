@@ -31,6 +31,12 @@
             outline: none;
         }
 
+        .pill-image {
+            height: 20px;
+            width: 20px;
+            border-radius: 4px 0 0 4px;
+        }
+
         .pill-value {
             margin: 0 5px;
         }
@@ -103,12 +109,6 @@
         content: attr(data-some-recipients-text);
         opacity: 0.5;
     }
-}
-
-.pill-image {
-    height: 20px;
-    width: 20px;
-    border-radius: 4px 0 0 4px;
 }
 
 @keyframes shake {
