@@ -849,7 +849,7 @@ function pick_empty_narrow_banner() {
         }
 
         // For empty stream searches within other narrows, we display the stop words
-        if (current_filter.operators("search")) {
+        if (current_filter.operands("search").length > 0) {
             show_search_query();
             return $("#empty_search_narrow_message");
         }
