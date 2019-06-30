@@ -33,6 +33,20 @@
     outline: none;
 }
 
+.pill-container .pill .pill-value {
+    margin: 0 5px;
+}
+
+.pill-container .pill .exit {
+    opacity: 0.5;
+    font-size: 1.3em;
+    margin-right: 3px;
+}
+
+.pill-container .pill:hover .exit {
+    opacity: 1;
+}
+
 .pill-container.not-editable {
     cursor: not-allowed;
     border: none;
@@ -61,20 +75,6 @@
     word-break: break-all;
 
     outline: none;
-}
-
-.pill-container .pill .pill-value {
-    margin: 0 5px;
-}
-
-.pill-container .pill .exit {
-    opacity: 0.5;
-    font-size: 1.3em;
-    margin-right: 3px;
-}
-
-.pill-container .pill:hover .exit {
-    opacity: 1;
 }
 
 .pill-container .input.shake {
