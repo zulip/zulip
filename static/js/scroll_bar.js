@@ -61,9 +61,8 @@ exports.initialize = function () {
         $("head").append("<style> @media (max-width: 1165px) { .compose-content, .header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +
                          "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " + (7 + sbWidth) + "px !important; } } " +
                          "</style>");
-
-        exports.set_layout_width();
     }
+    exports.set_layout_width();
 };
 
 exports.set_layout_width = function () {
