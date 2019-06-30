@@ -105,10 +105,13 @@ jobs:
       # runs the frontend tests.
       - *upload_coverage_report
 
-      # - store_artifacts:  # TODO
-      #     path: var/casper/
-      #     # also /tmp/zulip-test-event-log/
-      #     destination: test-reports
+      - store_artifacts:
+          path: ./var/casper/
+          destination: casper
+
+      - store_artifacts:    
+          path: ../../../tmp/zulip-test-event-log/
+          destination: test-reports
 
   "bionic-backend-python3.6":
     docker:
