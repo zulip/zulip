@@ -430,7 +430,9 @@ def main(options):
         run_as_root(["chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
         setup_node_modules(prefer_offline=True)
     except subprocess.CalledProcessError:
-        print(WARNING + "`yarn install` failed; retrying..." + ENDC)
+        print(WARNING +
+              "`yarn install` failed, this is usually indicative of a network issue; retrying..." +
+              ENDC)
         setup_node_modules()
 
     # Install shellcheck.
