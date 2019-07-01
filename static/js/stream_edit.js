@@ -2,6 +2,7 @@ var render_settings_deactivation_stream_modal = require("../templates/settings/d
 var render_stream_member_list_entry = require('../templates/stream_member_list_entry.hbs');
 var render_subscription_settings = require('../templates/subscription_settings.hbs');
 var render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
+var people = require('./people');
 
 var stream_edit = (function () {
 

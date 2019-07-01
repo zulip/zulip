@@ -1,5 +1,6 @@
 var render_widgets_poll_widget = require('../templates/widgets/poll_widget.hbs');
 var render_widgets_poll_widget_results = require('../templates/widgets/poll_widget_results.hbs');
+var people = require('./people');
 
 var poll_widget = (function () {
 

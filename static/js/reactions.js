@@ -1,5 +1,6 @@
 var render_message_reaction = require('../templates/message_reaction.hbs');
 var Dict = require('./dict').Dict;
+var people = require('./people');
 
 var reactions = (function () {
 var exports = {};

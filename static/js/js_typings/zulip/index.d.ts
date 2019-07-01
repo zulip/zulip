@@ -80,7 +80,6 @@ declare var notifications: any;
 declare var overlays: any;
 declare var padded_widget: any;
 declare var panels: any;
-declare var people: any;
 declare var pm_conversations: any;
 declare var pm_list: any;
 declare var pointer: any;

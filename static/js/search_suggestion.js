@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var search_suggestion = (function () {
 
 var exports = {};

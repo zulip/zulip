@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var compose_fade = (function () {
 
 var exports = {};

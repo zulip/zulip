@@ -1,4 +1,5 @@
 var render_typing_notifications = require('../templates/typing_notifications.hbs');
+var people = require('./people');
 
 var typing_events = (function () {
 var exports = {};

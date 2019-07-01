@@ -1,5 +1,6 @@
 var render_admin_user_group_list = require('../templates/admin_user_group_list.hbs');
 var render_confirm_delete_user = require('../templates/confirm_delete_user.hbs');
+var people = require('./people');
 
 var settings_user_groups = (function () {
 

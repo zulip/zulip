@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var click_handlers = (function () {
 
 // We don't actually export anything yet; this is just for consistency.

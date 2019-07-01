@@ -1,4 +1,5 @@
 var render_tab_bar = require('../templates/tab_bar.hbs');
+var people = require('./people');
 
 var tab_bar = (function () {
 

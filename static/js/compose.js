@@ -3,6 +3,7 @@ var render_compose_announce = require("../templates/compose_announce.hbs");
 var render_compose_invite_users = require("../templates/compose_invite_users.hbs");
 var render_compose_not_subscribed = require("../templates/compose_not_subscribed.hbs");
 var render_compose_private_stream_alert = require("../templates/compose_private_stream_alert.hbs");
+var people = require('./people');
 
 var compose = (function () {
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html

@@ -1,4 +1,5 @@
 var render_widgets_tictactoe_widget = require('../templates/widgets/tictactoe_widget.hbs');
+var people = require('./people');
 
 var tictactoe_widget = (function () {
 

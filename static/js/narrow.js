@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var narrow = (function () {
 
 var exports = {};

@@ -10,7 +10,7 @@ zrequire('util');
 assert(!util.is_all_or_everyone_mentioned('boring text'));
 assert(util.is_all_or_everyone_mentioned('mention @**everyone**'));
 
-// Let's test with people.js next.  We'll show this technique:
+// Let's test with people.ts next.  We'll show this technique:
 //  * get a false value
 //  * change the data
 //  * get a true value
@@ -26,7 +26,7 @@ assert(!people.is_known_user_id(isaac.user_id));
 people.add(isaac);
 assert(people.is_known_user_id(isaac.user_id));
 
-// The global.people object is a very fundamental object in the
+// The people module is a very fundamental object in the
 // Zulip app.  You can learn a lot more about it by reading
 // the tests in people.js in the same directory as this file.
 // Let's create the current user, which some future tests will

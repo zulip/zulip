@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var Filter = (function () {
 
 function zephyr_stream_name_match(message, operand) {

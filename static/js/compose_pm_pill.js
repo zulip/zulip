@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var compose_pm_pill = (function () {
 
 var exports = {};
@@ -24,7 +26,7 @@ exports.clear = function () {
 };
 
 exports.set_from_typeahead = function (person) {
-    // We expect person to be an object returned from people.js.
+    // We expect person to be an object returned from people.ts.
     user_pill.append_person({
         pill_widget: exports.widget,
         person: person,

@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var message_live_update = (function () {
 
 var exports = {};

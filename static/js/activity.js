@@ -1,5 +1,6 @@
 var render_group_pms = require('../templates/group_pms.hbs');
 var Dict = require('./dict').Dict;
+var people = require('./people');
 
 var activity = (function () {
 var exports = {};

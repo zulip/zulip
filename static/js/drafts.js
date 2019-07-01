@@ -1,4 +1,5 @@
 var render_draft_table_body = require('../templates/draft_table_body.hbs');
+var people = require('./people');
 
 var drafts = (function () {
 

@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var lightbox = (function () {
 var exports = {};
 

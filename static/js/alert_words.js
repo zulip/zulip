@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var alert_words = (function () {
 
 var exports = {};

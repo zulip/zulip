@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var server_events_dispatch = (function () {
 
 var exports = {};

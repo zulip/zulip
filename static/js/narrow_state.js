@@ -1,4 +1,5 @@
 var Dict = require('./dict').Dict;
+var people = require('./people');
 
 var narrow_state = (function () {
 

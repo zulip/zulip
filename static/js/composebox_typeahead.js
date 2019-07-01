@@ -1,4 +1,5 @@
 var autosize = require('autosize');
+var people = require('./people');
 
 var composebox_typeahead = (function () {
 

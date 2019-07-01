@@ -1,4 +1,5 @@
 var render_admin_export_list = require('../templates/admin_export_list.hbs');
+var people = require('./people');
 
 var settings_exports = (function () {
 

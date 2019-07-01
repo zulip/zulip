@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var echo = (function () {
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 

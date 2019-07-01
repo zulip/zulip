@@ -1,5 +1,6 @@
 var render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
 var Dict = require('./dict').Dict;
+var people = require('./people');
 
 var typeahead_helper = (function () {
 

@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var user_pill = (function () {
 
 var exports = {};

@@ -9,6 +9,7 @@ var render_user_group_info_popover_content = require('../templates/user_group_in
 var render_user_info_popover_content = require('../templates/user_info_popover_content.hbs');
 var render_user_info_popover_title = require('../templates/user_info_popover_title.hbs');
 var render_user_profile_modal = require("../templates/user_profile_modal.hbs");
+var people = require('./people');
 
 var popovers = (function () {
 

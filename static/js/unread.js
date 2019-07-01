@@ -1,4 +1,5 @@
 var Dict = require('./dict').Dict;
+var people = require('./people');
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
 // how this system is designed.

@@ -2,6 +2,7 @@ var render_bot_avatar_row = require('../templates/bot_avatar_row.hbs');
 var render_edit_bot = require('../templates/edit_bot.hbs');
 var render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");
 var render_settings_edit_outgoing_webhook_service = require("../templates/settings/edit_outgoing_webhook_service.hbs");
+var people = require('./people');
 
 var settings_bots = (function () {
 

@@ -1,6 +1,7 @@
 var render_message_edit_form = require('../templates/message_edit_form.hbs');
 var render_message_edit_history = require('../templates/message_edit_history.hbs');
 var render_topic_edit_form = require('../templates/topic_edit_form.hbs');
+var people = require('./people');
 
 var message_edit = (function () {
 var exports = {};

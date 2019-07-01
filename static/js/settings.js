@@ -1,4 +1,5 @@
 var render_settings_tab = require('../templates/settings_tab.hbs');
+var people = require('./people');
 
 var settings = (function () {
 

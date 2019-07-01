@@ -50,7 +50,6 @@ import "../muting.js";
 import "../muting_ui.js";
 import "../message_viewport.js";
 import "../rows.js";
-import "../people.js";
 import "../user_groups.js";
 import "../unread.js";
 import "../topic_list.js";

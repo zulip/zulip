@@ -1,3 +1,5 @@
+var people = require('./people');
+
 /* eslint indent: "off" */
 
 var bot_data = (function () {

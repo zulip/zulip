@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var transmit = (function () {
 
 var exports = {};

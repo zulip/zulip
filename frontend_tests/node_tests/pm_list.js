@@ -47,7 +47,7 @@ global.people.add_in_realm(me);
 global.people.initialize_current_user(me.user_id);
 
 run_test('get_conversation_li', () => {
-    var test_conversation = 'foo@example.com,bar@example.com'; // people.js
+    var test_conversation = 'foo@example.com,bar@example.com'; // people.ts
     pm_list.get_conversation_li(test_conversation);
 });
 

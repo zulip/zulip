@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var buddy_data = (function () {
 
 var exports = {};

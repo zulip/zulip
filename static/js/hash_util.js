@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var hash_util = (function () {
 
 var exports = {};

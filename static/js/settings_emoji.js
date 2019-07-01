@@ -1,5 +1,6 @@
 var render_admin_emoji_list = require('../templates/admin_emoji_list.hbs');
 var render_settings_emoji_settings_tip = require("../templates/settings/emoji_settings_tip.hbs");
+var people = require('./people');
 
 var settings_emoji = (function () {
 

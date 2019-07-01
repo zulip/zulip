@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var integration_bot_widget = (function () {
 
 var exports = {};

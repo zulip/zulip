@@ -1,6 +1,7 @@
 var render_admin_user_list = require("../templates/admin_user_list.hbs");
 var render_bot_owner_select = require("../templates/bot_owner_select.hbs");
 var render_user_info_form_modal = require('../templates/user_info_form_modal.hbs');
+var people = require('./people');
 
 var settings_users = (function () {
 

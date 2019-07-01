@@ -2,6 +2,7 @@ var render_bookend = require('../templates/bookend.hbs');
 var render_message_group = require('../templates/message_group.hbs');
 var render_recipient_row = require('../templates/recipient_row.hbs');
 var render_single_message = require('../templates/single_message.hbs');
+var people = require('./people');
 
 function MessageListView(list, table_name, collapse_messages) {
     this.list = list;

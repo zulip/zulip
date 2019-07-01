@@ -1,5 +1,6 @@
 var render_compose_notification = require('../templates/compose_notification.hbs');
 var render_notification = require('../templates/notification.hbs');
+var people = require('./people');
 
 var notifications = (function () {
 

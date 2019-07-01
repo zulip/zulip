@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var user_status_ui = (function () {
 
 var exports = {};

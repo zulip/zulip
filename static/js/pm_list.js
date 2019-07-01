@@ -1,4 +1,5 @@
 var render_sidebar_private_message_list = require('../templates/sidebar_private_message_list.hbs');
+var people = require('./people');
 
 var pm_list = (function () {
 

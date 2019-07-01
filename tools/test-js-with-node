@@ -53,7 +53,7 @@ enforce_fully_covered = {
     'static/js/message_store.js',
     'static/js/muting.js',
     'static/js/narrow_state.js',
-    'static/js/people.js',
+    'static/js/people.ts',
     'static/js/pm_conversations.js',
     'static/js/pm_list.js',
     'static/js/presence.js',

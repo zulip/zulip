@@ -3,6 +3,7 @@ var render_subscription = require('../templates/subscription.hbs');
 var render_subscription_settings = require('../templates/subscription_settings.hbs');
 var render_subscription_table_body = require('../templates/subscription_table_body.hbs');
 var render_subscriptions = require('../templates/subscriptions.hbs');
+var people = require('./people');
 
 var subs = (function () {
 

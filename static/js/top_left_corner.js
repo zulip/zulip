@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var top_left_corner = (function () {
 
 var exports = {};

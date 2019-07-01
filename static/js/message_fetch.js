@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var message_fetch = (function () {
 
 var exports = {};

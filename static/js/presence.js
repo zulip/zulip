@@ -1,3 +1,5 @@
+var people = require('./people');
+
 var presence = (function () {
 var exports = {};
 
