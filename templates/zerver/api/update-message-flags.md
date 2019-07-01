@@ -103,7 +103,7 @@ curl -X POST {{ api_url }}/v1/messages/flags \
                 </td>
             </tr>
             <tr>
-                <td>`mentioned`</td>
+                <td>`has_alert_word`</td>
                 <td>
                      Whether the message contains any of the current
                      user's [configured alert
