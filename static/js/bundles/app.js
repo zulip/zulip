@@ -2,7 +2,6 @@ import "js/bundles/commons.js";
 
 // Import Third party libraries
 import "third/bootstrap-notify/js/bootstrap-notify.js";
-import "third/html5-formdata/formdata.js";
 import "third/jquery-filedrop/jquery.filedrop.js";
 import "jquery-caret-plugin/src/jquery.caret.js";
 import "third/jquery-idle/jquery.idle.js";
