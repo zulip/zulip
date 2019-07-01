@@ -128,6 +128,12 @@ codename = distro_info['DISTRIB_CODENAME']
 family = distro_info['DISTRIB_FAMILY']
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
+    if codename == 'trusty':
+        print()
+        print("Ubuntu Trusty reached end-of-life upstream and is no longer a supported platform for Zulip")
+        if os.path.exists('/home/vagrant'):
+            print("It's recommended to run `vagrant destroy`, and rebuild the VM.\n")
+            print("See: https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html")
     sys.exit(1)
 
 POSTGRES_VERSION_MAP = {
