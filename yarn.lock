@@ -5756,6 +5756,11 @@ istanbul-reports@^2.2.4:
   dependencies:
     handlebars "^4.1.2"
 
+jquery-autosize@1.17.7:
+  version "1.17.7"
+  resolved "https://registry.yarnpkg.com/jquery-autosize/-/jquery-autosize-1.17.7.tgz#3e6292fac80b120e68e4ae8f44de3f82d427e5f7"
+  integrity sha1-PmKS+sgLEg5o5K6PRN4/gtQn5fc=
+
 jquery-validation@1.19.0:
   version "1.19.0"
   resolved "https://registry.yarnpkg.com/jquery-validation/-/jquery-validation-1.19.0.tgz#0fedf0c0483a030c4fff072398898ac18cfd6e40"

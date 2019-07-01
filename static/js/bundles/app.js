@@ -6,7 +6,7 @@ import "third/html5-formdata/formdata.js";
 import "third/jquery-filedrop/jquery.filedrop.js";
 import "third/jquery-caret/jquery.caret.1.5.2.js";
 import "third/jquery-idle/jquery.idle.js";
-import "third/jquery-autosize/jquery.autosize.js";
+import "jquery-autosize";
 import "third/spectrum/spectrum.js";
 import "third/sockjs/sockjs-0.3.4.js";
 import "third/marked/lib/marked.js";
