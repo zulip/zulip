@@ -284,18 +284,26 @@ v1_api_and_json_patterns = [
     url(r'^users/me/api_key/regenerate$', rest_dispatch,
         {'POST': 'zerver.views.user_settings.regenerate_api_key'}),
     url(r'^users/me/enter-sends$', rest_dispatch,
-        {'POST': 'zerver.views.user_settings.change_enter_sends'}),
+        {'POST': ('zerver.views.user_settings.change_enter_sends',
+                  # This endpoint should be folded into user settings
+                  {'intentionally_undocumented'})}),
     url(r'^users/me/avatar$', rest_dispatch,
         {'POST': 'zerver.views.user_settings.set_avatar_backend',
          'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
 
     # users/me/hotspots -> zerver.views.hotspots
     url(r'^users/me/hotspots$', rest_dispatch,
-        {'POST': 'zerver.views.hotspots.mark_hotspot_as_read'}),
+        {'POST': ('zerver.views.hotspots.mark_hotspot_as_read',
+                  # This endpoint is low priority for documentation as
+                  # it is part of the webapp-specific tutorial.
+                  {'intentionally_undocumented'})}),
 
     # users/me/tutorial_status -> zerver.views.tutorial
     url(r'^users/me/tutorial_status$', rest_dispatch,
-        {'POST': 'zerver.views.tutorial.set_tutorial_status'}),
+        {'POST': ('zerver.views.tutorial.set_tutorial_status',
+                  # This is a relic of an old Zulip tutorial model and
+                  # should be deleted.
+                  {'intentionally_undocumented'})}),
 
     # settings -> zerver.views.user_settings
     url(r'^settings$', rest_dispatch,
@@ -370,15 +378,20 @@ v1_api_and_json_patterns = [
          'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
 
     # report -> zerver.views.report
+    #
+    # These endpoints are for internal error/performance reporting
+    # from the browser to the webapp, and we don't expect to ever
+    # include in our API documentation.
     url(r'^report/error$', rest_dispatch,
         # Logged-out browsers can hit this endpoint, for portico page JS exceptions.
-        {'POST': ('zerver.views.report.report_error', {'allow_anonymous_user_web'})}),
+        {'POST': ('zerver.views.report.report_error', {'allow_anonymous_user_web',
+                                                       'intentionally_undocumented'})}),
     url(r'^report/send_times$', rest_dispatch,
-        {'POST': 'zerver.views.report.report_send_times'}),
+        {'POST': ('zerver.views.report.report_send_times', {'intentionally_undocumented'})}),
     url(r'^report/narrow_times$', rest_dispatch,
-        {'POST': 'zerver.views.report.report_narrow_times'}),
+        {'POST': ('zerver.views.report.report_narrow_times', {'intentionally_undocumented'})}),
     url(r'^report/unnarrow_times$', rest_dispatch,
-        {'POST': 'zerver.views.report.report_unnarrow_times'}),
+        {'POST': ('zerver.views.report.report_unnarrow_times', {'intentionally_undocumented'})}),
 
     # Used to generate a Zoom video call URL
     url(r'^calls/create$', rest_dispatch,

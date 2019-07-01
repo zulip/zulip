@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import mock
-from typing import Dict, Any
+from typing import Dict, Any, Set
 
 from django.conf import settings
 
@@ -147,21 +147,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Verifies that every REQ-defined argument appears in our API
         # documentation for the target endpoint where possible.
 
-        # TODO: Potentially this should move into configuration flags
-        # we attach to the endpoint in zproject/urls.py, to indicate
-        # it's an endpoint with no documentation by design.
-        NO_API_DOCS = set([
-            # These endpoints are for webapp-only use and will likely
-            # never have docs.
-            '/report/narrow_times',
-            '/report/send_times',
-            '/report/unnarrow_times',
-            '/report/error',
-            '/users/me/tutorial_status',
-            '/users/me/hotspots',
-            # These should probably be eliminated
-            '/users/me/enter-sends',
-            # These should have docs added
+        # These should have docs added
+        PENDING_ENDPOINTS = set([
             '/users/me/avatar',
             '/user_uploads',
             '/settings/display',
@@ -232,8 +219,9 @@ class OpenAPIArgumentsTest(ZulipTestCase):
             for method, value in p.default_args.items():
                 if isinstance(value, str):
                     function = value
+                    tags = set()  # type: Set[str]
                 else:
-                    function = value[0]
+                    function, tags = value
                 # Our accounting logic in the `has_request_variables()`
                 # code means we have the list of all arguments
                 # accepted by every view function in arguments_map.
@@ -258,10 +246,20 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                 # some URLs.
                 url_pattern = '/' + regex_pattern[1:][:-1]
 
-                if url_pattern in NO_API_DOCS:
+                if url_pattern in PENDING_ENDPOINTS:
+                    # TODO: Once these endpoints have been aptly documented,
+                    # we should remove this block and the associated List.
+                    continue
+                if "intentionally_undocumented" in tags:
                     # Don't do any validation on endpoints with no API
                     # documentation by design.
-                    continue
+                    try:
+                        get_openapi_parameters(url_pattern, method)
+                        raise AssertionError("We found some OpenAPI \
+documentation for %s %s, so maybe we shouldn't mark it as intentionally \
+undocumented in the urls." % (method, url_pattern))
+                    except KeyError:
+                        continue
                 if "(?P<" in url_pattern:
                     # See above TODO about our matching algorithm not
                     # handling captures in the regular expressions.
