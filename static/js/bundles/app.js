@@ -4,7 +4,7 @@ import "js/bundles/commons.js";
 import "third/bootstrap-notify/js/bootstrap-notify.js";
 import "third/html5-formdata/formdata.js";
 import "third/jquery-filedrop/jquery.filedrop.js";
-import "third/jquery-caret/jquery.caret.1.5.2.js";
+import "jquery-caret-plugin/src/jquery.caret.js";
 import "third/jquery-idle/jquery.idle.js";
 import "jquery-autosize";
 import "third/spectrum/spectrum.js";
