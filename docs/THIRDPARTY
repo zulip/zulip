@@ -143,10 +143,6 @@ Files: static/third/spectrum/*
 Copyright: 2013 Brian Grinstead
 License: Expat
 
-Files: static/third/zocial/*
-Copyright: Sam Collins
-License: Expat
-
 Files: zerver/lib/bugdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg
 License: BSD-3-Clause
