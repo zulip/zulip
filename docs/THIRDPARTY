@@ -112,11 +112,6 @@ Files: static/generated/emoji/images/emoji/unicode/* tools/setup/emoji/*.ttf
 Copyright: Google, Inc.
 License: Apache-2.0
 
-Files: static/third/html5-formdata/formdata.js
-Copyright: 2010 François de Metz
-License: Expat
-Comment: See https://github.com/francois2metz/html5-formdata
-
 Files: src/zulip/static/third/jquery/*
 Copyright: 2011, John Resig
  2011, The Dojo Foundation
