@@ -394,9 +394,39 @@
       "text_content": "_foo_"
     },
     {
-      "name": "star_strong_em",
+      "name": "strong_asterisk_em_asterisk",
       "input": "***foo***",
       "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "strong_asterisk_em_underscore",
+      "input": "**_foo_**",
+      "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "strong_underscore_em_asterisk",
+      "input": "__*foo*__",
+      "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "strong_underscore_em_underscore",
+      "input": "___foo___",
+      "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "em_asterisk_strong_underscore",
+      "input": "*__foo__*",
+      "expected_output": "<p><em><strong>foo</strong></em></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "em_underscore_strong_asterisk",
+      "input": "_**foo**_",
+      "expected_output": "<p><em><strong>foo</strong></em></p>",
       "text_content": "foo"
     },
     {
