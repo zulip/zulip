@@ -258,32 +258,14 @@ class SlackImporter(ZulipTestCase):
                          zerver_subscription[3]['recipient'])
         self.assertEqual(zerver_subscription[1]['pin_to_top'], False)
 
-    @mock.patch("zerver.data_import.slack.get_data_file")
-    def test_channels_to_zerver_stream(self, mock_get_data_file: mock.Mock) -> None:
-
+    def test_channels_to_zerver_stream(self) -> None:
         added_users = {"U061A1R2R": 1, "U061A3E0G": 8, "U061A5N1G": 7, "U064KUGRJ": 5}
         zerver_userprofile = [{'id': 1}, {'id': 8}, {'id': 7}, {'id': 5}]
         realm_id = 3
 
-        channel_data = [{'id': "C061A0WJG", 'name': 'random', 'created': '1433558319',
-                         'is_general': False, 'members': ['U061A1R2R', 'U061A5N1G'],
-                         'is_archived': True, 'topic': {'value': 'random'},
-                         'purpose': {'value': 'no purpose'}},
-                        {'id': "C061A0YJG", 'name': 'general', 'created': '1433559319',
-                         'is_general': False, 'is_archived': False,
-                         'members': ['U061A1R2R', 'U061A5N1G', 'U064KUGRJ'],
-                         'topic': {'value': 'general'}, 'purpose': {'value': 'general'}},
-                        {'id': "C061A0YJP", 'name': 'general1', 'created': '1433559319',
-                         'is_general': False, 'is_archived': False,
-                         'members': ['U061A1R2R'],
-                         'topic': {'value': 'general channel'}, 'purpose': {'value': 'For everyone'}},
-                        {'id': "C061A0HJG", 'name': 'feedback', 'created': '1433558359',
-                         'is_general': False, 'members': ['U061A3E0G'], 'is_archived': False,
-                         'topic': {'value': ''}, 'purpose': {'value': ''}}]
-        mock_get_data_file.side_effect = [channel_data, []]
+        channel_to_zerver_stream_output = channels_to_zerver_stream(self.fixture_file_name("", "slack_fixtures"),
+                                                                    realm_id, added_users, zerver_userprofile)
 
-        channel_to_zerver_stream_output = channels_to_zerver_stream('./random_path', realm_id, added_users,
-                                                                    zerver_userprofile)
         zerver_defaultstream = channel_to_zerver_stream_output[0]
         zerver_stream = channel_to_zerver_stream_output[1]
         added_channels = channel_to_zerver_stream_output[2]
@@ -320,8 +302,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_recipient[4]['type'], 1)
 
         # stream mapping
-        self.assertEqual(zerver_stream[0]['name'], channel_data[0]['name'])
-        self.assertEqual(zerver_stream[0]['deactivated'], channel_data[0]['is_archived'])
+        self.assertEqual(zerver_stream[0]['name'], "random")
+        self.assertEqual(zerver_stream[0]['deactivated'], True)
         self.assertEqual(zerver_stream[0]['description'], 'no purpose')
         self.assertEqual(zerver_stream[0]['invite_only'], False)
         self.assertEqual(zerver_stream[0]['realm'], realm_id)
