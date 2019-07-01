@@ -281,7 +281,7 @@ def install_system_deps():
     # type: () -> None
 
     # By doing list -> set -> list conversion, we remove duplicates.
-    deps_to_install = list(set(SYSTEM_DEPENDENCIES))
+    deps_to_install = sorted(set(SYSTEM_DEPENDENCIES))
 
     if family == 'redhat':
         install_yum_deps(deps_to_install)
