@@ -10,7 +10,7 @@ from typing import List, Dict, Any, Optional, Set, Callable, Iterable, Tuple, Ty
 from django.forms.models import model_to_dict
 
 from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
-    Attachment, Stream, Message, UserProfile
+    Attachment, Stream, Message, UserProfile, Huddle
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
@@ -303,6 +303,7 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
                        recipient_id: int,
                        mentioned_user_ids: List[int],
                        message_id: int,
+                       is_private: bool,
                        long_term_idle: Optional[Set[int]]=None) -> Tuple[int, int]:
     user_ids = subscriber_map.get(recipient_id, set())
 
@@ -314,10 +315,6 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
     if user_ids:
         for user_id in sorted(user_ids):
             is_mentioned = user_id in mentioned_user_ids
-
-            # Slack and Gitter don't yet triage private messages.
-            # It's possible we don't even get PMs from them.
-            is_private = False
 
             if not is_mentioned and not is_private and user_id in long_term_idle:
                 # these users are long-term idle
@@ -378,6 +375,12 @@ def build_stream(date_created: Any, realm_id: int, name: str,
                                 exclude=['realm'])
     stream_dict['realm'] = realm_id
     return stream_dict
+
+def build_huddle(huddle_id: int) -> ZerverFieldsT:
+    huddle = Huddle(
+        id=huddle_id
+    )
+    return model_to_dict(huddle)
 
 def build_message(topic_name: str, pub_date: float, message_id: int, content: str,
                   rendered_content: Optional[str], user_id: int, recipient_id: int,

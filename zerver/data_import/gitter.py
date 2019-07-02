@@ -191,6 +191,7 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
                 recipient_id=recipient_id,
                 mentioned_user_ids=mentioned_user_ids,
                 message_id=message_id,
+                is_private=False,
             )
 
             message_id += 1
