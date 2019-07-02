@@ -28,10 +28,12 @@ from zerver.lib.test_helpers import (
 import os
 import time
 import unittest
+import shutil
 
 from multiprocessing.sharedctypes import Synchronized
 
-from scripts.lib.zulip_tools import get_dev_uuid_var_path, TEMPLATE_DATABASE_DIR
+from scripts.lib.zulip_tools import get_dev_uuid_var_path, TEMPLATE_DATABASE_DIR, \
+    get_or_create_dev_uuid_var_path
 
 # We need to pick an ID for this test-backend invocation, and store it
 # in this global so it can be used in init_worker; this is used to
@@ -136,6 +138,9 @@ def run_test(test: TestCase, result: TestResult) -> bool:
 
     test._post_teardown()
     return failed
+
+# The root directory of a particular run of the test suite.
+TEST_RUN_DIR = ''
 
 class TextTestResult(runner.TextTestResult):
     """
@@ -301,6 +306,11 @@ def init_worker(counter: Synchronized) -> None:
     destroy_test_databases(_worker_id)
     create_test_databases(_worker_id)
 
+    # Allow each child process to write to a unique directory within `TEST_RUN_DIR`.
+    worker_path = os.path.join(TEST_RUN_DIR, 'worker_{}'.format(_worker_id))
+    os.makedirs(worker_path, exist_ok=True)
+    settings.TEST_WORKER_DIR = worker_path
+
     # Every process should upload to a separate directory so that
     # race conditions can be avoided.
     settings.LOCAL_UPLOADS_DIR = '{}_{}'.format(settings.LOCAL_UPLOADS_DIR,
@@ -433,6 +443,13 @@ class Runner(DiscoverRunner):
                     f.write(str(random_id_range_start + (index + 1)) + "\n")
             else:
                 f.write(str(random_id_range_start) + "\n")
+
+        global TEST_RUN_DIR
+        TEST_RUN_DIR = get_or_create_dev_uuid_var_path(os.path.join('test-backend',
+                                                                    'run_{}'.format(random_id_range_start)))
+
+        # We need to set the top-level value for `TEST_WORKER_DIR` here, before the suite is built.
+        settings.TEST_WORKER_DIR = TEST_RUN_DIR
         return super().setup_test_environment(*args, **kwargs)
 
     def teardown_test_environment(self, *args: Any, **kwargs: Any) -> Any:
@@ -455,6 +472,9 @@ class Runner(DiscoverRunner):
                                 str(random_id_range_start))
         os.remove(filepath)
 
+        # Clean up our test runs root directory.
+        if os.path.exists(TEST_RUN_DIR):
+            shutil.rmtree(TEST_RUN_DIR)
         return super().teardown_test_environment(*args, **kwargs)
 
     def test_imports(self, test_labels: List[str], suite: unittest.TestSuite) -> None:

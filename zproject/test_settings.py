@@ -129,6 +129,9 @@ ENABLE_FILE_LINKS = True
 
 LOCAL_UPLOADS_DIR = get_or_create_dev_uuid_var_path('test-backend/test_uploads')
 
+# Set in a running process of `test-backend`.
+TEST_WORKER_DIR = ''
+
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
 S3_AUTH_UPLOADS_BUCKET = 'test-authed-bucket'
