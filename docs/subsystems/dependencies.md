@@ -318,7 +318,7 @@ several files from the source data, which we manage similar to our
 emoji, but without the caching (and thus without the
 garbage-collection).  New translations data is downloaded from
 Transifex and then compiled to generate both the production locale
-files and also language data in `static/locale/language*.json` using
+files and also language data in `locale/language*.json` using
 `manage.py compilemessages`, which extends the default Django
 implementation of that tool.
 

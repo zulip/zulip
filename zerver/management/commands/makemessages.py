@@ -78,7 +78,7 @@ class Command(makemessages.Command):
                             default='static/templates',
                             help='Name of the Handlebars template directory')
         parser.add_argument('--frontend-output', type=str,
-                            default='static/locale',
+                            default='locale',
                             help='Name of the frontend messages output directory')
         parser.add_argument('--frontend-namespace', type=str,
                             default='translations.json',

@@ -34,6 +34,12 @@ package-lock.json
 # Dockerfiles generated for CircleCI
 /tools/circleci/images
 
+# Generated i18n data
+/locale/en
+/locale/language_options.json
+/locale/language_name_map.json
+/locale/*/mobile.json
+
 # Static build
 *.mo
 npm-debug.log

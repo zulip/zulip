@@ -6,12 +6,12 @@ from subprocess import check_output
 from typing import Dict, List
 
 def get_json_filename(locale: str) -> str:
-    return "static/locale/{}/mobile.json".format(locale)
+    return "locale/{}/mobile.json".format(locale)
 
 def get_locales() -> List[str]:
-    tracked_files = check_output(['git', 'ls-files', 'static/locale'])
+    tracked_files = check_output(['git', 'ls-files', 'locale'])
     tracked_files = tracked_files.decode().split()
-    regex = re.compile(r'static/locale/(\w+)/LC_MESSAGES/django.po')
+    regex = re.compile(r'locale/(\w+)/LC_MESSAGES/django.po')
     locales = ['en']
     for tracked_file in tracked_files:
         matched = regex.search(tracked_file)
@@ -37,7 +37,7 @@ for locale in get_locales():
         translation_stats.update({locale: stats})
         locale_paths.append(path)
 
-stats_path = os.path.join('static', 'locale', 'mobile_info.json')
+stats_path = os.path.join('locale', 'mobile_info.json')
 with open(stats_path, 'w') as f:
     json.dump(translation_stats, f, indent=2, sort_keys=True)
     f.write('\n')

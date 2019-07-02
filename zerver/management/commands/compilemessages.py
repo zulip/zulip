@@ -27,13 +27,6 @@ class Command(compilemessages.Command):
             help='Stop execution in case of errors.')
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if settings.PRODUCTION:
-            # HACK: When using upgrade-zulip-from-git, we're in a
-            # production environment where STATIC_ROOT will include
-            # past versions; this ensures we only process the current
-            # version
-            settings.STATIC_ROOT = os.path.join(settings.DEPLOY_ROOT, "static")
-            settings.LOCALE_PATHS = (os.path.join(settings.DEPLOY_ROOT, 'static/locale'),)
         super().handle(*args, **options)
         self.strict = options['strict']
         self.extract_language_options()
@@ -41,9 +34,9 @@ class Command(compilemessages.Command):
 
     def create_language_name_map(self) -> None:
         join = os.path.join
-        static_root = settings.STATIC_ROOT
-        path = join(static_root, 'locale', 'language_options.json')
-        output_path = join(static_root, 'locale', 'language_name_map.json')
+        deploy_root = settings.DEPLOY_ROOT
+        path = join(deploy_root, 'locale', 'language_options.json')
+        output_path = join(deploy_root, 'locale', 'language_name_map.json')
 
         with open(path, 'r') as reader:
             languages = ujson.load(reader)
@@ -80,9 +73,9 @@ class Command(compilemessages.Command):
                 raise Exception("Unknown language %s" % (locale,))
 
     def get_locales(self) -> List[str]:
-        tracked_files = check_output(['git', 'ls-files', 'static/locale'])
+        tracked_files = check_output(['git', 'ls-files', 'locale'])
         tracked_files = tracked_files.decode().split()
-        regex = re.compile(r'static/locale/(\w+)/LC_MESSAGES/django.po')
+        regex = re.compile(r'locale/(\w+)/LC_MESSAGES/django.po')
         locales = ['en']
         for tracked_file in tracked_files:
             matched = regex.search(tracked_file)
@@ -92,7 +85,7 @@ class Command(compilemessages.Command):
         return locales
 
     def extract_language_options(self) -> None:
-        locale_path = "{}/locale".format(settings.STATIC_ROOT)
+        locale_path = "{}/locale".format(settings.DEPLOY_ROOT)
         output_path = "{}/language_options.json".format(locale_path)
 
         data = {'languages': []}  # type: Dict[str, List[Dict[str, Any]]]

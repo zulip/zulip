@@ -33,12 +33,12 @@ if __name__ == '__main__':
         subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'],
                         stderr=subprocess.STDOUT)
 
-    with open('static/locale/en/translations.json') as f:
+    with open('locale/en/translations.json') as f:
         data = json.load(f)
         frontend = check_capitalization(list(data.keys()))
         frontend_errors, frontend_ignored, banned_errors_front = frontend
 
-    with open('static/locale/en/LC_MESSAGES/django.po') as f:
+    with open('locale/en/LC_MESSAGES/django.po') as f:
         rows = [r for r in DJANGO_PO_REGEX.findall(f.read()) if r]
         backend = check_capitalization(rows)
         backend_errors, backend_ignored, banned_errors_back = backend

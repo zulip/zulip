@@ -133,7 +133,7 @@ in our emails.
 
 One can test whether you did the translating part right by running
 `tools/inline-email-css && manage.py makemessages` and then searching
-for the strings in `static/locale/en/LC_MESSAGES/django.po`; if there
+for the strings in `locale/en/LC_MESSAGES/django.po`; if there
 are multiple copies or they contain CSS colors, you did it wrong.
 
 A final note for translating emails is that strings that are sent to

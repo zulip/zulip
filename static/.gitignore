@@ -16,11 +16,5 @@
 # From tools/setup/generate-custom-icon-webfont
 /generated/icons/
 
-# Generated i18n data
-/locale/en
-/locale/language_options.json
-/locale/language_name_map.json
-/locale/*/mobile.json
-
 # Legacy emoji data directory
 /third/emoji-data

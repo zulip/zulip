@@ -169,9 +169,7 @@ This is used to deploy essentially all configuration in production.
 
 ### Translation files
 
-* `locale/` Backend (Django) translations data files.
-
-* `static/locale/` Frontend translations data files.
+* `locale/` Backend (Django) and frontend translation data files.
 
 -----------------------------------------------------------------------
 
