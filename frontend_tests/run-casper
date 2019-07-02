@@ -110,8 +110,11 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     if ret != 0:
         print("""
 The Casper frontend tests failed!  For help debugging, read:
-  https://zulip.readthedocs.io/en/latest/testing/testing-with-casper.html
-""", file=sys.stderr)
+  https://zulip.readthedocs.io/en/latest/testing/testing-with-casper.html""", file=sys.stderr)
+        if os.environ.get("CIRCLECI"):
+            print("", file=sys.stderr)
+            print("In CircleCI, the Artifacts tab contains screenshots of the failure.", file=sys.stderr)
+            print("", file=sys.stderr)
 
         sys.exit(ret)
 
