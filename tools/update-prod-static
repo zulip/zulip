@@ -100,10 +100,6 @@ os.makedirs('prod-static', exist_ok=True)
 
 shutil.move(os.path.join(settings.STATIC_ROOT, 'source-map'), 'prod-static/source-map')
 
-# Move language_options.json to the production release
-run(['cp', '-aT', 'static/locale', os.path.join(settings.STATIC_ROOT, 'locale')],
-    stdout=fp, stderr=fp)
-
 # Generate /team page markdown for authors
 authors_cmd = ['./tools/update-authors-json']
 if os.environ.get("TRAVIS"):

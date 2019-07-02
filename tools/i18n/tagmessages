@@ -19,7 +19,7 @@ project_slug = 'zulip-test'  # HACK hardcode
 tools_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(tools_dir)
 # Choose any translation file for processing all strings.
-po = polib.pofile(os.path.join(root_dir, 'static', 'locale', 'de', 'LC_MESSAGES', 'django.po'))
+po = polib.pofile(os.path.join(root_dir, 'locale', 'de', 'LC_MESSAGES', 'django.po'))
 for entry in po:
     tag = entry.comment
     if tag:

@@ -889,7 +889,7 @@ else:
 
 # If changing this, you need to also the hack modifications to this in
 # our compilemessages management command.
-LOCALE_PATHS = (os.path.join(STATIC_ROOT, 'locale'),)
+LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, 'locale'),)
 
 # We want all temporary uploaded files to be stored on disk.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0

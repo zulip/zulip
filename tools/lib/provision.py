@@ -561,8 +561,8 @@ def main(options):
         # Consider updating generated translations data: both `.mo`
         # files and `language-options.json`.
         paths = ['zerver/management/commands/compilemessages.py']
-        paths += glob.glob('static/locale/*/LC_MESSAGES/*.po')
-        paths += glob.glob('static/locale/*/translations.json')
+        paths += glob.glob('locale/*/LC_MESSAGES/*.po')
+        paths += glob.glob('locale/*/translations.json')
 
         if file_or_package_hash_updated(paths, "last_compilemessages_hash", options.is_force):
             run(["./manage.py", "compilemessages"])

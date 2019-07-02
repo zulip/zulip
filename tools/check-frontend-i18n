@@ -33,7 +33,7 @@ if __name__ == '__main__':
         subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'],
                         stderr=subprocess.STDOUT)
 
-    with open('static/locale/en/translations.json') as f:
+    with open('locale/en/translations.json') as f:
         data = json.load(f)
 
     found = find_handlebars(list(data.keys()))

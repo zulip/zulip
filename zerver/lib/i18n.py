@@ -26,7 +26,7 @@ def with_language(string: str, language: str) -> str:
 
 @lru_cache()
 def get_language_list() -> List[Dict[str, Any]]:
-    path = os.path.join(settings.STATIC_ROOT, 'locale', 'language_name_map.json')
+    path = os.path.join(settings.DEPLOY_ROOT, 'locale', 'language_name_map.json')
     with open(path, 'r') as reader:
         languages = ujson.load(reader)
         return languages['name_map']
@@ -88,7 +88,7 @@ def get_language_translation_data(language: str) -> Dict[str, str]:
         language = 'zh_Hant'
     elif language == 'id-id':
         language = 'id_ID'
-    path = os.path.join(settings.STATIC_ROOT, 'locale', language, 'translations.json')
+    path = os.path.join(settings.DEPLOY_ROOT, 'locale', language, 'translations.json')
     try:
         with open(path, 'r') as reader:
             return ujson.load(reader)
