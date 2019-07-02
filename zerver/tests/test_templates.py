@@ -55,30 +55,13 @@ class TemplateTestCase(ZulipTestCase):
         ]
 
         logged_out = [
-            'confirmation/confirm.html',  # seems unused
             'zerver/compare.html',
             'zerver/footer.html',
         ]
 
         logged_in = [
             'analytics/stats.html',
-            'zerver/drafts.html',
-            'zerver/home.html',
-            'zerver/invite_user.html',
-            'zerver/keyboard_shortcuts.html',
-            'zerver/left_sidebar.html',
             'zerver/landing_nav.html',
-            'zerver/logout.html',
-            'zerver/markdown_help.html',
-            'zerver/navbar.html',
-            'zerver/right_sidebar.html',
-            'zerver/search_operators.html',
-            'zerver/settings_overlay.html',
-            'zerver/settings_sidebar.html',
-            'zerver/stream_creation_prompt.html',
-            'zerver/subscriptions.html',
-            'zerver/message_history.html',
-            'zerver/delete_message.html',
         ]
         unusual = [
             'zerver/emails/confirm_new_email.subject.txt',
@@ -87,7 +70,6 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/emails/notify_change_in_email.subject.txt',
             'zerver/emails/compiled/notify_change_in_email.html',
             'zerver/emails/digest.subject.txt',
-            'zerver/emails/digest.html',
             'zerver/emails/digest.txt',
             'zerver/emails/followup_day1.subject.txt',
             'zerver/emails/compiled/followup_day1.html',
@@ -96,7 +78,6 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/emails/followup_day2.txt',
             'zerver/emails/compiled/followup_day2.html',
             'zerver/emails/compiled/password_reset.html',
-            'corporate/mit.html',
             'corporate/zephyr.html',
             'corporate/zephyr-mirror.html',
             'pipeline/css.jinja',
@@ -106,20 +87,14 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/zulipchat_migration_tos.html',
             'zilencer/enterprise_tos_accept_body.txt',
             'zerver/invalid_email.html',
-            'zerver/topic_is_muted.html',
-            'zerver/bankruptcy.html',
-            'zerver/lightbox_overlay.html',
             'zerver/invalid_realm.html',
-            'zerver/compose.html',
             'zerver/debug.html',
             'zerver/base.html',
-            'zerver/api_content.json',
             'zerver/portico-header.html',
-            'zerver/deprecation_notice.html',
             'two_factor/_wizard_forms.html',
         ]
 
-        integrations_regexp = re.compile('zerver/integrations/.*.html')
+        integrations_regexp = re.compile(r'^zerver/integrations/.*\.html$')
 
         # Since static/generated/bots/ is searched by Jinja2 for templates,
         # it mistakes logo files under that directory for templates.
@@ -129,7 +104,9 @@ class TemplateTestCase(ZulipTestCase):
                                                                      'zerver/terms.html',
                                                                      'zerver/privacy.html']
 
-        templates = [t for t in get_all_templates() if not (
+        all_templates = get_all_templates()
+        self.assertEqual(set(skip) - set(all_templates), set())
+        templates = [t for t in all_templates if not (
             t in skip or integrations_regexp.match(t) or bot_logos_regexp.match(t))]
         self.render_templates(templates, self.get_context())
 
