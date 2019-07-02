@@ -28,20 +28,22 @@ integration!
    the following JSON into the **Content** box:
 
     ```
+    {% raw %}
     {"freshdesk_webhook":
         {
-            "triggered_event":"&#123;&#123;triggered_event&#125;&#125;",
-            "ticket_id":"&#123;&#123;ticket.id&#125;&#125;",
-            "ticket_url":"&#123;&#123;ticket.url&#125;&#125;",
-            "ticket_type":"&#123;&#123;ticket.ticket_type&#125;&#125;",
-            "ticket_subject":"&#123;&#123;ticket.subject&#125;&#125;",
-            "ticket_description":"&#123;&#123;ticket.description&#125;&#125;",
-            "ticket_status":"&#123;&#123;ticket.status&#125;&#125;",
-            "ticket_priority":"&#123;&#123;ticket.priority&#125;&#125;",
-            "requester_name":"&#123;&#123;ticket.requester.name&#125;&#125;",
-            "requester_email":"&#123;&#123;ticket.requester.email&#125;&#125;",
+            "triggered_event":"{{triggered_event}}",
+            "ticket_id":"{{ticket.id}}",
+            "ticket_url":"{{ticket.url}}",
+            "ticket_type":"{{ticket.ticket_type}}",
+            "ticket_subject":"{{ticket.subject}}",
+            "ticket_description":"{{ticket.description}}",
+            "ticket_status":"{{ticket.status}}",
+            "ticket_priority":"{{ticket.priority}}",
+            "requester_name":"{{ticket.requester.name}}",
+            "requester_email":"{{ticket.requester.email}}",
         }
     }
+    {% endraw %}
     ```
 
     Click **Save**.
@@ -74,20 +76,22 @@ integration!
    the following JSON into the **Content** box:
 
     ```
+    {% raw %}
     {"freshdesk_webhook":
         {
-            "triggered_event":"&#123;&#123;triggered_event&#125;&#125;",
-            "ticket_id":"&#123;&#123;ticket.id&#125;&#125;",
-            "ticket_url":"&#123;&#123;ticket.url&#125;&#125;",
-            "ticket_type":"&#123;&#123;ticket.ticket_type&#125;&#125;",
-            "ticket_subject":"&#123;&#123;ticket.subject&#125;&#125;",
-            "ticket_description":"&#123;&#123;ticket.description&#125;&#125;",
-            "ticket_status":"&#123;&#123;ticket.status&#125;&#125;",
-            "ticket_priority":"&#123;&#123;ticket.priority&#125;&#125;",
-            "requester_name":"&#123;&#123;ticket.requester.name&#125;&#125;",
-            "requester_email":"&#123;&#123;ticket.requester.email&#125;&#125;",
+            "triggered_event":"{{triggered_event}}",
+            "ticket_id":"{{ticket.id}}",
+            "ticket_url":"{{ticket.url}}",
+            "ticket_type":"{{ticket.ticket_type}}",
+            "ticket_subject":"{{ticket.subject}}",
+            "ticket_description":"{{ticket.description}}",
+            "ticket_status":"{{ticket.status}}",
+            "ticket_priority":"{{ticket.priority}}",
+            "requester_name":"{{ticket.requester.name}}",
+            "requester_email":"{{ticket.requester.email}}",
         }
     }
+    {% endraw %}
     ```
 
     Click **Save**.
