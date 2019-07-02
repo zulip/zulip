@@ -55,9 +55,6 @@ class ApiURLView(TemplateView):
         add_api_uri_context(context, self.request)
         return context
 
-class APIView(ApiURLView):
-    template_name = 'zerver/api.html'
-
 
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
