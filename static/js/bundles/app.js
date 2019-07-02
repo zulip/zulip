@@ -1,4 +1,4 @@
-import "./commons.js";
+import "./common.js";
 
 // Import Third party libraries
 import "../../third/bootstrap-notify/js/bootstrap-notify.js";
