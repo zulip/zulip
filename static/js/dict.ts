@@ -70,7 +70,7 @@ export class Dict<K, V> {
         return dict;
     }
 
-    get(key: K): V | undefined {
+    get(key: K | string): V | undefined {
         const mapping = this._items[this._munge(key)];
         if (mapping === undefined) {
             return undefined;
@@ -95,11 +95,11 @@ export class Dict<K, V> {
         return mapping.v;
     }
 
-    has(key: K): boolean {
+    has(key: K | string): boolean {
         return _.has(this._items, this._munge(key));
     }
 
-    del(key: K): void {
+    del(key: K | string): void {
         delete this._items[this._munge(key)];
     }
 
@@ -133,7 +133,7 @@ export class Dict<K, V> {
     }
 
     // Handle case-folding of keys and the empty string.
-    private _munge(key: K): string | undefined {
+    private _munge(key: K | string): string | undefined {
         if (key === undefined) {
             blueslip.error("Tried to call a Dict method with an undefined key.");
             return undefined;
