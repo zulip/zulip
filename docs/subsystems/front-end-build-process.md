@@ -67,7 +67,7 @@ needs to be accessible from one of the entry points defined in
   in `static/js/bundles/app.js`.
 * If it needs to be available both in the app and all
   logged-out/portico pages, import it to
-  `static/js/bundles/commons.js` which itself is imported to the
+  `static/js/bundles/common.js` which itself is imported to the
   `app` and `common` bundles.
 * If it's just used on a single standalone page (e.g. `/stats`),
   create a new entry point in `tools/webpack.assets.json`. Use the

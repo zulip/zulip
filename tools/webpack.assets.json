@@ -39,7 +39,7 @@
         "./static/styles/portico/portico-styles.scss"
     ],
     "common": [
-        "./static/js/bundles/commons.js"
+        "./static/js/bundles/common.js"
     ],
     "help": [
         "simplebar/dist/simplebar.css",
