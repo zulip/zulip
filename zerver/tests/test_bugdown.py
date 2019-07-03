@@ -428,14 +428,8 @@ class BugdownTest(ZulipTestCase):
     def test_inline_file(self) -> None:
         msg = 'Check out this file file:///Volumes/myserver/Users/Shared/pi.py'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py" title="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>')
-
-        bugdown.clear_state_for_testing()
-        with self.settings(ENABLE_FILE_LINKS=False):
-            realm = Realm.objects.create(string_id='file_links_test')
-            bugdown.maybe_update_markdown_engines(realm.id, False)
-            converted = bugdown.convert(msg, message_realm=realm)
-            self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
+        expected = '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py" title="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>'
+        self.assertEqual(converted, expected)
 
     def test_inline_bitcoin(self) -> None:
         msg = 'To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin'

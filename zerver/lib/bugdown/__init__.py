@@ -163,7 +163,7 @@ def get_web_link_regex() -> str:
         nested_paren_chunk = nested_paren_chunk % (paren_group,)
     nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
 
-    file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
+    file_links = r"| (?:file://(/[^/ ]*)+/?)"
     REGEX = r"""
         (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
                              # (Double-negative lookbehind to allow start-of-string)
@@ -179,7 +179,7 @@ def get_web_link_regex() -> str:
                 %s           # zero-to-6 sets of paired parens
             )?)              # Path is optional
             | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
-            %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
+            %s               # File path start with file:///
             | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{25,34})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
         )
         (?=                            # URL must be followed by (not included in group)
@@ -192,8 +192,8 @@ def get_web_link_regex() -> str:
 
 def clear_state_for_testing() -> None:
     # The link regex never changes in production, but our tests
-    # try out both sides of ENABLE_FILE_LINKS, so we need
-    # a way to clear it.
+    # try out multiple forms of the link regex, so we need a way
+    # to clear it.
     global LINK_REGEX
     LINK_REGEX = None
 
