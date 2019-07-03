@@ -25,8 +25,8 @@ def build_for_prod_or_casper(quiet):
     # type: (bool) -> NoReturn
     """Builds for production, writing the output to disk"""
 
-    webpack_args = ['node', 'node_modules/.bin/webpack-cli',
-                    '--config', 'tools/webpack.config.ts', '-p',
+    webpack_args = ['node', 'node_modules/.bin/parallel-webpack',
+                    '--config', 'tools/webpack.config.ts', '--no-stats', '--', '-p',
                     '--env', 'production']
     if quiet:
         webpack_args += ['--display', 'errors-only']
