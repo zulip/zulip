@@ -22,9 +22,6 @@ def run():
     parser.add_argument('--full',
                         action='store_true',
                         help='Check some things we typically ignore')
-    parser.add_argument('--fix',
-                        action='store_true',
-                        help='Automatically fix problems where supported')
     add_default_linter_arguments(parser)
     args = parser.parse_args()
 
