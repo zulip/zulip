@@ -2,6 +2,18 @@
     width: auto;
 }
 
+.popover hr {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.popover .sub_disable_btn_hint {
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: small;
+    text-align: justify;
+}
+
 .popover-content {
     padding: 5px 0px;
 }
@@ -21,11 +33,6 @@
 
 .popover_info {
     text-align: center;
-}
-
-.popover hr {
-    margin-top: 5px;
-    margin-bottom: 5px;
 }
 
 .popover-left,
@@ -343,13 +350,6 @@ ul.remind_me_popover .remind_icon {
     float: initial;
     position: relative;
     top: 1px;
-}
-
-.popover .sub_disable_btn_hint {
-    padding-left: 5px;
-    padding-right: 5px;
-    font-size: small;
-    text-align: justify;
 }
 
 .user_info_status_text {
