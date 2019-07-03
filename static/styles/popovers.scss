@@ -1,17 +1,17 @@
 .popover {
     width: auto;
-}
 
-.popover hr {
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
+    hr {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
 
-.popover .sub_disable_btn_hint {
-    padding-left: 5px;
-    padding-right: 5px;
-    font-size: small;
-    text-align: justify;
+    .sub_disable_btn_hint {
+        padding-left: 5px;
+        padding-right: 5px;
+        font-size: small;
+        text-align: justify;
+    }
 }
 
 .popover-content {
@@ -25,10 +25,10 @@
 
     font-size: inherit;
     line-height: inherit;
-}
 
-.popover-title:empty {
-    display: none;
+    &:empty {
+        display: none;
+    }
 }
 
 .popover_info {
