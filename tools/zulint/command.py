@@ -49,6 +49,9 @@ def add_default_linter_arguments(parser):
     parser.add_argument('--verbose', '-v',
                         action='store_true',
                         help='Print verbose output where available')
+    parser.add_argument('--fix',
+                        action='store_true',
+                        help='Automatically fix problems where supported')
 
 def split_arg_into_list(arg):
     # type: (str) -> List[str]
