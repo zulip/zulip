@@ -406,7 +406,7 @@ exports.set_up = function () {
             $("#edit_service_interface").val(service.interface);
         }
         if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
-            $("#service_data").append(templates.render("edit-embedded-bot-service",
+            $("#service_data").append(templates.render("settings/edit-embedded-bot-service",
                                                        {service: service}));
         }
 
