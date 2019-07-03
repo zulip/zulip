@@ -1,33 +1,11 @@
 # Useful reading is https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
 
 import os
-import shutil
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 from pipeline.storage import PipelineMixin
-
-class RemoveUnminifiedFilesMixin:
-    def post_process(self, paths: Dict[str, Tuple['ZulipStorage', str]], dry_run: bool=False,
-                     **kwargs: Any) -> List[Tuple[str, str, bool]]:
-        if dry_run:
-            return []
-
-        root = settings.STATIC_ROOT
-        to_remove = ['js']
-
-        for tree in to_remove:
-            shutil.rmtree(os.path.join(root, tree))
-
-        is_valid = lambda p: all([not p.startswith(k) for k in to_remove])
-
-        paths = {k: v for k, v in paths.items() if is_valid(k)}
-        super_class = super()
-        if hasattr(super_class, 'post_process'):
-            return super_class.post_process(paths, dry_run, **kwargs)  # type: ignore # https://github.com/python/mypy/issues/2956
-
-        return []
 
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
     def hashed_name(self, name: str, content: Optional[str]=None, filename: Optional[str]=None) -> str:
@@ -75,6 +53,5 @@ if settings.PRODUCTION:
     ManifestStaticFilesStorage.path = path
 
 class ZulipStorage(PipelineMixin,
-                   RemoveUnminifiedFilesMixin,
                    IgnoreBundlesManifestStaticFilesStorage):
     pass
