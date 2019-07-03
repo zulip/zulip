@@ -1075,8 +1075,23 @@ input[type=checkbox].inline-block {
         height: 100%;
     }
 
+    #user_avatar_delete_button {
+        cursor: pointer;
+        visibility: hidden;
+        font-size: 3rem;
+        position: absolute;
+        top: 67px; // 31.5px + 5px + 30px
+        right: 30px;
+    }
+
     .guest-avatar::after {
         outline: 9px solid hsl(0, 0%, 100%);
+    }
+
+    &:hover {
+        #user_avatar_delete_button {
+            visibility: visible;
+        }
     }
 }
 
