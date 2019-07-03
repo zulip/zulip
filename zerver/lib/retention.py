@@ -171,21 +171,16 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
                                    realm_id=realm.id, recipient_types=recipient_types,
                                    check_date=check_date.isoformat(), chunk_size=chunk_size)
 
-def move_to_archive_and_delete_models_with_message_key(msg_ids: List[int]) -> None:
+def move_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
     assert len(msg_ids) > 0
 
     for model in models_with_message_key:
         query = """
-        WITH archived_data AS (
-            INSERT INTO {archive_table_name} ({dst_fields})
-                SELECT {src_fields}
-                FROM {table_name}
-                WHERE {table_name}.message_id IN {message_ids}
-            ON CONFLICT (id) DO NOTHING
-            RETURNING id
-        )
-        DELETE FROM {table_name}
-        WHERE id IN (SELECT id FROM archived_data)
+        INSERT INTO {archive_table_name} ({dst_fields})
+            SELECT {src_fields}
+            FROM {table_name}
+            WHERE {table_name}.message_id IN {message_ids}
+        ON CONFLICT (id) DO NOTHING
         """
         move_rows(model['class'], query, table_name=model['table_name'],
                   archive_table_name=model['archive_table_name'],
@@ -211,17 +206,12 @@ def move_attachment_messages_to_archive(msg_ids: List[int]) -> None:
     assert len(msg_ids) > 0
 
     query = """
-    WITH archived_data AS (
-        INSERT INTO zerver_archivedattachment_messages (id, archivedattachment_id, archivedmessage_id)
-            SELECT zerver_attachment_messages.id, zerver_attachment_messages.attachment_id,
-                zerver_attachment_messages.message_id
-            FROM zerver_attachment_messages
-            WHERE  zerver_attachment_messages.message_id IN {message_ids}
-        ON CONFLICT (id) DO NOTHING
-        RETURNING id
-    )
-    DELETE FROM zerver_attachment_messages
-    WHERE id IN (SELECT id FROM archived_data)
+    INSERT INTO zerver_archivedattachment_messages (id, archivedattachment_id, archivedmessage_id)
+        SELECT zerver_attachment_messages.id, zerver_attachment_messages.attachment_id,
+            zerver_attachment_messages.message_id
+        FROM zerver_attachment_messages
+        WHERE  zerver_attachment_messages.message_id IN {message_ids}
+    ON CONFLICT (id) DO NOTHING
     """
     with connection.cursor() as cursor:
         cursor.execute(query.format(message_ids=ids_list_to_sql_query_format(msg_ids)))
@@ -242,7 +232,7 @@ def delete_expired_attachments(realm: Realm) -> None:
     ).delete()
 
 def move_related_objects_to_archive(msg_ids: List[int]) -> None:
-    move_to_archive_and_delete_models_with_message_key(msg_ids)
+    move_models_with_message_key_to_archive(msg_ids)
     move_attachments_to_archive(msg_ids)
     move_attachment_messages_to_archive(msg_ids)
 
