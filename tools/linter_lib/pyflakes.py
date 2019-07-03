@@ -27,4 +27,6 @@ def check_pyflakes(files, options):
         # Sphinx adds `tags` specially to the environment when running conf.py.
         (b"docs/conf.py", b"undefined name 'tags'"),
     ]
+    if options.full:
+        suppress_patterns = []
     return run_pyflakes(files, options, suppress_patterns)

@@ -45,7 +45,7 @@ def run_pyflakes(files, options, suppress_patterns=[]):
         return False
 
     for ln in pyflakes.stdout.readlines() + pyflakes.stderr.readlines():
-        if options.full or not suppress_line(ln):
+        if not suppress_line(ln):
             print_err('pyflakes', color, ln)
             failed = True
     return failed
