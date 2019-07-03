@@ -91,11 +91,11 @@ export default (env?: string): webpack.Configuration[] => {
                 },
                 // load fonts and files
                 {
-                    test: /\.(woff(2)?|ttf|eot|svg|otf|png)(\?v=\d+\.\d+\.\d+)?$/,
+                    test: /\.(woff(2)?|ttf|eot|svg|otf|png)$/,
                     use: [{
                         loader: 'file-loader',
                         options: {
-                            name: '[name].[ext]',
+                            name: production ? '[name].[hash].[ext]' : '[name].[ext]',
                             outputPath: 'files/',
                         },
                     }],
