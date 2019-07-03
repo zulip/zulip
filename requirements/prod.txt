@@ -67,7 +67,7 @@ jedi==0.13.3              # via ipython
 jinja2==2.10.1
 lxml==4.3.3
 markdown-include==0.5.1
-markdown==3.0.1
+markdown==3.1.1
 markupsafe==1.1.1
 matrix-client==0.3.2
 mock==2.0.0
