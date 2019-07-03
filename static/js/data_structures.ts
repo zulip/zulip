@@ -1,0 +1,76 @@
+export interface Recipient {
+    email: string;
+    full_name: string;
+    id: number;
+    user_id?: number;
+    is_mirror_dummy: boolean;
+    short_name: string;
+    unknown_local_echo_user?: true;
+}
+export interface FakePerson {
+    email: string;
+    full_name: string;
+    pm_recipient_count: number;  /** Infinity */
+    special_item_text: string;
+}
+export interface BaseReaction {
+    emoji_code: string;
+    emoji_name: string;
+    local_id: string;
+    reaction_type: string;
+    user_ids: number[];
+}
+export interface MessageReaction extends BaseReaction {
+    class: string;
+    count: number;
+    emoji_alt_code: boolean;
+    title: string;
+}
+export interface Reaction extends BaseReaction {
+    user: {
+        email: string;
+        full_name: string;
+        id: number;
+    };
+}
+export interface Message {
+    alerted: boolean;
+    avatar_url: string | null;
+    client: string;
+    collapsed: boolean;
+    content: string;
+    content_type: string;
+    display_recipient: Recipient[];
+    display_reply_to: string;
+    historical: boolean;
+    id: number;
+    is_me_message: boolean;
+    is_private: boolean;
+    mentioned: boolean;
+    mentioned_me_directly: boolean;
+    message_reactions: MessageReaction[];
+    pm_with_url: string;
+    reactions: Reaction[];
+    recipient_id: number;
+    reply_to: string;
+    sender_email: string;
+    sender_full_name: string;
+    sender_id: number;
+    sender_realm_str: string;
+    sender_short_name: string;
+    sent_by_me: boolean;
+    starred: boolean;
+    starred_status: string;
+    subject: string;
+    subject_links: string[];
+    submessages: {
+        id: number;
+        sender_id: number;
+        content: string;
+    }[];
+    timestamp: number;
+    to_user_ids: string;
+    topic: string;
+    type: string;
+    unread: boolean;
+}
