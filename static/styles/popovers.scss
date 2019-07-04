@@ -114,6 +114,7 @@ ul {
 
     .popover-title {
         padding: 0;
+        border-color: hsla(0, 0%, 0%, 0.2);
     }
 }
 
@@ -169,7 +170,6 @@ ul {
     word-wrap: break-word;
 }
 
-.message-info-popover .popover-title,
 .user_popover .popover-title {
     border-color: hsla(0, 0%, 0%, 0.2);
 }
