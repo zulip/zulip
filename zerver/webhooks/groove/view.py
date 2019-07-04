@@ -8,7 +8,8 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header, UnexpectedWebhookEventType
+    validate_extract_webhook_http_header, UnexpectedWebhookEventType, \
+    get_http_headers_from_filename
 from zerver.models import UserProfile
 
 TICKET_STARTED_TEMPLATE = """
@@ -101,3 +102,5 @@ EVENTS_FUNCTION_MAPPER = {
     'customer_replied': partial(replied_body, actor='customer', action='replied to'),
     'note_added': partial(replied_body, actor='agent', action='left a note on')
 }
+
+fixture_to_headers = get_http_headers_from_filename("HTTP_X_GROOVE_EVENT")
