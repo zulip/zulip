@@ -165,14 +165,11 @@ ul {
 .user_popover {
     .popover-title {
         padding: 0;
+        border-color: hsla(0, 0%, 0%, 0.2);
     }
 
     .popover_info li {
         word-wrap: break-word;
-    }
-
-    .popover-title {
-        border-color: hsla(0, 0%, 0%, 0.2);
     }
 }
 
