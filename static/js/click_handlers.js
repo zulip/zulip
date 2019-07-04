@@ -126,6 +126,9 @@ exports.initialize = function () {
             // stopPropagation prevents them from being called.
             return;
         }
+        if ($(e.target).is(".message_edit_notice")) {
+            return;
+        }
 
         // A tricky issue here is distinguishing hasty clicks (where
         // the mouse might still move a few pixels between mouseup and
@@ -229,6 +232,18 @@ exports.initialize = function () {
         message_edit.start(row);
         e.stopPropagation();
         popovers.hide_all();
+    });
+    $('body').on('click', '.message_edit_notice', function (e) {
+        var row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
+        current_msg_list.select_id(rows.id(row));
+        var message = current_msg_list.get(rows.id(row));
+        var message_history_cancel_btn = $('#message-history-cancel');
+
+        popovers.hide_actions_popover();
+        message_edit.show_history(message);
+        message_history_cancel_btn.focus();
+        e.stopPropagation();
+        e.preventDefault();
     });
     $('body').on('click', '.always_visible_topic_edit,.on_hover_topic_edit', function (e) {
         var recipient_row = $(this).closest(".recipient_row");

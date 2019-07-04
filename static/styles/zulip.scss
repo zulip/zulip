@@ -566,6 +566,11 @@ td.pointer {
     @include prefixed-user-select(none);
 }
 
+.message_edit_notice:hover {
+    opacity: 1.0;
+}
+
+
 .include-sender .message_time {
     top: -4px;
 }
