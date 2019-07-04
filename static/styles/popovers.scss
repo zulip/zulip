@@ -305,11 +305,11 @@ ul {
         border: none;
 
         pointer-events: none;
-    }
 
-    .message-info-popover .popover-inner {
-        background-color: hsl(0, 0%, 100%);
-        pointer-events: all;
+        .popover-inner {
+            background-color: hsl(0, 0%, 100%);
+            pointer-events: all;
+        }
     }
 
     .popover-flex {
@@ -332,15 +332,15 @@ ul {
         pointer-events: none;
 
         transition: all 0.3s ease;
-    }
 
-    .popover-flex.fade.in {
-        opacity: 1;
-        pointer-events: all;
-    }
+        &.fade.in {
+            opacity: 1;
+            pointer-events: all;
+        }
 
-    .popover-flex .popover {
-        display: inline-block;
+        .popover {
+            display: inline-block;
+        }
     }
 
     .emoji-info-popover {
