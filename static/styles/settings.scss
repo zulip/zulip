@@ -1112,10 +1112,10 @@ input[type=checkbox].inline-block {
     left: 0%;
     font-size: 0.9em;
     visibility: hidden;
-}
 
-.white-color {
-    color: hsl(0, 0%, 100%);
+    a {
+        color: hsl(0, 0%, 100%);
+    }
 }
 
 #realm-settings-icon {
