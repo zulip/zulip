@@ -4,12 +4,15 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header, UnexpectedWebhookEventType
+    validate_extract_webhook_http_header, UnexpectedWebhookEventType, \
+    get_http_headers_from_filename
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
 
 EVENTS = ['deploy_failed', 'deploy_locked', 'deploy_unlocked', 'deploy_building', 'deploy_created']
+
+fixture_to_headers = get_http_headers_from_filename("HTTP_X_NETLIFY_EVENT")
 
 @api_key_only_webhook_view('Netlify')
 @has_request_variables
