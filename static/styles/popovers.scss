@@ -162,16 +162,18 @@ ul {
     }
 }
 
-.user_popover .popover-title {
-    padding: 0;
-}
+.user_popover {
+    .popover-title {
+        padding: 0;
+    }
 
-.user_popover .popover_info li {
-    word-wrap: break-word;
-}
+    .popover_info li {
+        word-wrap: break-word;
+    }
 
-.user_popover .popover-title {
-    border-color: hsla(0, 0%, 0%, 0.2);
+    .popover-title {
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
 }
 
 .popover-avatar {
