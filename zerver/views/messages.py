@@ -1238,16 +1238,25 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: str=REQ('type'),
                          message_to: Union[Sequence[int], Sequence[str]]=REQ(
                              'to', converter=extract_recipients, default=[]),
-                         forged: bool=REQ(default=False),
+                         forged: bool=REQ(default=False,
+                                          documentation_pending=True),
                          topic_name: Optional[str]=REQ_topic(),
                          message_content: str=REQ('content'),
-                         widget_content: Optional[str]=REQ(default=None),
-                         realm_str: Optional[str]=REQ('realm_str', default=None),
-                         local_id: Optional[str]=REQ(default=None),
-                         queue_id: Optional[str]=REQ(default=None),
-                         delivery_type: Optional[str]=REQ('delivery_type', default='send_now'),
-                         defer_until: Optional[str]=REQ('deliver_at', default=None),
-                         tz_guess: Optional[str]=REQ('tz_guess', default=None)) -> HttpResponse:
+                         widget_content: Optional[str]=REQ(default=None,
+                                                           documentation_pending=True),
+                         realm_str: Optional[str]=REQ('realm_str', default=None,
+                                                      documentation_pending=True),
+                         local_id: Optional[str]=REQ(default=None,
+                                                     documentation_pending=True),
+                         queue_id: Optional[str]=REQ(default=None,
+                                                     documentation_pending=True),
+                         delivery_type: Optional[str]=REQ('delivery_type', default='send_now',
+                                                          documentation_pending=True),
+                         defer_until: Optional[str]=REQ('deliver_at', default=None,
+                                                        documentation_pending=True),
+                         tz_guess: Optional[str]=REQ('tz_guess', default=None,
+                                                     documentation_pending=True)
+                         ) -> HttpResponse:
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:

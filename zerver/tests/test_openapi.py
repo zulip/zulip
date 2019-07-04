@@ -201,14 +201,17 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # investigation.
         BUGGY_DOCUMENTATION_ENDPOINTS = set([
             '/events',
-            '/register',
-            '/messages',
-            '/typing',
             '/users/me/subscriptions/muted_topics',
         ])
 
         # First, we import the fancy-Django version of zproject/urls.py
         urlconf = __import__(getattr(settings, "ROOT_URLCONF"), {}, {}, [''])
+        # Import some view modules not already imported in urls.py, we use
+        # this round about manner because of the linters complaining of an
+        # unused import (which is correct, but we do this for triggering the
+        # has_request_variables decorator).
+        __import__('zerver.views.typing')
+        __import__('zerver.views.events_register')
 
         # We loop through all the API patterns, looking in particular
         # those using the rest_dispatch decorator; we then parse its
@@ -251,8 +254,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                     # we should remove this block and the associated List.
                     continue
                 if "intentionally_undocumented" in tags:
-                    # Don't do any validation on endpoints with no API
-                    # documentation by design.
                     try:
                         get_openapi_parameters(url_pattern, method)
                         raise AssertionError("We found some OpenAPI \

@@ -499,7 +499,7 @@ paths:
           type: string
         example: aaron@zulip.com, iago@zulip.com
         required: true
-      - name: subject
+      - name: topic
         in: query
         description: The topic of the message. Only required if `type` is
           `stream`, ignored otherwise. Maximum length of 60 characters.

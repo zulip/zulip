@@ -32,11 +32,11 @@ def events_register_backend(
         include_subscribers: bool=REQ(default=False, validator=check_bool),
         client_capabilities: Optional[Dict[str, bool]]=REQ(validator=check_dict([
             ("notification_settings_null", check_bool),
-        ]), default=None),
+        ]), default=None, documentation_pending=True),
         event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         narrow: NarrowT=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
-        queue_lifespan_secs: int=REQ(converter=int, default=0)
+        queue_lifespan_secs: int=REQ(converter=int, default=0, documentation_pending=True)
 ) -> HttpResponse:
     all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
     narrow = _default_narrow(user_profile, narrow)

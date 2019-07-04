@@ -68,6 +68,7 @@ class REQ:
                  str_validator: Callable[[Any], Any]=None,
                  argument_type: str=None, type: Type=None,
                  intentionally_undocumented=False,
+                 documentation_pending=False,
                  aliases: Optional[List[str]]=None) -> None:
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
@@ -105,6 +106,7 @@ class REQ:
         self.argument_type = argument_type
         self.aliases = aliases
         self.intentionally_undocumented = intentionally_undocumented
+        self.documentation_pending = documentation_pending
 
         if converter and (validator or str_validator):
             # Not user-facing, so shouldn't be tagged for translation
@@ -155,7 +157,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
             # Record arguments that should be documented so that our
             # automated OpenAPI docs tests can compare these against the code.
-            if not value.intentionally_undocumented:
+            if not value.intentionally_undocumented and not value.documentation_pending:
                 arguments_map[view_func_full_name].append(value.post_var_name)
 
     @wraps(view_func)
