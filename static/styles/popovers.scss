@@ -184,10 +184,10 @@ ul {
     &.guest-avatar::after {
         outline: 10px solid hsl(0, 0%, 100%);
     }
-}
 
-.popover-avatar .popover-inner {
-    width: 240px;
+    .popover-inner {
+        width: 240px;
+    }
 }
 
 #user-profile-modal {
