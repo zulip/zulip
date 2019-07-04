@@ -28,6 +28,7 @@ def REQ(whence: Optional[str] = None,
         str_validator: Optional[Validator] = None,
         argument_type: Optional[str] = None,
         intentionally_undocumented: bool=False,
+        documentation_pending: bool=False,
         aliases: Optional[List[str]] = None) -> ResultT: ...
 
 def has_request_variables(view_func: ViewFuncT) -> ViewFuncT: ...
