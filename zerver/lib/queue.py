@@ -51,8 +51,14 @@ class SimpleQueueClient:
         # it doesn't make sense with BlockingConnection
         credentials = pika.PlainCredentials(settings.RABBITMQ_USERNAME,
                                             settings.RABBITMQ_PASSWORD)
+        tcp_options = None
+        if self.rabbitmq_heartbeat == 0:
+            tcp_options = dict(TCP_KEEPIDLE=60,
+                               TCP_KEEPINTVL=10,
+                               TCP_KEEPCNT=9)
         return pika.ConnectionParameters(settings.RABBITMQ_HOST,
                                          heartbeat_interval=self.rabbitmq_heartbeat,
+                                         tcp_options=tcp_options,
                                          credentials=credentials)
 
     def _generate_ctag(self, queue_name: str) -> str:
