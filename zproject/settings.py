@@ -454,6 +454,10 @@ DEFAULT_SETTINGS.update({
     # DEFAULT_SETTINGS, since it likely isn't usefully user-configurable.
     'OFFLINE_THRESHOLD_SECS': 5 * 60,
 
+    # How many days deleted messages data should be kept before being
+    # permanently deleted.
+    'ARCHIVED_DATA_VACUUMING_DELAY_DAYS': 7,
+
     # Enables billing pages and plan-based feature gates. If False, all features
     # are available to all realms.
     'BILLING_ENABLED': False,
@@ -1380,9 +1384,6 @@ AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password', '')
 # Set the sender email address for Django traceback error reporting
 if SERVER_EMAIL is None:
     SERVER_EMAIL = ZULIP_ADMINISTRATOR
-
-# How many days archived data should be kept before being deleted:
-ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 14
 
 ########################################################################
 # MISC SETTINGS
