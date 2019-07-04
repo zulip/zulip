@@ -92,7 +92,8 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.realm_emoji.list_emoji'}),
     url(r'^realm/emoji/(?P<emoji_name>.*)$', rest_dispatch,
         {'POST': 'zerver.views.realm_emoji.upload_emoji',
-         'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
+         'DELETE': ('zerver.views.realm_emoji.delete_emoji', {"intentionally_undocumented"})}),
+    # this endpoint throws a status code 400 JsonableError when it should be a 404.
 
     # realm/icon -> zerver.views.realm_icon
     url(r'^realm/icon$', rest_dispatch,

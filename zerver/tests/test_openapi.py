@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 import mock
 from typing import Dict, Any, Set
 
@@ -190,6 +191,40 @@ class OpenAPIArgumentsTest(ZulipTestCase):
             # Mobile-app only endpoints
             '/users/me/android_gcm_reg_id',
             '/users/me/apns_device_token',
+            # Regex based urls
+            '/realm/domains/<domain>',
+            '/realm/filters/<filter_id>',
+            '/realm/profile_fields/<field_id>',
+            '/users/<user_id>/reactivate',
+            '/users/<user_id>',
+            '/bots/<bot_id>/api_key/regenerate',
+            '/bots/<bot_id>',
+            '/invites/<prereg_id>',
+            '/invites/<prereg_id>/resend',
+            '/invites/multiuse/<invite_id>',
+            '/messages/<message_id>',
+            '/messages/<message_id>',
+            '/messages/<message_id>',
+            '/messages/<message_id>/history',
+            '/users/me/subscriptions/<stream_id>',
+            '/messages/<message_id>/reactions',
+            '/messages/<message_id>/reactions',
+            '/messages/<message_id>/emoji_reactions/<emoji_name>',
+            '/messages/<message_id>/emoji_reactions/<emoji_name>',
+            '/attachments/<attachment_id>',
+            '/user_groups/<user_group_id>',
+            '/user_groups/<user_group_id>',
+            '/user_groups/<user_group_id>/members',
+            '/users/me/<stream_id>/topics',
+            '/streams/<stream_id>/members',
+            '/streams/<stream_id>',
+            '/streams/<stream_id>',
+            '/streams/<stream_id>/delete_topic',
+            '/default_stream_groups/<group_id>',
+            '/default_stream_groups/<group_id>',
+            '/default_stream_groups/<group_id>/streams',
+            # Regex with an unnamed capturing group.
+            '/users/(?!me/)(?P<email>[^/]*)/presence',
         ])
 
         # These endpoints have a mismatch between the documentation
@@ -212,6 +247,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # has_request_variables decorator).
         __import__('zerver.views.typing')
         __import__('zerver.views.events_register')
+        __import__('zerver.views.realm_emoji')
 
         # We loop through all the API patterns, looking in particular
         # those using the rest_dispatch decorator; we then parse its
@@ -234,46 +270,52 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                 # verify those too!
                 accepted_arguments = set(arguments_map[function])
 
-                # TODO: The purpose of this block is to match our URL
+                # The purpose of this block is to match our URL
                 # pattern regular expressions to the corresponding
                 # configuration in OpenAPI.  The means matching
                 #
                 # /messages/{message_id} <-> r'^messages/(?P<message_id>[0-9]+)$'
                 # /events <-> r'^events$'
-                #
-                # The below is a giant hack that only handles the simple case.
                 regex_pattern = p.regex.pattern
                 self.assertTrue(regex_pattern.startswith("^"))
                 self.assertTrue(regex_pattern.endswith("$"))
-                # Obviously this is a huge hack and won't work for
-                # some URLs.
                 url_pattern = '/' + regex_pattern[1:][:-1]
+                # Deal with the conversion of named capturing groups:
+                # Two possible ways to denote variables in urls exist.
+                # {var_name} and <var_name>. So we need to consider both.
+                url_patterns = [re.sub(r"\(\?P<(\w+)>[^/]+\)", r"<\1>", url_pattern),
+                                re.sub(r"\(\?P<(\w+)>[^/]+\)", r"{\1}", url_pattern)]
 
-                if url_pattern in PENDING_ENDPOINTS:
-                    # TODO: Once these endpoints have been aptly documented,
-                    # we should remove this block and the associated List.
+                if any([url_patterns[0] in PENDING_ENDPOINTS,
+                        url_patterns[1] in PENDING_ENDPOINTS]):
                     continue
                 if "intentionally_undocumented" in tags:
-                    try:
-                        get_openapi_parameters(url_pattern, method)
-                        raise AssertionError("We found some OpenAPI \
+                    error = AssertionError("We found some OpenAPI \
 documentation for %s %s, so maybe we shouldn't mark it as intentionally \
-undocumented in the urls." % (method, url_pattern))
+undocumented in the urls." % (method, url_patterns[0] + " or " + url_patterns[1]))
+
+                    try:
+                        get_openapi_parameters(url_patterns[0], method)
+                        raise error  # nocoverage
                     except KeyError:
-                        continue
-                if "(?P<" in url_pattern:
-                    # See above TODO about our matching algorithm not
-                    # handling captures in the regular expressions.
-                    continue
+                        pass
+
+                    try:
+                        get_openapi_parameters(url_patterns[1], method)
+                        raise error  # nocoverage
+                    except KeyError:
+                        pass
+
+                    continue  # nocoverage # although, this *is* covered.
 
                 try:
-                    openapi_parameters = get_openapi_parameters(url_pattern, method)
-                    # TODO: Record which entries in the OpenAPI file
-                    # found a match, and throw an error for any that
-                    # unexpectedly didn't.
+                    openapi_parameters = get_openapi_parameters(url_patterns[0], method)
                 except Exception:  # nocoverage
-                    raise AssertionError("Could not find OpenAPI docs for %s %s" %
-                                         (method, url_pattern))
+                    try:
+                        openapi_parameters = get_openapi_parameters(url_patterns[1], method)
+                    except Exception:  # nocoverage
+                        raise AssertionError("Could not find OpenAPI docs for %s %s" %
+                                             (method, url_patterns[0] + " or " + url_patterns[1]))
 
                 # We now have everything we need to understand the
                 # function as defined in our urls.py
@@ -298,14 +340,20 @@ undocumented in the urls." % (method, url_pattern))
                 )
 
                 if len(openapi_parameter_names - accepted_arguments) > 0:
-                    print("Undocumented parameters for", url_pattern, method, function)
+                    print("Undocumented parameters for",
+                          url_patterns[0] + " or " + url_patterns[1],
+                          method, function)
                     print(" +", openapi_parameter_names)
                     print(" -", accepted_arguments)
-                    assert(url_pattern in BUGGY_DOCUMENTATION_ENDPOINTS)
+                    assert(any([url_patterns[0] in BUGGY_DOCUMENTATION_ENDPOINTS,
+                                url_patterns[1] in BUGGY_DOCUMENTATION_ENDPOINTS]))
                 elif len(accepted_arguments - openapi_parameter_names) > 0:
-                    print("Documented invalid parameters for", url_pattern, method, function)
+                    print("Documented invalid parameters for",
+                          url_patterns[0] + " or " + url_patterns[1],
+                          method, function)
                     print(" -", openapi_parameter_names)
                     print(" +", accepted_arguments)
-                    assert(url_pattern in BUGGY_DOCUMENTATION_ENDPOINTS)
+                    assert(any([url_patterns[0] in BUGGY_DOCUMENTATION_ENDPOINTS,
+                                url_patterns[1] in BUGGY_DOCUMENTATION_ENDPOINTS]))
                 else:
                     self.assertEqual(openapi_parameter_names, accepted_arguments)

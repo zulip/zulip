@@ -1372,6 +1372,13 @@ paths:
   /realm/emoji/<emoji_name>:
     post:
       description: Upload a single emoji file.
+      parameters:
+      - name: emoji_name
+        in: path
+        description: The name that should be associated with the uploaded
+          emoji image/gif.
+        schema:
+          type: string
       requestBody:
         content:
           multipart/form-data:
@@ -1390,6 +1397,7 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
+
   /realm/emoji:
     get:
       description: Get all the custom emoji in the user's realm.
