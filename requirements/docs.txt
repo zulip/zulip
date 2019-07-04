@@ -9,7 +9,7 @@
 #
 alabaster==0.7.12
 babel==2.5.3
-certifi==2019.3.9         # via requests
+certifi==2019.6.16        # via requests
 chardet==3.0.4            # via requests
 commonmark==0.5.4
 docutils==0.14
@@ -18,15 +18,15 @@ imagesize==1.1.0
 jinja2==2.10.1            # via sphinx
 markupsafe==1.1.1         # via jinja2
 packaging==19.0           # via sphinx
-pygments==2.3.1           # via sphinx
+pygments==2.4.2           # via sphinx
 pyparsing==2.4.0          # via packaging
 pytz==2019.1              # via babel
 recommonmark==0.4.0
-requests==2.21.0          # via sphinx
+requests==2.22.0          # via sphinx
 six==1.12.0               # via packaging, sphinx
 snowballstemmer==1.2.1
 sphinx-rtd-theme==0.4.3
 sphinx==1.8.4
-sphinxcontrib-websupport==1.1.0  # via sphinx
+sphinxcontrib-websupport==1.1.2  # via sphinx
 typing==3.6.6
-urllib3==1.24.2           # via requests
+urllib3==1.25.3           # via requests
