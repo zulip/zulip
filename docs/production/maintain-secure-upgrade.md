@@ -399,6 +399,25 @@ installation.  Then, run as root:
 /home/zulip/deployments/current/scripts/setup/restore-backup /path/to/backup
 ```
 
+When that finishes, your Zulip server should be fully operational again.
+
+#### Changing the hostname
+
+It's common when testing backup restoration to restore backups with a
+different user-facing hostname than the original server to avoid
+disrupting service (e.g. `zuliptest.example.com` rather than
+`zulip.example.com`).
+
+If you do so, just like any other time you change the hostname, you'll
+need to [update `EXTERNAL_HOST`](../production/settings.html) and then
+restart the Zulip server (after backup restoration completes).
+
+Until you do, your Zulip server will think its user-facing hostname is
+still `zulip.example.com` and will return HTTP `400 BAD REQUEST`
+errors when trying to access it via `zuliptest.example.com`.
+
+#### Inspecting a backup tarball
+
 If you're not sure what versions were in use when a given backup was
 created, you can get that information via the files in the backup
 tarball `postgres-version`, `os-version`, and `zulip-version`.  The
