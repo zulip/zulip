@@ -40,12 +40,6 @@
     max-width: 200px;
 }
 
-.streams_popover .sp-container {
-    background-color: hsl(0, 0%, 100%);
-    cursor: pointer;
-    border: none;
-}
-
 .sp-container {
     z-index: 100;
 }
@@ -67,6 +61,12 @@
     left: auto !important;
     width: 175px;
     height: 65px;
+}
+
+.streams_popover .sp-container {
+    background-color: hsl(0, 0%, 100%);
+    cursor: pointer;
+    border: none;
 }
 
 .streams_popover .sp-palette-container {
