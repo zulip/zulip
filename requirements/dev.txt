@@ -57,7 +57,7 @@ django-sendfile==0.3.11
 django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.8.0
 django-webpack-loader==0.6.0
-django==1.11.20
+django==1.11.22
 docker==4.0.2             # via moto
 docopt==0.6.2
 docutils==0.14
