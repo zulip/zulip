@@ -110,14 +110,11 @@ ul {
 
 .message-info-popover {
     width: 240px;
-}
-
-.message-info-popover {
     padding: 0;
-}
 
-.message-info-popover .popover-title {
-    padding: 0;
+    .popover-title {
+        padding: 0;
+    }
 }
 
 .group-info-popover .group-info,
