@@ -112,6 +112,14 @@ ul {
     width: 240px;
 }
 
+.message-info-popover {
+    padding: 0;
+}
+
+.message-info-popover .popover-title {
+    padding: 0;
+}
+
 .group-info-popover .group-info,
 .group-info-popover .manage-group a {
     text-align: center;
@@ -277,14 +285,6 @@ ul {
             margin: 10px 0;
         }
     }
-}
-
-.message-info-popover {
-    padding: 0;
-}
-
-.message-info-popover .popover-title {
-    padding: 0;
 }
 
 @media (max-width: 768px) {
