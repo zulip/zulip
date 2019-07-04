@@ -63,24 +63,26 @@
     height: 65px;
 }
 
-.streams_popover .sp-container {
-    background-color: hsl(0, 0%, 100%);
-    cursor: pointer;
-    border: none;
-}
+.streams_popover {
+    .sp-container {
+        background-color: hsl(0, 0%, 100%);
+        cursor: pointer;
+        border: none;
+    }
 
-.streams_popover .sp-palette-container {
-    border-right: none;
-}
+    .sp-palette-container {
+        border-right: none;
+    }
 
-.streams_popover .colorpicker-container {
-    display: inline-block;
-    margin-right: 10px;
-}
+    .colorpicker-container {
+        display: inline-block;
+        margin-right: 10px;
+    }
 
-.streams_popover .popover_sub_unsub_button {
-    margin-top: 0px;
-    float: none;
+    .popover_sub_unsub_button {
+        margin-top: 0px;
+        float: none;
+    }
 }
 
 ul.info_popover_actions i,
