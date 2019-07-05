@@ -10,6 +10,7 @@ from importlib import import_module
 from io import StringIO
 import glob
 import time
+import shutil
 
 from django.db import connections, DEFAULT_DB_ALIAS, ProgrammingError, \
     connection
@@ -296,3 +297,15 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     if p.returncode != 0:
         raise RuntimeError("Error cleaning up test databases!")
     return len(databases_to_drop)
+
+def remove_test_run_directories(expiry_time: int = 60 * 60) -> int:
+    removed = 0
+    directories = glob.glob(os.path.join(UUID_VAR_DIR, "test-backend", "run_*"))
+    for test_run in directories:
+        if round(time.time()) - os.path.getmtime(test_run) > expiry_time:
+            try:
+                shutil.rmtree(test_run)
+                removed += 1
+            except FileNotFoundError:
+                pass
+    return removed
