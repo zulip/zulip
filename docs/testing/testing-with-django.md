@@ -123,7 +123,7 @@ best practices are for tests to:
 
 * Place any files created by the test under the dedicated directory
   tree for `test-backend` that is managed by the current development
-  environment (`var/<uuid>/test-backend/`).
+  environment (`var/<uuid>/test-backend/run_1234567/worker_N`).
 * Delete any files created by the test in the test class's `tearDown`
   method (which runs even if the test fails).
 
