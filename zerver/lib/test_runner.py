@@ -313,8 +313,11 @@ def init_worker(counter: Synchronized) -> None:
 
     # Every process should upload to a separate directory so that
     # race conditions can be avoided.
-    settings.LOCAL_UPLOADS_DIR = '{}_{}'.format(settings.LOCAL_UPLOADS_DIR,
-                                                _worker_id)
+    settings.LOCAL_UPLOADS_DIR = get_or_create_dev_uuid_var_path(
+        'test-backend/{run}/{worker}/test_uploads'.format(
+            run=os.path.basename(TEST_RUN_DIR),
+            worker=os.path.basename(worker_path),
+        ))
 
     def is_upload_avatar_url(url: RegexURLPattern) -> bool:
         if url.regex.pattern == r'^user_avatars/(?P<path>.*)$':
@@ -450,6 +453,12 @@ class Runner(DiscoverRunner):
 
         # We need to set the top-level value for `TEST_WORKER_DIR` here, before the suite is built.
         settings.TEST_WORKER_DIR = TEST_RUN_DIR
+
+        # Check if we are in serial mode to avoid unnecessarily making a directory.
+        # We add "worker_0" in the path for consistency with parallel mode.
+        if self.parallel == 1:
+            settings.LOCAL_UPLOADS_DIR = get_or_create_dev_uuid_var_path(
+                'test-backend/run_{number}/worker_0/test_uploads'.format(number=random_id_range_start))
         return super().setup_test_environment(*args, **kwargs)
 
     def teardown_test_environment(self, *args: Any, **kwargs: Any) -> Any:

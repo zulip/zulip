@@ -42,7 +42,8 @@ from zerver.lib.cache import get_realm_used_upload_space_cache_key, cache_get
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.users import get_api_key
 
-from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path, \
+    get_dev_uuid_var_path
 
 import urllib
 import ujson
@@ -691,11 +692,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 response = self.client_get(uri)
                 _get_sendfile.clear()
                 test_upload_dir = os.path.split(settings.LOCAL_UPLOADS_DIR)[1]
-                uuid_directory, test_backend = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
+                test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
                 self.assertEqual(response['X-Accel-Redirect'],
                                  '/serve_uploads/../../' +
-                                 os.path.join(os.path.basename(uuid_directory), test_backend) +
-                                 '/' + test_upload_dir +
+                                 os.path.basename(get_dev_uuid_var_path()) +
+                                 '/test-backend/' + os.path.basename(test_run) +
+                                 '/' + worker + '/' + test_upload_dir +
                                  '/files/' + fp_path + '/' + name_str_for_test)
                 if content_disposition != '':
                     self.assertIn('attachment;', response['Content-disposition'])
