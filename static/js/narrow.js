@@ -362,6 +362,14 @@ exports.activate = function (raw_operators, opts) {
     typing_events.render_notifications_for_narrow();
     tab_bar.initialize();
 
+    // this is to refresh the buddy list to sync with the new narrow for the stream member feature,
+    // ideally, we should be able to check if the list has changed between the previous and the
+    // current narrow (through something like buddy_data.maybe_redraw()) but for now,
+    // we just do the bare minimum check to see if the stream member mode is active
+    if (buddy_data.should_show_only_recipients()) {
+        activity.redraw();
+    }
+
     msg_list.initial_core_time = new Date();
     setTimeout(function () {
         resize.resize_stream_filters_container();
@@ -784,6 +792,12 @@ function handle_post_narrow_deactivate_processes() {
     notifications.redraw_title();
     notifications.hide_or_show_history_limit_message(home_msg_list);
     $(".all-messages-search-caution").hide();
+
+    // When a different mode of the buddy list is active, we need to redraw
+    // to ensure that we're showing the right list of users
+    if (buddy_data.should_show_only_recipients()) {
+        activity.redraw();
+    }
 }
 
 exports.deactivate = function () {

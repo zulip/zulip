@@ -7,6 +7,11 @@ zrequire('presence');
 zrequire('user_status');
 
 zrequire('buddy_data');
+zrequire('narrow_state');
+zrequire('Filter', 'js/filter');
+zrequire('hash_util');
+zrequire('stream_data');
+
 set_global('timerender', {});
 
 // The buddy_data module is mostly tested indirectly through
@@ -346,6 +351,60 @@ run_test('user_last_seen_time_status', () => {
     assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id),
                  'May 12');
 
+});
+
+function set_filter(operators) {
+    operators = _.map(operators, function (op) {
+        return {operator: op[0], operand: op[1]};
+    });
+    narrow_state.set_current_filter(new Filter(operators));
+}
+
+run_test('stream_member_functions', () => {
+    // This test works on users created by the make_people() function
+
+    buddy_data.should_show_only_recipients = () => true;
+    assert(buddy_data.should_show_only_recipients()); // sanity
+
+    // this narrow filter has the effect of excluding p1900 from the buddy list
+    set_filter([
+        ['pm-with', selma.email + "," + "person1200@example.com" + "," + "person1500@example.com"],
+    ]);
+
+    let user_ids = buddy_data.get_filtered_and_sorted_user_ids('');
+    assert.deepEqual(user_ids, [
+        me.user_id,
+        1200,
+        1500,
+        selma.user_id,
+    ]);
+
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids('person');
+    assert.deepEqual(user_ids, [
+        1200,
+        1500,
+    ]);
+
+    stream_data.clear_subscriptions();
+    const sub = {name: 'Rome', subscribed: true, stream_id: 100};
+    stream_data.add_sub(sub);
+    stream_data.set_subscribers(sub, [me.user_id, 1200, 1900]);
+    stream_data.update_calculated_fields(sub);
+
+    // this filter has the effect of excluding Human 1500 from the buddy list
+    set_filter([
+        ['stream', sub.name],
+        ['topic', 'Bar'], // ensure we can handle more than one filter
+    ]);
+
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids('person');
+    assert.deepEqual(user_ids, [
+        1200,
+        1900,
+    ]);
+
+    buddy_data.should_show_only_recipients = () => false;
+    assert(!buddy_data.should_show_only_recipients()); // reset for next test case
 });
 
 run_test('error handling', () => {

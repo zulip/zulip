@@ -12,6 +12,8 @@ zrequire('unread');
 zrequire('narrow');
 zrequire('search_pill');
 
+set_global('activity', {});
+set_global('buddy_data', {});
 set_global('channel', {});
 set_global('compose', {});
 set_global('compose_actions', {});
@@ -86,6 +88,7 @@ function test_helper() {
     stub('compose', 'update_closed_compose_buttons_for_stream');
     stub('compose', 'update_closed_compose_buttons_for_private');
     stub('notifications', 'hide_history_limit_message');
+    stub('activity', 'redraw');
 
     return {
         clear: () => {
@@ -189,6 +192,8 @@ run_test('basics', () => {
         });
     };
 
+    buddy_data.should_show_only_recipients = () => false;
+
     narrow.activate(terms, {
         then_select_id: selected_id,
     });
@@ -212,6 +217,36 @@ run_test('basics', () => {
         'stream_list.handle_narrow_activated',
         'typing_events.render_notifications_for_narrow',
         'tab_bar.initialize',
+    ]);
+
+    current_msg_list.selected_id = () => { return -1; };
+    current_msg_list.get_row = () => { return row; };
+    util.sorted_ids = () => { return []; };
+
+    helper.clear();
+
+    buddy_data.should_show_only_recipients = () => true;
+
+    narrow.activate(terms, {
+        then_select_id: selected_id,
+    });
+
+    helper.assert_events([
+        'notifications.clear_compose_notifications',
+        'notifications.redraw_title',
+        'notifications.hide_history_limit_message',
+        'ui_util.change_tab_to',
+        'message_scroll.hide_indicators',
+        'unread_ops.process_visible',
+        'hashchange.save_narrow',
+        'compose.update_closed_compose_buttons_for_stream',
+        'search.update_button_visibility',
+        'compose_actions.on_narrow',
+        'top_left_corner.handle_narrow_activated',
+        'stream_list.handle_narrow_activated',
+        'typing_events.render_notifications_for_narrow',
+        'tab_bar.initialize',
+        'activity.redraw',
     ]);
 
     current_msg_list.selected_id = () => { return -1; };

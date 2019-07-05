@@ -1,4 +1,5 @@
 const util = require("./util");
+const settings_config = require("./settings_config");
 /*
 
    This is the main model code for building the buddy list.
@@ -292,12 +293,58 @@ function maybe_shrink_list(user_ids, user_filter_text) {
     return user_ids;
 }
 
+exports.should_show_only_recipients = function () {
+    // The display setting has not been implemented yet.
+    return false;
+};
+
+function get_stream_message_recipients_list(sub) {
+    let user_ids = people.get_active_user_ids();
+    user_ids = _.filter(user_ids, function (user_id) {
+        const person = people.get_by_user_id(user_id);
+        if (person) {
+            // if the user is bot, do not show in presence data.
+            if (person.is_bot) {
+                return false;
+            }
+        }
+        if (sub && !stream_data.is_user_subscribed(sub, person.user_id)) {
+            return false;
+        }
+        return true;
+    });
+    return user_ids;
+}
+
+function get_pm_recipients_list(user_emails) {
+    // In case the following reduce function looks confusing,
+    // refer to https://underscorejs.org/#reduce
+    const user_ids = _.reduce(user_emails, function (list, user_email) {
+        const user_id = people.get_user_id(user_email);
+        const person = people.get_by_user_id(user_id);
+        // if the user is bot, do not show in presence data.
+        if (person && !person.is_bot) {
+            list.push(user_id);
+        }
+        return list;
+    }, []);
+
+    // Add current user to buddy list
+    const me = people.my_current_user_id();
+    if (!_.contains(user_ids, me)) {
+        user_ids.push(me);
+    }
+
+    return user_ids;
+}
+
+// all users path for buddy list
 function get_user_id_list(user_filter_text) {
     let user_ids;
 
     if (user_filter_text) {
-        // If there's a filter, select from all users, not just those
-        // recently active.
+        // If there's a filter, and we're not using the recipients list
+        // then select from all users, not just those recently active.
         user_ids = filter_user_ids(user_filter_text, people.get_active_user_ids());
     } else {
         // From large realms, the user_ids in presence may exclude
@@ -322,7 +369,34 @@ function get_user_id_list(user_filter_text) {
 
 exports.get_filtered_and_sorted_user_ids = function (user_filter_text) {
     let user_ids;
-    user_ids = get_user_id_list(user_filter_text);
+    let recipient_list = '';
+    let narrow_filter;
+
+    if (exports.should_show_only_recipients() && narrow_state.active()) {
+        narrow_filter = narrow_state.filter();
+        if (narrow_filter.has_operator('pm-with')) {
+            recipient_list = 'pm';
+        }
+        if (narrow_filter.has_operator('stream')) {
+            recipient_list = 'stream';
+        }
+    }
+
+    switch (recipient_list) {
+    case 'pm':
+        user_ids = get_pm_recipients_list(narrow_filter.operands('pm-with')[0].split(','));
+        user_ids = filter_user_ids(user_filter_text, user_ids);
+        break;
+    case 'stream':
+        user_ids = get_stream_message_recipients_list(narrow_filter.operands('stream')[0]);
+        user_ids = filter_user_ids(user_filter_text, user_ids);
+        break;
+    // currently we consider filters such as "is: private" as part of the default case
+    // ie the alternate buddy list mode only behaves differently for stream and pm narrows
+    default:
+        user_ids = get_user_id_list(user_filter_text);
+    }
+
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
     return exports.sort_users(user_ids);
 };
