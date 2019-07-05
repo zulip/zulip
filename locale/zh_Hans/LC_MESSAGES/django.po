@@ -15,7 +15,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-05-20 03:25+0000\n"
-"PO-Revision-Date: 2019-06-02 05:39+0000\n"
+"PO-Revision-Date: 2019-06-08 03:15+0000\n"
 "Last-Translator: longjiang li <cqlilon@live.com>\n"
 "Language-Team: Chinese Simplified (http://www.transifex.com/zulip/zulip/language/zh-Hans/)\n"
 "MIME-Version: 1.0\n"
@@ -2052,14 +2052,14 @@ msgid ""
 "<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
 "pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
 "shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
+msgstr "<a href=\"%(getting_started_link)s\">了解更多</a>关于Zulip的操作，<a href=\"%(keyboard_shortcuts_link)s\">快捷键</a>帮助更方便的使用Zulip，或者<a href=\"%(realm_uri)s\">直接进入</a>"
 
 #: templates/zerver/emails/followup_day1.source.html:47
 msgid ""
 "PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>, star us "
 "on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
 "live on the <a href=\"https://chat.zulip.org\">Zulip community server</a>!"
-msgstr ""
+msgstr "例如：关注我们的<a href=\"https://twitter.com/zulip\">Twitter</a>，给我们的<a href=\"https://github.com/zulip/zulip\">GitHub</a>加星，或者在<a href=\"https://chat.zulip.org\">Zulip 社区服务器</a>和我们在线交流"
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -2085,7 +2085,7 @@ msgstr "您加入了Zulip社群%(realm_name)s"
 msgid ""
 "(you'll need these to sign in to the mobile and desktop apps "
 "(https://zulipchat.com/apps))"
-msgstr ""
+msgstr "（您需要这些来登录移动和桌面应用程序 (https://zulipchat.com/apps)）"
 
 #: templates/zerver/emails/followup_day1.txt:25
 #, python-format
@@ -2093,7 +2093,7 @@ msgid ""
 "Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
 "pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
 "right in to %(realm_uri)s!"
-msgstr ""
+msgstr "查看我们的管理员向导（%(getting_started_link)s），快捷键（%(keyboard_shortcuts_link)s）帮助更方便的使用Zulip，或者直接进入%(realm_uri)s"
 
 #: templates/zerver/emails/followup_day1.txt:27
 #, python-format
@@ -2101,21 +2101,21 @@ msgid ""
 "Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
 "keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
 "%(realm_uri)s!"
-msgstr ""
+msgstr "了解更多（%(getting_started_link)s）关于Zulip的操作，快捷键（%(keyboard_shortcuts_link)s）帮助更方便的使用Zulip，或者直接进入%(realm_uri)s"
 
 #: templates/zerver/emails/followup_day1.txt:34
 msgid ""
 "PS: Check us out on Twitter (@zulip), star us on GitHub "
 "(https://github.com/zulip/zulip), or chat with us live on the Zulip "
 "community server (https://chat.zulip.org)!"
-msgstr ""
+msgstr "例如：关注我们的Twitter (@zulip)，给我们的GitHub加星(https://github.com/zulip/zulip)，或者在Zulip社区服务器和我们在线交流 (https://chat.zulip.org)"
 
 #: templates/zerver/emails/followup_day2.source.html:14
 msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em&mdash;you can always edit the message later!"
-msgstr ""
+msgstr "主题就像电子邮件的主题行。但最大的不同是，它们非常简短。两三个字就够了。不要想太多——你可以稍后再编辑信息!"
 
 #: templates/zerver/emails/followup_day2.source.html:23
 msgid ""
@@ -2123,7 +2123,7 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away&mdash;read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr ""
+msgstr "为什么要为话题消耗精力呢?有两个原因:它能让对话更清晰(想象一下如果没有电子邮件的话!)，它还能让你更有效地了解在你外出时发生的事情——阅读与你相关的话题，忽略与你无关的话题!"
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "One last thing: using topics like a pro"
@@ -2134,7 +2134,7 @@ msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em -- you can always edit the message later!"
-msgstr ""
+msgstr "主题就像电子邮件的主题行。但最大的不同是，它们非常简短。两三个字就够了。不要想太多——你可以稍后再编辑信息!"
 
 #: templates/zerver/emails/followup_day2.txt:11
 msgid ""
@@ -2142,7 +2142,7 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away -- read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr ""
+msgstr "为什么要为话题消耗精力呢?有两个原因:它能让对话更清晰(想象一下如果没有电子邮件的话!)，它还能让你更有效地了解在你外出时发生的事情——阅读与你相关的话题，忽略与你无关的话题!"
 
 #: templates/zerver/emails/followup_day2.txt:13
 msgid "Take it for a spin now:"
@@ -2162,7 +2162,7 @@ msgid ""
 "%(referrer_full_name)s (<a "
 "href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>)wants you to join "
 "them on Zulip &mdash; the team communication tool designed for productivity."
-msgstr ""
+msgstr "%(referrer_full_name)s（<a href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>）邀请您加入他们的Zulip — 一个能大大提高工作效率的团队交流工具。"
 
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
@@ -2179,7 +2179,7 @@ msgstr "%(referrer_full_name)s(%(referrer_email)s)邀请您加入他们的Zulip�
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
 msgid "To get started, click the link below."
-msgstr ""
+msgstr "点击下面的按钮开始吧"
 
 #: templates/zerver/emails/invitation_reminder.source.html:10
 #, python-format
@@ -2188,7 +2188,7 @@ msgid ""
 "href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>) wants you to join"
 " them on Zulip &mdash; the team communication tool designed for "
 "productivity."
-msgstr ""
+msgstr "友情提示：%(referrer_name)s（<a href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>）邀请您加入他们的Zulip — 一个能大大提高工作效率的团队交流工具。"
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
@@ -2201,7 +2201,7 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
-msgstr ""
+msgstr "友情提示：%(referrer_name)s（%(referrer_email)s）邀请您加入他们的Zulip — 一个能大大提高工作效率的团队交流工具。"
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #: templates/zerver/emails/realm_reactivation.txt:13
@@ -2209,7 +2209,7 @@ msgstr ""
 msgid ""
 "Contact us any time at %(support_email)s if you run into trouble, have any "
 "feedback, or just want to chat!"
-msgstr ""
+msgstr "如果您遇到任何麻烦，有问题需要反馈，或仅仅想聊聊天，任何时间都可以通过%(support_email)s联系我们。"
 
 #: templates/zerver/emails/notify_change_in_email.source.html:10
 #, python-format
@@ -2218,7 +2218,7 @@ msgid ""
 "href=\"%(new_email)s\">%(new_email)s</a>. If you did not request this "
 "change, please contact us immediately at <a "
 "href=\"mailto:%(support_email)s\">%(support_email)s</a>."
-msgstr ""
+msgstr "您Zulip账户关联的电子邮件变更为<a href=\"%(new_email)s\">%(new_email)s</a>。如果不是你请求的变更请立即联系我们<a href=\"mailto:%(support_email)s\">%(support_email)s</a>。"
 
 #: templates/zerver/emails/notify_change_in_email.subject.txt:1
 #, python-format
@@ -2231,7 +2231,7 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
-msgstr ""
+msgstr "您Zulip账户关联的电子邮件变更为%(new_email)s。如果不是你请求的变更请立即联系我们<%(support_email)s>。"
 
 #: templates/zerver/emails/notify_new_login.source.html:16
 #, python-format
@@ -2250,12 +2250,12 @@ msgid ""
 "compromised, please <a href=\"%(realm_uri)s/accounts/password/reset/\" "
 "target=\"_blank\">reset your password</a> or contact us immediately at <a "
 "href=\"mailto:%(support_email)s\">%(support_email)s</a>."
-msgstr ""
+msgstr "如果您知道此次登录，或认为您的帐户可能已被窃取，请<a href=\"%(realm_uri)s/accounts/password/reset/\" target=\"_blank\">重置您的密码</a>或立即与我们联系<a href=\"mailto:%(support_email)s\">%(support_email)s</a>"
 
 #: templates/zerver/emails/notify_new_login.subject.txt:1
 #, python-format
 msgid "New login from %(device_browser)s on %(device_os)s"
-msgstr ""
+msgstr "新的登录来自%(device_os)s上的%(device_browser)s"
 
 #: templates/zerver/emails/notify_new_login.txt:3
 #, python-format
@@ -2274,7 +2274,7 @@ msgid ""
 "compromised, please reset your password at "
 "%(realm_uri)s/accounts/password/reset/ or contact us immediately at "
 "%(support_email)s."
-msgstr ""
+msgstr "如果您知道此次登录，或认为您的帐户可能已被窃取，请通过%(realm_uri)s重置您的密码或立即与我们联系%(support_email)s"
 
 #: templates/zerver/emails/password_reset.source.html:19
 #, python-format
@@ -2283,7 +2283,7 @@ msgid ""
 " You can contact an organization administrator to <a "
 "href=\"%(realm_uri)s/help/deactivate-or-reactivate-a-user\">reactivate your "
 "account</a>."
-msgstr ""
+msgstr "您在社群%(realm_uri)s中已有账号，但是被禁用了。您可以联系社群管理员<a href=\"%(realm_uri)s/help/deactivate-or-reactivate-a-user\">启用您的账户</a>"
 
 #: templates/zerver/emails/password_reset.subject.txt:1
 #, python-format
@@ -2299,7 +2299,7 @@ msgstr "点击下面的链接以重置您的密码"
 msgid ""
 "You previously had an account on %(realm_uri)s, but it has been deactivated."
 " You can contact an organization administrator to reactivate your account."
-msgstr ""
+msgstr "您在社群%(realm_uri)s中已有账号，但是被禁用了。您可以联系社群管理员启用您的账户"
 
 #: templates/zerver/emails/realm_reactivation.txt:7
 msgid "Click the link below to reactivate your organization."
@@ -2847,7 +2847,7 @@ msgid ""
 "    <p>This organization has been migrated to new hosting on zulipchat.com. We just need you to do one last thing.</p>\n"
 "    <h3>Accept the Zulip Cloud terms of service</h3>\n"
 "    "
-msgstr ""
+msgstr "\n<p>你的社群已经从Zulip.com迁移到ZulipChat.com！新的服务器，更佳的强大，下面秩序要你做一件事</p>\n<h3>阅读并接受Zulip的服务条款</h3>"
 
 #: zerver/decorator.py:136 zerver/lib/emoji.py:93 zerver/lib/users.py:77
 #: zerver/lib/users.py:80 zerver/views/invite.py:27 zerver/views/invite.py:31

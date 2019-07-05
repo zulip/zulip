@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-05-20 03:25+0000\n"
-"PO-Revision-Date: 2019-05-31 14:22+0000\n"
+"PO-Revision-Date: 2019-06-04 20:22+0000\n"
 "Last-Translator: Juno Takano <juno@newen.pub>\n"
 "Language-Team: Portuguese (http://www.transifex.com/zulip/zulip/language/pt/)\n"
 "MIME-Version: 1.0\n"
@@ -596,11 +596,11 @@ msgid ""
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
 "            here</a>.\n"
 "            "
-msgstr ""
+msgstr "\n            Aprenda mais sobre menções <a href=\"/help/mention-a-user-or-group\">\n            aqui</a>.\n            "
 
 #: templates/zerver/app/home.html:145
 msgid "No search results"
-msgstr ""
+msgstr "Sem resultados de busca"
 
 #: templates/zerver/app/home.html:148 templates/zerver/app/home.html:150
 msgid "Messages"
@@ -946,7 +946,7 @@ msgstr "Todos os fluxos"
 
 #: templates/zerver/app/left_sidebar.html:77
 msgid "Add streams"
-msgstr ""
+msgstr "Adicionar fluxos"
 
 #: templates/zerver/app/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
@@ -1442,7 +1442,7 @@ msgstr "Usuários padrão"
 #: templates/zerver/emails/notify_new_login.source.html:8
 #: templates/zerver/emails/password_reset.source.html:4
 msgid "Zulip logo"
-msgstr ""
+msgstr "Logo do Zulip"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:9
 #: templates/zerver/emails/compiled/find_team.html:9
@@ -1475,7 +1475,7 @@ msgid ""
 "If you did not request this change, please contact us immediately at <a "
 "href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(support_email)s</a>."
-msgstr ""
+msgstr "Se você não pediu esta mudança, por favor contate-nos imediatamente em  <a href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a>."
 
 #: templates/zerver/emails/compiled/confirm_registration.html:4
 #: templates/zerver/emails/compiled/invitation.html:4
@@ -1484,7 +1484,7 @@ msgstr ""
 #: templates/zerver/emails/invitation.source.html:4
 #: templates/zerver/emails/realm_reactivation.source.html:4
 msgid "Turtle with envelope"
-msgstr ""
+msgstr "Tartaruga com um envelope"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.source.html:9
@@ -1515,12 +1515,12 @@ msgid ""
 "Contact us any time at <a href=\"mailto:%(support_email)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a> if "
 "you run into trouble, have any feedback, or just want to chat!"
-msgstr ""
+msgstr "Contate-nos a qualquer momento em <a href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a> se tiver problemas, comentários, ou só quiser conversar!"
 
 #: templates/zerver/emails/compiled/email_base_default.html:87
 #: templates/zerver/emails/email_base_default.source.html:30
 msgid "Swimming fish"
-msgstr ""
+msgstr "Peixe nadando"
 
 #: templates/zerver/emails/compiled/find_team.html:11
 #: templates/zerver/emails/find_team.source.html:10
@@ -1605,7 +1605,7 @@ msgid ""
 "(you'll need these to sign in to the <a href=\"https://zulipchat.com/apps\" "
 "style=\"color:#46aa8f; text-decoration:underline\">mobile and desktop</a> "
 "apps)"
-msgstr ""
+msgstr "(você precisará desses detalhes para entrar nos aplicativos <a href=\"https://zulipchat.com/apps\" style=\"color:#46aa8f; text-decoration:underline\">móvel e para computador de mesa</a>)"
 
 #: templates/zerver/emails/compiled/followup_day1.html:41
 #, python-format
@@ -1615,7 +1615,7 @@ msgid ""
 "few <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">dive right in</a>!"
-msgstr ""
+msgstr "Veja o nosso <a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-decoration:underline\">guia de administração</a>, torne-se um ninja Zulip com alguns <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-decoration:underline\">atalhos de teclado</a>, ou <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">jogue-se logo com tudo</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:43
 #, python-format
@@ -1625,7 +1625,7 @@ msgid ""
 "<a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">dive right in</a>!"
-msgstr ""
+msgstr "<a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-decoration:underline\">Aprenda mais</a> sobre o Zulip, torne-se um ninja Zulip com alguns <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-decoration:underline\">atalhos do teclado</a>, ou <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">jogue-se logo com tudo</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:48
 #: templates/zerver/emails/followup_day1.source.html:42
@@ -1650,12 +1650,12 @@ msgid ""
 "decoration:underline\">GitHub</a>, or chat with us live on the <a "
 "href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-"
 "decoration:underline\">Zulip community server</a>!"
-msgstr ""
+msgstr "PS: Siga-nos no <a href=\"https://twitter.com/zulip\" style=\"color:#46aa8f; text-decoration:underline\">Twitter</a>, favorite-nos no <a href=\"https://github.com/zulip/zulip\" style=\"color:#46aa8f; text-decoration:underline\">GitHub</a>, ou converse ao vivo conosco no <a href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-decoration:underline\">servidor da comunidade Zulip</a>!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:4
 #: templates/zerver/emails/followup_day2.source.html:4
 msgid "Octopus box with heart"
-msgstr ""
+msgstr "Polvo com caixa e coração"
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.source.html:8
@@ -1674,7 +1674,7 @@ msgstr "Eu queria compartilhar uma última coisa com você: algumas dicas sobre 
 #: templates/zerver/emails/compiled/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.source.html:12
 msgid "Examples of short topics"
-msgstr ""
+msgstr "Exemplos de tópicos curtos"
 
 #: templates/zerver/emails/compiled/followup_day2.html:15
 msgid ""
@@ -1700,7 +1700,7 @@ msgstr "Não recomendado: \"O que as pessoas acham dessa nova maquete de design?
 #: templates/zerver/emails/compiled/followup_day2.html:22
 #: templates/zerver/emails/followup_day2.source.html:21
 msgid "Example of a topic that is too long"
-msgstr ""
+msgstr "Exemplo de um tópico que é longo demais"
 
 #: templates/zerver/emails/compiled/followup_day2.html:24
 msgid ""
@@ -1756,7 +1756,7 @@ msgid ""
 "style=\"color:#46aa8f; text-"
 "decoration:underline\">%(referrer_email)s</a>)wants you to join them on "
 "Zulip — the team communication tool designed for productivity."
-msgstr ""
+msgstr "%(referrer_full_name)s (<a href=\"mailto:%(referrer_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>)quer juntar-se a você no Zulip — a ferramenta de comunicação para times feita pensando na produtividade."
 
 #: templates/zerver/emails/compiled/invitation.html:15
 #: templates/zerver/emails/compiled/invitation_reminder.html:14
@@ -1768,7 +1768,7 @@ msgstr "Para começar, clique no botão abaixo."
 #: templates/zerver/emails/compiled/invitation_reminder.html:4
 #: templates/zerver/emails/invitation_reminder.source.html:4
 msgid "Mailbox with envelope"
-msgstr ""
+msgstr "Caixa de correio com envelope"
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:9
 #: templates/zerver/emails/invitation_reminder.source.html:8
@@ -1783,7 +1783,7 @@ msgid ""
 "href=\"mailto:%(referrer_email)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(referrer_email)s</a>) wants you to join them on "
 "Zulip — the team communication tool designed for productivity."
-msgstr ""
+msgstr "Este é um lembrete amigável que %(referrer_name)s (<a href=\"mailto:%(referrer_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) quer juntar-se a você no Zulip — a ferramenta de comunicação feita pensando na produtividade."
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:19
 #: templates/zerver/emails/invitation_reminder.source.html:18
@@ -1833,14 +1833,14 @@ msgstr "Observamos uma entrada recente para a seguinte conta Zulip."
 msgid ""
 "Organization: <a href=\"%(realm_uri)s\" target=\"_blank\" "
 "style=\"color:#46aa8f; text-decoration:underline\">%(realm_uri)s</a>"
-msgstr ""
+msgstr "Organização: <a href=\"%(realm_uri)s\" target=\"_blank\" style=\"color:#46aa8f; text-decoration:underline\">%(realm_uri)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:21
 #, python-format
 msgid ""
 "Email: <a href=\"mailto:%(user_email)s\" target=\"_blank\" "
 "style=\"color:#46aa8f; text-decoration:underline\">%(user_email)s</a>"
-msgstr ""
+msgstr "Email: <a href=\"mailto:%(user_email)s\" target=\"_blank\" style=\"color:#46aa8f; text-decoration:underline\">%(user_email)s</a>"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:24
 #: templates/zerver/emails/notify_new_login.source.html:22
@@ -1878,7 +1878,7 @@ msgid ""
 "your password</a> or contact us immediately at <a "
 "href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">%(support_email)s</a>."
-msgstr ""
+msgstr "Se você não reconhece este login, ou acha que sua conta possa ter sido comprometida, por favor <a href=\"%(realm_uri)s/accounts/password/reset/\" target=\"_blank\" style=\"color:#46aa8f; text-decoration:underline\">reconfigure sua senha</a> ou contate-nos imediatamente em <a href=\"mailto:%(support_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(support_email)s</a>."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:43
 #: templates/zerver/emails/notify_new_login.source.html:41
@@ -1918,7 +1918,7 @@ msgid ""
 "href=\"%(realm_uri)s/help/deactivate-or-reactivate-a-user\" "
 "style=\"color:#46aa8f; text-decoration:underline\">reactivate your "
 "account</a>."
-msgstr ""
+msgstr "Você anteriormente teve uma conta em  %(realm_uri)s, mas ela foi desativada Você pode contatar um administrador desta organização para <a href=\"%(realm_uri)s/help/deactivate-or-reactivate-a-user\" style=\"color:#46aa8f; text-decoration:underline\">reativar sua conta</a>."
 
 #: templates/zerver/emails/compiled/password_reset.html:22
 #: templates/zerver/emails/password_reset.source.html:21
@@ -2497,12 +2497,12 @@ msgstr "Filtrar por categoria"
 #: templates/zerver/integrations/index.html:62
 #: templates/zerver/integrations/index.html:89
 msgid "Custom integrations"
-msgstr ""
+msgstr "Integrações personalizadas"
 
 #: templates/zerver/integrations/index.html:64
 #: templates/zerver/integrations/index.html:91
 msgid "Incoming webhooks"
-msgstr ""
+msgstr "Webhooks de entrada"
 
 #: templates/zerver/integrations/index.html:67
 #: templates/zerver/integrations/index.html:94 zerver/lib/integrations.py:45
@@ -2512,7 +2512,7 @@ msgstr "Bots interativos"
 #: templates/zerver/integrations/index.html:70
 #: templates/zerver/integrations/index.html:97
 msgid "REST API"
-msgstr ""
+msgstr "API REST"
 
 #: templates/zerver/integrations/index.html:77
 msgid "Categories"
@@ -3147,7 +3147,7 @@ msgstr "Já tem uma conta."
 
 #: zerver/lib/actions.py:4830
 msgid "Account has been deactivated."
-msgstr ""
+msgstr "A conta foi desativada."
 
 #: zerver/lib/actions.py:4836
 msgid "Invalid address."
@@ -4093,7 +4093,7 @@ msgstr "Status inválido: %s"
 
 #: zerver/views/public_export.py:26
 msgid "Exceeded rate limit."
-msgstr ""
+msgstr "Uso da API excedeu a taxa limite"
 
 #: zerver/views/push_notifications.py:14
 msgid "Empty or invalid length token"
@@ -4140,7 +4140,7 @@ msgstr "Pelo menos um método de autenticação deve estar habilitado."
 
 #: zerver/views/realm.py:89
 msgid "Invalid video chat provider {}"
-msgstr ""
+msgstr "Provedor de chat de vídeo inválido {}"
 
 #: zerver/views/realm.py:94 zerver/views/realm_domains.py:28
 msgid "Invalid domain: {}"
@@ -4148,15 +4148,15 @@ msgstr "Domínio inválido: {}"
 
 #: zerver/views/realm.py:100
 msgid "User ID cannot be empty"
-msgstr ""
+msgstr "ID do usuário não pode estar vazia"
 
 #: zerver/views/realm.py:102
 msgid "API key cannot be empty"
-msgstr ""
+msgstr "Chave da API não pode estar vazia"
 
 #: zerver/views/realm.py:104
 msgid "API secret cannot be empty"
-msgstr ""
+msgstr "Chave secreta da API não pode estar vazia"
 
 #: zerver/views/realm.py:116
 #, python-format
@@ -4273,7 +4273,7 @@ msgstr "Você pode apenas convitar outros usuários do espelhamento Zephyr para 
 
 #: zerver/views/streams.py:335
 msgid "Only administrators can modify other users' subscriptions."
-msgstr ""
+msgstr "Só administradores podem alterar as inscrições dos outros usuários"
 
 #: zerver/views/streams.py:340
 msgid "Your account is too new to modify other users' subscriptions."
@@ -4338,7 +4338,7 @@ msgstr "Não há nenhum membro '%s' neste grupo de usuários"
 
 #: zerver/views/user_settings.py:29
 msgid "Avatar changes are disabled in this organization."
-msgstr ""
+msgstr "Mudanças na imagem de perfil estão desativadas nesta organização"
 
 #: zerver/views/user_settings.py:42 zerver/views/user_settings.py:94
 msgid "Email address changes are disabled in this organization."
@@ -4477,7 +4477,7 @@ msgstr "Mensagem do Slack"
 #: zerver/webhooks/wordpress/view.py:45
 #, python-format
 msgid "Unknown WordPress webhook action: %s"
-msgstr ""
+msgstr "Ação desconhecida de webhook WordPress: %s"
 
 #: zerver/webhooks/zabbix/view.py:45
 msgid "Invalid payload"
