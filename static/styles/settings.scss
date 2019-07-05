@@ -1084,37 +1084,37 @@ input[type=checkbox].inline-block {
         right: 30px;
     }
 
+    #user-avatar-source {
+        margin-left: 10px;
+        width: 200px;
+        height: 20px;
+        position: absolute;
+        bottom: 19%;
+        left: 0%;
+        font-size: 0.9em;
+        visibility: hidden;
+
+        a {
+            color: hsl(0, 0%, 100%);
+        }
+    }
+
     .guest-avatar::after {
         outline: 9px solid hsl(0, 0%, 100%);
     }
 
     &:hover {
+        #user-avatar-block {
+            -webkit-filter: brightness(0.4);
+        }
+
         #user_avatar_delete_button {
             visibility: visible;
         }
-    }
-}
 
-#user-settings-avatar:hover #user-avatar-block {
-    -webkit-filter: brightness(0.4);
-}
-
-#user-settings-avatar:hover #user-avatar-source {
-    visibility: visible;
-}
-
-#user-avatar-source {
-    margin-left: 10px;
-    width: 200px;
-    height: 20px;
-    position: absolute;
-    bottom: 19%;
-    left: 0%;
-    font-size: 0.9em;
-    visibility: hidden;
-
-    a {
-        color: hsl(0, 0%, 100%);
+        #user-avatar-source {
+            visibility: visible;
+        }
     }
 }
 
