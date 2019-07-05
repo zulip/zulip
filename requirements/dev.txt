@@ -110,7 +110,7 @@ pexpect==4.7.0            # via ipython
 phonenumberslite==8.10.12
 pickleshare==0.7.5        # via ipython
 pika==0.13.0
-pillow==5.4.1
+pillow==6.1.0
 pip-tools==2.0.2
 polib==1.1.0
 premailer==3.4.0
