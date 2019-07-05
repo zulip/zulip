@@ -305,16 +305,7 @@ def init_worker(counter: Synchronized) -> None:
 
     destroy_test_databases(_worker_id)
     create_test_databases(_worker_id)
-
-    # Allow each child process to write to a unique directory within `TEST_RUN_DIR`.
-    worker_path = os.path.join(TEST_RUN_DIR, 'worker_{}'.format(_worker_id))
-    os.makedirs(worker_path, exist_ok=True)
-    settings.TEST_WORKER_DIR = worker_path
-
-    # Every process should upload to a separate directory so that
-    # race conditions can be avoided.
-    settings.LOCAL_UPLOADS_DIR = '{}_{}'.format(settings.LOCAL_UPLOADS_DIR,
-                                                _worker_id)
+    initialize_worker_path(_worker_id)
 
     def is_upload_avatar_url(url: RegexURLPattern) -> bool:
         if url.regex.pattern == r'^user_avatars/(?P<path>.*)$':
@@ -394,6 +385,22 @@ def check_import_error(test_name: str) -> None:
     except ImportError as exc:
         raise exc from exc  # Disable exception chaining in Python 3.
 
+
+def initialize_worker_path(worker_id: int) -> None:
+    # Allow each test worker process to write to a unique directory
+    # within `TEST_RUN_DIR`.
+    worker_path = os.path.join(TEST_RUN_DIR, 'worker_{}'.format(_worker_id))
+    os.makedirs(worker_path, exist_ok=True)
+    settings.TEST_WORKER_DIR = worker_path
+
+    # Every process should upload to a separate directory so that
+    # race conditions can be avoided.
+    settings.LOCAL_UPLOADS_DIR = get_or_create_dev_uuid_var_path(
+        os.path.join("test-backend",
+                     os.path.basename(TEST_RUN_DIR),
+                     os.path.basename(worker_path),
+                     "test_uploads"))
+
 class Runner(DiscoverRunner):
     test_suite = TestSuite
     test_loader = TestLoader()
@@ -443,6 +450,11 @@ class Runner(DiscoverRunner):
                     f.write(str(random_id_range_start + (index + 1)) + "\n")
             else:
                 f.write(str(random_id_range_start) + "\n")
+
+        # Check if we are in serial mode to avoid unnecessarily making a directory.
+        # We add "worker_0" in the path for consistency with parallel mode.
+        if self.parallel == 1:
+            initialize_worker_path(0)
 
         return super().setup_test_environment(*args, **kwargs)
 
