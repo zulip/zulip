@@ -358,50 +358,13 @@ ENABLE_GRAVATAR = True
 # Email gateway integration.
 #
 # The Email gateway integration supports sending messages into Zulip
-# by sending an email.  This is useful for receiving notifications
-# from third-party services that only send outgoing notifications via
-# email.  Once this integration is configured, each stream will have
-# an email address documented on the stream settings page and emails
-# sent to that address will be delivered into the stream.
-#
-# There are two ways to configure email mirroring in Zulip:
-#  1. Local delivery: A MTA runs locally and passes mail directly to Zulip
-#  2. Polling: Checks an IMAP inbox every minute for new messages.
-#
-# The local delivery configuration is preferred for production because
-# it supports nicer looking email addresses and has no cron delay,
-# while the polling mechanism is better for testing/developing this
-# feature because it doesn't require a public-facing IP/DNS setup.
-#
-# The main email mirror setting is the email address pattern, where
-# you specify the email address format you'd like the integration to
-# use.  It should be one of the following:
-#   %s@zulip.example.com (for local delivery)
-#   username+%s@example.com (for polling if EMAIL_GATEWAY_LOGIN=username@example.com)
+# by sending an email.
+# For details, see the documentation:
+#   https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
+
 EMAIL_GATEWAY_PATTERN = ""
-#
-# If you are using local delivery, EMAIL_GATEWAY_PATTERN is all you need
-# to change in this file.  You will also need to enable the Zulip postfix
-# configuration to support local delivery by adding
-#   , zulip::postfix_localmail
-# to puppet_classes in /etc/zulip/zulip.conf and then running
-# `scripts/zulip-puppet-apply -f` to do the installation.
-#
-# You will also need to setup DNS MX records to ensure emails sent to
-# the hostname configured in EMAIL_GATEWAY_PATTERN will be delivered
-# to the Zulip postfix server you installed above.
-#
-# If you are using polling, you will need to setup an IMAP email
-# account dedicated to Zulip email gateway messages.  The model is
-# that users will send emails to that account via an address of the
-# form username+%s@example.com (which is what you will set as
-# EMAIL_GATEWAY_PATTERN); your email provider should deliver those
-# emails to the username@example.com inbox.  Then you run in a cron
-# job `./manage.py email_mirror` (see puppet/zulip/files/cron.d/email-mirror),
-# which will check that inbox and batch-process any new messages.
-#
-# You will need to configure authentication for the email mirror
-# command to access the IMAP mailbox below and in zulip-secrets.conf.
+
+# If you are using polling , edit the IMAP settings below:
 #
 # The IMAP login; username here and password as email_gateway_password in
 # zulip-secrets.conf.
