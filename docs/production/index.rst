@@ -19,3 +19,4 @@ Zulip in Production
    ssl-certificates
    email
    deployment
+   email-gateway

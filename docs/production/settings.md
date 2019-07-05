@@ -100,7 +100,8 @@ if there's something you'd like to do but can't figure out how to.
 Some popular settings in `/etc/zulip/settings.py` include:
 * The Twitter integration, which provides pretty inline previews of
   tweets.
-* The email gateway, which lets users send emails into Zulip.
+* The [email gateway](../production/email-gateway.html), which lets
+  users send emails into Zulip.
 
 ## Zulip announcement list
 
