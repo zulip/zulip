@@ -2280,10 +2280,8 @@ paths:
                 - $ref: '#/components/schemas/JsonSuccess'
                 - example:
                       {
-                          "description": "Description successfully updated.",
                           "result": "success",
-                          "msg": "",
-                          "name": "Name successfully updated."
+                          "msg": ""
                       }
 
         '400':
