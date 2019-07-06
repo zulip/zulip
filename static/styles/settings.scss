@@ -1077,7 +1077,7 @@ input[type=checkbox].inline-block {
 
     #user_avatar_delete_button {
         cursor: pointer;
-        visibility: hidden;
+        opacity: 0;
         font-size: 3rem;
         position: absolute;
         top: 67px; // 31.5px + 5px + 30px
@@ -1109,7 +1109,7 @@ input[type=checkbox].inline-block {
         }
 
         #user_avatar_delete_button {
-            visibility: visible;
+            opacity: 1;
         }
 
         #user-avatar-source {

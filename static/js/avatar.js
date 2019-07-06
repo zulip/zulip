@@ -56,7 +56,7 @@ exports.build_user_avatar_widget = function (upload_function) {
         $("#user-avatar-source").hide();
     }
 
-    $("#user_avatar_delete_button").on('click', function (e) {
+    $("#user_avatar_delete_button").on('click keydown', function (e) {
         e.preventDefault();
         e.stopPropagation();
         channel.del({
