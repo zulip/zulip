@@ -602,21 +602,21 @@ form#add_new_subscription {
     background-size: 60% auto;
     background-repeat: no-repeat;
     background-position: center center;
-}
 
-.stream-row .check svg {
-    fill: transparent;
-    width: 70%;
-    margin: 0% 15%;
-}
+    svg {
+        fill: transparent;
+        width: 70%;
+        margin: 0% 15%;
+    }
 
-.stream-row .check.checked:hover svg {
-    opacity: 0.5;
-}
+    &.checked:hover svg {
+        opacity: 0.5;
+    }
 
-.stream-row .check.disabled {
-    pointer-events: none;
-    visibility: hidden;
+    &.disabled {
+        pointer-events: none;
+        visibility: hidden;
+    }
 }
 
 .stream-row .checked svg {
