@@ -10,14 +10,11 @@ from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets
 from zerver.models import RealmAuditLog
 from zerver.views.public_export import public_only_realm_export
 
-from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
-
 import os
 import re
 
 def create_tarball_path() -> str:
-    tarball_path = os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
-                                'test-export.tar.gz')
+    tarball_path = os.path.join(settings.TEST_WORKER_DIR, 'test-export.tar.gz')
     with open(tarball_path, 'w') as f:
         f.write('zulip!')
     return tarball_path

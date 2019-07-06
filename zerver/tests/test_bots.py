@@ -5,6 +5,7 @@ import ujson
 
 from django.core import mail
 from django.test import override_settings
+from django.conf import settings
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Mapping
 
@@ -24,8 +25,6 @@ from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.bot_lib import get_bot_handler
 
 from zulip_bots.custom_exceptions import ConfigValidationError
-
-from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 
 class BotTest(ZulipTestCase, UploadSerializeMixin):
     def get_bot_user(self, email: str) -> UserProfile:
@@ -894,7 +893,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(email, get_realm('zulip'))
         self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
 
-    @override_settings(LOCAL_UPLOADS_DIR=get_or_create_dev_uuid_var_path('test-backend/bot_avatar'))
+    @override_settings(LOCAL_UPLOADS_DIR=os.path.join(settings.TEST_WORKER_DIR, 'bot_avatar'))
     def test_patch_bot_avatar(self) -> None:
         self.login(self.example_email('hamlet'))
         bot_info = {

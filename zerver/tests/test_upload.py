@@ -42,8 +42,7 @@ from zerver.lib.cache import get_realm_used_upload_space_cache_key, cache_get
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.users import get_api_key
 
-from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path, \
-    get_dev_uuid_var_path
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
 
 import urllib
 import ujson
@@ -1449,7 +1448,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("iago")
         self.assertTrue(user_profile.is_realm_admin)
 
-        tarball_path = os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
+        tarball_path = os.path.join(settings.TEST_WORKER_DIR,
                                     'tarball.tar.gz')
         with open(tarball_path, 'w') as f:
             f.write('dummy')
@@ -1743,7 +1742,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("iago")
         self.assertTrue(user_profile.is_realm_admin)
 
-        tarball_path = os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
+        tarball_path = os.path.join(settings.TEST_WORKER_DIR,
                                     'tarball.tar.gz')
         with open(tarball_path, 'w') as f:
             f.write('dummy')

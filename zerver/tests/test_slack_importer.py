@@ -45,10 +45,6 @@ from zerver.models import (
     Recipient,
 )
 
-from scripts.lib.zulip_tools import (
-    get_or_create_dev_uuid_var_path,
-)
-
 import ujson
 import logging
 import shutil
@@ -483,7 +479,9 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
     def test_convert_slack_workspace_messages(self, mock_get_messages_iterator: mock.Mock,
                                               mock_message: mock.Mock) -> None:
-        output_dir = get_or_create_dev_uuid_var_path('test-backend/test-slack-import')
+        output_dir = os.path.join(settings.TEST_WORKER_DIR, 'test-slack-import')
+        os.makedirs(output_dir, exist_ok=True)
+
         added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
 
         time = float(timezone_now().timestamp())
