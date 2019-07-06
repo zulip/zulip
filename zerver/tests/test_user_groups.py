@@ -152,8 +152,6 @@ class UserGroupAPITestCase(ZulipTestCase):
         }
         result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
         self.assert_json_success(result)
-        self.assertEqual(result.json()['name'], 'Name successfully updated.')
-        self.assertEqual(result.json()['description'], 'Description successfully updated.')
 
         # Test when new data is not supplied.
         result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info={})
@@ -185,7 +183,6 @@ class UserGroupAPITestCase(ZulipTestCase):
         }
         result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
         self.assert_json_success(result)
-        self.assertEqual(result.json()['description'], 'Description successfully updated.')
 
     def test_user_group_update_by_guest_user(self) -> None:
         hamlet = self.example_user('hamlet')
