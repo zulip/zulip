@@ -473,6 +473,9 @@ def get_or_create_dev_uuid_var_path(path: str) -> str:
     os.makedirs(absolute_path, exist_ok=True)
     return absolute_path
 
+def is_vagrant_env_host(path: str) -> bool:
+    return '.vagrant' in os.listdir(path)
+
 if __name__ == '__main__':
     cmd = sys.argv[1]
     if cmd == 'make_deploy_path':
