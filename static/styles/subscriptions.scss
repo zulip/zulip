@@ -631,20 +631,20 @@ form#add_new_subscription {
     background-color: hsl(300, 100%, 25%);
     border-radius: 4px;
     color: hsl(0, 0%, 100%);
-}
 
-.stream-row .icon .symbol {
-    font-weight: 600;
-    font-size: 1.1em;
-}
+    .symbol {
+        font-weight: 600;
+        font-size: 1.1em;
+    }
 
-.stream-row .icon .fa-lock {
-    font-size: 1.4em;
-}
+    .fa-lock {
+        font-size: 1.4em;
+    }
 
-.stream-row .icon .hashtag {
-    font-size: 1.4em;
-    font-weight: 600;
+    .hashtag {
+        font-size: 1.4em;
+        font-weight: 600;
+    }
 }
 
 .stream-row .sub-info-box {
