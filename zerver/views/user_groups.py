@@ -44,16 +44,13 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
 
     user_group = access_user_group_by_id(user_group_id, user_profile)
 
-    result = {}
     if name != user_group.name:
         do_update_user_group_name(user_group, name)
-        result['name'] = _("Name successfully updated.")
 
     if description != user_group.description:
         do_update_user_group_description(user_group, description)
-        result['description'] = _("Description successfully updated.")
 
-    return json_success(result)
+    return json_success()
 
 @require_member_or_admin
 @has_request_variables
