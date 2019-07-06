@@ -610,10 +610,6 @@ form#add_new_subscription {
     margin: 0% 15%;
 }
 
-.stream-row .checked svg {
-    fill: hsl(170, 48%, 54%);
-}
-
 .stream-row .check.checked:hover svg {
     opacity: 0.5;
 }
@@ -621,6 +617,10 @@ form#add_new_subscription {
 .stream-row .check.disabled {
     pointer-events: none;
     visibility: hidden;
+}
+
+.stream-row .checked svg {
+    fill: hsl(170, 48%, 54%);
 }
 
 .stream-row .icon {
