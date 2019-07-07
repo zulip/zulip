@@ -144,114 +144,112 @@ class OpenAPIToolsTest(ZulipTestCase):
             self.assertFalse(mock_reload.called)
 
 class OpenAPIArgumentsTest(ZulipTestCase):
+    # This will be filled during test_openapi_arguments:
+    checked_endpoints = set()  # type: Set[str]
+    # TODO: These endpoints need to be documented:
+    pending_endpoints = set([
+        '/users/me/avatar',
+        '/user_uploads',
+        '/settings/display',
+        '/settings/notifications',
+        '/users/me/profile_data',
+        '/user_groups',
+        '/user_groups/create',
+        '/users/me/pointer',
+        '/users/me/presence',
+        '/users/me',
+        '/bot_storage',
+        '/users/me/api_key/regenerate',
+        '/default_streams',
+        '/default_stream_groups/create',
+        '/users/me/alert_words',
+        '/users/me/status',
+        '/users/me/subscriptions',
+        '/messages/matches_narrow',
+        '/settings',
+        '/submessage',
+        '/attachments',
+        '/calls/create',
+        '/export/realm',
+        '/mark_all_as_read',
+        '/zcommand',
+        '/realm',
+        '/realm/deactivate',
+        '/realm/domains',
+        '/realm/emoji',
+        '/realm/filters',
+        '/realm/icon',
+        '/realm/logo',
+        '/realm/presence',
+        '/realm/profile_fields',
+        '/queue_id',
+        '/invites',
+        '/invites/multiuse',
+        '/bots',
+        # Mobile-app only endpoints
+        '/users/me/android_gcm_reg_id',
+        '/users/me/apns_device_token',
+        # Regex based urls
+        '/realm/domains/<domain>',
+        '/realm/filters/<filter_id>',
+        '/realm/profile_fields/<field_id>',
+        '/users/<user_id>/reactivate',
+        '/users/<user_id>',
+        '/bots/<bot_id>/api_key/regenerate',
+        '/bots/<bot_id>',
+        '/invites/<prereg_id>',
+        '/invites/<prereg_id>/resend',
+        '/invites/multiuse/<invite_id>',
+        '/messages/<message_id>',
+        '/messages/<message_id>/history',
+        '/users/me/subscriptions/<stream_id>',
+        '/messages/<message_id>/reactions',
+        '/messages/<message_id>/emoji_reactions/<emoji_name>',
+        '/attachments/<attachment_id>',
+        '/user_groups/<user_group_id>',
+        '/user_groups/<user_group_id>/members',
+        '/users/me/<stream_id>/topics',
+        '/streams/<stream_id>/members',
+        '/streams/<stream_id>',
+        '/streams/<stream_id>/delete_topic',
+        '/default_stream_groups/<group_id>',
+        '/default_stream_groups/<group_id>/streams',
+        # Regex with an unnamed capturing group.
+        '/users/(?!me/)(?P<email>[^/]*)/presence',
+    ])
+    # TODO: These endpoints have a mismatch between the
+    # documentation and the actual API and need to be fixed:
+    buggy_documentation_endpoints = set([
+        '/events',
+        '/users/me/subscriptions/muted_topics',
+    ])
+
     def test_openapi_arguments(self) -> None:
-        # Verifies that every REQ-defined argument appears in our API
-        # documentation for the target endpoint where possible.
+        """This end-to-end API documentation test compares the arguments
+        defined in the actual code using @has_request_variables and
+        REQ(), with the arguments declared in our API documentation
+        for every API endpoint in Zulip.
 
-        # These should have docs added
-        PENDING_ENDPOINTS = set([
-            '/users/me/avatar',
-            '/user_uploads',
-            '/settings/display',
-            '/settings/notifications',
-            '/users/me/profile_data',
-            '/user_groups',
-            '/user_groups/create',
-            '/users/me/pointer',
-            '/users/me/presence',
-            '/users/me',
-            '/bot_storage',
-            '/users/me/api_key/regenerate',
-            '/default_streams',
-            '/default_stream_groups/create',
-            '/users/me/alert_words',
-            '/users/me/status',
-            '/users/me/subscriptions',
-            '/messages/matches_narrow',
-            '/settings',
-            '/submessage',
-            '/attachments',
-            '/calls/create',
-            '/export/realm',
-            '/mark_all_as_read',
-            '/zcommand',
-            '/realm',
-            '/realm/deactivate',
-            '/realm/domains',
-            '/realm/emoji',
-            '/realm/filters',
-            '/realm/icon',
-            '/realm/logo',
-            '/realm/presence',
-            '/realm/profile_fields',
-            '/queue_id',
-            '/invites',
-            '/invites/multiuse',
-            '/bots',
-            # Mobile-app only endpoints
-            '/users/me/android_gcm_reg_id',
-            '/users/me/apns_device_token',
-            # Regex based urls
-            '/realm/domains/<domain>',
-            '/realm/filters/<filter_id>',
-            '/realm/profile_fields/<field_id>',
-            '/users/<user_id>/reactivate',
-            '/users/<user_id>',
-            '/bots/<bot_id>/api_key/regenerate',
-            '/bots/<bot_id>',
-            '/invites/<prereg_id>',
-            '/invites/<prereg_id>/resend',
-            '/invites/multiuse/<invite_id>',
-            '/messages/<message_id>',
-            '/messages/<message_id>',
-            '/messages/<message_id>',
-            '/messages/<message_id>/history',
-            '/users/me/subscriptions/<stream_id>',
-            '/messages/<message_id>/reactions',
-            '/messages/<message_id>/reactions',
-            '/messages/<message_id>/emoji_reactions/<emoji_name>',
-            '/messages/<message_id>/emoji_reactions/<emoji_name>',
-            '/attachments/<attachment_id>',
-            '/user_groups/<user_group_id>',
-            '/user_groups/<user_group_id>',
-            '/user_groups/<user_group_id>/members',
-            '/users/me/<stream_id>/topics',
-            '/streams/<stream_id>/members',
-            '/streams/<stream_id>',
-            '/streams/<stream_id>',
-            '/streams/<stream_id>/delete_topic',
-            '/default_stream_groups/<group_id>',
-            '/default_stream_groups/<group_id>',
-            '/default_stream_groups/<group_id>/streams',
-            # Regex with an unnamed capturing group.
-            '/users/(?!me/)(?P<email>[^/]*)/presence',
-        ])
+        First, we import the fancy-Django version of zproject/urls.py
+        by doing this, each has_request_variables wrapper around each
+        imported view function gets called to generate the wrapped
+        view function and thus filling the global arguments_map variable.
+        Basically, we're exploiting code execution during import.
 
-        # These endpoints have a mismatch between the documentation
-        # and the actual API.  There are situations where we may want
-        # to have undocumented parameters for e.g. backwards
-        # compatibility, which could be the situation for some of
-        # these, in which case we may want a more clever exclude
-        # system.  This list can serve as a TODO list for such an
-        # investigation.
-        BUGGY_DOCUMENTATION_ENDPOINTS = set([
-            '/events',
-            '/users/me/subscriptions/muted_topics',
-        ])
+            Then we need to import some view modules not already imported in
+        urls.py. We use this different syntax because of the linters complaining
+        of an unused import (which is correct, but we do this for triggering the
+        has_request_variables decorator).
+        """
 
-        # First, we import the fancy-Django version of zproject/urls.py
         urlconf = __import__(getattr(settings, "ROOT_URLCONF"), {}, {}, [''])
-        # Import some view modules not already imported in urls.py, we use
-        # this round about manner because of the linters complaining of an
-        # unused import (which is correct, but we do this for triggering the
-        # has_request_variables decorator).
         __import__('zerver.views.typing')
         __import__('zerver.views.events_register')
         __import__('zerver.views.realm_emoji')
 
         # We loop through all the API patterns, looking in particular
-        # those using the rest_dispatch decorator; we then parse its
-        # mapping of (HTTP_METHOD -> FUNCTION).
+        # for those using the rest_dispatch decorator; we then parse
+        # its mapping of (HTTP_METHOD -> FUNCTION).
         for p in urlconf.v1_api_and_json_patterns:
             if p.lookup_str != 'zerver.lib.rest.rest_dispatch':
                 continue
@@ -261,6 +259,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                     tags = set()  # type: Set[str]
                 else:
                     function, tags = value
+
                 # Our accounting logic in the `has_request_variables()`
                 # code means we have the list of all arguments
                 # accepted by every view function in arguments_map.
@@ -270,12 +269,11 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                 # verify those too!
                 accepted_arguments = set(arguments_map[function])
 
-                # The purpose of this block is to match our URL
-                # pattern regular expressions to the corresponding
-                # configuration in OpenAPI.  The means matching
-                #
-                # /messages/{message_id} <-> r'^messages/(?P<message_id>[0-9]+)$'
-                # /events <-> r'^events$'
+                # Convert regular expressions style URL patterns to their
+                # corresponding OpenAPI style formats.
+                # E.G.
+                #     /messages/{message_id} <-> r'^messages/(?P<message_id>[0-9]+)$'
+                #     /events <-> r'^events$'
                 regex_pattern = p.regex.pattern
                 self.assertTrue(regex_pattern.startswith("^"))
                 self.assertTrue(regex_pattern.endswith("$"))
@@ -286,8 +284,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                 url_patterns = [re.sub(r"\(\?P<(\w+)>[^/]+\)", r"<\1>", url_pattern),
                                 re.sub(r"\(\?P<(\w+)>[^/]+\)", r"{\1}", url_pattern)]
 
-                if any([url_patterns[0] in PENDING_ENDPOINTS,
-                        url_patterns[1] in PENDING_ENDPOINTS]):
+                if any([url_patterns[0] in self.pending_endpoints,
+                        url_patterns[1] in self.pending_endpoints]):
                     continue
                 if "intentionally_undocumented" in tags:
                     error = AssertionError("We found some OpenAPI \
@@ -318,15 +316,16 @@ undocumented in the urls." % (method, url_patterns[0] + " or " + url_patterns[1]
                                              (method, url_patterns[0] + " or " + url_patterns[1]))
 
                 # We now have everything we need to understand the
-                # function as defined in our urls.py
+                # function as defined in our urls.py:
                 #
                 # * method is the HTTP method, e.g. GET, POST, or PATCH
                 #
                 # * p.regex.pattern is the URL pattern; might require
                 #   some processing to match with OpenAPI rules
                 #
-                # * accepted_arguments_list is the full set of arguments
-                #   this method accepts.
+                # * accepted_arguments is the full set of arguments
+                #   this method accepts (from the REQ declarations in
+                #   code).
                 #
                 # * The documented parameters for the endpoint as recorded in our
                 #   OpenAPI data in zerver/openapi/zulip.yaml.
@@ -345,15 +344,15 @@ undocumented in the urls." % (method, url_patterns[0] + " or " + url_patterns[1]
                           method, function)
                     print(" +", openapi_parameter_names)
                     print(" -", accepted_arguments)
-                    assert(any([url_patterns[0] in BUGGY_DOCUMENTATION_ENDPOINTS,
-                                url_patterns[1] in BUGGY_DOCUMENTATION_ENDPOINTS]))
+                    assert(any([url_patterns[0] in self.buggy_documentation_endpoints,
+                                url_patterns[1] in self.buggy_documentation_endpoints]))
                 elif len(accepted_arguments - openapi_parameter_names) > 0:
                     print("Documented invalid parameters for",
                           url_patterns[0] + " or " + url_patterns[1],
                           method, function)
                     print(" -", openapi_parameter_names)
                     print(" +", accepted_arguments)
-                    assert(any([url_patterns[0] in BUGGY_DOCUMENTATION_ENDPOINTS,
-                                url_patterns[1] in BUGGY_DOCUMENTATION_ENDPOINTS]))
+                    assert(any([url_patterns[0] in self.buggy_documentation_endpoints,
+                                url_patterns[1] in self.buggy_documentation_endpoints]))
                 else:
                     self.assertEqual(openapi_parameter_names, accepted_arguments)
