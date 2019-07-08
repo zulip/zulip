@@ -730,6 +730,9 @@ exports.register_click_handlers = function () {
         var id = $(this).attr('data-user-group-id');
         var row = $(this).closest(".message_row");
         e.stopPropagation();
+        if (page_params.is_guest) {
+            return; // hide user group popovers for guests
+        }
         var message = current_msg_list.get(rows.id(row));
         var group = user_groups.get_user_group_from_id(id, true);
         if (group === undefined) {
