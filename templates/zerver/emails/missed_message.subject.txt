@@ -6,5 +6,5 @@
 {% else %}
     New missed messages
 {% endif %}
-{% if realm_name_in_notifications %} in {{ realm_str }}
+{% if realm_name_in_notifications %} [{{ realm_str }}]
 {% endif %}
