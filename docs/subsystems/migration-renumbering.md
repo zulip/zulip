@@ -36,7 +36,7 @@ showell@Steves-MBP ~/zulip (showell-topic) $ git status
 # On branch showell-topic
 nothing to commit, working directory clean
 
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$ ./tools/test-backend
+(zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$ ./tools/test-backend
 <output skipped>
 DONE!
 ```
@@ -80,7 +80,7 @@ but I still need to run the tests to make sure there weren't any
 semantic conflicts with the new changes from master:
 
 ```
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$ ./tools/test-backend
+(zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$ ./tools/test-backend
 
 <output skipped>
 
@@ -273,7 +273,7 @@ showell@Steves-MBP ~/zulip/zerver/migrations (showell-topic) $ git show 8022839f
 And then I run the tests and cross my fingers!!!:
 
 ```
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$ ./tools/test-backend
+(zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$ ./tools/test-backend
 <output skipped>
   Applying zerver.0023_userprofile_default_language... OK
   Applying zerver.0024_realm_allow_message_editing... OK
