@@ -10,7 +10,8 @@ import zerver.lib.openapi as openapi
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.openapi import (
     get_openapi_fixture, get_openapi_parameters,
-    validate_against_openapi_schema, to_python_type, SchemaError, openapi_spec
+    validate_against_openapi_schema, to_python_type,
+    SchemaError, openapi_spec, get_openapi_paths
 )
 from zerver.lib.request import arguments_map
 
@@ -200,28 +201,36 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/invites/<prereg_id>',
         '/invites/<prereg_id>/resend',
         '/invites/multiuse/<invite_id>',
-        '/messages/<message_id>',
-        '/messages/<message_id>/history',
-        '/users/me/subscriptions/<stream_id>',
+        '/messages/{message_id}',
+        '/messages/{message_id}/history',
+        '/users/me/subscriptions/{stream_id}',
         '/messages/<message_id>/reactions',
         '/messages/<message_id>/emoji_reactions/<emoji_name>',
         '/attachments/<attachment_id>',
-        '/user_groups/<user_group_id>',
         '/user_groups/<user_group_id>/members',
-        '/users/me/<stream_id>/topics',
+        '/users/me/{stream_id}/topics',
         '/streams/<stream_id>/members',
-        '/streams/<stream_id>',
+        '/streams/{stream_id}',
         '/streams/<stream_id>/delete_topic',
         '/default_stream_groups/<group_id>',
         '/default_stream_groups/<group_id>/streams',
         # Regex with an unnamed capturing group.
         '/users/(?!me/)(?P<email>[^/]*)/presence',
+        # Actually '/user_groups/<user_group_id>' in urls.py but fails the reverse mapping
+        # test because of the variable name mismatch. So really, it's more of a buggy endpoint.
+        '/user_groups/{group_id}',  # Equivalent of what's in urls.py
+        '/user_groups/{user_group_id}',  # What's in the OpenAPI docs
     ])
     # TODO: These endpoints have a mismatch between the
     # documentation and the actual API and need to be fixed:
     buggy_documentation_endpoints = set([
         '/events',
         '/users/me/subscriptions/muted_topics',
+        # pattern starts with /api/v1 and thus fails reverse mapping test.
+        '/dev_fetch_api_key',
+        '/server_settings',
+        # Because of the unnamed capturing group, this fails the reverse mapping test.
+        '/users/{email}/presence',
     ])
 
     def test_openapi_arguments(self) -> None:
@@ -238,6 +247,10 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         urls.py. We use this different syntax because of the linters complaining
         of an unused import (which is correct, but we do this for triggering the
         has_request_variables decorator).
+
+            At the end, we perform a reverse mapping test that verifies that
+        every url pattern defined in the openapi documentation actually exists
+        in code.
         """
 
         urlconf = __import__(getattr(settings, "ROOT_URLCONF"), {}, {}, [''])
@@ -335,3 +348,17 @@ undocumented in the urls." % (method, url_patterns[0] + " or " + url_patterns[1]
                                 url_patterns[1] in self.buggy_documentation_endpoints]))
                 else:
                     self.assertEqual(openapi_parameter_names, accepted_arguments)
+                    self.checked_endpoints.add(url_patterns[0])
+                    self.checked_endpoints.add(url_patterns[1])
+
+        openapi_paths = set(get_openapi_paths())
+        undocumented_paths = openapi_paths - self.checked_endpoints
+        undocumented_paths -= self.buggy_documentation_endpoints
+        undocumented_paths -= self.pending_endpoints
+        try:
+            self.assertEqual(len(undocumented_paths), 0)
+        except AssertionError:  # nocoverage
+            msg = "The following endpoints have been documented but can't be found in urls.py:"
+            for undocumented_path in undocumented_paths:
+                msg += "\n + {}".format(undocumented_path)
+            raise AssertionError(msg)

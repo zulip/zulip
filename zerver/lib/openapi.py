@@ -1,7 +1,7 @@
 # Set of helper functions to manipulate the OpenAPI files that define our REST
 # API's specification.
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__),
@@ -66,6 +66,9 @@ def get_openapi_fixture(endpoint: str, method: str,
     return (openapi_spec.spec()['paths'][endpoint][method.lower()]['responses']
             [response]['content']['application/json']['schema']
             ['example'])
+
+def get_openapi_paths() -> Set[str]:
+    return set(openapi_spec.spec()['paths'].keys())
 
 def get_openapi_parameters(endpoint: str,
                            method: str) -> List[Dict[str, Any]]:
