@@ -1455,8 +1455,7 @@ def get_huddle_user_ids(recipient: Recipient) -> List[int]:
     assert(recipient.type == Recipient.HUDDLE)
 
     return Subscription.objects.filter(
-        recipient=recipient,
-        active=True,
+        recipient=recipient
     ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
 
 def bulk_get_recipients(type: int, type_ids: List[int]) -> Dict[int, Any]:
