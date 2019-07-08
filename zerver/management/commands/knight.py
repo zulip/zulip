@@ -38,25 +38,25 @@ ONLY perform this on customer request from an authorized person.
         email = options['email']
         realm = self.get_realm(options)
 
-        profile = self.get_user(email, realm)
+        user = self.get_user(email, realm)
 
         if options['grant']:
-            if profile.has_perm(options['permission'], profile.realm):
+            if user.has_perm(options['permission'], user.realm):
                 raise CommandError("User already has permission for this realm.")
             else:
                 if options['ack']:
-                    do_change_is_admin(profile, True, permission=options['permission'])
+                    do_change_is_admin(user, True, permission=options['permission'])
                     print("Done!")
                 else:
                     print("Would have granted %s %s rights for %s" % (
-                          email, options['permission'], profile.realm.string_id))
+                          email, options['permission'], user.realm.string_id))
         else:
-            if profile.has_perm(options['permission'], profile.realm):
+            if user.has_perm(options['permission'], user.realm):
                 if options['ack']:
-                    do_change_is_admin(profile, False, permission=options['permission'])
+                    do_change_is_admin(user, False, permission=options['permission'])
                     print("Done!")
                 else:
                     print("Would have removed %s's %s rights on %s" % (email, options['permission'],
-                                                                       profile.realm.string_id))
+                                                                       user.realm.string_id))
             else:
                 raise CommandError("User did not have permission for this realm!")
