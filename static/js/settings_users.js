@@ -232,6 +232,33 @@ exports.set_up = function () {
     });
 };
 
+function open_user_info_form_modal(person) {
+    var html = templates.render('user-info-form-modal', {
+        user_id: person.user_id,
+        email: person.email,
+        full_name: people.get_full_name(person.user_id),
+        is_admin: person.is_admin,
+        is_guest: person.is_guest,
+        is_member: !person.is_admin && !person.is_guest,
+        is_bot: person.is_bot,
+    });
+    var user_info_form_modal = $(html);
+    var modal_container = $('#user-info-form-modal-container');
+    modal_container.empty().append(user_info_form_modal);
+    overlays.open_modal('user-info-form-modal');
+
+    if (person.is_bot) {
+        // Dynamically add the owner select control in order to
+        // avoid performance issues in case of large number of users.
+        var users_list = people.get_active_human_persons();
+        var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
+        owner_select.val(bot_data.get(person.user_id).owner || "");
+        modal_container.find(".edit_bot_owner_container").append(owner_select);
+    }
+
+    return user_info_form_modal;
+}
+
 exports.on_load_success = function (realm_people_data) {
     meta.loaded = true;
 
@@ -325,33 +352,6 @@ exports.on_load_success = function (realm_people_data) {
 
         settings_ui.do_settings_change(channel.post, url, data, status, opts);
     });
-
-    function open_user_info_form_modal(person) {
-        var html = templates.render('user-info-form-modal', {
-            user_id: person.user_id,
-            email: person.email,
-            full_name: people.get_full_name(person.user_id),
-            is_admin: person.is_admin,
-            is_guest: person.is_guest,
-            is_member: !person.is_admin && !person.is_guest,
-            is_bot: person.is_bot,
-        });
-        var user_info_form_modal = $(html);
-        var modal_container = $('#user-info-form-modal-container');
-        modal_container.empty().append(user_info_form_modal);
-        overlays.open_modal('user-info-form-modal');
-
-        if (person.is_bot) {
-            // Dynamically add the owner select control in order to
-            // avoid performance issues in case of large number of users.
-            var users_list = people.get_active_human_persons();
-            var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
-            owner_select.val(bot_data.get(person.user_id).owner || "");
-            modal_container.find(".edit_bot_owner_container").append(owner_select);
-        }
-
-        return user_info_form_modal;
-    }
 
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
         var user_id = $(e.currentTarget).attr("data-user-id");
