@@ -1486,7 +1486,7 @@ a:hover code {
     /* Reduce top-margin when a paragraph is followed by an ordered or bulleted list */
     p + ul,
     p + ol {
-        margin-top: -2px;
+        margin-top: -3px;
     }
 
     /* Formatting for blockquotes */
