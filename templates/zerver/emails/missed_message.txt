@@ -14,6 +14,8 @@
 
 {% if mention %}
 You are receiving this email because you were mentioned.
+{% elif stream_email_notify %}
+You are receiving this email because you have email notifications enabled for this stream.<br>
 {% endif %}
 
 Manage email preferences:

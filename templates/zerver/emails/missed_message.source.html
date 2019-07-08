@@ -36,6 +36,8 @@
     &mdash;<br>
     {% if mention %}
     You are receiving this email because you were mentioned.<br>
+    {% elif stream_email_notify %}
+    You are receiving this email because you have email notifications enabled for this stream.<br>
     {% endif %}
     <a href="{{ realm_uri }}/#settings/notifications">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe</a> from missed message emails.<br>
     {% if reply_to_zulip %}

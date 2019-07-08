@@ -271,7 +271,9 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_stream_message(
             self.example_email('othello'), "denmark",
             '12')
-        body = 'Othello, the Moor of Venice --- 1 2 3 4 5 6 7 8 9 10 12'
+        body = ("Othello, the Moor of Venice --- 1 2 3 4 5 6 7 8 9 10 12 "
+                "You are receiving this email "
+                "because you have email notifications enabled for this stream.")
         email_subject = '#Denmark > test'
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user, trigger='stream_email_notify')
 
