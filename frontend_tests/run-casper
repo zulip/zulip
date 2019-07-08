@@ -108,6 +108,7 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
 
         ret = 1
         for test_file in test_files:
+            print("Make Xenial frontend-backend tests run.")
             test_name = os.path.basename(test_file)
             cmd = ["node_modules/.bin/casperjs"] + remote_debug + verbose + xunit_export + ["test", test_file]
             print("\n\n===================== %s\nRunning %s\n\n" % (test_name, " ".join(map(shlex.quote, cmd))))

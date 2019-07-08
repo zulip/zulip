@@ -69,7 +69,7 @@ function expect_stream() {
                 'Verona > other subject',
                 'Verona > frontend test',
             ], [
-                '<p>test message A</p>',
+                '<p>test message k</p>',
                 '<p>test message B</p>',
                 '<p>test message C</p>',
                 '<p>test message D</p>',
