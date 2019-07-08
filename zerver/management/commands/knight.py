@@ -41,7 +41,8 @@ ONLY perform this on customer request from an authorized person.
         user = self.get_user(email, realm)
 
         if options['grant']:
-            if user.has_perm(options['permission'], user.realm):
+            if (user.is_realm_admin and options['permission'] == "administer" or
+                    user.is_api_super_user and options['permission'] == "api_super_user"):
                 raise CommandError("User already has permission for this realm.")
             else:
                 if options['ack']:
@@ -51,7 +52,8 @@ ONLY perform this on customer request from an authorized person.
                     print("Would have granted %s %s rights for %s" % (
                           email, options['permission'], user.realm.string_id))
         else:
-            if user.has_perm(options['permission'], user.realm):
+            if (user.is_realm_admin and options['permission'] == "administer" or
+                    user.is_api_super_user and options['permission'] == "api_super_user"):
                 if options['ack']:
                     do_change_is_admin(user, False, permission=options['permission'])
                     print("Done!")
