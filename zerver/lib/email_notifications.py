@@ -316,6 +316,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     unique_triggers = set(triggers)
     context.update({
         'mention': 'mentioned' in unique_triggers,
+        'stream_email_notify': 'stream_email_notify' in unique_triggers,
         'mention_count': triggers.count('mentioned'),
     })
 
@@ -364,18 +365,18 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             context.update({'huddle_display_name': huddle_display_name})
     elif (missed_messages[0]['message'].recipient.type == Recipient.PERSONAL):
         context.update({'private_message': True})
-    elif context['mention']:
+    elif (context['mention'] or context['stream_email_notify']):
         # Keep only the senders who actually mentioned the user
-        senders = list(set(m['message'].sender for m in missed_messages
+        if context['mention']:
+            senders = list(set(m['message'].sender for m in missed_messages
                            if m['trigger'] == 'mentioned'))
-        # TODO: When we add wildcard mentions that send emails, we
-        # should make sure the right logic applies here.
-    elif ('stream_email_notify' in unique_triggers):
+            # TODO: When we add wildcard mentions that send emails, we
+            # should make sure the right logic applies here.
+
         message = missed_messages[0]['message']
         stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
         stream_header = "%s > %s" % (stream.name, message.topic_name())
         context.update({
-            'stream_email_notify': True,
             'stream_header': stream_header,
         })
     else:

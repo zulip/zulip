@@ -12,6 +12,10 @@
 {% endfor %}
 {% endif %}
 
+{% if mention %}
+You are receiving this email because you were mentioned.
+{% endif %}
+
 Manage email preferences:
 
 {{ realm_uri }}/#settings/notifications
