@@ -241,8 +241,9 @@ class TestMissedMessages(ZulipTestCase):
             '@**King Hamlet**')
 
         if show_message_content:
-            body = 'Othello, the Moor of Venice --- 1 2 3 4 5 6 7 8 9 10 @**King Hamlet**'
-            email_subject = 'Othello, the Moor of Venice mentioned you'
+            body = ("Othello, the Moor of Venice --- 1 2 3 4 5 6 7 8 9 10 @**King Hamlet** "
+                    "You are receiving this email because you were mentioned")
+            email_subject = '#Denmark > test'
             verify_body_does_not_include = []  # type: List[str]
         else:
             # Test in case if message content in missed email message are disabled.
@@ -285,8 +286,9 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_stream_message(
             self.example_email('othello'), "Denmark",
             '@**King Hamlet**')
-        body = 'Cordelia Lear --- 0 1 2 Othello, the Moor of Venice --- @**King Hamlet**'
-        email_subject = 'Othello, the Moor of Venice mentioned you'
+        body = ("Cordelia Lear --- 0 1 2 Othello, the Moor of Venice --- @**King Hamlet** "
+                "You are receiving this email because you were mentioned")
+        email_subject = '#Denmark > test'
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user, trigger='mentioned')
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -700,7 +702,7 @@ class TestMissedMessages(ZulipTestCase):
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_multiple_stream_messages_and_mentions(self, mock_random_token: MagicMock) -> None:
-        """A mention should take precedence over regular stream messages for email subjects."""
+        """Subject should be stream name and topic as usual."""
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -717,7 +719,7 @@ class TestMissedMessages(ZulipTestCase):
             {'message_id': msg_id_2, "trigger": "mentioned"},
         ])
         self.assertEqual(len(mail.outbox), 1)
-        email_subject = 'Othello, the Moor of Venice mentioned you'
+        email_subject = '#Denmark > test'
         self.assertEqual(mail.outbox[0].subject, email_subject)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -753,7 +755,7 @@ class TestMissedMessages(ZulipTestCase):
         ])
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, 'Iago mentioned you')  # email subject
+        self.assertEqual(mail.outbox[0].subject, '#private_stream > test')  # email subject
         email_text = mail.outbox[0].message().as_string()
         self.assertNotIn('Before subscribing', email_text)
         self.assertIn('After subscribing', email_text)
@@ -761,10 +763,7 @@ class TestMissedMessages(ZulipTestCase):
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_stream_mentions_multiple_people(self, mock_random_token: MagicMock) -> None:
-        """A mention should take precedence over regular stream messages for email subjects.
-
-        Each sender who has mentioned a user should appear in the email subject line.
-        """
+        """Subject should be stream name and topic as usual."""
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -785,7 +784,7 @@ class TestMissedMessages(ZulipTestCase):
             {'message_id': msg_id_3, "trigger": "stream_email_notify"},
         ])
         self.assertEqual(len(mail.outbox), 1)
-        email_subject = 'Iago, Othello, the Moor of Venice mentioned you'
+        email_subject = '#Denmark > test'
         self.assertEqual(mail.outbox[0].subject, email_subject)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
