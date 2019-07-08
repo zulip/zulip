@@ -221,7 +221,7 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = 'PMs with Othello, the Moor of Venice'
 
         if realm_name_in_notifications:
-            email_subject = 'PMs with Othello, the Moor of Venice in Zulip Dev'
+            email_subject = 'PMs with Othello, the Moor of Venice [Zulip Dev]'
         self._test_cases(tokens, msg_id, body, email_subject, False)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
