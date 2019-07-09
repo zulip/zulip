@@ -1,7 +1,7 @@
 var helpers = (function () {
 var exports = {};
 
-exports.create_ajax_request = function (url, form_name, stripe_token = null) {
+exports.create_ajax_request = function (url, form_name, stripe_token) {
     var form = $("#" + form_name + "-form");
     var form_loading_indicator = "#" + form_name + "_loading_indicator";
     var form_input_section = "#" + form_name + "-input-section";

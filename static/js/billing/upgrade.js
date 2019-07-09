@@ -1,7 +1,7 @@
 var upgrade = (function () {
 var exports = {};
 
-exports.initialize = () => {
+exports.initialize = function () {
     helpers.set_tab("upgrade");
 
     var add_card_handler = StripeCheckout.configure({ // eslint-disable-line no-undef

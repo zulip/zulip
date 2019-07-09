@@ -109,15 +109,15 @@ exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
         return;
     }
 
-    var keys_map = new Map([
-        ['Backspace', 'Delete'],
-        ['Enter', 'Return'],
-        ['Home', 'Fn + ←'],
-        ['End', 'Fn + →'],
-        ['PgUp', 'Fn + ↑'],
-        ['PgDn', 'Fn + ↓'],
-        ['Ctrl', '⌘'],
-    ]);
+    var keys_map = {
+        Backspace: 'Delete',
+        Enter: 'Return',
+        Home: 'Fn + ←',
+        End: 'Fn + →',
+        PgUp: 'Fn + ↑',
+        PgDn: 'Fn + ↓',
+        Ctrl: '⌘',
+    };
 
     $(key_elem_class).each(function () {
         var key_text = $(this).text();
@@ -127,8 +127,8 @@ exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
             $(this).addClass("mac-cmd-key");
         }
         _.each(keys, function (key) {
-            if (keys_map.get(key)) {
-                key_text = key_text.replace(key, keys_map.get(key));
+            if (keys_map.hasOwnProperty(key)) {
+                key_text = key_text.replace(key, keys_map[key]);
             }
         });
         $(this).text(key_text);

@@ -34,7 +34,7 @@ var INITIAL_STATE = {
     query: '',
 };
 
-var state = Object.assign({}, INITIAL_STATE);
+var state = _.assign({}, INITIAL_STATE);
 
 
 function adjust_font_sizing() {
@@ -229,7 +229,7 @@ function hide_integration_show_catalog() {
 }
 
 function get_state_from_path() {
-    var result = Object.assign({}, INITIAL_STATE);
+    var result = _.assign({}, INITIAL_STATE);
     result.query = state.query;
 
     var parts = path_parts();
@@ -243,7 +243,7 @@ function get_state_from_path() {
 }
 
 function render(next_state) {
-    var previous_state = Object.assign({}, state);
+    var previous_state = _.assign({}, state);
     state = next_state;
 
     if (previous_state.integration !== next_state.integration &&
@@ -271,28 +271,28 @@ function render(next_state) {
 function dispatch(action, payload) {
     switch (action) {
     case 'CHANGE_CATEGORY':
-        render(Object.assign({}, state, {
+        render(_.assign({}, state, {
             category: payload.category,
         }));
         update_path();
         break;
 
     case 'SHOW_INTEGRATION':
-        render(Object.assign({}, state, {
+        render(_.assign({}, state, {
             integration: payload.integration,
         }));
         update_path();
         break;
 
     case 'HIDE_INTEGRATION':
-        render(Object.assign({}, state, {
+        render(_.assign({}, state, {
             integration: null,
         }));
         update_path();
         break;
 
     case 'SHOW_CATEGORY':
-        render(Object.assign({}, state, {
+        render(_.assign({}, state, {
             integration: null,
             category: payload.category,
         }));
@@ -300,7 +300,7 @@ function dispatch(action, payload) {
         break;
 
     case 'UPDATE_QUERY':
-        render(Object.assign({}, state, {
+        render(_.assign({}, state, {
             query: payload.query,
         }));
         break;

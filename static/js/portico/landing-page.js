@@ -1,7 +1,7 @@
-const ELECTRON_APP_VERSION = "3.0.0";
-const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
-const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
-const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
+var ELECTRON_APP_VERSION = "3.0.0";
+var ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
+var ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
+var ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
 
 import render_tabs from './team.js';
 import {detect_user_os}  from './tabbed-instructions.js';

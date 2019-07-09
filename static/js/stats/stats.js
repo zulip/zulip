@@ -321,7 +321,7 @@ function round_to_percentages(values, total) {
             6, // this is the max precision (two #, 4 decimal points; 99.9999%).
             Math.max(
                 2, // the minimum amount of precision (40% or 6.0%).
-                Math.floor(-Math.log10(100 - unrounded)) + 3
+                Math.floor(-Math.log(100 - unrounded) / Math.log(10)) + 3
             )
         );
 

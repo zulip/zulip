@@ -20,11 +20,11 @@ export function detect_user_os() {
 export function activate_correct_tab($codeSection) {
     var user_os = detect_user_os();
     var desktop_os = ["mac", "linux", "windows"];
-    const $li = $codeSection.find("ul.nav li");
-    const $blocks = $codeSection.find(".blocks div");
+    var $li = $codeSection.find("ul.nav li");
+    var $blocks = $codeSection.find(".blocks div");
 
     $li.each(function () {
-        const language = this.dataset.language;
+        var language = this.dataset.language;
         $(this).removeClass("active");
         if (language === user_os) {
             $(this).addClass("active");
@@ -36,7 +36,7 @@ export function activate_correct_tab($codeSection) {
     });
 
     $blocks.each(function () {
-        const language = this.dataset.language;
+        var language = this.dataset.language;
         $(this).removeClass("active");
         if (language === user_os) {
             $(this).addClass("active");

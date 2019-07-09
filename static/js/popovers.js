@@ -320,7 +320,7 @@ function fetch_group_members(member_ids) {
             return m !== undefined;
         })
         .map(function (p) {
-            return Object.assign({}, p, {
+            return _.assign({}, p, {
                 user_circle_class: buddy_data.get_user_circle_class(p.user_id),
                 is_active: people.is_active_user_for_popover(p.user_id),
                 user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),

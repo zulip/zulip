@@ -3,11 +3,11 @@ import SimpleBar from 'simplebar';
 import {activate_correct_tab} from './tabbed-instructions.js';
 
 function registerCodeSection($codeSection) {
-    const $li = $codeSection.find("ul.nav li");
-    const $blocks = $codeSection.find(".blocks div");
+    var $li = $codeSection.find("ul.nav li");
+    var $blocks = $codeSection.find(".blocks div");
 
     $li.click(function () {
-        const language = this.dataset.language;
+        var language = this.dataset.language;
 
         $li.removeClass("active");
         $li.filter("[data-language=" + language + "]").addClass("active");

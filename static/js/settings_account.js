@@ -156,7 +156,7 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
                                          field.id + '"] .pill-container').expectOne();
             var pills = user_pill.create_pills(pill_container);
 
-            function update_custom_user_field() {
+            var update_custom_user_field = function () {
                 var fields = [];
                 var user_ids = user_pill.get_user_ids(pills);
                 if (user_ids.length < 1) {
@@ -166,7 +166,7 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
                     fields.push({id: field.id, value: user_ids});
                     update_user_custom_profile_fields(fields, channel.patch);
                 }
-            }
+            };
 
             if (field_value_raw) {
                 var field_value = JSON.parse(field_value_raw);

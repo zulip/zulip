@@ -616,12 +616,12 @@ exports.handle_keydown = function (event, textarea) {
 
     if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
         var range = textarea.range();
-        function wrap_text_with_markdown(prefix, suffix) {
+        var wrap_text_with_markdown = function (prefix, suffix) {
             if (!document.execCommand('insertText', false, prefix + range.text + suffix)) {
                 textarea.range(range.start, range.end).range(prefix + range.text + suffix);
             }
             event.preventDefault();
-        }
+        };
 
         if (isBold) {
             // ctrl + b: Convert selected text to bold text
