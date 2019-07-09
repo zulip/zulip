@@ -61,7 +61,7 @@ exports.show_streamlist_sidebar = function () {
     resize.resize_page_components();
 };
 
-exports.restore_stream_list_size = function () {
+exports.hide_streamlist_sidebar = function () {
     $(".app-main .column-left").removeClass("expanded");
 };
 

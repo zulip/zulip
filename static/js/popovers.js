@@ -1095,7 +1095,7 @@ exports.hide_all_except_sidebars = function () {
 // or narrow window sidebars.
 exports.hide_all = function () {
     popovers.hide_userlist_sidebar();
-    stream_popover.restore_stream_list_size();
+    stream_popover.hide_streamlist_sidebar();
     popovers.hide_all_except_sidebars();
 };
 
