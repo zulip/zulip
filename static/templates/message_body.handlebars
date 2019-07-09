@@ -1,11 +1,11 @@
-<div class="message_top_line">
+<div class="message_top_line no-select">
     {{#unless status_message}}
-    <span class="message_sender sender_info_hover no-select">
+    <span class="message_sender sender_info_hover">
         {{#if include_sender}}
 
             {{partial "message_avatar"}}
 
-            <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+            <span class="sender_name" role="button" tabindex="0">{{msg/sender_full_name}}</span>
             {{#if sender_is_bot}}
             <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
             {{/if}}
