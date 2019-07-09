@@ -1,3 +1,5 @@
+var render_draft_table_body = require('../templates/draft_table_body.hbs');
+
 var drafts = (function () {
 
 var exports = {};
@@ -314,7 +316,7 @@ exports.launch = function () {
 
     function render_widgets(drafts) {
         $('#drafts_table').empty();
-        var rendered = templates.render('draft_table_body', {
+        var rendered = render_draft_table_body({
             drafts: drafts,
             draft_lifetime: DRAFT_LIFETIME,
         });

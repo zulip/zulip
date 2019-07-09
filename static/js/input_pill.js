@@ -1,3 +1,5 @@
+var render_input_pill = require('../templates/input_pill.hbs');
+
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 var input_pill = (function () {
 
@@ -114,7 +116,7 @@ exports.create = function (opts) {
                 opts.img_src = item.img_src;
             }
 
-            var pill_html = templates.render('input_pill', opts);
+            var pill_html = render_input_pill(opts);
             payload.$element = $(pill_html);
             store.$input.before(payload.$element);
         },

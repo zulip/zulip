@@ -1,3 +1,5 @@
+var render_widgets_zform_choices = require('../templates/widgets/zform_choices.hbs');
+
 var zform = (function () {
 
 var exports = {};
@@ -64,7 +66,7 @@ exports.activate = function (opts) {
             choice.idx = idx;
         });
 
-        var html = templates.render('widgets/zform_choices', data);
+        var html = render_widgets_zform_choices(data);
         var elem = $(html);
 
         elem.find('button').on('click', function (e) {

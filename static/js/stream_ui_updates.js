@@ -1,3 +1,7 @@
+var render_subscription_count = require("../templates/subscription_count.hbs");
+var render_subscription_setting_icon = require('../templates/subscription_setting_icon.hbs');
+var render_subscription_type = require('../templates/subscription_type.hbs');
+
 var stream_ui_updates = (function () {
 
 var exports = {};
@@ -115,7 +119,7 @@ exports.update_stream_row_in_settings_tab = function (sub) {
 exports.update_stream_privacy_type_icon = function (sub) {
     var stream_settings = stream_edit.settings_for_sub(sub);
     var sub_row = subs.row_for_stream_id(sub.stream_id);
-    var html = templates.render('subscription_setting_icon', sub);
+    var html = render_subscription_setting_icon(sub);
 
     if (overlays.streams_open()) {
         sub_row.find('.icon').expectOne().replaceWith($(html));
@@ -133,7 +137,7 @@ exports.update_stream_privacy_type_icon = function (sub) {
 
 exports.update_stream_privacy_type_text = function (sub) {
     var stream_settings = stream_edit.settings_for_sub(sub);
-    var html = templates.render('subscription_type', sub);
+    var html = render_subscription_type(sub);
     if (stream_edit.is_sub_settings_active(sub)) {
         stream_settings.find('.subscription-type-text').expectOne().html(html);
     }
@@ -146,7 +150,7 @@ exports.update_subscribers_count = function (sub, just_subscribed) {
     }
     var stream_row = subs.row_for_stream_id(sub.stream_id);
     if (!sub.can_access_subscribers || just_subscribed && sub.invite_only || page_params.is_guest) {
-        var rendered_sub_count = templates.render("subscription_count", sub);
+        var rendered_sub_count = render_subscription_count(sub);
         stream_row.find('.subscriber-count').expectOne().html(rendered_sub_count);
     } else {
         stream_row.find(".subscriber-count-text").expectOne().text(sub.subscriber_count);

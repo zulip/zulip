@@ -1,3 +1,5 @@
+var render_stream_privacy = require('../templates/stream_privacy.hbs');
+var render_stream_sidebar_row = require('../templates/stream_sidebar_row.hbs');
 var Dict = require('./dict').Dict;
 
 var stream_list = (function () {
@@ -222,7 +224,7 @@ function build_stream_sidebar_li(sub) {
         pin_to_top: sub.pin_to_top,
     };
     args.dark_background = stream_color.get_color_class(args.color);
-    var list_item = $(templates.render('stream_sidebar_row', args));
+    var list_item = $(render_stream_sidebar_row(args));
     return list_item;
 }
 
@@ -283,7 +285,7 @@ exports.redraw_stream_privacy = function (sub) {
         dark_background: dark_background,
     };
 
-    var html = templates.render('stream_privacy', args);
+    var html = render_stream_privacy(args);
     div.html(html);
 };
 

@@ -62,19 +62,6 @@ found [here][hconditionals].
 There's no equivalent of `zulip_default_context` for the Handlebars
 templates.
 
-In order to find the context definition, you should grep without using
-the file extension. For example, to find where
-`invite_subscription.hbs` is rendered, you should run something
-like this:
-
-```
-$ git grep "render('invite_subscription" 'static/js'
-frontend_tests/node_tests/templates.js:    var html = render('invite_subscription', args);
-static/js/invite.js:    $('#streams_to_add').html(templates.render('invite_subscription', {streams: streams}));
-```
-
-The second argument to `templates.render` is the context.
-
 ### Toolchain
 
 Handlebars is in our `package.json` and thus ends up in `node_modules`; We use

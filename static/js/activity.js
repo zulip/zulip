@@ -1,3 +1,4 @@
+var render_group_pms = require('../templates/group_pms.hbs');
 var Dict = require('./dict').Dict;
 
 var activity = (function () {
@@ -250,7 +251,7 @@ exports.update_huddles = function () {
         };
     });
 
-    var html = templates.render('group_pms', {group_pms: group_pms});
+    var html = render_group_pms({group_pms: group_pms});
     ui.get_content_element($('#group-pms')).html(html);
 
     _.each(huddles, function (user_ids_string) {

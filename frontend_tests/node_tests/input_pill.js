@@ -48,7 +48,7 @@ function pill_html(value, data_id, img_src) {
         opts.img_src = img_src;
     }
 
-    return templates.render('input_pill', opts);
+    return require('../../static/templates/input_pill.hbs')(opts);
 }
 
 run_test('basics', () => {

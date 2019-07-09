@@ -1,3 +1,8 @@
+var render_emoji_popover = require('../templates/emoji_popover.hbs');
+var render_emoji_popover_content = require('../templates/emoji_popover_content.hbs');
+var render_emoji_popover_search_results = require('../templates/emoji_popover_search_results.hbs');
+var render_emoji_showcase = require("../templates/emoji_showcase.hbs");
+
 var emoji_picker = (function () {
 
 var exports = {};
@@ -151,7 +156,7 @@ var generate_emoji_picker_content = function (id) {
         });
     });
 
-    return templates.render('emoji_popover_content', {
+    return render_emoji_popover_content({
         message_id: id,
         emoji_categories: exports.complete_emoji_catalog,
     });
@@ -220,7 +225,7 @@ function filter_emojis() {
                 });
             });
         });
-        var rendered_search_results = templates.render('emoji_popover_search_results', {
+        var rendered_search_results = render_emoji_popover_search_results({
             search_results: search_results,
             message_id: message_id,
         });
@@ -316,7 +321,7 @@ function update_emoji_showcase($focused_emoji) {
     var emoji_dict = _.extend({}, focused_emoji_dict, {
         name: focused_emoji_name.replace(/_/g, ' '),
     });
-    var rendered_showcase = templates.render("emoji_showcase", {
+    var rendered_showcase = render_emoji_showcase({
         emoji_dict: emoji_dict,
     });
 
@@ -578,7 +583,7 @@ exports.render_emoji_popover = function (elt, id) {
         placement = 'left';
     }
 
-    var template = templates.render('emoji_popover', template_args);
+    var template = render_emoji_popover(template_args);
 
     // if the window is mobile sized, add the `.popover-flex` wrapper to the emoji
     // popover so that it will be wrapped in flex and centered in the screen.

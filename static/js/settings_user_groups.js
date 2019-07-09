@@ -1,3 +1,6 @@
+var render_admin_user_group_list = require('../templates/admin_user_group_list.hbs');
+var render_confirm_delete_user = require('../templates/confirm_delete_user.hbs');
+
 var settings_user_groups = (function () {
 
 var exports = {};
@@ -37,7 +40,7 @@ exports.populate_user_groups = function () {
     var user_groups_section = $('#user-groups').expectOne();
     var user_groups_array = user_groups.get_realm_user_groups();
     _.each(user_groups_array, function (data) {
-        user_groups_section.append(templates.render('admin_user_group_list', {
+        user_groups_section.append(render_admin_user_group_list({
             user_group: {
                 name: data.name,
                 id: data.id,
@@ -319,7 +322,7 @@ exports.set_up = function () {
         // This is mostly important for styling concerns.
         var modal_parent = $('#settings_content');
 
-        var html_body = templates.render('confirm_delete_user', {
+        var html_body = render_confirm_delete_user({
             group_name: user_group.name,
         });
 

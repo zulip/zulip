@@ -1,3 +1,7 @@
+var render_admin_user_list = require("../templates/admin_user_list.hbs");
+var render_bot_owner_select = require("../templates/bot_owner_select.hbs");
+var render_user_info_form_modal = require('../templates/user_info_form_modal.hbs');
+
 var settings_users = (function () {
 
 var exports = {};
@@ -132,7 +136,7 @@ function populate_users(realm_people_data) {
     list_render.create($bots_table, bots, {
         name: "admin_bot_list",
         modifier: function (item) {
-            return templates.render("admin_user_list", { user: item, can_modify: page_params.is_admin });
+            return render_admin_user_list({ user: item, can_modify: page_params.is_admin });
         },
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
@@ -168,7 +172,7 @@ function populate_users(realm_people_data) {
                 activity_rendered = $("<span></span>").text(i18n.t("Unknown"));
             }
 
-            var $row = $(templates.render("admin_user_list", {
+            var $row = $(render_admin_user_list({
                 user: item,
                 can_modify: page_params.is_admin,
                 is_current_user: people.is_my_user_id(item.user_id),
@@ -198,7 +202,7 @@ function populate_users(realm_people_data) {
     list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         modifier: function (item) {
-            return templates.render("admin_user_list", { user: item, can_modify: page_params.is_admin });
+            return render_admin_user_list({ user: item, can_modify: page_params.is_admin });
         },
         filter: {
             element: $deactivated_users_table.closest(".settings-section").find(".search"),
@@ -244,7 +248,7 @@ exports.set_up = function () {
 };
 
 function open_user_info_form_modal(person) {
-    var html = templates.render('user_info_form_modal', {
+    var html = render_user_info_form_modal({
         user_id: person.user_id,
         email: person.email,
         full_name: people.get_full_name(person.user_id),
@@ -262,7 +266,7 @@ function open_user_info_form_modal(person) {
         // Dynamically add the owner select control in order to
         // avoid performance issues in case of large number of users.
         var users_list = people.get_active_human_persons();
-        var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
+        var owner_select = $(render_bot_owner_select({users_list: users_list}));
         owner_select.val(bot_data.get(person.user_id).owner || "");
         modal_container.find(".edit_bot_owner_container").append(owner_select);
     }

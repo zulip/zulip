@@ -22,8 +22,6 @@ module.exports.make_handlebars = () => {
 };
 
 module.exports.stub_templates = stub => {
-    set_global("Handlebars", module.exports.make_handlebars());
-    zrequire("templates");
     render = (filename, ...args) => {
         const name = path.relative(templates_path, filename).slice(0, -".hbs".length);
         return stub(name, ...args);

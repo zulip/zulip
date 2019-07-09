@@ -55,9 +55,6 @@ global.with_overrides = namespace.with_overrides;
 var stub = require('./stub.js');
 global.with_stub = stub.with_stub;
 
-// Set up helpers to render templates.
-global.render_template = (name, args) => global.templates.render(name, args);
-
 // Set up fake jQuery
 global.make_zjquery = require('./zjquery.js').make_zjquery;
 

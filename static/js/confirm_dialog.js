@@ -1,3 +1,5 @@
+var render_confirm_dialog = require("../templates/confirm_dialog.hbs");
+
 var confirm_dialog = (function () {
 
 var exports = {};
@@ -28,7 +30,7 @@ var exports = {};
 */
 
 exports.launch = function (conf) {
-    var html = templates.render("confirm_dialog");
+    var html = render_confirm_dialog();
     var confirm_dialog = $(html);
 
     var conf_fields = [

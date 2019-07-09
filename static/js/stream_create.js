@@ -1,3 +1,7 @@
+var render_announce_stream_docs = require('../templates/announce_stream_docs.hbs');
+var render_new_stream_users = require('../templates/new_stream_users.hbs');
+var render_subscription_invites_warning_modal = require('../templates/subscription_invites_warning_modal.hbs');
+
 var stream_create = (function () {
 
 var exports = {};
@@ -257,7 +261,7 @@ exports.show_new_stream_modal = function () {
     var all_users = people.get_rest_of_realm();
     // Add current user on top of list
     all_users.unshift(people.get_person_from_user_id(page_params.user_id));
-    var html = templates.render('new_stream_users', {
+    var html = render_new_stream_users({
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
         is_admin: page_params.is_admin,
@@ -403,9 +407,10 @@ exports.set_up_handlers = function () {
         }
 
         if (principals.length >= 50) {
-            var invites_warning_modal = templates.render('subscription_invites_warning_modal',
-                                                         {stream_name: stream_name,
-                                                          count: principals.length});
+            var invites_warning_modal = render_subscription_invites_warning_modal({
+                stream_name: stream_name,
+                count: principals.length,
+            });
             $('#stream-creation').append(invites_warning_modal);
         } else {
             create_stream();
@@ -432,7 +437,7 @@ exports.set_up_handlers = function () {
         var announce_stream_docs = $("#announce-stream-docs");
         announce_stream_docs.popover({
             placement: "right",
-            content: templates.render('announce_stream_docs', {
+            content: render_announce_stream_docs({
                 notifications_stream: page_params.notifications_stream}),
             trigger: "manual"});
         announce_stream_docs.popover('show');

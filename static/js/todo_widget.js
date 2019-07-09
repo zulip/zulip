@@ -1,3 +1,6 @@
+var render_widgets_todo_widget = require('../templates/widgets/todo_widget.hbs');
+var render_widgets_todo_widget_tasks = require('../templates/widgets/todo_widget_tasks.hbs');
+
 var todo_widget = (function () {
 
 var exports = {};
@@ -122,7 +125,7 @@ exports.activate = function (opts) {
     var task_data = exports.task_data_holder();
 
     function render() {
-        var html = templates.render('widgets/todo_widget');
+        var html = render_widgets_todo_widget();
         elem.html(html);
 
         elem.find("button.add-task").on('click', function (e) {
@@ -149,7 +152,7 @@ exports.activate = function (opts) {
 
     function render_results() {
         var widget_data = task_data.get_widget_data();
-        var html = templates.render('widgets/todo_widget_tasks', widget_data);
+        var html = render_widgets_todo_widget_tasks(widget_data);
         elem.find('ul.todo-widget').html(html);
         elem.find(".widget-error").text('');
 

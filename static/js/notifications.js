@@ -1,3 +1,6 @@
+var render_compose_notification = require('../templates/compose_notification.hbs');
+var render_notification = require('../templates/notification.hbs');
+
 var notifications = (function () {
 
 var exports = {};
@@ -231,7 +234,7 @@ exports.window_has_focus = function () {
 };
 
 function in_browser_notify(message, title, content, raw_operators, opts) {
-    var notification_html = $(templates.render('notification', {
+    var notification_html = $(render_notification({
         gravatar_url: people.small_avatar_url(message),
         title: title,
         content: content,
@@ -255,10 +258,12 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
 }
 
 exports.notify_above_composebox = function (note, link_class, link_msg_id, link_text) {
-    var notification_html = $(templates.render('compose_notification', {note: note,
-                                                                        link_class: link_class,
-                                                                        link_msg_id: link_msg_id,
-                                                                        link_text: link_text}));
+    var notification_html = $(render_compose_notification({
+        note: note,
+        link_class: link_class,
+        link_msg_id: link_msg_id,
+        link_text: link_text,
+    }));
     exports.clear_compose_notifications();
     $('#out-of-view-notification').append(notification_html);
     $('#out-of-view-notification').show();

@@ -14,7 +14,7 @@ global.$ = require('jquery')(window);
 // ./tools/get-handlebar-vars static/templates/*.hbs
 
 function render(template_name, args) {
-    return global.render_template(template_name, args);
+    return require('../../static/templates/' + template_name + '.hbs')(args);
 }
 
 run_test('handlebars_bug', () => {

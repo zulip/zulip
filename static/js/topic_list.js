@@ -1,3 +1,5 @@
+var render_more_topics = require('../templates/more_topics.hbs');
+var render_topic_list_item = require('../templates/topic_list_item.hbs');
 var Dict = require('./dict').Dict;
 
 var topic_list = (function () {
@@ -113,7 +115,7 @@ exports.widget = function (parent_elem, my_stream_id) {
                 is_muted: muting.is_topic_muted(my_stream_id, topic_name),
                 url: hash_util.by_stream_topic_uri(my_stream_id, topic_name),
             };
-            var li = $(templates.render('topic_list_item', topic_info));
+            var li = $(render_topic_list_item(topic_info));
             self.topic_items.set(topic_name, li);
             ul.append(li);
         });
@@ -132,7 +134,7 @@ exports.widget = function (parent_elem, my_stream_id) {
     };
 
     self.build_more_topics_section = function () {
-        var show_more_html = templates.render('more_topics');
+        var show_more_html = render_more_topics();
         return $(show_more_html);
     };
 

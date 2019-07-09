@@ -2,18 +2,6 @@ var templates = (function () {
 
 var exports = {};
 
-exports.render = function (name, arg) {
-    var template;
-    try {
-        template = require('../templates/' + name + '.hbs');
-    } catch (_e) {
-        throw new Error('Cannot find template static/templates/' + name
-            + '.hbs.');
-    }
-
-    return template(arg);
-};
-
 // Below, we register Zulip-specific extensions to the handlebars API.
 //
 // IMPORTANT: When adding a new handlebars helper, update the
@@ -40,7 +28,7 @@ Handlebars.registerHelper('partial', function (template_name) {
     }
     var data = _.extend({}, this, extra_data);
 
-    return new Handlebars.SafeString(exports.render(template_name, data));
+    return new Handlebars.SafeString(require('../templates/' + template_name + '.hbs')(data));
 });
 
 Handlebars.registerHelper('plural', function (condition, one, other) {

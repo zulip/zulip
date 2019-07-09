@@ -1,3 +1,5 @@
+var render_typing_notifications = require('../templates/typing_notifications.hbs');
+
 var typing_events = (function () {
 var exports = {};
 
@@ -47,7 +49,7 @@ exports.render_notifications_for_narrow = function () {
     if (users_typing.length === 0) {
         $('#typing_notifications').hide();
     } else {
-        $('#typing_notifications').html(templates.render('typing_notifications', {users: users_typing}));
+        $('#typing_notifications').html(render_typing_notifications({users: users_typing}));
         $('#typing_notifications').show();
     }
 };

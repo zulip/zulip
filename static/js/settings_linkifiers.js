@@ -1,3 +1,5 @@
+var render_admin_filter_list = require("../templates/admin_filter_list.hbs");
+
 var settings_linkifiers = (function () {
 
 var exports = {};
@@ -28,16 +30,14 @@ exports.populate_filters = function (filters_data) {
     filters_table.find("tr.filter_row").remove();
     _.each(filters_data, function (filter) {
         filters_table.append(
-            templates.render(
-                "admin_filter_list", {
-                    filter: {
-                        pattern: filter[0],
-                        url_format_string: filter[1],
-                        id: filter[2],
-                    },
-                    can_modify: page_params.is_admin,
-                }
-            )
+            render_admin_filter_list({
+                filter: {
+                    pattern: filter[0],
+                    url_format_string: filter[1],
+                    id: filter[2],
+                },
+                can_modify: page_params.is_admin,
+            })
         );
     });
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));

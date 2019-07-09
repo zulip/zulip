@@ -1,3 +1,4 @@
+var render_admin_default_streams_list = require("../templates/admin_default_streams_list.hbs");
 var Dict = require('./dict').Dict;
 
 var settings_streams = (function () {
@@ -31,7 +32,10 @@ exports.build_default_stream_table = function (streams_data) {
     list_render.create(table, streams_data, {
         name: "default_streams_list",
         modifier: function (item) {
-            var row = $(templates.render("admin_default_streams_list", { stream: item, can_modify: page_params.is_admin }));
+            var row = $(render_admin_default_streams_list({
+                stream: item,
+                can_modify: page_params.is_admin,
+            }));
             self.row_dict.set(item.stream_id, row);
             return row;
         },

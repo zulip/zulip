@@ -1,3 +1,8 @@
+var render_settings_deactivation_stream_modal = require("../templates/settings/deactivation_stream_modal.hbs");
+var render_stream_member_list_entry = require('../templates/stream_member_list_entry.hbs');
+var render_subscription_settings = require('../templates/subscription_settings.hbs');
+var render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
+
 var stream_edit = (function () {
 
 var exports = {};
@@ -90,9 +95,10 @@ exports.open_edit_panel_empty = function () {
 
 function format_member_list_elem(email) {
     var person = people.get_by_email(email);
-    return templates.render('stream_member_list_entry',
-                            {name: person.full_name, email: email,
-                             displaying_for_admin: page_params.is_admin});
+    return render_stream_member_list_entry({
+        name: person.full_name, email: email,
+        displaying_for_admin: page_params.is_admin,
+    });
 }
 
 function get_subscriber_list(sub_row) {
@@ -268,7 +274,7 @@ exports.show_settings_for = function (node) {
     var sub = stream_data.get_sub_by_id(stream_id);
 
     stream_data.update_calculated_fields(sub);
-    var html = templates.render('subscription_settings', {
+    var html = render_subscription_settings({
         sub: sub,
         settings: exports.stream_settings(sub),
         realm_settings: check_realm_setting,
@@ -493,7 +499,7 @@ exports.initialize = function () {
                 stream.history_public_to_subscribers,
             is_admin: page_params.is_admin,
         };
-        var change_privacy_modal = templates.render("subscription_stream_privacy_modal", template_data);
+        var change_privacy_modal = render_subscription_stream_privacy_modal(template_data);
         $("#stream_privacy_modal").remove();
         $("#subscriptions_table").append(change_privacy_modal);
         overlays.open_modal('stream_privacy_modal');
@@ -617,7 +623,7 @@ exports.initialize = function () {
             return;
         }
         var stream_name = stream_data.maybe_get_stream_name(stream_id);
-        var deactivate_stream_modal = templates.render("settings/deactivation_stream_modal", {
+        var deactivate_stream_modal = render_settings_deactivation_stream_modal({
             stream_name: stream_name,
             stream_id: stream_id,
         });
