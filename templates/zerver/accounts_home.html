@@ -97,6 +97,17 @@ $(function () {
                             </form>
                         </div>
                         {% endif %}
+
+                        {% if azuread_auth_enabled %}
+                        <div class="login-social">
+                            <form class="form-inline azure-wrapper" action="{{ url('signup-social', args=('azuread-oauth2',)) }}" method="get">
+                                <input type='hidden' name='multiuse_object_key' value='{{ multiuse_object_key }}' />
+                                <button class="login-social-button full-width">
+                                    {{ _('Sign up with %(identity_provider)s', identity_provider="Azure AD") }}
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
