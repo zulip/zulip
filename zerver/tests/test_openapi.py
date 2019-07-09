@@ -233,6 +233,49 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/{email}/presence',
     ])
 
+    def convert_regex_to_url_pattern(self, regex_pattern: str) -> str:
+        """ Convert regular expressions style URL patterns to their
+            corresponding OpenAPI style formats. All patterns are
+            expected to start with ^ and end with $.
+            Examples:
+                1. /messages/{message_id} <-> r'^messages/(?P<message_id>[0-9]+)$'
+                2. /events <-> r'^events$'
+        """
+        self.assertTrue(regex_pattern.startswith("^"))
+        self.assertTrue(regex_pattern.endswith("$"))
+        url_pattern = '/' + regex_pattern[1:][:-1]
+        url_pattern = re.sub(r"\(\?P<(\w+)>[^/]+\)", r"{\1}", url_pattern)
+        return url_pattern
+
+    def ensure_no_documentation_if_intentionally_undocumented(self, url_pattern: str,
+                                                              method: str) -> None:
+        try:
+            get_openapi_parameters(url_pattern, method)
+            raise AssertionError("We found some OpenAPI \
+documentation for %s %s, so maybe we shouldn't mark it as intentionally \
+undocumented in the urls." % (method, url_pattern))  # nocoverage
+        except KeyError:
+            return
+
+    def check_for_non_existant_openapi_endpoints(self) -> None:
+        """ Here, we check to see if every endpoint documented in the openapi
+        documentation actually exists in urls.py and thus in actual code.
+        Note: We define this as a helper called at the end of
+        test_openapi_arguments instead of as a separate test to ensure that
+        this test is only executed after test_openapi_arguments so that it's
+        results can be used here in the set operations. """
+        openapi_paths = set(get_openapi_paths())
+        undocumented_paths = openapi_paths - self.checked_endpoints
+        undocumented_paths -= self.buggy_documentation_endpoints
+        undocumented_paths -= self.pending_endpoints
+        try:
+            self.assertEqual(len(undocumented_paths), 0)
+        except AssertionError:  # nocoverage
+            msg = "The following endpoints have been documented but can't be found in urls.py:"
+            for undocumented_path in undocumented_paths:
+                msg += "\n + {}".format(undocumented_path)
+            raise AssertionError(msg)
+
     def test_openapi_arguments(self) -> None:
         """This end-to-end API documentation test compares the arguments
         defined in the actual code using @has_request_variables and
@@ -282,28 +325,15 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                 # verify those too!
                 accepted_arguments = set(arguments_map[function])
 
-                # Convert regular expressions style URL patterns to their
-                # corresponding OpenAPI style formats.
-                # E.G.
-                #     /messages/{message_id} <-> r'^messages/(?P<message_id>[0-9]+)$'
-                #     /events <-> r'^events$'
                 regex_pattern = p.regex.pattern
-                self.assertTrue(regex_pattern.startswith("^"))
-                self.assertTrue(regex_pattern.endswith("$"))
-                url_pattern = '/' + regex_pattern[1:][:-1]
-                url_pattern = re.sub(r"\(\?P<(\w+)>[^/]+\)", r"{\1}", url_pattern)
+                url_pattern = self.convert_regex_to_url_pattern(regex_pattern)
 
                 if url_pattern in self.pending_endpoints:
                     continue
 
                 if "intentionally_undocumented" in tags:
-                    try:
-                        get_openapi_parameters(url_pattern, method)
-                        raise AssertionError("We found some OpenAPI \
-            documentation for %s %s, so maybe we shouldn't mark it as intentionally \
-            undocumented in the urls." % (method, url_pattern))  # nocoverage
-                    except KeyError:
-                        continue
+                    self.ensure_no_documentation_if_intentionally_undocumented(url_pattern, method)
+                    continue
 
                 try:
                     openapi_parameters = get_openapi_parameters(url_pattern, method)
@@ -350,14 +380,4 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                     self.assertEqual(openapi_parameter_names, accepted_arguments)
                     self.checked_endpoints.add(url_pattern)
 
-        openapi_paths = set(get_openapi_paths())
-        undocumented_paths = openapi_paths - self.checked_endpoints
-        undocumented_paths -= self.buggy_documentation_endpoints
-        undocumented_paths -= self.pending_endpoints
-        try:
-            self.assertEqual(len(undocumented_paths), 0)
-        except AssertionError:  # nocoverage
-            msg = "The following endpoints have been documented but can't be found in urls.py:"
-            for undocumented_path in undocumented_paths:
-                msg += "\n + {}".format(undocumented_path)
-            raise AssertionError(msg)
+        self.check_for_non_existant_openapi_endpoints()
