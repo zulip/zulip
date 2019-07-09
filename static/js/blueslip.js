@@ -12,20 +12,6 @@ if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
 
-var console = (function () {
-    if (window.console !== undefined) {
-        return window.console;
-    }
-
-    var proxy = {};
-    var methods = ['log', 'info', 'warn', 'error', 'trace'];
-    var i;
-    for (i = 0; i < methods.length; i++) {
-        proxy[methods[i]] = function () {};
-    }
-    return proxy;
-}());
-
 function Logger() {
     this._memory_log = [];
 }
