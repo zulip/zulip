@@ -295,10 +295,8 @@ exports.go_to_location = function (hash) {
 };
 
 exports.initialize = function () {
-    // jQuery doesn't have a hashchange event, so we manually wrap
-    // our event handler
-    window.onhashchange = blueslip.wrap_function(function (e) {
-        hashchanged(false, e);
+    $(window).on('hashchange', function (e) {
+        hashchanged(false, e.originalEvent);
     });
     hashchanged(true);
 };

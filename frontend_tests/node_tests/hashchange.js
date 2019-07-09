@@ -1,8 +1,11 @@
+set_global('$', global.make_zjquery());
+const window_stub = $.create('window-stub');
 global.patch_builtin('window', {
     location: {
         protocol: 'http:',
         host: 'example.com',
     },
+    to_$: () => window_stub,
 });
 zrequire('people');
 zrequire('hash_util');
@@ -177,7 +180,7 @@ run_test('hash_interactions', () => {
     ]);
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'message_viewport.stop_auto_scrolling',
@@ -189,7 +192,7 @@ run_test('hash_interactions', () => {
     window.location.hash = '#narrow/stream/Denmark';
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'message_viewport.stop_auto_scrolling',
@@ -203,7 +206,7 @@ run_test('hash_interactions', () => {
     window.location.hash = '#narrow';
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'message_viewport.stop_auto_scrolling',
@@ -217,7 +220,7 @@ run_test('hash_interactions', () => {
     window.location.hash = '#streams/whatever';
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'subs.launch',
@@ -226,7 +229,7 @@ run_test('hash_interactions', () => {
     window.location.hash = '#keyboard-shortcuts/whatever';
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'message_viewport.stop_auto_scrolling',
@@ -236,7 +239,7 @@ run_test('hash_interactions', () => {
     window.location.hash = '#message-formatting/whatever';
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'message_viewport.stop_auto_scrolling',
@@ -246,7 +249,7 @@ run_test('hash_interactions', () => {
     window.location.hash = '#search-operators/whatever';
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'message_viewport.stop_auto_scrolling',
@@ -256,7 +259,7 @@ run_test('hash_interactions', () => {
     window.location.hash = '#drafts';
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'drafts.launch',
@@ -265,7 +268,7 @@ run_test('hash_interactions', () => {
     window.location.hash = '#settings/alert-words';
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'settings.launch',
@@ -274,7 +277,7 @@ run_test('hash_interactions', () => {
     window.location.hash = '#organization/user-list-admin';
 
     helper.clear_events();
-    window.onhashchange();
+    $(window).trigger($.Event('hashchange', {}));
     helper.assert_events([
         'overlays.close_for_hash_change',
         'admin.launch',
