@@ -147,6 +147,10 @@ ul {
     width: 8px;
     height: 8px;
     margin: 0px 5px;
+    display: inline-block;
+    float: initial;
+    position: relative;
+    top: 1px;
 }
 
 .bot-owner-name {
@@ -339,13 +343,6 @@ ul {
         position: static;
         margin-right: 0;
     }
-}
-
-.popover_user_presence {
-    display: inline-block;
-    float: initial;
-    position: relative;
-    top: 1px;
 }
 
 .user_info_status_text {
