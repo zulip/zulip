@@ -1,9 +1,9 @@
 {
     "env": {
-        "node": true,
-        "es6": true
+        "node": true
     },
     "parserOptions": {
+        "ecmaVersion": 6,
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "module"
     },
@@ -412,6 +412,24 @@
         "yoda": "error"
     },
     "overrides": [
+        {
+            "files": ["static/js/**"],
+            "env": {
+                "browser": true,
+                "node": false
+            }
+        },
+        {
+            "files": ["static/js/**/*.js"],
+            "env": {
+                "commonjs": true
+            },
+            "plugins": ["es"],
+            "extends": ["plugin:es/no-2015"],
+            "rules": {
+                "es/no-modules": "off"
+            }
+        },
         {
             "files": ["**/*.ts"],
             "parser": "@typescript-eslint/parser",
