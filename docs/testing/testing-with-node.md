@@ -170,3 +170,44 @@ branch coverage is a good goal.
 
 The overall project goal is to get to 100% node test coverage on all
 data/logic modules (UI modules are lower priority for unit testing).
+
+# Debugging
+
+It is possible to debug tests using WebStorm
+First make sure that you have set up Vagrant in WebStorm by following [this guide](https://www.jetbrains.com/help/webstorm/vagrant-support.html?section=Windows%20or%20Linux)
+
+## Set up Vagrant in Webstorm
+
+After following the guide above your configuration should look something like this:
+
+![Image of WebStorm Preferences showing correct setup. Instructions are detailed in the next paragraph](../images/webstorm_vagrant_setup.png "Image showing proper WebStorm Vagrant setup")
+
+Navigate to Preferences then Tools then the Vagrant section.
+
+* `Vagrant executable` should be `vagrant` (this should be autodetected)
+* `Instance folder` should be your _local document `zulip` root_ (where the Vagrantfile is located)
+* `Provider` should be `virtualbox` on macOS and Docker on Linux
+* `Environment Variables` does not need to be set by default
+* `Boxes` should have only one option in it, unless you use VirtualBox for other things, in which case choose the one that is being used for Zulip
+
+## Setting up a Debug Configuration
+
+You'll now need to set up a Debug Configuration. 
+
+* Open up the Run/Debug Configuration and create a new `Node.js` config. 
+* Under `Node interpreter:` click the 3 dots to the right side and click on the little plus in the bottom left of the `Node.js Interpreters` window.
+  * Select `Add Remote...` 
+  * In the `Configure Node.js Remote Interpreter` window select `Vagrant`
+  * Set `Vagrant Instance Folder` to the root `zulip` folder where the `Vagrantfile` is located. This should set automatically.
+  * Wait for WebStorm to connect to Vagrant. This will be symbolized by the `Vagrant Host URL` section containing the Vagrant SSH url. It will be something like `ssh://vagrant@127.0.0.1:2222`
+  * **Set the `Node.js interpreter path` to `/usr/local/bin/node`**
+  * Hit `OK` 2 times to get back to the `Run/Debug Configurations` window
+
+![Image of Example WebStorm Debug Configuration](../images/webstorm_debug_configuration.png "Example WebStorm Debug Configuration")
+![Image of NodeJS Interpreters Window](../images/webstorm_nodejs_interpreters_window.png "NodeJS Interpreters Window")
+![Image of Remote NodeJS Interpreters Window](../images/webstorm_vagrant_nodejs_interpreter_window.png "Remote Interpreter Window")
+
+* Under `Working Directory` make sure the root `zulip` directory is chosen
+* Under `JavaScript file` make sure the `frontend_tests/zjsunit/index.js` file is chosen. **This is very important**
+* Under `Application parameters` choose your file that you are trying to test.
+* Under `Path Mappings` make sure that the Project Root is pointing to `/srv/zulip` in Vagrant. 
