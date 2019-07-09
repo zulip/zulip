@@ -44,15 +44,6 @@
     z-index: 100;
 }
 
-.colorpicker-container .sp-container input {
-    -webkit-box-sizing: initial;
-    -moz-box-sizing: inherit;
-    -ms-box-sizing: inherit;
-    box-sizing: initial;
-
-    width: calc(100% - 13px);
-}
-
 .mobile-message-buttons-popover {
     position: absolute;
     top: auto !important;
@@ -75,6 +66,15 @@
 
             .sp-palette-container {
                 border-right: none;
+            }
+
+            input {
+                -webkit-box-sizing: initial;
+                -moz-box-sizing: inherit;
+                -ms-box-sizing: inherit;
+                box-sizing: initial;
+
+                width: calc(100% - 13px);
             }
         }
     }
