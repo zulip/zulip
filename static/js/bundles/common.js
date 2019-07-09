@@ -1,7 +1,4 @@
 import "core-js/features/promise";
-import "core-js/features/string/ends-with";
-import "core-js/features/string/starts-with";
-import "core-js/features/string/code-point-at";
 import "jquery/dist/jquery.js";
 import "underscore/underscore.js";
 import "../csrf.js";
