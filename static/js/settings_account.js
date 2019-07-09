@@ -411,7 +411,7 @@ exports.set_up = function () {
                 if ('account_email' in data) {
                     settings_change_success(data.account_email);
                     if (page_params.development_environment) {
-                        var email_msg = templates.render('dev_env_email_access');
+                        var email_msg = templates.render('settings/dev_env_email_access');
                         $("#account-settings-status").append(email_msg);
                     }
                 } else {
