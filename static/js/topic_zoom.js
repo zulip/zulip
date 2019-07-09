@@ -11,7 +11,7 @@ exports.is_zoomed_in = function () {
 function zoom_in() {
     var stream_id = topic_list.active_stream_id();
 
-    popovers.hide_all();
+    popovers.hide_all_except_sidebars();
     topic_list.zoom_in();
     stream_list.zoom_in_topics({
         stream_id: stream_id,
@@ -23,7 +23,7 @@ function zoom_in() {
 exports.zoom_out = function () {
     var stream_li = topic_list.get_stream_li();
 
-    popovers.hide_all();
+    popovers.hide_all_except_sidebars();
     topic_list.zoom_out();
     stream_list.zoom_out_topics();
 

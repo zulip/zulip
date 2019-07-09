@@ -1066,10 +1066,10 @@ exports.any_active = function () {
         $("[class^='column-'].expanded").length;
 };
 
-// This function will hide all true popovers (the userlist sidebar
-// uses the popover infrastructure, but doesn't work like a popover
-// structurally).
-exports.hide_all_except_userlist_sidebar = function () {
+// This function will hide all true popovers (the streamlist and
+// userlist sidebars use the popover infrastructure, but doesn't work
+// like a popover structurally).
+exports.hide_all_except_sidebars = function () {
     $('.has_popover').removeClass('has_popover has_actions_popover has_emoji_popover');
     popovers.hide_actions_popover();
     popovers.hide_message_info_popover();
@@ -1080,7 +1080,6 @@ exports.hide_all_except_userlist_sidebar = function () {
     stream_popover.hide_starred_messages_popover();
     popovers.hide_user_sidebar_popover();
     popovers.hide_mobile_message_buttons_popover();
-    stream_popover.restore_stream_list_size();
     popovers.hide_user_profile();
 
     // look through all the popovers that have been added and removed.
@@ -1092,11 +1091,12 @@ exports.hide_all_except_userlist_sidebar = function () {
     list_of_popovers = [];
 };
 
-// This function will hide all the popovers, including the userlist
-// sidebar.
+// This function will hide all the popovers, including the mobile web
+// or narrow window sidebars.
 exports.hide_all = function () {
     popovers.hide_userlist_sidebar();
-    popovers.hide_all_except_userlist_sidebar();
+    stream_popover.restore_stream_list_size();
+    popovers.hide_all_except_sidebars();
 };
 
 exports.set_userlist_placement = function (placement) {
