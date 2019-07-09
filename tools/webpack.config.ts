@@ -33,13 +33,11 @@ export default (env?: string): webpack.Configuration[] => {
                         },
                     ],
                 },
-                // Run the typescript compilier on .ts files before webpack
+                // Transpile .js and .ts files with Babel
                 {
-                    test: /\.tsx?$/,
-                    loader: 'ts-loader',
-                    options: {
-                        configFile: require.resolve('../static/js/tsconfig.json'),
-                    },
+                    test: /\.(js|ts)$/,
+                    include: resolve(__dirname, '../static/js'),
+                    loader: 'babel-loader',
                 },
                 // Uses script-loader on minified files so we don't change global variables in them.
                 // Also has the effect of making processing these files fast
@@ -156,7 +154,7 @@ export default (env?: string): webpack.Configuration[] => {
         { path: "sortablejs/Sortable.js"},
         { path: "winchan/winchan.js", name: 'WinChan'},
     ];
-    config.module.rules.push(...getExposeLoaders(exposeOptions));
+    config.module.rules.unshift(...getExposeLoaders(exposeOptions));
 
     if (production) {
         config.plugins = [
