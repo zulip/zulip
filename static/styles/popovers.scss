@@ -64,19 +64,19 @@
 }
 
 .streams_popover {
-    .sp-container {
-        background-color: hsl(0, 0%, 100%);
-        cursor: pointer;
-        border: none;
-
-        .sp-palette-container {
-            border-right: none;
-        }
-    }
-
     .colorpicker-container {
         display: inline-block;
         margin-right: 10px;
+
+        .sp-container {
+            background-color: hsl(0, 0%, 100%);
+            cursor: pointer;
+            border: none;
+
+            .sp-palette-container {
+                border-right: none;
+            }
+        }
     }
 
     .popover_sub_unsub_button {
