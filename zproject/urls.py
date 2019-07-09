@@ -420,6 +420,9 @@ i18n_urls = [
     url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
     url(r'^accounts/login/social/([\w,-]+)$', zerver.views.auth.start_social_login,
         name='login-social'),
+    url(r'^accounts/register/social/([\w,-]+)$',
+        zerver.views.auth.start_social_signup,
+        name='signup-social'),
     url(r'^accounts/login/google/$', zerver.views.auth.start_google_oauth2,
         name='zerver.views.auth.start_google_oauth2'),
     url(r'^accounts/login/google/send/$',
@@ -466,9 +469,6 @@ i18n_urls = [
     url(r'^digest/$', zerver.views.digest.digest_page),
 
     # Registration views, require a confirmation ID.
-    url(r'^accounts/register/social/(\w+)$',
-        zerver.views.auth.start_social_signup,
-        name='signup-social'),
     url(r'^accounts/home/', zerver.views.registration.accounts_home,
         name='zerver.views.registration.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
