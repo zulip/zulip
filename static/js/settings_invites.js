@@ -1,3 +1,6 @@
+var render_admin_invites_list = require("../templates/admin_invites_list.hbs");
+var render_settings_revoke_invite_modal = require("../templates/settings/revoke_invite_modal.hbs");
+
 var settings_invites = (function () {
 
 var exports = {};
@@ -60,7 +63,7 @@ function populate_invites(invites_data) {
             name: "admin_invites_list",
             modifier: function (item) {
                 item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
-                return templates.render("admin_invites_list", { invite: item });
+                return render_admin_invites_list({ invite: item });
             },
             filter: {
                 element: invites_table.closest(".settings-section").find(".search"),
@@ -146,7 +149,7 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
         meta.is_multiuse = $(e.currentTarget).attr("data-is-multiuse");
         var ctx = {is_multiuse: meta.is_multiuse === "true", email: email, referred_by: referred_by};
-        var rendered_revoke_modal = templates.render("settings/revoke_invite_modal", ctx);
+        var rendered_revoke_modal = render_settings_revoke_invite_modal(ctx);
         $("#revoke_invite_modal_holder").html(rendered_revoke_modal);
         $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id", meta.invite_id);
         $("#revoke_invite_modal #do_revoke_invite_button").attr("data-is-multiuse", meta.is_multiuse);

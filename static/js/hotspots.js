@@ -1,3 +1,6 @@
+var render_hotspot_overlay = require('../templates/hotspot_overlay.hbs');
+var render_intro_reply_hotspot = require('../templates/intro_reply_hotspot.hbs');
+
 var hotspots = (function () {
 
 var exports = {};
@@ -186,11 +189,11 @@ function place_popover(hotspot) {
 
 function insert_hotspot_into_DOM(hotspot) {
     if (hotspot.name === "intro_reply") {
-        $('#bottom_whitespace').append(templates.render('intro_reply_hotspot', {}));
+        $('#bottom_whitespace').append(render_intro_reply_hotspot({}));
         return;
     }
 
-    var hotspot_overlay_HTML = templates.render('hotspot_overlay', {
+    var hotspot_overlay_HTML = render_hotspot_overlay({
         name: hotspot.name,
         title: hotspot.title,
         description: hotspot.description,

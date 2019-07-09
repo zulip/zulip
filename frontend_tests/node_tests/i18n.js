@@ -35,7 +35,7 @@ run_test('t_tag', () => {
         narrowed: true,
     };
 
-    var html = global.render_template('actions_popover_content', args);
+    var html = require('../../static/templates/actions_popover_content.hbs')(args);
     assert(html.indexOf("French translation") > 0);
 });
 
@@ -59,6 +59,6 @@ run_test('tr_tag', () => {
         },
     };
 
-    var html = global.render_template('settings_tab', args);
+    var html = require('../../static/templates/settings_tab.hbs')(args);
     assert(html.indexOf('Some French text') > 0);
 });

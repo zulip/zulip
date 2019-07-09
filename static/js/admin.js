@@ -1,3 +1,5 @@
+var render_admin_tab = require('../templates/admin_tab.hbs');
+
 var admin = (function () {
 
 var exports = {};
@@ -86,7 +88,7 @@ exports.build_page = function () {
         options.realm_night_logo_url = options.realm_logo_url;
     }
 
-    var rendered_admin_tab = templates.render('admin_tab', options);
+    var rendered_admin_tab = render_admin_tab(options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
 

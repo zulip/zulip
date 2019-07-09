@@ -1,3 +1,7 @@
+var render_message_edit_form = require('../templates/message_edit_form.hbs');
+var render_message_edit_history = require('../templates/message_edit_history.hbs');
+var render_topic_edit_form = require('../templates/topic_edit_form.hbs');
+
 var message_edit = (function () {
 var exports = {};
 var currently_editing_messages = {};
@@ -281,17 +285,17 @@ function edit_message(row, raw_content) {
         file_upload_enabled = true;
     }
 
-    var form = $(templates.render(
-        'message_edit_form',
-        {is_stream: message.type === 'stream',
-         message_id: message.id,
-         is_editable: is_editable,
-         is_content_editable: editability === message_edit.editability_types.FULL,
-         has_been_editable: editability !== editability_types.NO,
-         topic: util.get_message_topic(message),
-         content: raw_content,
-         file_upload_enabled: file_upload_enabled,
-         minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
+    var form = $(render_message_edit_form({
+        is_stream: message.type === 'stream',
+        message_id: message.id,
+        is_editable: is_editable,
+        is_content_editable: editability === message_edit.editability_types.FULL,
+        has_been_editable: editability !== editability_types.NO,
+        topic: util.get_message_topic(message),
+        content: raw_content,
+        file_upload_enabled: file_upload_enabled,
+        minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
+    }));
 
     var edit_obj = {form: form, raw_content: raw_content};
     currently_editing_messages[message.id] = edit_obj;
@@ -474,7 +478,7 @@ exports.start = function (row, edit_box_open_callback) {
 };
 
 exports.start_topic_edit = function (recipient_row) {
-    var form = $(templates.render('topic_edit_form'));
+    var form = $(render_topic_edit_form());
     current_msg_list.show_edit_topic(recipient_row, form);
     form.keydown(_.partial(handle_edit_keydown, true));
     var msg_id = rows.id_for_recipient_row(recipient_row);
@@ -608,7 +612,7 @@ exports.show_history = function (message) {
                 content_edit_history.push(item);
             });
 
-            $('#message-history').html(templates.render('message_edit_history', {
+            $('#message-history').html(render_message_edit_history({
                 edited_messages: content_edit_history,
             }));
         },

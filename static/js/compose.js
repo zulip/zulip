@@ -1,3 +1,9 @@
+var render_compose_all_everyone = require("../templates/compose_all_everyone.hbs");
+var render_compose_announce = require("../templates/compose_announce.hbs");
+var render_compose_invite_users = require("../templates/compose_invite_users.hbs");
+var render_compose_not_subscribed = require("../templates/compose_not_subscribed.hbs");
+var render_compose_private_stream_alert = require("../templates/compose_private_stream_alert.hbs");
+
 var compose = (function () {
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
@@ -29,7 +35,7 @@ function make_uploads_relative(content) {
 function show_all_everyone_warnings() {
     var stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
 
-    var all_everyone_template = templates.render("compose_all_everyone", {count: stream_count});
+    var all_everyone_template = render_compose_all_everyone({count: stream_count});
     var error_area_all_everyone = $("#compose-all-everyone");
 
     // only show one error for any number of @all or @everyone mentions
@@ -58,7 +64,7 @@ function show_sending_indicator(whats_happening) {
 function show_announce_warnings() {
     var stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
 
-    var announce_template = templates.render("compose_announce", {count: stream_count});
+    var announce_template = render_compose_announce({count: stream_count});
     var error_area_announce = $("#compose-announce");
 
     if (!error_area_announce.is(':visible')) {
@@ -498,7 +504,7 @@ exports.validation_error = function (error_type, stream_name) {
         return false;
     case "not-subscribed":
         var sub = stream_data.get_sub(stream_name);
-        var new_row = templates.render("compose_not_subscribed", {
+        var new_row = render_compose_not_subscribed({
             should_display_sub_button: sub.should_display_subscription_button});
         compose_not_subscribed_error(new_row, $('#stream_message_recipient_stream'));
         return false;
@@ -835,7 +841,7 @@ exports.initialize = function () {
                         name: data.mentioned.full_name,
                         can_subscribe_other_users: page_params.can_subscribe_other_users,
                     };
-                    var new_row = templates.render("compose_invite_users", context);
+                    var new_row = render_compose_invite_users(context);
                     error_area.append(new_row);
                 }
 
@@ -978,7 +984,7 @@ exports.initialize = function () {
 
         var warning_area = $("#compose_private_stream_alert");
         var context = { stream_name: stream_name };
-        var new_row = templates.render("compose_private_stream_alert", context);
+        var new_row = render_compose_private_stream_alert(context);
 
         warning_area.append(new_row);
         warning_area.show();

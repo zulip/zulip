@@ -1,3 +1,6 @@
+var render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
+var render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
+
 var settings_account = (function () {
 
 var exports = {};
@@ -110,7 +113,7 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
             }
         }
 
-        var html = templates.render("settings/custom_user_profile_field", {
+        var html = render_settings_custom_user_profile_field({
             field: field,
             field_type: all_field_template_types[field.type],
             field_value: field_value,
@@ -395,7 +398,7 @@ exports.set_up = function () {
         var opts = {
             success_continuation: function () {
                 if (page_params.development_environment) {
-                    var email_msg = templates.render('settings/dev_env_email_access');
+                    var email_msg = render_settings_dev_env_email_access();
                     ui_report.success(email_msg, $("#dev-account-settings-status").expectOne(), 4000);
                 }
                 overlays.close_modal('change_email_modal');

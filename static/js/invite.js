@@ -1,3 +1,7 @@
+var render_invitation_failed_error = require("../templates/invitation_failed_error.hbs");
+var render_invite_subscription = require('../templates/invite_subscription.hbs');
+var render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
+
 var invite = (function () {
 
 var exports = {};
@@ -56,7 +60,7 @@ function submit_invitation_form() {
             invitee_emails.val('');
 
             if (page_params.development_environment) {
-                var rendered_email_msg = templates.render('settings/dev_env_email_access');
+                var rendered_email_msg = render_settings_dev_env_email_access();
                 $('#dev_env_msg').html(rendered_email_msg).addClass('alert-info').show();
             }
 
@@ -75,7 +79,7 @@ function submit_invitation_form() {
                     invitee_emails_errored.push(value[0]);
                 });
 
-                var error_response = templates.render("invitation_failed_error", {
+                var error_response = render_invitation_failed_error({
                     error_message: arr.msg,
                     error_list: error_list,
                 });
@@ -128,7 +132,7 @@ exports.get_invite_streams = function () {
 
 function update_subscription_checkboxes() {
     var data = {streams: exports.get_invite_streams()};
-    var html = templates.render('invite_subscription', data);
+    var html = render_invite_subscription(data);
     $('#streams_to_add').html(html);
 }
 

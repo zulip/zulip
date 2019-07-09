@@ -1,3 +1,4 @@
+var render_message_reaction = require('../templates/message_reaction.hbs');
 var Dict = require('./dict').Dict;
 
 var reactions = (function () {
@@ -292,7 +293,7 @@ exports.view.insert_new_reaction = function (opts) {
         context.class = "message_reaction";
     }
 
-    var new_reaction = $(templates.render('message_reaction', context));
+    var new_reaction = $(render_message_reaction(context));
 
     // Now insert it before the add button.
     var reaction_button_element = exports.get_add_reaction_button(message_id);

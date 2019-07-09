@@ -1,3 +1,8 @@
+var render_bookend = require('../templates/bookend.hbs');
+var render_message_group = require('../templates/message_group.hbs');
+var render_recipient_row = require('../templates/recipient_row.hbs');
+var render_single_message = require('../templates/single_message.hbs');
+
 function MessageListView(list, table_name, collapse_messages) {
     this.list = list;
     this.collapse_messages = collapse_messages;
@@ -615,7 +620,7 @@ MessageListView.prototype = {
         var msg_to_render = _.extend(message_container, {
             table_name: this.table_name,
         });
-        return templates.render('single_message', msg_to_render);
+        return render_single_message(msg_to_render);
     },
 
     _render_group: function (opts) {
@@ -623,7 +628,7 @@ MessageListView.prototype = {
         var use_match_properties = opts.use_match_properties;
         var table_name = opts.table_name;
 
-        return $(templates.render('message_group', {
+        return $(render_message_group({
             message_groups: message_groups,
             use_match_properties: use_match_properties,
             table_name: table_name,
@@ -1166,7 +1171,7 @@ MessageListView.prototype = {
         // rerendering rather than looking up the original version.
         populate_group_from_message_container(group, group.message_containers[0]);
 
-        var rendered_recipient_row = $(templates.render('recipient_row', group));
+        var rendered_recipient_row = $(render_recipient_row(group));
 
         header.replaceWith(rendered_recipient_row);
     },
@@ -1301,7 +1306,7 @@ MessageListView.prototype = {
     },
 
     render_trailing_bookend: function (trailing_bookend_content, subscribed, show_button) {
-        var rendered_trailing_bookend = $(templates.render('bookend', {
+        var rendered_trailing_bookend = $(render_bookend({
             bookend_content: trailing_bookend_content,
             trailing: show_button,
             subscribed: subscribed,

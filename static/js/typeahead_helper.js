@@ -1,3 +1,4 @@
+var render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
 var Dict = require('./dict').Dict;
 
 var typeahead_helper = (function () {
@@ -74,7 +75,7 @@ exports.highlight_query_in_phrase = function (query, phrase) {
 exports.render_typeahead_item = function (args) {
     args.has_image = args.img_src !== undefined;
     args.has_secondary = args.secondary !== undefined;
-    return templates.render('typeahead_list_item', args);
+    return render_typeahead_list_item(args);
 };
 
 var rendered = { persons: new Dict(), streams: new Dict(), user_groups: new Dict() };

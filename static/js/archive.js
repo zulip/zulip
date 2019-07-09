@@ -1,3 +1,5 @@
+var render_archive_message_group = require('../templates/archive_message_group.hbs');
+
 var archive = (function () {
 
 var exports = {};
@@ -70,7 +72,7 @@ exports.initialize = function () {
     var context = {
         message_groups: all_message_groups,
     };
-    var message_groups_html = templates.render('archive_message_group', context);
+    var message_groups_html = render_archive_message_group(context);
     $('.message_row').each(function () {
         $(this).detach();
     });

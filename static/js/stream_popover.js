@@ -1,3 +1,10 @@
+var render_all_messages_sidebar_actions = require('../templates/all_messages_sidebar_actions.hbs');
+var render_delete_topic_modal = require('../templates/delete_topic_modal.hbs');
+var render_starred_messages_sidebar_actions = require('../templates/starred_messages_sidebar_actions.hbs');
+var render_stream_sidebar_actions = require('../templates/stream_sidebar_actions.hbs');
+var render_topic_sidebar_actions = require('../templates/topic_sidebar_actions.hbs');
+var render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
+
 var stream_popover = (function () {
 
 var exports = {};
@@ -120,10 +127,9 @@ function build_stream_popover(opts) {
     popovers.hide_all();
     exports.show_streamlist_sidebar();
 
-    var content = templates.render(
-        'stream_sidebar_actions',
-        {stream: stream_data.get_sub_by_id(stream_id)}
-    );
+    var content = render_stream_sidebar_actions({
+        stream: stream_data.get_sub_by_id(stream_id),
+    });
 
     $(elt).popover({
         content: content,
@@ -167,7 +173,7 @@ function build_topic_popover(opts) {
     var can_mute_topic = !is_muted;
     var can_unmute_topic = is_muted;
 
-    var content = templates.render('topic_sidebar_actions', {
+    var content = render_topic_sidebar_actions({
         stream_name: sub.name,
         stream_id: sub.stream_id,
         topic_name: topic_name,
@@ -199,9 +205,7 @@ function build_all_messages_popover(e) {
 
     popovers.hide_all();
 
-    var content = templates.render(
-        'all_messages_sidebar_actions'
-    );
+    var content = render_all_messages_sidebar_actions();
 
     $(elt).popover({
         content: content,
@@ -227,10 +231,9 @@ function build_starred_messages_popover(e) {
 
     popovers.hide_all();
 
-    var content = templates.render(
-        'starred_messages_sidebar_actions',
-        {starred_message_counts: page_params.starred_message_counts}
-    );
+    var content = render_starred_messages_sidebar_actions({
+        starred_message_counts: page_params.starred_message_counts,
+    });
 
     $(elt).popover({
         content: content,
@@ -318,7 +321,7 @@ exports.register_stream_handlers = function () {
         e.preventDefault();
         e.stopPropagation();
         $(".left-sidebar-modal-holder").empty();
-        $(".left-sidebar-modal-holder").html(templates.render("unstar_messages_modal"));
+        $(".left-sidebar-modal-holder").html(render_unstar_messages_modal());
         $("#unstar-messages-modal").modal("show");
     });
 
@@ -478,7 +481,7 @@ exports.register_topic_handlers = function () {
 
         exports.hide_topic_popover();
 
-        $('#delete-topic-modal-holder').html(templates.render('delete_topic_modal', args));
+        $('#delete-topic-modal-holder').html(render_delete_topic_modal(args));
 
         $('#do_delete_topic_button').on('click', function () {
             message_edit.delete_topic(stream_id, topic);

@@ -1,3 +1,6 @@
+var render_muted_topic_ui_row = require('../templates/muted_topic_ui_row.hbs');
+var render_topic_muted = require('../templates/topic_muted.hbs');
+
 var muting_ui = (function () {
 
 var exports = {};
@@ -88,7 +91,7 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
             topic: topic,
         };
 
-        var row = templates.render('muted_topic_ui_row', template_data);
+        var row = render_muted_topic_ui_row(template_data);
         muted_topics_table.append(row);
     });
 };
@@ -103,7 +106,7 @@ exports.mute = function (stream_id, topic) {
     exports.persist_mute(stream_id, topic);
     feedback_widget.show({
         populate: function (container) {
-            var rendered_html = templates.render('topic_muted');
+            var rendered_html = render_topic_muted();
             container.html(rendered_html);
             container.find(".stream").text(stream_name);
             container.find(".topic").text(topic);

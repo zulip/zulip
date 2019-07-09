@@ -1,3 +1,5 @@
+var render_widgets_tictactoe_widget = require('../templates/widgets/tictactoe_widget.hbs');
+
 var tictactoe_widget = (function () {
 
 var exports = {};
@@ -127,7 +129,7 @@ exports.activate = function (opts) {
 
     function render() {
         var widget_data = tictactoe_data.get_widget_data();
-        var html = templates.render('widgets/tictactoe_widget', widget_data);
+        var html = render_widgets_tictactoe_widget(widget_data);
         elem.html(html);
 
         elem.find("button.tictactoe-square").on('click', function (e) {

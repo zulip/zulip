@@ -1,3 +1,6 @@
+var render_user_presence_row = require('../templates/user_presence_row.hbs');
+var render_user_presence_rows = require('../templates/user_presence_rows.hbs');
+
 var buddy_list = (function () {
 
 function buddy_list_conf() {
@@ -10,12 +13,12 @@ function buddy_list_conf() {
 
     conf.items_to_html = function (opts) {
         var user_info = opts.items;
-        var html = templates.render('user_presence_rows', {users: user_info});
+        var html = render_user_presence_rows({users: user_info});
         return html;
     };
 
     conf.item_to_html = function (opts) {
-        var html = templates.render('user_presence_row', opts.item);
+        var html = render_user_presence_row(opts.item);
         return html;
     };
 

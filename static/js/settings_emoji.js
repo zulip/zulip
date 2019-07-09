@@ -1,3 +1,6 @@
+var render_admin_emoji_list = require('../templates/admin_emoji_list.hbs');
+var render_settings_emoji_settings_tip = require("../templates/settings/emoji_settings_tip.hbs");
+
 var settings_emoji = (function () {
 
 var exports = {};
@@ -34,7 +37,7 @@ function can_admin_emoji(emoji) {
 }
 
 exports.update_custom_emoji_ui = function () {
-    var rendered_tip = templates.render("settings/emoji_settings_tip", {
+    var rendered_tip = render_settings_emoji_settings_tip({
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
     });
     $('#emoji-settings').find('.emoji-settings-tip-container').html(rendered_tip);
@@ -62,7 +65,7 @@ exports.populate_emoji = function (emoji_data) {
     emoji_table.find('tr.emoji_row').remove();
     _.each(emoji_data, function (data) {
         if (data.deactivated !== true) {
-            emoji_table.append(templates.render('admin_emoji_list', {
+            emoji_table.append(render_admin_emoji_list({
                 emoji: {
                     name: data.name,
                     display_name: data.name.replace(/_/g, ' '),

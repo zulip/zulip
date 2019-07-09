@@ -1,3 +1,5 @@
+var render_tab_bar = require('../templates/tab_bar.hbs');
+
 var tab_bar = (function () {
 
 var exports = {};
@@ -158,7 +160,7 @@ function build_tab_bar() {
     tab_bar.empty();
 
     tabs[tabs.length - 1].active = "active";
-    var rendered =  templates.render('tab_bar', {tabs: tabs});
+    var rendered =  render_tab_bar({tabs: tabs});
 
     tab_bar.append(rendered);
     exports.colorize_tab_bar();

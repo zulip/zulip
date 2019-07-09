@@ -1,3 +1,6 @@
+var render_admin_profile_field_list = require("../templates/admin_profile_field_list.hbs");
+var render_settings_profile_field_choice = require("../templates/settings/profile_field_choice.hbs");
+
 var settings_profile_fields = (function () {
 
 var exports = {};
@@ -101,7 +104,7 @@ function update_choice_delete_btn(container, display_flag) {
 
 function create_choice_row(container) {
     var context = {};
-    var row = templates.render("settings/profile_field_choice", context);
+    var row = render_settings_profile_field_choice(context);
     $(container).append(row);
 }
 
@@ -221,7 +224,7 @@ function set_up_choices_field_edit_form(profile_field, field_data) {
 
     _.each(choices_data, function (choice) {
         choice_list.append(
-            templates.render("settings/profile_field_choice", {
+            render_settings_profile_field_choice({
                 text: choice.text,
             })
         );
@@ -333,22 +336,20 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
         }
 
         profile_fields_table.append(
-            templates.render(
-                "admin_profile_field_list", {
-                    profile_field: {
-                        id: profile_field.id,
-                        name: profile_field.name,
-                        hint: profile_field.hint,
-                        type: exports.field_type_id_to_string(profile_field.type),
-                        choices: choices,
-                        is_choice_field: profile_field.type === field_types.CHOICE.id,
-                        is_external_account_field: profile_field.type ===
-                                                    field_types.EXTERNAL_ACCOUNT.id,
-                    },
-                    can_modify: page_params.is_admin,
-                    realm_default_external_accounts: page_params.realm_default_external_accounts,
-                }
-            )
+            render_admin_profile_field_list({
+                profile_field: {
+                    id: profile_field.id,
+                    name: profile_field.name,
+                    hint: profile_field.hint,
+                    type: exports.field_type_id_to_string(profile_field.type),
+                    choices: choices,
+                    is_choice_field: profile_field.type === field_types.CHOICE.id,
+                    is_external_account_field: profile_field.type ===
+                                                field_types.EXTERNAL_ACCOUNT.id,
+                },
+                can_modify: page_params.is_admin,
+                realm_default_external_accounts: page_params.realm_default_external_accounts,
+            })
         );
     });
     if (page_params.is_admin) {

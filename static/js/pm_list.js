@@ -1,3 +1,5 @@
+var render_sidebar_private_message_list = require('../templates/sidebar_private_message_list.hbs');
+
 var pm_list = (function () {
 
 var exports = {};
@@ -106,8 +108,9 @@ exports._build_private_messages_list = function (active_conversation) {
         display_messages.push(display_message);
     });
 
-    var recipients_dom = templates.render('sidebar_private_message_list',
-                                          {messages: display_messages});
+    var recipients_dom = render_sidebar_private_message_list({
+        messages: display_messages,
+    });
     return recipients_dom;
 };
 

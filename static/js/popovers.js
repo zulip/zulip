@@ -1,4 +1,14 @@
 var confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
+var render_actions_popover_content = require('../templates/actions_popover_content.hbs');
+var render_mobile_message_buttons_popover = require('../templates/mobile_message_buttons_popover.hbs');
+var render_mobile_message_buttons_popover_content = require('../templates/mobile_message_buttons_popover_content.hbs');
+var render_no_arrow_popover = require('../templates/no_arrow_popover.hbs');
+var render_remind_me_popover_content = require('../templates/remind_me_popover_content.hbs');
+var render_user_group_info_popover = require('../templates/user_group_info_popover.hbs');
+var render_user_group_info_popover_content = require('../templates/user_group_info_popover_content.hbs');
+var render_user_info_popover_content = require('../templates/user_info_popover_content.hbs');
+var render_user_info_popover_title = require('../templates/user_info_popover_title.hbs');
+var render_user_profile_modal = require("../templates/user_profile_modal.hbs");
 
 var popovers = (function () {
 
@@ -185,16 +195,17 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
     }
 
     popover_element.popover({
-        content: templates.render('user_info_popover_content', args),
+        content: render_user_info_popover_content(args),
         // TODO: Determine whether `fixed` should be applied
         // unconditionally.  Right now, we only do it for the user
         // sidebar version of the popover.
         fixed: template_class === 'user_popover',
         placement: popover_placement,
-        template: templates.render('no_arrow_popover', {class: template_class}),
-        title: templates.render('user_info_popover_title',
-                                {user_avatar: "avatar/" + user.email,
-                                 user_is_guest: user.is_guest}),
+        template: render_no_arrow_popover({class: template_class}),
+        title: render_user_info_popover_title({
+            user_avatar: "avatar/" + user.email,
+            user_is_guest: user.is_guest,
+        }),
         trigger: "manual",
         top_offset: 100,
         fix_positions: true,
@@ -251,8 +262,8 @@ function show_mobile_message_buttons_popover(element) {
     var $element = $(element);
     $element.popover({
         placement: "left",
-        template: templates.render('mobile_message_buttons_popover'),
-        content: templates.render('mobile_message_buttons_popover_content', {
+        template: render_mobile_message_buttons_popover(),
+        content: render_mobile_message_buttons_popover_content({
             is_in_private_narrow: narrow_state.narrowed_to_pms(),
         }),
         trigger: "manual",
@@ -296,7 +307,7 @@ exports.show_user_profile = function (user) {
         user_is_guest: user.is_guest,
     };
 
-    $("#user-profile-modal-holder").html(templates.render("user_profile_modal", args));
+    $("#user-profile-modal-holder").html(render_user_profile_modal(args));
     $("#user-profile-modal").modal("show");
 
     settings_account.initialize_custom_user_type_fields("#user-profile-modal #content", user.user_id, false, false);
@@ -370,8 +381,8 @@ function show_user_group_info_popover(element, group, message) {
         };
         elt.popover({
             placement: calculate_info_popover_placement(popover_size, elt),
-            template: templates.render('user_group_info_popover', {class: "message-info-popover"}),
-            content: templates.render('user_group_info_popover_content', args),
+            template: render_user_group_info_popover({class: "message-info-popover"}),
+            content: render_user_group_info_popover_content(args),
             trigger: "manual",
         });
         elt.popover("show");
@@ -469,7 +480,7 @@ exports.toggle_actions_popover = function (element, id) {
             // Popover height with 7 items in it is ~190 px
             placement: message_viewport.height() - ypos < 220 ? 'top' : 'bottom',
             title: "",
-            content: templates.render('actions_popover_content', args),
+            content: render_actions_popover_content(args),
             trigger: "manual",
         });
         elt.popover("show");
@@ -492,7 +503,7 @@ exports.render_actions_remind_popover = function (element, id) {
             // Popover height with 7 items in it is ~190 px
             placement: message_viewport.height() - ypos < 220 ? 'top' : 'bottom',
             title: "",
-            content: templates.render('remind_me_popover_content', args),
+            content: render_remind_me_popover_content(args),
             trigger: "manual",
         });
         elt.popover("show");

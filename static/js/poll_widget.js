@@ -1,3 +1,6 @@
+var render_widgets_poll_widget = require('../templates/widgets/poll_widget.hbs');
+var render_widgets_poll_widget_results = require('../templates/widgets/poll_widget_results.hbs');
+
 var poll_widget = (function () {
 
 var exports = {};
@@ -285,7 +288,7 @@ exports.activate = function (opts) {
     }
 
     function build_widget() {
-        var html = templates.render('widgets/poll_widget');
+        var html = render_widgets_poll_widget();
         elem.html(html);
 
         elem.find('input.poll-question').on('keyup', function (e) {
@@ -346,7 +349,7 @@ exports.activate = function (opts) {
     function render_results() {
         var widget_data = poll_data.get_widget_data();
 
-        var html = templates.render('widgets/poll_widget_results', widget_data);
+        var html = render_widgets_poll_widget_results(widget_data);
         elem.find('ul.poll-widget').html(html);
 
         elem.find("button.poll-vote").off('click').on('click', function (e) {

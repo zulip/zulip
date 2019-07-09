@@ -1,3 +1,8 @@
+var render_bot_avatar_row = require('../templates/bot_avatar_row.hbs');
+var render_edit_bot = require('../templates/edit_bot.hbs');
+var render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");
+var render_settings_edit_outgoing_webhook_service = require("../templates/settings/edit_outgoing_webhook_service.hbs");
+
 var settings_bots = (function () {
 
 var exports = {};
@@ -49,7 +54,7 @@ exports.bot_error = function (bot_id, xhr) {
 };
 
 function add_bot_row(info) {
-    var row = $(templates.render('bot_avatar_row', info));
+    var row = $(render_bot_avatar_row(info));
     if (info.is_active) {
         $('#active_bots_list').append(row);
     } else {
@@ -391,8 +396,10 @@ exports.set_up = function () {
         var bot = bot_data.get(bot_id);
         var users_list = people.get_active_human_persons();
         $("#edit_bot").empty();
-        $("#edit_bot").append(templates.render('edit_bot', {bot: bot,
-                                                            users_list: users_list}));
+        $("#edit_bot").append(render_edit_bot({
+            bot: bot,
+            users_list: users_list,
+        }));
         var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
         var form = $('#settings_page .edit_bot_form');
         var image = li.find(".image");
@@ -401,13 +408,15 @@ exports.set_up = function () {
         $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
         var service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
-            $("#service_data").append(templates.render("settings/edit_outgoing_webhook_service",
-                                                       {service: service}));
+            $("#service_data").append(render_settings_edit_outgoing_webhook_service({
+                service: service,
+            }));
             $("#edit_service_interface").val(service.interface);
         }
         if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
-            $("#service_data").append(templates.render("settings/edit_embedded_bot_service",
-                                                       {service: service}));
+            $("#service_data").append(render_settings_edit_embedded_bot_service({
+                service: service,
+            }));
         }
 
         avatar_widget.clear();

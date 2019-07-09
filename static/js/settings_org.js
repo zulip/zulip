@@ -1,3 +1,8 @@
+var render_settings_admin_auth_methods_list = require('../templates/settings/admin_auth_methods_list.hbs');
+var render_settings_admin_realm_domains_list = require("../templates/settings/admin_realm_domains_list.hbs");
+var render_settings_admin_realm_dropdown_stream_list = require("../templates/settings/admin_realm_dropdown_stream_list.hbs");
+var render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
+
 var settings_org = (function () {
 
 var exports = {};
@@ -325,7 +330,11 @@ exports.populate_realm_domains = function (realm_domains) {
     var realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
     _.each(realm_domains, function (realm_domain) {
-        realm_domains_table_body.append(templates.render("settings/admin_realm_domains_list", {realm_domain: realm_domain}));
+        realm_domains_table_body.append(
+            render_settings_admin_realm_domains_list({
+                realm_domain: realm_domain,
+            })
+        );
     });
 };
 function sort_object_by_key(obj) {
@@ -344,7 +353,7 @@ exports.populate_auth_methods = function (auth_methods) {
     auth_methods = sort_object_by_key(auth_methods);
     var rendered_auth_method_rows = "";
     _.each(auth_methods, function (value, auth_method) {
-        rendered_auth_method_rows += templates.render('settings/admin_auth_methods_list', {
+        rendered_auth_method_rows += render_settings_admin_auth_methods_list({
             method: auth_method,
             enabled: value,
             is_admin: page_params.is_admin,
@@ -357,7 +366,7 @@ function insert_tip_box() {
     if (page_params.is_admin) {
         return;
     }
-    var tip_box = templates.render("settings/organization_settings_tip", {is_admin: page_params.is_admin});
+    var tip_box = render_settings_organization_settings_tip({is_admin: page_params.is_admin});
     $(".organization-box").find(".settings-section:not(.can-edit)")
         .not("#emoji-settings")
         .not("#user-groups-admin")
@@ -388,7 +397,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
     list_render.create(dropdown_list_body, stream_list, {
         name: "admin-realm-notifications-stream-dropdown-list",
         modifier: function (item) {
-            return templates.render("settings/admin_realm_dropdown_stream_list", { stream: item });
+            return render_settings_admin_realm_dropdown_stream_list({ stream: item });
         },
         filter: {
             element: search_input,
@@ -417,7 +426,7 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     list_render.create(dropdown_list_body, stream_list, {
         name: "admin-realm-signup-notifications-stream-dropdown-list",
         modifier: function (item) {
-            return templates.render("settings/admin_realm_dropdown_stream_list", { stream: item });
+            return render_settings_admin_realm_dropdown_stream_list({ stream: item });
         },
         filter: {
             element: search_input,

@@ -1,3 +1,5 @@
+var render_settings_tab = require('../templates/settings_tab.hbs');
+
 var settings = (function () {
 
 var exports = {};
@@ -121,7 +123,7 @@ function setup_settings_label() {
 exports.build_page = function () {
     setup_settings_label();
 
-    var rendered_settings_tab = templates.render('settings_tab', {
+    var rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
         page_params: page_params,
         enable_sound_select: page_params.enable_sounds ||

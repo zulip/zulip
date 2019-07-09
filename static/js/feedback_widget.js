@@ -1,3 +1,5 @@
+var render_feedback_container = require('../templates/feedback_container.hbs');
+
 var feedback_widget = (function () {
 
 var exports = {};
@@ -121,7 +123,7 @@ exports.show = function (opts) {
 
     meta.$container = $('#feedback_container');
 
-    var html = templates.render('feedback_container');
+    var html = render_feedback_container();
     meta.$container.html(html);
 
     set_up_handlers();

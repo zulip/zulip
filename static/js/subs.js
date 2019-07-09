@@ -1,3 +1,9 @@
+var render_email_address_hint = require('../templates/email_address_hint.hbs');
+var render_subscription = require('../templates/subscription.hbs');
+var render_subscription_settings = require('../templates/subscription_settings.hbs');
+var render_subscription_table_body = require('../templates/subscription_table_body.hbs');
+var render_subscriptions = require('../templates/subscriptions.hbs');
+
 var subs = (function () {
 
 var exports = {};
@@ -199,7 +205,7 @@ function add_email_hint_handler() {
     // Add a popover explaining stream e-mail addresses on hover.
 
     $("body").on("mouseover", '.stream-email-hint', function (e) {
-        var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
+        var email_address_hint_content = render_email_address_hint({ page_params: page_params });
         $(e.target).popover({
             placement: "right",
             title: "Email integration",
@@ -227,8 +233,8 @@ exports.add_sub_to_table = function (sub) {
         return;
     }
 
-    var html = templates.render('subscription', sub);
-    var settings_html = templates.render('subscription_settings', sub);
+    var html = render_subscription(sub);
+    var settings_html = render_subscription_settings(sub);
     if (stream_create.get_name() === sub.name) {
         ui.get_content_element($(".streams-list")).prepend(html);
         ui.reset_scrollbar($(".streams-list"));
@@ -393,7 +399,7 @@ exports.populate_stream_settings_left_panel = function () {
     var template_data = {
         subscriptions: sub_rows,
     };
-    var html = templates.render('subscriptions', template_data);
+    var html = render_subscriptions(template_data);
     ui.get_content_element($('#subscriptions_table .streams-list')).html(html);
 };
 
@@ -550,7 +556,7 @@ exports.setup_page = function (callback) {
             is_admin: page_params.is_admin,
         };
 
-        var rendered = templates.render('subscription_table_body', template_data);
+        var rendered = render_subscription_table_body(template_data);
         $('#subscriptions_table').append(rendered);
 
         exports.populate_stream_settings_left_panel();

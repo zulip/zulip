@@ -134,7 +134,7 @@ js_rules = RuleList(
          'exclude': ['frontend_tests/'],
          'description': '.includes() is incompatible with Internet Explorer. Use .indexOf() !== -1 instead.'},
         {'pattern': '[.]html[(]',
-         'exclude_pattern': '[.]html[(]("|\'|templates|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])',
+         'exclude_pattern': r'''[.]html[(]("|'|render_|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])''',
          'exclude': ['static/js/portico', 'static/js/lightbox.js', 'static/js/ui_report.js',
                      'static/js/confirm_dialog.js',
                      'frontend_tests/'],
