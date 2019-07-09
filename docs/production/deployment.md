@@ -64,12 +64,13 @@ of managing chat.zulip.org and zulipchat.com.
 
 ### Using Zulip with Amazon RDS as the database
 
-Unfortunately, you cannot use most third-party database-as-a-service
-provides like Amazon RDS as the database provider with Zulip without a
-degraded experience.  Zulip let you choose one of two
-[full-text search postgres extensions](../subsystems/full-text-search.html).
-Neither is available in Amazon RDS.  As a result, if you use one of
-those providers, Zulip's full-text search will be unavailable.
+You cannot use most third-party database-as-a-service provides like
+Amazon RDS as the database provider with Zulip, because Zulip requires
+one of two different [full-text search postgres
+extensions](../subsystems/full-text-search.html) to power its search.
+Neither is available in Amazon RDS; there should be no issue with
+using Zulip with a different database-as-a-service provider as long as
+one of those postgres extensions is available.
 
 ## Using an alternate port
 
