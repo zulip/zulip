@@ -94,7 +94,9 @@
         <div class="support-query-result new-style">
             <span class="label">realm</span>
             <h3><img src="{{ realm.realm_icon_url }}" class="support-realm-icon"> {{ realm.name }}</h3>
-            <b>URL</b>: <a target="_blank" href="{{ realm.uri }}">{{ realm.uri }}</a><br>
+            <b>URL</b>: <a target="_blank" href="{{ realm.uri }}">{{ realm.uri }}</a> |
+            <a target="_blank" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
+            <a target="_blank" href="/realm_activity/{{ realm.string_id }}/">activity</a><br>
             <b>Date created</b>: {{ realm.date_created|timesince }} ago<br>
             <b>Admins</b>: {{ realm.admin_emails }}
             <a title="Copy emails" class="copy-button" data-admin-emails="{{ realm.admin_emails }}">
