@@ -81,12 +81,6 @@ exports.make_zblueslip = function (opts) {
         return ex.message;
     };
 
-    lib.wrap_function = (f) => {
-        return (...args) => {
-            return f.apply(this, args);
-        };
-    };
-
     return lib;
 };
 
