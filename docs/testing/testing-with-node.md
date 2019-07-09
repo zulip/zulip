@@ -170,3 +170,63 @@ branch coverage is a good goal.
 
 The overall project goal is to get to 100% node test coverage on all
 data/logic modules (UI modules are lower priority for unit testing).
+
+# Editor debugger integration
+
+Our node test system is pretty simple, and it's possible to configure
+the native debugger features of popular editors to allow stepping
+through the code.  Below we document the editors where someone has put
+together detailed instructions for how to do so.  Contributions of
+notes for other editors are welcome!
+
+## Webstorm integration setup
+
+These instructions assume you're using the Vagrant development environment.
+
+1. Setup [Vagrant in WebStorm][vagrant-webstorm].
+
+2. In WebStorm, navigate to `Preferences -> Tools -> Vagrant` and
+   configure the following:
+
+    * `Instance folder` should be the root of the `zulip` repository on
+      your host (where the Vagrantfile is located).
+    * `Provider` should be `virtualbox` on macOS and Docker on Linux
+    * In `Boxes`, choose the one used for Zulip (unless you use
+      Virtualbox for other things, there should only be one option).
+
+    You shouldn't need to set these additional settings:
+    * `Vagrant executable` should already be correctly `vagrant`.
+    * `Environment Variables` is not needed.
+
+3. You'll now need to set up a WebStorm "Debug Configuration".  Open
+   the `Run/Debug Configuration` menu and create a new `Node.js` config:
+    1. Under `Node interpreter:` click the 3 dots to the right side and
+      click on the little plus in the bottom left of the `Node.js
+      Interpreters` window.
+    1. Select `Add Remote...`.
+        1. In the `Configure Node.js Remote Interpreter`, window select `Vagrant`
+        1. Wait for WebStorm to connect to Vagrant. This will be displayed
+           by the `Vagrant Host URL` section updating to contain the Vagrant
+           SSH url, e.g. `ssh://vagrant@127.0.0.1:2222`.
+        1. **Set the `Node.js interpreter path` to `/usr/local/bin/node`**
+        1. Hit `OK` 2 times to get back to the `Run/Debug Configurations` window.
+    1. Under `Working Directory` select the root `zulip` directory.
+    1. Under `JavaScript file`, enter `frontend_tests/zjsunit/index.js`
+     -- this is the root script for Zulip's node unit tests.
+
+Congratulations!  You've now setup the integration.
+
+## Running tests with the debugger
+
+To use Webstorm to debug a given node test file, do the following:
+
+1. Under `Application parameters` choose the node test file that you
+   are trying to test (e.g. `frontend_tests/node_tests/message_store.js`).
+1. Under `Path Mappings`, set `Project Root` to `/srv/zulip`
+   (i.e. where the `zulip` Git repository is mounted in the Vagrant guest).
+1. Use the WebStorm debugger; see [this overview][webstorm-debugging]
+   for details on how to use it.
+
+[webstorm-debugging]: https://blog.jetbrains.com/webstorm/2018/01/how-to-debug-with-webstorm/
+[vagrant-webstorm]: https://www.jetbrains.com/help/webstorm/vagrant-support.html?section=Windows%20or%20Linux
+
