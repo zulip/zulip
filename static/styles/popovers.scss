@@ -118,29 +118,31 @@ ul {
     }
 }
 
-.group-info-popover .group-info,
-.group-info-popover .manage-group a {
-    text-align: center;
-}
+.group-info-popover {
+    .group-info,
+    .manage-group a {
+        text-align: center;
+    }
 
-.group-info-popover .group-info .group-name {
-    font-weight: bold;
-}
+    .group-info .group-name {
+        font-weight: bold;
+    }
 
-.group-info-popover .member-list {
-    position: relative;
-    max-height: 300px;
-    overflow-y: auto;
-    list-style: none;
-    margin-left: 0;
-}
+    .member-list {
+        position: relative;
+        max-height: 300px;
+        overflow-y: auto;
+        list-style: none;
+        margin-left: 0;
 
-.group-info-popover .member-list .bot {
-    color: hsl(180, 5%, 74%);
-    vertical-align: top;
-    width: 20px;
-    padding-top: 3.5px;
-    text-align: center;
+        .bot {
+            color: hsl(180, 5%, 74%);
+            vertical-align: top;
+            width: 20px;
+            padding-top: 3.5px;
+            text-align: center;
+        }
+    }
 }
 
 .popover_user_presence {
