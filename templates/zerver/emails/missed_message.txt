@@ -34,7 +34,7 @@ Reply to this email directly, or view it in Zulip:
 Do not reply to this message. This Zulip server is not configured to accept
 incoming emails. Help:
 
-https://zulip.readthedocs.io/en/latest/production/settings.html#miscellaneous-server-settings
+https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 
 Reply in Zulip:
 
