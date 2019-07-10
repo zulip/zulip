@@ -8,11 +8,11 @@
                 <div class="input-group user-name-section">
                     <label class="inline-block title">{{t "Email" }}</label>
                     <button id='change_email' type="button" class="button btn-link small rounded inline-block" id='email_value'
-                      {{#unless page_params.is_admin}}{{#if page_params.realm_email_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
+                      {{#if (and page_params.realm_email_changes_disabled (not page_params.is_admin))}}disabled="disabled"{{/if}}>
                         {{page_params.delivery_email}}
                         <i class="fa fa-pencil"></i>
                     </button>
-                    <i class="fa fa-question-circle change_email_tooltip settings-info-icon" {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_email_changes_disabled}}style="display:none"{{/unless}}{{/if}}  data-toggle="tooltip"
+                    <i class="fa fa-question-circle change_email_tooltip settings-info-icon" {{#if (or (not page_params.realm_email_changes_disabled) page_params.is_admin)}}style="display: none;"{{/if}} data-toggle="tooltip"
                       title="{{t 'Email address changes are disabled in this organization.' }}"></i>
                 </div>
 
@@ -169,7 +169,7 @@
             </div>
             <div class="avatar-controls">
                 <button class="button rounded sea-green w-200 block" id="user_avatar_upload_button"
-                  {{#unless page_params.is_admin}}{{#if page_params.realm_avatar_changes_disabled}}style="display:none"{{else}}{{#if page_params.server_avatar_changes_disabled}}style="display:none"{{/if}}{{/if}}{{/unless}}>
+                  {{#if (and (not page_params.is_admin) page_params.realm_avatar_changes_disabled)}}style="display:none"{{/if}}>
                     {{t 'Upload new profile picture' }}
                 </button>
                 <div id="user_avatar_file_input_error" class="text-error"></div>
