@@ -2109,10 +2109,10 @@ def send_rate_limited_pm_notification_to_bot_owner(sender: UserProfile,
     sender.save(update_fields=['last_reminder'])
 
 
-def send_pm_if_empty_stream(sender: UserProfile,
-                            stream: Optional[Stream],
-                            stream_name: str,
+def send_pm_if_empty_stream(stream: Optional[Stream],
                             realm: Realm,
+                            sender: UserProfile,
+                            stream_name: Optional[str]=None,
                             stream_id: Optional[int]=None) -> None:
     """If a bot sends a message to a stream that doesn't exist or has no
     subscribers, sends a notification to the bot owner (if not a
@@ -2125,6 +2125,7 @@ def send_pm_if_empty_stream(sender: UserProfile,
             content = _("Your bot `%s` tried to send a message to stream ID %s, but there "
                         "is no stream with that ID." % (sender.delivery_email, stream_id))
         else:
+            assert(stream_name is not None)
             content = _("Your bot `%s` tried to send a message to stream #**%s**, but that "
                         "stream does not exist. Click [here](#streams/new) to create it.") % (
                             sender.delivery_email, stream_name)
@@ -2187,9 +2188,9 @@ def validate_stream_name_with_pm_notification(stream_name: str, realm: Realm,
 
     try:
         stream = get_stream(stream_name, realm)
-        send_pm_if_empty_stream(sender, stream, stream_name, realm)
+        send_pm_if_empty_stream(stream, realm, sender)
     except Stream.DoesNotExist:
-        send_pm_if_empty_stream(sender, None, stream_name, realm)
+        send_pm_if_empty_stream(None, realm, sender, stream_name=stream_name)
         raise StreamDoesNotExistError(escape(stream_name))
 
     return stream
@@ -2198,9 +2199,9 @@ def validate_stream_id_with_pm_notification(stream_id: int, realm: Realm,
                                             sender: UserProfile) -> Stream:
     try:
         stream = get_stream_by_id_in_realm(stream_id, realm)
-        send_pm_if_empty_stream(sender, stream, stream.name, realm)
+        send_pm_if_empty_stream(stream, realm, sender)
     except Stream.DoesNotExist:
-        send_pm_if_empty_stream(sender, None, "", realm, stream_id=stream_id)
+        send_pm_if_empty_stream(None, realm, sender, stream_id=stream_id)
         raise StreamWithIDDoesNotExistError(stream_id)
 
     return stream
