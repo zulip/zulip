@@ -591,148 +591,148 @@ form#add_new_subscription {
     padding: 15px 10px 11px 10px;
     border-bottom: 1px solid hsl(0, 0%, 93%);
     cursor: pointer;
-}
 
-.stream-row .check {
-    width: 25px;
-    height: 25px;
-    position: relative;
-    margin-right: 8px;
-    margin-top: 9px;
-    background-size: 60% auto;
-    background-repeat: no-repeat;
-    background-position: center center;
-
-    svg {
-        fill: transparent;
-        width: 70%;
-        margin: 0% 15%;
-    }
-
-    &.checked:hover svg {
-        opacity: 0.5;
-    }
-
-    &.disabled {
-        pointer-events: none;
-        visibility: hidden;
-    }
-}
-
-.stream-row .checked svg {
-    fill: hsl(170, 48%, 54%);
-}
-
-.stream-row .icon {
-    width: 35px;
-    height: 35px;
-    margin-right: 8px;
-    margin-top: 4px;
-    background-color: hsl(300, 100%, 25%);
-    border-radius: 4px;
-    color: hsl(0, 0%, 100%);
-
-    .symbol {
-        font-weight: 600;
-        font-size: 1.1em;
-    }
-
-    .fa-lock {
-        font-size: 1.4em;
-    }
-
-    .hashtag {
-        font-size: 1.4em;
-        font-weight: 600;
-    }
-}
-
-.stream-row .sub-info-box {
-    width: calc(100% - 90px);
-
-    .top-bar,
-    .bottom-bar {
-        display: flex;
-        justify-content: space-between;
+    .check {
+        width: 25px;
+        height: 25px;
         position: relative;
+        margin-right: 8px;
+        margin-top: 9px;
+        background-size: 60% auto;
+        background-repeat: no-repeat;
+        background-position: center center;
+
+        svg {
+            fill: transparent;
+            width: 70%;
+            margin: 0% 15%;
+        }
+
+        &.checked:hover svg {
+            opacity: 0.5;
+        }
+
+        &.disabled {
+            pointer-events: none;
+            visibility: hidden;
+        }
     }
 
-    .top-bar .stream-name,
-    .bottom-bar .description {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    .checked svg {
+        fill: hsl(170, 48%, 54%);
     }
 
-    .top-bar .subscriber-count,
-    .bottom-bar .stream-message-count {
-        white-space: nowrap;
-        color: hsl(0, 0%, 67%);
+    .icon {
+        width: 35px;
+        height: 35px;
+        margin-right: 8px;
+        margin-top: 4px;
+        background-color: hsl(300, 100%, 25%);
+        border-radius: 4px;
+        color: hsl(0, 0%, 100%);
+
+        .symbol {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .fa-lock {
+            font-size: 1.4em;
+        }
+
+        .hashtag {
+            font-size: 1.4em;
+            font-weight: 600;
+        }
     }
 
-    .top-bar .subscriber-count-text,
-    .top-bar .subscriber-count-lock,
-    .bottom-bar .stream-message-count-text {
-        margin-right: 5px;
+    .sub-info-box {
+        width: calc(100% - 90px);
+
+        .top-bar,
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .top-bar .stream-name,
+        .bottom-bar .description {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .top-bar .subscriber-count,
+        .bottom-bar .stream-message-count {
+            white-space: nowrap;
+            color: hsl(0, 0%, 67%);
+        }
+
+        .top-bar .subscriber-count-text,
+        .top-bar .subscriber-count-lock,
+        .bottom-bar .stream-message-count-text {
+            margin-right: 5px;
+        }
+
+        .top-bar > div {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .top-bar .stream-name {
+            font-weight: 600;
+        }
+
+        .bottom-bar {
+            margin-top: 2px;
+            line-height: 1.5;
+        }
+
+        .bottom-bar > div {
+            display: inline-block;
+            vertical-align: bottom;
+        }
     }
 
-    .top-bar > div {
+    &.active {
+        background-color: hsl(0, 0%, 93%);
+    }
+
+    > div {
         display: inline-block;
         vertical-align: top;
     }
 
-    .top-bar .stream-name {
-        font-weight: 600;
+    .settings-dropdown-trigger {
+        float: right;
+        margin-left: 10px;
+        color: hsl(0, 0%, 67%);
     }
 
-    .bottom-bar {
-        margin-top: 2px;
-        line-height: 1.5;
-    }
-
-    .bottom-bar > div {
+    &:hover .preview-stream {
         display: inline-block;
-        vertical-align: bottom;
     }
-}
 
-.stream-row.active {
-    background-color: hsl(0, 0%, 93%);
-}
+    &:hover .check:not(.checked) svg,
+    &.active:hover .check:not(.checked) svg {
+        fill: hsl(0, 0%, 87%);
+    }
 
-.stream-row > div {
-    display: inline-block;
-    vertical-align: top;
-}
+    .check:not(.checked):hover svg,
+    &.active .check:not(.checked):hover svg {
+        fill: hsl(0, 0%, 72%);
+    }
 
-.stream-row .settings-dropdown-trigger {
-    float: right;
-    margin-left: 10px;
-    color: hsl(0, 0%, 67%);
-}
+    &::-moz-selection,
+    .icon .hashtag::-moz-selection {
+        background-color: transparent;
+    }
 
-.stream-row:hover .preview-stream {
-    display: inline-block;
-}
-
-.stream-row:hover .check:not(.checked) svg,
-.stream-row.active:hover .check:not(.checked) svg {
-    fill: hsl(0, 0%, 87%);
-}
-
-.stream-row .check:not(.checked):hover svg,
-.stream-row.active .check:not(.checked):hover svg {
-    fill: hsl(0, 0%, 72%);
-}
-
-.stream-row::-moz-selection,
-.stream-row .icon .hashtag::-moz-selection {
-    background-color: transparent;
-}
-
-.stream-row::selection,
-.stream-row .icon .hashtag::selection {
-    background-color: transparent;
+    &::selection,
+    .icon .hashtag::selection {
+        background-color: transparent;
+    }
 }
 
 #subscription_overlay .stream-description .stream-description-editable:empty::after,
