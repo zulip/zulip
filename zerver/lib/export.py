@@ -32,7 +32,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     RealmAuditLog, UserHotspot, MutedTopic, Service, UserGroup, \
     UserGroupMembership, BotStorageData, BotConfigData
 from zerver.lib.parallel import run_parallel
-from zerver.lib.upload import upload_backend
+import zerver.lib.upload
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Union
 
@@ -1691,7 +1691,7 @@ def export_realm_wrapper(realm: Realm, output_dir: str,
     # without additional configuration.  We'll likely want to change
     # that in the future.
     print("Uploading export tarball...")
-    public_url = upload_backend.upload_export_tarball(realm, tarball_path)
+    public_url = zerver.lib.upload.upload_backend.upload_export_tarball(realm, tarball_path)
     print()
     print("Uploaded to %s" % (public_url,))
 
