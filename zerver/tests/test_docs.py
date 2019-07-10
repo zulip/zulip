@@ -184,6 +184,13 @@ class DocPageTest(ZulipTestCase):
         self._test(url, title, doc_html_str=True)
         self._test(url, description, doc_html_str=True)
 
+        # Test integrations page
+        url = '/integrations/'
+        title = '<meta property="og:title" content="Connect the tools you use to Zulip">'
+        description = '<meta property="og:description" content="Zulip comes with over'
+        self._test(url, title, doc_html_str=True)
+        self._test(url, description, doc_html_str=True)
+
     def test_email_integration(self) -> None:
         self._test('/integrations/doc-html/email',
                    'support+abcdefg@testserver', doc_html_str=True)

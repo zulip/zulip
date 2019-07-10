@@ -162,6 +162,10 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
         context['OPEN_GRAPH_TITLE'] = 'Connect your {category} tools to Zulip'.format(category=category)
         context['OPEN_GRAPH_DESCRIPTION'] = description
 
+    elif path_name == 'integrations':
+        context['OPEN_GRAPH_TITLE'] = 'Connect the tools you use to Zulip'
+        context['OPEN_GRAPH_DESCRIPTION'] = description
+
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations/index.html'
 
