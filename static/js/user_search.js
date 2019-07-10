@@ -52,7 +52,7 @@ var user_search = function (opts) {
     self.show_widget = function () {
         // Hide all the popovers but not userlist sidebar
         // when the user wants to search.
-        popovers.hide_all_except_userlist_sidebar();
+        popovers.hide_all_except_sidebars();
         $widget.removeClass('notdisplayed');
     };
 

@@ -39,7 +39,7 @@ const _pm_list = {
 };
 
 const _popovers = {
-    hide_all_except_userlist_sidebar: function () {},
+    hide_all_except_sidebars: function () {},
     hide_all: function () {},
     show_userlist_sidebar: function () {
         $('.column-right').addClass('expanded');
