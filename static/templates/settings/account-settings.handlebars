@@ -1,9 +1,10 @@
 <div id="account-settings" class="settings-section show" data-name="your-account">
-    <div class="alert" id="account-settings-status"></div>
+    <div class="alert" id="dev-account-settings-status"></div>
     <div class="account-settings-form">
         <div class="inline-block">
             <form class="email-change-form grid">
-                <h3>{{t "User settings" }}</h3>
+                <h3 class="inline-block">{{t "User settings" }}</h3>
+                <div class="alert-notification" id="account-settings-status"></div>
                 <div class="input-group user-name-section">
                     <label class="inline-block title">{{t "Email" }}</label>
                     <a id="change_email" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>

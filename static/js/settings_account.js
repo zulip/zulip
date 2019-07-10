@@ -62,10 +62,6 @@ function settings_change_error(message, xhr) {
     ui_report.error(message, xhr, $('#account-settings-status').expectOne());
 }
 
-function settings_change_success(message) {
-    ui_report.success(message, $('#account-settings-status').expectOne());
-}
-
 function update_user_custom_profile_fields(fields, method) {
     if (method === undefined) {
         blueslip.error("Undefined method in update_user_custom_profile_fields");
@@ -331,7 +327,7 @@ exports.set_up = function () {
     $('#change_password_button').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var change_password_info = $('#change_password_modal').find(".change_password_info").expectOne();
+        var change_password_error = $('#change_password_modal').find(".change_password_info").expectOne();
 
         var data = {
             old_password: $('#old_password').val(),
@@ -355,19 +351,15 @@ exports.set_up = function () {
             }
         }
 
-        channel.patch({
-            url: "/json/settings",
-            data: data,
-            success: function () {
-                settings_change_success(i18n.t("Updated settings!"));
-                overlays.close_modal('change_password_modal');
-                clear_password_change();
+        var opts = {
+            success_continuation: function () {
+                overlays.close_modal("change_password_modal");
             },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, change_password_info);
-                clear_password_change();
-            },
-        });
+            error_msg_element: change_password_error,
+        };
+        settings_ui.do_settings_change(channel.patch, '/json/settings', data,
+                                       $('#account-settings-status').expectOne(), opts);
+        clear_password_change();
     });
 
     $('#new_password').on('input', function () {
@@ -378,54 +370,40 @@ exports.set_up = function () {
     $("#change_full_name_button").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var change_full_name_info = $('#change_full_name_modal').find(".change_full_name_info").expectOne();
+        var change_full_name_error = $('#change_full_name_modal').find(".change_full_name_info").expectOne();
         var data = {};
 
         data.full_name = $('.full_name_change_container').find("input[name='full_name']").val();
-        channel.patch({
-            url: '/json/settings',
-            data: data,
-            success: function (data) {
-                if ('full_name' in data) {
-                    settings_change_success(i18n.t("Updated settings!"));
-                } else {
-                    settings_change_success(i18n.t("No changes made."));
-                }
-                overlays.close_modal('change_full_name_modal');
+
+        var opts = {
+            success_continuation: function () {
+                overlays.close_modal("change_full_name_modal");
             },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, change_full_name_info);
-            },
-        });
+            error_msg_element: change_full_name_error,
+        };
+        settings_ui.do_settings_change(channel.patch, '/json/settings', data,
+                                       $('#account-settings-status').expectOne(), opts);
     });
 
     $('#change_email_button').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var change_email_info = $('#change_email_modal').find(".change_email_info").expectOne();
-
+        var change_email_error = $('#change_email_modal').find(".change_email_info").expectOne();
         var data = {};
         data.email = $('.email_change_container').find("input[name='email']").val();
 
-        channel.patch({
-            url: '/json/settings',
-            data: data,
-            success: function (data) {
-                if ('account_email' in data) {
-                    settings_change_success(data.account_email);
-                    if (page_params.development_environment) {
-                        var email_msg = templates.render('settings/dev_env_email_access');
-                        $("#account-settings-status").append(email_msg);
-                    }
-                } else {
-                    settings_change_success(i18n.t("No changes made."));
+        var opts = {
+            success_continuation: function () {
+                if (page_params.development_environment) {
+                    var email_msg = templates.render('settings/dev_env_email_access');
+                    ui_report.success(email_msg, $("#dev-account-settings-status").expectOne(), 4000);
                 }
                 overlays.close_modal('change_email_modal');
             },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, change_email_info);
-            },
-        });
+            error_msg_element: change_email_error,
+        };
+        settings_ui.do_settings_change(channel.patch, '/json/settings', data,
+                                       $('#account-settings-status').expectOne(), opts);
     });
 
     $('#change_email').on('click', function (e) {

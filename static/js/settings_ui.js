@@ -49,11 +49,20 @@ exports.do_settings_change = function (request_method, url, data, status_element
                 settings_ui.display_checkmark(spinner);
             }, appear_after);
             if (success_continuation !== undefined) {
-                success_continuation(reponse_data);
+                if (opts !== undefined && opts.success_continuation_arg) {
+                    success_continuation(opts.success_continuation_arg);
+                } else {
+                    success_continuation(reponse_data);
+                }
             }
         },
         error: function (xhr) {
-            ui_report.error(exports.strings.failure, xhr, spinner);
+            if (opts !== undefined && opts.error_msg_element) {
+                loading.destroy_indicator(spinner);
+                ui_report.error(exports.strings.failure, xhr, opts.error_msg_element);
+            } else {
+                ui_report.error(exports.strings.failure, xhr, spinner);
+            }
             if (error_continuation !== undefined) {
                 error_continuation(xhr);
             }
