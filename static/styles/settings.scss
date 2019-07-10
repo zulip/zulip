@@ -1511,9 +1511,12 @@ body:not(.night-mode) #account-settings .custom_user_field .datepicker {
     min-width: 206px;
 }
 
-#settings_page #change_password_modal .change_password_info,
 #settings_page #change_email_modal .change_email_info,
 #settings_page #change_full_name_modal .change_full_name_info {
+    margin-bottom: 0px;
+}
+
+#settings_page #change_password_modal .change_password_info {
     margin: 10px;
 }
 
