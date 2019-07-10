@@ -21,3 +21,31 @@ To send an email to a Zulip stream:
 
 Please note that it may take up to one minute for the message to show
 up in Zulip.
+
+**Additional options**
+
+This integration supports additional options when sending an email into it,
+controled through the email address. The way you use them is by adding
+`.option-name` at the end of the first part of the email address.
+The options can be used in conjunction with each other.
+Example: `{{ email_gateway_example_with_options }}`
+
+* `show-sender`: Add `.show-sender` in the address (as specified above)
+  if you want `From: <Sender email address>` to be displayed at the top
+  of your message.
+* `include-footer`: By default, Zulip tries to remove the footer from the messages,
+  as they can cause unnecessary clutter. If you want the footer to be kept,
+  add `.include-footer` in the address when sending the message.
+* `include-quotes`: Just like footers, quotations of other emails are removed by default.
+  To keep them, add `.include-quotes` in the address.
+  Additional note: If the email is forwarded (this is determined by the presence of `FWD:`,
+  or similar, at the beginning of the subject), quotations are kept by default,
+  regardless of usage of this option.
+
+**Final notes**
+
+* The stream name (with the following `.`) can be omitted from the address,
+  and the email will still be properly processed as long as the alphanumeric token
+  is correct.
+* Alternatively, `+` can be used in place of the `.` separators, but this is supported
+  mainly for backward compatibility.
