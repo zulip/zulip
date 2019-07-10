@@ -658,20 +658,11 @@ form#add_new_subscription {
     position: relative;
 }
 
-.stream-row .sub-info-box .top-bar > div {
-    display: inline-block;
-    vertical-align: top;
-}
-
 .stream-row .sub-info-box .top-bar .stream-name,
 .stream-row .sub-info-box .bottom-bar .description {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.stream-row .sub-info-box .top-bar .stream-name {
-    font-weight: 600;
 }
 
 .stream-row .sub-info-box .top-bar .subscriber-count,
@@ -686,14 +677,23 @@ form#add_new_subscription {
     margin-right: 5px;
 }
 
-.stream-row .sub-info-box .bottom-bar > div {
+.stream-row .sub-info-box .top-bar > div {
     display: inline-block;
-    vertical-align: bottom;
+    vertical-align: top;
+}
+
+.stream-row .sub-info-box .top-bar .stream-name {
+    font-weight: 600;
 }
 
 .stream-row .sub-info-box .bottom-bar {
     margin-top: 2px;
     line-height: 1.5;
+}
+
+.stream-row .sub-info-box .bottom-bar > div {
+    display: inline-block;
+    vertical-align: bottom;
 }
 
 .stream-row.active {
