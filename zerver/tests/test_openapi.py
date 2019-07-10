@@ -2,11 +2,14 @@
 
 import re
 import mock
-from typing import Dict, Any, Set, Optional
+import inspect
+from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional
 
 from django.conf import settings
+from django.http import HttpResponse
 
 import zerver.lib.openapi as openapi
+from zerver.lib.request import REQ
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.openapi import (
     get_openapi_fixture, get_openapi_parameters,
@@ -20,6 +23,14 @@ TEST_METHOD = 'patch'
 TEST_RESPONSE_BAD_REQ = '400'
 TEST_RESPONSE_SUCCESS = '200'
 
+VARMAP = {
+    'integer': int,
+    'string': str,
+    'boolean': bool,
+    'array': list,
+    'Typing.List': list,
+    'NoneType': None,
+}
 
 class OpenAPIToolsTest(ZulipTestCase):
     """Make sure that the tools we use to handle our OpenAPI specification
@@ -276,6 +287,91 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
                 msg += "\n + {}".format(undocumented_path)
             raise AssertionError(msg)
 
+    def get_type_by_priority(self, types: List[type]) -> type:
+        priority = {list: 1, str: 2, int: 3, bool: 4}
+        tyiroirp = {1: list, 2: str, 3: int, 4: bool}
+        val = 5
+        for t in types:
+            v = priority.get(t, 5)
+            if v < val:
+                val = v
+        return tyiroirp.get(val, types[0])
+
+    def get_standardized_argument_type(self, t: Any) -> type:
+        """ Given a type from the typing module such as List[str] or Union[str, int],
+        convert it into a corresponding Python type. Unions are mapped to a canonical
+        choice among the options.
+        E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
+        needs to be mapped to list."""
+
+        origin = getattr(t, "__origin__", None)
+        if not origin:
+            # Then it's most likely one of the fundamental data types
+            # I.E. Not one of the data types from the "typing" module.
+            return t
+        elif origin == Union:
+            subtypes = []
+            for st in t.__args__:
+                subtypes.append(self. get_standardized_argument_type(st))
+            return self.get_type_by_priority(subtypes)
+        elif origin == List:
+            return list
+        return self. get_standardized_argument_type(t.__args__[0])
+
+    def render_openapi_type_exception(self, function:  Callable[..., HttpResponse],
+                                      openapi_params: Set[Tuple[Any, Optional[type]]],
+                                      function_params: Set[Tuple[str, type]],
+                                      diff: Set[Tuple[Any, Optional[type]]]) -> None:  # nocoverage
+        """ Print a *VERY* clear and verbose error message for when the types
+        (between the OpenAPI documentation and the function declaration) don't match. """
+
+        msg = """
+There seems to be a mismatch between the types for the request parameters documented in
+the OpenAPI documentation and the actual request parameters in the function
+declaration for {}.\n""".format(function.__name__)
+        msg += '='*65 + '\n'
+        msg += "{:<10s}{:^30s}{:>10s}\n".format("Parameter", "OpenAPI Type",
+                                                "Function Declaration Type")
+        msg += '='*65 + '\n'
+        for element in diff:
+            vname = element[0]
+            for element in openapi_params:
+                if element[0] == vname:
+                    opvtype = element[1]
+                    break
+            for element in function_params:
+                if element[0] == vname:
+                    fdvtype = element[1]
+                    break
+        msg += "{:<10s}{:^30s}{:>10s}\n".format(vname, str(opvtype), str(fdvtype))
+        raise AssertionError(msg)
+
+    def check_argument_types(self, function: Callable[..., HttpResponse],
+                             openapi_parameters: List[Dict[str, Any]]) -> None:
+        """ We construct for both the OpenAPI data and the function's definition a set of
+        tuples of the form (var_name, type) and then compare those sets to see if the
+        OpenAPI data defines a different type than that actually accepted by the function.
+        Otherwise, we print out the exact differences for convenient debugging and raise an
+        AssertionError. """
+        openapi_params = set([(element["name"], VARMAP[element["schema"]["type"]]) for
+                             element in openapi_parameters])
+
+        function_params = set()  # type: Set[Tuple[str, type]]
+        # Iterate through the decorators to find the original function so we can parse its arguments.
+        while getattr(function, "__wrapped__", None):
+            function = getattr(function, "__wrapped__", None)
+            assert function is not None  # This is used as a trick for mypy.
+        for vname, defval in inspect.signature(function).parameters.items():
+            defval = defval.default
+            if defval.__class__ == REQ:
+                vtype = self.get_standardized_argument_type(function.__annotations__[vname])
+                vname = defval.post_var_name  # type: ignore # it's a REQ; account for whence
+                function_params.add((vname, vtype))
+
+        diff = openapi_params - function_params
+        if diff:  # nocoverage
+            self.render_openapi_type_exception(function, openapi_params, function_params, diff)
+
     def test_openapi_arguments(self) -> None:
         """This end-to-end API documentation test compares the arguments
         defined in the actual code using @has_request_variables and
@@ -299,9 +395,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         """
 
         urlconf = __import__(getattr(settings, "ROOT_URLCONF"), {}, {}, [''])
-        __import__('zerver.views.typing')
-        __import__('zerver.views.events_register')
-        __import__('zerver.views.realm_emoji')
 
         # We loop through all the API patterns, looking in particular
         # for those using the rest_dispatch decorator; we then parse
@@ -309,6 +402,9 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         for p in urlconf.v1_api_and_json_patterns:
             if p.lookup_str != 'zerver.lib.rest.rest_dispatch':
                 continue
+
+            # since the module was already imported and is now residing in
+            # memory, we won't actually face any performance penalties here.
             for method, value in p.default_args.items():
                 if isinstance(value, str):
                     function_name = value
@@ -316,13 +412,13 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
                 else:
                     function_name, tags = value
 
+                lookup_parts = function_name.split('.')
+                module = __import__('.'.join(lookup_parts[:-1]), {}, {}, [''])
+                function = getattr(module, lookup_parts[-1])
+
                 # Our accounting logic in the `has_request_variables()`
                 # code means we have the list of all arguments
                 # accepted by every view function in arguments_map.
-                #
-                # TODO: Probably with a bit more work, we could get
-                # the types, too; `check_int` -> `int`, etc., and
-                # verify those too!
                 accepted_arguments = set(arguments_map[function_name])
 
                 regex_pattern = p.regex.pattern
@@ -386,6 +482,7 @@ so maybe we shouldn't include it in pending_endpoints.
                     assert(url_pattern in self.buggy_documentation_endpoints)
                 else:
                     self.assertEqual(openapi_parameter_names, accepted_arguments)
+                    self.check_argument_types(function, openapi_parameters)
                     self.checked_endpoints.add(url_pattern)
 
         self.check_for_non_existant_openapi_endpoints()
