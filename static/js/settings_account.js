@@ -74,14 +74,28 @@ function settings_change_error(message, xhr) {
     ui_report.error(message, xhr, $('#account-settings-status').expectOne());
 }
 
+function update_custom_profile_field(field, method) {
+    var field_id;
+    if (method === channel.del) {
+        field_id = field;
+    } else {
+        field_id = field.id;
+    }
+
+    var spinner = $('.custom_user_field[data-field-id="' + field_id +
+        '"] .custom-field-status').expectOne();
+    loading.make_indicator(spinner, {text: 'Saving ...'});
+    settings_ui.do_settings_change(method, "/json/users/me/profile_data",
+                                   {data: JSON.stringify([field])}, spinner);
+}
+
 function update_user_custom_profile_fields(fields, method) {
     if (method === undefined) {
         blueslip.error("Undefined method in update_user_custom_profile_fields");
     }
-    var spinner = $("#custom-field-status").expectOne();
-    loading.make_indicator(spinner, {text: 'Saving ...'});
-    settings_ui.do_settings_change(method, "/json/users/me/profile_data",
-                                   {data: JSON.stringify(fields)}, spinner);
+    _.each(fields, function (field) {
+        update_custom_profile_field(field, method);
+    });
 }
 
 exports.append_custom_profile_fields = function (element_id, user_id) {
