@@ -45,7 +45,7 @@ exports.do_settings_change = function (request_method, url, data, status_element
         data: data,
         success: function (reponse_data) {
             setTimeout(function () {
-                ui_report.success(success_msg, spinner, null, remove_after);
+                ui_report.success(success_msg, spinner, remove_after);
                 settings_ui.display_checkmark(spinner);
             }, appear_after);
             if (success_continuation !== undefined) {
