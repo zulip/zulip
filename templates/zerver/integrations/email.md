@@ -21,3 +21,22 @@ To send an email to a Zulip stream:
 
 Please note that it may take up to one minute for the message to show
 up in Zulip.
+
+**Additional options**
+
+The default behavior of this integration is designed to be convenient
+in the common case.  We offer a few options for overriding the default
+behavior, configured by editing the Zulip email address:
+
+Example: `{{ email_gateway_example_with_options }}`
+
+* `show-sender`: Will cause `From: <Sender email address>` to be
+  displayed at the top of Zulip messages sent via this integration.
+* `include-footer`: Include footer sections of emails (by default,
+  they are not included, to minimize clutter).
+* `include-quotes`: Include quoted sections of emails in the Zulip
+  message (By default, Zulip includes them only for forwarded emails,
+  i.e. those where the subject starts with `Fwd:` or similar)
+* You can use `+` instead of the `.` separators if you prefer.  We
+  recommend the `.` syntax by default because Google Groups silently
+  drops `+` from email addresses subscribed to its mailing lists.

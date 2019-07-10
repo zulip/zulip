@@ -829,9 +829,12 @@ for bot in INTERNAL_BOTS + REALM_INTERNAL_BOTS + DISABLED_REALM_INTERNAL_BOTS:
         vars()[bot['var_name']] = bot_email
 
 if EMAIL_GATEWAY_PATTERN != "":
-    EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
+    EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support.abcd1234",)
+    EMAIL_GATEWAY_EXAMPLE_WITH_OPTIONS = EMAIL_GATEWAY_PATTERN % (
+        "support.abcd1234.first-option.second-option",)
 else:
     EMAIL_GATEWAY_EXAMPLE = ""
+    EMAIL_GATEWAY_EXAMPLE_WITH_OPTIONS = ""
 
 ########################################################################
 # STATSD CONFIGURATION

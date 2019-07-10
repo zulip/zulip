@@ -195,6 +195,7 @@ def integration_doc(request: HttpRequest, integration_name: str=REQ(default=None
         context['hubot_docs_url'] = integration.hubot_docs_url
     if isinstance(integration, EmailIntegration):
         context['email_gateway_example'] = settings.EMAIL_GATEWAY_EXAMPLE
+        context['email_gateway_example_with_options'] = settings.EMAIL_GATEWAY_EXAMPLE_WITH_OPTIONS
 
     doc_html_str = render_markdown_path(integration.doc, context)
 
