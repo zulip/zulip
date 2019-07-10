@@ -6,24 +6,6 @@ const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-desktop/release
 import render_tabs from './team.js';
 import {detect_user_os}  from './tabbed-instructions.js';
 
-// this will either smooth scroll to an anchor where the `name`
-// is the same as the `scroll-to` reference, or to a px height
-// (as specified like `scroll-to='0px'`).
-var ScrollTo = function () {
-    $("[scroll-to]").click(function () {
-        var sel = $(this).attr("scroll-to");
-
-        // if the `scroll-to` is a parse-able pixel value like `50px`,
-        // then use that as the scrollTop, else assume it is a selector name
-        // and find the `offsetTop`.
-        var top = /\dpx/.test(sel) ?
-            parseInt(sel, 10) :
-            $("[name='" + sel + "']").offset().top;
-
-        $("body").animate({ scrollTop: top + "px" }, 300);
-    });
-};
-
 export function path_parts() {
     return window.location.pathname.split('/').filter(function (chunk) {
         return chunk !== '';
@@ -152,8 +134,6 @@ var apps_events = function () {
 };
 
 var events = function () {
-    ScrollTo();
-
     // get the location url like `zulipchat.com/features/`, cut off the trailing
     // `/` and then split by `/` to get ["zulipchat.com", "features"], then
     // pop the last element to get the current section (eg. `features`).
