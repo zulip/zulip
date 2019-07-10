@@ -154,27 +154,6 @@ var apps_events = function () {
 var events = function () {
     ScrollTo();
 
-    $("a").click(function (e) {
-        // if a user is holding the CMD/CTRL key while clicking a link, they
-        // want to open the link in another browser tab which means that we
-        // should preserve the state of this one. Return out, and don't fade
-        // the page.
-        if (e.metaKey || e.ctrlKey) {
-            return;
-        }
-
-        // if the pathname is different than what we are already on, run the
-        // custom transition function.
-        if (window.location.pathname !== this.pathname && !this.hasAttribute("download") &&
-            !/no-action/.test(this.className)) {
-            e.preventDefault();
-
-            setTimeout(function () {
-                window.location.href = $(this).attr("href");
-            }.bind(this), 500);
-        }
-    });
-
     // get the location url like `zulipchat.com/features/`, cut off the trailing
     // `/` and then split by `/` to get ["zulipchat.com", "features"], then
     // pop the last element to get the current section (eg. `features`).
