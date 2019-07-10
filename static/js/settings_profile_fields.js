@@ -150,7 +150,7 @@ function create_profile_field(e) {
     };
 
     settings_ui.do_settings_change(channel.post, "/json/realm/profile_fields", form_data,
-                                   $('#admin-profile-field-status').expectOne(), opts);
+                                   $('#admin-add-profile-field-status').expectOne(), opts);
     update_profile_fields_table_element();
 }
 

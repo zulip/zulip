@@ -17,7 +17,8 @@
     <form class="form-horizontal admin-profile-field-form">
         <div class="add-new-profile-field-box grey-box">
             <div class="new-profile-field-form wrapper">
-                <div class="settings-section-title new-profile-field-section-title">{{t "Add a new profile field" }}</div>
+                <div class="settings-section-title new-profile-field-section-title inline-block">{{t "Add a new profile field" }}</div>
+                <div class="alert-notification" id="admin-add-profile-field-status"></div>
                 <div class="control-group">
                     <label for="profile_field_name" class="control-label">{{t "Label" }}</label>
                     <input type="text" id="profile_field_name" name="name" autocomplete="off" maxlength="40" />
