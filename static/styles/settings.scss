@@ -651,6 +651,16 @@ input[type=checkbox].inline-block {
     text-align: left;
 }
 
+#account-settings .custom-profile-fields-form .custom_user_field label {
+    min-width: fit-content;
+}
+
+#account-settings .alert-notification.custom-field-status {
+    margin-top: 0px;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
 #realm_notifications_stream_label > button,
 #realm_signup_notifications_stream_label > button {
     margin: 0px 5px;
