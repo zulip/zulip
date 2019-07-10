@@ -960,6 +960,10 @@ input[type=checkbox].inline-block {
     margin-right: 20px;
 }
 
+.admin-profile-field-form #custom_external_account_url_pattern input {
+    width: 70%;
+}
+
 #upload_avatar_spinner,
 #upload_logo_spinner,
 #upload_icon_spinner,
