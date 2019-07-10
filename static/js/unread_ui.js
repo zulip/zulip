@@ -54,14 +54,7 @@ exports.update_unread_counts = function () {
     stream_list.update_dom_with_unread_counts(res);
     pm_list.update_dom_with_unread_counts(res);
     notifications.update_pm_count(res.private_message_count);
-
-    var only_show_notifiable = page_params.desktop_icon_count_display ===
-        settings_notifications.desktop_icon_count_display_values.notifiable.code;
-    if (only_show_notifiable) {
-        notifications.update_title_count(res.mentioned_message_count + res.private_message_count);
-    } else {
-        notifications.update_title_count(res.home_unread_messages);
-    }
+    notifications.update_title_count(res);
 
     exports.set_count_toggle_button($("#streamlist-toggle-unreadcount"),
                                     res.home_unread_messages);

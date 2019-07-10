@@ -84,13 +84,7 @@ function change_notification_setting(setting, setting_data, status_element) {
 function update_desktop_icon_count_display() {
     $("#desktop_icon_count_display").val(page_params.desktop_icon_count_display);
     var res = unread.get_counts();
-    var only_show_notifiable = page_params.desktop_icon_count_display ===
-        exports.desktop_icon_count_display_values.notifiable.code;
-    if (only_show_notifiable) { // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE
-        notifications.update_title_count(res.mentioned_message_count + res.private_message_count);
-    } else { // DESKTOP_ICON_COUNT_DISPLAY_MESSAGES
-        notifications.update_title_count(res.home_unread_messages);
-    }
+    notifications.update_title_count(res);
 }
 
 exports.set_enable_digest_emails_visibility = function () {
