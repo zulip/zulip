@@ -3426,7 +3426,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assert_json_success(ret)
 
         msg = '''
-            Hi there! @**King Hamlet** just subscribed you to the following streams:
+            @**King Hamlet** subscribed you to the following streams:
 
             * #**stream_0**
             * #**stream_1**
@@ -3460,7 +3460,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assert_json_success(ret)
 
         msg = '''
-            Hi there! @**King Hamlet** just subscribed you to the stream #**stream_invite_only_1**.
+            @**King Hamlet** subscribed you to the stream #**stream_invite_only_1**.
             '''
         self.assert_user_got_subscription_notification(msg)
 
