@@ -8,27 +8,6 @@ export const cacheLoader: RuleSetUseItem = {
     },
 };
 
-/* Return imports-loader format to the config
-    For example:
-    [
-        // Adds 'imports-loader?this=>widndow'
-        {path: './foler/my_module.js', args: '?this=>window'},
-    ]
-*/
-interface ImportLoaderOptions {
-    path: string;
-    args: string;
-}
-function getImportLoaders(optionsArr: ImportLoaderOptions[]): RuleSetRule[] {
-    const importsLoaders = [];
-    for (var loaderEntry of optionsArr) {
-        importsLoaders.push({
-            test: require.resolve(loaderEntry.path),
-            use: [cacheLoader, "imports-loader?" + loaderEntry.args],
-        });
-    }
-    return importsLoaders;
-}
 /* Return expose-loader format to the config
     For example
     [
@@ -76,5 +55,4 @@ function getExposeLoaders(optionsArr: ExportLoaderOptions[]): RuleSetRule[] {
 }
 export {
     getExposeLoaders,
-    getImportLoaders,
 };
