@@ -99,6 +99,10 @@ These two simple rules, combined with the pointer logic above, end up
 matching user expectations well for whether the product should treat
 them as having read a set of messages (or not).
 
+One key detail to highlight is that we only mark messages as read
+through these processes in views that contain all messages in a
+thread; search views will never mark messages as read.
+
 ## Testing and development
 
 In a Zulip development environment, you can use `manage.py

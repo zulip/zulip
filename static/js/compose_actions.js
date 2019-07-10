@@ -301,7 +301,9 @@ exports.respond_to_message = function (opts) {
         return;
     }
 
-    unread_ops.notify_server_message_read(message);
+    if (current_msg_list.can_mark_messages_read()) {
+        unread_ops.notify_server_message_read(message);
+    }
 
     var stream = '';
     var topic = '';

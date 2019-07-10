@@ -527,8 +527,11 @@ run_test('unread_ops', () => {
         // Make us not be in a narrow (somewhat hackily).
         message_list.narrowed = undefined;
 
+        // Set current_message_list containing messages that
+        // can be marked read
         set_global('current_msg_list', {
             all_messages: () => test_messages,
+            can_mark_messages_read: () => true,
         });
 
         // Ignore these interactions for now:
@@ -544,6 +547,12 @@ run_test('unread_ops', () => {
         channel_post_opts = opts;
     };
 
+    // First, test for a message list that cannot read messages
+    current_msg_list.can_mark_messages_read = () => false;
+    unread_ops.process_visible();
+    assert.deepEqual(channel_post_opts, undefined);
+
+    current_msg_list.can_mark_messages_read = () => true;
     // Do the main thing we're testing!
     unread_ops.process_visible();
 
@@ -556,6 +565,7 @@ run_test('unread_ops', () => {
         data: { messages: '[50]', op: 'add', flag: 'read' },
         success: channel_post_opts.success,
     });
+
 });
 
 /*

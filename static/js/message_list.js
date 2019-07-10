@@ -122,6 +122,10 @@ exports.MessageList.prototype = {
         return this.data.is_search();
     },
 
+    can_mark_messages_read: function () {
+        return this.data.can_mark_messages_read();
+    },
+
     clear: function  MessageList_clear(opts) {
         opts = _.extend({clear_selected_id: true}, opts);
 

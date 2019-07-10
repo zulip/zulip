@@ -592,7 +592,12 @@ exports.by_topic = function (target_id, opts) {
         exports.by_recipient(target_id, opts);
         return;
     }
+
+    // We don't check msg_list.can_mark_messages_read here only because
+    // the target msg_list isn't initialized yet; in any case, the
+    // message is about to be marked read in the new view.
     unread_ops.notify_server_message_read(original);
+
     var search_terms = [
         {operator: 'stream', operand: original.stream},
         {operator: 'topic', operand: util.get_message_topic(original)},
@@ -606,7 +611,12 @@ exports.by_recipient = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     var message = message_store.get(target_id);
+
+    // We don't check msg_list.can_mark_messages_read here only because
+    // the target msg_list isn't initialized yet; in any case, the
+    // message is about to be marked read in the new view.
     unread_ops.notify_server_message_read(message);
+
     switch (message.type) {
     case 'private':
         exports.by('pm-with', message.reply_to, opts);

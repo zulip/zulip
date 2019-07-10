@@ -375,6 +375,10 @@ Filter.prototype = {
         return this.has_operator('search');
     },
 
+    can_mark_messages_read: function () {
+        return !this.has_operator('search');
+    },
+
     can_apply_locally: function () {
         if (this.is_search()) {
             // The semantics for matching keywords are implemented

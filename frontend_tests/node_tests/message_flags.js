@@ -13,7 +13,10 @@ run_test('starred', () => {
     const message = {
         id: 50,
     };
-
+    set_global('current_msg_list', {
+        all_messages: () => [message],
+        is_search: () => false,
+    });
     var ui_updated;
 
     ui.update_starred_view = () => {
