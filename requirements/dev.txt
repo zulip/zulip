@@ -26,8 +26,6 @@ automat==0.7.0            # via twisted
 aws-xray-sdk==0.95        # via moto
 babel==2.5.3              # via django-phonenumber-field, sphinx
 backcall==0.1.0           # via ipython
-backports-abc==0.5
-backports.ssl-match-hostname==3.7.0.1
 beautifulsoup4==4.7.1
 boto3==1.9.183            # via moto
 boto==2.49.0
@@ -59,12 +57,10 @@ django-two-factor-auth==1.8.0
 django-webpack-loader==0.6.0
 django==1.11.22
 docker==4.0.2             # via moto
-docopt==0.6.2
 docutils==0.14            # via botocore, recommonmark, sphinx
 ecdsa==0.13.2             # via python-jose
 fakeldap==0.6.1
 first==2.0.2              # via pip-tools
-gitdb==0.6.4
 gitlint==0.11.0
 google-api-python-client==1.7.4
 google-auth-httplib2==0.0.3  # via google-api-python-client
@@ -99,7 +95,6 @@ mock==2.0.0
 moto==1.3.7
 mypy-extensions==0.4.1
 mypy==0.670
-ndg-httpsclient==0.5.1
 oauth2client==4.1.3
 oauthlib==3.0.1           # via requests-oauthlib, social-auth-core
 packaging==19.0           # via sphinx
@@ -121,10 +116,9 @@ py3dns==3.2.0
 pyahocorasick==1.4.0
 pyaml==19.4.1             # via moto
 pyasn1-modules==0.2.5     # via google-auth, oauth2client, python-ldap, service-identity
-pyasn1==0.4.5             # via ndg-httpsclient, oauth2client, pyasn1-modules, python-ldap, rsa, service-identity
+pyasn1==0.4.5             # via oauth2client, pyasn1-modules, python-ldap, rsa, service-identity
 pycodestyle==2.5.0
 pycparser==2.19           # via cffi
-pycrypto==2.6.1
 pycryptodome==3.8.2       # via python-jose
 pydispatcher==2.0.5       # via scrapy
 pyflakes==2.1.1
@@ -135,7 +129,7 @@ pyjwt==1.7.1
 pyldap==3.0.0.post1       # via fakeldap
 pylibmc==1.6.0
 pyoembed==0.1.2
-pyopenssl==19.0.0         # via ndg-httpsclient, requests, scrapy
+pyopenssl==19.0.0         # via requests, scrapy
 pyparsing==2.4.0          # via packaging
 pysocks==1.7.0            # via twilio
 python-dateutil==2.8.0
@@ -163,7 +157,6 @@ service-identity==18.1.0  # via scrapy
 sh==1.12.14               # via gitlint
 simplegeneric==0.8.1      # via ipython
 six==1.12.0
-smmap==0.9.0
 snakeviz==2.0.0
 snowballstemmer==1.2.1    # via sphinx
 social-auth-app-django==3.1.0
@@ -185,7 +178,6 @@ twilio==6.26.2
 twisted==19.2.1
 typed-ast==1.3.5          # via mypy
 typing==3.6.6
-typing_extensions==3.6.6
 uritemplate==3.0.0        # via google-api-python-client
 urllib3==1.25.3           # via botocore, requests, transifex-client
 virtualenv-clone==0.5.3

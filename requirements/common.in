@@ -27,12 +27,6 @@ SQLAlchemy==1.3.3
 # Needed for password hashing
 argon2-cffi==19.1.0
 
-# Needed for Tornado >3.2 compatibility
-backports-abc==0.5
-
-# Needed for Tornado 4 compatibility
-backports.ssl-match-hostname==3.7.0.1
-
 # Needed for S3 file uploads
 boto==2.49.0
 
@@ -48,12 +42,8 @@ django-auth-ldap==1.7.0
 # Django extension for sending data to statsd
 django-statsd-mozilla==0.4.0
 
-docopt==0.6.2
-
 # Needed for Android push notifications
 python-gcm==0.4
-
-gitdb==0.6.4
 
 # Needed for Google Apps mobile auth
 google-api-python-client==1.7.4
@@ -83,18 +73,12 @@ mock==2.0.0
 
 oauth2client==4.1.3
 
-# Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
-# Needed by requests to send https request to some sites.
-ndg-httpsclient==0.5.1
-
 # Needed to access rabbitmq
 # See #8466 for why we're not using the latest version.
 pika==0.13.0
 
 # Needed to access our database
 psycopg2==2.8.2 --no-binary psycopg2
-
-pycrypto==2.6.1
 
 # Needed for memcached usage
 pylibmc==1.6.0
@@ -113,7 +97,6 @@ redis==2.10.6
 
 # Needed for Python 2+3 compatibility
 six==1.12.0
-smmap==0.9.0
 
 # Needed for Tornado websockets support
 sockjs-tornado==1.0.6
