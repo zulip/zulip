@@ -60,7 +60,6 @@ exports.process_read_messages_event = function (message_ids) {
 // Skips any messages that are already marked as read.
 exports.notify_server_messages_read = function (messages, options) {
     options = options || {};
-
     messages = unread.get_unread_messages(messages);
     if (messages.length === 0) {
         return;
@@ -91,7 +90,8 @@ exports.process_visible = function () {
         return;
     }
 
-    if (message_viewport.bottom_message_visible()) {
+    if (message_viewport.bottom_message_visible() &&
+            current_msg_list.can_mark_messages_read()) {
         exports.mark_current_list_as_read();
     }
 };

@@ -142,7 +142,9 @@ MessageListData.prototype = {
     is_search: function () {
         return this.filter.is_search();
     },
-
+    can_mark_messages_read: function () {
+        return this.filter.can_mark_messages_read();
+    },
     _get_predicate: function () {
         // We cache this.
         if (!this.predicate) {

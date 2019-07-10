@@ -124,7 +124,9 @@ exports.initialize = function initialize() {
             } else {
                 messages = event.msg_list.message_range(event.previously_selected, event.id);
             }
-            unread_ops.notify_server_messages_read(messages, {from: 'pointer'});
+            if (event.msg_list.can_mark_messages_read()) {
+                unread_ops.notify_server_messages_read(messages, {from: 'pointer'});
+            }
         }
     });
 };

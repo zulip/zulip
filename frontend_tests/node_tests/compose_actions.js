@@ -82,6 +82,9 @@ function stub_selected_message(msg) {
         selected_message: function () {
             return msg;
         },
+        can_mark_messages_read: function () {
+            return true;
+        },
     });
 }
 

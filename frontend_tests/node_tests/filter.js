@@ -68,6 +68,7 @@ run_test('basics', () => {
     assert(!filter.has_operand('stream', 'nada'));
 
     assert(!filter.is_search());
+    assert(filter.can_mark_messages_read());
     assert(filter.can_apply_locally());
 
     operators = [
@@ -78,6 +79,7 @@ run_test('basics', () => {
     filter = new Filter(operators);
 
     assert(filter.is_search());
+    assert(!filter.can_mark_messages_read());
     assert(!filter.can_apply_locally());
     assert(!filter.is_exactly('stream'));
 
