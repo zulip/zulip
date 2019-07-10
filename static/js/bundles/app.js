@@ -7,7 +7,7 @@ import "../../third/jquery-filedrop/jquery.filedrop.js";
 import "jquery-caret-plugin/src/jquery.caret.js";
 import "../../third/jquery-idle/jquery.idle.js";
 import "jquery-autosize";
-import "../../third/spectrum/spectrum.js";
+import "spectrum-colorpicker";
 import "../../third/sockjs/sockjs-0.3.4.js";
 import "../../third/marked/lib/marked.js";
 import "xdate/src/xdate.js";
@@ -205,7 +205,7 @@ import "../stream_ui_updates.js";
 // Import Styles
 
 import "../../third/bootstrap-notify/css/bootstrap-notify.css";
-import "../../third/spectrum/spectrum.css";
+import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.css";

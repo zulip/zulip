@@ -4,7 +4,7 @@ import * as webpack from 'webpack';
 // The devServer member of webpack.Configuration is managed by the
 // webpack-dev-server package. We are only importing the type here.
 import * as _webpackDevServer from 'webpack-dev-server';
-import { getExposeLoaders, getImportLoaders, cacheLoader } from './webpack-helpers';
+import { getExposeLoaders, cacheLoader } from './webpack-helpers';
 import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 const assets = require('./webpack.assets.json');
@@ -117,16 +117,6 @@ export default (env?: string): webpack.Configuration[] => {
         // breakpoints in chrome.
         devtool: production ? 'source-map' : 'cheap-module-source-map',
     };
-
-    // Add variables within modules
-    // Because of code corecing the value of window within the libraries
-    var importsOptions = [
-        {
-            path: "../static/third/spectrum/spectrum.js",
-            args: "this=>window",
-        },
-    ];
-    config.module.rules.push(...getImportLoaders(importsOptions));
 
     // Expose Global variables for third party libraries to webpack modules
     // Use the unminified versions of jquery and underscore so that
