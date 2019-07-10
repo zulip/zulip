@@ -298,6 +298,7 @@ exports.set_up = function () {
         e.stopPropagation();
         if (!page_params.realm_name_changes_disabled && !page_params.server_name_changes_disabled
         || page_params.is_admin) {
+            $('#change_full_name_modal').find("input[name='full_name']").val(page_params.full_name);
             overlays.open_modal('change_full_name_modal');
         }
     });
