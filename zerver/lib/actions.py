@@ -2120,15 +2120,11 @@ def send_pm_if_empty_stream(sender: UserProfile,
     if not sender.is_bot or sender.bot_owner is None:
         return
 
-    if stream is not None:
-        num_subscribers = num_subscribers_for_stream_id(stream.id)
-        if num_subscribers > 0:
-            return
-
     if stream is None:
         error_msg = "that stream does not yet exist. To create it, "
     else:
-        # num_subscribers == 0
+        if num_subscribers_for_stream_id(stream.id) > 0:
+            return
         error_msg = "there are no subscribers to that stream. To join it, "
 
     if stream_id is not None:
