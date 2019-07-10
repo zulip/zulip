@@ -40,7 +40,7 @@ set_global('stream_popover', {
     hide_topic_popover: noop,
     hide_all_messages_popover: noop,
     hide_starred_messages_popover: noop,
-    restore_stream_list_size: noop,
+    hide_streamlist_sidebar: noop,
 });
 
 set_global('stream_data', {});
