@@ -1399,10 +1399,8 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Stream with ID '99999' does not exist")
 
         msg = self.get_last_message()
-        expected = ("Hi there! We thought you'd like to know that your bot **{sender}** just "
-                    "tried to send a message to stream {stream_info}, but that stream does not "
-                    "yet exist. To create it, click the gear in the left-side stream list.")
-        expected = expected.format(sender=bot.full_name, stream_info='with ID 99999')
+        expected = ("Your bot `whatever-bot@zulip.testserver` tried to send a message to "
+                    "stream ID 99999, but there is no stream with that ID.")
         self.assertEqual(msg.content, expected)
 
     def test_message_to_stream_by_id(self) -> None:
@@ -3636,7 +3634,7 @@ class CheckMessageTest(ZulipTestCase):
 
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
-        self.assertIn("that stream does not yet exist.", most_recent_message(parent).content)
+        self.assertIn("that stream does not exist.", most_recent_message(parent).content)
 
         # Try sending to stream that exists with no subscribers soon
         # after; due to rate-limiting, this should send nothing.
@@ -3656,7 +3654,7 @@ class CheckMessageTest(ZulipTestCase):
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 2)
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
-        self.assertIn("there are no subscribers to that stream", most_recent_message(parent).content)
+        self.assertIn("does not have any subscribers", most_recent_message(parent).content)
 
     def test_bot_pm_error_handling(self) -> None:
         # This just test some defensive code.

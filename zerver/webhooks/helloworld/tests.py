@@ -41,7 +41,7 @@ class HelloWorldHookTests(WebhookTestCase):
         self.STREAM_NAME = 'nonexistent'
         self.url = self.build_webhook_url()
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
-        expected_message = "Hi there! We thought you'd like to know that your bot **Zulip Webhook Bot** just tried to send a message to stream `nonexistent`, but that stream does not yet exist. To create it, click the gear in the left-side stream list."
+        expected_message = "Your bot `webhook-bot@zulip.com` tried to send a message to stream #**nonexistent**, but that stream does not exist. Click [here](#streams/new) to create it."
         self.send_and_test_private_message('goodbye', expected_message=expected_message,
                                            content_type='application/x-www-form-urlencoded',
                                            sender=notification_bot)
