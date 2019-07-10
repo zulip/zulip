@@ -13,7 +13,6 @@ Jinja2==2.10.1
 
 # Needed for markdown processing
 Markdown==3.1.1
-MarkupSafe==1.1.1
 Pygments==2.3.1
 
 # Needed for manage.py
@@ -36,17 +35,6 @@ backports.ssl-match-hostname==3.7.0.1
 
 # Needed for S3 file uploads
 boto==2.49.0
-
-certifi===2019.3.9
-
-# Used for scrapy as well as argon2
-cffi==1.12.3
-
-chardet==3.0.4
-
-# Pinned version because older versions don't compile on newer Linux.
-# Not actually a direct dependency.
-cryptography==2.6.1
 
 # Needed for integrations
 defusedxml==0.5.0
@@ -94,7 +82,6 @@ markdown-include==0.5.1
 mock==2.0.0
 
 oauth2client==4.1.3
-oauthlib==3.0.1
 
 # Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
 # Needed by requests to send https request to some sites.
@@ -107,8 +94,6 @@ pika==0.13.0
 # Needed to access our database
 psycopg2==2.8.2 --no-binary psycopg2
 
-pyasn1==0.4.5
-pyasn1-modules==0.2.5
 pycrypto==2.6.1
 
 # Needed for memcached usage
@@ -126,9 +111,6 @@ pytz==2019.1
 # Needed for redis
 redis==2.10.6
 
-requests_oauthlib==1.0.0
-rsa==4.0
-
 # Needed for Python 2+3 compatibility
 six==1.12.0
 smmap==0.9.0
@@ -142,13 +124,8 @@ sourcemap==0.2.1
 # Tornado used for server->client push system
 tornado==4.5.3
 
-# Needed for Python static typing
-typing==3.6.6
-
 # Fast JSON parser
 -e git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
-
-uritemplate==3.0.0
 
 # Django extension for static asset pipeline
 django-pipeline==1.6.14

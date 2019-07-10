@@ -16,7 +16,7 @@ git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/zulip/python-zulip-api.git@0.6.0#egg=zulip==0.6.0_git&subdirectory=zulip
 git+https://github.com/zulip/python-zulip-api.git@0.6.0#egg=zulip_bots==0.6.0+git&subdirectory=zulip_bots
-alabaster==0.7.12
+alabaster==0.7.12         # via sphinx
 apns2==0.4.1
 argon2-cffi==19.1.0
 arrow==0.10.0             # via gitlint
@@ -24,7 +24,7 @@ asn1crypto==0.24.0        # via cryptography
 attrs==19.1.0             # via automat, service-identity, twisted
 automat==0.7.0            # via twisted
 aws-xray-sdk==0.95        # via moto
-babel==2.5.3
+babel==2.5.3              # via django-phonenumber-field, sphinx
 backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.7.0.1
@@ -34,14 +34,14 @@ boto==2.49.0
 botocore==1.12.183        # via boto3, moto, s3transfer
 cachetools==3.1.1         # via google-auth, premailer
 cchardet==2.1.4
-certifi==2019.3.9
-cffi==1.12.3
-chardet==3.0.4
+certifi==2019.3.9         # via requests
+cffi==1.12.3              # via argon2-cffi, cryptography
+chardet==3.0.4            # via requests
 click==6.7                # via gitlint, pip-tools
 commonmark==0.5.4
 constantly==15.1.0        # via twisted
 coverage==4.5.3
-cryptography==2.6.1
+cryptography==2.6.1       # via apns2, moto, pyopenssl, requests, service-identity
 cssselect==1.0.3          # via parsel, premailer, scrapy
 cssutils==1.0.2           # via premailer
 decorator==4.4.0          # via ipython, traitlets
@@ -60,7 +60,7 @@ django-webpack-loader==0.6.0
 django==1.11.22
 docker==4.0.2             # via moto
 docopt==0.6.2
-docutils==0.14
+docutils==0.14            # via botocore, recommonmark, sphinx
 ecdsa==0.13.2             # via python-jose
 fakeldap==0.6.1
 first==2.0.2              # via pip-tools
@@ -80,7 +80,7 @@ hyperframe==3.2.0         # via h2, hyper
 hyperlink==19.0.0         # via twisted
 idna==2.8                 # via hyperlink, requests
 ijson==2.3
-imagesize==1.1.0
+imagesize==1.1.0          # via sphinx
 incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0
@@ -93,7 +93,7 @@ jsonpickle==1.2           # via aws-xray-sdk, python-digitalocean
 lxml==4.3.3
 markdown-include==0.5.1
 markdown==3.1.1
-markupsafe==1.1.1
+markupsafe==1.1.1         # via jinja2
 matrix-client==0.3.2
 mock==2.0.0
 moto==1.3.7
@@ -101,7 +101,7 @@ mypy-extensions==0.4.1
 mypy==0.670
 ndg-httpsclient==0.5.1
 oauth2client==4.1.3
-oauthlib==3.0.1
+oauthlib==3.0.1           # via requests-oauthlib, social-auth-core
 packaging==19.0           # via sphinx
 parsel==1.5.1             # via scrapy
 parso==0.5.0              # via jedi
@@ -120,8 +120,8 @@ ptyprocess==0.6.0         # via pexpect
 py3dns==3.2.0
 pyahocorasick==1.4.0
 pyaml==19.4.1             # via moto
-pyasn1-modules==0.2.5
-pyasn1==0.4.5
+pyasn1-modules==0.2.5     # via google-auth, oauth2client, python-ldap, service-identity
+pyasn1==0.4.5             # via ndg-httpsclient, oauth2client, pyasn1-modules, python-ldap, rsa, service-identity
 pycodestyle==2.5.0
 pycparser==2.19           # via cffi
 pycrypto==2.6.1
@@ -153,10 +153,10 @@ queuelib==1.5.0           # via scrapy
 recommonmark==0.4.0
 redis==2.10.6
 regex==2019.6.8
-requests-oauthlib==1.0.0
+requests-oauthlib==1.0.0  # via python-twitter, social-auth-core
 requests[security]==2.22.0  # via aws-xray-sdk, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
 responses==0.10.6         # via moto
-rsa==4.0
+rsa==4.0                  # via google-auth, oauth2client
 s3transfer==0.2.1         # via boto3
 scrapy==1.6.0
 service-identity==18.1.0  # via scrapy
@@ -165,7 +165,7 @@ simplegeneric==0.8.1      # via ipython
 six==1.12.0
 smmap==0.9.0
 snakeviz==2.0.0
-snowballstemmer==1.2.1
+snowballstemmer==1.2.1    # via sphinx
 social-auth-app-django==3.1.0
 social-auth-core==3.2.0   # via social-auth-app-django
 sockjs-tornado==1.0.6
@@ -186,7 +186,7 @@ twisted==19.2.1
 typed-ast==1.3.5          # via mypy
 typing==3.6.6
 typing_extensions==3.6.6
-uritemplate==3.0.0
+uritemplate==3.0.0        # via google-api-python-client
 urllib3==1.25.3           # via botocore, requests, transifex-client
 virtualenv-clone==0.5.3
 w3lib==1.20.0             # via parsel, scrapy
