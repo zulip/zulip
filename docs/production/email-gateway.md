@@ -12,11 +12,11 @@ because it enables:
   documentation](https://zulipchat.com/integrations/doc/email) for
   details.
 
-Once this integration is configured, each stream will have an special
+Once this integration is configured, each stream will have a special
 email address displayed on the stream settings page.  Emails sent to
 that address will be delivered into the stream.
 
-There are two ways to configure Zulip's email email gateway:
+There are two ways to configure Zulip's email gateway:
 
   1. Local delivery (recommended): A postfix server runs on the Zulip
     server and passes the emails directly to Zulip.
@@ -83,10 +83,10 @@ Congratulations!  The integration should be fully operational.
 
 ## Polling setup
 
-1. Create an email account dedicated to Zulip email gateway
+1. Create an email account dedicated to Zulip's email gateway
   messages.  We assume the address is of the form
   `username@example.com`.  The email provider needs to support the
-  standard model of delivering emails sent
+  standard model of delivering emails sent to
   `username+stuff@example.com` to the `username@example.com` inbox.
 
 1. Edit `/etc/zulip/settings.py`, and set `EMAIL_GATEWAY_PATTERN` to
