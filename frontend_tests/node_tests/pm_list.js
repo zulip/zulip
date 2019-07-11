@@ -22,7 +22,6 @@ zrequire('presence');
 zrequire('buddy_data');
 zrequire('hash_util');
 zrequire('Handlebars', 'handlebars');
-zrequire('templates');
 zrequire('people');
 zrequire('pm_conversations');
 zrequire('pm_list');
@@ -76,10 +75,10 @@ run_test('build_private_messages_list', () => {
 
     var template_data;
 
-    global.templates.render = function (template_name, data) {
+    global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'sidebar_private_message_list');
         template_data = data;
-    };
+    });
 
     pm_list._build_private_messages_list(active_conversation_1, max_conversations);
 
@@ -115,10 +114,10 @@ run_test('build_private_messages_list', () => {
 });
 
 run_test('expand_and_update_private_messages', () => {
-    global.templates.render = function (template_name) {
+    global.stub_templates(function (template_name) {
         assert.equal(template_name, 'sidebar_private_message_list');
         return 'fake-dom-for-pm-list';
-    };
+    });
 
     var private_li = $(".top_left_private_messages");
     var alice_li = $.create('alice-li-stub');

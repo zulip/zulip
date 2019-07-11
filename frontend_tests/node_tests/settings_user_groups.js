@@ -14,7 +14,6 @@ var pills = {
 var create_item_handler;
 
 set_global('channel', {});
-set_global('templates', {});
 set_global('blueslip', global.make_zblueslip());
 set_global('typeahead_helper', {});
 set_global('user_groups', {
@@ -102,14 +101,14 @@ run_test('populate_user_groups', () => {
 
     var templates_render_called = false;
     var fake_rendered_temp = $.create('fake_admin_user_group_list_template_rendered');
-    templates.render = function (template, args) {
+    global.stub_templates(function (template, args) {
         assert.equal(template, 'admin_user_group_list');
         assert.equal(args.user_group.id, 1);
         assert.equal(args.user_group.name, 'Mobile');
         assert.equal(args.user_group.description, 'All mobile people');
         templates_render_called = true;
         return fake_rendered_temp;
-    };
+    });
 
     var user_groups_list_append_called = false;
     $('#user-groups').append = function (rendered_temp) {
@@ -328,9 +327,9 @@ run_test('with_external_user', () => {
         return noop;
     };
 
-    templates.render = function () {
+    global.stub_templates(function () {
         return noop;
-    };
+    });
 
     people.get_person_from_user_id = function () {
         return noop;

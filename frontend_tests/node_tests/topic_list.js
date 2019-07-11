@@ -5,7 +5,6 @@ set_global('narrow_state', {});
 set_global('unread', {});
 set_global('muting', {});
 set_global('stream_popover', {});
-set_global('templates', {});
 set_global('message_list', {});
 
 zrequire('hash_util');
@@ -43,7 +42,7 @@ run_test('topic_list_build_widget', () => {
     var checked_mutes;
     var rendered;
 
-    templates.render = function (name, info) {
+    global.stub_templates(function (name, info) {
         assert.equal(name, 'topic_list_item');
         var expected = {
             topic_name: 'coding',
@@ -55,7 +54,7 @@ run_test('topic_list_build_widget', () => {
         assert.deepEqual(info, expected);
         rendered = true;
         return '<topic list item>';
-    };
+    });
 
     muting.is_topic_muted = function (stream_id, topic_name) {
         assert.equal(stream_id, devel.stream_id);

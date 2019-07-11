@@ -1,6 +1,5 @@
 set_global('i18n', global.stub_i18n);
 set_global('page_params', {realm_is_zephyr_mirror_realm: false});
-set_global('templates', {});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
@@ -413,13 +412,13 @@ run_test('render_person when emails hidden', () => {
     // Test render_person with regular person, under hidden email visiblity case
     settings_org.show_email = () => false;
     var rendered = false;
-    global.templates.render = function (template_name, args) {
+    global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, matches[2].full_name);
         assert.equal(args.secondary, undefined);
         rendered = true;
         return 'typeahead-item-stub';
-    };
+    });
     assert.equal(th.render_person(matches[2]), 'typeahead-item-stub');
     assert(rendered);
 });
@@ -428,13 +427,13 @@ run_test('render_person', () => {
     settings_org.show_email = () => true;
     // Test render_person with regular person
     var rendered = false;
-    global.templates.render = function (template_name, args) {
+    global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, matches[1].full_name);
         assert.equal(args.secondary, matches[1].email);
         rendered = true;
         return 'typeahead-item-stub';
-    };
+    });
     assert.equal(th.render_person(matches[1]), 'typeahead-item-stub');
     assert(rendered);
 
@@ -448,25 +447,25 @@ run_test('render_person', () => {
         special_item_text: "special_text",
     };
     rendered = false;
-    global.templates.render = function (template_name, args) {
+    global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, special_person.special_item_text);
         rendered = true;
         return 'typeahead-item-stub';
-    };
+    });
     assert.equal(th.render_person(special_person), 'typeahead-item-stub');
     assert(rendered);
 });
 
 run_test('clear_rendered_person', () => {
     var rendered = false;
-    global.templates.render = function (template_name, args) {
+    global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, matches[5].full_name);
         assert.equal(args.secondary, matches[5].email);
         rendered = true;
         return 'typeahead-item-stub';
-    };
+    });
     assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
     assert(rendered);
 
@@ -492,13 +491,13 @@ run_test('render_stream', () => {
         stream_id: 42,
         name: 'Short Description',
     };
-    global.templates.render = function (template_name, args) {
+    global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, stream.name);
         assert.equal(args.secondary, stream.description);
         rendered = true;
         return 'typeahead-item-stub';
-    };
+    });
     assert.equal(th.render_stream(stream), 'typeahead-item-stub');
     assert(rendered);
 
@@ -509,14 +508,14 @@ run_test('render_stream', () => {
         stream_id: 43,
         name: 'Long Description',
     };
-    global.templates.render = function (template_name, args) {
+    global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, stream.name);
         var short_desc = stream.description.substring(0, 35);
         assert.equal(args.secondary, short_desc + "...");
         rendered = true;
         return 'typeahead-item-stub';
-    };
+    });
     assert.equal(th.render_stream(stream), 'typeahead-item-stub');
     assert(rendered);
 });
@@ -532,7 +531,7 @@ run_test('render_emoji', () => {
         realm_emoji: 'TBD',
     };
 
-    global.templates.render = function (template_name, args) {
+    global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.deepEqual(args, {
             primary: 'thumbs up',
@@ -543,7 +542,7 @@ run_test('render_emoji', () => {
         });
         rendered = true;
         return 'typeahead-item-stub';
-    };
+    });
     assert.equal(th.render_emoji(test_emoji), 'typeahead-item-stub');
     assert(rendered);
 
@@ -554,7 +553,7 @@ run_test('render_emoji', () => {
         emoji_url: 'TBD',
     };
 
-    global.templates.render = function (template_name, args) {
+    global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.deepEqual(args, {
             primary: 'realm emoji',
@@ -565,7 +564,7 @@ run_test('render_emoji', () => {
         });
         rendered = true;
         return 'typeahead-item-stub';
-    };
+    });
     assert.equal(th.render_emoji(test_emoji), 'typeahead-item-stub');
     assert(rendered);
 });

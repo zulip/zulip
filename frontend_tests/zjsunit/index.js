@@ -67,6 +67,12 @@ global.make_zblueslip = require('./zblueslip.js').make_zblueslip;
 // Set up fake translation
 global.stub_i18n = require('./i18n.js');
 
+// Set up Handlebars
+global.stub_templates = stub => {
+    set_global('templates', {});
+    templates.render = stub;
+};
+
 var noop = function () {};
 
 // Set up fake module.hot

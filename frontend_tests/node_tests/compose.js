@@ -49,7 +49,6 @@ set_global('sent_messages', _sent_messages);
 
 set_global('transmit', {});
 set_global('channel', {});
-set_global('templates', {});
 set_global('echo', {});
 set_global('stream_edit', {});
 set_global('markdown', {});
@@ -122,10 +121,10 @@ run_test('validate_stream_message_address_info', () => {
 
     sub.subscribed = false;
     stream_data.add_sub('social', sub);
-    templates.render = function (template_name) {
+    global.stub_templates(function (template_name) {
         assert.equal(template_name, 'compose_not_subscribed');
         return 'compose_not_subscribed_stub';
-    };
+    });
     assert(!compose.validate_stream_message_address_info('social'));
     assert.equal($('#compose-error-msg').html(), 'compose_not_subscribed_stub');
 
@@ -185,10 +184,10 @@ run_test('validate', () => {
         $("#zephyr-mirror-error").is = noop;
         $("#private_message_recipient").select(noop);
 
-        templates.render = function (fn) {
+        global.stub_templates(function (fn) {
             assert.equal(fn, 'input_pill');
             return '<div>pill-html</div>';
-        };
+        });
     }
 
     function add_content_to_compose_box() {
@@ -299,11 +298,11 @@ run_test('validate_stream_message', () => {
         assert.equal(stream_name, 'social');
         return 16;
     };
-    templates.render = function (template_name, data) {
+    global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'compose_all_everyone');
         assert.equal(data.count, 16);
         return 'compose_all_everyone_stub';
-    };
+    });
     var compose_content;
     $('#compose-all-everyone').append = function (data) {
         compose_content = data;
@@ -1084,13 +1083,13 @@ run_test('on_events', () => {
 
             (function () {
                 var called;
-                templates.render = function (template_name, context) {
+                global.stub_templates(function (template_name, context) {
                     called = true;
                     assert.equal(template_name, 'compose_invite_users');
                     assert.equal(context.email, 'foo@bar.com');
                     assert.equal(context.name, 'Foo Barson');
                     return 'fake-compose-invite-user-template';
-                };
+                });
                 return function () { assert(called); };
             }()),
 
@@ -1134,7 +1133,7 @@ run_test('on_events', () => {
 
         // Now try to mention the same person again. The template should
         // not render.
-        templates.render = noop;
+        global.stub_templates(noop);
         handler({}, data);
         assert.equal($('#compose_invite_users').visible(), true);
         assert(looked_for_existing);
@@ -1362,12 +1361,12 @@ run_test('on_events', () => {
         var checks = [
             (function () {
                 var called;
-                templates.render = function (template_name, context) {
+                global.stub_templates(function (template_name, context) {
                     called = true;
                     assert.equal(template_name, 'compose_private_stream_alert');
                     assert.equal(context.stream_name, 'Denmark');
                     return 'fake-compose_private_stream_alert-template';
-                };
+                });
                 return function () { assert(called); };
             }()),
 
