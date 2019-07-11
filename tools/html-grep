@@ -41,7 +41,7 @@ USAGE = '''
     Finding files to search:
 
         The tool currently searches your git repo for files with
-        the extension .html or .handlebars., and then it does
+        the extension .html or .hbs., and then it does
         the grep against all those files.
 
         TODO: allow specific files to be searched.'''
@@ -72,7 +72,7 @@ def check_our_files():
 
     files = lister.list_files(
         modified_only=options.modified,
-        ftypes=['handlebars', 'html'],
+        ftypes=['hbs', 'html'],
     )
 
     fns = [fn for fn in files if ('casperjs' not in fn) and ('puppet/zulip' not in fn)]

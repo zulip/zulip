@@ -110,7 +110,7 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
             }
         }
 
-        var html = templates.render("settings/custom-user-profile-field", {
+        var html = templates.render("settings/custom_user_profile_field", {
             field: field,
             field_type: all_field_template_types[field.type],
             field_value: field_value,

@@ -236,7 +236,7 @@ functions or other arguments following them.
 Combine adjacent on-ready functions, if they are logically related.
 
 The best way to build complicated DOM elements is a Mustache template
-like `static/templates/message_reactions.handlebars`. For simpler things
+like `static/templates/message_reactions.hbs`. For simpler things
 you can use jQuery DOM building APIs like so:
 
     var new_tr = $('<tr />').attr('id', object.id);

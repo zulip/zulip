@@ -42,7 +42,7 @@ organization in Zulip). The following files are involved in the process:
   consistent and correct.
 
 **Frontend**
-- `static/templates/settings/organization-permissions-admin.handlebars`: defines
+- `static/templates/settings/organization_permissions_admin.hbs`: defines
    the structure of the admin permissions page (checkboxes for each organization
    permission setting).
 - `static/js/settings_org.js`: handles organization setting form submission.
@@ -488,7 +488,7 @@ handled on the client.
 
 To add the checkbox to the admin page, modify the relevant template in
 `static/templates/settings/`, which can be
-`organization-permissions-admin.handlebars` or `organization-settings-admin.handlebars`
+`organization_permissions_admin.hbs` or `organization_settings_admin.hbs`
 (omitted here since it is relatively straightforward).
 
 Then add the new form control in `static/js/admin.js`.

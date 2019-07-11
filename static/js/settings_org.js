@@ -325,7 +325,7 @@ exports.populate_realm_domains = function (realm_domains) {
     var realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
     _.each(realm_domains, function (realm_domain) {
-        realm_domains_table_body.append(templates.render("settings/admin-realm-domains-list", {realm_domain: realm_domain}));
+        realm_domains_table_body.append(templates.render("settings/admin_realm_domains_list", {realm_domain: realm_domain}));
     });
 };
 function sort_object_by_key(obj) {
@@ -357,7 +357,7 @@ function insert_tip_box() {
     if (page_params.is_admin) {
         return;
     }
-    var tip_box = templates.render("settings/organization-settings-tip", {is_admin: page_params.is_admin});
+    var tip_box = templates.render("settings/organization_settings_tip", {is_admin: page_params.is_admin});
     $(".organization-box").find(".settings-section:not(.can-edit)")
         .not("#emoji-settings")
         .not("#user-groups-admin")
@@ -388,7 +388,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
     list_render.create(dropdown_list_body, stream_list, {
         name: "admin-realm-notifications-stream-dropdown-list",
         modifier: function (item) {
-            return templates.render("settings/admin-realm-dropdown-stream-list", { stream: item });
+            return templates.render("settings/admin_realm_dropdown_stream_list", { stream: item });
         },
         filter: {
             element: search_input,
@@ -417,7 +417,7 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     list_render.create(dropdown_list_body, stream_list, {
         name: "admin-realm-signup-notifications-stream-dropdown-list",
         modifier: function (item) {
-            return templates.render("settings/admin-realm-dropdown-stream-list", { stream: item });
+            return templates.render("settings/admin_realm_dropdown_stream_list", { stream: item });
         },
         filter: {
             element: search_input,

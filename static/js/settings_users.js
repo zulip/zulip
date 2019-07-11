@@ -244,7 +244,7 @@ exports.set_up = function () {
 };
 
 function open_user_info_form_modal(person) {
-    var html = templates.render('user-info-form-modal', {
+    var html = templates.render('user_info_form_modal', {
         user_id: person.user_id,
         email: person.email,
         full_name: people.get_full_name(person.user_id),

@@ -68,7 +68,7 @@ exports.template_finder = (function () {
     // This class lets you find template files in our file system.
     // It may be slightly overkill for our flat directory system;
     // it might make more sense to just do something more like
-    // this: get_template_dir() + name + '.handlebars'
+    // this: get_template_dir() + name + '.hbs'
 
     var self = {};
 
@@ -76,12 +76,12 @@ exports.template_finder = (function () {
     var all_files = exports.walk(template_dir());
     var files = all_files
         .filter(function (file) {
-            return (/\.handlebars$/).test(file.name);
+            return (/\.hbs$/).test(file.name);
         })
         .map(function (file) {
             return {
                 url: file.url,
-                name: file.name.replace(/\.handlebars$/, ""),
+                name: file.name.replace(/\.hbs$/, ""),
             };
         });
 

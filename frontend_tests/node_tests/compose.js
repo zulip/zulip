@@ -1086,7 +1086,7 @@ run_test('on_events', () => {
                 var called;
                 templates.render = function (template_name, context) {
                     called = true;
-                    assert.equal(template_name, 'compose-invite-users');
+                    assert.equal(template_name, 'compose_invite_users');
                     assert.equal(context.email, 'foo@bar.com');
                     assert.equal(context.name, 'Foo Barson');
                     return 'fake-compose-invite-user-template';

@@ -617,7 +617,7 @@ exports.initialize = function () {
             return;
         }
         var stream_name = stream_data.maybe_get_stream_name(stream_id);
-        var deactivate_stream_modal = templates.render("settings/deactivation-stream-modal", {
+        var deactivate_stream_modal = templates.render("settings/deactivation_stream_modal", {
             stream_name: stream_name,
             stream_id: stream_id,
         });

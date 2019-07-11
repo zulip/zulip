@@ -401,12 +401,12 @@ exports.set_up = function () {
         $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
         var service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
-            $("#service_data").append(templates.render("settings/edit-outgoing-webhook-service",
+            $("#service_data").append(templates.render("settings/edit_outgoing_webhook_service",
                                                        {service: service}));
             $("#edit_service_interface").val(service.interface);
         }
         if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
-            $("#service_data").append(templates.render("settings/edit-embedded-bot-service",
+            $("#service_data").append(templates.render("settings/edit_embedded_bot_service",
                                                        {service: service}));
         }
 

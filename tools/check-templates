@@ -27,10 +27,10 @@ def check_our_files(modified_only, all_dups, targets):
         lister.list_files(
             targets=targets,
             modified_only=args.modified,
-            ftypes=['handlebars', 'html'],
+            ftypes=['hbs', 'html'],
             group_by_ftype=True, exclude=EXCLUDED_FILES))
 
-    check_handlebar_templates(by_lang['handlebars'])
+    check_handlebar_templates(by_lang['hbs'])
     check_html_templates(by_lang['html'], args.all_dups)
 
 def check_html_templates(templates, all_dups):
@@ -145,11 +145,11 @@ def check_html_templates(templates, all_dups):
 def check_handlebar_templates(templates):
     # type: (Iterable[str]) -> None
     # Check all our handlebars templates.
-    templates = [fn for fn in templates if fn.endswith('.handlebars')]
+    templates = [fn for fn in templates if fn.endswith('.hbs')]
 
     IGNORE_FILES = [
         # TODO: Add some exclude mechanism for the line-wrapping issue here.
-        'static/templates/recipient_row.handlebars',
+        'static/templates/recipient_row.hbs',
     ]
 
     for fn in templates:
