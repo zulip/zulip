@@ -284,7 +284,8 @@ def walk_tree(root: Element,
 ElementFamily = NamedTuple('ElementFamily', [
     ('grandparent', Optional[Element]),
     ('parent', Element),
-    ('child', Element)
+    ('child', Element),
+    ('in_blockquote', bool),
 ])
 
 ResultWithFamily = NamedTuple('ResultWithFamily', [
@@ -318,7 +319,8 @@ def walk_tree_with_family(root: Element,
                 family = ElementFamily(
                     grandparent=grandparent,
                     parent=currElementPair.value,
-                    child=child
+                    child=child,
+                    in_blockquote=has_blockquote_ancestor(currElementPair)
                 )
 
                 results.append(ResultWithFamily(
@@ -327,6 +329,14 @@ def walk_tree_with_family(root: Element,
                 ))
 
     return results
+
+def has_blockquote_ancestor(element_pair: Optional[ElementPair]) -> bool:
+    if element_pair is None:
+        return False
+    elif element_pair.value.tag == 'blockquote':
+        return True
+    else:
+        return has_blockquote_ancestor(element_pair.parent)
 
 # height is not actually used
 def add_a(
@@ -1024,7 +1034,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
-        unique_urls = {found_url.result[0] for found_url in found_urls}
+        # Collect unique URLs which are not quoted
+        unique_urls = {found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote}
         if len(found_urls) == 0 or len(unique_urls) > self.INLINE_PREVIEW_LIMIT_PER_MESSAGE:
             return
 
@@ -1034,7 +1045,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         for found_url in found_urls:
             (url, text) = found_url.result
 
-            if url not in processed_urls:
+            if url in unique_urls and url not in processed_urls:
                 processed_urls.add(url)
             else:
                 continue
