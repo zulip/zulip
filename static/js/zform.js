@@ -64,7 +64,7 @@ exports.activate = function (opts) {
             choice.idx = idx;
         });
 
-        var html = templates.render('widgets/zform-choices', data);
+        var html = templates.render('widgets/zform_choices', data);
         var elem = $(html);
 
         elem.find('button').on('click', function (e) {

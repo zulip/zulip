@@ -36,7 +36,7 @@ const _channel = {};
 
 const _templates = {
     render: function (name, data) {
-        if (name === 'settings/admin-realm-domains-list') {
+        if (name === 'settings/admin_realm_domains_list') {
             assert(data.realm_domain.domain);
             return 'stub-domains-list';
         }

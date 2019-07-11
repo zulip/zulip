@@ -64,7 +64,7 @@ templates.
 
 In order to find the context definition, you should grep without using
 the file extension. For example, to find where
-`invite_subscription.handlebars` is rendered, you should run something
+`invite_subscription.hbs` is rendered, you should run something
 like this:
 
 ```

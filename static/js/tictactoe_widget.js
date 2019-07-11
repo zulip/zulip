@@ -127,7 +127,7 @@ exports.activate = function (opts) {
 
     function render() {
         var widget_data = tictactoe_data.get_widget_data();
-        var html = templates.render('widgets/tictactoe-widget', widget_data);
+        var html = templates.render('widgets/tictactoe_widget', widget_data);
         elem.html(html);
 
         elem.find("button.tictactoe-square").on('click', function (e) {

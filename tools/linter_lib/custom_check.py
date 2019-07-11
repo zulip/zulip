@@ -646,7 +646,7 @@ html_rules = whitespace_rules + prose_style_rules + cast(Rule, [
      'description': "`title` value should be translatable."},
     {'pattern': r'''\Walt=["'][^{"']''',
      'description': "alt argument should be enclosed by _() or it should be an empty string.",
-     'exclude': set(['static/templates/settings/display-settings.handlebars',
+     'exclude': set(['static/templates/settings/display_settings.hbs',
                      'templates/zerver/app/keyboard_shortcuts.html',
                      'templates/zerver/app/markdown_help.html']),
      'good_lines': ['<img src="{{source_url}}" alt="{{ _(name) }}" />', '<img alg="" />'],
@@ -671,12 +671,12 @@ html_rules = whitespace_rules + prose_style_rules + cast(Rule, [
          # 5xx page doesn't have external CSS
          'static/html/5xx.html',
          # Group PMs color is dynamically calculated
-         'static/templates/group_pms.handlebars',
+         'static/templates/group_pms.hbs',
 
          # exclude_pattern above handles color, but have other issues:
-         'static/templates/draft.handlebars',
-         'static/templates/subscription.handlebars',
-         'static/templates/single_message.handlebars',
+         'static/templates/draft.hbs',
+         'static/templates/subscription.hbs',
+         'static/templates/single_message.hbs',
 
          # Old-style email templates need to use inline style
          # attributes; it should be possible to clean these up
@@ -691,11 +691,11 @@ html_rules = whitespace_rules + prose_style_rules + cast(Rule, [
          'templates/zerver/app/navbar.html',
 
          # Needs the width cleaned up; display: none is fine
-         'static/templates/settings/account-settings.handlebars',
+         'static/templates/settings/account_settings.hbs',
 
          # background image property is dynamically generated
-         'static/templates/user_profile_modal.handlebars',
-         'static/templates/sidebar_private_message_list.handlebars',
+         'static/templates/user_profile_modal.hbs',
+         'static/templates/sidebar_private_message_list.hbs',
 
          # Inline styling for an svg; could be moved to CSS files?
          'templates/zerver/landing_nav.html',
@@ -707,8 +707,8 @@ html_rules = whitespace_rules + prose_style_rules + cast(Rule, [
          'templates/corporate/upgrade.html',
 
          # Miscellaneous violations to be cleaned up
-         'static/templates/user_info_popover_title.handlebars',
-         'static/templates/subscription_invites_warning_modal.handlebars',
+         'static/templates/user_info_popover_title.hbs',
+         'static/templates/subscription_invites_warning_modal.hbs',
          'templates/zerver/reset_confirm.html',
          'templates/zerver/config_error.html',
          'templates/zerver/dev_env_email_access_details.html',

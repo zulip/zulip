@@ -5,10 +5,10 @@ var exports = {};
 exports.render = function (name, arg) {
     var template;
     try {
-        template = require('../templates/' + name + '.handlebars');
+        template = require('../templates/' + name + '.hbs');
     } catch (_e) {
         throw new Error('Cannot find template static/templates/' + name
-            + '.handlebars.');
+            + '.hbs.');
     }
 
     return template(arg);

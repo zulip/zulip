@@ -835,7 +835,7 @@ exports.initialize = function () {
                         name: data.mentioned.full_name,
                         can_subscribe_other_users: page_params.can_subscribe_other_users,
                     };
-                    var new_row = templates.render("compose-invite-users", context);
+                    var new_row = templates.render("compose_invite_users", context);
                     error_area.append(new_row);
                 }
 

@@ -318,7 +318,7 @@ exports.register_stream_handlers = function () {
         e.preventDefault();
         e.stopPropagation();
         $(".left-sidebar-modal-holder").empty();
-        $(".left-sidebar-modal-holder").html(templates.render("unstar-messages-modal"));
+        $(".left-sidebar-modal-holder").html(templates.render("unstar_messages_modal"));
         $("#unstar-messages-modal").modal("show");
     });
 

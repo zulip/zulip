@@ -79,7 +79,7 @@ export default (env?: string): webpack.Configuration[] => {
                     ],
                 },
                 {
-                    test: /\.handlebars$/,
+                    test: /\.hbs$/,
                     loader: 'handlebars-loader',
                     options: {
                         // Tell webpack not to explicitly require these.

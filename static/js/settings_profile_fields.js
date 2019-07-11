@@ -101,7 +101,7 @@ function update_choice_delete_btn(container, display_flag) {
 
 function create_choice_row(container) {
     var context = {};
-    var row = templates.render("settings/profile-field-choice", context);
+    var row = templates.render("settings/profile_field_choice", context);
     $(container).append(row);
 }
 
@@ -221,7 +221,7 @@ function set_up_choices_field_edit_form(profile_field, field_data) {
 
     _.each(choices_data, function (choice) {
         choice_list.append(
-            templates.render("settings/profile-field-choice", {
+            templates.render("settings/profile_field_choice", {
                 text: choice.text,
             })
         );

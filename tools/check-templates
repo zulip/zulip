@@ -145,11 +145,11 @@ def check_html_templates(templates, all_dups):
 def check_handlebar_templates(templates):
     # type: (Iterable[str]) -> None
     # Check all our handlebars templates.
-    templates = [fn for fn in templates if fn.endswith('.handlebars')]
+    templates = [fn for fn in templates if fn.endswith('.hbs')]
 
     IGNORE_FILES = [
         # TODO: Add some exclude mechanism for the line-wrapping issue here.
-        'static/templates/recipient_row.handlebars',
+        'static/templates/recipient_row.hbs',
     ]
 
     for fn in templates:

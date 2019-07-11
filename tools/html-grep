@@ -41,7 +41,7 @@ USAGE = '''
     Finding files to search:
 
         The tool currently searches your git repo for files with
-        the extension .html or .handlebars., and then it does
+        the extension .html or .hbs., and then it does
         the grep against all those files.
 
         TODO: allow specific files to be searched.'''

@@ -141,11 +141,11 @@ run_test('poll_data_holder my question', () => {
 run_test('activate another person poll', () => {
     people.is_my_user_id = return_false;
     templates.render = (template_name) => {
-        if (template_name === 'widgets/poll-widget') {
-            return 'widgets/poll-widget';
+        if (template_name === 'widgets/poll_widget') {
+            return 'widgets/poll_widget';
         }
-        if (template_name === 'widgets/poll-widget-results') {
-            return 'widgets/poll-widget-results';
+        if (template_name === 'widgets/poll_widget_results') {
+            return 'widgets/poll_widget_results';
         }
     };
 
@@ -234,8 +234,8 @@ run_test('activate another person poll', () => {
 
     poll_widget.activate(opts);
 
-    assert.equal(widget_elem.html(), 'widgets/poll-widget');
-    assert.equal(widget_option_container.html(), 'widgets/poll-widget-results');
+    assert.equal(widget_elem.html(), 'widgets/poll_widget');
+    assert.equal(widget_option_container.html(), 'widgets/poll_widget_results');
     assert.equal(poll_question_header.text(), 'What do you want?');
 
     const e = {
@@ -306,11 +306,11 @@ run_test('activate own poll', () => {
 
     people.is_my_user_id = return_true;
     templates.render = (template_name) => {
-        if (template_name === 'widgets/poll-widget') {
-            return 'widgets/poll-widget';
+        if (template_name === 'widgets/poll_widget') {
+            return 'widgets/poll_widget';
         }
-        if (template_name === 'widgets/poll-widget-results') {
-            return 'widgets/poll-widget-results';
+        if (template_name === 'widgets/poll_widget_results') {
+            return 'widgets/poll_widget_results';
         }
     };
 
@@ -396,8 +396,8 @@ run_test('activate own poll', () => {
 
     poll_widget.activate(opts);
 
-    assert.equal(widget_elem.html(), 'widgets/poll-widget');
-    assert.equal(widget_option_container.html(), 'widgets/poll-widget-results');
+    assert.equal(widget_elem.html(), 'widgets/poll_widget');
+    assert.equal(widget_option_container.html(), 'widgets/poll_widget_results');
     assert.equal(poll_question_header.text(), 'Where to go?');
 
     {

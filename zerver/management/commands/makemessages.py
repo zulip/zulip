@@ -163,7 +163,7 @@ class Command(makemessages.Command):
         dirname = self.get_template_dir()
 
         for dirpath, dirnames, filenames in os.walk(dirname):
-            for filename in [f for f in filenames if f.endswith(".handlebars")]:
+            for filename in [f for f in filenames if f.endswith(".hbs")]:
                 if filename.startswith('.'):
                     continue
                 with open(os.path.join(dirpath, filename), 'r') as reader:

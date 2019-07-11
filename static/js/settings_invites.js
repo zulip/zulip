@@ -146,7 +146,7 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
         meta.is_multiuse = $(e.currentTarget).attr("data-is-multiuse");
         var ctx = {is_multiuse: meta.is_multiuse === "true", email: email, referred_by: referred_by};
-        var rendered_revoke_modal = templates.render("settings/revoke-invite-modal", ctx);
+        var rendered_revoke_modal = templates.render("settings/revoke_invite_modal", ctx);
         $("#revoke_invite_modal_holder").html(rendered_revoke_modal);
         $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id", meta.invite_id);
         $("#revoke_invite_modal #do_revoke_invite_button").attr("data-is-multiuse", meta.is_multiuse);
