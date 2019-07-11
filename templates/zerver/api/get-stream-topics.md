@@ -2,7 +2,7 @@
 
 Get all the topics in a specific stream
 
-`GET {{ api_url }}/v1/users/me/<stream_id>/topics`
+`GET {{ api_url }}/v1/users/me/{stream_id}/topics`
 
 ## Usage examples
 
@@ -32,7 +32,7 @@ zulip(config).then((client) => {
 {tab|curl}
 
 ``` curl
-curl -X GET {{ api_url }}/v1/users/me/<stream_id>/topics \
+curl -X GET {{ api_url }}/v1/users/me/{stream_id}/topics \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
 

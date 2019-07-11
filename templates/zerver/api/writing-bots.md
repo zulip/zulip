@@ -460,7 +460,7 @@ following helper method:
         # self.assert_bot_response(...)
 
 `mock_http_conversation(fixture_name)` patches `requests.get` and returns the data specified
-in the file `fixtures/<fixture_name>.json`. Use the following JSON code as a skeleton for new
+in the file `fixtures/{fixture_name}.json`. Use the following JSON code as a skeleton for new
 fixtures:
 ```
 {

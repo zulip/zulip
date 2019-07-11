@@ -2,9 +2,9 @@
 
 Edit/update the content or topic of a message.
 
-`PATCH {{ api_url }}/v1/messages/<msg_id>`
+`PATCH {{ api_url }}/v1/messages/{msg_id}`
 
-`<msg_id>` in the above URL should be replaced with the ID of the
+`{msg_id}` in the above URL should be replaced with the ID of the
 message you wish you update.
 
 ## Usage examples
@@ -39,7 +39,7 @@ zulip(config).then((client) => {
 {tab|curl}
 
 ``` curl
-curl -X "PATCH" {{ api_url }}/v1/messages/<msg_id> \
+curl -X "PATCH" {{ api_url }}/v1/messages/{msg_id} \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d $"content=New content"
 ```

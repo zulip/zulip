@@ -2,7 +2,7 @@
 
 Permanently delete a message.
 
-`DELETE {{ api_url }}/v1/messages/<msg_id>`
+`DELETE {{ api_url }}/v1/messages/{msg_id}`
 
 This API corresponds to the
 [delete a message completely][delete-completely] feature documented in

@@ -2,7 +2,7 @@
 
 Get the raw content of a message.
 
-`GET {{ api_url }}/v1/messages/<msg_id>`
+`GET {{ api_url }}/v1/messages/{msg_id}`
 
 This is a rarely-used endpoint relevant for clients that primarily
 work with HTML-rendered messages but might need to occasionally fetch
@@ -19,7 +19,7 @@ UI).
 {tab|curl}
 
 ``` curl
-curl -X GET {{ api_url }}/v1/messages/<msg_id> \
+curl -X GET {{ api_url }}/v1/messages/{msg_id} \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
 ```
 

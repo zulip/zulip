@@ -4,7 +4,7 @@ This endpoint is used to upload a custom emoji for use in the user's
 organization.  Access to this endpoint depends on the
 [organization's configuration](https://zulipchat.com/help/only-allow-admins-to-add-emoji).
 
- `POST {{ api_url }}/v1/realm/emoji/<emoji_name>`
+ `POST {{ api_url }}/v1/realm/emoji/{emoji_name}`
 
 ## Usage examples
 
@@ -12,12 +12,12 @@ organization.  Access to this endpoint depends on the
 
 {tab|python}
 
-{generate_code_example(python)|/realm/emoji/<emoji_name>:post|example}
+{generate_code_example(python)|/realm/emoji/{emoji_name}:post|example}
 
 {tab|curl}
 
 ``` curl
-curl -X POST {{ api_url }}/v1/realm/emoji/<emoji_name> \
+curl -X POST {{ api_url }}/v1/realm/emoji/{emoji_name} \
     -F "data=@/path/to/img.png" \
     -u USER_EMAIL:API_KEY
 ```
@@ -51,4 +51,4 @@ to 5MB.
 
 A typical successful JSON response may look like:
 
-{generate_code_example|/realm/emoji/<emoji_name>:post|fixture(200)}
+{generate_code_example|/realm/emoji/{emoji_name}:post|fixture(200)}

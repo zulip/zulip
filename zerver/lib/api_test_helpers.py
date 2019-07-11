@@ -195,7 +195,7 @@ def remove_realm_filter(client):
     result = client.remove_realm_filter(42)
     # {code_example|end}
 
-    validate_against_openapi_schema(result, '/realm/filters/<filter_id>', 'delete', '200')
+    validate_against_openapi_schema(result, '/realm/filters/{filter_id}', 'delete', '200')
 
 def get_profile(client):
     # type: (Client) -> None
@@ -861,7 +861,7 @@ def upload_custom_emoji(client):
     # {code_example|end}
     fp.close()
     validate_against_openapi_schema(result,
-                                    '/realm/emoji/<emoji_name>',
+                                    '/realm/emoji/{emoji_name}',
                                     'post', '200')
 
 def get_alert_words(client):
@@ -981,10 +981,10 @@ TEST_FUNCTIONS = {
     '/users/me/subscriptions/properties:post': update_subscription_settings,
     '/users:get': get_members,
     '/realm/emoji:get': get_realm_emoji,
-    '/realm/emoji/<emoji_name>:post': upload_custom_emoji,
+    '/realm/emoji/{emoji_name}:post': upload_custom_emoji,
     '/realm/filters:get': get_realm_filters,
     '/realm/filters:post': add_realm_filter,
-    '/realm/filters/<filter_id>:delete': remove_realm_filter,
+    '/realm/filters/{filter_id}:delete': remove_realm_filter,
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
     '/server_settings:get': get_server_settings,

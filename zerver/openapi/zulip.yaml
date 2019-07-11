@@ -1369,7 +1369,7 @@ paths:
                           "msg": "Topic is not muted",
                           "result": "error"
                       }
-  /realm/emoji/<emoji_name>:
+  /realm/emoji/{emoji_name}:
     post:
       description: Upload a single emoji file.
       parameters:
@@ -1568,7 +1568,7 @@ paths:
                         "result": "success",
                         "msg": ""
                     }
-  /realm/filters/<filter_id>:
+  /realm/filters/{filter_id}:
     delete:
       description: Remove an organization filter.
       parameters:
