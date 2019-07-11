@@ -17,19 +17,6 @@ function render(template_name, args) {
     return global.render_template(template_name, args);
 }
 
-run_test('finding_partials', () => {
-    var fns = global.find_included_partials('settings_tab');
-    assert.deepEqual(fns, [
-        'settings/account_settings',
-        'settings/display_settings',
-        'settings/notification_settings',
-        'settings/bot_settings',
-        'settings/alert_word_settings',
-        'settings/attachments_settings',
-        'settings/muted_topics_settings',
-    ]);
-});
-
 run_test('handlebars_bug', () => {
     // There was a bug in 1.0.9 where identically structured
     // blocks get confused, so when foo is false, it still

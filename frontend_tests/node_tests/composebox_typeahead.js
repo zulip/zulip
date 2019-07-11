@@ -167,8 +167,6 @@ set_global('pygments_data', {langs:
     {python: 0, javscript: 1, html: 2, css: 3},
 });
 
-global.compile_template('typeahead_list_item');
-
 var hamlet = {
     email: 'hamlet@zulip.com',
     user_id: 100,

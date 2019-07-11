@@ -124,7 +124,6 @@ function set_up() {
         };
         return mock_children;
     };
-    global.compile_template('embedded_bot_config_item');
     avatar.build_bot_create_widget = () => {};
     avatar.build_bot_edit_widget = () => {};
 

@@ -146,10 +146,6 @@ people.initialize_current_user(me.user_id);
 const real_update_huddles = activity.update_huddles;
 activity.update_huddles = () => {};
 
-global.compile_template('user_presence_row');
-global.compile_template('user_presence_rows');
-global.compile_template('group_pms');
-
 const presence_info = {};
 presence_info[alice.user_id] = { status: 'inactive' };
 presence_info[fred.user_id] = { status: 'active' };
