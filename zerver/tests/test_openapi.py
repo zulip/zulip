@@ -291,42 +291,25 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                 self.assertTrue(regex_pattern.startswith("^"))
                 self.assertTrue(regex_pattern.endswith("$"))
                 url_pattern = '/' + regex_pattern[1:][:-1]
-                # Deal with the conversion of named capturing groups:
-                # Two possible ways to denote variables in urls exist.
-                # {var_name} and <var_name>. So we need to consider both.
-                url_patterns = [re.sub(r"\(\?P<(\w+)>[^/]+\)", r"<\1>", url_pattern),
-                                re.sub(r"\(\?P<(\w+)>[^/]+\)", r"{\1}", url_pattern)]
+                url_pattern = re.sub(r"\(\?P<(\w+)>[^/]+\)", r"{\1}", url_pattern)
 
-                if any([url_patterns[0] in self.pending_endpoints,
-                        url_patterns[1] in self.pending_endpoints]):
+                if url_pattern in self.pending_endpoints:
                     continue
+
                 if "intentionally_undocumented" in tags:
-                    error = AssertionError("We found some OpenAPI \
-documentation for %s %s, so maybe we shouldn't mark it as intentionally \
-undocumented in the urls." % (method, url_patterns[0] + " or " + url_patterns[1]))
-
                     try:
-                        get_openapi_parameters(url_patterns[0], method)
-                        raise error  # nocoverage
+                        get_openapi_parameters(url_pattern, method)
+                        raise AssertionError("We found some OpenAPI \
+            documentation for %s %s, so maybe we shouldn't mark it as intentionally \
+            undocumented in the urls." % (method, url_pattern))  # nocoverage
                     except KeyError:
-                        pass
-
-                    try:
-                        get_openapi_parameters(url_patterns[1], method)
-                        raise error  # nocoverage
-                    except KeyError:
-                        pass
-
-                    continue  # nocoverage # although, this *is* covered.
+                        continue
 
                 try:
-                    openapi_parameters = get_openapi_parameters(url_patterns[0], method)
+                    openapi_parameters = get_openapi_parameters(url_pattern, method)
                 except Exception:  # nocoverage
-                    try:
-                        openapi_parameters = get_openapi_parameters(url_patterns[1], method)
-                    except Exception:  # nocoverage
-                        raise AssertionError("Could not find OpenAPI docs for %s %s" %
-                                             (method, url_patterns[0] + " or " + url_patterns[1]))
+                    raise AssertionError("Could not find OpenAPI docs for %s %s" %
+                                         (method, url_pattern))
 
                 # We now have everything we need to understand the
                 # function as defined in our urls.py:
@@ -353,24 +336,19 @@ undocumented in the urls." % (method, url_patterns[0] + " or " + url_patterns[1]
 
                 if len(openapi_parameter_names - accepted_arguments) > 0:
                     print("Undocumented parameters for",
-                          url_patterns[0] + " or " + url_patterns[1],
-                          method, function)
+                          url_pattern, method, function)
                     print(" +", openapi_parameter_names)
                     print(" -", accepted_arguments)
-                    assert(any([url_patterns[0] in self.buggy_documentation_endpoints,
-                                url_patterns[1] in self.buggy_documentation_endpoints]))
+                    assert(url_pattern in self.buggy_documentation_endpoints)
                 elif len(accepted_arguments - openapi_parameter_names) > 0:
                     print("Documented invalid parameters for",
-                          url_patterns[0] + " or " + url_patterns[1],
-                          method, function)
+                          url_pattern, method, function)
                     print(" -", openapi_parameter_names)
                     print(" +", accepted_arguments)
-                    assert(any([url_patterns[0] in self.buggy_documentation_endpoints,
-                                url_patterns[1] in self.buggy_documentation_endpoints]))
+                    assert(url_pattern in self.buggy_documentation_endpoints)
                 else:
                     self.assertEqual(openapi_parameter_names, accepted_arguments)
-                    self.checked_endpoints.add(url_patterns[0])
-                    self.checked_endpoints.add(url_patterns[1])
+                    self.checked_endpoints.add(url_pattern)
 
         openapi_paths = set(get_openapi_paths())
         undocumented_paths = openapi_paths - self.checked_endpoints
