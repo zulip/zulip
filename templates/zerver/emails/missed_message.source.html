@@ -15,7 +15,6 @@
         {% for recipient_block in messages %}
             {% for sender_block in recipient_block.senders %}
                 <div class="missed_message">
-                    {% if sender_block.sender %}<div class="missed_message_sender">{{ sender_block.sender }}</div>{% endif %}
                     {% for message_block in sender_block.content %}
                         {{ message_block.html|safe }}
                     {% endfor %}

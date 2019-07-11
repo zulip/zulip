@@ -1,10 +1,6 @@
 {% if show_message_content %}
 {% for recipient_block in messages %}
 {% for sender_block in recipient_block.senders %}
-{% if sender_block.sender %}
-{{ sender_block.sender }}
----
-{% endif %}
 {% for message_block in sender_block.content %}
 {{ message_block.plain }}
 {% endfor %}
