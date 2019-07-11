@@ -21,7 +21,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
     do_change_default_stream_group_description, do_change_default_stream_group_name, \
-    prep_stream_welcome_message, do_change_stream_announcement_only, \
+    do_change_stream_announcement_only, \
     do_delete_messages
 from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
@@ -415,9 +415,18 @@ def add_subscriptions_backend(
                 )
             )
 
-    if not user_profile.realm.is_zephyr_mirror_realm:
+    if not user_profile.realm.is_zephyr_mirror_realm and len(created_streams) > 0:
+        sender = get_system_bot(settings.NOTIFICATION_BOT)
         for stream in created_streams:
-            notifications.append(prep_stream_welcome_message(stream))
+            notifications.append(
+                internal_prep_stream_message(
+                    realm=user_profile.realm,
+                    sender=sender,
+                    stream=stream,
+                    topic=_('stream events'),
+                    content=_('Stream created. Welcome!'),
+                )
+            )
 
     if len(notifications) > 0:
         do_send_messages(notifications)
