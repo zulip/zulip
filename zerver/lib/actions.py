@@ -1709,20 +1709,11 @@ def check_typing_notification(sender: UserProfile,
     assert recipient.type != Recipient.STREAM
     return {'sender': sender, 'recipient': recipient, 'op': operator}
 
-def stream_welcome_message(stream: Stream) -> str:
-    content = _('Welcome to #**%s**.') % (stream.name,)
-
-    if stream.description:
-        content += '\n\n**' + _('Description') + '**: '
-        content += stream.description
-
-    return content
-
 def prep_stream_welcome_message(stream: Stream) -> Optional[Dict[str, Any]]:
     realm = stream.realm
-    sender = get_system_bot(settings.WELCOME_BOT)
-    topic = _('hello')
-    content = stream_welcome_message(stream)
+    sender = get_system_bot(settings.NOTIFICATION_BOT)
+    topic = _('stream events')
+    content = _('Stream created. Welcome!')
 
     message = internal_prep_stream_message(
         realm=realm,

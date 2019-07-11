@@ -121,7 +121,7 @@ IGNORED_PHRASES = [
     # We should probably just delete this string from translations
     r'activation key',
     # this is used as a topic
-    r'^hello$',
+    r'^stream events$',
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",

@@ -57,7 +57,6 @@ from zerver.lib.actions import (
     ensure_stream,
     do_deactivate_stream,
     do_deactivate_user,
-    stream_welcome_message,
     do_create_default_stream_group,
     do_add_streams_to_default_stream_group, do_remove_streams_from_default_stream_group,
     do_remove_default_stream_group,
@@ -239,32 +238,6 @@ class TestCreateStreams(ZulipTestCase):
         self.assertTrue(created)
         self.assertFalse(stream.invite_only)
         self.assertFalse(stream.history_public_to_subscribers)
-
-    def test_welcome_message(self) -> None:
-        realm = get_realm('zulip')
-        name = u'New Stream'
-
-        new_stream = ensure_stream(
-            realm=realm,
-            stream_name=name
-        )
-        welcome_message = stream_welcome_message(new_stream)
-
-        self.assertEqual(
-            welcome_message,
-            u'Welcome to #**New Stream**.'
-        )
-
-        new_stream.description = 'Talk about **stuff**.'
-
-        welcome_message = stream_welcome_message(new_stream)
-
-        self.assertEqual(
-            welcome_message,
-            'Welcome to #**New Stream**.'
-            '\n\n'
-            '**Description**: Talk about **stuff**.'
-        )
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self) -> None:
@@ -2334,9 +2307,9 @@ class SubscriptionAPITest(ZulipTestCase):
         # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
-        self.assertEqual(msg.topic_name(), u'hello')
-        self.assertEqual(msg.sender.email, settings.WELCOME_BOT)
-        self.assertIn('Welcome to #**', msg.content)
+        self.assertEqual(msg.topic_name(), u'stream events')
+        self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
+        self.assertEqual('Stream created. Welcome!', msg.content)
 
     def test_multi_user_subscription(self) -> None:
         user1 = self.example_user("cordelia")
