@@ -239,17 +239,17 @@ form#add_new_subscription {
     text-align: center;
     border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
-}
 
-.subscriber_list_container {
-    position: relative;
-    max-height: 300px;
-    overflow: auto;
-    text-align: left;
-    -webkit-overflow-scrolling: touch;
+    .subscriber_list_container {
+        position: relative;
+        max-height: 300px;
+        overflow: auto;
+        text-align: left;
+        -webkit-overflow-scrolling: touch;
 
-    .form_inline input {
-        vertical-align: top;
+        .form_inline input {
+            vertical-align: top;
+        }
     }
 }
 
