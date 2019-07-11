@@ -41,7 +41,7 @@
         </div>
         <div class="subscription-type">
             <div class="subscription-type-text">
-                {{partial "subscription_type"}}
+                {{> subscription_type}}
             </div>
             <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
@@ -51,16 +51,16 @@
                 <ul class="grey-box">
                     {{#each settings}}
                     <li>
-                        {{partial "stream_settings_checkbox"
-                          "setting_name" name
-                          "prefix" "sub_"
-                          "suffix" "_setting"
-                          "is_checked" value
-                          "is_muted" (lookup ../sub "is_muted")
-                          "stream_id" (lookup ../sub "stream_id")
-                          "notification_setting" is_notification_setting
-                          "realm_setting_disabled" (lookup ../realm_settings name)
-                          "label" label}}
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          prefix="sub_"
+                          suffix="_setting"
+                          is_checked=value
+                          is_muted=(lookup ../sub "is_muted")
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=is_notification_setting
+                          realm_setting_disabled=(lookup ../realm_settings name)
+                          label=label}}
                     </li>
                     {{/each}}
                     <li>
@@ -80,7 +80,7 @@
         </div>
         {{#with sub}}
         <div class="subscription-members-setting">
-            {{partial "subscription_members"}}
+            {{> subscription_members}}
         </div>
         {{/with}}
     </div>

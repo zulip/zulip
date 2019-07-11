@@ -10,7 +10,7 @@
                         <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                     </a>
                 </h3>
-                {{ partial "settings/settings_save_discard_widget" "section_name" "msg-editing" }}
+                {{> settings_save_discard_widget section_name="msg-editing" }}
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
@@ -32,17 +32,17 @@
                     </div>
                 </div>
 
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_allow_community_topic_editing"
-                  "prefix" "id_"
-                  "is_checked" realm_allow_community_topic_editing
-                  "label" admin_settings_label.realm_allow_community_topic_editing}}
+                {{> settings_checkbox
+                  setting_name="realm_allow_community_topic_editing"
+                  prefix="id_"
+                  is_checked=realm_allow_community_topic_editing
+                  label=admin_settings_label.realm_allow_community_topic_editing}}
 
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_allow_edit_history"
-                  "prefix" "id_"
-                  "is_checked" realm_allow_edit_history
-                  "label" admin_settings_label.realm_allow_edit_history}}
+                {{> settings_checkbox
+                  setting_name="realm_allow_edit_history"
+                  prefix="id_"
+                  is_checked=realm_allow_edit_history
+                  label=admin_settings_label.realm_allow_edit_history}}
 
                 <div class="input-group">
                     <label for="realm_msg_delete_limit_setting" class="dropdown-title">
@@ -72,20 +72,20 @@
         <div id="org-notifications" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Notifications" }}</h3>
-                {{ partial "settings/settings_save_discard_widget" "section_name" "notifications" }}
+                {{> settings_save_discard_widget section_name="notifications" }}
             </div>
             <div class="inline-block organization-settings-parent">
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_send_welcome_emails"
-                  "prefix" "id_"
-                  "is_checked" realm_send_welcome_emails
-                  "label" admin_settings_label.realm_send_welcome_emails}}
+                {{> settings_checkbox
+                  setting_name="realm_send_welcome_emails"
+                  prefix="id_"
+                  is_checked=realm_send_welcome_emails
+                  label=admin_settings_label.realm_send_welcome_emails}}
                 {{#if settings_send_digest_emails }}
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_digest_emails_enabled"
-                  "prefix" "id_"
-                  "is_checked" realm_digest_emails_enabled
-                  "label" admin_settings_label.realm_digest_emails_enabled}}
+                {{> settings_checkbox
+                  setting_name="realm_digest_emails_enabled"
+                  prefix="id_"
+                  is_checked=realm_digest_emails_enabled
+                  label=admin_settings_label.realm_digest_emails_enabled}}
                 {{/if}}
                 <div class="input-group">
                     <label for="realm_digest_weekday" class="dropdown-title">{{t "Day of the week to send digests" }}</label>
@@ -152,7 +152,7 @@
         <div id="org-user-defaults" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Default user settings" }}</h3>
-                {{ partial "settings/settings_save_discard_widget" "section_name" "user-defaults" }}
+                {{> settings_save_discard_widget section_name="user-defaults" }}
             </div>
             <p>{{t "Default settings for new users joining this organization." }}</p>
             <div class="inline-block organization-settings-parent">
@@ -164,18 +164,18 @@
                         {{/each}}
                     </select>
                 </div>
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_default_twenty_four_hour_time"
-                  "prefix" "id_"
-                  "is_checked" realm_default_twenty_four_hour_time
-                  "label" admin_settings_label.realm_default_twenty_four_hour_time}}
+                {{> settings_checkbox
+                  setting_name="realm_default_twenty_four_hour_time"
+                  prefix="id_"
+                  is_checked=realm_default_twenty_four_hour_time
+                  label=admin_settings_label.realm_default_twenty_four_hour_time}}
             </div>
         </div>
 
         <div id="org-other-settings" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Other settings" }}</h3>
-                {{ partial "settings/settings_save_discard_widget" "section_name" "other-settings" }}
+                {{> settings_save_discard_widget section_name="other-settings" }}
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
@@ -227,11 +227,11 @@
                     </div>
                 </div>
 
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_message_content_allowed_in_email_notifications"
-                  "prefix" "id_"
-                  "is_checked" realm_message_content_allowed_in_email_notifications
-                  "label" admin_settings_label.realm_message_content_allowed_in_email_notifications}}
+                {{> settings_checkbox
+                  setting_name="realm_message_content_allowed_in_email_notifications"
+                  prefix="id_"
+                  is_checked=realm_message_content_allowed_in_email_notifications
+                  label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
 
                 {{#if false}}
                 <div class="input-group">
@@ -245,26 +245,26 @@
                       value="{{ realm_message_retention_days }}"/>
                 </div>
                 {{/if}}
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_mandatory_topics"
-                  "prefix" "id_"
-                  "is_checked" realm_mandatory_topics
-                  "label" admin_settings_label.realm_mandatory_topics}}
+                {{> settings_checkbox
+                  setting_name="realm_mandatory_topics"
+                  prefix="id_"
+                  is_checked=realm_mandatory_topics
+                  label=admin_settings_label.realm_mandatory_topics}}
 
                 {{#if server_inline_image_preview}}
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_inline_image_preview"
-                  "prefix" "id_"
-                  "is_checked" realm_inline_image_preview
-                  "label" admin_settings_label.realm_inline_image_preview}}
+                {{> settings_checkbox
+                  setting_name="realm_inline_image_preview"
+                  prefix="id_"
+                  is_checked=realm_inline_image_preview
+                  label=admin_settings_label.realm_inline_image_preview}}
                 {{/if}}
 
                 {{#if server_inline_url_embed_preview}}
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_inline_url_embed_preview"
-                  "prefix" "id_"
-                  "is_checked" realm_inline_url_embed_preview
-                  "label" admin_settings_label.realm_inline_url_embed_preview}}
+                {{> settings_checkbox
+                  setting_name="realm_inline_url_embed_preview"
+                  prefix="id_"
+                  is_checked=realm_inline_url_embed_preview
+                  label=admin_settings_label.realm_inline_url_embed_preview}}
                 {{/if}}
             </div>
         </div>

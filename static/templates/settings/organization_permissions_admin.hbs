@@ -4,7 +4,7 @@
         <div id="org-org-join" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Joining the organization" }}</h3>
-                {{ partial "settings/settings_save_discard_widget" "section_name" "org-join" }}
+                {{> settings_save_discard_widget section_name="org-join" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
@@ -36,33 +36,33 @@
         <div id="org-user-identity" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "User identity" }}</h3>
-                {{ partial "settings/settings_save_discard_widget" "section_name" "user-identity" }}
+                {{> settings_save_discard_widget section_name="user-identity" }}
             </div>
             <div class="inline-block organization-permissions-parent">
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_name_changes_disabled"
-                  "prefix" "id_"
-                  "is_checked" realm_name_changes_disabled
-                  "label" admin_settings_label.realm_name_changes_disabled}}
+                {{> settings_checkbox
+                  setting_name="realm_name_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_name_changes_disabled
+                  label=admin_settings_label.realm_name_changes_disabled}}
 
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_email_changes_disabled"
-                  "prefix" "id_"
-                  "is_checked" realm_email_changes_disabled
-                  "label" admin_settings_label.realm_email_changes_disabled}}
+                {{> settings_checkbox
+                  setting_name="realm_email_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_email_changes_disabled
+                  label=admin_settings_label.realm_email_changes_disabled}}
 
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_avatar_changes_disabled"
-                  "prefix" "id_"
-                  "is_checked" realm_avatar_changes_disabled
-                  "label" admin_settings_label.realm_avatar_changes_disabled}}
+                {{> settings_checkbox
+                  setting_name="realm_avatar_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_avatar_changes_disabled
+                  label=admin_settings_label.realm_avatar_changes_disabled}}
             </div>
         </div>
 
         <div id="org-other-permissions" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Other permissions" }}</h3>
-                {{ partial "settings/settings_save_discard_widget" "section_name" "other-permissions" }}
+                {{> settings_save_discard_widget section_name="other-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">

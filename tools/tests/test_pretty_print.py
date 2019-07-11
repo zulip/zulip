@@ -209,7 +209,7 @@ BAD_HTML8 = """
     <div class="anything">{{{test}}}</div>
   {{/if}}
   {{#if foobar2}}
-  {{partial "teststuff"}}
+  {{> teststuff}}
   {{/if}}
   {{/with}}
 {{/each}}
@@ -222,7 +222,7 @@ GOOD_HTML8 = """
         <div class="anything">{{{test}}}</div>
         {{/if}}
         {{#if foobar2}}
-        {{partial "teststuff"}}
+        {{> teststuff}}
         {{/if}}
     {{/with}}
 {{/each}}
@@ -422,19 +422,19 @@ GOOD_HTML15 = """
 
 BAD_HTML16 = """
 <div>
-  {{partial "settings_checkbox"
-  "setting_name" "realm_name_in_notifications"
-  "is_checked" page_params.realm_name_in_notifications
-  "label" settings_label.realm_name_in_notifications}}
+  {{> settings_checkbox
+  setting_name="realm_name_in_notifications"
+  is_checked=page_params.realm_name_in_notifications
+  label=settings_label.realm_name_in_notifications}}
 </div>
 """
 
 GOOD_HTML16 = """
 <div>
-    {{partial "settings_checkbox"
-      "setting_name" "realm_name_in_notifications"
-      "is_checked" page_params.realm_name_in_notifications
-      "label" settings_label.realm_name_in_notifications}}
+    {{> settings_checkbox
+      setting_name="realm_name_in_notifications"
+      is_checked=page_params.realm_name_in_notifications
+      label=settings_label.realm_name_in_notifications}}
 </div>
 """
 

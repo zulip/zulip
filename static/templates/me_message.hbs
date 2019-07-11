@@ -1,6 +1,6 @@
 <span class="message_sender no-select">
     <span class="sender_info_hover">
-        {{partial "message_avatar"}}
+        {{> message_avatar}}
     </span>
 
     <span class="sender-status">
@@ -14,7 +14,7 @@
         </span>
 
         {{#if edited_status_msg}}
-        {{partial "edited_notice"}}
+        {{> edited_notice}}
         {{/if}}
     </span>
 </span>

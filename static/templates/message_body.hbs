@@ -3,7 +3,7 @@
     <span class="message_sender sender_info_hover no-select">
         {{#if include_sender}}
 
-            {{partial "message_avatar"}}
+            {{> message_avatar}}
 
             <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
             {{#if sender_is_bot}}
@@ -15,7 +15,7 @@
     {{/unless}}
 
     {{#if status_message}}
-    {{partial "me_message"}}
+    {{> me_message}}
     {{/if}}
 
     <span class="alert-msg pull-right"></span>
@@ -28,10 +28,10 @@
     </span>
 
     {{#if edited_alongside_sender}}
-    {{partial "edited_notice"}}
+    {{> edited_notice}}
     {{/if}}
 
-    {{partial "message_controls"}}
+    {{> message_controls}}
 
 </div>
 
@@ -40,7 +40,7 @@
 {{/unless}}
 
 {{#if edited_in_left_col}}
-{{partial "edited_notice"}}
+{{> edited_notice}}
 {{/if}}
 
 <div class="message_edit">
@@ -48,4 +48,4 @@
 </div>
 <div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
 <div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
-<div class="message_reactions">{{ partial "message_reactions" }}</div>
+<div class="message_reactions">{{> message_reactions }}</div>
