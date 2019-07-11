@@ -31,35 +31,29 @@ records in DNS.
 
 ## Local delivery setup
 
-In this discussion, we assume your Zulip server has a hostname of
-`hostname.example.com`, and EXTERNAL_HOST is `zulip.example.com`
-(for most installations `hostname` and `zulip` will be the same, but
-if you are using an [HTTP reverse proxy][reverse-proxy], they may not be).
+Zulip's puppet configuration provides everything needed run this
+integration; you just need to enable and configure it as follows.
 
-1. Using your DNS provider, configure a DNS MX (mail exchange) record.
-   The record should cause email for `zulip.example.com` to be
-   processed by `hostname.example.com`.  If you did this correctly,
-   the output of `dig -t MX zulip.example.com` should look like this:
+The main decision you need to make is what email domain you want to
+use for the gateway; for this discussion we'll use
+`emaildomain.example.com`.  The email addresses used by the gateway
+will look like `foo@emaildomain.example.com`, so we recommend using
+`EXTERNAL_HOST` here.
+
+We will use `hostname.example.com` as the hostname of the Zulip server
+(this will usually also be the same as `EXTERNAL_HOST`, unless you are
+using an [HTTP reverse proxy][reverse-proxy]).
+
+1. Using your DNS provider, create a DNS MX (mail exchange) record
+   configuring email for `emaildomain.example.com` to be processed by
+   `hostname.example.com`.  You can check your work using this command:
 
     ```
-    $ dig zulip.example.com -t MX | grep 'IN.*MX'
-    ;zulip.example.com.     IN  MX
-    zulip.example.com.      82  IN  MX  1  hostname.example.com.
+    $ dig +short emaildomain.example.com -t MX
+    1 hostname.example.com
     ```
 
 1.  Login to your Zulip server; the remaining steps all happen there.
-
-1.  If `hostname` is different from `zulip`, add a section to
-   `/etc/zulip/zulip.conf` on your Zulip server like this:
-
-    ```
-    [postfix]
-    mailname = zulip.example.com
-    ```
-
-    This tells postfix to expect to receive emails at addresses ending
-    with `@zulip.example.com`, overriding the default of
-    `@hostname.example.com`.
 
 1. Add `, zulip::postfix_localmail` to `puppet_classes` in
    `/etc/zulip/zulip.conf`.  A typical value after this change is:
@@ -67,12 +61,25 @@ if you are using an [HTTP reverse proxy][reverse-proxy], they may not be).
    puppet_classes = zulip::voyager, zulip::postfix_localmail
    ```
 
+1.  If `hostname.example.com` is different from
+   `emaildomain.example.com`, add a section to `/etc/zulip/zulip.conf`
+   on your Zulip server like this:
+
+    ```
+    [postfix]
+    mailname = emaildomain.example.com
+    ```
+
+    This tells postfix to expect to receive emails at addresses ending
+    with `@emaildomain.example.com`, overriding the default of
+    `@hostname.example.com`.
+
 1. Run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`
    (and answer `y`) to apply your new `/etc/zulip/zulip.conf`
    configuration to your Zulip server.
 
 1. Edit `/etc/zulip/settings.py`, and set `EMAIL_GATEWAY_PATTERN`
-   to `"%s@zulip.example.com"`.
+   to `"%s@emaildomain.example.com"`.
 
 1. Restart your Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
