@@ -33,7 +33,6 @@ set_global('$', () => {});
 set_global('resize', {});
 set_global('feature_flags', {});
 set_global('page_params', {});
-set_global('templates', {});
 
 const ignore_modules = [
     'activity',
@@ -73,7 +72,7 @@ _.each(ignore_modules, (mod) => {
 zrequire('util');
 
 util.is_mobile = () => false;
-templates.render = () => 'some-html';
+global.stub_templates(() => 'some-html');
 ui.get_scroll_element = element => element;
 
 zrequire('echo');

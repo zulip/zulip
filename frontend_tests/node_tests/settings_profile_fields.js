@@ -1,6 +1,5 @@
 set_global('page_params', {});
 set_global('$', global.make_zjquery());
-set_global('templates', {});
 set_global('loading', {});
 set_global('Sortable', {create: () => {}});
 
@@ -51,11 +50,11 @@ function test_populate(opts) {
     loading.destroy_indicator = () => {};
 
     const template_data = [];
-    templates.render = (fn, data) => {
+    global.stub_templates((fn, data) => {
         assert.equal(fn, 'admin_profile_field_list');
         template_data.push(data);
         return 'whatever';
-    };
+    });
 
     settings_profile_fields.do_populate_profile_fields(fields_data);
 

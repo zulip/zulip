@@ -5,7 +5,6 @@ set_global('i18n', global.stub_i18n);
 
 set_global('people', {});
 set_global('blueslip', global.make_zblueslip());
-set_global('templates', {});
 
 const noop = () => {};
 const return_false = () => false;
@@ -140,14 +139,14 @@ run_test('poll_data_holder my question', () => {
 
 run_test('activate another person poll', () => {
     people.is_my_user_id = return_false;
-    templates.render = (template_name) => {
+    global.stub_templates((template_name) => {
         if (template_name === 'widgets/poll_widget') {
             return 'widgets/poll_widget';
         }
         if (template_name === 'widgets/poll_widget_results') {
             return 'widgets/poll_widget_results';
         }
-    };
+    });
 
     const widget_elem = $('<div>').addClass('widget-content');
 
@@ -305,14 +304,14 @@ run_test('activate own poll', () => {
     $.clear_all_elements();
 
     people.is_my_user_id = return_true;
-    templates.render = (template_name) => {
+    global.stub_templates((template_name) => {
         if (template_name === 'widgets/poll_widget') {
             return 'widgets/poll_widget';
         }
         if (template_name === 'widgets/poll_widget_results') {
             return 'widgets/poll_widget_results';
         }
-    };
+    });
 
     const widget_elem = $('<div>').addClass('widget-content');
     let out_data;

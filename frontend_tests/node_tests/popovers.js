@@ -24,7 +24,6 @@ set_global('page_params', {
     custom_profile_fields: [],
 });
 set_global('rows', {});
-set_global('templates', {});
 
 
 set_global('message_viewport', {
@@ -142,7 +141,7 @@ run_test('sender_hover', () => {
         return {};
     };
 
-    templates.render = function (fn, opts) {
+    global.stub_templates(function (fn, opts) {
         switch (fn) {
         case 'no_arrow_popover':
             assert.deepEqual(opts, {
@@ -184,7 +183,7 @@ run_test('sender_hover', () => {
         default:
             throw Error('unrecognized template: ' + fn);
         }
-    };
+    });
 
     $('.user_popover_email').each = noop;
 
@@ -233,7 +232,7 @@ run_test('actions_popover', () => {
         };
     };
 
-    templates.render = function (fn, opts) {
+    global.stub_templates(function (fn, opts) {
         // TODO: Test all the properties of the popover
         switch (fn) {
         case 'actions_popover_content':
@@ -244,7 +243,7 @@ run_test('actions_popover', () => {
         default:
             throw Error('unrecognized template: ' + fn);
         }
-    };
+    });
 
     handler.call(target, e);
 });

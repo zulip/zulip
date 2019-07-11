@@ -34,14 +34,12 @@ const _page_params = {
 const _realm_icon = {};
 const _channel = {};
 
-const _templates = {
-    render: function (name, data) {
-        if (name === 'settings/admin_realm_domains_list') {
-            assert(data.realm_domain.domain);
-            return 'stub-domains-list';
-        }
-    },
-};
+global.stub_templates(function (name, data) {
+    if (name === 'settings/admin_realm_domains_list') {
+        assert(data.realm_domain.domain);
+        return 'stub-domains-list';
+    }
+});
 
 const _overlays = {};
 
@@ -68,7 +66,6 @@ set_global('overlays', _overlays);
 set_global('page_params', _page_params);
 set_global('realm_icon', _realm_icon);
 set_global('realm_logo', _realm_logo);
-set_global('templates', _templates);
 set_global('ui_report', _ui_report);
 
 zrequire('stream_data');

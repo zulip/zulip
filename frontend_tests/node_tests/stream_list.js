@@ -1,8 +1,6 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
-set_global('templates', {});
-
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
 zrequire('util');
@@ -74,11 +72,11 @@ run_test('create_sidebar_row', () => {
         devel_count.set_find_results('.value', devel_value);
         devel_count.set_parent(sidebar_row);
 
-        global.templates.render = function (template_name, data) {
+        global.stub_templates(function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
             assert.equal(data.uri, '#narrow/stream/100-devel');
             return '<devel sidebar row>';
-        };
+        });
 
         stream_list.create_sidebar_row(devel);
         assert.equal(devel_value.text(), '42');
@@ -93,11 +91,11 @@ run_test('create_sidebar_row', () => {
         social_count.set_find_results('.value', social_value);
         social_count.set_parent(sidebar_row);
 
-        global.templates.render = function (template_name, data) {
+        global.stub_templates(function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
             assert.equal(data.uri, '#narrow/stream/200-social');
             return '<social sidebar row>';
-        };
+        });
 
         stream_list.create_sidebar_row(social);
         assert.equal(social_value.text(), '42');
@@ -132,12 +130,12 @@ run_test('create_sidebar_row', () => {
 
     social.invite_only = true;
     social.color = '#222222';
-    global.templates.render = function (template_name, data) {
+    global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'stream_privacy');
         assert.equal(data.invite_only, true);
         assert.equal(data.dark_background, 'dark_background');
         return '<div>privacy-html';
-    };
+    });
     stream_list.redraw_stream_privacy(social);
     assert.equal(privacy_elem.html(), '<div>privacy-html');
 
@@ -693,7 +691,7 @@ run_test('rename_stream', () => {
     const li_stub = $.create('li stub');
     li_stub.length = 0;
 
-    templates.render = (name, payload) => {
+    global.stub_templates((name, payload) => {
         assert.equal(name, 'stream_sidebar_row');
         assert.deepEqual(payload, {
             name: 'Development',
@@ -707,7 +705,7 @@ run_test('rename_stream', () => {
             dark_background: payload.dark_background,
         });
         return {to_$: () => li_stub};
-    };
+    });
 
     var count_updated;
     stream_list.update_count_in_dom = (li) => {
@@ -740,9 +738,9 @@ run_test('refresh_pin', () => {
     const li_stub = $.create('li stub');
     li_stub.length = 0;
 
-    templates.render = () => {
+    global.stub_templates(() => {
         return {to_$: () => li_stub};
-    };
+    });
 
     stream_list.update_count_in_dom = noop;
     $('#stream_filters').append = noop;
@@ -771,10 +769,10 @@ run_test('create_initial_sidebar_rows', () => {
 
     stream_list.update_count_in_dom = noop;
 
-    global.templates.render = function (template_name, data) {
+    global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'stream_sidebar_row');
         return '<div>stub-html-' + data.name;
-    };
+    });
 
     // Test this code with stubs above...
     stream_list.create_initial_sidebar_rows();

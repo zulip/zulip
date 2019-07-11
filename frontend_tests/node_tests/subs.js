@@ -1,6 +1,5 @@
 global.stub_out_jquery();
 
-set_global('templates', {});
 set_global('ui', {
     get_content_element: element => element,
     get_scroll_element: element => element,
@@ -71,10 +70,10 @@ run_test('filter_table', () => {
 
     var populated_subs;
 
-    templates.render = (fn, data) => {
+    global.stub_templates((fn, data) => {
         assert.equal(fn, 'subscriptions');
         populated_subs = data.subscriptions;
-    };
+    });
 
     subs.populate_stream_settings_left_panel();
 

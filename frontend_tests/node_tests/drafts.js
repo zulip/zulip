@@ -44,7 +44,6 @@ set_global('people', {
         };
     },
 });
-set_global('templates', {});
 set_global('markdown', {
     apply_markdown: noop,
 });
@@ -318,12 +317,12 @@ run_test('format_drafts', () => {
         return stub_render_now(time, new XDate(1549958107000));
     };
 
-    global.templates.render = function (template_name, data) {
+    global.stub_templates(function (template_name, data) {
         assert.equal(template_name, 'draft_table_body');
         // Tests formatting and sorting of drafts
         assert.deepEqual(data.drafts, expected);
         return '<draft table stub>';
-    };
+    });
 
     drafts.open_modal = noop;
     drafts.set_initial_element = noop;

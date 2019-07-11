@@ -50,7 +50,6 @@ set_global('blueslip', global.make_zblueslip());
 set_global('page_params', {user_id: 5});
 
 set_global('channel', {});
-set_global('templates', {});
 set_global('emoji_codes', {
     name_to_codepoint: {
         alien: '1f47d',
@@ -325,7 +324,7 @@ run_test('add_and_remove_reaction', () => {
     };
 
     var template_called;
-    global.templates.render = function (template_name, data) {
+    global.stub_templates(function (template_name, data) {
         template_called = true;
         assert.equal(template_name, 'message_reaction');
         assert.equal(data.class, 'message_reaction reacted');
@@ -333,7 +332,7 @@ run_test('add_and_remove_reaction', () => {
         assert.equal(data.message_id, 1001);
         assert.equal(data.title, 'You (click to remove) reacted with :8ball:');
         return '<new reaction html>';
-    };
+    });
 
     var insert_called;
     $('<new reaction html>').insertBefore = function (element) {
@@ -434,12 +433,12 @@ run_test('add_and_remove_reaction', () => {
     };
 
     template_called = false;
-    global.templates.render = function (template_name, data) {
+    global.stub_templates(function (template_name, data) {
         assert.equal(data.class, 'message_reaction');
         assert(data.is_realm_emoji);
         template_called = true;
         return '<new reaction html>';
-    };
+    });
 
     message_reactions.find = function (selector) {
         assert.equal(selector, '.reaction_button');
