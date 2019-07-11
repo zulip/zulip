@@ -221,9 +221,9 @@ function handleStream(streamName) {
     if (stream === undefined) {
         return;
     }
-    var href = window.location.origin + '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
+    var href = hash_util.by_stream_uri(stream.stream_id);
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
-        'href="' + href + '"' +
+        'href="/' + href + '"' +
         '>' + '#' + escape(stream.name) + '</a>';
 }
 
@@ -232,11 +232,10 @@ function handleStreamTopic(streamName, topic) {
     if (stream === undefined || !topic) {
         return;
     }
-    var href = window.location.origin + '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
-    href += '/topic/' + hash_util.encodeHashComponent(topic);
+    var href = hash_util.by_stream_topic_uri(stream.stream_id, topic);
     var text = '#' + escape(stream.name) + ' > ' + escape(topic);
     return '<a class="stream-topic" data-stream-id="' + stream.stream_id + '" ' +
-        'href="' + href + '"' + '>' + text + '</a>';
+        'href="/' + href + '"' + '>' + text + '</a>';
 }
 
 function handleRealmFilter(pattern, matches) {
