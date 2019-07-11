@@ -155,6 +155,21 @@ class DocPageTest(ZulipTestCase):
         result = self.client_get('/static/favicon.ico')
         self.assertEqual(result.status_code, 200)
 
+    def test_portico_pages_open_graph_metadata(self) -> None:
+        # Why Zulip
+        url = '/why-zulip/'
+        title = '<meta property="og:title" content="Team chat with first-class threading">'
+        description = '<meta property="og:description" content="Most team chats are overwhelming'
+        self._test(url, title, doc_html_str=True)
+        self._test(url, description, doc_html_str=True)
+
+        # Features
+        url = '/features/'
+        title = '<meta property="og:title" content="Zulip Features">'
+        description = '<meta property="og:description" content="First class threading'
+        self._test(url, title, doc_html_str=True)
+        self._test(url, description, doc_html_str=True)
+
     @slow("Tests dozens of endpoints, including all our integrations docs")
     def test_integration_doc_endpoints(self) -> None:
         self._test('/integrations/',
