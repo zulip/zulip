@@ -104,6 +104,29 @@ function get_messages_success(data, opts) {
     resize.resize_bottom_whitespace();
 }
 
+// This function modifies the data.narrow filters to use user IDs
+// instead of emails string if it is supported. We currently don't set
+// or convert the emails string to user IDs directly into the Filter code
+// because doing so breaks the app in various modules that expect emails string.
+function handle_user_ids_supported_operators(data) {
+    var user_ids_supported_operators = ['pm-with'];
+
+    if (data.narrow === undefined) {
+        return data;
+    }
+
+    data.narrow = JSON.parse(data.narrow);
+    data.narrow = _.map(data.narrow, function (filter) {
+        if (user_ids_supported_operators.indexOf(filter.operator) !== -1) {
+            filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
+        }
+
+        return filter;
+    });
+
+    data.narrow = JSON.stringify(data.narrow);
+    return data;
+}
 
 exports.load_messages = function (opts) {
     var data = {anchor: opts.anchor,
@@ -139,6 +162,7 @@ exports.load_messages = function (opts) {
     }
 
     data.client_gravatar = true;
+    data = handle_user_ids_supported_operators(data);
 
     channel.get({
         url: '/json/messages',

@@ -510,6 +510,10 @@ def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
             return dict(operator=elem[0], operand=elem[1])
 
         if isinstance(elem, dict):
+            # Make sure to sync this list to frontend also when adding a new operator.
+            # that supports user IDs. Relevant code is located in static/js/message_fetch.js
+            # in handle_user_ids_supported_operators function where you will need to update
+            # the user_ids_supported_operator.
             user_ids_supported_operators = ['pm-with']
             if elem.get('operator', '') in user_ids_supported_operators:
                 operand_validator = check_string_or_int_list
