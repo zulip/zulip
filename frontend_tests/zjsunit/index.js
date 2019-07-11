@@ -56,11 +56,7 @@ var stub = require('./stub.js');
 global.with_stub = stub.with_stub;
 
 // Set up helpers to render templates.
-var render = require('./render.js');
-global.find_included_partials = render.find_included_partials;
-global.compile_template = render.compile_template;
-global.render_template = render.render_template;
-global.walk = render.walk;
+global.render_template = (name, args) => global.templates.render(name, args);
 
 // Set up fake jQuery
 global.make_zjquery = require('./zjquery.js').make_zjquery;
@@ -123,7 +119,6 @@ try {
         _.throttle = immediate;
         _.debounce = immediate;
 
-        render.init();
         run_one_module(file);
         namespace.restore();
     });

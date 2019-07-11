@@ -4,7 +4,6 @@ zrequire('input_pill');
 
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
-global.compile_template('input_pill');
 
 set_global('blueslip', global.make_zblueslip());
 set_global('document', {});
