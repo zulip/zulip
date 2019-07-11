@@ -590,6 +590,7 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
     num_messages = 0
     random_max = 1000000
     recipients = {}  # type: Dict[int, Tuple[int, int, Dict[str, Any]]]
+    messages = []
     while num_messages < tot_messages:
         saved_data = {}  # type: Dict[str, Any]
         message = Message()
@@ -638,19 +639,21 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
             saved_data['subject'] = message.subject
 
         message.pub_date = choose_pub_date(num_messages, tot_messages, options['threads'])
-
-        # We disable USING_RABBITMQ here, so that deferred work is
-        # executed in do_send_message_messages, rather than being
-        # queued.  This is important, because otherwise, if run-dev.py
-        # wasn't running when populate_db was run, a developer can end
-        # up with queued events that reference objects from a previous
-        # life of the database, which naturally throws exceptions.
-        settings.USING_RABBITMQ = False
-        do_send_messages([{'message': message}])
-        settings.USING_RABBITMQ = True
+        messages.append(message)
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
+
+    # We disable USING_RABBITMQ here, so that deferred work is
+    # executed in do_send_message_messages, rather than being
+    # queued.  This is important, because otherwise, if run-dev.py
+    # wasn't running when populate_db was run, a developer can end
+    # up with queued events that reference objects from a previous
+    # life of the database, which naturally throws exceptions.
+    settings.USING_RABBITMQ = False
+    do_send_messages([{'message': message} for message in messages])
+    settings.USING_RABBITMQ = True
+
     return tot_messages
 
 def choose_pub_date(num_messages: int, tot_messages: int, threads: int) -> datetime:
