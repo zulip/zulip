@@ -287,13 +287,6 @@ form#add_new_subscription {
     display: inline-block;
 }
 
-.hide-subscriber-list {
-    display: block;
-    padding: 5px;
-    text-align: center;
-    color: hsl(0, 0%, 67%);
-}
-
 .subscriber-list tbody:empty::after,
 .subscriber-list:empty::after {
     content: "No subscribers to this stream.";
@@ -306,6 +299,13 @@ form#add_new_subscription {
 .subscriber-list:empty {
     display: block;
     padding: 5px;
+}
+
+.hide-subscriber-list {
+    display: block;
+    padding: 5px;
+    text-align: center;
+    color: hsl(0, 0%, 67%);
 }
 
 .subscriber-name,
