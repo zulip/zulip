@@ -250,54 +250,54 @@ form#add_new_subscription {
         .form_inline input {
             vertical-align: top;
         }
-    }
-}
 
-.subscriber-list {
-    width: 100%;
-    margin: auto;
-    border-radius: 6px;
+        .subscriber-list {
+            width: 100%;
+            margin: auto;
+            border-radius: 6px;
 
-    tr {
-        border-bottom: 1px solid hsl(0, 0%, 93%);
+            tr {
+                border-bottom: 1px solid hsl(0, 0%, 93%);
 
-        &:last-of-type {
-            border-bottom: none;
+                &:last-of-type {
+                    border-bottom: none;
+                }
+
+                td {
+                    padding: 4px 0px;
+
+                    &:first-of-type {
+                        padding-left: 10px;
+                    }
+
+                    &:last-of-type {
+                        padding-right: 10px;
+                    }
+
+                    &.unsubscribe {
+                        text-align: right;
+                    }
+                }
+            }
+
+            .subscriber_list_remove {
+                display: inline-block;
+            }
+
+            tbody:empty::after,
+            &:empty::after {
+                content: "No subscribers to this stream.";
+                display: block;
+
+                text-align: center;
+                color: hsl(0, 0%, 67%);
+            }
+
+            &:empty {
+                display: block;
+                padding: 5px;
+            }
         }
-
-        td {
-            padding: 4px 0px;
-
-            &:first-of-type {
-                padding-left: 10px;
-            }
-
-            &:last-of-type {
-                padding-right: 10px;
-            }
-
-            &.unsubscribe {
-                text-align: right;
-            }
-        }
-    }
-
-    .subscriber_list_remove {
-        display: inline-block;
-    }
-
-    tbody:empty::after,
-    &:empty::after {
-        content: "No subscribers to this stream.";
-        display: block;
-
-        text-align: center;
-        color: hsl(0, 0%, 67%);
-    }
-
-    &:empty {
-        display: block;
-        padding: 5px;
     }
 }
 
