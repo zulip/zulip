@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Iterable, List, \
     Mapping, Optional, Sequence, Set, Tuple
 
 import ujson
+from datetime import datetime
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
@@ -636,24 +637,7 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
             message.subject = stream.name + str(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
-        # Spoofing time not supported with threading
-        if options['threads'] != 1:
-            message.pub_date = timezone_now()
-        else:
-            # Distrubutes 80% of messages starting from 5 days ago, over a period
-            # of 3 days. Then, distributes remaining messages over past 24 hours.
-            spoofed_date = timezone_now() - timezone_timedelta(days = 5)
-            if (num_messages < tot_messages * 0.8):
-                # Maximum of 3 days ahead, convert to minutes
-                time_ahead = 3 * 24 * 60
-                time_ahead //= int(tot_messages * 0.8)
-            else:
-                time_ahead = 24 * 60
-                time_ahead //= int(tot_messages * 0.2)
-
-            spoofed_minute = random.randint(time_ahead * num_messages, time_ahead * (num_messages + 1))
-            spoofed_date += timezone_timedelta(minutes = spoofed_minute)
-            message.pub_date = spoofed_date
+        message.pub_date = choose_pub_date(num_messages, tot_messages, options['threads'])
 
         # We disable USING_RABBITMQ here, so that deferred work is
         # executed in do_send_message_messages, rather than being
@@ -668,6 +652,35 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
+
+def choose_pub_date(num_messages: int, tot_messages: int, threads: int) -> datetime:
+    # Spoofing time not supported with threading
+    if threads != 1:
+        return timezone_now()
+
+    # Distrubutes 80% of messages starting from 5 days ago, over a period
+    # of 3 days. Then, distributes remaining messages over past 24 hours.
+    amount_in_first_chunk = int(tot_messages * 0.8)
+    amount_in_second_chunk = tot_messages - amount_in_first_chunk
+    if (num_messages < amount_in_first_chunk):
+        # Distribute starting from 5 days ago, over a period
+        # of 3 days:
+        spoofed_date = timezone_now() - timezone_timedelta(days = 5)
+        interval_size = 3 * 24 * 60 * 60 / amount_in_first_chunk
+        lower_bound = interval_size * num_messages
+        upper_bound = interval_size * (num_messages + 1)
+
+    else:
+        # We're in the last 20% of messages, distribute them over the last 24 hours:
+        spoofed_date = timezone_now() - timezone_timedelta(days = 1)
+        interval_size = 24 * 60 * 60 / amount_in_second_chunk
+        lower_bound = interval_size * (num_messages - amount_in_first_chunk)
+        upper_bound = interval_size * (num_messages - amount_in_first_chunk + 1)
+
+    offset_seconds = random.uniform(lower_bound, upper_bound)
+    spoofed_date += timezone_timedelta(seconds=offset_seconds)
+
+    return spoofed_date
 
 def create_user_presences(user_profiles: Iterable[UserProfile]) -> None:
     for user in user_profiles:
