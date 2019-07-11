@@ -853,3 +853,29 @@ run_test('initialize', () => {
     assert.equal(global.page_params.cross_realm_bots, undefined);
     assert.equal(global.page_params.realm_non_active_users, undefined);
 });
+
+run_test('emails_strings_to_user_ids_array', function () {
+    const steven = {
+        email: 'steven@example.com',
+        user_id: 7,
+        full_name: 'Steven',
+    };
+
+    const maria = {
+        email: 'maria@example.com',
+        user_id: 728,
+        full_name: 'Maria',
+    };
+
+    people.add(steven);
+    people.add(maria);
+
+    let user_ids = people.emails_strings_to_user_ids_array(`${steven.email},${maria.email}`);
+    assert.deepEqual(user_ids, [steven.user_id, maria.user_id]);
+
+    blueslip.set_test_data('warn', 'Unknown emails: dummyuser@example.com');
+    user_ids = people.emails_strings_to_user_ids_array('dummyuser@example.com');
+    assert.equal(user_ids, undefined);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
+});

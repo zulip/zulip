@@ -188,6 +188,16 @@ exports.user_ids_string_to_ids_array = function (user_ids_string) {
     return ids;
 };
 
+exports.emails_strings_to_user_ids_array = function (emails_string) {
+    var user_ids_string = exports.emails_strings_to_user_ids_string(emails_string);
+    if (user_ids_string === undefined) {
+        return;
+    }
+
+    var user_ids_array = exports.user_ids_string_to_ids_array(user_ids_string);
+    return user_ids_array;
+};
+
 exports.reply_to_to_user_ids_string = function (emails_string) {
     // This is basically emails_strings_to_user_ids_string
     // without blueslip warnings, since it can be called with

@@ -12,6 +12,7 @@ zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('message_list');
 zrequire('util');
+zrequire('people');
 
 set_global('page_params', {
     have_initial_messages: true,
@@ -36,6 +37,13 @@ set_global('server_events', {});
 set_global('stream_list', {
     maybe_scroll_narrow_into_view: () => {},
 });
+
+var alice = {
+    email: 'alice@example.com',
+    user_id: 7,
+    full_name: 'Alice',
+};
+people.add(alice);
 
 muting.is_topic_muted = function () { return false; };
 resize.resize_bottom_whitespace = noop;
@@ -273,7 +281,7 @@ function simulate_narrow() {
 
     narrow_state.active = function () { return true; };
     narrow_state.public_operators = function () {
-        return 'operators-stub';
+        return [{ operator: 'pm-with', operand: alice.email }];
     };
 
     var msg_list = new message_list.MessageList({
@@ -321,7 +329,7 @@ run_test('loading_newer', () => {
                 anchor: '444',
                 num_before: 0,
                 num_after: 100,
-                narrow: '"operators-stub"',
+                narrow: `[{"operator":"pm-with","operand":[${alice.user_id}]}]`,
                 client_gravatar: true,
             },
             resp: {
