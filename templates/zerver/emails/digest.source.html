@@ -9,7 +9,6 @@
                     <div class='hot_convo_recipient_header'>{{ recipient_block.header.html|safe }}</div>
                     <div class='hot_convo_message_content'>
                         {% for sender_block in recipient_block.senders %}
-                            {% if sender_block.sender %} <div class="hot_convo_message_sender">{{ sender_block.sender }}</div>{% endif %}
                             {% for message_block in sender_block.content %}
                             <div class='hot_convo_message_content_block'>
                                 {{ message_block.html|safe }}

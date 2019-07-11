@@ -33,6 +33,7 @@ import re
 import subprocess
 from collections import defaultdict
 import pytz
+from bs4 import BeautifulSoup
 
 def relative_to_full_url(base_url: str, content: str) -> str:
     # Convert relative URLs to absolute URLs.
@@ -138,7 +139,18 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
         # with a simple hyperlink.
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
-    def build_message_payload(message: Message) -> Dict[str, str]:
+    def append_sender_to_message(message_plain: str, message_html: str, sender: str) -> Tuple[str, str]:
+        message_plain = "{}: {}".format(sender, message_plain)
+        message_soup = BeautifulSoup(message_html, "html.parser")
+        sender_name_soup = BeautifulSoup("<b>{}</b>: ".format(sender), "html.parser")
+        first_tag = message_soup.find()
+        if first_tag.name == "p":
+            first_tag.insert(0, sender_name_soup)
+        else:
+            message_soup.insert(0, sender_name_soup)
+        return message_plain, str(message_soup)
+
+    def build_message_payload(message: Message, sender: Optional[str]=None) -> Dict[str, str]:
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         # There's a small chance of colliding with non-Zulip URLs containing
@@ -154,13 +166,14 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
         html = message.rendered_content
         html = relative_to_full_url(user_profile.realm.uri, html)
         html = fix_emojis(html, user_profile.realm.uri, user_profile.emojiset)
-
+        if sender:
+            plain, html = append_sender_to_message(plain, html, sender)
         return {'plain': plain, 'html': html}
 
     def build_sender_payload(message: Message) -> Dict[str, Any]:
         sender = sender_string(message)
         return {'sender': sender,
-                'content': [build_message_payload(message)]}
+                'content': [build_message_payload(message, sender)]}
 
     def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:

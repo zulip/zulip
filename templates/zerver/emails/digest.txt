@@ -1,7 +1,6 @@
 {% if hot_conversations %}
 {% for convo in hot_conversations %}{% for recipient_block in convo.first_few_messages %}{{ recipient_block.header.plain }}
-{% for sender_block in recipient_block.senders %}{% if sender_block.sender %}{{ sender_block.sender }}
-{% endif %}
+{% for sender_block in recipient_block.senders %}
 {% for message_block in sender_block.content %}{{ message_block.plain }}
 {% endfor %}{% endfor %}
 {% if convo.count > 0 %}+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.{% endif %}{% endfor %}{% endfor %}{% endif %}
