@@ -9,14 +9,30 @@ module.exports.make_handlebars = () => {
     const Handlebars = require("handlebars/dist/cjs/handlebars.js");
     const hb = Handlebars.create();
 
-    const compiled = new Map();
-
-    render = (filename, ...args) => {
-        if (!compiled.has(filename)) {
-            compiled.set(filename, hb.compile(fs.readFileSync(filename, "utf-8")));
+    const compiled = new Set();
+    const compileFile = filename => {
+        const name = "$" + path.relative(templates_path, filename);
+        if (!compiled.has(name)) {
+            compiled.add(name);
+            hb.registerPartial(name, hb.compile(fs.readFileSync(filename, "utf-8"), { zjsFilename: filename }));
         }
-        return compiled.get(filename)(...args);
+        return name;
     };
+
+    class ZJavaScriptCompiler extends hb.JavaScriptCompiler {
+        nameLookup(parent, name, type) {
+            // Auto-register partials with relative paths, like handlebars-loader.
+            if (type === "partial" && name !== "@partial-block") {
+                name = compileFile(path.resolve(path.dirname(this.options.zjsFilename), name + ".hbs"));
+            }
+            return super.nameLookup(parent, name, type);
+        }
+    }
+
+    ZJavaScriptCompiler.prototype.compiler = ZJavaScriptCompiler;
+    hb.JavaScriptCompiler = ZJavaScriptCompiler;
+
+    render = (filename, ...args) => hb.partials[compileFile(filename)](...args);
 
     return hb;
 };
