@@ -61,7 +61,7 @@ def tokenize(text):
         return looking_at("{#")
 
     def looking_at_handlebarpartial() -> bool:
-        return looking_at("{{partial")
+        return looking_at("{{>")
 
     def looking_at_html_start():
         # type: () -> bool

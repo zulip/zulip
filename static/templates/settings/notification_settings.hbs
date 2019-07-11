@@ -8,12 +8,12 @@
             <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
 
             {{#each notification_settings.stream_notification_settings}}
-            {{partial "settings/settings_checkbox"
-              "setting_name" this
-              "is_checked" (lookup ../page_params this)
-              "label" (lookup ../settings_label this)
-              "realm_push_notifications_enabled" (lookup ../page_params.realm_push_notifications_enabled)
-              "push_notifications_tooltip" (lookup ../push_notification_tooltip this)}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../page_params this)
+              label=(lookup ../settings_label this)
+              realm_push_notifications_enabled=(lookup ../page_params.realm_push_notifications_enabled)
+              push_notifications_tooltip=(lookup ../push_notification_tooltip this)}}
             {{/each}}
 
             <p class="notification-settings-note">
@@ -26,12 +26,12 @@
             <div class="alert-notification" id="pm-mention-notify-settings-status"></div>
 
             {{#each notification_settings.pm_mention_notification_settings}}
-            {{partial "settings/settings_checkbox"
-              "setting_name" this
-              "is_checked" (lookup ../page_params this)
-              "label" (lookup ../settings_label this)
-              "realm_push_notifications_enabled" (lookup ../page_params.realm_push_notifications_enabled)
-              "push_notifications_tooltip" (lookup ../push_notification_tooltip this)}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../page_params this)
+              label=(lookup ../settings_label this)
+              realm_push_notifications_enabled=(lookup ../page_params.realm_push_notifications_enabled)
+              push_notifications_tooltip=(lookup ../push_notification_tooltip this)}}
             {{/each}}
         </div>
 
@@ -43,10 +43,10 @@
             <h5>{{t "Desktop" }}</h5>
 
             {{#each notification_settings.desktop_notification_settings}}
-            {{partial "settings/settings_checkbox"
-              "setting_name" this
-              "is_checked" (lookup ../page_params this)
-              "label" (lookup ../settings_label this)}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../page_params this)
+              label=(lookup ../settings_label this)}}
             {{/each}}
 
             <label for="notification_sound">
@@ -70,21 +70,21 @@
             <h5>{{t "Mobile" }}</h5>
 
             {{#each notification_settings.mobile_notification_settings}}
-            {{partial "settings/settings_checkbox"
-              "setting_name" this
-              "is_checked" (lookup ../page_params this)
-              "label" (lookup ../settings_label this)
-              "realm_push_notifications_enabled" (lookup ../page_params.realm_push_notifications_enabled)
-              "push_notifications_tooltip" (lookup ../push_notification_tooltip this)}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../page_params this)
+              label=(lookup ../settings_label this)
+              realm_push_notifications_enabled=(lookup ../page_params.realm_push_notifications_enabled)
+              push_notifications_tooltip=(lookup ../push_notification_tooltip this)}}
             {{/each}}
 
             <h5>{{t "Email" }}</h5>
 
             {{#each notification_settings.email_notification_settings}}
-            {{partial "settings/settings_checkbox"
-              "setting_name" this
-              "is_checked" (lookup ../page_params this)
-              "label" (lookup ../settings_label this)}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../page_params this)
+              label=(lookup ../settings_label this)}}
             {{/each}}
 
         </div>

@@ -9,7 +9,7 @@
                         <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                     </a>
                 </h3>
-                {{ partial "settings/settings_save_discard_widget" "section_name" "org-profile" }}
+                {{> settings_save_discard_widget section_name="org-profile" }}
             </div>
 
             <div class="organization-settings-parent">
@@ -116,7 +116,7 @@
                     {{t 'Deactivate organization' }}
                 </button>
             </div>
-            {{ partial "settings/deactivate_realm_modal"}}
+            {{> deactivate_realm_modal}}
         </div>
     </form>
 </div>
