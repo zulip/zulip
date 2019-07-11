@@ -120,7 +120,8 @@ IGNORED_PHRASES = [
     r"in 3 hours",
     # We should probably just delete this string from translations
     r'activation key',
-    # this is used as a topic
+    # these are used as topics
+    r'^new streams$',
     r'^stream events$',
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
