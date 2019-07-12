@@ -37,6 +37,17 @@ exports.demote_inactive_streams_values = {
     },
 };
 
+exports.timeformats = {
+    twelve_hour_format: {
+        label: false,
+        description: i18n.t("12-hour clock (5:00 PM)"),
+    },
+    twenty_four_hour_format: {
+        label: true,
+        description: i18n.t("24-hour clock (17:00)"),
+    },
+};
+
 exports.all_display_settings = {
     settings: {
         user_display_settings: [
@@ -61,6 +72,8 @@ exports.set_up = function () {
     $("#user_timezone").val(page_params.timezone);
 
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
+
+    $("#timeformat").val(page_params.twenty_four_hour_time.toString());
 
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
@@ -116,8 +129,8 @@ exports.set_up = function () {
         window.location.reload();
     });
 
-    $("#twenty_four_hour_time").change(function () {
-        var data = {twenty_four_hour_time: JSON.stringify(this.checked)};
+    $("#timeformat").change(function () {
+        var data = { twenty_four_hour_time: this.value};
         change_display_setting(data, '#time-settings-status');
     });
 

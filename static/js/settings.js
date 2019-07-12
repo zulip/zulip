@@ -113,7 +113,6 @@ function setup_settings_label() {
         left_side_userlist: i18n.t("User list on left sidebar in narrow windows"),
         night_mode: i18n.t("Night mode"),
         starred_message_counts: i18n.t("Show counts for starred messages"),
-        twenty_four_hour_time: i18n.t("24-hour time (17:00 instead of 5:00 PM)"),
         translate_emoticons: i18n.t("Convert emoticons before sending (<code>:)</code> becomes 😃)"),
     };
 }
@@ -136,6 +135,7 @@ exports.build_page = function () {
         push_notification_tooltip:
             settings_notifications.all_notifications.push_notification_tooltip,
         display_settings: settings_display.all_display_settings,
+        timeformats: settings_display.timeformats,
     });
 
     $(".settings-box").html(rendered_settings_tab);

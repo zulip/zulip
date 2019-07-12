@@ -49,10 +49,14 @@
             <h3 class="inline-block">{{t "Time settings" }}</h3>
             <div class="alert-notification" id="time-settings-status"></div>
 
-            {{partial "settings/settings_checkbox"
-              "setting_name" "twenty_four_hour_time"
-              "is_checked" page_params.twenty_four_hour_time
-              "label" settings_label.twenty_four_hour_time}}
+            <div class="input-group">
+                <label for="timeformat" class="dropdown-title">{{t "Time format" }}</label>
+                <select name="timeformat" id="timeformat">
+                    {{#each timeformats}}
+                    <option value='{{ this.label }}'>{{ this.description }}</option>
+                    {{/each}}
+                </select>
+            </div>
 
             <div class="input-group">
                 <label for="timezone" class="dropdown-title">{{t "Time zone" }}</label>
