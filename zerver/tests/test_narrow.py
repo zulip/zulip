@@ -1426,11 +1426,13 @@ class GetOldMessagesTest(ZulipTestCase):
         self.send_personal_message(self.example_email("othello"), self.example_email("hamlet"))
         self.send_stream_message(self.example_email("iago"), "Scotland")
 
-        narrow = [dict(operator='sender', operand=self.example_email("othello"))]
-        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+        test_operands = [self.example_email("othello"), self.example_user("othello").id]
+        for operand in test_operands:
+            narrow = [dict(operator='sender', operand=operand)]
+            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
-        for message in result["messages"]:
-            self.assertEqual(message["sender_email"], self.example_email("othello"))
+            for message in result["messages"]:
+                self.assertEqual(message["sender_email"], self.example_email("othello"))
 
     def _update_tsvector_index(self) -> None:
         # We use brute force here and update our text search index

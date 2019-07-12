@@ -45,12 +45,13 @@ from zerver.lib.topic import (
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
-    check_list, check_int, check_dict, check_string, check_bool, check_string_or_int_list
+    check_list, check_int, check_dict, check_string, check_bool, \
+    check_string_or_int_list, check_string_or_int
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
     get_stream, email_to_domain, get_realm, get_active_streams, \
-    get_user_including_cross_realm, get_stream_recipient
+    get_user_including_cross_realm, get_user_by_id_in_realm_including_cross_realm, get_stream_recipient
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -282,11 +283,14 @@ class NarrowBuilder:
         cond = topic_match_sa(operand)
         return query.where(maybe_negate(cond))
 
-    def by_sender(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_sender(self, query: Query, operand: Union[str, int], maybe_negate: ConditionTransform) -> Query:
         try:
-            sender = get_user_including_cross_realm(operand, self.user_realm)
+            if isinstance(operand, str):
+                sender = get_user_including_cross_realm(operand, self.user_realm)
+            else:
+                sender = get_user_by_id_in_realm_including_cross_realm(operand, self.user_realm)
         except UserProfile.DoesNotExist:
-            raise BadNarrowOperator('unknown user ' + operand)
+            raise BadNarrowOperator('unknown user ' + str(operand))
 
         cond = column("sender_id") == literal(sender.id)
         return query.where(maybe_negate(cond))
@@ -513,9 +517,14 @@ def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
             # Make sure to sync this list to frontend also when adding a new operator.
             # that supports user IDs. Relevant code is located in static/js/message_fetch.js
             # in handle_user_ids_supported_operators function where you will need to update
-            # the user_ids_supported_operator.
+            # user_id_supported_operator, or user_ids_supported_operator array.
+            user_id_supported_operator = ['sender']
             user_ids_supported_operators = ['pm-with']
-            if elem.get('operator', '') in user_ids_supported_operators:
+
+            operator = elem.get('operator', '')
+            if operator in user_id_supported_operator:
+                operand_validator = check_string_or_int
+            elif operator in user_ids_supported_operators:
                 operand_validator = check_string_or_int_list
             else:
                 operand_validator = check_string
