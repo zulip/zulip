@@ -4,7 +4,7 @@ set_global('md5', function (s) {
     return 'md5-' + s;
 });
 
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('recent_senders');
 zrequire('pm_conversations');
 zrequire('people');

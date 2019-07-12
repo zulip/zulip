@@ -2,7 +2,7 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 zrequire('input_pill');
 
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 
 set_global('blueslip', global.make_zblueslip());

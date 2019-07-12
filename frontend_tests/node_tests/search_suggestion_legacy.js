@@ -3,7 +3,7 @@ set_global('page_params', {
 });
 zrequire('util');
 zrequire('typeahead_helper');
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
 zrequire('narrow_state');
 zrequire('stream_data');

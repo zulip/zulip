@@ -21,7 +21,7 @@ zrequire('user_status');
 zrequire('presence');
 zrequire('buddy_data');
 zrequire('hash_util');
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('people');
 zrequire('pm_conversations');
 zrequire('pm_list');

@@ -67,7 +67,7 @@ zrequire('compose_ui');
 zrequire('util');
 zrequire('rtl');
 zrequire('common');
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('stream_data');
 zrequire('compose_state');
 zrequire('people');

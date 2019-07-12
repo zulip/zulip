@@ -2,7 +2,7 @@ zrequire('search_pill');
 zrequire('util');
 zrequire('input_pill');
 zrequire('Filter', 'js/filter');
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 
 var is_starred_item = {
     display_value: 'is:starred',

@@ -1,4 +1,4 @@
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 zrequire('i18n', 'i18next');
 

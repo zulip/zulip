@@ -2,7 +2,7 @@ zrequire('util');
 zrequire('unread');
 zrequire('stream_data');
 zrequire('people');
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
 
 set_global('message_store', {});
