@@ -91,6 +91,12 @@ class Command(BaseCommand):
                             default=500,
                             help='The number of messages to create.')
 
+        parser.add_argument('-b', '--batch-size',
+                            dest='batch_size',
+                            type=int,
+                            default=1000,
+                            help='How many messages to process in a single batch')
+
         parser.add_argument('--extra-users',
                             dest='extra_users',
                             type=int,
@@ -587,6 +593,7 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
         huddle_members[h] = [s.user_profile.id for s in
                              Subscription.objects.filter(recipient_id=h)]
 
+    message_batch_size = options['batch_size']
     num_messages = 0
     random_max = 1000000
     recipients = {}  # type: Dict[int, Tuple[int, int, Dict[str, Any]]]
@@ -644,15 +651,21 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
 
-    # We disable USING_RABBITMQ here, so that deferred work is
-    # executed in do_send_message_messages, rather than being
-    # queued.  This is important, because otherwise, if run-dev.py
-    # wasn't running when populate_db was run, a developer can end
-    # up with queued events that reference objects from a previous
-    # life of the database, which naturally throws exceptions.
-    settings.USING_RABBITMQ = False
-    do_send_messages([{'message': message} for message in messages])
-    settings.USING_RABBITMQ = True
+        if (num_messages % message_batch_size) == 0 or (num_messages == tot_messages):
+            # Send the batch:
+
+            # We disable USING_RABBITMQ here, so that deferred work is
+            # executed in do_send_message_messages, rather than being
+            # queued.  This is important, because otherwise, if run-dev.py
+            # wasn't running when populate_db was run, a developer can end
+            # up with queued events that reference objects from a previous
+            # life of the database, which naturally throws exceptions.
+            settings.USING_RABBITMQ = False
+            do_send_messages([{'message': message} for message in messages])
+            settings.USING_RABBITMQ = True
+
+            # Empty the list:
+            messages.clear()
 
     return tot_messages
 
