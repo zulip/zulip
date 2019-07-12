@@ -793,6 +793,9 @@ exports.build_page = function () {
         } else if (subsection === 'auth_settings') {
             data = {};
             data.authentication_methods = JSON.stringify(get_auth_method_table_data());
+        } else if (subsection === 'user_defaults') {
+            var timeformat_value = $('#id_realm_default_twenty_four_hour_time').val();
+            data.default_twenty_four_hour_time = timeformat_value;
         }
         return data;
     }

@@ -164,11 +164,14 @@
                         {{/each}}
                     </select>
                 </div>
-                {{partial "settings/settings_checkbox"
-                  "setting_name" "realm_default_twenty_four_hour_time"
-                  "prefix" "id_"
-                  "is_checked" realm_default_twenty_four_hour_time
-                  "label" admin_settings_label.realm_default_twenty_four_hour_time}}
+                <div class="input-group">
+                    <label for="realm_default_timeformat" class="dropdown-title">{{t "Default time format" }}:</label>
+                    <select name="realm_default_timeformat" class="setting-widget prop-element" id="id_realm_default_twenty_four_hour_time">
+                        {{#each timeformats}}
+                        <option value='{{this.label}}'>{{this.description}}</option>
+                        {{/each}}
+                    </select>
+                </div>
             </div>
         </div>
 
