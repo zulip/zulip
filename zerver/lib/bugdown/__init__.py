@@ -1,7 +1,7 @@
 # Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
 from typing import (Any, Callable, Dict, Iterable, List, NamedTuple,
-                    Optional, Set, Tuple, TypeVar, Union, cast)
+                    Optional, Set, Tuple, TypeVar, Union)
 from mypy_extensions import TypedDict
 from typing.re import Match, Pattern
 
@@ -293,7 +293,7 @@ ResultWithFamily = NamedTuple('ResultWithFamily', [
 ])
 
 ElementPair = NamedTuple('ElementPair', [
-    ('parent', Optional[Element]),
+    ('parent', Optional[Any]),  # Recursive types are not fully supported yet
     ('value', Element)
 ])
 
@@ -307,11 +307,11 @@ def walk_tree_with_family(root: Element,
         currElementPair = queue.popleft()
         for child in currElementPair.value.getchildren():
             if child.getchildren():
-                queue.append(ElementPair(parent=currElementPair, value=child))  # type: ignore  # Lack of Deque support in typing module for Python 3.4.3
+                queue.append(ElementPair(parent=currElementPair, value=child))  # type: ignore  # Lack of Deque support in typing module for Python <=3.5.3
             result = processor(child)
             if result is not None:
                 if currElementPair.parent is not None:
-                    grandparent_element = cast(ElementPair, currElementPair.parent)
+                    grandparent_element = currElementPair.parent
                     grandparent = grandparent_element.value
                 else:
                     grandparent = None
