@@ -73,6 +73,8 @@ class RealmExportTest(ZulipTestCase):
 
         export_object = RealmAuditLog.objects.filter(
             event_type='realm_exported').first()
+        self.assertEqual(export_object.acting_user_id, admin.id)
+
         uri = getattr(export_object, 'extra_data')
         response = self.client_get(uri)
         self.assertEqual(response.status_code, 200)

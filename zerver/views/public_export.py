@@ -27,7 +27,8 @@ def public_only_realm_export(request: HttpRequest, user: UserProfile) -> HttpRes
 
     row = RealmAuditLog.objects.create(realm=realm,
                                        event_type=event_type,
-                                       event_time=event_time)
+                                       event_time=event_time,
+                                       acting_user=user)
     # Using the deferred_work queue processor to avoid
     # killing the process after 60s
     event = {'type': event_type,
