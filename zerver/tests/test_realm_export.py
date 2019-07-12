@@ -11,7 +11,6 @@ from zerver.models import RealmAuditLog
 from zerver.views.public_export import public_only_realm_export
 
 import os
-import re
 
 def create_tarball_path() -> str:
     tarball_path = os.path.join(settings.TEST_WORKER_DIR, 'test-export.tar.gz')
@@ -48,9 +47,9 @@ class RealmExportTest(ZulipTestCase):
 
         export_object = RealmAuditLog.objects.filter(
             event_type='realm_exported').first()
-        uri = getattr(export_object, 'extra_data')
-        self.assertIsNotNone(uri)
-        path_id = re.sub('https://test-avatar-bucket.s3.amazonaws.com:443/', '', uri)
+        path_id = getattr(export_object, 'extra_data')
+        self.assertIsNotNone(path_id)
+
         self.assertEqual(bucket.get_key(path_id).get_contents_as_string(),
                          b'zulip!')
 
@@ -75,10 +74,10 @@ class RealmExportTest(ZulipTestCase):
             event_type='realm_exported').first()
         self.assertEqual(export_object.acting_user_id, admin.id)
 
-        uri = getattr(export_object, 'extra_data')
-        response = self.client_get(uri)
+        path_id = getattr(export_object, 'extra_data')
+        response = self.client_get(path_id)
         self.assertEqual(response.status_code, 200)
-        self.assert_url_serves_contents_of_file(uri, b'zulip!')
+        self.assert_url_serves_contents_of_file(path_id, b'zulip!')
 
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user('iago')

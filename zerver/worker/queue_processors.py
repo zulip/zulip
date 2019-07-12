@@ -59,6 +59,7 @@ import datetime
 import logging
 import requests
 from io import StringIO
+import urllib
 
 logger = logging.getLogger(__name__)
 
@@ -618,9 +619,9 @@ class DeferredWorker(QueueProcessingWorker):
                                               delete_after_upload=True)
             assert public_url is not None
 
-            # TODO: This enables support for delete after access, and needs to be tested.
+            # Store the relative URL of the export.
             export_event = RealmAuditLog.objects.get(id=event['id'])
-            export_event.extra_data = public_url
+            export_event.extra_data = urllib.parse.urlparse(public_url).path
             export_event.save(update_fields=['extra_data'])
 
             # Send a private message notification letting the user who
