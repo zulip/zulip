@@ -68,6 +68,10 @@ global.make_zblueslip = require('./zblueslip.js').make_zblueslip;
 global.stub_i18n = require('./i18n.js');
 
 // Set up Handlebars
+global.make_handlebars = () => {
+    zrequire('Handlebars', 'handlebars');
+    return global.Handlebars;
+};
 global.stub_templates = stub => {
     set_global('templates', {});
     templates.render = stub;

@@ -5,7 +5,7 @@ zrequire('localstorage');
 zrequire('drafts');
 zrequire('XDate', 'xdate');
 zrequire('timerender');
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('util');
 zrequire('stream_color');
 zrequire('colorspace');

@@ -19,7 +19,7 @@ set_global('i18n', global.stub_i18n);
 
 zrequire('bot_data');
 zrequire('settings_bots');
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('people');
 zrequire('templates');
 

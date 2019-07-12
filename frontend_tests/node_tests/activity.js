@@ -79,7 +79,7 @@ set_global('stream_popover', _stream_popover);
 set_global('ui', _ui);
 
 zrequire('compose_fade');
-zrequire('Handlebars', 'handlebars');
+set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 zrequire('unread');
 zrequire('hash_util');
