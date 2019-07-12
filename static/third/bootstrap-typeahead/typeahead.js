@@ -17,6 +17,18 @@
  * limitations under the License.
  * ============================================================ */
 
+/* =============================================================
+ * Zulip's custom changes
+ *
+ * 1. Automated selection:
+ *
+ *   This adds support for automatically selecting a typeahead (on certain
+ *   completions or queries). If `this.automated` returns true, we do not
+ *   render the typeahead and directly trigger selection of the current
+ *   choice.
+ *
+ *   Our custom changes include all mentions of this.automated.
+ * ============================================================ */
 
 !function($){
 
@@ -38,6 +50,7 @@
     this.shown = false
     this.dropup = this.options.dropup
     this.fixed = this.options.fixed || false;
+    this.automated = this.options.automated || this.automated;
 
     if (this.fixed) {
       this.$menu.css('position', 'fixed');
@@ -68,6 +81,10 @@
   , updater: function (item) {
       return item
     }
+
+  , automated: function() {
+    return false;
+  }
 
   , show: function () {
       var pos;
@@ -136,7 +153,11 @@
       if (!items.length) {
         return this.shown ? this.hide() : this
       }
-
+      if (this.automated()) {
+        this.select();
+        this.lookup();
+        return this;
+      }
       return this.render(items.slice(0, this.options.items)).show()
     }
 
