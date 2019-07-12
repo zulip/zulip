@@ -337,3 +337,9 @@ def check_string_or_int_list(var_name: str, val: object) -> Optional[str]:
         return _('%s is not a string or an integer list') % (var_name,)
 
     return check_list(check_int)(var_name, val)
+
+def check_string_or_int(var_name: str, val: object) -> Optional[str]:
+    if isinstance(val, str) or isinstance(val, int):
+        return None
+
+    return _('%s is not a string or integer') % (var_name,)
