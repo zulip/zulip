@@ -54,6 +54,8 @@ var namespace = require('./namespace.js');
 global.set_global = namespace.set_global;
 global.patch_builtin = namespace.patch_builtin;
 global.zrequire = namespace.zrequire;
+global.zrequire_pure = namespace.zrequire_pure;
+global.zstub = namespace.zstub;
 global.stub_out_jquery = namespace.stub_out_jquery;
 global.with_overrides = namespace.with_overrides;
 
