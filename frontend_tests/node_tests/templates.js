@@ -442,7 +442,7 @@ run_test('settings/admin_auth_methods_list', () => {
 
     var method = $(html).find('tr.method_row').first().find('span.method');
     assert.equal(method.text(), 'Email');
-    assert.equal(method.is("checked"), false);
+    assert.equal(method.is(":checked"), false);
 });
 
 run_test('bookend', () => {
