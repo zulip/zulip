@@ -1,9 +1,16 @@
 require('ts-node').register({
     project: 'static/js/tsconfig.json',
+    // ts-node does not supply ts.Program to custom transformers like
+    // ts-loader. ttypescipt is a wrapper that supports this option.
+    // Tracking issue: https://github.com/TypeStrong/ts-node/issues/792
+    compiler: 'ttypescript',
     compilerOptions: {
         // We don't have webpack to handle es6 modules here so directly
         // transpile to CommonJS format.
         module: "commonjs",
+        plugins: [
+            { transform: 'ts-use-exports', type: "program" },
+        ],
     },
 });
 
