@@ -1,3 +1,15 @@
+/*
+This library implements two related, similar concepts:
+
+- condensing, i.e. cutting off messages taller than about a half
+  screen so that they aren't distractingly tall (and offering a button
+  to uncondense them).
+
+- Collapsing, i.e. taking a message and reducing its height to a
+  single line, with a button to see the content.
+
+*/
+
 var Dict = require('./dict').Dict;
 
 var condense = (function () {
@@ -99,24 +111,39 @@ exports.toggle_collapse = function (message) {
         return;
     }
 
+    // This function implements a multi-way toggle, to try to do what
+    // the user wants for messages:
+    //
+    // * If the message is currently showing any [More] link, either
+    //   because it was previously condensed or collapsed, fully display it.
+    // * If the message is fully visible, either because it's too short to
+    //   condense or because it's already uncondensed, collapse it
+
     var row = current_msg_list.get_row(message.id);
     if (!row) {
         return;
     }
-    var condensed = row.find(".could-be-condensed");
+
+    var content = row.find(".message_content");
+    var is_condensable = content.hasClass("could-be-condensed");
+    var is_condensed = content.hasClass("condensed");
     if (message.collapsed) {
-        message.condensed = true;
+        if (is_condensable) {
+            message.condensed = true;
+            content.addClass("condensed");
+            exports.show_message_expander(row);
+            row.find(".message_condenser").hide();
+        }
         condense.uncollapse(row);
-        condensed.addClass("condensed");
-        exports.show_message_expander(row);
-        row.find(".message_condenser").hide();
-    } else if (!message.collapsed && condensed.hasClass("condensed")) {
-        message.condensed = false;
-        condensed.removeClass("condensed");
-        exports.hide_message_expander(row);
-        row.find(".message_condenser").show();
-    } else if (!message.collapsed && !condensed.hasClass("condensed")) {
-        condense.collapse(row);
+    } else {
+        if (is_condensed) {
+            message.condensed = false;
+            content.removeClass("condensed");
+            exports.hide_message_expander(row);
+            row.find(".message_condenser").show();
+        } else {
+            condense.collapse(row);
+        }
     }
 };
 
