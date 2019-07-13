@@ -77,6 +77,7 @@
     "stylelint": "10.0.1",
     "svgo": "1.2.2",
     "swagger-parser": "6.0.5",
+    "ts-use-exports": "^1.1.2",
     "ttypescript": "^1.5.7",
     "vnu-jar": "^19.6.7",
     "webpack-dev-server": "3.5.1"
