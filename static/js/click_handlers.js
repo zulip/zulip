@@ -636,25 +636,21 @@ exports.initialize = function () {
         $("#nonexistent_stream_reply_error").stop(true).fadeOut(500);
     });
 
-    $(".compose_stream_button").on("click", () => {
-        popovers.hide_mobile_message_buttons_popover();
+    $("#compose_new_topic_button").click(() => {
+        popovers.hide_all();
         compose_actions.start("stream", {trigger: "new topic button"});
     });
-    $(".compose_private_button").on("click", () => {
-        popovers.hide_mobile_message_buttons_popover();
+
+    $("body").on("click", ".compose_stream_button", () => {
+        popovers.hide_compose_actions_popover();
+        compose_actions.start("stream", {trigger: "new topic button"});
+    });
+    $("body").on("click", ".compose_private_button", () => {
+        popovers.hide_compose_actions_popover();
         compose_actions.start("private");
     });
 
-    $("body").on("click", ".compose_mobile_stream_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("stream", {trigger: "new topic button"});
-    });
-    $("body").on("click", ".compose_mobile_private_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("private");
-    });
-
-    $(".compose_reply_button").on("click", () => {
+    $("#compose_reply_button").on("click", () => {
         compose_actions.respond_to_message({trigger: "reply button"});
     });
 
@@ -675,12 +671,6 @@ exports.initialize = function () {
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
         if ($(e.target).is("#emoji_map, img.emoji, .drag")) {
-            return;
-        }
-
-        // The mobile compose button has its own popover when clicked, so it already.
-        // hides other popovers.
-        if ($(e.target).is(".compose_mobile_button, .compose_mobile_button *")) {
             return;
         }
 
@@ -940,6 +930,12 @@ exports.initialize = function () {
         if ($(".modal.in").has(e.target).length === 0) {
             // Enable mouse events for the background as the modal closes
             $(".overlay.show").attr("style", null);
+        }
+
+        // Don't focus on the compose-textarea if a button in the
+        // compose actions popover is clicked.
+        if ($(e.target).parent("#compose_actions_popover")) {
+            return;
         }
 
         if (compose_state.composing()) {

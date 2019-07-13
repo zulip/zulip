@@ -5,8 +5,8 @@ const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDat
 const moment = require("moment");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
-const render_mobile_message_buttons_popover = require("../templates/mobile_message_buttons_popover.hbs");
-const render_mobile_message_buttons_popover_content = require("../templates/mobile_message_buttons_popover_content.hbs");
+const render_compose_actions_popover = require("../templates/compose_actions_popover.hbs");
+const render_compose_actions_popover_content = require("../templates/compose_actions_popover_content.hbs");
 const render_no_arrow_popover = require("../templates/no_arrow_popover.hbs");
 const render_remind_me_popover_content = require("../templates/remind_me_popover_content.hbs");
 const render_user_group_info_popover = require("../templates/user_group_info_popover.hbs");
@@ -21,7 +21,7 @@ const util = require("./util");
 let current_actions_popover_elem;
 let current_flatpickr_instance;
 let current_message_info_popover_elem;
-let current_mobile_message_buttons_popover_elem;
+let current_compose_actions_popover_elem;
 let userlist_placement = "right";
 
 let list_of_popovers = [];
@@ -279,37 +279,6 @@ function show_user_info_popover_for_message(element, user, message) {
     }
 }
 
-function show_mobile_message_buttons_popover(element) {
-    const last_popover_elem = current_mobile_message_buttons_popover_elem;
-    exports.hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
-        return;
-    }
-
-    const $element = $(element);
-    $element.popover({
-        placement: "left",
-        template: render_mobile_message_buttons_popover(),
-        content: render_mobile_message_buttons_popover_content({
-            is_in_private_narrow: narrow_state.narrowed_to_pms(),
-        }),
-        html: true,
-        trigger: "manual",
-    });
-    $element.popover("show");
-
-    current_mobile_message_buttons_popover_elem = $element;
-}
-
-exports.hide_mobile_message_buttons_popover = function () {
-    if (current_mobile_message_buttons_popover_elem) {
-        current_mobile_message_buttons_popover_elem.popover("destroy");
-        current_mobile_message_buttons_popover_elem = undefined;
-    }
-};
-
 exports.hide_user_profile = function () {
     $("#user-profile-modal").modal("hide");
 };
@@ -515,6 +484,47 @@ exports.toggle_actions_popover = function (element, id) {
     }
 };
 
+exports.toggle_compose_actions_popover = function (element) {
+    const last_popover_elem = current_compose_actions_popover_elem;
+    popovers.hide_all();
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    const filter = narrow_state.filter();
+    let text_stream;
+    let stream_name;
+
+    if (filter && filter.has_operator("stream")) {
+        // In stream narrows.
+        stream_name = filter.operands("stream")[0];
+        text_stream = i18n.t("New topic in stream");
+    } else {
+        // In other narrows.
+        text_stream = i18n.t("New stream message");
+    }
+
+    const elt = $(element);
+    if (elt.data("popover") === undefined) {
+        const args = {
+            stream_button_text: text_stream,
+            stream_name,
+        };
+
+        elt.popover({
+            placement: "left",
+            template: render_compose_actions_popover(),
+            content: render_compose_actions_popover_content(args),
+            html: true,
+            trigger: "manual",
+        });
+        elt.popover("show");
+        current_compose_actions_popover_elem = elt;
+    }
+};
+
 exports.render_actions_remind_popover = function (element, id) {
     exports.hide_all();
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
@@ -643,6 +653,17 @@ exports.hide_message_info_popover = function () {
     if (exports.message_info_popped()) {
         current_message_info_popover_elem.popover("destroy");
         current_message_info_popover_elem = undefined;
+    }
+};
+
+exports.compose_actions_popped = function () {
+    return current_compose_actions_popover_elem !== undefined;
+};
+
+exports.hide_compose_actions_popover = function () {
+    if (exports.compose_actions_popped()) {
+        current_compose_actions_popover_elem.popover("destroy");
+        current_compose_actions_popover_elem = undefined;
     }
 };
 
@@ -845,12 +866,6 @@ exports.register_click_handlers = function () {
 
     $("body").on("click", "#user-profile-modal #name #edit-button", () => {
         exports.hide_user_profile();
-    });
-
-    $("body").on("click", ".compose_mobile_button", function (e) {
-        show_mobile_message_buttons_popover(this);
-        e.stopPropagation();
-        e.preventDefault();
     });
 
     $("body").on("click", ".set_away_status", (e) => {
@@ -1093,6 +1108,12 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    $("#compose_buttons").on("click", "#compose_actions_dropdown", (e) => {
+        exports.toggle_compose_actions_popover(e.currentTarget);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     (function () {
         let last_scroll = 0;
 
@@ -1144,7 +1165,7 @@ exports.hide_all_except_sidebars = function () {
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
     exports.hide_user_sidebar_popover();
-    exports.hide_mobile_message_buttons_popover();
+    exports.hide_compose_actions_popover();
     exports.hide_user_profile();
 
     // look through all the popovers that have been added and removed.

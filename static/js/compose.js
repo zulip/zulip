@@ -138,32 +138,12 @@ exports.clear_preview_area = function () {
     $("#markdown_preview").show();
 };
 
-function update_stream_button(btn_text, title) {
-    $("#left_bar_compose_stream_button_big").text(btn_text);
-    $("#left_bar_compose_stream_button_big").prop("title", title);
-}
-
-function update_conversation_button(btn_text, title) {
-    $("#left_bar_compose_private_button_big").text(btn_text);
-    $("#left_bar_compose_private_button_big").prop("title", title);
-}
-
-exports.update_closed_compose_buttons_for_private = function () {
-    const text_stream = i18n.t("New stream message");
-    const title_stream = text_stream + " (c)";
-    const text_conversation = i18n.t("New private message");
-    const title_conversation = text_conversation + " (x)";
-    update_stream_button(text_stream, title_stream);
-    update_conversation_button(text_conversation, title_conversation);
+exports.show_new_topic_btn = function () {
+    $("#compose_new_topic_button").attr("hidden", false);
 };
 
-exports.update_closed_compose_buttons_for_stream = function () {
-    const text_stream = i18n.t("New topic");
-    const title_stream = text_stream + " (c)";
-    const text_conversation = i18n.t("New private message");
-    const title_conversation = text_conversation + " (x)";
-    update_stream_button(text_stream, title_stream);
-    update_conversation_button(text_conversation, title_conversation);
+exports.hide_new_topic_btn = function () {
+    $("#compose_new_topic_button").attr("hidden", true);
 };
 
 function update_fade() {

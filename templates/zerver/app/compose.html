@@ -15,33 +15,19 @@
                     <span class="alert-draft pull-left">{{ _('Saved as draft') }}</span>
                 </span>
                 <span class="new_message_button">
-                    <button type="button" class="button small rounded compose_mobile_button"
-                      id="left_bar_compose_mobile_button_big"
-                      title="{{ _('New message') }} (c)">
-                        <span>+</span>
+                    <button type="button" class="button small rounded" id="compose_new_topic_button"
+                      title="{{ _('New topic') }} (c)" hidden>
+                        <span class="compose_new_topic_button_label">{{ _('New topic') }}</span>
                     </button>
                 </span>
                 <span class="new_message_button">
-                    <button type="button" class="button small rounded compose_stream_button"
-                      id="left_bar_compose_stream_button_big"
-                      title="{{ _('New topic') }} (c)">
-                        <span class="compose_stream_button_label">{{ _('New topic') }}</span>
-                    </button>
-                </span>
-                {% if not embedded %}
-                <span class="new_message_button">
-                    <button type="button" class="button small rounded compose_private_button"
-                      id="left_bar_compose_private_button_big"
-                      title="{{ _('New private message') }} (x)">
-                        <span class="compose_private_button_label">{{ _('New private message') }}</span>
-                    </button>
-                </span>
-                {% endif %}
-                <span class="new_message_button">
-                    <button type="button" class="button small rounded compose_reply_button"
+                    <button type="button" class="button small rounded" id="compose_reply_button"
                       id="left_bar_compose_reply_button_big"
                       title="{{ _('Reply') }} (r)">
                         <span class="compose_reply_button_label">{{ _('Reply') }}</span>
+                    </button>{# -#}
+                    <button type="button" class="button small rounded" id="compose_actions_dropdown">
+                        <i class="fa fa-caret-down"></i>
                     </button>
                 </span>
             </div>

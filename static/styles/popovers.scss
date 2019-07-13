@@ -44,16 +44,6 @@
     z-index: 106;
 }
 
-.mobile-message-buttons-popover {
-    position: absolute;
-    top: auto !important;
-    right: 8px;
-    bottom: 48px;
-    left: auto !important;
-    width: 175px;
-    height: 65px;
-}
-
 .streams_popover {
     .topic-name {
         text-align: center;
@@ -110,6 +100,7 @@ ul {
     &.info_popover_actions i,
     &.actions_popover i,
     &.streams_popover i,
+    &#compose_actions_popover i,
     &.topics_popover i {
         display: inline-block;
         width: 14px;
@@ -438,4 +429,12 @@ ul {
     .inline_topic_edit {
         margin-left: 5px !important;
     }
+}
+
+#compose_actions_popover {
+    margin-top: -50px;
+    margin-left: 30px;
+    -webkit-box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.2);
+    -moz-box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.2);
 }

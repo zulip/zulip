@@ -9,16 +9,14 @@
             padding: 3px 10px;
         }
 
-        .compose_mobile_button {
-            span {
-                font-size: 1.2em !important;
-                font-weight: 400;
-                line-height: 1em;
-            }
+        #compose_reply_button {
+            border-radius: 4px 0px 0px 4px;
+            border-right: none;
+        }
 
-            @media (min-width: 551px) {
-                display: none;
-            }
+        #compose_actions_dropdown {
+            border-radius: 0px 4px 4px 0px;
+            padding: 3px 8px !important;
         }
 
         .drafts-link {
@@ -31,13 +29,6 @@
             padding: 3px 12px;
             font-weight: 400;
             display: none;
-        }
-
-        @media (max-width: 550px) {
-            .compose_stream_button,
-            .compose_private_button {
-                display: none;
-            }
         }
     }
 }
@@ -497,11 +488,6 @@ a#undo_markdown_preview {
     }
 }
 
-.compose_mobile_stream_button i,
-.compose_mobile_private_button i {
-    margin-right: 4px;
-}
-
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 1165px) {
     .compose-content {
@@ -517,12 +503,6 @@ a#undo_markdown_preview {
 }
 
 @media (max-width: 500px) {
-    .compose_stream_button,
-    .compose_private_button,
-    .compose_reply_button {
-        padding: 5px 10px 5px 10px;
-    }
-
     textarea.new_message_textarea {
         height: 30px !important;
         min-height: 30px !important;

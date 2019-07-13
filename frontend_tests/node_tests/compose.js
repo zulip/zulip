@@ -68,7 +68,6 @@ global.document.location.host = "foo.com";
 
 zrequire("zcommand");
 zrequire("compose_ui");
-const util = zrequire("util");
 zrequire("rtl");
 zrequire("common");
 zrequire("stream_data");
@@ -83,6 +82,7 @@ rewiremock.proxy(() => zrequire("compose"), {
         update_elements: () => {},
     },
 });
+zrequire("compose");
 zrequire("upload");
 zrequire("server_events_dispatch");
 
@@ -1739,18 +1739,6 @@ run_test("nonexistent_stream_reply_error", () => {
     compose.nonexistent_stream_reply_error();
     assert.equal($("#compose-reply-error-msg").html(), "There are no messages to reply to yet.");
     assert.deepEqual(actions, ["show", "hide"]);
-});
-
-run_test("narrow_button_titles", () => {
-    util.is_mobile = () => false;
-
-    compose.update_closed_compose_buttons_for_private();
-    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New stream message"));
-    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
-
-    compose.update_closed_compose_buttons_for_stream();
-    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
-    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
 });
 
 run_test("test_video_chat_button_toggle", () => {

@@ -79,6 +79,7 @@ function test_helper() {
         };
     }
 
+    stub("compose", "show_new_topic_btn");
     stub("compose_actions", "on_narrow");
     stub("hashchange", "save_narrow");
     stub("message_scroll", "hide_indicators");
@@ -93,8 +94,7 @@ function test_helper() {
     stub("typing_events", "render_notifications_for_narrow");
     stub("ui_util", "change_tab_to");
     stub("unread_ops", "process_visible");
-    stub("compose", "update_closed_compose_buttons_for_stream");
-    stub("compose", "update_closed_compose_buttons_for_private");
+    stub("notifications", "hide_history_limit_message");
 
     return {
         clear: () => {
@@ -205,7 +205,7 @@ run_test("basics", () => {
         "ui_util.change_tab_to",
         "unread_ops.process_visible",
         "hashchange.save_narrow",
-        "compose.update_closed_compose_buttons_for_stream",
+        "compose.show_new_topic_btn",
         "search.update_button_visibility",
         "compose_actions.on_narrow",
         "top_left_corner.handle_narrow_activated",
@@ -217,6 +217,7 @@ run_test("basics", () => {
     current_msg_list.selected_id = () => -1;
     current_msg_list.get_row = () => row;
     util.sorted_ids = () => [];
+    compose.hide_new_topic_btn = () => {};
 
     narrow.activate([{operator: "is", operand: "private"}], {
         then_select_id: selected_id,
