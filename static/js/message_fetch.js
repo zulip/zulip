@@ -110,6 +110,7 @@ function get_messages_success(data, opts) {
 // because doing so breaks the app in various modules that expect emails string.
 function handle_user_ids_supported_operators(data) {
     var user_ids_supported_operators = ['pm-with'];
+    var user_id_supported_operators = ['sender', 'group-pm-with'];
 
     if (data.narrow === undefined) {
         return data;
@@ -119,6 +120,13 @@ function handle_user_ids_supported_operators(data) {
     data.narrow = _.map(data.narrow, function (filter) {
         if (user_ids_supported_operators.indexOf(filter.operator) !== -1) {
             filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
+        }
+
+        if (user_id_supported_operators.indexOf(filter.operator) !== -1) {
+            var person = people.get_by_email(filter.operand);
+            if (person !== undefined) {
+                filter.operand = person.user_id;
+            }
         }
 
         return filter;
