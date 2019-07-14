@@ -1183,11 +1183,13 @@ class GetOldMessagesTest(ZulipTestCase):
         )
 
         self.login(me)
-        narrow = [dict(operator='group-pm-with', operand=self.example_email("cordelia"))]
-        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
-        for message in result["messages"]:
-            self.assertIn(message["id"], matching_message_ids)
-            self.assertNotIn(message["id"], non_matching_message_ids)
+        test_operands = [self.example_email("cordelia"), self.example_user("cordelia").id]
+        for operand in test_operands:
+            narrow = [dict(operator='group-pm-with', operand=operand)]
+            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+            for message in result["messages"]:
+                self.assertIn(message["id"], matching_message_ids)
+                self.assertNotIn(message["id"], non_matching_message_ids)
 
     def test_get_visible_messages_with_narrow_group_pm_with(self) -> None:
         me = self.example_email('hamlet')
