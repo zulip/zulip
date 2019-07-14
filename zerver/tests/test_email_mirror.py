@@ -76,19 +76,10 @@ class TestEncodeDecode(ZulipTestCase):
         self.assertEqual(token, stream.email_token)
 
         parts = email_address.split('@')
-        parts[0] += "+include-footer+show-sender+include-quotations"
+        # Use a mix of + and . as separators, to test that it works:
+        parts[0] += "+include-footer.show-sender+include-quotations"
         email_address_all_options = '@'.join(parts)
         token, options = decode_email_address(email_address_all_options)
-        self._assert_options(options, show_sender=True, include_footer=True, include_quotations=True)
-        self.assertEqual(token, stream.email_token)
-
-        email_address_dots = email_address.replace('+', '.')
-        token, options = decode_email_address(email_address_dots)
-        self._assert_options(options)
-        self.assertEqual(token, stream.email_token)
-
-        email_address_dots_all_options = email_address_all_options.replace('+', '.')
-        token, options = decode_email_address(email_address_dots_all_options)
         self._assert_options(options, show_sender=True, include_footer=True, include_quotations=True)
         self.assertEqual(token, stream.email_token)
 
