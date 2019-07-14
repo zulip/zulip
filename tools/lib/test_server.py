@@ -54,10 +54,11 @@ def test_server_running(force: bool=False, external_host: str='testserver',
     log = sys.stdout
     if log_file:
         if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:
-            log = open(log_file, 'a')
-            log.write('\n\n')
+            with open(log_file, 'a') as f:
+                f.write('\n\n')
         else:
-            log = open(log_file, 'w')
+            with open(log_file, 'w') as f:
+                f.close()
 
     set_up_django(external_host)
 

@@ -191,10 +191,9 @@ def pretty_print_html(html, num_spaces=4):
 
 def validate_indent_html(fn):
     # type: (str) -> int
-    file = open(fn)
-    html = file.read()
+    with open(fn, 'r') as f:
+        html = f.read()
     phtml = pretty_print_html(html)
-    file.close()
     if not html.split('\n') == phtml.split('\n'):
         print('Invalid Indentation detected in file: '
               '%s\nDiff for the file against expected indented file:' % (fn,), flush=True)

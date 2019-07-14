@@ -32,7 +32,8 @@ def report(state, data, last_check):
         data))
     exit(states[state])
 
-data = open(RESULTS_FILE).read().strip()
+with open(RESULTS_FILE, 'r') as f:
+    data = f.read().strip()
 if data.split("\n")[-1].strip() == "0":
     state = "OK"
 else:

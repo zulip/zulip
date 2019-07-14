@@ -490,7 +490,8 @@ class WorkerTest(ZulipTestCase):
                     "Problem handling data on queue unreliable_worker")
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
-        line = open(fn).readline().strip()
+        with open(fn, 'r') as f:
+            line = f.readline().strip()
         event = ujson.loads(line.split('\t')[1])
         self.assertEqual(event["type"], 'unexpected behaviour')
 

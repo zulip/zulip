@@ -800,12 +800,12 @@ def upload_file(client):
 
     # {code_example|start}
     # Upload a file
-    fp = open(path_to_file, 'rb')
-    result = client.call_endpoint(
-        'user_uploads',
-        method='POST',
-        files=[fp]
-    )
+    with open(path_to_file, 'rb') as fp:
+        result = client.call_endpoint(
+            'user_uploads',
+            method='POST',
+            files=[fp]
+        )
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/user_uploads', 'post', '200')
@@ -851,15 +851,15 @@ def upload_custom_emoji(client):
 
     # {code_example|start}
     # Upload a custom emoji; assume `emoji_path` is the path to your image.
-    fp = open(emoji_path, 'rb')
-    emoji_name = 'my_custom_emoji'
-    result = client.call_endpoint(
-        'realm/emoji/{}'.format(emoji_name),
-        method='POST',
-        files=[fp]
-    )
+    with open(emoji_path, 'rb') as fp:
+        emoji_name = 'my_custom_emoji'
+        result = client.call_endpoint(
+            'realm/emoji/{}'.format(emoji_name),
+            method='POST',
+            files=[fp]
+        )
     # {code_example|end}
-    fp.close()
+
     validate_against_openapi_schema(result,
                                     '/realm/emoji/{emoji_name}',
                                     'post', '200')

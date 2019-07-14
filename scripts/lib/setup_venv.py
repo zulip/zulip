@@ -260,16 +260,14 @@ def do_patch_activate_script(venv_path):
     # venv_path should be what we want to have in VIRTUAL_ENV after patching
     script_path = os.path.join(venv_path, "bin", "activate")
 
-    file_obj = open(script_path)
-    lines = file_obj.readlines()
+    with open(script_path, 'r') as f:
+        lines = f.readlines()
     for i, line in enumerate(lines):
         if line.startswith('VIRTUAL_ENV='):
             lines[i] = 'VIRTUAL_ENV="%s"\n' % (venv_path,)
-    file_obj.close()
 
-    file_obj = open(script_path, 'w')
-    file_obj.write("".join(lines))
-    file_obj.close()
+    with open(script_path, 'w') as f:
+        f.write("".join(lines))
 
 def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, patch_activate_script=False):
     # type: (Optional[str], str, Optional[List[str]], bool) -> str
@@ -285,7 +283,8 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
     if not os.path.exists(success_stamp):
         do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args or [])
-        open(success_stamp, 'w').close()
+        with open(success_stamp, 'w') as f:
+            f.close()
 
     print("Using cached Python venv from %s" % (cached_venv_path,))
     if target_venv_path is not None:

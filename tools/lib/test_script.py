@@ -56,7 +56,8 @@ def get_provisioning_status():
         # their own dependencies and not running provision.
         return True, None
 
-    version = open(version_file).read().strip()
+    with open(version_file, 'r') as f:
+        version = f.read().strip()
 
     # Normal path for people that provision--we're all good!
     if version == PROVISION_VERSION:
