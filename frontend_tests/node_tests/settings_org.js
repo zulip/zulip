@@ -871,21 +871,25 @@ run_test('misc', () => {
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
     assert.equal($('#full_name').attr('disabled'), false);
+    assert.equal($('.change_name_tooltip').is(':visible'), false);
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
     assert.equal($('#full_name').attr('disabled'), 'disabled');
+    assert($('.change_name_tooltip').is(':visible'));
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
     assert.equal($('#full_name').attr('disabled'), 'disabled');
+    assert($('.change_name_tooltip').is(':visible'));
 
     page_params.realm_name_changes_disabled = false;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
     assert.equal($('#full_name').attr('disabled'), 'disabled');
+    assert($('.change_name_tooltip').is(':visible'));
 
     page_params.realm_email_changes_disabled = false;
     settings_account.update_email_change_display();
@@ -923,6 +927,7 @@ run_test('misc', () => {
     page_params.is_admin = true;
     settings_account.update_name_change_display();
     assert.equal($('#full_name').attr('disabled'), false);
+    assert.equal($('.change_name_tooltip').is(':visible'), false);
 
     settings_account.update_email_change_display();
     assert.equal($("#change_email .button").attr('disabled'), false);
