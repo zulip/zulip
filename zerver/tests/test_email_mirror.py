@@ -125,7 +125,7 @@ class TestEncodeDecode(ZulipTestCase):
         asciiable_stream_name = "ąężć"
         stream = ensure_stream(realm, asciiable_stream_name)
         email_address = encode_email_address(stream)
-        self.assertTrue(email_address.startswith("aezc+"))
+        self.assertTrue(email_address.startswith("aezc."))
 
     def test_decode_ignores_stream_name(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
