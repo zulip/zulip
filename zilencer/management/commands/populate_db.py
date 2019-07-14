@@ -231,8 +231,7 @@ class Command(BaseCommand):
 
             # Initialize the email gateway bot as an API Super User
             email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
-            email_gateway_bot.is_api_super_user = True
-            email_gateway_bot.save()
+            do_change_is_admin(email_gateway_bot, True, permission="api_super_user")
 
             zoe = get_user("zoe@zulip.com", zulip_realm)
             zulip_webhook_bots = [
