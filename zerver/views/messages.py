@@ -365,10 +365,13 @@ class NarrowBuilder:
                     column("recipient_id") == recipient.id)
         return query.where(maybe_negate(cond))
 
-    def by_group_pm_with(self, query: Query, operand: str,
+    def by_group_pm_with(self, query: Query, operand: Union[str, int],
                          maybe_negate: ConditionTransform) -> Query:
         try:
-            narrow_profile = get_user_including_cross_realm(operand, self.user_realm)
+            if isinstance(operand, str):
+                narrow_profile = get_user_including_cross_realm(operand, self.user_realm)
+            else:
+                narrow_profile = get_user_by_id_in_realm_including_cross_realm(operand, self.user_realm)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + str(operand))
 
@@ -518,7 +521,7 @@ def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
             # that supports user IDs. Relevant code is located in static/js/message_fetch.js
             # in handle_user_ids_supported_operators function where you will need to update
             # user_id_supported_operator, or user_ids_supported_operator array.
-            user_id_supported_operator = ['sender']
+            user_id_supported_operator = ['sender', 'group-pm-with']
             user_ids_supported_operators = ['pm-with']
 
             operator = elem.get('operator', '')
