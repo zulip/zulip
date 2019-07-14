@@ -59,10 +59,10 @@ from typing import Any, Callable, Dict, Mapping, Union, Optional
 
 class TestEncodeDecode(ZulipTestCase):
     def _assert_options(self, options: Dict[str, bool], show_sender: bool=False,
-                        include_footer: bool=False, include_quotations: bool=False) -> None:
+                        include_footer: bool=False, include_quotes: bool=False) -> None:
         self.assertEqual(show_sender, ('show_sender' in options) and options['show_sender'])
         self.assertEqual(include_footer, ('include_footer' in options) and options['include_footer'])
-        self.assertEqual(include_quotations, ('include_quotations' in options) and options['include_quotations'])
+        self.assertEqual(include_quotes, ('include_quotes' in options) and options['include_quotes'])
 
     def test_encode_decode(self) -> None:
         realm = get_realm('zulip')
@@ -77,10 +77,10 @@ class TestEncodeDecode(ZulipTestCase):
 
         parts = email_address.split('@')
         # Use a mix of + and . as separators, to test that it works:
-        parts[0] += "+include-footer.show-sender+include-quotations"
+        parts[0] += "+include-footer.show-sender+include-quotes"
         email_address_all_options = '@'.join(parts)
         token, options = decode_email_address(email_address_all_options)
-        self._assert_options(options, show_sender=True, include_footer=True, include_quotations=True)
+        self._assert_options(options, show_sender=True, include_footer=True, include_quotes=True)
         self.assertEqual(token, stream.email_token)
 
         email_address = email_address.replace('@testserver', '@zulip.org')
@@ -97,7 +97,7 @@ class TestEncodeDecode(ZulipTestCase):
             self.assertEqual(token, stream.email_token)
 
             token, options = decode_email_address(email_address_all_options)
-            self._assert_options(options, show_sender=True, include_footer=True, include_quotations=True)
+            self._assert_options(options, show_sender=True, include_footer=True, include_quotes=True)
             self.assertEqual(token, stream.email_token)
 
         with self.assertRaises(ZulipEmailForwardError):
@@ -335,7 +335,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
-    def test_receive_stream_email_include_quotations_success(self) -> None:
+    def test_receive_stream_email_include_quotes_success(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
         self.subscribe(user_profile, "Denmark")
@@ -343,7 +343,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         stream_to_address = encode_email_address(stream)
         parts = stream_to_address.split('@')
-        parts[0] += "+include-quotations"
+        parts[0] += "+include-quotes"
         stream_to_address = '@'.join(parts)
 
         text = """Reply

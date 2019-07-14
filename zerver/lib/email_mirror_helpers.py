@@ -7,7 +7,7 @@ from zerver.models import Stream
 
 from typing import Dict, Tuple
 
-optional_address_tokens = ["show-sender", "include-footer", "include-quotations"]
+optional_address_tokens = ["show-sender", "include-footer", "include-quotes"]
 
 class ZulipEmailForwardError(Exception):
     pass
