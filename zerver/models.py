@@ -829,7 +829,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     is_mirror_dummy = models.BooleanField(default=False)  # type: bool
 
     # API super users are allowed to forge messages as sent by another
-    # user; also used for Zephyr/Jabber mirroring.
+    # user and to send to private streams; also used for Zephyr/Jabber mirroring.
     is_api_super_user = models.BooleanField(default=False, db_index=True)  # type: bool
 
     ### Notifications settings. ###
