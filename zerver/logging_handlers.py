@@ -31,7 +31,8 @@ def add_deployment_metadata(report: Dict[str, Any]) -> None:
 
     version_path = os.path.join(os.path.dirname(__file__), '../version')
     if os.path.exists(version_path):
-        report['zulip_version_file'] = open(version_path).read().strip()  # nocoverage
+        with open(version_path, 'r') as f:  # nocoverage
+            report['zulip_version_file'] = f.read().strip()
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
     report['has_request'] = True

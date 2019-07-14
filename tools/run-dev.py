@@ -133,9 +133,8 @@ else:
 # Required for compatibility python versions.
 if not os.path.exists(os.path.dirname(pid_file_path)):
     os.makedirs(os.path.dirname(pid_file_path))
-pid_file = open(pid_file_path, 'w+')
-pid_file.write(str(os.getpgrp()) + "\n")
-pid_file.close()
+with open(pid_file_path, 'w+') as f:
+    f.write(str(os.getpgrp()) + "\n")
 
 # Pass --nostatic because we configure static serving ourselves in
 # zulip/urls.py.

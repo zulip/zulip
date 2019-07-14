@@ -1558,7 +1558,8 @@ class S3Test(ZulipTestCase):
 
         with get_test_image_file('img.png') as image_file:
             zerver.lib.upload.upload_backend.upload_avatar_image(image_file, user_profile, user_profile)
-        test_image_data = open(get_test_image_file('img.png').name, 'rb').read()
+        with open(get_test_image_file('img.png').name, 'rb') as f:
+            test_image_data = f.read()
         test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
 
         original_image_key = bucket.get_key(original_image_path_id)

@@ -7,13 +7,11 @@ def clean_html(filenames):
     # type: (List[str]) -> None
     for fn in filenames:
         print('Prettifying: %s' % (fn,))
-        file = open(fn)
-        html = file.read()
+        with open(fn, 'r') as f:
+            html = f.read()
         phtml = pretty_print_html(html)
-        file.close()
-        file = open(fn, 'w')
-        file.write(phtml)
-        file.close()
+        with open(fn, 'w') as f:
+            f.write(phtml)
 
 if __name__ == '__main__':
     # If command arguments are provided, we only check those filenames.

@@ -3062,7 +3062,8 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     @use_s3_backend
     def test_update_user_avatar_for_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
-        test_image_data = open(get_test_image_file('img.png').name, 'rb').read()
+        with open(get_test_image_file('img.png').name, 'rb') as f:
+            test_image_data = f.read()
 
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {

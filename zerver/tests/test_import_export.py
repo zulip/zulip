@@ -301,7 +301,8 @@ class ImportExportTest(ZulipTestCase):
             upload_emoji_image(img_file, '1.png', user_profile)
         with get_test_image_file('img.png') as img_file:
             upload_avatar_image(img_file, user_profile, user_profile)
-        test_image = open(get_test_image_file('img.png').name, 'rb').read()
+        with open(get_test_image_file('img.png').name, 'rb') as f:
+            test_image = f.read()
         message.sender.avatar_source = 'U'
         message.sender.save()
 
@@ -323,7 +324,7 @@ class ImportExportTest(ZulipTestCase):
 
         # Test uploads
         fn = os.path.join(full_data['uploads_dir'], path_id)
-        with open(fn) as f:
+        with open(fn, 'r') as f:
             self.assertEqual(f.read(), 'zulip!')
         records = full_data['uploads_dir_records']
         self.assertEqual(records[0]['path'], path_id)
@@ -340,7 +341,8 @@ class ImportExportTest(ZulipTestCase):
 
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
-        fn_data = open(fn, 'rb').read()
+        with open(fn, 'rb') as fb:
+            fn_data = fb.read()
         self.assertEqual(fn_data, test_image)
         records = full_data['avatar_dir_records']
         record_path = [record['path'] for record in records]
@@ -370,7 +372,7 @@ class ImportExportTest(ZulipTestCase):
         # Test uploads
         fields = attachment_path_id.split('/')
         fn = os.path.join(full_data['uploads_dir'], os.path.join(fields[0], fields[1], fields[2]))
-        with open(fn) as f:
+        with open(fn, 'r') as f:
             self.assertEqual(f.read(), 'zulip!')
         records = full_data['uploads_dir_records']
         self.assertEqual(records[0]['path'], os.path.join(fields[0], fields[1], fields[2]))
@@ -390,7 +392,8 @@ class ImportExportTest(ZulipTestCase):
 
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
-        fn_data = open(fn, 'rb').read()
+        with open(fn, 'rb') as file:
+            fn_data = file.read()
         self.assertEqual(fn_data, test_image)
         records = full_data['avatar_dir_records']
         record_path = [record['path'] for record in records]
@@ -994,7 +997,8 @@ class ImportExportTest(ZulipTestCase):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'),
                             'test-zulip')
         imported_realm = Realm.objects.get(string_id='test-zulip')
-        test_image_data = open(get_test_image_file('img.png').name, 'rb').read()
+        with open(get_test_image_file('img.png').name, 'rb') as f:
+            test_image_data = f.read()
 
         # Test attachments
         uploaded_file = Attachment.objects.get(realm=imported_realm)

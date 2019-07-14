@@ -92,7 +92,8 @@ def main() -> None:
     if not os.path.exists(success_stamp):
         print("Dumping emojis ...")
         dump_emojis(source_emoji_dump)
-        open(success_stamp, 'w').close()
+        with open(success_stamp, 'w') as f:
+            f.close()
 
     print("Using cached emojis from {}".format(source_emoji_dump))
     if os.path.lexists(TARGET_EMOJI_DUMP):
@@ -135,11 +136,10 @@ def generate_sprite_css_files(cache_path: str,
             }
 
     SPRITE_CSS_PATH = os.path.join(cache_path, '%s-sprite.css' % (emojiset,))
-    sprite_css_file = open(SPRITE_CSS_PATH, 'w')
-    sprite_css_file.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
-                                                      'emoji_positions': emoji_positions,
-                                                      })
-    sprite_css_file.close()
+    with open(SPRITE_CSS_PATH, 'w') as f:
+        f.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
+                                            'emoji_positions': emoji_positions,
+                                            })
 
 def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
     def ensure_emoji_image(emoji_dict: Dict[str, Any],

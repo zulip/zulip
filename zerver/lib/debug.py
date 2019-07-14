@@ -53,7 +53,8 @@ def tracemalloc_dump() -> None:
     gc.collect()
     tracemalloc.take_snapshot().dump(path)
 
-    procstat = open('/proc/{}/stat'.format(os.getpid()), 'rb').read().split()
+    with open('/proc/{}/stat'.format(os.getpid()), 'rb') as f:
+        procstat = f.read().split()
     rss_pages = int(procstat[23])
     logger.info("tracemalloc dump: tracing {} MiB ({} MiB peak), using {} MiB; rss {} MiB; dumped {}"
                 .format(tracemalloc.get_traced_memory()[0] // 1048576,

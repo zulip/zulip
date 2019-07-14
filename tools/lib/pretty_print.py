@@ -194,10 +194,9 @@ def pretty_print_html(html, num_spaces=4):
 
 def validate_indent_html(fn, fix):
     # type: (str, bool) -> int
-    file = open(fn)
-    html = file.read()
+    with open(fn, 'r') as f:
+        html = f.read()
     phtml = pretty_print_html(html)
-    file.close()
     if not html.split('\n') == phtml.split('\n'):
         if fix:
             print(GREEN + "Automatically fixing problems..." + ENDC)

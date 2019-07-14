@@ -108,11 +108,10 @@ def generate_secrets(development=False):
         print("generate_secrets: No new secrets to generate.")
         return
 
-    out = open(OUTPUT_SETTINGS_FILENAME, 'a')
-    # Write a newline at the start, in case there was no newline at
-    # the end of the file due to human editing.
-    out.write("\n" + "".join(lines))
-    out.close()
+    with open(OUTPUT_SETTINGS_FILENAME, 'a') as f:
+        # Write a newline at the start, in case there was no newline at
+        # the end of the file due to human editing.
+        f.write("\n" + "".join(lines))
 
     print("Generated new secrets in %s." % (OUTPUT_SETTINGS_FILENAME,))
 

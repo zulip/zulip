@@ -14,7 +14,8 @@ def nagios_from_file(results_file):
     This file is created by various nagios checking cron jobs such as
     check-rabbitmq-queues and check-rabbitmq-consumers"""
 
-    data = open(results_file).read().strip()
+    with open(results_file) as f:
+        data = f.read().strip()
     pieces = data.split('|')
 
     if not len(pieces) == 4:

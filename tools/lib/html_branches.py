@@ -193,7 +193,8 @@ def build_id_dict(templates):
     template_id_dict = defaultdict(list)  # type: (Dict[str, List[str]])
 
     for fn in templates:
-        text = open(fn).read()
+        with open(fn, 'r') as f:
+            text = f.read()
         list_tags = tokenize(text)
 
         for tag in list_tags:

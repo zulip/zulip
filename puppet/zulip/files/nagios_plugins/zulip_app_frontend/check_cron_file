@@ -18,7 +18,8 @@ def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int
     This file is created by various nagios checking cron jobs such as
     check-rabbitmq-queues and check-rabbitmq-consumers"""
 
-    data = open(results_file).read().strip()
+    with open(results_file, 'r') as f:
+        data = f.read().strip()
     pieces = data.split('|')
 
     if not len(pieces) == 4:

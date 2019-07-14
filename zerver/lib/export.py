@@ -1375,7 +1375,8 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     with open(stats_file, 'w') as f:
         for fn in fns:
             f.write(os.path.basename(fn) + '\n')
-            payload = open(fn).read()
+            with open(fn, 'r') as filename:
+                payload = filename.read()
             data = ujson.loads(payload)
             for k in sorted(data):
                 f.write('%5d %s\n' % (len(data[k]), k))
@@ -1386,7 +1387,8 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
 
         for fn in [avatar_file, uploads_file]:
             f.write(fn+'\n')
-            payload = open(fn).read()
+            with open(fn, 'r') as filename:
+                payload = filename.read()
             data = ujson.loads(payload)
             f.write('%5d records\n' % (len(data),))
             f.write('\n')
