@@ -665,6 +665,7 @@ run_test('slugs', () => {
 
     // Test undefined slug
     assert.equal(people.emails_to_slug('does@not.exist'), undefined);
+    assert.equal(people.slug_to_emails('501debbie'), undefined);
 });
 
 initialize();
