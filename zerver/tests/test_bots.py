@@ -4,8 +4,6 @@ import os
 import ujson
 
 from django.core import mail
-from django.test import override_settings
-from django.conf import settings
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Mapping
 
@@ -893,7 +891,6 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(email, get_realm('zulip'))
         self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
 
-    @override_settings(LOCAL_UPLOADS_DIR=os.path.join(settings.TEST_WORKER_DIR, 'bot_avatar'))
     def test_patch_bot_avatar(self) -> None:
         self.login(self.example_email('hamlet'))
         bot_info = {
