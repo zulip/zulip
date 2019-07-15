@@ -20,6 +20,7 @@ from zerver.lib.test_runner import slow
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile,
     flush_per_request_caches, DefaultStream, Realm,
+    get_system_bot,
 )
 from zerver.views.home import sent_time_in_epoch_seconds, compute_navbar_logo_url
 from corporate.models import Customer, CustomerPlan
@@ -573,14 +574,14 @@ class HomeTest(ZulipTestCase):
 
         self.assertEqual(sorted(cross_bots, key=by_email), sorted([
             dict(
-                user_id=get_user('emailgateway@zulip.com', get_realm('zulip')).id,
+                user_id=get_system_bot('emailgateway@zulip.com').id,
                 is_admin=False,
                 email='emailgateway@zulip.com',
                 full_name='Email Gateway',
                 is_bot=True
             ),
             dict(
-                user_id=get_user('feedback@zulip.com', get_realm('zulip')).id,
+                user_id=get_system_bot('feedback@zulip.com').id,
                 is_admin=False,
                 email='feedback@zulip.com',
                 full_name='Zulip Feedback Bot',
@@ -594,7 +595,7 @@ class HomeTest(ZulipTestCase):
                 is_bot=True
             ),
             dict(
-                user_id=get_user('welcome-bot@zulip.com', get_realm('zulip')).id,
+                user_id=get_system_bot('welcome-bot@zulip.com').id,
                 is_admin=False,
                 email='welcome-bot@zulip.com',
                 full_name='Welcome Bot',
@@ -748,23 +749,23 @@ class HomeTest(ZulipTestCase):
         page_params = {"night_mode": True}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/1/realm/logo.png?version=2")
+                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
 
         page_params = {"night_mode": False}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/1/realm/logo.png?version=2")
+                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
 
         do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=True)
         page_params = {"night_mode": True}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/1/realm/night_logo.png?version=2")
+                         "/user_avatars/%s/realm/night_logo.png?version=2" % (user_profile.realm_id,))
 
         page_params = {"night_mode": False}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/1/realm/logo.png?version=2")
+                         "/user_avatars/%s/realm/logo.png?version=2" % (user_profile.realm_id,))
 
         # This configuration isn't super supported in the UI and is a
         # weird choice, but we have a test for it anyway.
@@ -772,7 +773,7 @@ class HomeTest(ZulipTestCase):
         page_params = {"night_mode": True}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/user_avatars/1/realm/night_logo.png?version=2")
+                         "/user_avatars/%s/realm/night_logo.png?version=2" % (user_profile.realm_id,))
 
         page_params = {"night_mode": False}
         add_realm_logo_fields(page_params, user_profile.realm)
