@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 
+from zerver.lib.actions import internal_send_private_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import message_stream_count, most_recent_message
-from zerver.models import get_realm, get_user, UserProfile
+from zerver.models import get_realm, get_user, get_system_bot, UserProfile
 
 import ujson
 
@@ -11,10 +13,10 @@ class TutorialTests(ZulipTestCase):
         # This emulates the welcome message sent by the welcome bot to hamlet@zulip.com
         # This is only a quick fix - ideally, we would have this message sent by the initialization
         # code in populate_db.py
-        user_email = 'hamlet@zulip.com'
-        bot_email = 'welcome-bot@zulip.com'
+        user = self.example_user('hamlet')
+        welcome_bot = get_system_bot(settings.WELCOME_BOT)
         content = 'Shortened welcome message.'
-        self.send_personal_message(bot_email, user_email, content)
+        internal_send_private_message(welcome_bot.realm, welcome_bot, user, content)
 
     def test_tutorial_status(self) -> None:
         email = self.example_email('hamlet')
