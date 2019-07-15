@@ -48,6 +48,7 @@ from zerver.models import (
     get_display_recipient,
     get_user,
     get_realm,
+    get_system_bot,
     Client,
     Message,
     Realm,
@@ -223,7 +224,8 @@ class ZulipTestCase(TestCase):
         polonius='polonius@zulip.com',
         webhook_bot='webhook-bot@zulip.com',
         welcome_bot='welcome-bot@zulip.com',
-        outgoing_webhook_bot='outgoing-webhook@zulip.com'
+        outgoing_webhook_bot='outgoing-webhook@zulip.com',
+        default_bot='default-bot@zulip.com'
     )
 
     mit_user_map = dict(
@@ -275,7 +277,7 @@ class ZulipTestCase(TestCase):
         return self.mit_user_map[name]
 
     def notification_bot(self) -> UserProfile:
-        return get_user('notification-bot@zulip.com', get_realm('zulip'))
+        return get_system_bot(settings.NOTIFICATION_BOT)
 
     def create_test_bot(self, short_name: str, user_profile: UserProfile,
                         assert_json_error_msg: str=None, **extras: Any) -> Optional[UserProfile]:
@@ -404,7 +406,7 @@ class ZulipTestCase(TestCase):
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
 
     def api_get(self, email: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email, kwargs.get('realm', 'zulip'))
         return self.client_get(*args, **kwargs)
 
     def api_post(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
