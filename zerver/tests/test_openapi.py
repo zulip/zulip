@@ -369,13 +369,13 @@ undocumented in the urls." % (method, url_pattern))  # nocoverage
                 )
 
                 if len(openapi_parameter_names - accepted_arguments) > 0:
-                    print("Undocumented parameters for",
+                    print("Documented invalid parameters for",
                           url_pattern, method, function)
                     print(" +", openapi_parameter_names)
                     print(" -", accepted_arguments)
                     assert(url_pattern in self.buggy_documentation_endpoints)
                 elif len(accepted_arguments - openapi_parameter_names) > 0:
-                    print("Documented invalid parameters for",
+                    print("Undocumented parameters for",
                           url_pattern, method, function)
                     print(" -", openapi_parameter_names)
                     print(" +", accepted_arguments)
