@@ -28,9 +28,18 @@ exports.update_full_name = function (new_full_name) {
     }
 };
 
+exports.user_can_change_name = function () {
+    if (page_params.is_admin) {
+        return true;
+    }
+    if (page_params.realm_name_changes_disabled || page_params.server_name_changes_disabled) {
+        return false;
+    }
+    return true;
+};
+
 exports.update_name_change_display = function () {
-    if ((page_params.realm_name_changes_disabled || page_params.server_name_changes_disabled)
-        && !page_params.is_admin) {
+    if (!exports.user_can_change_name()) {
         $('#full_name').attr('disabled', 'disabled');
         $(".change_name_tooltip").show();
     } else {
@@ -295,8 +304,7 @@ exports.set_up = function () {
     $("#change_full_name").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (!page_params.realm_name_changes_disabled && !page_params.server_name_changes_disabled
-        || page_params.is_admin) {
+        if (exports.user_can_change_name()) {
             $('#change_full_name_modal').find("input[name='full_name']").val(page_params.full_name);
             overlays.open_modal('change_full_name_modal');
         }

@@ -140,6 +140,7 @@ exports.build_page = function () {
         push_notification_tooltip:
             settings_notifications.all_notifications.push_notification_tooltip,
         display_settings: settings_display.all_display_settings,
+        user_can_change_name: settings_account.user_can_change_name(),
     });
 
     $(".settings-box").html(rendered_settings_tab);
