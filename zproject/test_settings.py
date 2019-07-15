@@ -18,6 +18,8 @@ if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 from .settings import *
 
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+
 # Clear out the REALM_HOSTS set in dev_settings.py
 REALM_HOSTS = {}
 
@@ -126,7 +128,9 @@ ENABLE_FILE_LINKS = True
 
 # These settings are set dynamically in `zerver/lib/test_runner.py`:
 TEST_WORKER_DIR = ''
-LOCAL_UPLOADS_DIR = ''
+# We set a default value for tests that utilize `LOCAL_UPLOADS_DIR`,
+# but that aren't part of our `test-backend` suite.
+LOCAL_UPLOADS_DIR = get_or_create_dev_uuid_var_path('test-backend')
 
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
