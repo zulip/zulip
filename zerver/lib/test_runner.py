@@ -479,8 +479,11 @@ class Runner(DiscoverRunner):
         os.remove(filepath)
 
         # Clean up our test runs root directory.
-        if os.path.exists(TEST_RUN_DIR):
+        try:
             shutil.rmtree(TEST_RUN_DIR)
+        except OSError:
+            print("Unable to clean up the test run's directory.")
+            pass
         return super().teardown_test_environment(*args, **kwargs)
 
     def test_imports(self, test_labels: List[str], suite: unittest.TestSuite) -> None:
