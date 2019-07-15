@@ -17,6 +17,13 @@ from zerver.lib.webhooks.git import EMPTY_SHA, \
     get_push_tag_event_message, get_remove_branch_event_message
 from zerver.models import UserProfile
 
+def fixture_to_headers(fixture_name: str) -> Dict[str, Any]:
+    if fixture_name.startswith("build"):
+        return {}  # Since there are 2 possible event types.
+
+    # Map "push_hook__push_commits_more_than_limit.json" into GitLab's
+    # HTTP event title "Push Hook".
+    return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__")[0].replace("_", " ").title()}
 
 def get_push_event_body(payload: Dict[str, Any]) -> str:
     if payload.get('after') == EMPTY_SHA:
