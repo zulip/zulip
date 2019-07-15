@@ -3,6 +3,7 @@
 import ujson
 from typing import Any, Mapping, List
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from zerver.lib.actions import recipient_for_user_ids
@@ -10,7 +11,7 @@ from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.models import get_display_recipient
+from zerver.models import get_display_recipient, get_system_bot
 
 class TypingNotificationOperatorTest(ZulipTestCase):
     def test_missing_parameter(self) -> None:
@@ -331,7 +332,7 @@ class TypingValidationHelpersTest(ZulipTestCase):
     def test_recipient_for_user_ids(self) -> None:
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
-        cross_realm_bot = self.example_user('welcome_bot')
+        cross_realm_bot = get_system_bot(settings.WELCOME_BOT)
         sender = self.example_user('iago')
         recipient_user_ids = [hamlet.id, othello.id, cross_realm_bot.id]
 
