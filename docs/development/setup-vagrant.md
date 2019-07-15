@@ -121,6 +121,28 @@ $ groups | grep docker
 christie adm cdrom sudo dip plugdev lpadmin sambashare docker
 ```
 
+##### 3. Make sure the Docker daemon is running:
+
+On some versions of Ubuntu, newly installed services like Docker are
+not automatically enabled and started after installation.  You can
+check using the following:
+
+```
+$ systemctl status docker
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+   Active: active (running) since Mon 2019-07-15 23:20:46 IST; 18min ago
+```
+
+If the service is not running, you'll see `Active: inactive (dead)` on
+the second line, and will need to enable and start the Docker service
+using the following:
+
+```
+sudo systemctl enable docker
+sudo systemctl start docker
+```
+
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 #### Debian
@@ -247,14 +269,16 @@ environment.](#step-3-start-the-development-environment)
 ### Step 3: Start the development environment
 
 Change into the zulip directory and tell vagrant to start the Zulip
-development environment with `vagrant up`.
+development environment with `vagrant up`:
 
 ```
-christie@win10 ~
-$ cd zulip
+# On Windows or macOS:
+cd zulip
+vagrant up --provider=virtualbox
 
-christie@win10 ~/zulip
-$ vagrant up
+# On Linux:
+cd zulip
+vagrant up --provider=docker
 ```
 
 The first time you run this command it will take some time because vagrant
@@ -484,9 +508,10 @@ Check out the Vagrant documentation to learn more about
 
 #### Resuming the development environment
 
-When you're ready to work on Zulip again, run `vagrant up`. You will also need
-to connect to the virtual machine with `vagrant ssh` and re-start the Zulip
-server:
+When you're ready to work on Zulip again, run `vagrant up` (no need to
+pass the `--provider` option required above). You will also need to
+connect to the virtual machine with `vagrant ssh` and re-start the
+Zulip server:
 
 ```
 christie@win10 ~/zulip
