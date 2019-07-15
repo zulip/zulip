@@ -121,6 +121,28 @@ $ groups | grep docker
 christie adm cdrom sudo dip plugdev lpadmin sambashare docker
 ```
 
+Now let's make sure that the Docker daemon is indeed running, we can do
+this using systemd/systemctl.
+
+```
+hemanth@hypro999:~$ systemctl status docker
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+   Active: active (running) since Mon 2019-07-15 23:20:46 IST; 18min ago
+
+```
+
+If the service is not active. Then you'll see something like `Active: inactive (dead)`
+instead of `Active: active (running)` in the above example. We can easily change this
+by doing:
+
+```
+hemanth@hypro999:~$ sudo systemctl enable docker
+hemanth@hypro999:~$ sudo systemctl start docker
+```
+
+With this, you'll be able to get the docker daemon up and running.
+
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 #### Debian
@@ -249,12 +271,22 @@ environment.](#step-3-start-the-development-environment)
 Change into the zulip directory and tell vagrant to start the Zulip
 development environment with `vagrant up`.
 
+On Windows:
 ```
 christie@win10 ~
 $ cd zulip
 
 christie@win10 ~/zulip
 $ vagrant up
+```
+
+On Linux:
+```
+christie@ubuntu-desktop ~
+$ cd zulip
+
+christie@ubuntu-desktop ~/zulip
+$ vagrant up --provider=docker
 ```
 
 The first time you run this command it will take some time because vagrant
@@ -307,6 +339,9 @@ You can confirm this by looking at the command prompt, which starts
 with `(zulip-py3-venv)vagrant@`.  If it just starts with `vagrant@`, your
 provisioning failed and you should look at the
 [troubleshooting section](#troubleshooting-and-common-errors).
+
+Note: The next time you need to do `vagrant up`, you won't need to use the
+`--provider=docker` part again (if you were using Linux).
 
 Next, start the Zulip server:
 
