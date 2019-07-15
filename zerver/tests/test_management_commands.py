@@ -48,7 +48,8 @@ class TestZulipBaseCommand(ZulipTestCase):
     def test_get_realm(self) -> None:
         self.assertEqual(self.command.get_realm(dict(realm_id='zulip')), self.zulip_realm)
         self.assertEqual(self.command.get_realm(dict(realm_id=None)), None)
-        self.assertEqual(self.command.get_realm(dict(realm_id='1')), self.zulip_realm)
+        self.assertEqual(self.command.get_realm(dict(realm_id=str(self.zulip_realm.id))),
+                         self.zulip_realm)
         with self.assertRaisesRegex(CommandError, "There is no realm with id"):
             self.command.get_realm(dict(realm_id='17'))
         with self.assertRaisesRegex(CommandError, "There is no realm with id"):
@@ -62,7 +63,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(self.command.get_user(email, self.zulip_realm), user_profile)
         self.assertEqual(self.command.get_user(email, None), user_profile)
 
-        error_message = "The realm '<Realm: zephyr 2>' does not contain a user with email"
+        error_message = "The realm '%s' does not contain a user with email" % (mit_realm,)
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_user(email, mit_realm)
 
@@ -97,7 +98,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         expected_user_profiles = [self.example_user("iago"), self.mit_user("sipbtest")]
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
-        error_message = "The realm '<Realm: zulip 1>' does not contain a user with email"
+        error_message = "The realm '%s' does not contain a user with email" % (self.zulip_realm,)
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_users(dict(users=user_emails), self.zulip_realm)
 
@@ -350,7 +351,7 @@ class TestSendToEmailMirror(ZulipTestCase):
         # last message should be equal to the body of the email in 1.txt
         self.assertEqual(message.content, "Email fixture 1.txt body")
 
-        stream_id = get_stream("Denmark2", message.sender.realm).id
+        stream_id = get_stream("Denmark2", get_realm("zulip")).id
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertEqual(message.recipient.type_id, stream_id)
 
