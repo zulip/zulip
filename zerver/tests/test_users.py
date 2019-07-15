@@ -15,7 +15,7 @@ from zerver.lib.test_classes import (
 from zerver.models import UserProfile, Recipient, Realm, \
     RealmDomain, UserHotspot, get_client, \
     get_user, get_realm, get_stream, get_stream_recipient, \
-    get_source_profile, \
+    get_source_profile, get_system_bot, \
     ScheduledEmail, check_valid_user_ids, \
     get_user_by_id_in_realm_including_cross_realm, CustomProfileField
 
@@ -38,6 +38,8 @@ from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.users import user_ids_to_users, access_user_by_id, \
     get_accounts_for_email
+
+from django.conf import settings
 
 import datetime
 import mock
@@ -272,7 +274,7 @@ class PermissionTest(ZulipTestCase):
             access_user_by_id(iago, self.mit_user("sipbtest").id)
 
         # Can only access bot users if allow_deactivated is passed
-        bot = self.example_user("welcome_bot")
+        bot = self.example_user("default_bot")
         access_user_by_id(iago, bot.id, allow_bots=True)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, bot.id)
@@ -651,7 +653,7 @@ class UserProfileTest(ZulipTestCase):
         realm = get_realm("zulip")
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
-        bot = self.example_user("welcome_bot")
+        bot = self.example_user("default_bot")
 
         # Invalid user ID
         invalid_uid = 1000  # type: Any
@@ -839,7 +841,7 @@ class UserProfileTest(ZulipTestCase):
         realm = get_realm('zulip')
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
-        bot = self.example_user('welcome_bot')
+        bot = get_system_bot(settings.WELCOME_BOT)
 
         # Pass in the ID of a cross-realm bot and a valid realm
         cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(
