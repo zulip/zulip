@@ -48,6 +48,7 @@ FILES_WITH_LEGACY_SUBJECT = {
 
     # These are tied more to our API than our DB model.
     'zerver/lib/api_test_helpers.py',
+    'zerver/tests/test_openapi.py',
 
     # This has lots of query data embedded, so it's hard
     # to fix everything until we migrate the DB to "topic".

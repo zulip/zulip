@@ -150,12 +150,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     # TODO: These endpoints need to be documented:
     pending_endpoints = set([
         '/users/me/avatar',
-        '/user_uploads',
         '/settings/display',
-        '/settings/notifications',
         '/users/me/profile_data',
-        '/user_groups',
-        '/user_groups/create',
         '/users/me/pointer',
         '/users/me/presence',
         '/users/me',
@@ -165,6 +161,9 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/default_stream_groups/create',
         '/users/me/alert_words',
         '/users/me/status',
+        # This endpoint is legacy; documented using the old system
+        # defined in ./templates/zerver/api/fixtures.json, not
+        # zulip.yaml.  Needs migrating.
         '/users/me/subscriptions',
         '/messages/matches_narrow',
         '/settings',
@@ -172,13 +171,10 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/attachments',
         '/calls/create',
         '/export/realm',
-        '/mark_all_as_read',
         '/zcommand',
         '/realm',
         '/realm/deactivate',
         '/realm/domains',
-        '/realm/emoji',
-        '/realm/filters',
         '/realm/icon',
         '/realm/logo',
         '/realm/presence',
@@ -192,7 +188,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/me/apns_device_token',
         # Regex based urls
         '/realm/domains/{domain}',
-        '/realm/filters/{filter_id}',
         '/realm/profile_fields/{field_id}',
         '/users/{user_id}/reactivate',
         '/users/{user_id}',
@@ -201,16 +196,12 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/invites/{prereg_id}',
         '/invites/{prereg_id}/resend',
         '/invites/multiuse/{invite_id}',
-        '/messages/{message_id}',
-        '/messages/{message_id}/history',
         '/users/me/subscriptions/{stream_id}',
         '/messages/{message_id}/reactions',
         '/messages/{message_id}/emoji_reactions/{emoji_name}',
         '/attachments/{attachment_id}',
         '/user_groups/{user_group_id}/members',
-        '/users/me/{stream_id}/topics',
         '/streams/{stream_id}/members',
-        '/streams/{stream_id}',
         '/streams/{stream_id}/delete_topic',
         '/default_stream_groups/{group_id}',
         '/default_stream_groups/{group_id}/streams',
@@ -226,6 +217,15 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     buggy_documentation_endpoints = set([
         '/events',
         '/users/me/subscriptions/muted_topics',
+        # List of flags is broader in actual code; fix is to just add them
+        '/settings/notifications',
+        # Endpoint is documented; parameters aren't detected properly.
+        '/realm/filters',
+        '/realm/filters/{filter_id}',
+        # Docs need update for subject -> topic migration
+        '/messages/{message_id}',
+        # stream_id parameter incorrectly appears in both URL and endpoint parameters?
+        '/streams/{stream_id}',
         # pattern starts with /api/v1 and thus fails reverse mapping test.
         '/dev_fetch_api_key',
         '/server_settings',
@@ -328,10 +328,14 @@ undocumented in the urls." % (method, url_pattern))  # nocoverage
                 regex_pattern = p.regex.pattern
                 url_pattern = self.convert_regex_to_url_pattern(regex_pattern)
 
-                if url_pattern in self.pending_endpoints:
+                if url_pattern == "/users/me/subscriptions":
+                    # Hack to workaround legacy pre-openapi docs.
+                    # TODO: Migrate get-subscriptions out of
+                    # ./templates/zerver/api/fixtures.json and into
+                    # zerver/openapi/zulip.yaml.
                     continue
 
-                if "intentionally_undocumented" in tags:
+                if "intentionally_undocumented" in tags or url_pattern in self.pending_endpoints:
                     self.ensure_no_documentation_if_intentionally_undocumented(url_pattern, method)
                     continue
 

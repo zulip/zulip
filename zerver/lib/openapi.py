@@ -72,7 +72,11 @@ def get_openapi_paths() -> Set[str]:
 
 def get_openapi_parameters(endpoint: str,
                            method: str) -> List[Dict[str, Any]]:
-    return (openapi_spec.spec()['paths'][endpoint][method.lower()]['parameters'])
+    openapi_endpoint = openapi_spec.spec()['paths'][endpoint][method.lower()]
+    # We do a `.get()` for this last bit to distinguish documented
+    # endpoints with no parameters (empty list) from undocumented
+    # endpoints (KeyError exception).
+    return openapi_endpoint.get('parameters', [])
 
 def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
                                     method: str, response: str) -> None:
