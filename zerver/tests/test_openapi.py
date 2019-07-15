@@ -311,10 +311,10 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
                 continue
             for method, value in p.default_args.items():
                 if isinstance(value, str):
-                    function = value
+                    function_name = value
                     tags = set()  # type: Set[str]
                 else:
-                    function, tags = value
+                    function_name, tags = value
 
                 # Our accounting logic in the `has_request_variables()`
                 # code means we have the list of all arguments
@@ -323,7 +323,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
                 # TODO: Probably with a bit more work, we could get
                 # the types, too; `check_int` -> `int`, etc., and
                 # verify those too!
-                accepted_arguments = set(arguments_map[function])
+                accepted_arguments = set(arguments_map[function_name])
 
                 regex_pattern = p.regex.pattern
                 url_pattern = self.convert_regex_to_url_pattern(regex_pattern)
@@ -373,14 +373,14 @@ so maybe we shouldn't include it in pending_endpoints.
                 )
 
                 if len(openapi_parameter_names - accepted_arguments) > 0:
-                    print("Documented invalid parameters for",
-                          url_pattern, method, function)
+                    print("Undocumented parameters for",
+                          url_pattern, method, function_name)
                     print(" +", openapi_parameter_names)
                     print(" -", accepted_arguments)
                     assert(url_pattern in self.buggy_documentation_endpoints)
                 elif len(accepted_arguments - openapi_parameter_names) > 0:
-                    print("Undocumented parameters for",
-                          url_pattern, method, function)
+                    print("Documented invalid parameters for",
+                          url_pattern, method, function_name)
                     print(" -", openapi_parameter_names)
                     print(" +", accepted_arguments)
                     assert(url_pattern in self.buggy_documentation_endpoints)
