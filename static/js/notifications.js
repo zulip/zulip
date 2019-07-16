@@ -269,6 +269,46 @@ exports.notify_above_composebox = function (note, link_class, link_msg_id, link_
     $('#out-of-view-notification').show();
 };
 
+if (window.electron_bridge !== undefined) {
+    // The code below is for sending a message received from notification reply which
+    // is often refered to as inline reply feature. This is done so desktop app doesn't
+    // have to depend on channel.post for setting crsf_token and narrow.by_topic
+    // to narrow to the message being sent.
+    window.electron_bridge.send_notification_reply_message_supported = true;
+    window.electron_bridge.on_event('send_notification_reply_message', function (message_id, reply) {
+        var message = message_store.get(message_id);
+        var data = {
+            type: message.type,
+            content: reply,
+            to: message.type === 'private' ? message.reply_to : message.stream,
+            topic: util.get_message_topic(message),
+        };
+
+        function success() {
+            if (message.type === 'stream') {
+                narrow.by_topic(message_id, {trigger: 'desktop_notification_reply'});
+            } else {
+                narrow.by_recipient(message_id, {trigger: 'desktop_notification_reply'});
+            }
+        }
+
+        function error(error) {
+            window.electron_bridge.send_event('send_notification_reply_message_failed', {
+                data: data,
+                message_id: message_id,
+                error: error,
+            });
+        }
+
+        channel.post({
+            url: '/json/messages',
+            data: data,
+            success: success,
+            error: error,
+        });
+    });
+}
+
 function process_notification(notification) {
     var i;
     var notification_object;

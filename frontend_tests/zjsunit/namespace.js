@@ -41,6 +41,7 @@ exports.restore = function () {
         delete require.cache[require.resolve(fn)];
     });
     dependencies = [];
+    delete global.window.electron_bridge;
     _.extend(global, old_builtins);
     old_builtins = {};
 };
