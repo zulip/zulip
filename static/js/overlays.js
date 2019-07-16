@@ -106,6 +106,7 @@ exports.open_modal = function (name) {
     $('.overlay.show').attr("style", "pointer-events: none");
     // Remove previous alert messsages from modal, if exists.
     $("#" + name).find(".alert").hide();
+    $("#" + name).find(".alert-notification").html("");
 };
 
 exports.close_overlay = function (name) {
