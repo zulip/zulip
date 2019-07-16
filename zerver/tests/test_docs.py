@@ -283,7 +283,7 @@ class HelpTest(ZulipTestCase):
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
         for integration in INTEGRATIONS.values():
-            self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
+            self.assertTrue(os.path.isfile(DEPLOY_ROOT + integration.logo_url), integration.name)
 
     def test_api_url_view_subdomains_base(self) -> None:
         context = dict()  # type: Dict[str, Any]

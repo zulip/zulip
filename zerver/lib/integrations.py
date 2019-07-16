@@ -1,9 +1,9 @@
 import os
-import pathlib
 
 from typing import Dict, List, Optional, Any
 from django.conf import settings
 from django.conf.urls import url
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls.resolvers import LocaleRegexProvider
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
@@ -46,8 +46,8 @@ CATEGORIES = {
 }  # type: Dict[str, str]
 
 class Integration:
-    DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
-    DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
+    DEFAULT_LOGO_STATIC_PATH_PNG = 'images/integrations/logos/{name}.png'
+    DEFAULT_LOGO_STATIC_PATH_SVG = 'images/integrations/logos/{name}.svg'
 
     def __init__(self, name: str, client_name: str, categories: List[str],
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
@@ -68,8 +68,9 @@ class Integration:
         self.categories = list(map((lambda c: CATEGORIES[c]), categories))
 
         if logo is None:
-            logo = self.get_logo_url()
-        self.logo = logo
+            self.logo_url = self.get_logo_url()
+        else:
+            self.logo_url = staticfiles_storage.url(logo)
 
         if display_name is None:
             display_name = name.title()
@@ -83,25 +84,19 @@ class Integration:
         return True
 
     def get_logo_url(self) -> Optional[str]:
-        logo_file_path_svg = str(pathlib.PurePath(
-            settings.STATIC_ROOT,
-            *self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name).split('/')[1:]
-        ))
-        logo_file_path_png = str(pathlib.PurePath(
-            settings.STATIC_ROOT,
-            *self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name).split('/')[1:]
-        ))
-        if os.path.isfile(logo_file_path_svg):
-            return self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
-        elif os.path.isfile(logo_file_path_png):
-            return self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
+        logo_file_path_svg = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
+        logo_file_path_png = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
+        if os.path.isfile(os.path.join(settings.STATIC_ROOT, logo_file_path_svg)):
+            return staticfiles_storage.url(logo_file_path_svg)
+        elif os.path.isfile(os.path.join(settings.STATIC_ROOT, logo_file_path_png)):
+            return staticfiles_storage.url(logo_file_path_png)
 
         return None
 
 class BotIntegration(Integration):
-    DEFAULT_LOGO_STATIC_PATH_PNG = 'static/generated/bots/{name}/logo.png'
-    DEFAULT_LOGO_STATIC_PATH_SVG = 'static/generated/bots/{name}/logo.svg'
-    ZULIP_LOGO_STATIC_PATH_PNG = 'static/images/logo/zulip-icon-128x128.png'
+    DEFAULT_LOGO_STATIC_PATH_PNG = 'generated/bots/{name}/logo.png'
+    DEFAULT_LOGO_STATIC_PATH_SVG = 'generated/bots/{name}/logo.svg'
+    ZULIP_LOGO_STATIC_PATH_PNG = 'images/logo/zulip-icon-128x128.png'
     DEFAULT_DOC_PATH = '{name}/doc.md'
 
     def __init__(self, name: str, categories: List[str], logo: Optional[str]=None,
@@ -115,13 +110,12 @@ class BotIntegration(Integration):
         )
 
         if logo is None:
-            logo_url = self.get_logo_url()
-            if logo_url is not None:
-                logo = logo_url
-            else:
+            self.logo_url = self.get_logo_url()
+            if self.logo_url is None:
                 # TODO: Add a test for this by initializing one in a test.
-                logo = self.ZULIP_LOGO_STATIC_PATH_PNG  # nocoverage
-        self.logo = logo
+                logo = staticfiles_storage.url(self.ZULIP_LOGO_STATIC_PATH_PNG)  # nocoverage
+        else:
+            self.logo_url = staticfiles_storage.url(logo)
 
         if display_name is None:
             display_name = "{} Bot".format(name.title())  # nocoverage
@@ -237,14 +231,14 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration(
         'bitbucket3',
         ['version-control'],
-        logo='static/images/integrations/logos/bitbucket.svg',
+        logo='images/integrations/logos/bitbucket.svg',
         display_name='Bitbucket Server',
         stream_name='bitbucket'
     ),
     WebhookIntegration(
         'bitbucket2',
         ['version-control'],
-        logo='static/images/integrations/logos/bitbucket.svg',
+        logo='images/integrations/logos/bitbucket.svg',
         display_name='Bitbucket',
         stream_name='bitbucket'
     ),
@@ -266,7 +260,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration(
         'deskdotcom',
         ['customer-support'],
-        logo='static/images/integrations/logos/deskcom.png',
+        logo='images/integrations/logos/deskcom.png',
         display_name='Desk.com',
         stream_name='desk'
     ),
@@ -278,7 +272,7 @@ WEBHOOK_INTEGRATIONS = [
         'github',
         ['version-control'],
         display_name='GitHub',
-        logo='static/images/integrations/logos/github.svg',
+        logo='images/integrations/logos/github.svg',
         function='zerver.webhooks.github.view.api_github_webhook',
         stream_name='github'
     ),
@@ -386,7 +380,7 @@ INTEGRATIONS = {
         'jira-plugin',
         'jira-plugin',
         ['project-management'],
-        logo='static/images/integrations/logos/jira.svg',
+        logo='images/integrations/logos/jira.svg',
         secondary_line_text='(locally installed)',
         display_name='JIRA',
         doc='zerver/integrations/jira-plugin.md',
@@ -427,7 +421,7 @@ INTEGRATIONS = {
         'trello-plugin',
         'trello-plugin',
         ['project-management'],
-        logo='static/images/integrations/logos/trello.svg',
+        logo='images/integrations/logos/trello.svg',
         secondary_line_text='(legacy)',
         display_name='Trello',
         doc='zerver/integrations/trello-plugin.md',
@@ -436,7 +430,7 @@ INTEGRATIONS = {
     ),
     'twitter': Integration('twitter', 'twitter', ['customer-support', 'marketing'],
                            # _ needed to get around adblock plus
-                           logo='static/images/integrations/logos/twitte_r.svg',
+                           logo='images/integrations/logos/twitte_r.svg',
                            doc='zerver/integrations/twitter.md'),
 }  # type: Dict[str, Integration]
 
@@ -444,7 +438,7 @@ BOT_INTEGRATIONS = [
     BotIntegration('github_detail', ['version-control', 'bots'],
                    display_name='GitHub Detail'),
     BotIntegration('xkcd', ['bots', 'misc'], display_name='xkcd',
-                   logo='static/images/integrations/logos/xkcd.png'),
+                   logo='images/integrations/logos/xkcd.png'),
 ]  # type: List[BotIntegration]
 
 HUBOT_INTEGRATIONS = [
@@ -458,14 +452,14 @@ HUBOT_INTEGRATIONS = [
                      logo_alt='Google Hangouts logo'),
     HubotIntegration('instagram', ['misc'], display_name='Instagram',
                      # _ needed to get around adblock plus
-                     logo='static/images/integrations/logos/instagra_m.svg'),
+                     logo='images/integrations/logos/instagra_m.svg'),
     HubotIntegration('mailchimp', ['communication', 'marketing'],
                      display_name='MailChimp'),
     HubotIntegration('google-translate', ['misc'],
                      display_name="Google Translate", logo_alt='Google Translate logo'),
     HubotIntegration('youtube', ['misc'], display_name='YouTube',
                      # _ needed to get around adblock plus
-                     logo='static/images/integrations/logos/youtub_e.svg'),
+                     logo='images/integrations/logos/youtub_e.svg'),
 ]  # type: List[HubotIntegration]
 
 for hubot_integration in HUBOT_INTEGRATIONS:
