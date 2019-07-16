@@ -48,7 +48,7 @@ su "$POSTGRES_USER" -c 'psql -v ON_ERROR_STOP=1 -e' <<EOF
 DROP DATABASE IF EXISTS zulip;
 EOF
 
-"$(dirname "$0")/postgres-create-db"
+su "$POSTGRES_USER" -c 'psql -v ON_ERROR_STOP=1 -e' < "$(dirname "$0")/create-db.sql"
 )
 
 # Clear memcached to avoid contamination from previous database state
