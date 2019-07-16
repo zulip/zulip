@@ -110,7 +110,7 @@
                                   {% endif %}
                                   data-categories="{{ integration.categories }}"
                                   data-name="{{ integration.name }}">
-                                    <img class="integration-logo" src="/{{ integration.logo }}"
+                                    <img class="integration-logo" src="{{ integration.logo_url }}"
                                       alt="{{ integration.display_name }} logo"/>
                                     {% if integration.secondary_line_text %}
                                     <h3 class="integration-name with-secondary">{{ integration.display_name }}</h3>
