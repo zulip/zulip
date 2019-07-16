@@ -14,7 +14,10 @@ module.exports.make_handlebars = () => {
         const name = "$" + path.relative(templates_path, filename);
         if (!compiled.has(name)) {
             compiled.add(name);
-            hb.registerPartial(name, hb.compile(fs.readFileSync(filename, "utf-8"), { zjsFilename: filename }));
+            hb.registerPartial(
+                name,
+                hb.compile(fs.readFileSync(filename, "utf-8"), { preventIndent: true, zjsFilename: filename })
+            );
         }
         return name;
     };
