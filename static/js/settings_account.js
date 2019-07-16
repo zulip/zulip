@@ -426,6 +426,8 @@ exports.set_up = function () {
                 overlays.close_modal('change_email_modal');
             },
             error_msg_element: change_email_error,
+            success_msg: i18n.t('Check your email (%s) to confirm the new address.').replace(
+                "%s", data.email),
         };
         settings_ui.do_settings_change(channel.patch, '/json/settings', data,
                                        $('#account-settings-status').expectOne(), opts);
