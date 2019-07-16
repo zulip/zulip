@@ -27,7 +27,8 @@ ENV TSEARCH_EXTRAS_VERSION=0.4
 ENV TSEARCH_EXTRAS_DEB=postgresql-${PG_MAJOR}-tsearch-extras_${TSEARCH_EXTRAS_VERSION}_amd64.deb
 COPY --from=0 /${TSEARCH_EXTRAS_DEB} /tmp
 COPY puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/$PG_MAJOR/tsearch_data/zulip_english.stop
-COPY scripts/setup/postgres-create-db /docker-entrypoint-initdb.d/postgres-create-db.sh
+COPY scripts/setup/create-db.sql /docker-entrypoint-initdb.d/zulip-create-db.sql
+COPY scripts/setup/create-pgroonga.sql /docker-entrypoint-initdb.d/zulip-create-pgroonga.sql
 COPY scripts/setup/pgroonga-debian.asc /tmp
 RUN apt-key add /tmp/pgroonga-debian.asc \
     && echo "deb http://packages.groonga.org/debian/ stretch main" > /etc/apt/sources.list.d/zulip.list \
