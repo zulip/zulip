@@ -87,6 +87,7 @@ export default (env?: string): webpack.Configuration[] => {
                             // The ones below are defined in static/js/templates.js
                             'partial', 'plural', 'eq', 'and', 'or', 'not',
                             't', 'tr'],
+                        preventIndent: true,
                     },
                 },
                 // load fonts and files
