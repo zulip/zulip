@@ -2,6 +2,8 @@ var render_invitation_failed_error = require("../templates/invitation_failed_err
 var render_invite_subscription = require('../templates/invite_subscription.hbs');
 var render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
 
+var autosize = require('autosize');
+
 var invite = (function () {
 
 var exports = {};
@@ -144,7 +146,7 @@ function prepare_form_to_be_shown() {
 exports.launch = function () {
     $('#submit-invitation').button();
     prepare_form_to_be_shown();
-    $("#invitee_emails").focus().autosize();
+    autosize($("#invitee_emails").focus());
 
     overlays.open_overlay({
         name: 'invite',

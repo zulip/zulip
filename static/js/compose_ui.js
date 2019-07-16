@@ -1,9 +1,11 @@
+var autosize = require('autosize');
+
 var compose_ui = (function () {
 
 var exports = {};
 
 exports.autosize_textarea = function () {
-    $("#compose-textarea").trigger("autosize.resize");
+    autosize.update($("#compose-textarea"));
 };
 
 exports.smart_insert = function (textarea, syntax) {
@@ -42,7 +44,7 @@ exports.smart_insert = function (textarea, syntax) {
 
     // This should just call exports.autosize_textarea, but it's a bit
     // annoying for the unit tests, so we don't do that.
-    textarea.trigger("autosize.resize");
+    autosize.update(textarea);
 };
 
 exports.insert_syntax_and_focus = function (syntax, textarea) {

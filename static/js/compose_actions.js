@@ -1,3 +1,5 @@
+var autosize = require('autosize');
+
 var compose_actions = (function () {
 
 var exports = {};
@@ -105,7 +107,7 @@ function clear_box() {
 }
 
 exports.autosize_message_content = function () {
-    $("#compose-textarea").autosize({
+    autosize($("#compose-textarea"), {
         callback: function () {
             compose_actions.maybe_scroll_up_selected_message();
         },
@@ -417,7 +419,7 @@ exports.quote_and_reply = function (opts) {
 
     function replace_content(raw_content) {
         compose_ui.replace_syntax('[Quoting…]', '```quote\n' + raw_content + '\n```', textarea);
-        $("#compose-textarea").trigger("autosize.resize");
+        autosize.update($('#compose-textarea'));
     }
 
     if (message && message.raw_content) {

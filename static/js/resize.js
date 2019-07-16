@@ -1,3 +1,5 @@
+var autosize = require('autosize');
+
 var resize = (function () {
 
 var exports = {};
@@ -185,7 +187,7 @@ exports.watch_manual_resize = function (element) {
     }(function (height) {
         // This callback disables autosize on the textarea.  It
         // will be re-enabled when this component is next opened.
-        $(element).trigger("autosize.destroy")
+        autosize.destroy($(element))
             .height(height + "px");
     }));
 };
