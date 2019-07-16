@@ -368,6 +368,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'update_display_settings': {
         const user_display_settings = [
+            'buddy_list_mode',
             'default_language',
             'demote_inactive_streams',
             'dense_mode',
@@ -401,6 +402,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.setting_name === 'demote_inactive_streams') {
             stream_list.update_streams_sidebar();
             stream_data.set_filter_out_inactives();
+        }
+        if (event.setting_name === 'buddy_list_mode') {
+            // switch setting here.
         }
         if (event.setting_name === 'dense_mode') {
             $("body").toggleClass("less_dense_mode");

@@ -161,6 +161,8 @@ def update_display_settings_backend(
             emojiset_choices), default=None),
         demote_inactive_streams: Optional[int]=REQ(validator=check_int_in(
             UserProfile.DEMOTE_STREAMS_CHOICES), default=None),
+        buddy_list_mode: Optional[int]=REQ(validator=check_int_in(
+            UserProfile.BUDDY_LIST_MODE_CHOICES), default=None),
         timezone: Optional[str]=REQ(validator=check_string_in(all_timezones),
                                     default=None)) -> HttpResponse:
 

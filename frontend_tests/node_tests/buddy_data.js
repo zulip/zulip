@@ -11,6 +11,7 @@ zrequire('narrow_state');
 zrequire('Filter', 'js/filter');
 zrequire('hash_util');
 zrequire('stream_data');
+const settings_config = zrequire('settings_config');
 
 set_global('timerender', {});
 
@@ -363,7 +364,18 @@ function set_filter(operators) {
 run_test('stream_member_functions', () => {
     // This test works on users created by the make_people() function
 
-    buddy_data.should_show_only_recipients = () => true;
+    function turn_on_message_recipient_list_mode() {
+        _page_params.buddy_list_mode =
+            settings_config.buddy_list_mode_values.stream_or_pm_members.value;
+        set_global('page_params', _page_params);
+    }
+
+    function turn_off_message_recipient_list_mode() {
+        _page_params.buddy_list_mode = settings_config.buddy_list_mode_values.all_users.value;
+        set_global('page_params', _page_params);
+    }
+
+    turn_on_message_recipient_list_mode();
     assert(buddy_data.should_show_only_recipients()); // sanity
 
     // this narrow filter has the effect of excluding p1900 from the buddy list
@@ -403,7 +415,7 @@ run_test('stream_member_functions', () => {
         1900,
     ]);
 
-    buddy_data.should_show_only_recipients = () => false;
+    turn_off_message_recipient_list_mode();
     assert(!buddy_data.should_show_only_recipients()); // reset for next test case
 });
 

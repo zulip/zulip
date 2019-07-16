@@ -294,8 +294,8 @@ function maybe_shrink_list(user_ids, user_filter_text) {
 }
 
 exports.should_show_only_recipients = function () {
-    // The display setting has not been implemented yet.
-    return false;
+    return  page_params.buddy_list_mode ===
+            settings_config.buddy_list_mode_values.stream_or_pm_members.value;
 };
 
 function get_stream_message_recipients_list(sub) {

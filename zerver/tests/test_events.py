@@ -1849,6 +1849,7 @@ class EventsRegisterTest(ZulipTestCase):
             default_language = ['es', 'de', 'en'],
             timezone = ['US/Mountain', 'US/Samoa', 'Pacific/Galapogos', ''],
             demote_inactive_streams = [2, 3, 1],
+            buddy_list_mode = [2, 3, 1],
         )
 
         property_type = UserProfile.property_types[setting_name]

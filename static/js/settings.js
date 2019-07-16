@@ -61,6 +61,7 @@ exports.build_page = function () {
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications().general_settings,
         notification_settings: settings_config.all_notifications().settings,
+        buddy_list_mode_values: settings_config.buddy_list_mode_values,
         desktop_icon_count_display_values: settings_notifications.desktop_icon_count_display_values,
         show_push_notifications_tooltip:
             settings_config.all_notifications().show_push_notifications_tooltip,

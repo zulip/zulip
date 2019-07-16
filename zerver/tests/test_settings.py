@@ -324,6 +324,7 @@ class ChangeSettingsTest(ZulipTestCase):
             emojiset = 'google',
             timezone = 'US/Mountain',
             demote_inactive_streams = 2,
+            buddy_list_mode = 2,
         )
 
         self.login('hamlet')

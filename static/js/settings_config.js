@@ -93,6 +93,17 @@ exports.create_stream_policy_values = {
     },
 };
 
+exports.buddy_list_mode_values = {
+    all_users: {
+        value: 1,
+        description: i18n.t("All users"),
+    },
+    stream_or_pm_members: {
+        value: 2,
+        description: i18n.t("Stream or PM recipients"),
+    },
+};
+
 exports.invite_to_stream_policy_values = exports.create_stream_policy_values;
 
 exports.user_group_edit_policy_values = {

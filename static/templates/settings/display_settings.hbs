@@ -37,6 +37,15 @@
                     {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
                 </select>
             </div>
+
+            <div class="input-group">
+                <label for="buddy_list_mode" class="dropdown-title">{{t "User list content" }}:</label>
+                <select name="buddy_list_mode" id="buddy_list_mode">
+                    {{#each buddy_list_mode_values}}
+                    <option value='{{ this.value }}'>{{ this.description }}</option>
+                    {{/each}}
+                </select>
+            </div>
         </div>
 
         <div id="user-time-settings">

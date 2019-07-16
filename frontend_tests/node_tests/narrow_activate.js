@@ -1,6 +1,7 @@
 const util = zrequire('util');
 set_global('$', global.make_zjquery());
 
+zrequire('buddy_data');
 zrequire('narrow_state');
 set_global('resize', {
     resize_stream_filters_container: () => {},
@@ -11,6 +12,15 @@ zrequire('MessageListData', 'js/message_list_data');
 zrequire('unread');
 zrequire('narrow');
 zrequire('search_pill');
+zrequire('settings_config');
+zrequire('util');
+
+// for activity.js
+const _document = {
+    hasFocus: function () {
+        return true;
+    },
+};
 
 set_global('activity', {});
 set_global('buddy_data', {});
@@ -18,6 +28,7 @@ set_global('channel', {});
 set_global('compose', {});
 set_global('compose_actions', {});
 set_global('current_msg_list', {});
+set_global('document', _document);
 set_global('hashchange', {});
 set_global('home_msg_list', {});
 set_global('message_fetch', {});

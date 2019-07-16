@@ -31,6 +31,8 @@ exports.set_up = function () {
 
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
+    $("#buddy_list_mode").val(page_params.buddy_list_mode);
+
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
     $("#default_language_modal [data-dismiss]").click(function () {
@@ -86,6 +88,11 @@ exports.set_up = function () {
         window.location.reload();
     });
 
+
+    $('#buddy_list_mode').change(function () {
+        const data = {buddy_list_mode: this.value};
+        change_display_setting(data, '#display-settings-status');
+    });
 
     $("#twenty_four_hour_time").change(function () {
         const data = {twenty_four_hour_time: this.value};

@@ -985,6 +985,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.Field.null.
     timezone: str = models.CharField(max_length=40, default='')
 
+    # user list sidebar
+    BUDDY_LIST_MODE_ALL_USERS = 1
+    BUDDY_LIST_MODE_STREAM_OR_PM_RECIPIENTS = 2
+    BUDDY_LIST_MODE_CHOICES = [
+        BUDDY_LIST_MODE_ALL_USERS,
+        BUDDY_LIST_MODE_STREAM_OR_PM_RECIPIENTS
+    ]
+    buddy_list_mode = models.PositiveSmallIntegerField(default=BUDDY_LIST_MODE_ALL_USERS)
+
     # Emojisets
     GOOGLE_EMOJISET         = 'google'
     GOOGLE_BLOB_EMOJISET    = 'google-blob'
@@ -1024,6 +1033,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     # Define the types of the various automatically managed properties
     property_types = dict(
+        buddy_list_mode=int,
         default_language=str,
         demote_inactive_streams=int,
         dense_mode=bool,
