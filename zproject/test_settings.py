@@ -126,7 +126,11 @@ ENABLE_FILE_LINKS = True
 
 # These settings are set dynamically in `zerver/lib/test_runner.py`:
 TEST_WORKER_DIR = ''
-LOCAL_UPLOADS_DIR = ''
+# Don't unintentionally override a set value.
+if "LOCAL_UPLOADS_DIR" in os.environ:
+    LOCAL_UPLOADS_DIR = os.getenv("LOCAL_UPLOADS_DIR")
+else:
+    LOCAL_UPLOADS_DIR = ''
 
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
