@@ -85,7 +85,7 @@ export default (env?: string): webpack.Configuration[] => {
                         // Tell webpack not to explicitly require these.
                         knownHelpers: ['if', 'unless', 'each', 'with',
                             // The ones below are defined in static/js/templates.js
-                            'partial', 'plural', 'eq', 'and', 'or', 'not',
+                            'plural', 'eq', 'and', 'or', 'not',
                             't', 'tr'],
                         preventIndent: true,
                     },
