@@ -131,19 +131,20 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         user_profile = self.example_user("hamlet")
         sender_email = user_profile.email
         sample_size = 10
+        realm_id = get_realm("zulip").id
         dummy_files = [
-            ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
-            ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
-            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size)
+            ('zulip.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt' % (realm_id,), sample_size),
+            ('temp_file.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py' % (realm_id,), sample_size),
+            ('abc.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py' % (realm_id,), sample_size)
         ]
 
         for file_name, path_id, size in dummy_files:
             create_attachment(file_name, path_id, user_profile, size)
 
         self.subscribe(user_profile, "Denmark")
-        body = "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" + \
-               "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." + \
-               "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
+        body = ("Some files here ...[zulip.txt](http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +
+                "http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." +
+                "http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py").format(id=realm_id)
 
         expired_message_id = self.send_stream_message(sender_email, "Denmark", body)
         actual_message_id = self.send_stream_message(sender_email, "Denmark", body)
@@ -475,12 +476,13 @@ class MoveMessageToArchiveBase(RetentionTestingBase):
 
     def _create_attachments(self) -> None:
         sample_size = 10
+        realm_id = get_realm("zulip").id
         dummy_files = [
-            ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
-            ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
-            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size),
-            ('hello.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt', sample_size),
-            ('new.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py', sample_size)
+            ('zulip.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt' % (realm_id,), sample_size),
+            ('temp_file.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py' % (realm_id,), sample_size),
+            ('abc.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py' % (realm_id,), sample_size),
+            ('hello.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt' % (realm_id,), sample_size),
+            ('new.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py' % (realm_id,), sample_size)
         ]
         user_profile = self.example_user('hamlet')
         for file_name, path_id, size in dummy_files:
@@ -530,17 +532,18 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
 
     def test_archiving_messages_with_attachment(self) -> None:
         self._create_attachments()
+        realm_id = get_realm("zulip").id
 
         body1 = """Some files here ...[zulip.txt](
-            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
-            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
-            Some more.... http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
-        """
+            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
+        """.format(id=realm_id)
         body2 = """Some files here
-            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt ...
-            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
-        """
+            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt ...
+            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+        """.format(id=realm_id)
 
         msg_ids = [
             self.send_personal_message(self.sender, self.recipient, body1),
@@ -592,14 +595,15 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
     def test_archiving_message_with_shared_attachment(self) -> None:
         # Make sure that attachments still in use in other messages don't get deleted:
         self._create_attachments()
+        realm_id = get_realm("zulip").id
 
         body = """Some files here ...[zulip.txt](
-            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
-            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
-            Some more.... http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
-            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
-            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-        """
+            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
+            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+        """.format(id=realm_id)
 
         msg_id = self.send_personal_message(self.sender, self.recipient, body)
         # Simulate a reply with the same contents.
