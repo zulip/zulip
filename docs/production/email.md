@@ -12,7 +12,9 @@ email addresses and send notifications.
 2. Fill out the section of `/etc/zulip/settings.py` headed "Outgoing
    email (SMTP) settings".  This includes the hostname and typically
    the port to reach your SMTP provider, and the username to log into
-   it as.
+   it as. Ensure that your SMTP server allows emails originating from
+   the email address listed as `ZULIP_ADMINISTRATOR` in
+   `/etc/zulip/settings.py`.
 
 3. Put the password for the SMTP user account in
    `/etc/zulip/zulip-secrets.conf` by setting `email_password`. For
