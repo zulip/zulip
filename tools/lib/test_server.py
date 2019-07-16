@@ -20,11 +20,14 @@ if TOOLS_DIR not in sys.path:
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
 from zerver.lib.test_fixtures import update_test_databases_if_required
+from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 
 def set_up_django(external_host):
     # type: (str) -> None
     os.environ['EXTERNAL_HOST'] = external_host
     os.environ["TORNADO_SERVER"] = "http://127.0.0.1:9983"
+    os.environ["LOCAL_UPLOADS_DIR"] = get_or_create_dev_uuid_var_path(
+        'test-backend/test_uploads')
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
     django.setup()
     os.environ['PYTHONUNBUFFERED'] = 'y'
