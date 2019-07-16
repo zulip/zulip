@@ -9,12 +9,12 @@ email addresses and send notifications.
    send mail.  If you don't already have one you want to use, see
    [Email services](#email-services) below.
 
-2. Fill out the section of `/etc/zulip/settings.py` headed "Outgoing
+1. Fill out the section of `/etc/zulip/settings.py` headed "Outgoing
    email (SMTP) settings".  This includes the hostname and typically
    the port to reach your SMTP provider, and the username to log into
-   it as.
+   it.  You'll also want to fill out the noreply email section.
 
-3. Put the password for the SMTP user account in
+1. Put the password for the SMTP user account in
    `/etc/zulip/zulip-secrets.conf` by setting `email_password`. For
    example: `email_password = abcd1234`.
 
@@ -22,9 +22,24 @@ email addresses and send notifications.
    [restart the server](settings.html) to make your changes take
    effect.
 
-4. Test that your configuration is working.  See the test command in
-   the [Troubleshooting](#troubleshooting) section below.  If it's not
-   working, see the suggestions in that section.
+1. Configure your SMTP server to allows your Zulip server to send
+   emails originating from the email addresses listed in
+   `/etc/zulip/settings.py` as `ZULIP_ADMINISTRATOR`,
+   `NOREPLY_EMAIL_ADDRESS` and if `ADD_TOKENS_TO_NOREPLY_ADDRESS=True`
+   (the default), `TOKENIZED_NOREPLY_EMAIL_ADDRESS`.
+
+   If you don't know how to do this, we recommend using a [free
+   transactional email service](#free-outgoing-email-services); they
+   will guide you through everything you need to do, covering details
+   like configuring DKIM/SPF authentication so your Zulip emails won't
+   be spam filtered.
+
+1. Use Zulip's email configuration test tool, documented in the
+   [Troubleshooting section](#troubleshooting), to verify that your
+   configuration is working.
+
+1. Once your configuration is working, restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart`.
 
 ## Email services
 
