@@ -53,8 +53,10 @@
                           {{#unless page_params.is_admin}}{{#if page_params.realm_name_changes_disabled}}{{else}}{{#unless page_params.server_name_changes_disabled}}href="#change_email"{{/unless}}{{/if}}{{/unless}}>
                             <button type="button" class="button small white rounded inline-block" id="full_name"
                               {{#unless page_params.is_admin}}{{#if page_params.realm_name_changes_disabled}}disabled="disabled"{{else}}{{#if page_params.server_name_changes_disabled}}disabled="disabled"{{/if}}{{/if}}{{/unless}}>
+                                {{~#if true~}}
                                 <span id="full_name_value">{{page_params.full_name}}</span>
                                 <i class="fa fa-pencil"></i>
+                                {{~/if~}}
                             </button>
                         </a>
                         <i class="fa fa-question-circle change_name_tooltip settings-info-icon" data-toggle="tooltip"
