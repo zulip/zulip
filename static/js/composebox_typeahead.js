@@ -1,3 +1,5 @@
+var autosize = require('autosize');
+
 var composebox_typeahead = (function () {
 
 //************************************
@@ -189,7 +191,7 @@ exports.handle_enter = function (textarea, e) {
         // Now add the newline, remembering to resize the
         // textarea if needed.
         textarea.caret("\n");
-        textarea.trigger("autosize.resize");
+        autosize.update(textarea);
         e.preventDefault();
         return;
     }

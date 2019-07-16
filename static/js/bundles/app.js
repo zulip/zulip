@@ -6,7 +6,6 @@ import "../../third/bootstrap-typeahead/typeahead.js";
 import "../../third/jquery-filedrop/jquery.filedrop.js";
 import "jquery-caret-plugin/src/jquery.caret.js";
 import "../../third/jquery-idle/jquery.idle.js";
-import "jquery-autosize";
 import "spectrum-colorpicker";
 import "../../third/sockjs/sockjs-0.3.4.js";
 import "../../third/marked/lib/marked.js";
