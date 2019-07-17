@@ -11,7 +11,6 @@ from django.core import signing
 from django.urls import reverse
 
 import httpretty
-import os
 
 import jwt
 import mock
@@ -35,6 +34,7 @@ from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
     check_bool, check_dict_only, check_string, Validator
 from zerver.lib.request import JsonableError
+from zerver.lib.storage import static_path
 from zerver.lib.users import get_all_api_keys
 from zerver.lib.upload import resize_avatar, MEDIUM_AVATAR_SIZE
 from zerver.lib.initial_password import initial_password
@@ -2506,7 +2506,7 @@ class TestLDAP(ZulipLDAPTestCase):
             'uid=nonexisting,ou=users,dc=acme,dc=com': {
                 'cn': ['NonExisting', ],
                 'userPassword': ['testing', ],
-                'thumbnailPhoto': [open(os.path.join(settings.STATIC_ROOT, "images/team/tim.png"), "rb").read()],
+                'thumbnailPhoto': [open(static_path("images/team/tim.png"), "rb").read()],
             }
         }
         with self.settings(
@@ -2640,7 +2640,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
                 'cn': ['King Hamlet', ],
-                'thumbnailPhoto': [open(os.path.join(settings.STATIC_ROOT, "images/team/tim.png"), "rb").read()]
+                'thumbnailPhoto': [open(static_path("images/team/tim.png"), "rb").read()]
             }
         }
         with mock.patch('zerver.lib.upload.upload_avatar_image') as fn, \
@@ -2662,7 +2662,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
                 'cn': ['King Hamlet', ],
-                'thumbnailPhoto': [open(os.path.join(settings.STATIC_ROOT, "images/logo/zulip-icon-512x512.png"), "rb").read()]
+                'thumbnailPhoto': [open(static_path("images/logo/zulip-icon-512x512.png"), "rb").read()]
             }
         }
         with mock.patch('zerver.lib.upload.upload_avatar_image') as fn, \
@@ -2852,7 +2852,7 @@ class TestQueryLDAP(ZulipLDAPTestCase):
         attrs = {
             'cn': ['King Hamlet', ],
             'sn': ['Hamlet', ],
-            'thumbnailPhoto': [open(os.path.join(settings.STATIC_ROOT, "images/team/tim.png"), "rb").read()],
+            'thumbnailPhoto': [open(static_path("images/team/tim.png"), "rb").read()],
             'birthDate': ['1990-01-01', ],
             'twitter': ['@handle', ],
         }

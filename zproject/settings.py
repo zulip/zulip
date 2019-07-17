@@ -873,14 +873,7 @@ STATIC_URL = '/static/'
 # here so that urls.py can read it.
 PIPELINE_ENABLED = not DEBUG
 
-if not PIPELINE_ENABLED:
-    STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
-    STATICFILES_FINDERS = (
-        'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-        'pipeline.finders.PipelineFinder',
-    )
-    STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'static/'))
-else:
+if PIPELINE_ENABLED:
     STATICFILES_STORAGE = 'zerver.lib.storage.ZulipStorage'
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -968,7 +961,9 @@ default_template_engine_settings.update({
         # The webhook integration templates
         os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
         # The python-zulip-api:zulip_bots package templates
-        os.path.join(STATIC_ROOT, 'generated', 'bots'),
+        os.path.join(
+            STATIC_ROOT if PIPELINE_ENABLED else 'static', 'generated', 'bots'
+        ),
     ],
     'APP_DIRS': True,
 })
@@ -1416,7 +1411,5 @@ CROSS_REALM_BOT_EMAILS = {
     'welcome-bot@zulip.com',
     'emailgateway@zulip.com',
 }
-
-CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')
 
 THUMBOR_KEY = get_secret('thumbor_key')

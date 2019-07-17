@@ -21,6 +21,7 @@ from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
+from zerver.lib.storage import static_path
 from zerver.lib.users import add_service
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
@@ -407,7 +408,7 @@ class Command(BaseCommand):
         user_profiles = list(UserProfile.objects.filter(is_bot=False))  # type: List[UserProfile]
 
         # Create a test realm emoji.
-        IMAGE_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'images', 'test-images', 'checkbox.png')
+        IMAGE_FILE_PATH = static_path('images/test-images/checkbox.png')
         with open(IMAGE_FILE_PATH, 'rb') as fp:
             check_add_realm_emoji(zulip_realm, 'green_tick', iago, fp)
 

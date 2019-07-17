@@ -34,6 +34,7 @@ from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import translate_emoticons, emoticon_regex
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
+from zerver.lib.storage import static_path
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import timeout, TimeoutExpired
@@ -1166,13 +1167,11 @@ def possible_avatar_emails(content: str) -> Set[str]:
 
     return emails
 
-path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT,
-                                         "generated", "emoji", "name_to_codepoint.json")
+path_to_name_to_codepoint = static_path("generated/emoji/name_to_codepoint.json")
 with open(path_to_name_to_codepoint) as name_to_codepoint_file:
     name_to_codepoint = ujson.load(name_to_codepoint_file)
 
-path_to_codepoint_to_name = os.path.join(settings.STATIC_ROOT,
-                                         "generated", "emoji", "codepoint_to_name.json")
+path_to_codepoint_to_name = static_path("generated/emoji/codepoint_to_name.json")
 with open(path_to_codepoint_to_name) as codepoint_to_name_file:
     codepoint_to_name = ujson.load(codepoint_to_name_file)
 

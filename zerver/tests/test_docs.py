@@ -4,13 +4,13 @@ import os
 import subprocess
 import ujson
 
-from django.conf import settings
 from django.test import TestCase, override_settings
 from django.http import HttpResponse
 from typing import Any, Dict, List
 
 from zproject.settings import DEPLOY_ROOT
 from zerver.lib.integrations import INTEGRATIONS
+from zerver.lib.storage import static_path
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
@@ -346,7 +346,7 @@ class AboutPageTest(ZulipTestCase):
         """
         # This block has unreliable test coverage due to the implicit
         # caching here, so we exclude it from coverage.
-        if not os.path.exists(settings.CONTRIBUTORS_DATA):
+        if not os.path.exists(static_path('generated/github-contributors.json')):
             # Copy the fixture file in `zerver/tests/fixtures` to `static/generated`
             update_script = os.path.join(os.path.dirname(__file__),
                                          '../../tools/update-authors-json')  # nocoverage

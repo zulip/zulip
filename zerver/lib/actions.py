@@ -50,6 +50,7 @@ from zerver.lib.realm_logo import realm_logo_url
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins, \
     clear_scheduled_emails, clear_scheduled_invitation_emails
+from zerver.lib.storage import static_path
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_active_subscriptions_for_stream_ids,
@@ -2916,7 +2917,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
             already_subscribed)
 
 def get_available_notification_sounds() -> List[str]:
-    notification_sounds_path = os.path.join(settings.STATIC_ROOT, 'audio/notification_sounds')
+    notification_sounds_path = static_path('audio/notification_sounds')
     available_notification_sounds = []
 
     for file_name in os.listdir(notification_sounds_path):

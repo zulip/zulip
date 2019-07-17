@@ -12,13 +12,13 @@ from zerver.lib.bugdown import privacy_clean_markdown
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.storage import static_path
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import check_bool, check_dict
 from zerver.models import UserProfile
 
 import subprocess
-import os
 import logging
 
 js_source_map = None  # type: Optional[SourceMap]
@@ -28,7 +28,7 @@ def get_js_source_map() -> Optional[SourceMap]:
     global js_source_map
     if not js_source_map and not (settings.DEVELOPMENT or settings.TEST_SUITE):
         js_source_map = SourceMap([
-            os.path.join(settings.STATIC_ROOT, 'webpack-bundles')
+            static_path('webpack-bundles')
         ])
     return js_source_map
 
