@@ -114,7 +114,6 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/debug.html',
             'zerver/base.html',
             'zerver/api_content.json',
-            'zerver/handlebars_compilation_failed.html',
             'zerver/portico-header.html',
             'zerver/deprecation_notice.html',
             'two_factor/_wizard_forms.html',

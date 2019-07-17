@@ -31,7 +31,6 @@ from two_factor.utils import default_device
 
 import calendar
 import logging
-import os
 import time
 
 @zulip_login_required
@@ -81,11 +80,6 @@ def compute_navbar_logo_url(page_params: Dict[str, Any]) -> str:
     return navbar_logo_url
 
 def home(request: HttpRequest) -> HttpResponse:
-    if (settings.DEVELOPMENT and not settings.TEST_SUITE and
-            os.path.exists('var/handlebars-templates/compile.error')):
-        response = render(request, 'zerver/handlebars_compilation_failed.html')
-        response.status_code = 500
-        return response
     if not settings.ROOT_DOMAIN_LANDING_PAGE:
         return home_real(request)
 
