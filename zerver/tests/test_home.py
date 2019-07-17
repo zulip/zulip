@@ -13,7 +13,7 @@ from zerver.lib.actions import do_change_logo_source
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
-    HostRequestMock, queries_captured, get_user_messages
+    queries_captured, get_user_messages
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
@@ -21,7 +21,7 @@ from zerver.models import (
     get_realm, get_stream, get_user, UserProfile,
     flush_per_request_caches, DefaultStream, Realm,
 )
-from zerver.views.home import home, sent_time_in_epoch_seconds, compute_navbar_logo_url
+from zerver.views.home import sent_time_in_epoch_seconds, compute_navbar_logo_url
 from corporate.models import Customer, CustomerPlan
 
 class HomeTest(ZulipTestCase):
@@ -798,14 +798,6 @@ class HomeTest(ZulipTestCase):
         user_message = MagicMock()
         user_message.message.pub_date = pub_date
         self.assertEqual(sent_time_in_epoch_seconds(user_message), epoch_seconds)
-
-    def test_handlebars_compile_error(self) -> None:
-        request = HostRequestMock()
-        with self.settings(DEVELOPMENT=True, TEST_SUITE=False):
-            with patch('os.path.exists', return_value=True):
-                result = home(request)
-        self.assertEqual(result.status_code, 500)
-        self.assert_in_response('Error compiling handlebars templates.', result)
 
     def test_subdomain_homepage(self) -> None:
         email = self.example_email("hamlet")
