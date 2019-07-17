@@ -394,16 +394,16 @@ form#add_new_subscription {
     text-transform: uppercase;
     font-weight: 700;
     border-bottom: 1px solid hsl(0, 0%, 87%);
-}
 
-.subscriptions-header .fa-chevron-left {
-    display: none;
-}
+    .fa-chevron-left {
+        display: none;
+    }
 
-.subscriptions-header .subscriptions-title {
-    display: inline-block;
-    transition: all 0.3s ease;
-    transform: translate(-13px, 0px);
+    .subscriptions-title {
+        display: inline-block;
+        transition: all 0.3s ease;
+        transform: translate(-13px, 0px);
+    }
 }
 
 .subscriptions-header .fa-chevron-left,
