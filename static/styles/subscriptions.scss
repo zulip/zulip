@@ -400,6 +400,12 @@ form#add_new_subscription {
     display: none;
 }
 
+.subscriptions-header .subscriptions-title {
+    display: inline-block;
+    transition: all 0.3s ease;
+    transform: translate(-13px, 0px);
+}
+
 .subscriptions-header .fa-chevron-left,
 #settings_overlay_container .settings-header.mobile .fa-chevron-left {
     position: relative;
@@ -419,12 +425,6 @@ form#add_new_subscription {
 #settings_overlay_container .settings-header.mobile.slide-left .fa-chevron-left {
     transform: translate(-0px, 0px);
     opacity: 1;
-}
-
-.subscriptions-header .subscriptions-title {
-    display: inline-block;
-    transition: all 0.3s ease;
-    transform: translate(-13px, 0px);
 }
 
 .subscriptions-container .exit {
