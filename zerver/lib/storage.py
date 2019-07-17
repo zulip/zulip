@@ -7,6 +7,15 @@ from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 from pipeline.storage import PipelineMixin
 
+if not settings.PIPELINE_ENABLED:
+    from django.contrib.staticfiles.finders import find
+
+    def static_path(path: str) -> str:
+        return find(path) or "/nonexistent"
+else:
+    def static_path(path: str) -> str:
+        return os.path.join(settings.STATIC_ROOT, path)
+
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
     def hashed_name(self, name: str, content: Optional[str]=None, filename: Optional[str]=None) -> str:
         ext = os.path.splitext(name)[1]

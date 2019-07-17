@@ -7,6 +7,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls.resolvers import LocaleRegexProvider
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
+from zerver.lib.storage import static_path
 
 
 """This module declares all of the (documented) integrations available
@@ -86,9 +87,9 @@ class Integration:
     def get_logo_url(self) -> Optional[str]:
         logo_file_path_svg = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
         logo_file_path_png = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
-        if os.path.isfile(os.path.join(settings.STATIC_ROOT, logo_file_path_svg)):
+        if os.path.isfile(static_path(logo_file_path_svg)):
             return staticfiles_storage.url(logo_file_path_svg)
-        elif os.path.isfile(os.path.join(settings.STATIC_ROOT, logo_file_path_png)):
+        elif os.path.isfile(static_path(logo_file_path_png)):
             return staticfiles_storage.url(logo_file_path_png)
 
         return None

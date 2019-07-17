@@ -23,6 +23,7 @@ from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
+from zerver.lib.storage import static_path
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.users import get_api_key
@@ -521,7 +522,7 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     return json_success(result)
 
 def team_view(request: HttpRequest) -> HttpResponse:
-    with open(settings.CONTRIBUTORS_DATA) as f:
+    with open(static_path('generated/github-contributors.json')) as f:
         data = ujson.load(f)
 
     return render(

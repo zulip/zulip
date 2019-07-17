@@ -4,6 +4,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 from django.conf import settings
+from zerver.lib.storage import static_path
 
 # See https://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/
 # for docs on what these values mean.
@@ -21,7 +22,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
         ldap_data.append((name, email, phone_number, birthdate))
 
     profile_images = [open(path, "rb").read() for path in
-                      glob.glob(os.path.join(settings.STATIC_ROOT, "images/team/*"))]
+                      glob.glob(os.path.join(static_path("images/team"), "*"))]
     ldap_dir = {}
     for i, user_data in enumerate(ldap_data):
         email = user_data[1].lower()

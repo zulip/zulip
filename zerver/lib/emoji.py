@@ -3,15 +3,15 @@ import os
 import re
 import ujson
 
-from django.conf import settings
 from django.utils.translation import ugettext as _
 from typing import Optional, Tuple
 
 from zerver.lib.request import JsonableError
+from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 
-EMOJI_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji")
+EMOJI_PATH = static_path("generated/emoji")
 NAME_TO_CODEPOINT_PATH = os.path.join(EMOJI_PATH, "name_to_codepoint.json")
 CODEPOINT_TO_NAME_PATH = os.path.join(EMOJI_PATH, "codepoint_to_name.json")
 EMOTICON_CONVERSIONS_PATH = os.path.join(EMOJI_PATH, "emoticon_conversions.json")

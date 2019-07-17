@@ -4,6 +4,7 @@ import os
 import subprocess
 from django.conf import settings
 from typing import Optional
+from zerver.lib.storage import static_path
 
 def render_tex(tex: str, is_inline: bool=True) -> Optional[str]:
     r"""Render a TeX string into HTML using KaTeX
@@ -20,7 +21,7 @@ def render_tex(tex: str, is_inline: bool=True) -> Optional[str]:
     """
 
     katex_path = (
-        os.path.join(settings.STATIC_ROOT, "webpack-bundles/katex-cli.js")
+        static_path("webpack-bundles/katex-cli.js")
         if settings.PRODUCTION
         else os.path.join(settings.DEPLOY_ROOT, "node_modules/katex/cli.js")
     )
