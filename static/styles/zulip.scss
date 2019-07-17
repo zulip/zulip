@@ -2546,29 +2546,29 @@ li .message_inline_image img {
     height: 18px;
     border-radius: 4px;
     margin-bottom: 3px;
-}
 
-.small_square_button:focus {
-    outline: none;
-}
+    &:focus {
+        outline: none;
+    }
 
-.small_square_button.small_square_check {
-    background-color: hsl(166, 35%, 57%);
-    color: hsl(0, 0%, 95%);
-}
+    &.small_square_check {
+        background-color: hsl(166, 35%, 57%);
+        color: hsl(0, 0%, 95%);
 
-.small_square_button.small_square_check:hover {
-    background-color: hsl(156, 30%, 50%);
-    color: hsl(0, 0%, 100%);
-}
+        &:hover {
+            background-color: hsl(156, 30%, 50%);
+            color: hsl(0, 0%, 100%);
+        }
+    }
 
-.small_square_button.small_square_x {
-    background-color: hsl(0, 0%, 100%);
-    color: hsl(0, 0%, 47%);
-}
+    &.small_square_x {
+        background-color: hsl(0, 0%, 100%);
+        color: hsl(0, 0%, 47%);
 
-.small_square_button.small_square_x:hover {
-    color: hsl(0, 0%, 18%);
+        &:hover {
+            color: hsl(0, 0%, 18%);
+        }
+    }
 }
 
 div.topic_edit_spinner {
