@@ -378,7 +378,9 @@ Filter.prototype = {
     can_mark_messages_read: function () {
         return !this.has_operator('search');
     },
-
+    allow_use_first_unread_when_narrowing: function () {
+        return this.can_mark_messages_read() || this.has_operator('is');
+    },
     can_apply_locally: function () {
         if (this.is_search()) {
             // The semantics for matching keywords are implemented
