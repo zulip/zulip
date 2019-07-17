@@ -290,8 +290,7 @@ def notify_invites_changed(user_profile: UserProfile) -> None:
     send_event(user_profile.realm, event, admin_ids)
 
 def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
-    if settings.NOTIFICATION_BOT is not None:
-        send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)
+    send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
     """Give you the last 1000 messages on your public streams, so you have
@@ -354,8 +353,7 @@ def process_new_human_user(user_profile: UserProfile,
     add_new_user_history(user_profile, streams)
 
     # mit_beta_users don't have a referred_by field
-    if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None \
-            and settings.NOTIFICATION_BOT is not None:
+    if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None:
         # This is a cross-realm private message.
         internal_send_private_message(
             user_profile.realm,
@@ -3627,12 +3625,11 @@ def do_create_realm(string_id: str, name: str,
                "string_id": string_id,
                "emails_restricted_to_domains": emails_restricted_to_domains})
 
-    # Send a notification to the admin realm (if configured)
-    if settings.NOTIFICATION_BOT is not None:
-        signup_message = "Signups enabled"
-        admin_realm = get_system_bot(settings.NOTIFICATION_BOT).realm
-        internal_send_message(admin_realm, settings.NOTIFICATION_BOT, "stream",
-                              "signups", realm.display_subdomain, signup_message)
+    # Send a notification to the admin realm
+    signup_message = "Signups enabled"
+    admin_realm = get_system_bot(settings.NOTIFICATION_BOT).realm
+    internal_send_message(admin_realm, settings.NOTIFICATION_BOT, "stream",
+                          "signups", realm.display_subdomain, signup_message)
     return realm
 
 def do_change_notification_settings(user_profile: UserProfile, name: str,
