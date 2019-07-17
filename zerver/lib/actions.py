@@ -296,7 +296,7 @@ def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
 
     # We also clear any scheduled invitation emails to prevent them
     # from being sent after the user is created.
-    clear_scheduled_invitation_emails(user_profile.email)
+    clear_scheduled_invitation_emails(user_profile.delivery_email)
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
     """Give you the last 1000 messages on your public streams, so you have
