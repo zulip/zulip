@@ -292,7 +292,6 @@ def notify_invites_changed(user_profile: UserProfile) -> None:
 def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
     if settings.NOTIFICATION_BOT is not None:
         send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)
-    statsd.gauge("users.signups.%s" % (user_profile.realm.string_id,), 1, delta=True)
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
     """Give you the last 1000 messages on your public streams, so you have
