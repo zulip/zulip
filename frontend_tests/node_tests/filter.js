@@ -69,6 +69,7 @@ run_test('basics', () => {
 
     assert(!filter.is_search());
     assert(filter.can_mark_messages_read());
+    assert(filter.allow_use_first_unread_when_narrowing());
     assert(filter.can_apply_locally());
 
     operators = [
@@ -80,6 +81,7 @@ run_test('basics', () => {
 
     assert(filter.is_search());
     assert(!filter.can_mark_messages_read());
+    assert(!filter.allow_use_first_unread_when_narrowing());
     assert(!filter.can_apply_locally());
     assert(!filter.is_exactly('stream'));
 
@@ -110,7 +112,32 @@ run_test('basics', () => {
     assert(filter.has_operator('has'));
     assert(!filter.can_apply_locally());
 });
+run_test('show_first_unread', () => {
+    var operators = [
+        {operator: 'is', operand: 'any'},
+    ];
+    var filter = new Filter(operators);
+    assert(filter.allow_use_first_unread_when_narrowing());
 
+    operators = [
+        {operator: 'search', operand: 'query to search'},
+    ];
+    filter = new Filter(operators);
+    assert(!filter.allow_use_first_unread_when_narrowing());
+
+    filter = new Filter();
+    filter.can_mark_messages_read = () => true;
+    assert(filter.allow_use_first_unread_when_narrowing());
+
+    // Side case
+    operators = [
+        {operator: 'is', operand: 'any'},
+    ];
+    filter = new Filter(operators);
+    filter.can_mark_messages_read = () => false;
+    assert(filter.allow_use_first_unread_when_narrowing());
+
+});
 run_test('topic_stuff', () => {
     var operators = [
         {operator: 'stream', operand: 'foo'},

@@ -226,9 +226,12 @@ exports.activate = function (raw_operators, opts) {
         if (id_info.final_select_id !== undefined) {
             anchor = id_info.final_select_id;
             use_first_unread = false;
-        } else {
+        } else if (narrow_state.filter().allow_use_first_unread_when_narrowing()) {
             anchor = -1;
             use_first_unread = true;
+        } else {
+            anchor = 10000000000000000;
+            use_first_unread = false;
         }
 
         message_fetch.load_messages_for_narrow({
