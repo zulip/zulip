@@ -294,10 +294,6 @@ def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
         send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)
     statsd.gauge("users.signups.%s" % (user_profile.realm.string_id,), 1, delta=True)
 
-    # We also clear any scheduled invitation emails to prevent them
-    # from being sent after the user is created.
-    clear_scheduled_invitation_emails(user_profile.delivery_email)
-
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
     """Give you the last 1000 messages on your public streams, so you have
     something to look at in your home view once you finish the
@@ -383,6 +379,9 @@ def process_new_human_user(user_profile: UserProfile,
         PreregistrationUser.objects.filter(email__iexact=user_profile.delivery_email).update(status=0)
 
     notify_new_user(user_profile)
+    # Clear any scheduled invitation emails to prevent them
+    # from being sent after the user is created.
+    clear_scheduled_invitation_emails(user_profile.delivery_email)
     if user_profile.realm.send_welcome_emails:
         enqueue_welcome_emails(user_profile, realm_creation)
 
