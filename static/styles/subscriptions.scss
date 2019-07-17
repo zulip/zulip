@@ -377,17 +377,6 @@ form#add_new_subscription {
     color: hsl(0, 0%, 27%);
 }
 
-.subscriptions-container {
-    position: relative;
-    height: 95%;
-    border-radius: 4px;
-    padding: 0px;
-    width: 97%;
-    overflow: hidden;
-    max-width: 1200px;
-    max-height: 1000px;
-}
-
 .subscriptions-header {
     padding: 12px;
     text-align: center;
@@ -427,6 +416,17 @@ form#add_new_subscription {
     opacity: 1;
 }
 
+.subscriptions-container {
+    position: relative;
+    height: 95%;
+    border-radius: 4px;
+    padding: 0px;
+    width: 97%;
+    overflow: hidden;
+    max-width: 1200px;
+    max-height: 1000px;
+}
+
 .subscriptions-container .exit {
     font-weight: 600;
     position: absolute;
@@ -455,6 +455,17 @@ form#add_new_subscription {
     margin: 0px -2px;
 }
 
+.subscriptions-container .left {
+    border-right: 1px solid hsl(0, 0%, 87%);
+}
+
+.subscriptions-container .left .search-container {
+    padding: 6px 8px;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+    display: flex;
+    justify-content: space-between;
+}
+
 .subscriptions-container .right {
     width: calc(50% - -1px);
 }
@@ -476,22 +487,23 @@ form#add_new_subscription {
     margin: 0 auto 10px auto;
 }
 
-.subscriptions-container .left {
-    border-right: 1px solid hsl(0, 0%, 87%);
-}
-
-.subscriptions-container .left .search-container {
-    padding: 6px 8px;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-    display: flex;
-    justify-content: space-between;
-}
-
 .subscriptions-container .right .display-type {
     padding: 6px;
     text-align: center;
     font-weight: 600;
     border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+.subscriptions-container .right #preview_iframe {
+    width: 100%;
+    height: calc(100% - 45px);
+    border: none;
+    background-color: hsl(0, 0%, 98%);
+    box-shadow: inset 0px 0px 50px hsla(0, 0%, 0%, 0.5);
+    background-image: url(../images/preview-loading.png);
+    background-size: 150px auto;
+    background-position: center center;
+    background-repeat: no-repeat;
 }
 
 .subscriptions-container .display-type.preview::after {
@@ -508,18 +520,6 @@ form#add_new_subscription {
     line-height: 1;
     margin: 9px 0px;
     font-weight: 600;
-}
-
-.subscriptions-container .right #preview_iframe {
-    width: 100%;
-    height: calc(100% - 45px);
-    border: none;
-    background-color: hsl(0, 0%, 98%);
-    box-shadow: inset 0px 0px 50px hsla(0, 0%, 0%, 0.5);
-    background-image: url(../images/preview-loading.png);
-    background-size: 150px auto;
-    background-position: center center;
-    background-repeat: no-repeat;
 }
 
 .subscriptions-container input[type=text].small {
