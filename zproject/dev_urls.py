@@ -11,7 +11,7 @@ import zerver.views.development.integrations
 
 # These URLs are available only in the development environment
 
-use_prod_static = getattr(settings, 'PIPELINE_ENABLED', False)
+use_prod_static = not settings.DEBUG
 
 urls = [
     # Serve useful development environment resources (docs, coverage reports, etc.)

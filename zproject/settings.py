@@ -576,7 +576,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'confirmation',
-    'pipeline',
     'webpack_loader',
     'zerver',
     'social_django',
@@ -861,7 +860,7 @@ if CAMO_URI != '':
 
 STATIC_URL = '/static/'
 
-# ZulipStorage is a modified version of PipelineCachedStorage,
+# ZulipStorage is a modified version of ManifestStaticFilesStorage,
 # and, like that class, it inserts a file hash into filenames
 # to prevent the browser from using stale files from cache.
 #
@@ -869,16 +868,8 @@ STATIC_URL = '/static/'
 # STATIC_ROOT even for dev servers.  So we only use
 # ZulipStorage when not DEBUG.
 
-# This is the default behavior from Pipeline, but we set it
-# here so that urls.py can read it.
-PIPELINE_ENABLED = not DEBUG
-
-if PIPELINE_ENABLED:
+if not DEBUG:
     STATICFILES_STORAGE = 'zerver.lib.storage.ZulipStorage'
-    STATICFILES_FINDERS = (
-        'django.contrib.staticfiles.finders.FileSystemFinder',
-        'pipeline.finders.PipelineFinder',
-    )
     if PRODUCTION:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
@@ -893,24 +884,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 STATICFILES_DIRS = ['static/']
 
-# To use minified files in dev, set PIPELINE_ENABLED = True.  For the full
-# cache-busting behavior, you must also set DEBUG = False.
-#
-# You will need to run update-prod-static after changing
-# static files.
-#
-# Useful reading on how this works is in
-# https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
-
-PIPELINE = {
-    'PIPELINE_ENABLED': PIPELINE_ENABLED,
-    'CSS_COMPRESSOR': 'pipeline.compressors.yui.YUICompressor',
-    'YUI_BINARY': '/usr/bin/env yui-compressor',
-    'STYLESHEETS': {},
-    'JAVASCRIPT': {},
-}
-
-if not PIPELINE_ENABLED:
+if DEBUG:
     WEBPACK_STATS_FILE = os.path.join('var', 'webpack-stats-dev.json')
 else:
     WEBPACK_STATS_FILE = 'webpack-stats-production.json'
@@ -942,7 +916,6 @@ base_template_engine_settings = {
         'extensions': [
             'jinja2.ext.i18n',
             'jinja2.ext.autoescape',
-            'pipeline.jinja2.PipelineExtension',
             'webpack_loader.contrib.jinja2ext.WebpackExtension',
         ],
         'context_processors': [
@@ -961,9 +934,7 @@ default_template_engine_settings.update({
         # The webhook integration templates
         os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
         # The python-zulip-api:zulip_bots package templates
-        os.path.join(
-            STATIC_ROOT if PIPELINE_ENABLED else 'static', 'generated', 'bots'
-        ),
+        os.path.join('static' if DEBUG else STATIC_ROOT, 'generated', 'bots'),
     ],
     'APP_DIRS': True,
 })

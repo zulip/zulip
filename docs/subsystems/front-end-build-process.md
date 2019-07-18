@@ -74,13 +74,11 @@ needs to be accessible from one of the entry points defined in
   the compiled JS and CSS.
 
 If you want to test minified files in development, look for the
-`PIPELINE_ENABLED =` line in `zproject/settings.py` and set it to `True`
--- or just set `DEBUG = False`.
+`DEBUG =` line in `zproject/settings.py` and set it to `False`.
 
 ## How it works in production
 
-You can learn a lot from reading about django-pipeline, but a few
-useful notes are:
+A few useful notes are:
 * Zulip installs static assets in production in
 `/home/zulip/prod-static`.  When a new version is deployed, before the
 server is restarted, files are copied into that directory.
