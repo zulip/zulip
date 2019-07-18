@@ -35,22 +35,16 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             return name
         return super().hashed_name(name, content, filename)
 
-if settings.PRODUCTION:
+class ZulipStorage(PipelineMixin,
+                   IgnoreBundlesManifestStaticFilesStorage):
     # This is a hack to use staticfiles.json from within the
     # deployment, rather than a directory under STATIC_ROOT.  By doing
     # so, we can use a different copy of staticfiles.json for each
     # deployment, which ensures that we always use the correct static
     # assets for each deployment.
-    ManifestStaticFilesStorage.manifest_name = os.path.join(settings.DEPLOY_ROOT,
-                                                            "staticfiles.json")
-    orig_path = ManifestStaticFilesStorage.path
+    manifest_name = os.path.join(settings.DEPLOY_ROOT, "staticfiles.json")
 
-    def path(self: ManifestStaticFilesStorage, name: str) -> str:
-        if name == ManifestStaticFilesStorage.manifest_name:
+    def path(self, name: str) -> str:
+        if name == self.manifest_name:
             return name
-        return orig_path(self, name)
-    ManifestStaticFilesStorage.path = path
-
-class ZulipStorage(PipelineMixin,
-                   IgnoreBundlesManifestStaticFilesStorage):
-    pass
+        return super().path(name)

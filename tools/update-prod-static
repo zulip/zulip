@@ -5,7 +5,6 @@
 
 import os
 import argparse
-import shutil
 import sys
 
 # We need settings so we can figure out where the prod-static directory is.
@@ -64,10 +63,6 @@ run(authors_cmd, stdout=fp, stderr=fp)
 run(['./manage.py', 'collectstatic', '--no-default-ignore',
      '--noinput', '-i', 'assets', '-i', 'js', '-i', 'styles', '-i', 'templates'],
     stdout=fp, stderr=fp)
-
-if not settings.PRODUCTION:
-    # When building a release tarball, we need to move staticfiles.json
-    shutil.move('prod-static/serve/staticfiles.json', 'staticfiles.json')
 
 # Compile translation strings to generate `.mo` files.
 run(['./manage.py', 'compilemessages'], stdout=fp, stderr=fp)
