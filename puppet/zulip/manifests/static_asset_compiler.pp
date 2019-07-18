@@ -3,14 +3,12 @@ class zulip::static_asset_compiler {
   case $::osfamily {
     'debian': {
       $static_asset_compiler_packages = [
-        'yui-compressor',
         # Used by makemessages i18n
         'gettext',
       ]
     }
     'redhat': {
       $static_asset_compiler_packages = [
-        'yuicompressor',
         'gettext',
       ]
     }

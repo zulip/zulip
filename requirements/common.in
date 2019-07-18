@@ -106,9 +106,6 @@ tornado==4.5.3
 # Fast JSON parser
 -e git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 
-# Django extension for static asset pipeline
-django-pipeline==1.6.14
-
 # Django extension for serving webpack modules
 django-webpack-loader==0.6.0
 
