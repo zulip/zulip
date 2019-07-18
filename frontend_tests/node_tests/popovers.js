@@ -21,6 +21,8 @@ popovers.hide_user_profile = noop;
 
 set_global('current_msg_list', {});
 set_global('page_params', {
+    is_admin: false,
+    realm_email_address_visibility: 3,
     custom_profile_fields: [],
 });
 set_global('rows', {});
