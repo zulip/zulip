@@ -151,7 +151,6 @@ COMMON_DEPENDENCIES = [
 UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "redis-server",
     "hunspell-en-us",
-    "yui-compressor",
     "puppet-lint",
     "netcat",               # Used for flushing memcached
     "libfontconfig1",       # Required by phantomjs
@@ -160,7 +159,6 @@ UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
 COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "redis",
     "hunspell-en-US",
-    "yuicompressor",
     "rubygem-puppet-lint",
     "nmap-ncat",
     "fontconfig",  # phantomjs dependencies from here until libstdc++
