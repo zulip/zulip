@@ -870,16 +870,13 @@ STATIC_URL = '/static/'
 # here so that urls.py can read it.
 PIPELINE_ENABLED = not DEBUG
 
-if DEBUG:
+if not PIPELINE_ENABLED:
     STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
         'pipeline.finders.PipelineFinder',
     )
-    if PIPELINE_ENABLED:
-        STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'prod-static/serve'))
-    else:
-        STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'static/'))
+    STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'static/'))
 else:
     STATICFILES_STORAGE = 'zerver.lib.storage.ZulipStorage'
     STATICFILES_FINDERS = (
