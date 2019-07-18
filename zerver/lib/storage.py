@@ -5,9 +5,8 @@ from typing import Optional
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
-from pipeline.storage import PipelineMixin
 
-if not settings.PIPELINE_ENABLED:
+if settings.DEBUG:
     from django.contrib.staticfiles.finders import find
 
     def static_path(path: str) -> str:
@@ -44,8 +43,7 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             return name
         return super().hashed_name(name, content, filename)
 
-class ZulipStorage(PipelineMixin,
-                   IgnoreBundlesManifestStaticFilesStorage):
+class ZulipStorage(IgnoreBundlesManifestStaticFilesStorage):
     # This is a hack to use staticfiles.json from within the
     # deployment, rather than a directory under STATIC_ROOT.  By doing
     # so, we can use a different copy of staticfiles.json for each

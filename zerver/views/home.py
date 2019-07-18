@@ -288,7 +288,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'avatar_url': avatar_url(user_profile),
                                'show_debug':
                                settings.DEBUG and ('show_debug' in request.GET),
-                               'pipeline': settings.PIPELINE_ENABLED,
                                'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
                                'show_invites': show_invites,
                                'show_add_streams': show_add_streams,
