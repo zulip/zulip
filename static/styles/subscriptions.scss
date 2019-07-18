@@ -377,25 +377,7 @@ form#add_new_subscription {
     color: hsl(0, 0%, 27%);
 }
 
-.subscriptions-header {
-    padding: 12px;
-    text-align: center;
-    text-transform: uppercase;
-    font-weight: 700;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-
-    .fa-chevron-left {
-        display: none;
-    }
-
-    .subscriptions-title {
-        display: inline-block;
-        transition: all 0.3s ease;
-        transform: translate(-13px, 0px);
-    }
-}
-
-.subscriptions-header .fa-chevron-left,
+.subscriptions-container .subscriptions-header .fa-chevron-left,
 #settings_overlay_container .settings-header.mobile .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0px);
@@ -410,7 +392,7 @@ form#add_new_subscription {
     transition: all 0.3s ease;
 }
 
-.subscriptions-header.slide-left .fa-chevron-left,
+.subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
 #settings_overlay_container .settings-header.mobile.slide-left .fa-chevron-left {
     transform: translate(-0px, 0px);
     opacity: 1;
@@ -425,6 +407,24 @@ form#add_new_subscription {
     overflow: hidden;
     max-width: 1200px;
     max-height: 1000px;
+
+    .subscriptions-header {
+        padding: 12px;
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: 700;
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+
+        .fa-chevron-left {
+            display: none;
+        }
+
+        .subscriptions-title {
+            display: inline-block;
+            transition: all 0.3s ease;
+            transform: translate(-13px, 0px);
+        }
+    }
 
     .exit {
         font-weight: 600;
@@ -1042,7 +1042,7 @@ form#add_new_subscription {
         position: relative;
     }
 
-    .subscriptions-header .fa-chevron-left {
+    .subscriptions-container .subscriptions-header .fa-chevron-left {
         display: block;
     }
 
