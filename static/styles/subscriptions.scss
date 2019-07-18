@@ -425,118 +425,120 @@ form#add_new_subscription {
     overflow: hidden;
     max-width: 1200px;
     max-height: 1000px;
-}
 
-.subscriptions-container .exit {
-    font-weight: 600;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: hsl(0, 0%, 67%);
-    cursor: pointer;
-}
+    .exit {
+        font-weight: 600;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: hsl(0, 0%, 67%);
+        cursor: pointer;
+    }
 
-.subscriptions-container .exit-sign {
-    position: relative;
-    top: 3px;
-    margin-left: 3px;
-    font-size: 1.5rem;
-    font-weight: 600;
-    cursor: pointer;
-}
+    .exit-sign {
+        position: relative;
+        top: 3px;
+        margin-left: 3px;
+        font-size: 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
 
-.subscriptions-container .left,
-.subscriptions-container .right {
-    position: relative;
-    display: inline-block;
-    vertical-align: top;
-    width: 50%;
-    height: calc(100% - 45px);
-    margin: 0px -2px;
-}
+    .left,
+    .right {
+        position: relative;
+        display: inline-block;
+        vertical-align: top;
+        width: 50%;
+        height: calc(100% - 45px);
+        margin: 0px -2px;
+    }
 
-.subscriptions-container .left {
-    border-right: 1px solid hsl(0, 0%, 87%);
-}
+    .left {
+        border-right: 1px solid hsl(0, 0%, 87%);
 
-.subscriptions-container .left .search-container {
-    padding: 6px 8px;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-    display: flex;
-    justify-content: space-between;
-}
+        .search-container {
+            padding: 6px 8px;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+            display: flex;
+            justify-content: space-between;
+        }
+    }
 
-.subscriptions-container .right {
-    width: calc(50% - -1px);
-}
+    .right {
+        width: calc(50% - -1px);
 
-.subscriptions-container .right .nothing-selected {
-    display: block;
-    margin-top: calc(45vh - 75px);
-    text-align: center;
-    font-size: 1em;
-}
+        .nothing-selected {
+            display: block;
+            margin-top: calc(45vh - 75px);
+            text-align: center;
+            font-size: 1em;
 
-.subscriptions-container .right .nothing-selected span {
-    color: hsl(0, 0%, 67%);
-}
+            span {
+                color: hsl(0, 0%, 67%);
+            }
 
-.subscriptions-container .right .nothing-selected button {
-    padding: 6px 10px 8px 10px;
-    display: block;
-    margin: 0 auto 10px auto;
-}
+            button {
+                padding: 6px 10px 8px 10px;
+                display: block;
+                margin: 0 auto 10px auto;
+            }
+        }
 
-.subscriptions-container .right .display-type {
-    padding: 6px;
-    text-align: center;
-    font-weight: 600;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
+        .display-type {
+            padding: 6px;
+            text-align: center;
+            font-weight: 600;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+        }
 
-.subscriptions-container .right #preview_iframe {
-    width: 100%;
-    height: calc(100% - 45px);
-    border: none;
-    background-color: hsl(0, 0%, 98%);
-    box-shadow: inset 0px 0px 50px hsla(0, 0%, 0%, 0.5);
-    background-image: url(../images/preview-loading.png);
-    background-size: 150px auto;
-    background-position: center center;
-    background-repeat: no-repeat;
-}
+        #preview_iframe {
+            width: 100%;
+            height: calc(100% - 45px);
+            border: none;
+            background-color: hsl(0, 0%, 98%);
+            box-shadow: inset 0px 0px 50px hsla(0, 0%, 0%, 0.5);
+            background-image: url(../images/preview-loading.png);
+            background-size: 150px auto;
+            background-position: center center;
+            background-repeat: no-repeat;
+        }
+    }
 
-.subscriptions-container .display-type.preview::after {
-    content: "Preview";
-}
+    .display-type {
+        &.preview::after {
+            content: "Preview";
+        }
 
-.subscriptions-container .display-type.preferences::after {
-    content: "Preferences";
-}
+        &.preferences::after {
+            content: "Preferences";
+        }
 
-.subscriptions-container .display-type .stream-info-title {
-    display: none;
-    font-size: 1em;
-    line-height: 1;
-    margin: 9px 0px;
-    font-weight: 600;
-}
+        .stream-info-title {
+            display: none;
+            font-size: 1em;
+            line-height: 1;
+            margin: 9px 0px;
+            font-weight: 600;
+        }
+    }
 
-.subscriptions-container input[type=text].small {
-    border: 1px solid hsl(0, 0%, 80%);
-    border-radius: 4px;
-    padding: 3px;
-    outline: none;
-    color: hsl(0, 0%, 27%);
-    text-align: center;
-}
+    input[type=text].small {
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 4px;
+        padding: 3px;
+        outline: none;
+        color: hsl(0, 0%, 27%);
+        text-align: center;
 
-.subscriptions-container input[type=text].small:focus {
-    text-align: left;
-}
+        &:focus {
+            text-align: left;
+        }
 
-.subscriptions-container input[type=text].small:valid {
-    text-align: left;
+        &:valid {
+            text-align: left;
+        }
+    }
 }
 
 #search_stream_name {
