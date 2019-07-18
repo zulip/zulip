@@ -21,10 +21,6 @@ from datetime import date
 import requests
 import json
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
-from django.conf import settings
-
 FIXTURE_FILE = os.path.join(os.path.dirname(__file__), '../zerver/tests/fixtures/authors.json')
 duplicate_commits_file = os.path.join(os.path.dirname(__file__),
                                       '../zerver/tests/fixtures/duplicate_commits.json')
@@ -144,7 +140,7 @@ def run_production() -> None:
         contributor_data['name'] = contributor_name
         data['contrib'].append(contributor_data)
 
-    write_to_disk(data, settings.CONTRIBUTORS_DATA)
+    write_to_disk(data, 'static/generated/github-contributors.json')
 
 
 def copy_fixture() -> None:
@@ -152,7 +148,7 @@ def copy_fixture() -> None:
     Copy test fixture file from zerver/tests/fixtures. This is used to avoid
     constantly fetching data from Github during testing.
     """
-    shutil.copyfile(FIXTURE_FILE, settings.CONTRIBUTORS_DATA)
+    shutil.copyfile(FIXTURE_FILE, 'static/generated/github-contributors.json')
 
 
 if args.use_fixture:
