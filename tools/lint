@@ -72,7 +72,8 @@ def run():
                                   "(config: tools/linter_lib/exclude.py)")
     linter_config.external_linter('templates', ['tools/check-templates'], ['hbs', 'html'],
                                   description="Custom linter checks whitespace formatting"
-                                  "of HTML templates.")
+                                  "of HTML templates.",
+                                  fix_arg='--fix')
     linter_config.external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'],
                                   description="Validates our OpenAPI/Swagger API documentation"
                                   "(zerver/openapi/zulip.yaml) ")

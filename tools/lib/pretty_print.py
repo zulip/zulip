@@ -5,6 +5,9 @@ from .template_parser import (
     tokenize,
     is_django_block_tag,
 )
+
+from zulint.printer import GREEN, ENDC
+
 import subprocess
 
 def pretty_print_html(html, num_spaces=4):
@@ -189,13 +192,18 @@ def pretty_print_html(html, num_spaces=4):
     return '\n'.join(formatted_lines)
 
 
-def validate_indent_html(fn):
-    # type: (str) -> int
+def validate_indent_html(fn, fix):
+    # type: (str, bool) -> int
     file = open(fn)
     html = file.read()
     phtml = pretty_print_html(html)
     file.close()
     if not html.split('\n') == phtml.split('\n'):
+        if fix:
+            print(GREEN + "Automatically fixing problems..." + ENDC)
+            with open(fn, 'w') as f:
+                f.write(phtml)
+            return 1
         print('Invalid Indentation detected in file: '
               '%s\nDiff for the file against expected indented file:' % (fn,), flush=True)
         with subprocess.Popen(
@@ -204,5 +212,7 @@ def validate_indent_html(fn):
                 stderr=subprocess.STDOUT,
                 universal_newlines=True) as p:
             p.communicate(phtml)
+        print()
+        print("This problem can be fixed with the `--fix` option.")
         return 0
     return 1

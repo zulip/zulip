@@ -22,8 +22,8 @@ EXCLUDED_FILES = [
     'static/icons/fonts/template.hbs',
 ]
 
-def check_our_files(modified_only, all_dups, targets):
-    # type: (bool, bool, List[str]) -> None
+def check_our_files(modified_only, all_dups, fix, targets):
+    # type: (bool, bool, bool, List[str]) -> None
     by_lang = cast(
         Dict[str, List[str]],
         lister.list_files(
@@ -32,11 +32,11 @@ def check_our_files(modified_only, all_dups, targets):
             ftypes=['hbs', 'html'],
             group_by_ftype=True, exclude=EXCLUDED_FILES))
 
-    check_handlebar_templates(by_lang['hbs'])
-    check_html_templates(by_lang['html'], args.all_dups)
+    check_handlebar_templates(by_lang['hbs'], args.fix)
+    check_html_templates(by_lang['html'], args.all_dups, args.fix)
 
-def check_html_templates(templates, all_dups):
-    # type: (Iterable[str], bool) -> None
+def check_html_templates(templates, all_dups, fix):
+    # type: (Iterable[str], bool, bool) -> None
     # Our files with .html extensions are usually for Django, but we also
     # have a few static .html files.
     #
@@ -141,11 +141,11 @@ def check_html_templates(templates, all_dups):
     # TODO: Clean these files
     for fn in templates:
         if fn not in IGNORE_FILES:
-            if not validate_indent_html(fn):
+            if not validate_indent_html(fn, fix):
                 sys.exit(1)
 
-def check_handlebar_templates(templates):
-    # type: (Iterable[str]) -> None
+def check_handlebar_templates(templates, fix):
+    # type: (Iterable[str], bool) -> None
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith('.hbs')]
 
@@ -162,7 +162,7 @@ def check_handlebar_templates(templates):
     for fn in templates:
         if fn in IGNORE_FILES:
             continue
-        if not validate_indent_html(fn):
+        if not validate_indent_html(fn, fix):
             sys.exit(1)
 
 if __name__ == '__main__':
@@ -173,6 +173,9 @@ if __name__ == '__main__':
     parser.add_argument('--all-dups',
                         action="store_true", default=False,
                         help='Run lint tool to detect duplicate ids on ignored files as well')
+    parser.add_argument('--fix',
+                        action='store_true', default=False,
+                        help='Automatically fix indentation problems.')
     parser.add_argument('targets', nargs=argparse.REMAINDER)
     args = parser.parse_args()
-    check_our_files(args.modified, args.all_dups, args.targets)
+    check_our_files(args.modified, args.all_dups, args.fix, args.targets)
