@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
 import os
 from django.views.static import serve
@@ -11,12 +12,8 @@ import zerver.views.development.integrations
 # These URLs are available only in the development environment
 
 use_prod_static = getattr(settings, 'PIPELINE_ENABLED', False)
-static_root = os.path.join(settings.DEPLOY_ROOT, 'prod-static/serve' if use_prod_static else 'static')
 
 urls = [
-    # Serve static assets via the Django server
-    url(r'^static/(?P<path>.*)$', serve, {'document_root': static_root}),
-
     # Serve useful development environment resources (docs, coverage reports, etc.)
     url(r'^coverage/(?P<path>.*)$',
         serve, {'document_root':
@@ -66,6 +63,14 @@ urls = [
     url(r'^devtools/integrations/(?P<integration_name>.+)/fixtures$',
         zerver.views.development.integrations.get_fixtures),
 ]
+
+# Serve static assets via the Django server
+if use_prod_static:
+    urls += [
+        url(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+    ]
+else:
+    urls += staticfiles_urlpatterns()
 
 i18n_urls = [
     url(r'^confirmation_key/$', zerver.views.development.registration.confirmation_key),

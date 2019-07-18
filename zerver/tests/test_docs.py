@@ -152,9 +152,6 @@ class DocPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 301)
         self.assertIn('hello', result['Location'])
 
-        result = self.client_get('/static/favicon.ico')
-        self.assertEqual(result.status_code, 200)
-
     def test_portico_pages_open_graph_metadata(self) -> None:
         # Why Zulip
         url = '/why-zulip/'
