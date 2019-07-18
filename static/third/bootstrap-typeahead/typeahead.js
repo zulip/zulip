@@ -28,6 +28,17 @@
  *   choice.
  *
  *   Our custom changes include all mentions of this.automated.
+ *
+ * 2. Custom selection triggers:
+ *
+ *   This adds support for completing a typeahead on custom keyup input. By
+ *   default, we only support Tab and Enter to complete a typeahead, but we
+ *   have usecases where we want to complete using custom characters like: >.
+ *
+ *   If `this.trigger_selection` returns true, we complete the typeahead and
+ *   pass the keyup event to the updater.
+ *
+ *   Our custom changes include all mentions of this.trigger_selection.
  * ============================================================ */
 
 !function($){
@@ -51,6 +62,7 @@
     this.dropup = this.options.dropup
     this.fixed = this.options.fixed || false;
     this.automated = this.options.automated || this.automated;
+    this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
 
     if (this.fixed) {
       this.$menu.css('position', 'fixed');
@@ -83,6 +95,10 @@
     }
 
   , automated: function() {
+    return false;
+  }
+
+  , trigger_selection: function() {
     return false;
   }
 
@@ -310,6 +326,10 @@
           break
 
         default:
+          if (this.trigger_selection(e)) {
+            if (!this.shown) return;
+            this.select(e);
+          }
           this.lookup()
       }
 
