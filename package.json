@@ -40,7 +40,7 @@
     "sass-loader": "7.1.0",
     "script-loader": "0.7.2",
     "shebang-loader": "^0.0.1",
-    "simplebar": "^4.0.0",
+    "simplebar": "^4.1.0",
     "sortablejs": "1.9.0",
     "sorttable": "1.0.2",
     "source-sans-pro": "2.45.0",
