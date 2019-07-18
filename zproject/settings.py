@@ -914,7 +914,7 @@ PIPELINE = {
     'JAVASCRIPT': {},
 }
 
-if DEVELOPMENT:
+if not PIPELINE_ENABLED:
     WEBPACK_STATS_FILE = os.path.join('var', 'webpack-stats-dev.json')
 else:
     WEBPACK_STATS_FILE = 'webpack-stats-production.json'
