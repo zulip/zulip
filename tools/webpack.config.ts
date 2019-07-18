@@ -11,12 +11,28 @@ const assets = require('./webpack.assets.json');
 
 export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";
+    const publicPath = production ? '/static/webpack-bundles/' : '/webpack/';
     const config: webpack.Configuration = {
         mode: production ? "production" : "development",
         context: resolve(__dirname, "../"),
         entry: assets,
         module: {
             rules: [
+                // Generate webfont
+                {
+                    test: /\.font\.js$/,
+                    use: [
+                        MiniCssExtractPlugin.loader,
+                        'css-loader',
+                        {
+                            loader: 'webfonts-loader',
+                            options: {
+                                fileName: production ? 'files/[fontname].[chunkhash].[ext]' : 'files/[fontname].[ext]',
+                                publicPath,
+                            },
+                        },
+                    ],
+                },
                 // Run the typescript compilier on .ts files before webpack
                 {
                     test: /\.tsx?$/,
@@ -105,7 +121,7 @@ export default (env?: string): webpack.Configuration[] => {
         },
         output: {
             path: resolve(__dirname, '../static/webpack-bundles'),
-            publicPath: '/static/webpack-bundles/',
+            publicPath,
             filename: production ? '[name].[chunkhash].js' : '[name].js',
         },
         resolve: {
@@ -163,7 +179,6 @@ export default (env?: string): webpack.Configuration[] => {
         // Out JS debugging tools
         config.entry['common'].push('./static/js/debug.js');  // eslint-disable-line dot-notation
 
-        config.output.publicPath = '/webpack/';
         config.plugins = [
             new BundleTracker({filename: 'var/webpack-stats-dev.json'}),
             // Better logging from console for hot reload

@@ -19,7 +19,7 @@ EXCLUDED_FILES = [
     # Our parser doesn't handle the way its conditionals are layered
     'templates/zerver/emails/missed_message.source.html',
     # Previously unchecked and our parser doesn't like its indentation
-    'static/icons/fonts/template.hbs',
+    'static/assets/icons/template.hbs',
 ]
 
 def check_our_files(modified_only, all_dups, targets):

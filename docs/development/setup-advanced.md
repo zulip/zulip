@@ -163,7 +163,6 @@ sudo mkdir /srv/zulip-emoji-cache
 sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
 ./tools/setup/emoji/build_emoji
 ./tools/inline-email-css
-./tools/setup/generate-custom-icon-webfont
 ./tools/setup/build_pygments_data
 ./tools/setup/generate_zulip_bots_static_files.py
 ./scripts/setup/generate_secrets.py --development
