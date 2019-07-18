@@ -170,6 +170,7 @@
                 "markdown": false,
                 "message_edit": false,
                 "message_edit_history": false,
+                "message_embed": false,
                 "message_events": false,
                 "message_fetch": false,
                 "message_flags": false,

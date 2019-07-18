@@ -68,6 +68,7 @@ declare let localstorage: any;
 declare let markdown: any;
 declare let message_edit: any;
 declare let message_edit_history: any;
+declare let message_embed: any;
 declare let message_events: any;
 declare let message_fetch: any;
 declare let message_flags: any;

@@ -23,6 +23,7 @@ function message_unhover() {
         return;
     }
     current_message_hover.find("span.edit_content").html("");
+    current_message_hover.find("button.message_embed_remove").hide();
     current_message_hover = undefined;
 }
 
@@ -52,6 +53,8 @@ function message_hover(message_row) {
         msg_id: id,
     };
     message_row.find(".edit_content").html(render_edit_content_button(args));
+
+    message_embed.maybe_show_preview_remove_button(message_row);
 }
 
 exports.initialize_kitchen_sink_stuff = function () {

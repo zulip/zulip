@@ -194,6 +194,7 @@ import "../search_pill";
 import "../search_pill_widget";
 import "../stream_ui_updates";
 import "../spoilers";
+import "../message_embed";
 
 // Import Styles
 
