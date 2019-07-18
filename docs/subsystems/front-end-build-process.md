@@ -54,9 +54,8 @@ first add it to the appropriate place under `static/`.
 - Portico JavaScript ("portico" means for logged-out pages) lives under
   `static/js/portico`.
 - Custom SVG graphics living under `static/assets/icons` are compiled into
-  custom icon webfonts that live under `static/generated/icons/fonts` by
-  `tools/setup/generate-custom-icon-webfont` according to the
-  `static/icons/fonts/template.hbs` template.
+  custom icon webfonts by webfont-loader according to the
+  `static/assets/icons/template.hbs` template.
 
 For your asset to be included in a development/production bundle, it
 needs to be accessible from one of the entry points defined in

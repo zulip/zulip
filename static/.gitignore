@@ -11,8 +11,6 @@
 /generated/pygments_data.js
 # From `tools/update-authors-json`
 /generated/github-contributors.json
-# From tools/setup/generate-custom-icon-webfont
-/generated/icons/
 
 # Legacy emoji data directory
 /third/emoji-data
