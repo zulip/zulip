@@ -140,6 +140,7 @@ page_params.subscriptions = [];
 page_params.unsubscribed = [];
 page_params.never_subscribed = [];
 page_params.realm_notifications_stream_id = -1;
+page_params.unread_msgs = {};
 
 $('#tab_bar').append = () => {};
 $('#compose').filedrop = () => {};

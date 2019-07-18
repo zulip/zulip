@@ -6,9 +6,6 @@ zrequire('unread');
 
 set_global('blueslip', {});
 set_global('page_params', {});
-set_global('feature_flags', {
-    load_server_counts: true,
-});
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
 set_global('home_msg_list', {});

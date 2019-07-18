@@ -602,7 +602,7 @@ exports.get_msg_ids_for_starred = function () {
     return [];
 };
 
-exports.load_server_counts = function () {
+exports.initialize = function () {
     var unread_msgs = page_params.unread_msgs;
 
     exports.unread_pm_counter.set_huddles(unread_msgs.huddles);
@@ -620,12 +620,6 @@ exports.load_server_counts = function () {
         unread_messages.add_many(obj.unread_message_ids);
     });
     unread_messages.add_many(unread_msgs.mentions);
-};
-
-exports.initialize = function () {
-    if (feature_flags.load_server_counts) {
-        exports.load_server_counts();
-    }
 };
 
 return exports;

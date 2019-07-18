@@ -2,8 +2,6 @@ var feature_flags = (function () {
 
 var exports = {};
 
-exports.load_server_counts = false;
-
 // The features below have all settled into their final states and can
 // be removed when we get a chance
 exports.propagate_topic_edits = true;
