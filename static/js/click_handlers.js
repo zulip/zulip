@@ -11,7 +11,7 @@ exports.initialize = function () {
     function is_clickable_message_element(target) {
         return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
             target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
-            target.is("i.edit_content_button") ||
+            target.is("i.edit_content_button") || target.is("button.message_embed_remove") ||
             target.is(".highlight") && target.parent().is("a");
     }
 
@@ -214,6 +214,11 @@ exports.initialize = function () {
             return;
         }
         window.location.href = $(this).attr('href');
+    });
+
+    $("#main_div").on("click", ".message_embed_remove", function (e) {
+        e.preventDefault();
+        message_embed.remove_preview(e.target);
     });
 
     // USER STATUS MODAL

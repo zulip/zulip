@@ -291,6 +291,7 @@
                 "marked": false,
                 "md5": false,
                 "message_edit": false,
+                "message_embed": false,
                 "message_events": false,
                 "message_fetch": false,
                 "message_flags": false,

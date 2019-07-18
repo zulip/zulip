@@ -635,6 +635,8 @@ MessageListView.prototype = {
             row: row,
             message_id: id,
         });
+
+        message_embed.add_preview_remove_button(row, id);
     },
 
     _get_message_template: function (message_container) {

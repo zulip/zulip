@@ -15,6 +15,7 @@ function message_unhover() {
         return;
     }
     current_message_hover.find('span.edit_content').html("");
+    current_message_hover.find('button.message_embed_remove').hide();
     current_message_hover = undefined;
 }
 
@@ -43,6 +44,7 @@ function message_hover(message_row) {
     } else {
         message_row.find(".edit_content").html('<i class="fa fa-file-text-o edit_content_button" aria-hidden="true" title="View source (e)" data-message-id="' + id + '"></i>');
     }
+    message_embed.maybe_show_preview_remove_button(message_row);
 }
 
 exports.initialize_kitchen_sink_stuff = function () {
