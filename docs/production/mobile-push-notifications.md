@@ -178,6 +178,21 @@ notifications, for Zulip 1.8 and older.
 
 ## Sending push notifications directly from your server
 
+This section documents an alternative way to send push notifications
+that does not involve using the Mobile Push Notifications Service at
+the cost of needing to compile and distribute modified versions of the
+Zulip mobile apps.
+
+We don't recommend this path -- patching and shipping a production
+mobile app can take dozens of hours to setup even for an experienced
+developer, and even more time to maintain.  And it doesn't provide
+material privacy benefits -- your organization's push notification
+data would still go through Apple/Google's servers, just not Kandra
+Labs'.  Our view is the correct way to optimize for privacy is
+end-to-end encryption of push notifications.  But in the interest of
+transparency, we document in this section roughly what's involved in
+doing so.
+
 As we discussed above, it is impossible for a single app in their
 stores to receive push notifications from multiple, mutually
 untrusted, servers.  The Mobile Push Notification Service is one of
