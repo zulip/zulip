@@ -31,6 +31,10 @@ VNU_IGNORE = re.compile(r'|'.join([
     r'The first occurrence of ID “[^”]*” was here\.',
     r'Attribute “markdown” not allowed on element “div” at this point\.',
     r'No “p” element in scope but a “p” end tag seen\.',
+    r'Element “div” not allowed as child of element “ul” in this context\. '
+    + r'\(Suppressing further errors from this subtree\.\)',
+    r'The element “button” must not appear as a descendant of the “a” element\.',
+    r'Attribute “href” not allowed on element “button” at this point\.',
 
     # Warnings that are probably less important.
     r'The “type” attribute is unnecessary for JavaScript resources\.',
