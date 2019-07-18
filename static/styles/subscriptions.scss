@@ -490,6 +490,22 @@ form#add_new_subscription {
             text-align: center;
             font-weight: 600;
             border-bottom: 1px solid hsl(0, 0%, 87%);
+
+            &.preview::after {
+                content: "Preview";
+            }
+
+            &.preferences::after {
+                content: "Preferences";
+            }
+
+            .stream-info-title {
+                display: none;
+                font-size: 1em;
+                line-height: 1;
+                margin: 9px 0px;
+                font-weight: 600;
+            }
         }
 
         #preview_iframe {
@@ -502,24 +518,6 @@ form#add_new_subscription {
             background-size: 150px auto;
             background-position: center center;
             background-repeat: no-repeat;
-        }
-    }
-
-    .display-type {
-        &.preview::after {
-            content: "Preview";
-        }
-
-        &.preferences::after {
-            content: "Preferences";
-        }
-
-        .stream-info-title {
-            display: none;
-            font-size: 1em;
-            line-height: 1;
-            margin: 9px 0px;
-            font-weight: 600;
         }
     }
 
