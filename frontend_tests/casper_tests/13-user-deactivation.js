@@ -78,22 +78,22 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[data-email="new-user-bot@zulip.com"]', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="new-user-bot@zulip.com"]', 'Deactivate');
-        casper.click('.user_row[data-email="new-user-bot@zulip.com"] .deactivate');
+    casper.waitUntilVisible('.user_row[data-email="default-bot@zulip.com"]', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="default-bot@zulip.com"]', 'Deactivate');
+        casper.click('.user_row[data-email="default-bot@zulip.com"] .deactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[data-email="new-user-bot@zulip.com"].deactivated_user', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="new-user-bot@zulip.com"]', 'Reactivate');
-        casper.click('.user_row[data-email="new-user-bot@zulip.com"] .reactivate');
+    casper.waitUntilVisible('.user_row[data-email="default-bot@zulip.com"].deactivated_user', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="default-bot@zulip.com"]', 'Reactivate');
+        casper.click('.user_row[data-email="default-bot@zulip.com"] .reactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[data-email="new-user-bot@zulip.com"]:not(.deactivated_user)', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="new-user-bot@zulip.com"]', 'Deactivate');
+    casper.waitUntilVisible('.user_row[data-email="default-bot@zulip.com"]:not(.deactivated_user)', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="default-bot@zulip.com"]', 'Deactivate');
     });
 });
 

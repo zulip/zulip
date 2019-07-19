@@ -1397,7 +1397,6 @@ CROSS_REALM_BOT_EMAILS = {
     'feedback@zulip.com',
     'notification-bot@zulip.com',
     'welcome-bot@zulip.com',
-    'new-user-bot@zulip.com',
     'emailgateway@zulip.com',
 }
 

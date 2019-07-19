@@ -361,7 +361,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_get("/json/users/cordelia@zulip.com/presence")
         self.assert_json_error(result, "No such user")
 
-        result = self.client_get("/json/users/new-user-bot@zulip.com/presence")
+        result = self.client_get("/json/users/default-bot@zulip.com/presence")
         self.assert_json_error(result, "Presence is not supported for bot users.")
 
         self.login(self.mit_email("sipbtest"), realm=get_realm("zephyr"))
