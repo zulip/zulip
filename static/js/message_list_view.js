@@ -1,3 +1,4 @@
+var hash_util = require('./hash_util');
 var render_bookend = require('../templates/bookend.hbs');
 var render_message_group = require('../templates/message_group.hbs');
 var render_recipient_row = require('../templates/recipient_row.hbs');

@@ -1,3 +1,4 @@
+var hash_util = require('./hash_util');
 var render_group_pms = require('../templates/group_pms.hbs');
 var Dict = require('./dict').Dict;
 

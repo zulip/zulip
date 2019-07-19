@@ -1,3 +1,4 @@
+var hash_util = require('./hash_util');
 var render_tab_bar = require('../templates/tab_bar.hbs');
 
 var tab_bar = (function () {

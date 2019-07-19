@@ -1,3 +1,4 @@
+var hash_util = require('./hash_util');
 var render_settings_deactivation_stream_modal = require("../templates/settings/deactivation_stream_modal.hbs");
 var render_stream_member_list_entry = require('../templates/stream_member_list_entry.hbs');
 var render_subscription_settings = require('../templates/subscription_settings.hbs');

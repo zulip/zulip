@@ -1,3 +1,4 @@
+var hash_util = require('./hash_util');
 var render_more_topics = require('../templates/more_topics.hbs');
 var render_topic_list_item = require('../templates/topic_list_item.hbs');
 var Dict = require('./dict').Dict;

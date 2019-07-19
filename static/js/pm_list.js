@@ -1,3 +1,4 @@
+var hash_util = require('./hash_util');
 var render_sidebar_private_message_list = require('../templates/sidebar_private_message_list.hbs');
 
 var pm_list = (function () {

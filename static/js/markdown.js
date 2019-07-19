@@ -1,3 +1,5 @@
+var hash_util = require('./hash_util');
+
 // This contains zulip's frontend markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
 // main piece in rendering markdown client-side is

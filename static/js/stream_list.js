@@ -1,3 +1,4 @@
+var hash_util = require('./hash_util');
 var render_stream_privacy = require('../templates/stream_privacy.hbs');
 var render_stream_sidebar_row = require('../templates/stream_sidebar_row.hbs');
 var Dict = require('./dict').Dict;

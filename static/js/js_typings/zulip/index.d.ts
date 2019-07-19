@@ -41,7 +41,6 @@ declare var filter: any;
 declare var floating_recipient_bar: any;
 declare var gear_menu: any;
 declare var hashchange: any;
-declare var hash_util: any;
 declare var hotkey: any;
 declare var hotspots: any;
 declare var info_overlay: any;

@@ -66,7 +66,6 @@
         "flatpickr": false,
         "floating_recipient_bar": false,
         "gear_menu": false,
-        "hash_util": false,
         "hashchange": false,
         "helpers": false,
         "history": false,

@@ -131,7 +131,6 @@ import "../list_util.js";
 import "../hotkey.js";
 import "../favicon.js";
 import "../notifications.js";
-import "../hash_util.js";
 import "../hashchange.js";
 import "../invite.js";
 import "../message_flags.js";

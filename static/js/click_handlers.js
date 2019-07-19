@@ -1,3 +1,5 @@
+var hash_util = require('./hash_util');
+
 var click_handlers = (function () {
 
 // We don't actually export anything yet; this is just for consistency.

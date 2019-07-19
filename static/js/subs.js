@@ -1,3 +1,4 @@
+var hash_util = require('./hash_util');
 var render_email_address_hint = require('../templates/email_address_hint.hbs');
 var render_subscription = require('../templates/subscription.hbs');
 var render_subscription_settings = require('../templates/subscription_settings.hbs');

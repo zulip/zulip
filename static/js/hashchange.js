@@ -1,3 +1,5 @@
+var hash_util = require('./hash_util');
+
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
 var hashchange = (function () {

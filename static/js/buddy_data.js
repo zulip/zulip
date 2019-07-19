@@ -1,3 +1,5 @@
+var hash_util = require('./hash_util');
+
 var buddy_data = (function () {
 
 var exports = {};

@@ -1,4 +1,5 @@
 var Dict = require('./dict').Dict;
+var hash_util = require('./hash_util');
 
 var stream_data = (function () {
 

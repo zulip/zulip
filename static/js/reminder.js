@@ -1,3 +1,5 @@
+var hash_util = require('./hash_util');
+
 var reminder = (function () {
 
 var exports = {};

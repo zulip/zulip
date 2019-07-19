@@ -1,3 +1,4 @@
+var hash_util = require('./hash_util');
 var render_all_messages_sidebar_actions = require('../templates/all_messages_sidebar_actions.hbs');
 var render_delete_topic_modal = require('../templates/delete_topic_modal.hbs');
 var render_starred_messages_sidebar_actions = require('../templates/starred_messages_sidebar_actions.hbs');

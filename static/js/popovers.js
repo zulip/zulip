@@ -1,4 +1,5 @@
 var confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
+var hash_util = require('./hash_util');
 var render_actions_popover_content = require('../templates/actions_popover_content.hbs');
 var render_mobile_message_buttons_popover = require('../templates/mobile_message_buttons_popover.hbs');
 var render_mobile_message_buttons_popover_content = require('../templates/mobile_message_buttons_popover_content.hbs');
