@@ -7,15 +7,14 @@ import platform
 import subprocess
 import glob
 import hashlib
-import shutil
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, run_as_root, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated, \
+from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
+    get_dev_uuid_var_path, FAIL, parse_lsb_release, \
     overwrite_symlink
 from scripts.lib.setup_venv import (
     VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
@@ -23,13 +22,11 @@ from scripts.lib.setup_venv import (
     FEDORA_VENV_DEPENDENCIES
 )
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
+from tools.setup import setup_venvs
 
-from version import PROVISION_VERSION
 if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Any, List
-
-from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
+    from typing import List, NoReturn
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
@@ -53,23 +50,10 @@ SUPPORTED_PLATFORMS = {
     ]
 }
 
-VENV_PATH = "/srv/zulip-py3-venv"
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
-LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
-UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
-TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
-COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
-NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
-XUNIT_XML_TEST_RESULTS_DIR_PATH = os.path.join(VAR_DIR_PATH, 'xunit-test-results')
 
 is_travis = 'TRAVIS' in os.environ
 is_circleci = 'CIRCLECI' in os.environ
-
-# TODO: De-duplicate this with emoji_dump.py
-EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
-if is_travis:
-    # In Travis CI, we don't have root access
-    EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print(FAIL + "Error: No Zulip git repository present!" + ENDC)
@@ -264,27 +248,6 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 user_id = os.getuid()
 
-def setup_shell_profile(shell_profile):
-    # type: (str) -> None
-    shell_profile_path = os.path.expanduser(shell_profile)
-
-    def write_command(command):
-        # type: (str) -> None
-        if os.path.exists(shell_profile_path):
-            with open(shell_profile_path, 'r') as shell_profile_file:
-                lines = [line.strip() for line in shell_profile_file.readlines()]
-            if command not in lines:
-                with open(shell_profile_path, 'a+') as shell_profile_file:
-                    shell_profile_file.writelines(command + '\n')
-        else:
-            with open(shell_profile_path, 'w') as shell_profile_file:
-                shell_profile_file.writelines(command + '\n')
-
-    source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
-    write_command(source_activate_command)
-    if os.path.exists('/srv/zulip'):
-        write_command('cd /srv/zulip')
-
 def install_system_deps():
     # type: () -> None
 
@@ -379,7 +342,7 @@ def install_yum_deps(deps_to_install):
                       % (POSTGRES_VERSION,))
 
 def main(options):
-    # type: (Any) -> int
+    # type: (argparse.Namespace) -> NoReturn
 
     # yarn and management commands expect to be run from the root of the
     # project.
@@ -450,64 +413,9 @@ def main(options):
     # Install shellcheck.
     run_as_root(["scripts/lib/install-shellcheck"])
 
-    from tools.setup import setup_venvs
     setup_venvs.main()
 
-    activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
-    exec(open(activate_this).read(), dict(__file__=activate_this))
-
-    setup_shell_profile('~/.bash_profile')
-    setup_shell_profile('~/.zprofile')
-
-    # This needs to happen before anything that imports zproject.settings.
-    run(["scripts/setup/generate_secrets.py", "--development"])
-
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
-
-    # create log directory `zulip/var/log`
-    os.makedirs(LOG_DIR_PATH, exist_ok=True)
-    # create upload directory `var/uploads`
-    os.makedirs(UPLOAD_DIR_PATH, exist_ok=True)
-    # create test upload directory `var/test_upload`
-    os.makedirs(TEST_UPLOAD_DIR_PATH, exist_ok=True)
-    # create coverage directory `var/coverage`
-    os.makedirs(COVERAGE_DIR_PATH, exist_ok=True)
-    # create linecoverage directory `var/node-coverage`
-    os.makedirs(NODE_TEST_COVERAGE_DIR_PATH, exist_ok=True)
-    # create XUnit XML test results directory`var/xunit-test-results`
-    os.makedirs(XUNIT_XML_TEST_RESULTS_DIR_PATH, exist_ok=True)
-
-    # The `build_emoji` script requires `emoji-datasource` package
-    # which we install via npm; thus this step is after installing npm
-    # packages.
-    if not os.path.isdir(EMOJI_CACHE_PATH):
-        run_as_root(["mkdir", EMOJI_CACHE_PATH])
-    run_as_root(["chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
-    run(["tools/setup/emoji/build_emoji"])
-
-    # copy over static files from the zulip_bots package
-    generate_zulip_bots_static_files()
-
-    build_pygments_data_paths = ["tools/setup/build_pygments_data", "tools/setup/lang.json"]
-    from pygments import __version__ as pygments_version
-    if file_or_package_hash_updated(build_pygments_data_paths, "build_pygments_data_hash", options.is_force,
-                                    [pygments_version]):
-        run(["tools/setup/build_pygments_data"])
-    else:
-        print("No need to run `tools/setup/build_pygments_data`.")
-
-    update_authors_json_paths = ["tools/update-authors-json", "zerver/tests/fixtures/authors.json"]
-    if file_or_package_hash_updated(update_authors_json_paths, "update_authors_json_hash", options.is_force):
-        run(["tools/update-authors-json", "--use-fixture"])
-    else:
-        print("No need to run `tools/update-authors-json`.")
-
-    email_source_paths = ["tools/inline-email-css", "templates/zerver/emails/email.css"]
-    email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
-    if file_or_package_hash_updated(email_source_paths, "last_email_source_files_hash", options.is_force):
-        run(["tools/inline-email-css"])
-    else:
-        print("No need to run `tools/inline-email-css`.")
 
     if is_circleci or (is_travis and not options.is_production_travis):
         run_as_root(["service", "rabbitmq-server", "restart"])
@@ -518,102 +426,24 @@ def main(options):
         for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "memcached", "redis"]:
             run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
             run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
-    if not options.is_production_travis:
-        # The following block is skipped for the production Travis
-        # suite, because that suite doesn't make use of these elements
-        # of the development environment (it just uses the development
-        # environment to build a release tarball).
 
-        # Need to set up Django before using template_database_status
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
-        import django
-        django.setup()
-
-        from zerver.lib.test_fixtures import template_database_status, run_db_migrations, \
-            destroy_leaked_test_databases
-
-        try:
-            from zerver.lib.queue import SimpleQueueClient
-            SimpleQueueClient()
-            rabbitmq_is_configured = True
-        except Exception:
-            rabbitmq_is_configured = False
-
-        if options.is_force or not rabbitmq_is_configured:
-            run(["scripts/setup/configure-rabbitmq"])
-        else:
-            print("RabbitMQ is already configured.")
-
-        migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
-        dev_template_db_status = template_database_status(
-            migration_status=migration_status_path,
-            settings="zproject.settings",
-            database_name="zulip",
-        )
-        if options.is_force or dev_template_db_status == 'needs_rebuild':
-            run(["tools/setup/postgres-init-dev-db"])
-            run(["tools/do-destroy-rebuild-database"])
-        elif dev_template_db_status == 'run_migrations':
-            run_db_migrations('dev')
-        elif dev_template_db_status == 'current':
-            print("No need to regenerate the dev DB.")
-
-        test_template_db_status = template_database_status()
-        if options.is_force or test_template_db_status == 'needs_rebuild':
-            run(["tools/setup/postgres-init-test-db"])
-            run(["tools/do-destroy-rebuild-test-database"])
-        elif test_template_db_status == 'run_migrations':
-            run_db_migrations('test')
-        elif test_template_db_status == 'current':
-            print("No need to regenerate the test DB.")
-
-        # Consider updating generated translations data: both `.mo`
-        # files and `language-options.json`.
-        paths = ['zerver/management/commands/compilemessages.py']
-        paths += glob.glob('locale/*/LC_MESSAGES/*.po')
-        paths += glob.glob('locale/*/translations.json')
-
-        if file_or_package_hash_updated(paths, "last_compilemessages_hash", options.is_force):
-            run(["./manage.py", "compilemessages"])
-        else:
-            print("No need to run `manage.py compilemessages`.")
-
-        destroyed = destroy_leaked_test_databases()
-        if destroyed:
-            print("Dropped %s stale test databases!" % (destroyed,))
-
-    run(["scripts/lib/clean-unused-caches"])
-
-    # Keeping this cache file around can cause eslint to throw
-    # random TypeErrors when new/updated dependencies are added
-    if os.path.isfile('.eslintcache'):
-        # Remove this block when
-        # https://github.com/eslint/eslint/issues/11639 is fixed
-        # upstream.
-        os.remove('.eslintcache')
-
-    # Clean up the root of the `var/` directory for various
-    # testing-related files that we have migrated to
-    # `var/<uuid>/test-backend`.
-    print("Cleaning var/ directory files...")
-    var_paths = glob.glob('var/test*')
-    var_paths.append('var/bot_avatar')
-    for path in var_paths:
-        try:
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            else:
-                os.remove(path)
-        except FileNotFoundError:
-            pass
-
-    version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
-    print('writing to %s\n' % (version_file,))
-    open(version_file, 'w').write(PROVISION_VERSION + '\n')
-
-    print()
-    print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
-    return 0
+    # If we imported modules after activating the virtualenv in this
+    # Python process, they could end up mismatching with modules we’ve
+    # already imported from outside the virtualenv.  That seems like a
+    # bad idea, and empirically it can cause Python to segfault on
+    # certain cffi-related imports.  Instead, start a new Python
+    # process inside the virtualenv.
+    activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
+    provision_inner = os.path.join(ZULIP_PATH, "tools", "lib", "provision_inner.py")
+    exec(open(activate_this).read(), dict(__file__=activate_this))
+    os.execvp(
+        provision_inner,
+        [
+            provision_inner,
+            *(["--force"] if options.is_force else []),
+            *(["--production-travis"] if options.is_production_travis else []),
+        ]
+    )
 
 if __name__ == "__main__":
     description = ("Provision script to install Zulip")
@@ -628,4 +458,4 @@ if __name__ == "__main__":
                         help="Provision for Travis with production settings.")
 
     options = parser.parse_args()
-    sys.exit(main(options))
+    main(options)
