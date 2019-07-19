@@ -520,6 +520,33 @@ run_test('render_stream', () => {
     assert(rendered);
 });
 
+run_test('clear_rendered_stream', () => {
+    var rendered = false;
+    var stream = {
+        description: 'This is a description.',
+        stream_id: 44,
+        name: 'Stream To Be Cleared',
+    };
+    global.stub_templates(function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.equal(args.primary, stream.name);
+        assert.equal(args.secondary, stream.description);
+        rendered = true;
+        return 'typeahead-item-stub';
+    });
+    assert.equal(th.render_stream(stream), 'typeahead-item-stub');
+    assert(rendered);
+
+    rendered = false;
+    assert.equal(th.render_stream(stream), 'typeahead-item-stub');
+    assert.equal(rendered, false);
+
+    // Here rendered will be true as it is being rendered again.
+    th.clear_rendered_stream(stream.stream_id);
+    assert.equal(th.render_stream(stream), 'typeahead-item-stub');
+    assert(rendered);
+});
+
 run_test('render_emoji', () => {
     // Test render_emoji with normal emoji.
     var rendered = false;
