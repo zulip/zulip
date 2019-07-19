@@ -55,6 +55,9 @@ Tips for adding a new article:
 * Find an existing article in the same section of the help documentation,
   and copy the format, wording, style, etc as closely as you can.
 
+* If the feature exists in other team chat products, check out their
+  documentation for inspiration.
+
 * Fewer words is better than more. Many Zulip users have English as a second
   language.
 
@@ -63,6 +66,17 @@ Tips for adding a new article:
 
 * The goal of user-facing documentation is not to be comprehensive. The goal
   is to give the right bits of information for the intended audience.
+
+* Real estate in the left sidebar is somewhat precious. Minor features
+  should rarely get their own article.
+
+An anti-pattern is trying to make up for bad UX by adding user
+documentation. It's worth remembering that for most articles, almost 100% of
+the users of the feature will never read the article. Instructions for
+filling out forms, interacting with UI widgets (e.g. typeaheads),
+interacting with modals, etc. should never go in user documentation.
+In such cases you may be able to fix the problem by adding text in-app,
+where the user will see it as they are interacting with the feature.
 
 ### User interface
 
