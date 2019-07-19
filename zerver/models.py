@@ -251,6 +251,7 @@ class Realm(models.Model):
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'general'
     INITIAL_PRIVATE_STREAM_NAME = u'core team'
+    STREAM_EVENTS_NOTIFICATION_TOPIC = _('stream events')
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
     signup_notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
 

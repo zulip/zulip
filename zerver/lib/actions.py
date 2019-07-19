@@ -3568,7 +3568,7 @@ def do_rename_stream(stream: Stream,
         stream.realm,
         sender,
         stream,
-        _('stream events'),
+        Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
         _('@_**%(user_name)s|%(user_id)d** renamed stream **%(old_stream_name)s** to '
           '**%(new_stream_name)s**.') % {
               'user_name': user_profile.full_name,
