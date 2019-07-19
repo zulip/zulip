@@ -3564,10 +3564,13 @@ def do_rename_stream(stream: Stream,
         stream.realm,
         sender,
         stream,
-        "welcome",
-        "@_**%s|%d** renamed stream **%s** to **%s**" % (user_profile.full_name,
-                                                         user_profile.id,
-                                                         old_name, new_name)
+        _('stream events'),
+        _('@_**%(user_name)s|%(user_id)d** renamed stream **%(old_stream_name)s** to '
+          '**%(new_stream_name)s**.') % {
+              'user_name': user_profile.full_name,
+              'user_id': user_profile.id,
+              'old_stream_name': old_name,
+              'new_stream_name': new_name}
     )
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.

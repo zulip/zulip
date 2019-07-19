@@ -426,8 +426,9 @@ def add_subscriptions_backend(
                     sender=sender,
                     stream=stream,
                     topic=_('stream events'),
-                    content=_('Stream created by @_**%s|%d**.') % (
-                        user_profile.full_name, user_profile.id)
+                    content=_('Stream created by @_**%(user_name)s|%(user_id)d**.') % {
+                        'user_name': user_profile.full_name,
+                        'user_id': user_profile.id}
                 )
             )
 
