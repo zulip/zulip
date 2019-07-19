@@ -9,7 +9,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, run_as_root, OKBLUE, ENDC, \
-    get_dev_uuid_var_path, parse_lsb_release, file_or_package_hash_updated
+    get_dev_uuid_var_path, file_or_package_hash_updated
 
 from version import PROVISION_VERSION
 
@@ -33,9 +33,6 @@ if is_travis:
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
 UUID_VAR_PATH = get_dev_uuid_var_path()
-
-distro_info = parse_lsb_release()
-family = distro_info['DISTRIB_FAMILY']
 
 user_id = os.getuid()
 
