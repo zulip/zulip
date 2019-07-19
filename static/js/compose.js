@@ -962,6 +962,12 @@ exports.initialize = function () {
         }
 
         var compose_stream = stream_data.get_sub(compose_state.stream_name());
+        if (compose_stream === undefined) {
+            // We have an invalid stream name, don't warn about this here as
+            // we show an error to the user when they try to send the message.
+            return;
+        }
+
         if (compose_stream.subscribers && data.stream.subscribers) {
             var compose_stream_sub = compose_stream.subscribers.keys();
             var mentioned_stream_sub = data.stream.subscribers.keys();
