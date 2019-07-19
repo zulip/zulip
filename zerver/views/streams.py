@@ -425,7 +425,7 @@ def add_subscriptions_backend(
                     realm=user_profile.realm,
                     sender=sender,
                     stream=stream,
-                    topic=_('stream events'),
+                    topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
                     content=_('Stream created by @_**%(user_name)s|%(user_id)d**.') % {
                         'user_name': user_profile.full_name,
                         'user_id': user_profile.id}
