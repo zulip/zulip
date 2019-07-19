@@ -132,6 +132,12 @@ exports.render_person_or_user_group = function (item) {
     return typeahead_helper.render_person(item);
 };
 
+exports.clear_rendered_stream = function (stream_id) {
+    if (rendered.streams.has(stream_id)) {
+        rendered.streams.del(stream_id);
+    }
+};
+
 exports.render_stream = function (stream) {
     var desc = stream.description;
     var short_desc = desc.substring(0, 35);

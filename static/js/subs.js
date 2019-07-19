@@ -149,6 +149,9 @@ exports.update_stream_name = function (sub, new_name) {
 
     // Update the message feed.
     message_live_update.update_stream_name(stream_id, new_name);
+
+    // Clear rendered typeahead cache
+    typeahead_helper.clear_rendered_stream(stream_id);
 };
 
 exports.update_stream_description = function (sub, description, rendered_description) {
