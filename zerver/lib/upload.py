@@ -439,10 +439,13 @@ class S3UploadBackend(ZulipUploadBackend):
         # ?x=x allows templates to append additional parameters with &s
         return "https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, hash_key, medium_suffix)
 
+    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
+        return os.path.join(str(realm.id), 'realm')
+
     def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
         content_type = guess_type(icon_file.name)[0]
         bucket_name = settings.S3_AVATAR_BUCKET
-        s3_file_name = os.path.join(str(user_profile.realm.id), 'realm', 'icon')
+        s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), 'icon')
 
         image_data = icon_file.read()
         upload_image_to_s3(
@@ -477,7 +480,7 @@ class S3UploadBackend(ZulipUploadBackend):
             basename = 'night_logo'
         else:
             basename = 'logo'
-        s3_file_name = os.path.join(str(user_profile.realm.id), 'realm', basename)
+        s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), basename)
 
         image_data = logo_file.read()
         upload_image_to_s3(
@@ -685,9 +688,11 @@ class LocalUploadBackend(ZulipUploadBackend):
         image_data = read_local_file('avatars', source_file_path + '.original')
         self.write_avatar_images(target_file_path, image_data)
 
-    def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
-        upload_path = os.path.join('avatars', str(user_profile.realm.id), 'realm')
+    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
+        return os.path.join('avatars', str(realm.id), 'realm')
 
+    def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
+        upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         image_data = icon_file.read()
         write_local_file(
             upload_path,
@@ -703,7 +708,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
-        upload_path = os.path.join('avatars', str(user_profile.realm.id), 'realm')
+        upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         if night:
             original_file = 'night_logo.original'
             resized_file = 'night_logo.png'
