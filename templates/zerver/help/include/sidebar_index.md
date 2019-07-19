@@ -36,6 +36,7 @@
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
+* [Stream and topic links](/help/stream-and-topic-links)
 
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)
@@ -68,6 +69,7 @@
 * [Change the topic of a message](/help/change-the-topic-of-a-message)
 * [Rename a topic](/help/rename-a-topic)
 * [Manage inactive streams](/help/manage-inactive-streams)
+* [Stream and topic links](/help/stream-and-topic-links)
 
 ## Notifications
 * [Stream notifications](/help/stream-notifications)

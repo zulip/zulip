@@ -50,3 +50,8 @@ notification. Silent mentions start with `@_` instead of `@`.
 
 You can mention everyone on a stream with the `@**all**` mention. Use
 sparingly! Note that this will not notify anyone who has muted the stream.
+
+## Stream and topic links
+
+You can also insert links to streams or topics in a message with a similar
+process as user mentions. Read more about them [here](/help/stream-and-topic-links).
