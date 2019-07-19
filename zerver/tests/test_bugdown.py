@@ -832,6 +832,14 @@ class BugdownTest(ZulipTestCase):
         converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
         self.assertEqual(converted_topic, [u'https://google.com/hello-world'])
 
+        msg.set_topic_name("Without scheme google.com/hello-world")
+        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        self.assertEqual(converted_topic, [u'https://google.com/hello-world'])
+
+        msg.set_topic_name("Without scheme random.words/hello-world")
+        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
+        self.assertEqual(converted_topic, [])
+
         msg.set_topic_name("Try out http://ftp.debian.org, https://google.com/ and https://google.in/.")
         converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
         self.assertEqual(converted_topic, [u'http://ftp.debian.org', 'https://google.com/', 'https://google.in/'])

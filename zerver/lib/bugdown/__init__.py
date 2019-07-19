@@ -18,6 +18,7 @@ import ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element
 import ahocorasick
+from hyperlink import parse
 
 from collections import deque, defaultdict
 
@@ -2074,7 +2075,11 @@ def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
     for sub_string in basic_link_splitter.split(topic_name):
         link_match = re.match(get_web_link_regex(), sub_string)
         if link_match:
-            matches.append(link_match.group('url'))
+            url = link_match.group('url')
+            url_object = parse(url)
+            if not url_object.scheme:
+                url = url_object.replace(scheme='https').to_text()
+            matches.append(url)
 
     return matches
 
