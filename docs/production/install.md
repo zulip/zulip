@@ -1,14 +1,16 @@
 # Production Installation
 
-Make sure you want to install a Zulip production server. If you'd
-instead like to test or develop a new feature, we recommend the
-[Zulip development server](../development/overview.html#requirements) instead.
-If you just want to play around with Zulip and see what it looks like, you
-can create a test organization at <https://zulipchat.com>.
-
 You'll need an Ubuntu or Debian system that satisfies
-[the installation requirements](../production/requirements.html), or
-you can use Zulip's [experimental Docker image](../production/deployment.html#zulip-in-docker).
+[the installation requirements](../production/requirements.html). Alternatively,
+you can use a preconfigured
+[Digital Ocean droplet](https://marketplace.digitalocean.com/apps/zulip), or
+Zulip's
+[experimental Docker image](../production/deployment.html#zulip-in-docker).
+
+Note that if you're developing for Zulip, you should install Zulip's
+[development environment](../development/overview.html) instead. If
+you're just looking to play around with Zulip and see what it looks like,
+you can create a test organization at <https://zulipchat.com/new>.
 
 ## Step 1: Download the latest release
 
