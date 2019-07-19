@@ -1117,9 +1117,9 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
     avatars_output_dir = os.path.join(output_dir, 'avatars')
     emoji_output_dir = os.path.join(output_dir, 'emoji')
 
-    for output_dir in (uploads_output_dir, avatars_output_dir, emoji_output_dir):
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+    for dir_path in (uploads_output_dir, avatars_output_dir, emoji_output_dir):
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
 
     if settings.LOCAL_UPLOADS_DIR:
         # Small installations and developers will usually just store files locally.
@@ -1132,6 +1132,9 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         export_emoji_from_local(realm,
                                 local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
                                 output_dir=emoji_output_dir)
+        export_realm_icon_and_logo(realm,
+                                   local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR),
+                                   output_dir=output_dir)
     else:
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(realm,
@@ -1329,6 +1332,15 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
 
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
+
+def export_realm_icon_and_logo(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+    path = zerver.lib.upload.upload_backend.realm_avatar_and_logo_path(realm)
+    wildcard = os.path.join(local_dir, path, '*')
+    for local_path in glob.glob(wildcard):
+        fn = os.path.relpath(local_path, local_dir)
+        output_path = os.path.join(output_dir, fn)
+        os.makedirs(str(os.path.dirname(output_path)), exist_ok=True)
+        shutil.copy2(str(local_path), str(output_path))
 
 def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 

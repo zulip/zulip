@@ -245,6 +245,8 @@ class ZulipUploadBackend:
     def upload_export_tarball(self, realm: Realm, tarball_path: str) -> str:
         raise NotImplementedError()
 
+    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
+        raise NotADirectoryError()
 
 ### S3
 
