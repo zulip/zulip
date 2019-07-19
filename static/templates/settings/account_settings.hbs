@@ -60,14 +60,14 @@
                       aria-labelledby="change_full_name_modal_label" aria-hidden="true">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
-                            <h3 id="change_full_name_modal_label">{{t "Change full name" }}</h3>
+                            <h3 class="inline-block" id="change_full_name_modal_label">{{t "Change full name" }}</h3>
+                            <div class="alert-notification change_full_name_info"></div>
                         </div>
                         <div class="modal-body">
                             <div class="input-group full_name_change_container">
                                 <label for="email">{{t "New full name" }}</label>
                                 <input type="text" name="full_name" value="{{ page_params.full_name }}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
                             </div>
-                            <div class="alert change_full_name_info"></div>
                         </div>
                         <div class="modal-footer">
                             <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
