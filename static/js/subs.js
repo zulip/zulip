@@ -130,6 +130,8 @@ exports.is_subscribed_stream_tab_active = function () {
 };
 
 exports.update_stream_name = function (sub, new_name) {
+    var old_name = sub.name;
+
     // Rename the stream internally.
     stream_data.rename_sub(sub, new_name);
     var stream_id = sub.stream_id;
@@ -152,6 +154,11 @@ exports.update_stream_name = function (sub, new_name) {
 
     // Clear rendered typeahead cache
     typeahead_helper.clear_rendered_stream(stream_id);
+
+    // Update compose_state if needed
+    if (compose_state.stream_name() === old_name) {
+        compose_state.stream_name(new_name);
+    }
 };
 
 exports.update_stream_description = function (sub, description, rendered_description) {
