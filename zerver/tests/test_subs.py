@@ -603,7 +603,7 @@ class StreamAdminTest(ZulipTestCase):
         # Inspect the notification message sent
         message = self.get_last_message()
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        message_content = '@_**King Hamlet|{}** renamed stream **stream_name1** to **stream_name2**'.format(user_profile.id)
+        message_content = '@_**King Hamlet|{}** renamed stream **stream_name1** to **stream_name2**.'.format(user_profile.id)
         self.assertEqual(message.sender.realm, user_profile.realm)
         self.assertEqual(actual_stream.name, 'stream_name2')
         self.assertEqual(message.recipient.type, Recipient.STREAM)
