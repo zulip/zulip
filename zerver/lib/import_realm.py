@@ -584,14 +584,16 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
             client = Client.objects.create(name=item['name'])
         update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
-def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=False,
-                   processing_emojis: bool=False) -> None:
+def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_avatars: bool=False,
+                   processing_emojis: bool=False, processing_realm_icons: bool=False) -> None:
     if processing_avatars and processing_emojis:
         raise AssertionError("Cannot import avatars and emojis at the same time!")
     if processing_avatars:
         logging.info("Importing avatars")
     elif processing_emojis:
         logging.info("Importing emojis")
+    elif processing_realm_icons:
+        logging.info("Importing realm icons and logos")
     else:
         logging.info("Importing uploaded files")
 
@@ -602,14 +604,14 @@ def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=Fa
 
     re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
                                  id_field=True)
-    if not processing_emojis:
+    if not processing_emojis and not processing_realm_icons:
         re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
                                      related_table="user_profile", id_field=True)
 
     s3_uploads = settings.LOCAL_UPLOADS_DIR is None
 
     if s3_uploads:
-        if processing_avatars or processing_emojis:
+        if processing_avatars or processing_emojis or processing_realm_icons:
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
@@ -641,6 +643,10 @@ def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=Fa
                 realm_id=record['realm_id'],
                 emoji_file_name=record['file_name'])
             record['last_modified'] = timestamp
+        elif processing_realm_icons:
+            icon_name = os.path.basename(record["path"])
+            relative_path = os.path.join(str(record['realm_id']), "realm", icon_name)
+            record['last_modified'] = timestamp
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
             # function 'upload_message_file'
@@ -654,9 +660,15 @@ def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=Fa
         if s3_uploads:
             key = Key(bucket)
             key.key = relative_path
-            # Exported custom emoji from tools like Slack don't have
-            # the data for what user uploaded them in `user_profile_id`.
-            if not processing_emojis:
+            if processing_emojis:
+                # Exported custom emoji from tools like Slack don't have
+                # the data for what user uploaded them in `user_profile_id`.
+                pass
+            elif processing_realm_icons and "user_profile_id" not in record:
+                # Exported realm icons and logos from local export don't have
+                # the value of user_profile_id in the associated record.
+                pass
+            else:
                 user_profile_id = int(record['user_profile_id'])
                 # Support email gateway bot and other cross-realm messages
                 if user_profile_id in ID_MAP["user_profile"]:
@@ -683,7 +695,7 @@ def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=Fa
 
             key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
         else:
-            if processing_avatars or processing_emojis:
+            if processing_avatars or processing_emojis or processing_realm_icons:
                 file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
             else:
                 file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", relative_path)
@@ -980,14 +992,18 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     bulk_import_model(data, CustomProfileFieldValue)
 
     # Import uploaded files and avatars
-    import_uploads(os.path.join(import_dir, "avatars"), processes, processing_avatars=True)
-    import_uploads(os.path.join(import_dir, "uploads"), processes)
+    import_uploads(realm, os.path.join(import_dir, "avatars"), processes, processing_avatars=True)
+    import_uploads(realm, os.path.join(import_dir, "uploads"), processes)
 
     # We need to have this check as the emoji files are only present in the data
     # importer from slack
     # For Zulip export, this doesn't exist
     if os.path.exists(os.path.join(import_dir, "emoji")):
-        import_uploads(os.path.join(import_dir, "emoji"), processes, processing_emojis=True)
+        import_uploads(realm, os.path.join(import_dir, "emoji"), processes, processing_emojis=True)
+
+    if os.path.exists(os.path.join(import_dir, "realm_icons")):
+        import_uploads(realm, os.path.join(import_dir, "realm_icons"), processes,
+                       processing_realm_icons=True)
 
     sender_map = {
         user['id']: user

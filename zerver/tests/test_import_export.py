@@ -28,6 +28,8 @@ from zerver.lib.upload import (
     upload_emoji_image,
     upload_avatar_image,
 )
+from zerver.lib import upload
+
 from zerver.lib.utils import (
     query_chunker,
 )
@@ -51,7 +53,9 @@ from zerver.lib.bot_config import (
 from zerver.lib.actions import (
     do_create_user,
     do_add_reaction,
-    create_stream_if_needed
+    create_stream_if_needed,
+    do_change_icon_source,
+    do_change_logo_source
 )
 
 from zerver.lib.test_runner import slow
@@ -276,6 +280,8 @@ class ImportExportTest(ZulipTestCase):
         result['emoji_dir_records'] = read_file(os.path.join('emoji', 'records.json'))
         result['avatar_dir'] = os.path.join(output_dir, 'avatars')
         result['avatar_dir_records'] = read_file(os.path.join('avatars', 'records.json'))
+        result['realm_icons_dir'] = os.path.join(output_dir, 'realm_icons')
+        result['realm_icons_dir_records'] = read_file(os.path.join('realm_icons', 'records.json'))
         return result
 
     def _setup_export_files(self) -> Tuple[str, str, str, bytes]:
@@ -304,6 +310,19 @@ class ImportExportTest(ZulipTestCase):
             upload_avatar_image(img_file, user_profile, user_profile)
         with open(get_test_image_file('img.png').name, 'rb') as f:
             test_image = f.read()
+
+        with get_test_image_file('img.png') as img_file:
+            upload.upload_backend.upload_realm_icon_image(img_file, user_profile)
+            do_change_icon_source(realm, Realm.ICON_UPLOADED, False)
+
+        with get_test_image_file('img.png') as img_file:
+            upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=False)
+            do_change_logo_source(realm, Realm.LOGO_UPLOADED, False)
+        with get_test_image_file('img.png') as img_file:
+            upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=True)
+            do_change_logo_source(realm, Realm.LOGO_UPLOADED, True)
+
+        test_image = get_test_image_file('img.png').read()
         message.sender.avatar_source = 'U'
         message.sender.save()
 
@@ -339,6 +358,21 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(records[0]['file_name'], '1.png')
         self.assertEqual(records[0]['path'], '2/emoji/images/1.png')
         self.assertEqual(records[0]['s3_path'], '2/emoji/images/1.png')
+
+        # Test realm logo and icon
+        records = full_data['realm_icons_dir_records']
+        image_files = set()
+        for record in records:
+            image_path = os.path.join(full_data['realm_icons_dir'], record["path"])
+            if image_path[-9:] == ".original":
+                image_data = open(image_path, 'rb').read()
+                self.assertEqual(image_data, test_image)
+            else:
+                self.assertTrue(os.path.exists(image_path))
+
+            image_files.add(os.path.basename(image_path))
+        self.assertEqual(set(image_files), {'night_logo.png', 'logo.original', 'logo.png',
+                                            'icon.png', 'night_logo.original', 'icon.original'})
 
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
@@ -390,6 +424,21 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(records[0]['path'], '2/emoji/images/1.png')
         self.assertEqual(records[0]['s3_path'], '2/emoji/images/1.png')
         check_variable_type(records[0]['user_profile_id'], records[0]['realm_id'])
+
+        # Test realm logo and icon
+        records = full_data['realm_icons_dir_records']
+        image_files = set()
+        for record in records:
+            image_path = os.path.join(full_data['realm_icons_dir'], record["s3_path"])
+            if image_path[-9:] == ".original":
+                image_data = open(image_path, 'rb').read()
+                self.assertEqual(image_data, test_image)
+            else:
+                self.assertTrue(os.path.exists(image_path))
+
+            image_files.add(os.path.basename(image_path))
+        self.assertEqual(set(image_files), {'night_logo.png', 'logo.original', 'logo.png',
+                                            'icon.png', 'night_logo.original', 'icon.original'})
 
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
@@ -958,6 +1007,8 @@ class ImportExportTest(ZulipTestCase):
 
         realm = Realm.objects.get(string_id='zulip')
         self._setup_export_files()
+        realm.refresh_from_db()
+
         self._export_realm(realm)
 
         with patch('logging.info'):
@@ -988,6 +1039,29 @@ class ImportExportTest(ZulipTestCase):
         avatar_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path_id)
         self.assertTrue(os.path.isfile(avatar_file_path))
 
+        # Test realm icon and logo
+        upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
+        full_upload_path = os.path.join(settings.LOCAL_UPLOADS_DIR, upload_path)
+
+        with open(get_test_image_file('img.png').name, 'rb') as f:
+            test_image_data = f.read()
+        self.assertIsNotNone(test_image_data)
+
+        with open(os.path.join(full_upload_path, "icon.original"), 'rb') as f:
+            self.assertEqual(f.read(), test_image_data)
+        self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "icon.png")))
+        self.assertEqual(imported_realm.icon_source, Realm.ICON_UPLOADED)
+
+        with open(os.path.join(full_upload_path, "logo.original"), 'rb') as f:
+            self.assertEqual(f.read(), test_image_data)
+        self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "logo.png")))
+        self.assertEqual(imported_realm.logo_source, Realm.LOGO_UPLOADED)
+
+        with open(os.path.join(full_upload_path, "night_logo.original"), 'rb') as f:
+            self.assertEqual(f.read(), test_image_data)
+        self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "night_logo.png")))
+        self.assertEqual(imported_realm.night_logo_source, Realm.LOGO_UPLOADED)
+
     @use_s3_backend
     def test_import_files_from_s3(self) -> None:
         uploads_bucket, avatar_bucket = create_s3_buckets(
@@ -996,6 +1070,8 @@ class ImportExportTest(ZulipTestCase):
 
         realm = Realm.objects.get(string_id='zulip')
         self._setup_export_files()
+        realm.refresh_from_db()
+
         self._export_realm(realm)
         with patch('logging.info'):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'),
@@ -1029,6 +1105,33 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(original_image_key.key, avatar_path_id)
         image_data = original_image_key.get_contents_as_string()
         self.assertEqual(image_data, test_image_data)
+
+        # Test realm icon and logo
+        upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
+
+        original_icon_path_id = os.path.join(upload_path, "icon.original")
+        original_icon_key = avatar_bucket.get_key(original_icon_path_id)
+        self.assertEqual(original_icon_key.get_contents_as_string(), test_image_data)
+        resized_icon_path_id = os.path.join(upload_path, "icon.png")
+        resized_icon_key = avatar_bucket.get_key(resized_icon_path_id)
+        self.assertEqual(resized_icon_key.key, resized_icon_path_id)
+        self.assertEqual(imported_realm.icon_source, Realm.ICON_UPLOADED)
+
+        original_logo_path_id = os.path.join(upload_path, "logo.original")
+        original_logo_key = avatar_bucket.get_key(original_logo_path_id)
+        self.assertEqual(original_logo_key.get_contents_as_string(), test_image_data)
+        resized_logo_path_id = os.path.join(upload_path, "logo.png")
+        resized_logo_key = avatar_bucket.get_key(resized_logo_path_id)
+        self.assertEqual(resized_logo_key.key, resized_logo_path_id)
+        self.assertEqual(imported_realm.logo_source, Realm.LOGO_UPLOADED)
+
+        night_logo_original_path_id = os.path.join(upload_path, "night_logo.original")
+        night_logo_original_key = avatar_bucket.get_key(night_logo_original_path_id)
+        self.assertEqual(night_logo_original_key.get_contents_as_string(), test_image_data)
+        resized_night_logo_path_id = os.path.join(upload_path, "night_logo.png")
+        resized_night_logo_key = avatar_bucket.get_key(resized_night_logo_path_id)
+        self.assertEqual(resized_night_logo_key.key, resized_night_logo_path_id)
+        self.assertEqual(imported_realm.night_logo_source, Realm.LOGO_UPLOADED)
 
     def test_get_incoming_message_ids(self) -> None:
         import_dir = os.path.join(settings.DEPLOY_ROOT, "zerver", "tests", "fixtures", "import_fixtures")
