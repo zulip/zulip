@@ -9,7 +9,7 @@ Get all streams that the user is subscribed to.
 {start_tabs}
 {tab|python}
 
-{generate_code_example(python)|get-subscribed-streams|example}
+{generate_code_example(python)|/users/me/subscriptions:get|example}
 
 {tab|js}
 
@@ -74,4 +74,4 @@ This request takes no arguments.
 
 A typical successful JSON response may look like:
 
-{generate_code_example|get-subscribed-streams|fixture}
+{generate_code_example|/users/me/subscriptions:get|fixture(200)}

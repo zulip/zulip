@@ -327,9 +327,8 @@ def list_subscriptions(client):
     result = client.list_subscriptions()
     # {code_example|end}
 
-    fixture = FIXTURES['get-subscribed-streams']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['subscriptions'])
+    validate_against_openapi_schema(result, '/users/me/subscriptions',
+                                    'get', '200')
 
     streams = [s for s in result['subscriptions'] if s['name'] == 'new stream']
     assert streams[0]['description'] == 'New stream for testing'
@@ -969,13 +968,13 @@ TEST_FUNCTIONS = {
     '/get_stream_id:get': get_stream_id,
     '/streams/{stream_id}:delete': delete_stream,
     '/streams/{stream_id}:patch': update_stream,
-    'get-subscribed-streams': list_subscriptions,
     '/streams:get': get_streams,
     '/users:post': create_user,
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
     '/users/{email}/presence:get': get_user_presence,
     '/users/me/presence:post': update_presence,
+    '/users/me/subscriptions:get': list_subscriptions,
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
     '/users/me/subscriptions/properties:post': update_subscription_settings,
