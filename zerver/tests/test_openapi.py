@@ -161,10 +161,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/default_stream_groups/create',
         '/users/me/alert_words',
         '/users/me/status',
-        # This endpoint is legacy; documented using the old system
-        # defined in ./templates/zerver/api/fixtures.json, not
-        # zulip.yaml.  Needs migrating.
-        '/users/me/subscriptions',
         '/messages/matches_narrow',
         '/settings',
         '/submessage',
@@ -252,7 +248,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                                                               msg: Optional[str]=None) -> None:
         try:
             get_openapi_parameters(url_pattern, method)
-            if not msg:
+            if not msg:  # nocoverage
                 msg = """
 We found some OpenAPI documentation for {method} {url_pattern},
 so maybe we shouldn't mark it as intentionally undocumented in the urls.
@@ -331,13 +327,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
 
                 regex_pattern = p.regex.pattern
                 url_pattern = self.convert_regex_to_url_pattern(regex_pattern)
-
-                if url_pattern == "/users/me/subscriptions":
-                    # Hack to workaround legacy pre-openapi docs.
-                    # TODO: Migrate get-subscriptions out of
-                    # ./templates/zerver/api/fixtures.json and into
-                    # zerver/openapi/zulip.yaml.
-                    continue
 
                 if "intentionally_undocumented" in tags:
                     self.ensure_no_documentation_if_intentionally_undocumented(url_pattern, method)

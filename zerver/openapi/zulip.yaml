@@ -1115,6 +1115,69 @@ paths:
                         "result": "error"
                     }
   /users/me/subscriptions:
+    get:
+      description: Get information on every stream the user is subscribed to.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    subscriptions:
+                      type: array
+                      items:
+                        type: object
+                - example:
+                    {
+                      "msg": "",
+                      "result": "success",
+                      "subscriptions": [
+                        {
+                          "audible_notifications": true,
+                          "color": "#e79ab5",
+                          "description": "A Scandinavian country",
+                          "desktop_notifications": true,
+                          "email_address": "Denmark+187b4125ed36d6af8b5d03ef4f65c0cf@zulipdev.com:9981",
+                          "in_home_view": true,
+                          "invite_only": false,
+                          "name": "Denmark",
+                          "pin_to_top": false,
+                          "push_notifications": false,
+                          "stream_id": 1,
+                          "subscribers": [
+                              "ZOE@zulip.com",
+                              "hamlet@zulip.com",
+                              "iago@zulip.com",
+                              "othello@zulip.com",
+                              "prospero@zulip.com"
+                          ]
+                        },
+                        {
+                          "audible_notifications": true,
+                          "color": "#e79ab5",
+                          "description": "Located in the United Kingdom",
+                          "desktop_notifications": true,
+                          "email_address": "Scotland+f5786390183e60a1ccb18374f9d05649@zulipdev.com:9981",
+                          "in_home_view": true,
+                          "invite_only": false,
+                          "name": "Scotland",
+                          "pin_to_top": false,
+                          "push_notifications": false,
+                          "stream_id": 3,
+                          "subscribers": [
+                              "ZOE@zulip.com",
+                              "iago@zulip.com",
+                              "othello@zulip.com",
+                              "prospero@zulip.com"
+                          ]
+                        }
+                      ]
+                    }
     post:
       description: Subscribe one or more users to one or more streams.
       parameters:
@@ -1171,6 +1234,31 @@ paths:
           type: boolean
           default: true
         example: false
+      - name: history_public_to_subscribers
+        in: query
+        description: A boolean indicating if the history should be available to
+          newly subscribed members.
+        schema:
+          type: boolean
+          default: None
+        example: false
+      - name: is_announcement_only
+        in: query
+        description: A boolean indicating if the stream is an announcements only stream.
+          Only organization admins can post to announcements only streams.
+        schema:
+          type: boolean
+          default: false
+        example: false
+      - name: announce
+        in: query
+        description: If `announce` is `True` and one of the streams specified
+          in `subscriptions` has to be created (i.e. doesn't exist to begin
+          with), an announcement will be made notifying that a new stream was
+          created.
+        schema:
+          type: boolean
+        example: true
       security:
       - basicAuth: []
       responses:
@@ -1239,6 +1327,43 @@ paths:
                             "private_stream"
                         ]
                     }
+    patch:
+      description: Update which streams you are are subscribed to.
+      parameters:
+        - name: delete
+          in: query
+          description: A list of stream names to unsubscribe from.
+          schema:
+            type: array
+            items:
+              type: string
+          example: ['Verona', 'Denmark']
+          required: false
+        - name: add
+          in: query
+          description: A list of objects describing which streams to subscribe to,
+            optionally including per-user subscription parameters (e.g. color)
+            and if the stream is to be created, its description.
+          schema:
+            type: array
+            items:
+              type: object
+              items:
+                name: string
+                color: string
+                description: string
+          example:
+            [
+              {
+                "name": "Verona"
+              },
+              {
+                "name": "Denmark",
+                "color": "#e79ab5",
+                "description": "A Scandinavian country",
+              }
+            ]
+          required: false
     delete:
       description: Unsubscribe yourself or other users from one or more
         streams.
