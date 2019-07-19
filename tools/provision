@@ -28,16 +28,16 @@ export PYTHONUNBUFFERED=1
 ./lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
 failed=${PIPESTATUS[0]}
 
-if [ "$failed" = 1 ]; then
+if [ "$failed" -ne 0 ]; then
     echo -e "$FAIL"
-    echo "Provisioning failed!"
+    echo "Provisioning failed (exit code $failed)!"
     echo
     echo "* Look at the traceback(s) above to find more about the errors."
     echo "* Resolve the errors or get help on chat."
     echo "* If you can fix this yourself, you can re-run tools/provision at any time."
     echo "* Logs are here: zulip/var/log/provision.log"
     echo -e "$ENDC"
-    exit 1
+    exit "$failed"
 elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${TRAVIS}${SKIP_VENV_SHELL_WARNING}" ]; then
     echo -e "$WARNING"
     echo "WARNING: This shell does not have the Zulip Python 3 virtualenv activated."

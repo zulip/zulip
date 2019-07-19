@@ -29,10 +29,16 @@ sudo rm -f /etc/apt/sources.list.d/mongodb*.list
 # Provisioning may fail due to many issues but most of the times a network
 # connection issue is the reason. So we are going to retry entire provisioning
 # once again if that fixes our problem.
-if ! tools/provision --production-travis; then
-    echo "\`provision\`: Something went wrong with the provisioning, might be a network issue, Retrying to provision..."
-    tools/provision --production-travis
-fi
+tools/provision --production-travis || {
+    ret=$?
+    if [ "$ret" = 1 ]; then
+        echo "\`provision\`: Something went wrong with the provisioning, might be a network issue, Retrying to provision..."
+        tools/provision --production-travis
+    else
+        echo "\`provision\`: Something REALLY BAD went wrong with the provisioning, not retrying."
+        exit "$ret"
+    fi
+}
 
 cp -a tools/ci/success-http-headers.txt ~/
 source tools/ci/activate-venv
