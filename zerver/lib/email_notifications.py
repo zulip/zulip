@@ -315,6 +315,8 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             (recipients,)
         )
 
+    # This link is no longer a part of the email, but keeping the code in case
+    # we find a clean way to add it back in the future
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
     context = common_context(user_profile)
     context.update({
