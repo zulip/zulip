@@ -218,7 +218,6 @@ class Command(BaseCommand):
             all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
                               for bot in settings.INTERNAL_BOTS]
             zulip_realm_bots = [
-                ("Zulip New User Bot", "new-user-bot@zulip.com"),
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
                 ("Welcome Bot", "welcome-bot@zulip.com"),

@@ -559,7 +559,7 @@ class HomeTest(ZulipTestCase):
         self.assertNotIn('defunct-1@zulip.com', active_emails)
 
         cross_bots = page_params['cross_realm_bots']
-        self.assertEqual(len(cross_bots), 5)
+        self.assertEqual(len(cross_bots), 4)
         cross_bots.sort(key=lambda d: d['email'])
         for cross_bot in cross_bots:
             # These are either nondeterministic or boring
@@ -572,13 +572,6 @@ class HomeTest(ZulipTestCase):
         by_email = lambda d: d['email']
 
         self.assertEqual(sorted(cross_bots, key=by_email), sorted([
-            dict(
-                user_id=get_user('new-user-bot@zulip.com', get_realm('zulip')).id,
-                is_admin=False,
-                email='new-user-bot@zulip.com',
-                full_name='Zulip New User Bot',
-                is_bot=True
-            ),
             dict(
                 user_id=get_user('emailgateway@zulip.com', get_realm('zulip')).id,
                 is_admin=False,
