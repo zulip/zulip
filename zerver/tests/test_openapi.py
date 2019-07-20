@@ -2,7 +2,7 @@
 
 import re
 import mock
-from typing import Dict, Any, Set
+from typing import Dict, Any, Set, Optional
 
 from django.conf import settings
 
@@ -248,12 +248,16 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         return url_pattern
 
     def ensure_no_documentation_if_intentionally_undocumented(self, url_pattern: str,
-                                                              method: str) -> None:
+                                                              method: str,
+                                                              msg: Optional[str]=None) -> None:
         try:
             get_openapi_parameters(url_pattern, method)
-            raise AssertionError("We found some OpenAPI \
-documentation for %s %s, so maybe we shouldn't mark it as intentionally \
-undocumented in the urls." % (method, url_pattern))  # nocoverage
+            if not msg:
+                msg = """
+We found some OpenAPI documentation for {method} {url_pattern},
+so maybe we shouldn't mark it as intentionally undocumented in the urls.
+""".format(method=method, url_pattern=url_pattern)
+            raise AssertionError(msg)  # nocoverage
         except KeyError:
             return
 
@@ -335,8 +339,19 @@ undocumented in the urls." % (method, url_pattern))  # nocoverage
                     # zerver/openapi/zulip.yaml.
                     continue
 
-                if "intentionally_undocumented" in tags or url_pattern in self.pending_endpoints:
+                if "intentionally_undocumented" in tags:
                     self.ensure_no_documentation_if_intentionally_undocumented(url_pattern, method)
+                    continue
+
+                if url_pattern in self.pending_endpoints:
+                    # HACK: After all pending_endpoints have been resolved, we should remove
+                    # this segment and the "msg" part of the `ensure_no_...` method.
+                    msg = """
+We found some OpenAPI documentation for {method} {url_pattern},
+so maybe we shouldn't include it in pending_endpoints.
+""".format(method=method, url_pattern=url_pattern)
+                    self.ensure_no_documentation_if_intentionally_undocumented(url_pattern,
+                                                                               method, msg)
                     continue
 
                 try:
