@@ -433,6 +433,16 @@ run_test('private_messages', () => {
     assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), [message.id]);
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
+
+    unread.mark_as_read(message.id);
+    assert.equal(unread.num_unread_for_person(alice.user_id), 0);
+    assert.equal(unread.num_unread_for_person(''), 0);
+    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
+    assert.deepEqual(unread.get_msg_ids_for_private(), []);
+    assert.deepEqual(unread.get_all_msg_ids(), []);
+    var counts = unread.get_counts();
+    assert.equal(counts.private_message_count, 0);
 });
 
 
