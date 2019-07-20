@@ -195,7 +195,9 @@ exports.hide_or_show_history_limit_message = function (msg_list) {
     // this reduces lag by preventing unnecessary calls to favicon.set()
     let previous_counts = {};
     setInterval(function () {
-        const private_message_count = unread.get_counts().private_message_count;
+        const unread_count = unread.get_counts();
+        const private_message_count = unread_count.private_message_count;
+        const notifiable_unread_count = unread.calculate_notifiable_count(unread_count);
         const toggle = (counter + 1) % 2;
         let update_image = false;
         if (private_message_count > 0 && toggle) {
@@ -206,7 +208,7 @@ exports.hide_or_show_history_limit_message = function (msg_list) {
             update_image = true;
         } else {
             const default_count = {
-                unread_count: unread.get_counts().home_unread_messages,
+                unread_count: notifiable_unread_count,
             };
 
             if (!_.isEqual(previous_counts, default_count)) {
