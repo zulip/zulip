@@ -588,6 +588,7 @@ css_rules = RuleList(
 
 prose_style_rules = cast(Rule, [
     {'pattern': r'[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs
+     'exclude': set(["docs/documentation/api.md"]),
      'description': "javascript should be spelled JavaScript"},
     {'pattern': r'''[^\/\-\."'\_\=\>]([gG]ithub)[^\.\-\_"\<]''',  # exclude usage in hrefs/divs
      'description': "github should be spelled GitHub"},
