@@ -26,8 +26,11 @@ class DocPageTest(ZulipTestCase):
             return self.client_get(url, subdomain=subdomain, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         return self.client_get(url, subdomain=subdomain)
 
-    def print_msg_if_error(self, response: HttpResponse) -> None:  # nocoverage
-        if response.status_code != 200 and response.get('Content-Type') == 'application/json':
+    def print_msg_if_error(self, url: str, response: HttpResponse) -> None:  # nocoverage
+        if response.status_code == 200:
+            return
+        print("Error processing URL:", url)
+        if response.get('Content-Type') == 'application/json':
             content = ujson.loads(response.content)
             print()
             print("======================================================================")
@@ -40,7 +43,7 @@ class DocPageTest(ZulipTestCase):
 
         # Test the URL on the "zephyr" subdomain
         result = self.get_doc(url, subdomain="zephyr")
-        self.print_msg_if_error(result)
+        self.print_msg_if_error(url, result)
 
         self.assertEqual(result.status_code, 200)
         self.assertIn(expected_content, str(result.content))
@@ -51,7 +54,7 @@ class DocPageTest(ZulipTestCase):
 
         # Test the URL on the root subdomain
         result = self.get_doc(url, subdomain="")
-        self.print_msg_if_error(result)
+        self.print_msg_if_error(url, result)
 
         self.assertEqual(result.status_code, 200)
         self.assertIn(expected_content, str(result.content))
@@ -66,7 +69,7 @@ class DocPageTest(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             # Test the URL on the root subdomain with the landing page setting
             result = self.get_doc(url, subdomain="")
-            self.print_msg_if_error(result)
+            self.print_msg_if_error(url, result)
 
             self.assertEqual(result.status_code, 200)
             self.assertIn(expected_content, str(result.content))
@@ -80,7 +83,7 @@ class DocPageTest(ZulipTestCase):
 
             # Test the URL on the "zephyr" subdomain with the landing page setting
             result = self.get_doc(url, subdomain="zephyr")
-            self.print_msg_if_error(result)
+            self.print_msg_if_error(url, result)
 
             self.assertEqual(result.status_code, 200)
             self.assertIn(expected_content, str(result.content))
@@ -97,7 +100,7 @@ class DocPageTest(ZulipTestCase):
 
         def _filter_func(fp: str) -> bool:
             ignored_files = ['sidebar_index.md', 'index.md', 'missing.md']
-            return fp.endswith('.md') and fp not in ignored_files
+            return fp.endswith('.md') and not fp.startswith(".") and fp not in ignored_files
 
         files = list(filter(_filter_func, files))
 
