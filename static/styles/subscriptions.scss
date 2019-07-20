@@ -204,10 +204,10 @@ form#add_new_subscription {
     transition: all 0.2s ease;
     padding-bottom: 0px;
     padding-top: 0px;
-}
 
-.create_stream_button:hover {
-    color: hsl(0, 0%, 27%);
+    &:hover {
+        color: hsl(0, 0%, 27%);
+    }
 }
 
 #create_stream_description {
