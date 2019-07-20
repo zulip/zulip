@@ -12,7 +12,6 @@ def check_pyflakes(files, options):
     # type: (List[str], argparse.Namespace) -> bool
     suppress_patterns = [
         (b"scripts/lib/pythonrc.py", b"imported but unused"),
-        (b'', b"'scripts.lib.setup_path_on_import' imported but unused"),
         # Intentionally imported by zerver/lib/webhooks/common.py
         (b'', b"'zerver.lib.exceptions.UnexpectedWebhookEventType' imported but unused"),
 

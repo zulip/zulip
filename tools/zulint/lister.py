@@ -26,6 +26,9 @@ def get_ftype(fpath, use_shebang):
             if re.search(r'^#!.*\bpython', first_line):
                 return 'py'
             elif re.search(r'^#!.*sh', first_line):
+                second_line = f.readline()
+                if re.search(r'-\*-(?:.*;)? *mode: *python;.*-\*-', second_line):
+                    return 'py'
                 return 'sh'
             elif re.search(r'^#!.*\bperl', first_line):
                 return 'pl'

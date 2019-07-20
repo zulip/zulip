@@ -62,7 +62,7 @@ shebang_rules = [
     # /bin/sh and /usr/bin/env are the only two binaries
     # that NixOS provides at a fixed path (outside a
     # buildFHSUserEnv sandbox).
-    {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))',
+    {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh|/home/zulip/deployments/current/zulip-py3-venv/bin/python3)(?: |$))',
      'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo`"
      " for interpreters other than sh."},
     {'pattern': '^#!/usr/bin/env python$',
@@ -346,7 +346,7 @@ python_rules = RuleList(
          'exclude': set([
              # Not important, but should fix
              'scripts/lib/process-mobile-i18n',
-             # Uses setup_path_on_import before importing.
+             # Runs in zulip-py3-venv.
              'puppet/zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time',
          ]),
          'description': 'For scripts run as part of installer, cannot rely on typing existing; use `if False` workaround.',

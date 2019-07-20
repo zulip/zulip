@@ -18,6 +18,11 @@ configure this feature entirely in the UI.  However, servers that had
 previously [enabled previews of linked
 websites](https://zulipchat.com/help/allow-image-link-previews) will
 lose the setting and need to re-enable it.
+- If you are using our [Apache SSO
+integration](../production/authentication-methods.html), note that the
+`WSGIDaemonProcess` line in the Apache configuration file now requires
+a `python-home` argument; see
+`/etc/apache2/sites-available/zulip-sso.example`.
 
 
 ### 2.0.4 -- 2019-06-29

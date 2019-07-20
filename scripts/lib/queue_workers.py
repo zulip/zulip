@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#!/bin/sh
+# -*- mode: python; -*-
+"exec" "`dirname \"$0\"`/../../zulip-py3-venv/bin/python3" "$0" "$@"
 
 import argparse
 import os
@@ -6,7 +8,6 @@ import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
-import scripts.lib.setup_path_on_import
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 

@@ -188,13 +188,17 @@ highlighting.  The system is largely managed by the code in
   production deployment directory under `/home/zulip/deployments/`.
   This helps ensure that a Zulip installation doesn't leak large
   amounts of disk over time.
-* **Scripts**.  Often, we want a script running in production to use
-  the Zulip virtualenv.  To make that work without a lot of duplicated
-  code, we have a helpful library,
-  `scripts/lib/setup_path_on_import.py`, which on import will put the
-  currently running Python script into the Zulip virtualenv.  This is
-  called by `./manage.py` to ensure that our Django code always uses
-  the correct virtualenv as well.
+* **Scripts**.  Often, we want a Python script running in production
+  to use the Zulip virtualenv.  We do that by prepending a small shell
+  script carefully written to appear as a no-op string constant to
+  Python:
+  ```sh
+  #!/bin/sh
+  # -*- mode: python; -*-
+  "exec" "`dirname \"$0\"`/zulip-py3-venv/bin/python3" "$0" "$@"
+  ```
+  This is used by `./manage.py` to ensure that our Django code always
+  uses the correct virtualenv as well.
 * **Mypy type checker**.  Because we're using mypy in a strict mode,
   when you add use of a new Python dependency, you usually need to
   either adds stubs to the `stubs/` directory for the library, or edit
