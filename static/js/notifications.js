@@ -130,16 +130,8 @@ exports.permission_state = function () {
 
 var new_message_count = 0;
 
-exports.update_title_count = function (res) {
-    var only_show_notifiable = page_params.desktop_icon_count_display ===
-        settings_notifications.desktop_icon_count_display_values.notifiable.code;
-    if (only_show_notifiable) {
-        // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE
-        new_message_count = res.mentioned_message_count + res.private_message_count;
-    } else {
-        // DESKTOP_ICON_COUNT_DISPLAY_MESSAGES
-        new_message_count = res.home_unread_messages;
-    }
+exports.update_title_count = function (count) {
+    new_message_count = count;
     exports.redraw_title();
 };
 

@@ -546,6 +546,27 @@ exports.get_counts = function () {
     return res;
 };
 
+// Saves us from calling to get_counts() when we can avoid it.
+exports.calculate_notifiable_count = function (res) {
+    var new_message_count = 0;
+
+    var only_show_notifiable = page_params.desktop_icon_count_display ===
+        settings_notifications.desktop_icon_count_display_values.notifiable.code;
+    if (only_show_notifiable) {
+        // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE
+        new_message_count = res.mentioned_message_count + res.private_message_count;
+    } else {
+        // DESKTOP_ICON_COUNT_DISPLAY_MESSAGES
+        new_message_count = res.home_unread_messages;
+    }
+    return new_message_count;
+};
+
+exports.get_notifiable_count = function () {
+    var res = exports.get_counts();
+    return exports.calculate_notifiable_count(res);
+};
+
 exports.num_unread_for_stream = function (stream_id) {
     return exports.unread_topic_counter.get_stream_count(stream_id);
 };

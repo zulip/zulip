@@ -1,11 +1,14 @@
+set_global('i18n', global.stub_i18n);
+
 zrequire('muting');
 zrequire('people');
 zrequire('stream_data');
 zrequire('util');
 zrequire('unread');
+zrequire('settings_notifications');
 
-set_global('blueslip', {});
 set_global('page_params', {});
+set_global('blueslip', {});
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
 set_global('home_msg_list', {});
@@ -36,14 +39,29 @@ var zero_counts = {
     pm_count: new Dict(),
 };
 
+function test_notifiable_count(home_unread_messages, expected_notifiable_count) {
+    set_global('page_params', {
+        desktop_icon_count_display: 1,
+    });
+    var notifiable_counts = unread.get_notifiable_count();
+    assert.deepEqual(notifiable_counts, home_unread_messages);
+    set_global('page_params', {
+        desktop_icon_count_display: 2,
+    });
+    notifiable_counts = unread.get_notifiable_count();
+    assert.deepEqual(notifiable_counts, expected_notifiable_count);
+}
+
 run_test('empty_counts_while_narrowed', () => {
     var counts = unread.get_counts();
     assert.deepEqual(counts, zero_counts);
+    test_notifiable_count(counts.home_unread_messages, 0);
 });
 
 run_test('empty_counts_while_home', () => {
     var counts = unread.get_counts();
     assert.deepEqual(counts, zero_counts);
+    test_notifiable_count(counts.home_unread_messages, 0);
 });
 
 run_test('changing_topics', () => {
@@ -205,6 +223,7 @@ run_test('muting', () => {
     assert.equal(counts.home_unread_messages, 1);
     assert.equal(unread.num_unread_for_stream(stream_id), 1);
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), [message.id]);
+    test_notifiable_count(counts.home_unread_messages, 0);
 
     muting.add_muted_topic(social.stream_id, 'test_muting');
     counts = unread.get_counts();
@@ -212,6 +231,7 @@ run_test('muting', () => {
     assert.equal(counts.home_unread_messages, 0);
     assert.equal(unread.num_unread_for_stream(stream_id), 0);
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), []);
+    test_notifiable_count(counts.home_unread_messages, 0);
 
     // we still find the message id here (muting is ignored)
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
@@ -322,19 +342,23 @@ run_test('home_messages', () => {
 
     var counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
 
     unread.process_loaded_messages([message]);
 
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 1);
     assert.equal(counts.stream_count.get(stream_id), 1);
+    test_notifiable_count(counts.home_unread_messages, 0);
     unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
 
     unread.process_loaded_messages([message]);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 1);
+    test_notifiable_count(counts.home_unread_messages, 0);
 
     // Now unsubscribe all our streams.
     stream_data.is_subscribed = function () {
@@ -342,6 +366,7 @@ run_test('home_messages', () => {
     };
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
 
 });
 
@@ -358,6 +383,7 @@ run_test('phantom_messages', () => {
     unread.mark_as_read(message.id);
     var counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
 });
 
 run_test('private_messages', () => {
@@ -386,10 +412,12 @@ run_test('private_messages', () => {
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 1);
     assert.equal(counts.pm_count.get('999'), 1);
+    test_notifiable_count(counts.home_unread_messages, 1);
     unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
     assert.equal(counts.pm_count.get('999'), 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
 });
 
 run_test('private_messages', () => {
@@ -443,6 +471,7 @@ run_test('private_messages', () => {
     assert.deepEqual(unread.get_all_msg_ids(), []);
     var counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
 });
 
 
@@ -450,6 +479,7 @@ run_test('mentions', () => {
     var counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
     assert.deepEqual(unread.get_msg_ids_for_mentions(), []);
+    test_notifiable_count(counts.home_unread_messages, 0);
 
     var message = {
         id: 15,
@@ -466,9 +496,11 @@ run_test('mentions', () => {
     assert.equal(counts.mentioned_message_count, 1);
     assert.deepEqual(unread.get_msg_ids_for_mentions(), [message.id]);
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
+    test_notifiable_count(counts.home_unread_messages, 1);
     unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
 });
 
 run_test('starring', () => {
@@ -492,6 +524,7 @@ run_test('declare_bankruptcy', () => {
 
     var counts = unread.get_counts();
     assert.deepEqual(counts, zero_counts);
+    test_notifiable_count(counts.home_unread_messages, 0);
 });
 
 run_test('message_unread', () => {
@@ -588,5 +621,6 @@ run_test('errors', () => {
     unread.mark_as_read(message.id);
     var counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
 });
 
