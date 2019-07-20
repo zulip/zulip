@@ -1520,22 +1520,23 @@ nav ul li.active::after {
     margin: 0 auto;
 }
 
-.tour .carousel-inner button.call-to-action {
-    display: block;
-    margin: 70px auto;
+.tour .carousel-inner .call-to-action {
+    display: inline-block;
+    margin: 40px auto;
     padding: 11px 25px 11px 25px;
 
     font-size: 1.2rem;
+    line-height: 20px;
     font-weight: 400;
     color: hsl(0, 0%, 100%);
 
     background-color: hsl(185, 38%, 55%);
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
     box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.2);
-    border: 0;
+    border-radius: 4px;
 }
 
-.tour .carousel-inner button.call-to-action:hover {
+.tour .carousel-inner .call-to-action:hover {
     background-color: hsl(169, 65%, 42%);
     box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
 }
@@ -3562,8 +3563,8 @@ nav ul li.active::after {
         height: 450px;
     }
 
-    .tour .carousel-inner button.call-to-action {
-        margin: 40px auto;
+    .tour .carousel-inner .call-to-action {
+        margin: 10px auto;
     }
 }
 

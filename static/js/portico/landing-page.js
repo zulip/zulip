@@ -194,10 +194,6 @@ var load = function () {
         }
     });
 
-    $(".carousel-link-button").click(function () {
-        window.location.href = $(this).attr("href");
-    });
-
     $('.carousel').on('slid', function () {
         var $this = $(this);
         $this.find('.visibility-control').show();
