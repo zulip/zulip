@@ -1,4 +1,5 @@
 zrequire('echo');
+zrequire('util');
 
 let disparities = [];
 let messages_to_rerender = [];
@@ -52,6 +53,7 @@ run_test('process_from_server for differently rendered messages', () => {
             timestamp: old_value,
             is_me_message: old_value,
             submessages: old_value,
+            subject_links: old_value,
         },
     };
     const server_messages = [
@@ -61,6 +63,7 @@ run_test('process_from_server for differently rendered messages', () => {
             timestamp: new_value,
             is_me_message: new_value,
             submessages: new_value,
+            subject_links: new_value,
         },
     ];
     echo._patch_waiting_for_awk(waiting_for_ack);
@@ -74,5 +77,6 @@ run_test('process_from_server for differently rendered messages', () => {
         timestamp: new_value,
         is_me_message: new_value,
         submessages: new_value,
+        subject_links: new_value,
     }]);
 });
