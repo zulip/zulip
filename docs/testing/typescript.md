@@ -32,11 +32,11 @@ The following resources are valuable for learning TypeScript:
 
 ## Type checking
 
-TypeScript types are checked primarily via `webpack`, so you'll see
-typing errors in red in your `run-dev.py` console as you do
-development.
-
-TODO: Document command for running the type check manually.
+TypeScript types are checked by the TypeScript compiler, `tsc`, which
+is run as part of our [lint checks](linters.html).  You can run the
+compiler yourself with `tools/run-tsc`, which will check all the
+TypeScript files once, or `tools/run-tsc --watch`, which will
+continually recheck the files as you edit them.
 
 ## Linting and style
 

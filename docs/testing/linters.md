@@ -106,6 +106,8 @@ following checks:
 - Running `mypy` to check static types in Python code.  Our
   [documentation on using mypy](../testing/mypy.html) covers mypy in
   more detail.
+- Running `tsc` to compile TypeScript code.  Our [documentation on
+  TypeScript](typescript.html) covers TypeScript in more detail.
 
 The rest of this document pertains to the checks that occur in `./tools/lint`.
 
