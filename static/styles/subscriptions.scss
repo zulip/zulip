@@ -558,25 +558,29 @@ form#add_new_subscription {
     margin-bottom: 10px;
 }
 
-.stream-creation-body section.block {
-    margin-bottom: 20px;
-}
+.stream-creation-body {
+    section.block {
+        margin-bottom: 20px;
+    }
 
-.stream-creation-body #make-invite-only .radio {
-    margin: 5px;
-}
+    #make-invite-only {
+        .radio {
+            margin: 5px;
+        }
 
-.stream-creation-body #make-invite-only .grey-box .checkbox {
-    margin: 5px;
-}
+        .grey-box .checkbox {
+            margin: 5px;
+        }
+    }
 
-.stream-creation-body #announce-new-stream {
-    margin-top: 10px;
-}
+    #announce-new-stream {
+        margin-top: 10px;
 
-.stream-creation-body #announce-new-stream div[class^="fa"] {
-    margin-left: 3px;
-    margin-right: 8px;
+        div[class^="fa"] {
+            margin-left: 3px;
+            margin-right: 8px;
+        }
+    }
 }
 
 .streams-list {
