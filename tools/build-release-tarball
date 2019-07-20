@@ -69,6 +69,8 @@ mv zulip-git-version "$TMPDIR/$prefix/"
 
 cd "$TMPDIR/$prefix"
 
+ln -s "$BASEDIR/zulip-py3-venv" .
+
 # create var/log directory in the new temporary checkout
 mkdir -p "var/log"
 
