@@ -60,11 +60,11 @@
     "zxcvbn": "4.4.2"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "1.9.0",
-    "@typescript-eslint/parser": "1.9.0",
+    "@typescript-eslint/eslint-plugin": "^1.12.0",
+    "@typescript-eslint/parser": "^1.12.0",
     "casperjs": "casperjs/casperjs",
     "difflib": "0.2.4",
-    "eslint": "5.16.0",
+    "eslint": "^6.0.1",
     "eslint-plugin-empty-returns": "1.0.2",
     "jsdom": "15.1.1",
     "nyc": "14.1.1",
