@@ -45,7 +45,7 @@
                             <div class="item active">
                                 <div class="item-inner">
 
-                                    <button href="#tour-carousel" data-slide="next" type="button" name="button" class="start-button">Take the tour</button>
+                                    <button data-target="#tour-carousel" data-slide="next" type="button" name="button" class="start-button">Take the tour</button>
                                     <img src="/static/images/story-tutorial/zulip-topic-blurred.png" alt="" class="start-image">
                                 </div>
                             </div>
@@ -125,10 +125,9 @@
                             <div class="item">
                                 <div class="item-inner">
                                     <p class="tour-item-header tour-item-header-top-push tour-item-header-centered">Zulip Free is free for an unlimited number of users.</p>
-                                    <button href="/plans" type="button" name="button"
-                                      class="call-to-action carousel-link-button">
+                                    <a href="/plans" class="call-to-action">
                                         {{ _('See plans and pricing') }}
-                                    </button>
+                                    </a>
                                     <div class="other-resources">
                                         <div class="other-resources-section">
                                             <a href="/why-zulip"><img src="/static/images/landing-page/organised.svg" alt=""></a>
