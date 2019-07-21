@@ -2116,20 +2116,26 @@ def send_pm_if_empty_stream(stream: Optional[Stream],
     if not sender.is_bot or sender.bot_owner is None:
         return
 
+    arg_dict = {
+        "bot_identity": sender.delivery_email,
+        "stream_id": stream_id,
+        "stream_name": stream_name,
+    }
     if stream is None:
         if stream_id is not None:
-            content = _("Your bot `%s` tried to send a message to stream ID %s, but there "
-                        "is no stream with that ID." % (sender.delivery_email, stream_id))
+            content = _("Your bot `%(bot_identity)s` tried to send a message to stream ID "
+                        "%(stream_id)s, but there is no stream with that ID.") % arg_dict
         else:
             assert(stream_name is not None)
-            content = _("Your bot `%s` tried to send a message to stream #**%s**, but that "
-                        "stream does not exist. Click [here](#streams/new) to create it.") % (
-                            sender.delivery_email, stream_name)
+            content = _("Your bot `%(bot_identity)s` tried to send a message to stream "
+                        "#**%(stream_name)s**, but that stream does not exist. "
+                        "Click [here](#streams/new) to create it.") % arg_dict
     else:
         if num_subscribers_for_stream_id(stream.id) > 0:
             return
-        content = _("Your bot `%s` tried to send a message to stream #**%s**. The stream exists but "
-                    "does not have any subscribers.") % (sender.delivery_email, stream.name)
+        content = _("Your bot `%(bot_identity)s` tried to send a message to "
+                    "stream #**%(stream_name)s**. The stream exists but "
+                    "does not have any subscribers.") % arg_dict
 
     send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
