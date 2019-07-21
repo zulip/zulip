@@ -1,4 +1,4 @@
-zrequire('hash_util');
+const hash_util = zrequire_pure('hash_util');
 zrequire('stream_data');
 zrequire('people');
 zrequire('util');

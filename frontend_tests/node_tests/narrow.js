@@ -1,5 +1,5 @@
 set_global('$', global.make_zjquery());
-zrequire('hash_util');
+const hash_util = zrequire_pure('hash_util');
 zrequire('hashchange');
 zrequire('narrow_state');
 zrequire('people');
@@ -84,13 +84,13 @@ run_test('uris', () => {
     uri = hash_util.by_sender_uri(ray.email);
     assert.equal(uri, '#narrow/sender/22-ray');
 
-    var emails = global.hash_util.decode_operand('pm-with', '22,23-group');
+    var emails = hash_util.decode_operand('pm-with', '22,23-group');
     assert.equal(emails, 'alice@example.com,ray@example.com');
 
-    emails = global.hash_util.decode_operand('pm-with', '5,22,23-group');
+    emails = hash_util.decode_operand('pm-with', '5,22,23-group');
     assert.equal(emails, 'alice@example.com,ray@example.com');
 
-    emails = global.hash_util.decode_operand('pm-with', '5-group');
+    emails = hash_util.decode_operand('pm-with', '5-group');
     assert.equal(emails, 'me@example.com');
 });
 

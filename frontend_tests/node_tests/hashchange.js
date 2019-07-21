@@ -8,7 +8,7 @@ global.patch_builtin('window', {
     to_$: () => window_stub,
 });
 zrequire('people');
-zrequire('hash_util');
+const hash_util = zrequire_pure('hash_util');
 zrequire('hashchange');
 zrequire('stream_data');
 

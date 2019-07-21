@@ -12,7 +12,6 @@ zrequire('emoji');
 zrequire('util');
 zrequire('stream_data');
 zrequire('narrow');
-zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
 zrequire('settings_org');
 var th = zrequire('typeahead_helper');

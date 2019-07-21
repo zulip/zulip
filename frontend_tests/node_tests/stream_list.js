@@ -8,7 +8,6 @@ zrequire('topic_data');
 zrequire('stream_sort');
 zrequire('colorspace');
 zrequire('stream_color');
-zrequire('hash_util');
 zrequire('unread');
 zrequire('stream_data');
 zrequire('scroll_util');

@@ -82,7 +82,6 @@ zrequire('compose_fade');
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 zrequire('unread');
-zrequire('hash_util');
 zrequire('narrow');
 zrequire('util');
 zrequire('presence');

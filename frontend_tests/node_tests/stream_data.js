@@ -14,7 +14,6 @@ global.stub_out_jquery();
 
 zrequire('color_data');
 zrequire('util');
-zrequire('hash_util');
 zrequire('topic_data');
 zrequire('people');
 zrequire('stream_color');

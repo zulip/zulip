@@ -1,4 +1,3 @@
-zrequire('hash_util');
 zrequire('katex', 'katex/dist/katex.min.js');
 zrequire('marked', 'third/marked/lib/marked');
 zrequire('util');

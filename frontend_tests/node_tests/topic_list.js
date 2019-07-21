@@ -7,7 +7,6 @@ set_global('muting', {});
 set_global('stream_popover', {});
 set_global('message_list', {});
 
-zrequire('hash_util');
 zrequire('stream_data');
 zrequire('unread');
 zrequire('topic_data');

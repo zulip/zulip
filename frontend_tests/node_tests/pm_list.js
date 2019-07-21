@@ -20,7 +20,6 @@ set_global('popovers', {
 zrequire('user_status');
 zrequire('presence');
 zrequire('buddy_data');
-zrequire('hash_util');
 set_global('Handlebars', global.make_handlebars());
 zrequire('people');
 zrequire('pm_conversations');
