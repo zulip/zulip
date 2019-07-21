@@ -759,15 +759,15 @@ form#add_new_subscription {
     width: calc(100% - 27px);
 }
 
-#stream-creation .stream-creation-body {
+#subscription_overlay #stream-creation .stream-creation-body {
     padding: 15px;
 }
 
-.add-user-label {
+#subscription_overlay #stream-creation .add-user-label {
     margin: 8px 0px;
 }
 
-.add-user-list-filter {
+#subscription_overlay #stream-creation .add-user-list-filter {
     width: calc(100% - 10px);
 }
 
