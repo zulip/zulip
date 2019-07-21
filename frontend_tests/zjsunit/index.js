@@ -122,6 +122,8 @@ global.run_test = (label, f) => {
     f();
 };
 
+namespace.base_requires = new Set(Object.keys(require.cache));
+
 try {
     files.forEach(function (file) {
         global.patch_builtin('setTimeout', noop);

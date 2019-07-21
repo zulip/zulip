@@ -4,8 +4,10 @@ var _ = require('underscore/underscore.js');
 var exports = {};
 
 var dependencies = [];
-var requires = new Set();
 var old_builtins = {};
+
+// Set this just before we execute the tests in index.js
+exports.base_requires = undefined;
 
 exports.set_global = function (name, val) {
     global[name] = val;
@@ -36,9 +38,6 @@ function resolve_name(name, fn) {
 // Put this before other zrequire-s if you run into caching issues.
 exports.zrequire_pure = function (name, fn) {
     fn = resolve_name(name, fn);
-    const path = require.resolve(fn);
-    delete require.cache[path];
-    requires.add(fn);
     return require(fn);
 };
 
@@ -58,7 +57,6 @@ exports.zstub = function (name, fn, stub) {
         loaded: true,
         exports: stub,
     };
-    requires.add(fn);
     return require(fn);
 };
 
@@ -66,11 +64,12 @@ exports.restore = function () {
     dependencies.forEach(function (name) {
         delete global[name];
     });
-    requires.forEach(function (fn) {
-        delete require.cache[require.resolve(fn)];
-    });
     dependencies = [];
-    requires.clear();
+    for (const key of Object.keys(require.cache)) {
+        if (!exports.base_requires.has(key)) {
+            delete require.cache[key];
+        }
+    }
     delete global.window.electron_bridge;
     _.extend(global, old_builtins);
     old_builtins = {};
