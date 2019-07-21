@@ -325,7 +325,7 @@ run_test('search', () => {
         },
         expected_id_info: {
             target_id: undefined,
-            final_select_id: undefined,
+            final_select_id: 10000000000000000,
             local_select_id: undefined,
         },
         expected_msg_ids: [],
@@ -379,6 +379,32 @@ run_test('stream, no unread, not in all_messages', () => {
         expected_id_info: {
             target_id: 450,
             final_select_id: 450,
+            local_select_id: undefined,
+        },
+        expected_msg_ids: [],
+    };
+
+    test_with(fixture);
+});
+
+run_test('search, stream, not in all_messages', () => {
+    const fixture = {
+        filter_terms: [
+            {operator: 'search', operand: 'foo'},
+            {operator: 'stream', operand: 'whatever'},
+        ],
+        unread_info: {
+            flavor: 'cannot_compute',
+        },
+        has_found_newest: true,
+        empty: false,
+        all_messages: [
+            {id: 400},
+            {id: 500},
+        ],
+        expected_id_info: {
+            target_id: undefined,
+            final_select_id: 10000000000000000,
             local_select_id: undefined,
         },
         expected_msg_ids: [],
