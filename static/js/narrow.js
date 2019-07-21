@@ -457,6 +457,11 @@ exports.maybe_add_local_messages = function (opts) {
     // so we definitely want to land on the target_id message.
     id_info.final_select_id = id_info.target_id;
 
+    // TODO: We could improve on this next condition by considering
+    // cases where `message_list.all.has_found_oldest(); which would
+    // come up with e.g. `near: 0` in a small organization.
+    //
+    // And similarly for `near: max_int` with has_found_newest.
     if (message_list.all.empty() ||
         id_info.target_id < message_list.all.first().id ||
         id_info.target_id > message_list.all.last().id) {
