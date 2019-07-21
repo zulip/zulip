@@ -521,7 +521,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 FROM (
                     SELECT
                         realm.id as realm_id,
-                        up.email
+                        up.delivery_email
                     FROM zerver_useractivity ua
                     JOIN zerver_userprofile up
                         ON up.id = ua.user_profile_id
@@ -538,7 +538,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                             '/json/users/me/pointer',
                             'update_pointer_backend'
                         )
-                    GROUP by realm.id, up.email
+                    GROUP by realm.id, up.delivery_email
                     HAVING max(last_visit) > now() - interval '7 day'
                 ) as wau_users
                 GROUP BY realm_id
@@ -579,7 +579,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         is_realm_admin=True,
         is_active=True
     ):
-        realm_admins[up.realm.string_id].append(up.email)
+        realm_admins[up.realm.string_id].append(up.delivery_email)
 
     for row in rows:
         row['date_created_day'] = row['date_created'].strftime('%Y-%m-%d')
@@ -1073,13 +1073,13 @@ def support(request: HttpRequest) -> HttpResponse:
     if query:
         key_words = get_invitee_emails_set(query)
 
-        users = UserProfile.objects.filter(email__in=key_words)
+        users = UserProfile.objects.filter(delivery_email__in=key_words)
         if users:
             for user in users:
                 user.realm.realm_icon_url = realm_icon_url(user.realm)
                 user.realm.admin_emails = ", ".join(
                     user.realm.get_human_admin_users().values_list(
-                        "email",
+                        "delivery_email",
                         flat=True))
                 user.realm.default_discount = get_discount_for_realm(user.realm)
             context["users"] = users
@@ -1104,7 +1104,8 @@ def support(request: HttpRequest) -> HttpResponse:
         if realms:
             for realm in realms:
                 realm.realm_icon_url = realm_icon_url(realm)
-                realm.admin_emails = ", ".join(realm.get_human_admin_users().values_list("email", flat=True))
+                realm.admin_emails = ", ".join(realm.get_human_admin_users().values_list(
+                    "delivery_email", flat=True))
                 realm.default_discount = get_discount_for_realm(realm)
             context["realms"] = realms
     return render(request, 'analytics/support.html', context=context)
