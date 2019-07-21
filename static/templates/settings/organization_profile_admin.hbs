@@ -58,11 +58,9 @@
             </h3>
             <div>
                 {{#unless plan_includes_wide_organization_logo}}
-                <p class="upgrade_realm_plan_type_suggestion">
-                    <a href="https://zulipchat.com/plans/" target="_blank">
-                        {{upgrade_text_for_wide_organization_logo}}
-                    </a>
-                </p>
+                <a href="/upgrade" class="upgrade-tip" target="_blank">
+                    {{upgrade_text_for_wide_organization_logo}}
+                </a>
                 {{/unless}}
             </div>
         </div>
