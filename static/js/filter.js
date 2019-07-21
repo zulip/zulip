@@ -382,7 +382,13 @@ Filter.prototype = {
     },
 
     can_mark_messages_read: function () {
-        return !this.has_operator('search');
+        return _.every(this._operators, function (elem) {
+            return (_.contains(['stream', 'topic', 'pm-with'], elem.operator)
+                || elem.operator === 'is' && elem.operand === 'private'
+                || elem.operator === 'in' && elem.operand === 'all'
+                || elem.operator === 'in' && elem.operand === 'home')
+                && !elem.negated;
+        });
     },
 
     allow_use_first_unread_when_narrowing: function () {
