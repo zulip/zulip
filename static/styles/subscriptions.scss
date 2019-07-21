@@ -746,215 +746,217 @@ form#add_new_subscription {
     color: hsl(0, 0%, 67%);
 }
 
-#subscription_overlay #stream-creation {
-    max-height: calc(100% - 102px);
-    overflow: auto;
-    outline: none;
-    -webkit-overflow-scrolling: touch;
+#subscription_overlay {
+    #stream-creation {
+        max-height: calc(100% - 102px);
+        overflow: auto;
+        outline: none;
+        -webkit-overflow-scrolling: touch;
 
-    .modal-footer {
-        position: absolute;
-        bottom: 0;
-        width: calc(100% - 27px);
-    }
+        .modal-footer {
+            position: absolute;
+            bottom: 0;
+            width: calc(100% - 27px);
+        }
 
-    .stream-creation-body {
-        padding: 15px;
-    }
+        .stream-creation-body {
+            padding: 15px;
+        }
 
-    .add-user-label {
-        margin: 8px 0px;
-    }
+        .add-user-label {
+            margin: 8px 0px;
+        }
 
-    .add-user-list-filter {
-        width: calc(100% - 10px);
-    }
+        .add-user-list-filter {
+            width: calc(100% - 10px);
+        }
 
-    #stream_creation_form {
-        margin: 0px;
+        #stream_creation_form {
+            margin: 0px;
 
-        #stream_creating_indicator {
-            &:not(:empty) {
-                position: absolute;
-                width: 100% !important;
-                height: calc(100% - 105px) !important;
-                display: flex !important;
-                justify-content: center;
-                align-items: center;
-                background-color: hsla(0, 0%, 100%, 0.9);
-                z-index: 1;
-            }
+            #stream_creating_indicator {
+                &:not(:empty) {
+                    position: absolute;
+                    width: 100% !important;
+                    height: calc(100% - 105px) !important;
+                    display: flex !important;
+                    justify-content: center;
+                    align-items: center;
+                    background-color: hsla(0, 0%, 100%, 0.9);
+                    z-index: 1;
+                }
 
-            .loading_indicator_text {
-                font-weight: 400;
+                .loading_indicator_text {
+                    font-weight: 400;
+                }
             }
         }
     }
-}
 
-#subscription_overlay .inner-box {
-    margin: 20px;
-}
+    .inner-box {
+        margin: 20px;
+    }
 
-#subscription_overlay .stream-header {
-    margin-bottom: 20px;
-    white-space: nowrap;
-}
+    .stream-header {
+        margin-bottom: 20px;
+        white-space: nowrap;
 
-#subscription_overlay .stream-header .stream-name {
-    display: inline-block;
-    font-size: 1.5em;
-    font-weight: 600;
-    margin-left: -3px;
-    white-space: normal;
-    word-break: break-all;
-}
+        .stream-name {
+            display: inline-block;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-left: -3px;
+            white-space: normal;
+            word-break: break-all;
+        }
 
-#subscription_overlay .stream-header .deactivate,
-#subscription_overlay .stream-header .subscribe-button {
-    float: right;
-    margin-top: -5px;
-    margin-right: 5px;
-}
+        .deactivate,
+        .subscribe-button {
+            float: right;
+            margin-top: -5px;
+            margin-right: 5px;
+        }
 
-#subscription_overlay .stream-header .button-group {
-    float: right;
-}
+        .button-group {
+            float: right;
+        }
 
-#subscription_overlay .stream-header .subscribe-button.unsubscribed {
-    color: hsl(156, 39%, 54%);
-    border-color: hsl(156, 39%, 77%);
-}
+        .subscribe-button.unsubscribed {
+            color: hsl(156, 39%, 54%);
+            border-color: hsl(156, 39%, 77%);
 
-#subscription_overlay .stream-header .subscribe-button.unsubscribed:active {
-    background-color: hsla(156, 39%, 54%, 0.2);
-}
+            &:active {
+                background-color: hsla(156, 39%, 54%, 0.2);
+            }
+        }
 
-#subscription_overlay .stream-header .large-icon {
-    display: inline-block;
-    vertical-align: top;
-    margin-right: 5px;
-    font-size: 1.5em;
-}
-
-#subscription_overlay .stream-description {
-    font-size: 0.9em;
-    margin-bottom: 5px;
-}
-
-#subscription_overlay #preview-stream-button {
-    float: right;
-    margin-top: -5px;
-    margin-right: 5px;
-    text-decoration: none;
-    line-height: 16px;
-    vertical-align: middle;
-}
-
-#subscription_overlay .editable-section {
-    position: relative;
-    display: inline;
-    min-width: 10px;
-    max-width: 100%;
-
-    &[contenteditable=true] {
-        display: inline-block;
-        vertical-align: top;
-        color: hsl(170, 48%, 54%);
-
-        &:focus {
-            outline: none;
+        .large-icon {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 5px;
+            font-size: 1.5em;
         }
     }
-}
 
-#subscription_overlay .editable {
-    position: relative;
-    top: -1px;
-    margin-left: 5px;
-    color: hsl(0, 0%, 67%);
-    cursor: pointer;
-    font-size: 1.4rem;
-    font-weight: 300;
+    .stream-description {
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
 
-    transition: all 0.3s ease;
-}
+    #preview-stream-button {
+        float: right;
+        margin-top: -5px;
+        margin-right: 5px;
+        text-decoration: none;
+        line-height: 16px;
+        vertical-align: middle;
+    }
 
-#subscription_overlay .editable:empty::before {
-    content: "\f040";
-    font-family: "FontAwesome";
-    font-size: 0.8rem;
-    font-weight: normal;
-}
+    .editable-section {
+        position: relative;
+        display: inline;
+        min-width: 10px;
+        max-width: 100%;
 
-#subscription_overlay .editable:not(:empty) {
-    position: relative;
-    top: 2px;
-}
+        &[contenteditable=true] {
+            display: inline-block;
+            vertical-align: top;
+            color: hsl(170, 48%, 54%);
 
-#subscription_overlay .editable:hover {
-    color: hsl(0, 0%, 27%);
-}
+            &:focus {
+                outline: none;
+            }
+        }
+    }
 
-#subscription_overlay .checkmark {
-    display: none;
-    margin-left: 5px;
-    font-size: 0.9rem;
-    color: hsl(0, 0%, 67%);
+    .editable {
+        position: relative;
+        top: -1px;
+        margin-left: 5px;
+        color: hsl(0, 0%, 67%);
+        cursor: pointer;
+        font-size: 1.4rem;
+        font-weight: 300;
 
-    cursor: pointer;
-}
+        transition: all 0.3s ease;
 
-#subscription_overlay .checkmark.show {
-    display: block;
-}
+        &:empty::before {
+            content: "\f040";
+            font-family: "FontAwesome";
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
 
-#subscription_overlay .subscription-type {
-    margin-bottom: 10px;
-    font-size: 0.9em;
-    opacity: 0.5;
-}
+        &:not(:empty) {
+            position: relative;
+            top: 2px;
+        }
 
-#subscription_overlay .subscription-type .subscription-type-text {
-    display: inline;
-}
+        &:hover {
+            color: hsl(0, 0%, 27%);
+        }
+    }
 
-#subscription_overlay .subscription-type b {
-    font-weight: 600;
-}
+    .checkmark {
+        display: none;
+        margin-left: 5px;
+        font-size: 0.9rem;
+        color: hsl(0, 0%, 67%);
 
-#subscription_overlay .hash::after {
-    position: relative;
-    content: "#";
-    font-size: 1.09em;
-    font-weight: 800;
-}
+        cursor: pointer;
 
-#subscription_overlay .stream-header .large-icon.hash::after {
-    position: relative;
-    top: 1px;
-    content: "#";
-    font-weight: 800;
-}
+        &.show {
+            display: block;
+        }
+    }
 
-#subscription_overlay .settings {
-    position: relative;
-    height: calc(100% - 45px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
+    .subscription-type {
+        margin-bottom: 10px;
+        font-size: 0.9em;
+        opacity: 0.5;
 
-#subscription_overlay .subscription_settings {
-    display: none;
-    position: relative;
-    width: 100%;
-    margin: 0 auto;
-    border-radius: 4px;
-    top: -1px;
-}
+        .subscription-type-text {
+            display: inline;
+        }
 
-#subscription_overlay .subscription_settings.show {
-    display: block;
+        b {
+            font-weight: 600;
+        }
+    }
+
+    .hash::after {
+        position: relative;
+        content: "#";
+        font-size: 1.09em;
+        font-weight: 800;
+    }
+
+    .stream-header .large-icon.hash::after {
+        position: relative;
+        top: 1px;
+        content: "#";
+        font-weight: 800;
+    }
+
+    .settings {
+        position: relative;
+        height: calc(100% - 45px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .subscription_settings {
+        display: none;
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        border-radius: 4px;
+        top: -1px;
+
+        &.show {
+            display: block;
+        }
+    }
 }
 
 #stream_privacy_modal ul.grey-box {
