@@ -856,16 +856,16 @@ form#add_new_subscription {
     display: inline;
     min-width: 10px;
     max-width: 100%;
-}
 
-.editable-section[contenteditable=true] {
-    display: inline-block;
-    vertical-align: top;
-    color: hsl(170, 48%, 54%);
-}
+    &[contenteditable=true] {
+        display: inline-block;
+        vertical-align: top;
+        color: hsl(170, 48%, 54%);
 
-.editable-section[contenteditable=true]:focus {
-    outline: none;
+        &:focus {
+            outline: none;
+        }
+    }
 }
 
 #subscription_overlay .editable {
