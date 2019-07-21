@@ -751,24 +751,24 @@ form#add_new_subscription {
     overflow: auto;
     outline: none;
     -webkit-overflow-scrolling: touch;
-}
 
-#subscription_overlay #stream-creation .modal-footer {
-    position: absolute;
-    bottom: 0;
-    width: calc(100% - 27px);
-}
+    .modal-footer {
+        position: absolute;
+        bottom: 0;
+        width: calc(100% - 27px);
+    }
 
-#subscription_overlay #stream-creation .stream-creation-body {
-    padding: 15px;
-}
+    .stream-creation-body {
+        padding: 15px;
+    }
 
-#subscription_overlay #stream-creation .add-user-label {
-    margin: 8px 0px;
-}
+    .add-user-label {
+        margin: 8px 0px;
+    }
 
-#subscription_overlay #stream-creation .add-user-list-filter {
-    width: calc(100% - 10px);
+    .add-user-list-filter {
+        width: calc(100% - 10px);
+    }
 }
 
 #stream_creation_form {
