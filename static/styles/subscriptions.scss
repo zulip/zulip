@@ -769,25 +769,25 @@ form#add_new_subscription {
     .add-user-list-filter {
         width: calc(100% - 10px);
     }
-}
 
-#stream_creation_form {
-    margin: 0px;
+    #stream_creation_form {
+        margin: 0px;
 
-    #stream_creating_indicator {
-        &:not(:empty) {
-            position: absolute;
-            width: 100% !important;
-            height: calc(100% - 105px) !important;
-            display: flex !important;
-            justify-content: center;
-            align-items: center;
-            background-color: hsla(0, 0%, 100%, 0.9);
-            z-index: 1;
-        }
+        #stream_creating_indicator {
+            &:not(:empty) {
+                position: absolute;
+                width: 100% !important;
+                height: calc(100% - 105px) !important;
+                display: flex !important;
+                justify-content: center;
+                align-items: center;
+                background-color: hsla(0, 0%, 100%, 0.9);
+                z-index: 1;
+            }
 
-        .loading_indicator_text {
-            font-weight: 400;
+            .loading_indicator_text {
+                font-weight: 400;
+            }
         }
     }
 }

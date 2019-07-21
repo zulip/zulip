@@ -223,7 +223,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .overlay,
-    #stream_creation_form #stream_creating_indicator:not(:empty),
+    #subscription_overlay #stream-creation #stream_creation_form #stream_creating_indicator:not(:empty),
     .emoji-info-popover .emoji-popover .emoji-popover-emoji:not(.reacted):focus {
         background-color: hsla(212, 28%, 8%, 0.75);
     }
