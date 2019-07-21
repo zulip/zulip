@@ -835,6 +835,10 @@ form#add_new_subscription {
             vertical-align: top;
             margin-right: 5px;
             font-size: 1.5em;
+
+            &.hash::after {
+                top: 1px;
+            }
         }
     }
 
@@ -929,10 +933,6 @@ form#add_new_subscription {
         content: "#";
         font-size: 1.09em;
         font-weight: 800;
-    }
-
-    .stream-header .large-icon.hash::after {
-        top: 1px;
     }
 
     .settings {
