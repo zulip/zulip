@@ -105,15 +105,6 @@ label {
     margin-bottom: 10px;
 }
 
-.upgrade_realm_plan_type_suggestion {
-    font-size: 16px;
-}
-
-.upgrade_realm_plan_type_suggestion::after {
-    font-family: FontAwesome;
-    content: "\f135";
-}
-
 .user-avatar-section {
     float: right;
 }
@@ -312,6 +303,7 @@ td .button {
     margin-right: 5px;
 }
 
+.settings-section .upgrade-tip,
 .settings-section .tip {
     position: relative;
     display: block;
@@ -325,14 +317,29 @@ td .button {
     color: hsl(0, 0%, 40%);
 }
 
+.settings-section .upgrade-tip::before,
 .settings-section .tip::before {
-    content: "\f0a2";
-
     display: inline;
     margin-right: 8px;
 
     font-family: FontAwesome, "Yantramanav", Source Sans Pro;
     font-weight: 600;
+}
+
+.settings-section .upgrade-tip::before {
+    content: "\f135";
+}
+
+.settings-section .upgrade-tip:hover {
+    color: hsl(0, 0%, 20%);
+    border: 1px solid hsl(49, 20%, 60%);
+    box-shadow: 0px 0px 4px hsla(199, 79%, 56%, .2);
+
+    text-decoration: none;
+}
+
+.settings-section .tip::before {
+    content: "\f0a2";
 }
 
 .dynamic-input {

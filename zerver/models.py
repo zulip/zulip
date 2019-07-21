@@ -270,6 +270,7 @@ class Realm(models.Model):
     COMMUNITY = 2
     org_type = models.PositiveSmallIntegerField(default=CORPORATE)  # type: int
 
+    UPGRADE_TEXT_STANDARD = _("Available on Zulip Standard. Upgrade to access.")
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant servers
     # like zulipchat.com.
@@ -277,7 +278,6 @@ class Realm(models.Model):
     LIMITED = 2
     STANDARD = 3
     STANDARD_FREE = 4
-    UPGRADE_TEXT_STANDARD = _("Available on all paid plans. Upgrade ")
     plan_type = models.PositiveSmallIntegerField(default=SELF_HOSTED)  # type: int
 
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
