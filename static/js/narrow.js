@@ -219,15 +219,16 @@ exports.activate = function (raw_operators, opts) {
         let anchor;
         let use_first_unread;
 
+        // Either we're trying to center the narrow around a
+        // particular message ID (which could be max_int), or we're
+        // asking the server to figure out for us what the first
+        // unread message is, and center the narrow around that.
         if (id_info.final_select_id !== undefined) {
             anchor = id_info.final_select_id;
             use_first_unread = false;
-        } else if (narrow_state.filter().allow_use_first_unread_when_narrowing()) {
+        } else {
             anchor = -1;
             use_first_unread = true;
-        } else {
-            anchor = 10000000000000000;
-            use_first_unread = false;
         }
 
         message_fetch.load_messages_for_narrow({
@@ -332,8 +333,22 @@ function load_local_messages(msg_data) {
 }
 
 exports.maybe_add_local_messages = function (opts) {
-    // This function does two very closely related things, both of
-    // which are somewhat optional:
+    // This function determines whether we need to go to the server to
+    // fetch messages for the requested narrow, or whether we have the
+    // data cached locally to render the narrow correctly without
+    // waiting for the server.  There are two high-level outcomes:
+    //
+    // 1. We're centering this narrow on the first unread message: In
+    // this case final_select_id is left undefined or first unread
+    // message id locally.
+    //
+    // 2. We're centering this narrow on the most recent matching
+    // message. In this case we select final_select_id to the latest
+    // message in the local cache (if the local cache has the latest
+    // messages for this narrow) or max_int (if it doesn't).
+    //
+    // In either case, this function does two very closely related
+    // things, both of which are somewhat optional:
     //
     //  - update id_info with more complete values
     //  - add messages into our message list from our local cache
@@ -341,7 +356,29 @@ exports.maybe_add_local_messages = function (opts) {
     const msg_data = opts.msg_data;
     const unread_info = narrow_state.get_first_unread_info();
 
+    // If we don't have a specific message we're hoping to select
+    // (i.e. no `target_id`) and the narrow's filter doesn't
+    // allow_use_first_unread_when_narrowing, we want to just render
+    // the latest messages matching the filter.  To ensure this, we
+    // set an initial value final_select_id to `max_int`.
+    //
+    // While that's a confusing naming choice (`final_select_id` is
+    // meant to be final in the context of the caller), this sets the
+    // default behavior to be fetching and then selecting the very
+    // latest message in this narrow.
+    //
+    // If we're able to render the narrow locally, we'll end up
+    // overwriting this value with the ID of the latest message in the
+    // narrow later in this function.
+    if (!id_info.target_id && !narrow_state.filter().allow_use_first_unread_when_narrowing()) {
+        // Note that this may be overwritten; see above comment.
+        id_info.final_select_id = 10000000000000000;
+    }
+
     if (unread_info.flavor === 'cannot_compute') {
+        // Full-text search and potentially other future cases where
+        // we can't check which messages match on the frontend, so it
+        // doesn't matter what's in our cache, we must go to the server.
         if (id_info.target_id) {
             // TODO: Ideally, in this case we should be asking the
             // server to give us the first unread or the target_id,
@@ -357,11 +394,14 @@ exports.maybe_add_local_messages = function (opts) {
     // We can now assume narrow_state.filter().can_apply_locally(),
     // because !can_apply_locally => cannot_compute
 
-    if (unread_info.flavor === 'found') {
-        // We have at least one unread message in this narrow.  So
-        // either we aim for the first unread message, or the
-        // target_id (if any), whichever is earlier.  See #2091 for a
-        // detailed explanation of why we need to look at unread here.
+    if (unread_info.flavor === 'found' &&
+            narrow_state.filter().allow_use_first_unread_when_narrowing()) {
+        // We have at least one unread message in this narrow, and the
+        // narrow is one where we use the first unread message in
+        // narrowing positioning decisions.  So either we aim for the
+        // first unread message, or the target_id (if any), whichever
+        // is earlier.  See #2091 for a detailed explanation of why we
+        // need to look at unread here.
         id_info.final_select_id = min_defined(
             id_info.target_id,
             unread_info.msg_id
@@ -382,16 +422,17 @@ exports.maybe_add_local_messages = function (opts) {
         return;
     }
 
-    // Now we know that there are no unread messages, because
-    //   unread_info.flavor === 'not_found'
+    // In all cases below here, the first unread message is irrelevant
+    // to our positioning decisions, either because there are no
+    // unread messages (unread_info.flavor === 'not_found') or because
+    // this is a mixed narrow where we prefer the bottom of the feed
+    // to the first unread message for positioning (and the narrow
+    // will be configured to not mark messages as read).
 
     if (!id_info.target_id) {
         // Without unread messages or a target ID, we're narrowing to
-        // the very latest message matching the narrow.
+        // the very latest message or first unread if matching the narrow allows.
 
-        // TODO: A possible optimization in this code path is to set
-        // `id_info.final_select_id` to be `max_int` here, i.e. saving the
-        // server the first_unread query when we need the server.
         if (!message_list.all.fetch_status.has_found_newest()) {
             // If message_list.all is not caught up, then we cannot
             // populate the latest messages for the target narrow
@@ -405,6 +446,7 @@ exports.maybe_add_local_messages = function (opts) {
         // is caught up, so the last message in our now-populated
         // msg_data object must be the last message matching the
         // narrow the server could give us, so we can render locally.
+        // and use local latest message id instead of max_int if set earlier.
         const last_msg = msg_data.last();
         id_info.final_select_id = last_msg.id;
         id_info.local_select_id = id_info.final_select_id;
