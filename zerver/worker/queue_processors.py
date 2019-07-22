@@ -390,11 +390,9 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
     # Sleep 1 minute between checking the queue
     sleep_delay = 60 * 1
 
-    # TODO: The type annotation here should be List[str], but that
-    # creates conflicts with other users in the file.
-    def consume_batch(self, slow_queries: List[Any]) -> None:
-        for query in slow_queries:
-            logging.info("Slow query: %s" % (query,))
+    def consume_batch(self, slow_query_events: List[Dict[str, Any]]) -> None:
+        for event in slow_query_events:
+            logging.info("Slow query: %s" % (event["query"],))
 
         if settings.SLOW_QUERY_LOGS_STREAM is None:
             return
@@ -402,12 +400,12 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
         if settings.ERROR_BOT is None:
             return
 
-        if len(slow_queries) > 0:
+        if len(slow_query_events) > 0:
             topic = "%s: slow queries" % (settings.EXTERNAL_HOST,)
 
             content = ""
-            for query in slow_queries:
-                content += "    %s\n" % (query,)
+            for event in slow_query_events:
+                content += "    %s\n" % (event["query"],)
 
             error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
             internal_send_message(error_bot_realm, settings.ERROR_BOT,

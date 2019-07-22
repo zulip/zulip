@@ -71,9 +71,11 @@ class WorkerTest(ZulipTestCase):
     def test_slow_queries_worker(self) -> None:
         error_bot = get_system_bot(settings.ERROR_BOT)
         fake_client = self.FakeClient()
+        # TODO: Rewrite this set part of the test by just mocking
+        # `is_slow_query` to generate the events.
         events = [
-            'test query (data)',
-            'second test query (data)',
+            {'query': 'test query (data)'},
+            {'query': 'second test query (data)'},
         ]
         for event in events:
             fake_client.queue.append(('slow_queries', event))

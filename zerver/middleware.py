@@ -211,7 +211,8 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         logger.info(logger_line)
 
     if (is_slow_query(time_delta, path)):
-        queue_json_publish("slow_queries", "%s (%s)" % (logger_line, email))
+        queue_json_publish("slow_queries", dict(
+            query="%s (%s)" % (logger_line, email)))
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
