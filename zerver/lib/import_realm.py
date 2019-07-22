@@ -616,7 +616,12 @@ def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=Fa
             if record['s3_path'].endswith('.original'):
                 relative_path += '.original'
             else:
-                relative_path += '.png'
+                # TODO: This really should be unconditional.  However,
+                # until we fix the S3 upload backend to use the .png
+                # path suffix for its normal avatar URLs, we need to
+                # only do this for the LOCAL_UPLOADS_DIR backend.
+                if not s3_uploads:
+                    relative_path += '.png'
         elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
             relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
