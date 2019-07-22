@@ -158,6 +158,7 @@ from zerver.lib.upload import (
     delete_message_image,
     upload_emoji_image,
 )
+from zerver.lib.url_preview.preview import get_queue_processor_event_data
 from zerver.lib.user_groups import access_user_group_by_id, create_user_group
 from zerver.lib.user_status import update_user_status
 from zerver.lib.users import (
@@ -167,7 +168,6 @@ from zerver.lib.users import (
     get_api_key,
     user_profile_to_user_row,
 )
-from zerver.lib.url_preview.preview import get_queue_processor_event_data
 from zerver.lib.utils import generate_api_key, log_statsd_event
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
@@ -183,6 +183,7 @@ from zerver.models import (
     Message,
     MultiuseInvite,
     PreregistrationUser,
+    PreviewRemoved,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -1870,6 +1871,21 @@ def do_send_typing_notification(
     ]
 
     send_event(realm, event, user_ids_to_notify)
+
+def do_remove_preview(message: Message, url: str) -> None:
+    preview_removed = PreviewRemoved(message=message, url=url)
+    try:
+        preview_removed.save()
+    except django.db.utils.IntegrityError:  # nocoverage
+        raise JsonableError(_("Preview already removed for this URL."))
+
+    # We render the message to populate the message.links_for_preview attribute
+    render_incoming_message(message,
+                            message.content,
+                            set(),
+                            message.sender.realm)
+    event_data = get_queue_processor_event_data(message, message.sender.realm_id, message.links_for_preview)
+    queue_json_publish('embed_links', event_data)
 
 # check_send_typing_notification:
 # Checks the typing notification and sends it

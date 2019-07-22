@@ -41,12 +41,14 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.request import RequestVariableConversionError
 from zerver.models import (
     ArchivedAttachment,
+    ArchivedPreviewRemoved,
     ArchivedReaction,
     ArchivedSubMessage,
     ArchivedUserMessage,
     ArchiveTransaction,
     Attachment,
     Message,
+    PreviewRemoved,
     Reaction,
     Realm,
     Recipient,
@@ -68,6 +70,12 @@ TRANSACTION_DELETION_BATCH_SIZE = 100
 # of its primary lookup key).  This structure allows us to share the
 # code for managing these related tables.
 models_with_message_key: List[Dict[str, Any]] = [
+    {
+        'class': PreviewRemoved,
+        'archive_class': ArchivedPreviewRemoved,
+        'table_name': 'zerver_previewremoved',
+        'archive_table_name': 'zerver_archivedpreviewremoved'
+    },
     {
         'class': Reaction,
         'archive_class': ArchivedReaction,
