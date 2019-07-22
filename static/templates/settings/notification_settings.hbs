@@ -12,7 +12,7 @@
               setting_name=this
               is_checked=(lookup ../page_params this)
               label=(lookup ../settings_label this)
-              realm_push_notifications_enabled=(lookup ../page_params.realm_push_notifications_enabled)
+              realm_push_notifications_enabled=(lookup ../page_params "realm_push_notifications_enabled")
               push_notifications_tooltip=(lookup ../push_notification_tooltip this)}}
             {{/each}}
 
@@ -30,7 +30,7 @@
               setting_name=this
               is_checked=(lookup ../page_params this)
               label=(lookup ../settings_label this)
-              realm_push_notifications_enabled=(lookup ../page_params.realm_push_notifications_enabled)
+              realm_push_notifications_enabled=(lookup ../page_params "realm_push_notifications_enabled")
               push_notifications_tooltip=(lookup ../push_notification_tooltip this)}}
             {{/each}}
         </div>
@@ -83,7 +83,7 @@
               setting_name=this
               is_checked=(lookup ../page_params this)
               label=(lookup ../settings_label this)
-              realm_push_notifications_enabled=(lookup ../page_params.realm_push_notifications_enabled)
+              realm_push_notifications_enabled=(lookup ../page_params "realm_push_notifications_enabled")
               push_notifications_tooltip=(lookup ../push_notification_tooltip this)}}
             {{/each}}
 
