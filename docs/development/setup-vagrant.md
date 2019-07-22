@@ -839,7 +839,6 @@ warning fsevents@1.1.1: The platform "linux" is incompatible with this module.
 info "fsevents@1.1.1" is an optional dependency and failed compatibility check. Excluding it from installation.
 [3/4] Linking dependencies...
 [4/4] Building fresh packages...
-$ browserify node_modules/sockjs-client/lib/entry.js --standalone SockJS > node_modules/sockjs-client/sockjs.js
 Done in 23.50s.
 ```
 

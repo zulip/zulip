@@ -19,8 +19,6 @@
         "MessageListData": false,
         "MessageListView": false,
         "Plotly": false,
-        "SockJS": false,
-        "Socket": false,
         "Sortable": false,
         "WinChan": false,
         "XDate": false,

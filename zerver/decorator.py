@@ -120,13 +120,8 @@ def update_user_activity(request: HttpRequest, user_profile: UserProfile,
 def require_post(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
     def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        if (request.method != "POST" and
-            not (request.method == "SOCKET" and
-                 request.META['zulip.emulated_method'] == "POST")):
-            if request.method == "SOCKET":  # nocoverage # zulip.emulated_method is always POST
-                err_method = "SOCKET/%s" % (request.META['zulip.emulated_method'],)
-            else:
-                err_method = request.method
+        if request.method != "POST":
+            err_method = request.method
             logging.warning('Method Not Allowed (%s): %s', err_method, request.path,
                             extra={'status_code': 405, 'request': request})
             return HttpResponseNotAllowed(["POST"])
@@ -251,13 +246,9 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
     if not user_profile.is_active:
         raise JsonableError(_("Account is deactivated"))
 
-    # Either the subdomain matches, or processing a websockets message
-    # in the message_sender worker (which will have already had the
-    # subdomain validated), or we're accessing Tornado from and to
-    # localhost (aka spoofing a request as the user).
+    # Either the subdomain matches, or we're accessing Tornado from
+    # and to localhost (aka spoofing a request as the user).
     if (not user_matches_subdomain(get_subdomain(request), user_profile) and
-        not (request.method == "SOCKET" and
-             request.META['SERVER_NAME'] == "127.0.0.1") and
         not (settings.RUNNING_INSIDE_TORNADO and
              request.META["SERVER_NAME"] == "127.0.0.1" and
              request.META["REMOTE_ADDR"] == "127.0.0.1")):

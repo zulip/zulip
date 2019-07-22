@@ -1,25 +1,3 @@
-let socket;
-exports.initialize =  function () {
-    // We initialize the socket inside a function so that this code
-    // runs after `csrf_token` is initialized in setup.js.
-    if (page_params.use_websockets) {
-        socket = new Socket("/sockjs");
-    }
-    // For debugging.  The socket will eventually move out of this file anyway.
-    exports._socket = socket;
-};
-
-function send_message_socket(request, success, error) {
-    request.socket_user_agent = navigator.userAgent;
-    socket.send(request, success, function (type, resp) {
-        let err_msg = "Error sending message";
-        if (type === 'response') {
-            err_msg += ": " + resp.msg;
-        }
-        error(err_msg);
-    });
-}
-
 function send_message_ajax(request, success, error) {
     channel.post({
         url: '/json/messages',
@@ -52,11 +30,7 @@ exports.send_message = function (request, on_success, error) {
         sent_messages.report_server_ack(request.local_id);
     }
 
-    if (page_params.use_websockets) {
-        send_message_socket(request, success, error);
-    } else {
-        send_message_ajax(request, success, error);
-    }
+    send_message_ajax(request, success, error);
 };
 
 exports.reply_message = function (opts) {

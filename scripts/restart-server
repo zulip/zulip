@@ -35,7 +35,7 @@ if args.fill_cache:
     logging.info("Filling memcached caches")
     subprocess.check_call(["./manage.py", "fill_memcached_caches"])
 
-core_server_services = ["zulip-django", "zulip-senders:*"]
+core_server_services = ["zulip-django"]
 if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
     core_server_services.append("zulip-thumbor")
 

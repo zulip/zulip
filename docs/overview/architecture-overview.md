@@ -79,7 +79,7 @@ processes; see "Supervisor" below) and the nginx configuration (which
 explains which HTTP requests get sent to which app server).
 
 Tornado is an asynchronous server and is meant specifically to hold
-open tens of thousands of long-lived (long-polling or websocket)
+open tens of thousands of long-lived (long-polling)
 connections -- that is to say, routes that maintain a persistent
 connection from every running client. For this reason, it's
 responsible for event (message) delivery, but not much else. We try to
@@ -94,9 +94,7 @@ use in most of our codebase using don't support that, and in any case,
 our architecture doesn't require Tornado to do that).
 
 The parts that are activated relatively rarely (e.g. when people type or
-click on something) are processed by the Django application server. One
-exception to this is that Zulip uses websockets through Tornado to
-minimize latency on the code path for **sending** messages.
+click on something) are processed by the Django application server.
 
 There is detailed documentation on the
 [real-time push and event queue system](../subsystems/events-system.md); most of
@@ -137,7 +135,7 @@ from outside.
     compiles, minifies, and installs the static assets into the
     `prod-static/` tree form. In development, files are served directly
     from `/static/` in the git repository.
--   Requests to `/json/events`, `/api/v1/events`, and `/sockjs` are
+-   Requests to `/json/events` and `/api/v1/events` are
     sent to the Tornado server. These are requests to the real-time push
     system, because the user's web browser sets up a long-lived TCP
     connection with Tornado to serve as [a channel for push

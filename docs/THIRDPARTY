@@ -120,11 +120,6 @@ Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
 
-Files: static/third/sockjs/sockjs-0.3.4.js
-Copyright: 2011-2012 VMware, Inc.
- 2012 Douglas Crockford
-License: Expat and public-domain
-
 Files: zerver/lib/bugdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg
 License: BSD-3-Clause

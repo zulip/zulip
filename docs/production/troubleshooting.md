@@ -46,11 +46,6 @@ When everything is running as expected, you will see something like this:
 ```
 process-fts-updates                                             RUNNING   pid 2194, uptime 1:13:11
 zulip-django                                                    RUNNING   pid 2192, uptime 1:13:11
-zulip-senders:zulip-events-message_sender-0                     RUNNING   pid 2209, uptime 1:13:11
-zulip-senders:zulip-events-message_sender-1                     RUNNING   pid 2210, uptime 1:13:11
-zulip-senders:zulip-events-message_sender-2                     RUNNING   pid 2211, uptime 1:13:11
-zulip-senders:zulip-events-message_sender-3                     RUNNING   pid 2212, uptime 1:13:11
-zulip-senders:zulip-events-message_sender-4                     RUNNING   pid 2208, uptime 1:13:11
 zulip-tornado                                                   RUNNING   pid 2193, uptime 1:13:11
 zulip-workers:zulip-events-confirmation-emails                  RUNNING   pid 2199, uptime 1:13:11
 zulip-workers:zulip-events-digest_emails                        RUNNING   pid 2205, uptime 1:13:11

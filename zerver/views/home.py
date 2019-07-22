@@ -187,7 +187,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         max_file_upload_size  = settings.MAX_FILE_UPLOAD_SIZE,
         max_avatar_file_size  = settings.MAX_AVATAR_FILE_SIZE,
         server_generation     = settings.SERVER_GENERATION,
-        use_websockets        = settings.USE_WEBSOCKETS,
         save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
         warn_no_email         = settings.WARN_NO_EMAIL,
         server_inline_image_preview = settings.INLINE_IMAGE_PREVIEW,

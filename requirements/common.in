@@ -95,9 +95,6 @@ redis
 # Needed for Python 2+3 compatibility
 six
 
-# Needed for Tornado websockets support
-sockjs-tornado
-
 # Needed to parse source maps for error reporting
 sourcemap
 

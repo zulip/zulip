@@ -8,7 +8,6 @@ declare let Filter: any;
 declare let LightboxCanvas: any;
 declare let MessageListData: any;
 declare let MessageListView: any;
-declare let Socket: any;
 declare let activity: any;
 declare let admin: any;
 declare let alert_words: any;

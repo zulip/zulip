@@ -85,8 +85,6 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     method_to_use = request.method
     if request.POST and 'method' in request.POST:
         method_to_use = request.POST['method']
-    if method_to_use == "SOCKET" and "zulip.emulated_method" in request.META:
-        method_to_use = request.META["zulip.emulated_method"]
 
     if method_to_use in supported_methods:
         entry = supported_methods[method_to_use]

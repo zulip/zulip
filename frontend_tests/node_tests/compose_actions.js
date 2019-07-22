@@ -6,9 +6,7 @@ set_global('document', {
     location: {}, // we need this to load compose.js
 });
 
-set_global('page_params', {
-    use_websockets: false,
-});
+set_global('page_params', {});
 
 set_global('$', global.make_zjquery());
 
