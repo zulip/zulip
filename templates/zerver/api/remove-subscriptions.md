@@ -2,7 +2,7 @@
 
 Unsubscribe yourself or other users from one or more streams.
 
-`DELETE {{ api_url }}/v1/users/me/subcriptions`
+`DELETE {{ api_url }}/v1/users/me/subscriptions`
 
 ## Usage examples
 
