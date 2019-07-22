@@ -1570,6 +1570,10 @@ input.new-organization-button {
         top: 50px;
     }
 
+    .help .markdown {
+        height: calc(100vh - 39px);
+    }
+
     .error_page .lead {
         font-size: 1.5em;
         margin-bottom: 10px;
