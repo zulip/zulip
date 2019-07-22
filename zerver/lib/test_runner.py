@@ -96,11 +96,13 @@ def report_slow_tests() -> None:
             print('      This may no longer be true: %s' % (slowness_reason,))
 
 def enforce_timely_test_completion(test_method: Any, test_name: str,
-                                   delay: float, result: "TextTestResult") -> None:
+                                   delay: float, result: unittest.TestResult) -> None:
     if hasattr(test_method, 'slowness_reason'):
         max_delay = 2.0  # seconds
     else:
         max_delay = 0.4  # seconds
+
+    assert isinstance(result, TextTestResult) or isinstance(result, RemoteTestResult)
 
     if delay > max_delay:
         msg = '** Test is TOO slow: %s (%.3f s)\n' % (test_name, delay)
