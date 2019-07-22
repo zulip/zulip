@@ -644,58 +644,6 @@ class SocialAuthBase(ZulipTestCase):
                                  parsed_url.path)
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
-    def test_github_oauth2_success_non_primary(self) -> None:
-        account_data_dict = dict(email='nonprimary@zulip.com', name="Non Primary")
-        email_data = [
-            dict(email=account_data_dict["email"],
-                 verified=True),
-            dict(email='hamlet@zulip.com',
-                 verified=True,
-                 primary=True),
-            dict(email="ignored@example.com",
-                 verified=False),
-        ]
-        result = self.social_auth_test(account_data_dict,
-                                       subdomain='zulip', email_data=email_data,
-                                       expect_choose_email_screen=True,
-                                       next='/user_uploads/image')
-        data = load_subdomain_token(result)
-        self.assertEqual(data['email'], 'nonprimary@zulip.com')
-        self.assertEqual(data['name'], 'Non Primary')
-        self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
-        self.assertEqual(result.status_code, 302)
-        parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
-        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-    def test_github_oauth2_success_single_email(self) -> None:
-        # If the user has a single email associated with its GitHub account,
-        # the choose email screen should not be shown and the first email
-        # should be used for user's signup/login.
-        account_data_dict = dict(email='not-hamlet@zulip.com', name=self.name)
-        email_data = [
-            dict(email='hamlet@zulip.com',
-                 verified=True,
-                 primary=True),
-        ]
-        result = self.social_auth_test(account_data_dict,
-                                       subdomain='zulip',
-                                       email_data=email_data,
-                                       expect_choose_email_screen=False,
-                                       next='/user_uploads/image')
-        data = load_subdomain_token(result)
-        self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
-        self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
-        self.assertEqual(result.status_code, 302)
-        parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
-        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
     @override_settings(SOCIAL_AUTH_SUBDOMAIN=None)
     def test_when_social_auth_subdomain_is_not_set(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -727,49 +675,6 @@ class SocialAuthBase(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/?is_deactivated=true")
         # TODO: verify whether we provide a clear error message
-
-    def test_github_oauth2_email_no_reply_dot_github_dot_com(self) -> None:
-        # As emails ending with `noreply.github.com` are excluded from
-        # verified_emails, choosing it as an email should raise a `email
-        # not associated` warning.
-        account_data_dict = dict(email="hamlet@noreply.github.com", name=self.name)
-        email_data = [
-            dict(email="notprimary@zulip.com",
-                 verified=True),
-            dict(email="hamlet@zulip.com",
-                 verified=True,
-                 primary=True),
-            dict(email=account_data_dict["email"],
-                 verified=True),
-        ]
-        with mock.patch('logging.warning') as mock_warning:
-            result = self.social_auth_test(account_data_dict,
-                                           subdomain='zulip',
-                                           expect_choose_email_screen=True,
-                                           email_data=email_data)
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
-                                                 " emails associated with the account")
-
-    def test_github_oauth2_email_not_associated(self) -> None:
-        account_data_dict = dict(email='not-associated@zulip.com', name=self.name)
-        email_data = [
-            dict(email='nonprimary@zulip.com',
-                 verified=True,),
-            dict(email='hamlet@zulip.com',
-                 verified=True,
-                 primary=True),
-        ]
-        with mock.patch('logging.warning') as mock_warning:
-            result = self.social_auth_test(account_data_dict,
-                                           subdomain='zulip',
-                                           expect_choose_email_screen=True,
-                                           email_data=email_data)
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/")
-            mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
-                                                 " emails associated with the account")
 
     def test_social_auth_invalid_realm(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -1169,6 +1074,101 @@ class GitHubAuthBackendTest(SocialAuthBase):
     def test_github_auth_enabled(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
             self.assertTrue(github_auth_enabled())
+
+    def test_github_oauth2_success_non_primary(self) -> None:
+        account_data_dict = dict(email='nonprimary@zulip.com', name="Non Primary")
+        email_data = [
+            dict(email=account_data_dict["email"],
+                 verified=True),
+            dict(email='hamlet@zulip.com',
+                 verified=True,
+                 primary=True),
+            dict(email="ignored@example.com",
+                 verified=False),
+        ]
+        result = self.social_auth_test(account_data_dict,
+                                       subdomain='zulip', email_data=email_data,
+                                       expect_choose_email_screen=True,
+                                       next='/user_uploads/image')
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], 'nonprimary@zulip.com')
+        self.assertEqual(data['name'], 'Non Primary')
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+    def test_github_oauth2_success_single_email(self) -> None:
+        # If the user has a single email associated with its GitHub account,
+        # the choose email screen should not be shown and the first email
+        # should be used for user's signup/login.
+        account_data_dict = dict(email='not-hamlet@zulip.com', name=self.name)
+        email_data = [
+            dict(email='hamlet@zulip.com',
+                 verified=True,
+                 primary=True),
+        ]
+        result = self.social_auth_test(account_data_dict,
+                                       subdomain='zulip',
+                                       email_data=email_data,
+                                       expect_choose_email_screen=False,
+                                       next='/user_uploads/image')
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], self.example_email("hamlet"))
+        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+    def test_github_oauth2_email_no_reply_dot_github_dot_com(self) -> None:
+        # As emails ending with `noreply.github.com` are excluded from
+        # verified_emails, choosing it as an email should raise a `email
+        # not associated` warning.
+        account_data_dict = dict(email="hamlet@noreply.github.com", name=self.name)
+        email_data = [
+            dict(email="notprimary@zulip.com",
+                 verified=True),
+            dict(email="hamlet@zulip.com",
+                 verified=True,
+                 primary=True),
+            dict(email=account_data_dict["email"],
+                 verified=True),
+        ]
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.social_auth_test(account_data_dict,
+                                           subdomain='zulip',
+                                           expect_choose_email_screen=True,
+                                           email_data=email_data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/login/")
+            mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
+                                                 " emails associated with the account")
+
+    def test_github_oauth2_email_not_associated(self) -> None:
+        account_data_dict = dict(email='not-associated@zulip.com', name=self.name)
+        email_data = [
+            dict(email='nonprimary@zulip.com',
+                 verified=True,),
+            dict(email='hamlet@zulip.com',
+                 verified=True,
+                 primary=True),
+        ]
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.social_auth_test(account_data_dict,
+                                           subdomain='zulip',
+                                           expect_choose_email_screen=True,
+                                           email_data=email_data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/login/")
+            mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
+                                                 " emails associated with the account")
 
 class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response: ResponseMock, account_response: ResponseMock,
