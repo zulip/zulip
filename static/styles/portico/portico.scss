@@ -87,45 +87,6 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-.code-section ul.nav {
-    margin: 0;
-}
-
-.code-section ul.nav li {
-    display: inline-block;
-    padding: 5px 14px;
-    margin: 0;
-
-    cursor: pointer;
-}
-
-.code-section ul.nav li.active {
-    color: hsl(176, 46%, 41%);
-    margin-bottom: -1px;
-
-    border: 1px solid hsl(0, 0%, 87%);
-    border-bottom: 1px solid hsl(0, 0%, 100%);
-    border-radius: 4px 4px 0px 0px;
-}
-
-.code-section.no-tabs ul.nav {
-    display: none;
-}
-
-.code-section .blocks {
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid hsl(0, 0%, 87%);
-}
-
-.code-section.has-tabs .blocks {
-    border-radius: 0px 6px 6px 6px;
-}
-
-.code-section.no-tabs .blocks {
-    border-radius: 6px;
-}
-
 /* The API tabbed content tends to have a lot of code blocks,
    which look nicer against a different background */
 .api-center .code-section .blocks {
@@ -141,15 +102,6 @@ body {
    We also want the Help Center tabbed content to pop more. */
 .help-center .code-section .blocks {
     max-width: 500px;
-}
-
-.code-section .blocks > div {
-    display: none;
-}
-
-.code-section.no-tabs .blocks > div,
-.code-section.has-tabs .blocks > .active {
-    display: block;
 }
 
 .digest-container {
