@@ -110,7 +110,7 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
         the old logic. The added advantage is that due to this our event
         system code doesn't change.
         """
-        self._request_middleware = []  # type: Optional[List[Callable[[HttpRequest], HttpResponse]]]
+        self._request_middleware = []
         self._view_middleware = []  # type: List[Callable[[HttpRequest, ViewFuncT, List[str], Dict[str, Any]], Optional[HttpResponse]]]
         self._template_response_middleware = []  # type: List[Callable[[HttpRequest, HttpResponse], HttpResponse]]
         self._response_middleware = []  # type: List[Callable[[HttpRequest, HttpResponse], HttpResponse]]
