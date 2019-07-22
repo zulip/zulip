@@ -19,7 +19,6 @@ from tornado import httputil
 from tornado import gen
 from tornado import web
 from tornado.ioloop import IOLoop
-from tornado.websocket import WebSocketHandler, websocket_connect
 
 from typing import Any, Callable, Generator, List, Optional
 
@@ -200,61 +199,11 @@ def fetch_request(url, callback, **kwargs):
     callback(response)
 
 
-class BaseWebsocketHandler(WebSocketHandler):
+class BaseHandler(web.RequestHandler):
     # target server ip
     target_host = '127.0.0.1'  # type: str
     # target server port
     target_port = None  # type: int
-
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
-        super().__init__(*args, **kwargs)
-        # define client for target websocket server
-        self.client = None  # type: Any
-
-    def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
-        # use get method from WebsocketHandler
-        return super().get(*args, **kwargs)
-
-    def open(self):
-        # type: () -> None
-        # setup connection with target websocket server
-        websocket_url = "ws://{host}:{port}{uri}".format(
-            host=self.target_host,
-            port=self.target_port,
-            uri=self.request.uri
-        )
-        request = httpclient.HTTPRequest(websocket_url)
-        request.headers = self._add_request_headers(['sec-websocket-extensions'])
-        websocket_connect(request, callback=self.open_callback,
-                          on_message_callback=self.on_client_message)
-
-    def open_callback(self, future):
-        # type: (Any) -> None
-        # callback on connect with target websocket server
-        self.client = future.result()
-
-    def on_client_message(self, message):
-        # type: (str) -> None
-        if not message:
-            # if message empty -> target websocket server close connection
-            return self.close()
-        if self.ws_connection:
-            # send message to client if connection exists
-            self.write_message(message, False)
-
-    def on_message(self, message, binary=False):
-        # type: (str, bool) -> Optional[Callable[..., Any]]
-        if not self.client:
-            # close websocket proxy connection if no connection with target websocket server
-            return self.close()
-        self.client.write_message(message, binary)
-        return None
-
-    def check_origin(self, origin):
-        # type: (str) -> bool
-        return True
 
     def _add_request_headers(self, exclude_lower_headers_list=None):
         # type: (Optional[List[str]]) -> httputil.HTTPHeaders
@@ -265,14 +214,9 @@ class BaseWebsocketHandler(WebSocketHandler):
                 headers.add(header, v)
         return headers
 
-
-class CombineHandler(BaseWebsocketHandler):
-
-    def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
-        if self.request.headers.get("Upgrade", "").lower() == 'websocket':
-            return super().get(*args, **kwargs)
-        return None
+    def get(self):
+        # type: () -> None
+        pass
 
     def head(self):
         # type: () -> None
@@ -321,8 +265,6 @@ class CombineHandler(BaseWebsocketHandler):
             self.request.headers['X-REAL-IP'] = self.request.remote_ip
         if 'X-FORWARDED_PORT' not in self.request.headers:
             self.request.headers['X-FORWARDED-PORT'] = str(proxy_port)
-        if self.request.headers.get("Upgrade", "").lower() == 'websocket':
-            return super().prepare()
         url = transform_url(
             self.request.protocol,
             self.request.path,
@@ -349,19 +291,19 @@ class CombineHandler(BaseWebsocketHandler):
                 self.finish()
 
 
-class WebPackHandler(CombineHandler):
+class WebPackHandler(BaseHandler):
     target_port = webpack_port
 
 
-class DjangoHandler(CombineHandler):
+class DjangoHandler(BaseHandler):
     target_port = django_port
 
 
-class TornadoHandler(CombineHandler):
+class TornadoHandler(BaseHandler):
     target_port = tornado_port
 
 
-class ThumborHandler(CombineHandler):
+class ThumborHandler(BaseHandler):
     target_port = thumbor_port
 
 
@@ -372,14 +314,13 @@ class Application(web.Application):
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
-            (r"/sockjs.*", TornadoHandler),
             (r"/thumbor.*", ThumborHandler),
             (r"/.*", DjangoHandler)
         ]
         super().__init__(handlers, enable_logging=enable_logging)
 
     def log_request(self, handler):
-        # type: (BaseWebsocketHandler) -> None
+        # type: (BaseHandler) -> None
         if self.settings['enable_logging']:
             super().log_request(handler)
 

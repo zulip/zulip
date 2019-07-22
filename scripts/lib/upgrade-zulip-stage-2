@@ -163,7 +163,7 @@ if not args.skip_migrations:
 if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
     subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
 
-core_server_services = ["zulip-django", "zulip-senders:*",
+core_server_services = ["zulip-django",
                         "zulip-tornado" if tornado_processes == 1 else "zulip-tornado:*"]
 worker_services = ["zulip-workers:*"]
 # Stop and start thumbor service only if thumbor is installed.

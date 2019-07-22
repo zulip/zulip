@@ -118,9 +118,7 @@ not_yet_fully_covered = {path for target in [
     'zerver/tornado/handlers.py',
     'zerver/tornado/ioloop_logging.py',
     'zerver/tornado/sharding.py',
-    'zerver/tornado/socket.py',
     'zerver/tornado/views.py',
-    'zerver/tornado/websocket_client.py',
     # Data import files; relatively low priority
     'zerver/data_import/hipchat*.py',
     'zerver/data_import/sequencer.py',

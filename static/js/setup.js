@@ -2,10 +2,7 @@
 
 $(function () {
     if (util.is_mobile()) {
-        // if the client is mobile, disable websockets for message sending
-        // (it doesn't work on iOS for some reason).
-        page_params.use_websockets = false;
-        // Also disable the tutorial; it's ugly on mobile.
+        // Disable the tutorial; it's ugly on mobile.
         page_params.needs_tutorial = false;
     }
 
@@ -54,5 +51,4 @@ $(function () {
             return $(this).is(sel) || $(this).closest(sel).length;
         };
     }
-    transmit.initialize();
 });

@@ -42,12 +42,6 @@ http {
       text/plain;
     gzip_vary on;
 
-    # Select a Connection header for sockjs reverse-proxying
-    map $http_upgrade $connection_upgrade {
-        default upgrade;
-        ''      close;
-    }
-
     # https://wiki.mozilla.org/Security/Server_Side_TLS intermediate profile
     ssl_session_timeout 1d;
     ssl_session_cache shared:SSL:50m;

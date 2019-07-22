@@ -214,7 +214,6 @@ class HomeTest(ZulipTestCase):
             "unread_msgs",
             "unsubscribed",
             "upgrade_text_for_wide_organization_logo",
-            "use_websockets",
             "user_id",
             "user_status",
             "warn_no_email",

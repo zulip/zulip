@@ -306,11 +306,6 @@ CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS = 1
 INVITATION_LINK_VALIDITY_DAYS = 10
 REALM_CREATION_LINK_VALIDITY_DAYS = 7
 
-# By default, Zulip uses websockets to send messages.  In some
-# networks, websockets don't work.  One can configure Zulip to
-# not use websockets here.
-USE_WEBSOCKETS = True
-
 # Version number for ToS.  Change this if you want to force every
 # user to click through to re-accept terms of service before using
 # Zulip again on the web.

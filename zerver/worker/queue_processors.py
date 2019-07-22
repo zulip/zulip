@@ -13,8 +13,6 @@ import socket
 
 from django.conf import settings
 from django.db import connection
-from django.core.handlers.wsgi import WSGIRequest
-from django.core.handlers.base import BaseHandler
 from zerver.models import \
     get_client, get_system_bot, PreregistrationUser, \
     get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
@@ -22,7 +20,7 @@ from zerver.models import \
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.feedback import handle_feedback
-from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
+from zerver.lib.queue import SimpleQueueClient, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.email_notifications import handle_missedmessage_emails
 from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification, \
@@ -38,9 +36,7 @@ from zerver.lib.send_email import send_future_email, send_email_from_dict, \
 from zerver.lib.email_mirror import process_message as mirror_email, rate_limit_mirror_by_realm, \
     is_missed_message_address, extract_and_validate
 from zerver.lib.streams import access_stream_by_id
-from zerver.tornado.socket import req_redis_key, respond_send_message
 from zerver.lib.db import reset_queries
-from zerver.lib.redis_utils import get_redis_client
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services, RealmAuditLog
@@ -51,7 +47,6 @@ from zerver.lib.export import export_realm_wrapper
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 
 import os
-import sys
 import ujson
 from collections import defaultdict
 import email
@@ -59,7 +54,6 @@ import time
 import datetime
 import logging
 import requests
-from io import StringIO
 import urllib
 
 logger = logging.getLogger(__name__)
@@ -483,66 +477,6 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
             error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
             internal_send_message(error_bot_realm, settings.ERROR_BOT,
                                   "stream", settings.SLOW_QUERY_LOGS_STREAM, topic, content)
-
-@assign_queue("message_sender")
-class MessageSenderWorker(QueueProcessingWorker):
-    def __init__(self) -> None:
-        super().__init__()
-        self.redis_client = get_redis_client()
-        self.handler = BaseHandler()
-        self.handler.load_middleware()
-
-    def consume(self, event: Mapping[str, Any]) -> None:
-        server_meta = event['server_meta']
-
-        environ = {
-            'REQUEST_METHOD': 'SOCKET',
-            'SCRIPT_NAME': '',
-            'PATH_INFO': '/json/messages',
-            'SERVER_NAME': '127.0.0.1',
-            'SERVER_PORT': 9993,
-            'SERVER_PROTOCOL': 'ZULIP_SOCKET/1.0',
-            'wsgi.version': (1, 0),
-            'wsgi.input': StringIO(),
-            'wsgi.errors': sys.stderr,
-            'wsgi.multithread': False,
-            'wsgi.multiprocess': True,
-            'wsgi.run_once': False,
-            'zulip.emulated_method': 'POST'
-        }
-
-        if 'socket_user_agent' in event['request']:
-            environ['HTTP_USER_AGENT'] = event['request']['socket_user_agent']
-            del event['request']['socket_user_agent']
-
-        # We're mostly using a WSGIRequest for convenience
-        environ.update(server_meta['request_environ'])
-        request = WSGIRequest(environ)
-        # Note: If we ever support non-POST methods, we'll need to change this.
-        request._post = event['request']
-        request.csrf_processing_done = True
-
-        user_profile = get_user_profile_by_id(server_meta['user_id'])
-        request._cached_user = user_profile
-
-        resp = self.handler.get_response(request)
-        server_meta['time_request_finished'] = time.time()
-        server_meta['worker_log_data'] = request._log_data
-
-        resp_content = resp.content.decode('utf-8')
-        response_data = ujson.loads(resp_content)
-        if response_data['result'] == 'error':
-            check_and_send_restart_signal()
-
-        result = {'response': response_data, 'req_id': event['req_id'],
-                  'server_meta': server_meta}
-
-        redis_key = req_redis_key(event['req_id'])
-        self.redis_client.hmset(redis_key, {'status': 'complete',
-                                            'response': resp_content})
-
-        queue_json_publish(server_meta['return_queue'], result,
-                           respond_send_message)
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):  # nocoverage

@@ -20,8 +20,3 @@ def notify_tornado_queue_name(port: int) -> str:
     if settings.TORNADO_PROCESSES == 1:
         return "notify_tornado"
     return "notify_tornado_port_%d" % (port,)
-
-def tornado_return_queue_name(port: int) -> str:
-    if settings.TORNADO_PROCESSES == 1:
-        return "tornado_return"
-    return "tornado_return_port_%d" % (port,)

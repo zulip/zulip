@@ -46,10 +46,6 @@ parser.add_argument('--munin',
                     dest='munin',
                     action='store_true')
 
-parser.add_argument('--websocket',
-                    dest='websocket',
-                    action='store_true')
-
 parser.add_argument('config', nargs='?', default=None)
 
 options = parser.parse_args()
@@ -78,7 +74,6 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
 django.setup()
 
 from zerver.models import get_system_bot
-from zerver.tornado.websocket_client import WebsocketClient
 from django.conf import settings
 
 states = {
@@ -93,10 +88,7 @@ def report(state, timestamp=None, msg=None):
     now = int(time.time())
     if msg is None:
         msg = "send time was %s" % (timestamp,)
-    if options.websocket:
-        state_file_path = "/var/lib/nagios_state/check_send_receive_websockets_state"
-    else:
-        state_file_path = "/var/lib/nagios_state/check_send_receive_state"
+    state_file_path = "/var/lib/nagios_state/check_send_receive_state"
     with open(state_file_path + ".tmp", 'w') as f:
         f.write("%s|%s|%s|%s\n" % (now, states[state], state, msg))
     os.rename(state_file_path + ".tmp", state_file_path)
@@ -122,10 +114,6 @@ def get_zulips():
     if 'heartbeat' in set(event['type'] for event in res['events']):
         report("CRITICAL", msg="Got heartbeat waiting for Zulip, which means get_events is hanging")
     return [event['message'] for event in res['events']]
-
-def send_message_via_websocket(websocket_client, recepient_email, content):
-    # type: (WebsocketClient, str, str) -> None
-    websocket_client.send_message('website', 'private', 'no topic', "", recepient_email, content)
 
 if "staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None and \
         settings.NAGIOS_STAGING_RECEIVE_BOT is not None:
@@ -161,19 +149,12 @@ except Exception:
 msg_to_send = str(random.getrandbits(64))
 time_start = time.time()
 
-if options.websocket:
-    client = WebsocketClient(host_url=options.site, sockjs_url='/sockjs/366/v8nw22qe/websocket',
-                             run_on_start=send_message_via_websocket, sender_email=sender.email,
-                             recepient_email=recipient.email, content=msg_to_send,
-                             validate_ssl=not options.insecure)
-    client.run()
-else:
-    send_zulip(zulip_sender, {
-        "type": 'private',
-        "content": msg_to_send,
-        "subject": "time to send",
-        "to": recipient.email,
-    })
+send_zulip(zulip_sender, {
+    "type": 'private',
+    "content": msg_to_send,
+    "subject": "time to send",
+    "to": recipient.email,
+})
 
 msg_content = []  # type: List[str]
 

@@ -117,22 +117,6 @@ stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 
-[program:zulip_events_message_sender]
-command=/home/zulip/deployments/current/manage.py process_queue --queue_name=message_sender --worker_num=%(process_num)s
-process_name=%(program_name)s-%(process_num)s
-priority=350                   ; the relative start priority (default 999)
-autostart=true                 ; start at supervisord start (default: true)
-autorestart=true               ; whether/when to restart (default: unexpected)
-stopsignal=TERM                ; signal used to kill process (default TERM)
-stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
-user=zulip                    ; setuid to this UNIX account to run the program
-redirect_stderr=true           ; redirect proc stderr to stdout (default false)
-stdout_logfile=/var/log/zulip/events_message_sender.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
-stdout_logfile_backups=5     ; # of stdout logfile backups (default 10)
-directory=/home/zulip/deployments/current/
-numprocs=<%= @message_sender_processes %>
-
 ; The below sample group section shows all possible group values,
 ; create one or more 'real' group: sections to create "heterogeneous"
 ; process groups.
@@ -144,9 +128,6 @@ programs=zulip_deliver_enqueued_emails, zulip_deliver_scheduled_messages, <% @qu
 <% else %>
 programs=zulip_deliver_enqueued_emails, zulip_events, zulip_deliver_scheduled_messages
 <% end %>
-
-[group:zulip-senders]
-programs=zulip_events_message_sender
 
 ; The [include] section can just contain the "files" setting.  This
 ; setting can list multiple files (separated by whitespace or

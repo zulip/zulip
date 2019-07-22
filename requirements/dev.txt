@@ -762,8 +762,6 @@ social-auth-core==3.2.0 \
     --hash=sha256:8320666548a532eb158968eda542bbe1863682357c432d8c4e28034a7f1e3b58 \
     --hash=sha256:d81ed681e3c0722300b61a0792c5db5d21206793f95ca810f010c1cc931c8d89 \
     # via social-auth-app-django
-sockjs-tornado==1.0.6 \
-    --hash=sha256:ec12b0c37723b0aac56610fb9b6aa68390720d0c9c2a10461df030c3a1d9af95
 soupsieve==1.9.5 \
     --hash=sha256:bdb0d917b03a1369ce964056fc195cfdff8819c40de04695a80bc813c3cfa1f5 \
     --hash=sha256:e2c1c5dee4a1c36bcb790e0fabd5492d874b8ebd4617622c4f6a731701060dda \

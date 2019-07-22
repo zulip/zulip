@@ -841,17 +841,6 @@ LOGGING = {
         'requests': {
             'level': 'WARNING',
         },
-        'tornado.general': {
-            # sockjs.tornado sends a lot of ERROR level logs to this
-            # logger.  These should not result in error emails/Zulips.
-            #
-            # TODO: Ideally, we'd do something that just filters the
-            # sockjs.tornado logging entirely, since other Tornado
-            # logging may be of interest.  Might require patching
-            # sockjs.tornado to do this correctly :(.
-            'handlers': ['console', 'file'],
-            'propagate': False,
-        },
 
         # our own loggers, alphabetized
         'zerver.lib.digest': {

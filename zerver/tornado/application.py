@@ -6,7 +6,6 @@ from zerver.tornado import autoreload
 
 from zerver.lib.queue import get_queue_client
 from zerver.tornado.handlers import AsyncDjangoHandler
-from zerver.tornado.socket import get_sockjs_router
 
 def setup_tornado_rabbitmq() -> None:  # nocoverage
     # When tornado is shut down, disconnect cleanly from rabbitmq
@@ -24,8 +23,7 @@ def create_tornado_application(port: int) -> tornado.web.Application:
     )
 
     # Application is an instance of Django's standard wsgi handler.
-    return tornado.web.Application(([(url, AsyncDjangoHandler) for url in urls] +
-                                    get_sockjs_router(port).urls),
+    return tornado.web.Application([(url, AsyncDjangoHandler) for url in urls],
                                    debug=settings.DEBUG,
                                    autoreload=False,
                                    # Disable Tornado's own request logging, since we have our own
