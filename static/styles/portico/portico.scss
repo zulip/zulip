@@ -355,14 +355,12 @@ body {
     list-style: none;
 }
 
-.markdown ol > li,
-.portico-landing.integrations ol > li {
+.markdown ol > li {
     counter-increment: item;
     margin-bottom: 5px;
 }
 
-.markdown ol > li::before,
-.portico-landing.integrations ol > li::before {
+.markdown ol > li::before {
     content: counter(item);
     display: inline-block;
     vertical-align: top;
@@ -376,19 +374,12 @@ body {
     text-align: center;
 }
 
-.markdown ol > li > p,
-.portico-landing.integrations ol > li > p {
+.markdown ol > li > p {
     display: inline-block;
     vertical-align: top;
     max-width: calc(100% - 30px);
     position: relative;
     top: -2px;
-}
-
-/* TODO: Clean up this override */
-.portico-landing.integrations ol > li > p {
-    max-width: calc(100% - 33px) !important;
-    margin-top: 0px !important;
 }
 
 .help-center ol,
@@ -397,24 +388,17 @@ body {
 }
 
 ol > li > div.codehilite,
-.markdown ol > li > p:not(:first-child),
-.portico-landing.integrations ol > li > p:not(:first-child) {
+.markdown ol > li > p:not(:first-child) {
     padding-left: 24px;
     margin-left: 5px;
 }
 
-.markdown .content ol li p:not(:first-child),
-.integration-instructions .help-content ol li p:not(:first-child) {
+.markdown .content ol li p:not(:first-child) {
     display: block;
 }
 
 li div.codehilite {
     background-color: hsl(0, 0%, 100%);
-}
-
-.portico-landing.integrations ol ul {
-    padding-left: 40px;
-    margin-left: 5px;
 }
 
 .markdown ol > li > ul {
@@ -423,10 +407,6 @@ li div.codehilite {
 
 .markdown ul > li::before {
     content: none;
-}
-
-#hubot-integrations {
-    margin-top: 30px;
 }
 
 .title {
@@ -1578,7 +1558,6 @@ input.new-organization-button {
     border: none;
 }
 
-.integration-instructions .tip,
 .markdown .warn,
 .markdown .tip,
 .markdown .keyboard_tip {
@@ -1591,7 +1570,6 @@ input.new-organization-button {
     margin: 5px 0px;
 }
 
-.integration-instructions .tip,
 .markdown .tip,
 .markdown .keyboard_tip {
     background-color: hsl(46, 63%, 95%);
@@ -1604,7 +1582,6 @@ input.new-organization-button {
     margin-bottom: 0;
 }
 
-.integration-instructions .tip::before,
 .markdown .tip::before {
     display: inline;
     content: "\f0eb   Tip:  ";
@@ -1619,14 +1596,9 @@ input.new-organization-button {
     font-weight: 600;
 }
 
-.integration-instructions .tip p:first-of-type,
 .markdown .tip p:first-of-type,
 .markdown .keyboard_tip p:first-of-type {
     display: inline;
-}
-
-.integration-instructions .help-content h3 {
-    margin: 20px 0;
 }
 
 .markdown ol > li > div.keyboard_tip,

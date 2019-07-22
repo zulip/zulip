@@ -3,6 +3,12 @@
     font-weight: normal;
 }
 
+.portico-landing.integrations h1:hover::after,
+.portico-landing.integrations h2:hover::after,
+.portico-landing.integrations h3:hover::after {
+    content: none;
+}
+
 .portico-landing.integrations .main {
     width: calc(100% - 100px);
     max-width: 1170px;
@@ -12,6 +18,11 @@
     box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
 
     visibility: hidden;
+}
+
+.portico-landing.integrations .main img {
+    box-shadow: none;
+    border: none;
 }
 
 .portico-landing.integrations .padded-content {
@@ -55,6 +66,7 @@
     font-weight: 300;
     line-height: 1.2;
     text-align: center;
+    border-bottom: none;
 }
 
 .portico-landing.integrations .portico-page-heading a {
@@ -287,6 +299,10 @@
 .integration-instruction-block .integration-lozenge {
     float: left;
     margin-top: 5px;
+}
+
+.integration-instructions .help-content h3 {
+    margin: 20px 0;
 }
 
 .integration-lozenge .square-wrapper {
@@ -551,6 +567,12 @@
         width: -webkit-calc(100% - 80px);
         width: -o-calc(100% - 80px);
         width: calc(100% - 80px);
+    }
+}
+
+@media (max-width: 500px) {
+    .portico-landing.integrations .padded-content .inner-content {
+        height: auto;
     }
 }
 
