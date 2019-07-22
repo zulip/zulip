@@ -455,7 +455,7 @@ class Command(BaseCommand):
             jobs.append((count, personals_pairs, options, self.stdout.write, random.randint(0, 10**10)))
 
         for job in jobs:
-            send_messages(job)
+            generate_and_send_messages(job)
 
         if options["delete"]:
             # Create the "website" and "API" clients; if we don't, the
@@ -573,8 +573,8 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple personals converastions
 # - multiple messages per subject
 # - both single and multi-line content
-def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
-                              Callable[[str], Any], int]) -> int:
+def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
+                                           Callable[[str], Any], int]) -> int:
     (tot_messages, personals_pairs, options, output, random_seed) = data
     random.seed(random_seed)
 
@@ -651,23 +651,27 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
 
-        if (num_messages % message_batch_size) == 0 or (num_messages == tot_messages):
-            # Send the batch:
+        if (num_messages % message_batch_size) == 0:
+            # Send the batch and empty the list:
+            send_messages(messages)
+            messages = []
 
-            # We disable USING_RABBITMQ here, so that deferred work is
-            # executed in do_send_message_messages, rather than being
-            # queued.  This is important, because otherwise, if run-dev.py
-            # wasn't running when populate_db was run, a developer can end
-            # up with queued events that reference objects from a previous
-            # life of the database, which naturally throws exceptions.
-            settings.USING_RABBITMQ = False
-            do_send_messages([{'message': message} for message in messages])
-            settings.USING_RABBITMQ = True
-
-            # Empty the list:
-            messages.clear()
+    if len(messages) > 0:
+        # If there are unsent messages after exiting the loop, send them:
+        send_messages(messages)
 
     return tot_messages
+
+def send_messages(messages: List[Message]) -> None:
+    # We disable USING_RABBITMQ here, so that deferred work is
+    # executed in do_send_message_messages, rather than being
+    # queued.  This is important, because otherwise, if run-dev.py
+    # wasn't running when populate_db was run, a developer can end
+    # up with queued events that reference objects from a previous
+    # life of the database, which naturally throws exceptions.
+    settings.USING_RABBITMQ = False
+    do_send_messages([{'message': message} for message in messages])
+    settings.USING_RABBITMQ = True
 
 def choose_pub_date(num_messages: int, tot_messages: int, threads: int) -> datetime:
     # Spoofing time not supported with threading
