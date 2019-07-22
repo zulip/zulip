@@ -336,7 +336,7 @@ class TestSuite(unittest.TestSuite):
         """
         topLevel = False
         if getattr(result, '_testRunEntered', False) is False:
-            result._testRunEntered = topLevel = True
+            result._testRunEntered = topLevel = True  # type: ignore
 
         for test in self:
             # but this is correct. Taken from unittest.
@@ -349,7 +349,7 @@ class TestSuite(unittest.TestSuite):
                 self._tearDownPreviousClass(test, result)  # type: ignore
                 self._handleModuleFixture(test, result)  # type: ignore
                 self._handleClassSetUp(test, result)  # type: ignore
-                result._previousTestClass = test.__class__
+                result._previousTestClass = test.__class__  # type: ignore
                 if (getattr(test.__class__, '_classSetupFailed', False) or
                         getattr(result, '_moduleSetUpFailed', False)):
                     continue
@@ -362,7 +362,7 @@ class TestSuite(unittest.TestSuite):
         if topLevel:
             self._tearDownPreviousClass(None, result)  # type: ignore
             self._handleModuleTearDown(result)  # type: ignore
-            result._testRunEntered = False
+            result._testRunEntered = False  # type: ignore
         return result
 
 class TestLoader(loader.TestLoader):
