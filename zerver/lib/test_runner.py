@@ -570,7 +570,7 @@ def get_test_names(suite: unittest.TestSuite) -> List[str]:
         suite = cast(TestSuite, suite)
         return [full_test_name(t) for t in get_tests_from_suite(suite)]
 
-def get_tests_from_suite(suite: TestSuite) -> TestCase:
+def get_tests_from_suite(suite: unittest.TestSuite) -> TestCase:
     for test in suite:
         if isinstance(test, TestSuite):
             for child in get_tests_from_suite(test):
