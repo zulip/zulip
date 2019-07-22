@@ -2264,6 +2264,8 @@ nav ul li.active::after {
     display: block;
     margin: 0 auto;
     max-width: 100%;
+    box-shadow: none;
+    border: none;
 }
 
 .portico-landing.why-page .main .slack-image {
