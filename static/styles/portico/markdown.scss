@@ -298,11 +298,6 @@
             background-color: hsl(106, 74%, 44%);
         }
     }
-
-    @media (max-width: 500px) {
-        height: calc(100vh - 39px);
-        width: 100%;
-    }
 }
 
 li div.codehilite {
