@@ -480,11 +480,11 @@ class ResponseMock:
         return "Response text"
 
 class SocialAuthBase(ZulipTestCase):
-    """This is a base class for testing social-auth backends. Following
-    methods can be overrided by subclasses as per the backend:
+    """This is a base class for testing social-auth backends. These
+    methods are often overriden by subclasses:
 
-        registerExtraEndpoints() - If the backend being tested calls some extra
-                                   endpoints then they can be added here.
+        register_extra_endpoints() - If the backend being tested calls some extra
+                                     endpoints then they can be added here.
 
         get_account_data_dict() - Return the data returned by the user info endpoint
                                   according to the respective backend.
@@ -571,7 +571,7 @@ class SocialAuthBase(ZulipTestCase):
             status=200,
             body=json.dumps(account_data_dict)
         )
-        self.registerExtraEndpoints(account_data_dict, **extra_data)
+        self.register_extra_endpoints(account_data_dict, **extra_data)
 
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
@@ -968,9 +968,9 @@ class GitHubAuthBackendTest(SocialAuthBase):
     AUTH_FINISH_URL = "/complete/github/"
     CONFIG_ERROR_URL = "/config-error/github"
 
-    def registerExtraEndpoints(self,
-                               account_data_dict: Dict[str, str],
-                               **extra_data: Any) -> None:
+    def register_extra_endpoints(self,
+                                 account_data_dict: Dict[str, str],
+                                 **extra_data: Any) -> None:
         # Keeping a verified email before the primary email makes sure
         # get_verified_emails puts the primary email at the start of the
         # email list returned as social_associate_user_helper assumes the
