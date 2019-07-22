@@ -2213,37 +2213,6 @@ nav ul li.active::after {
     opacity: 0.7;
 }
 
-.portico-landing.why-page .main .inner-content h2 {
-    margin-top: 30px;
-    margin-bottom: 10px;
-}
-
-.portico-landing.why-page .main p {
-    font-size: 1.2em;
-    margin: 0px 0px 20px;
-    line-height: 1.4;
-}
-
-.portico-landing.why-page .main h3 {
-    margin-top: 20px;
-}
-
-.portico-landing.why-page .main li {
-    line-height: 1.6;
-    font-size: 1.2em;
-    margin-bottom: 5px;
-    p,
-    li {
-        /* Avoid double-applying the 1.2em font-size here */
-        font-size: 1em;
-    }
-}
-
-.portico-landing.why-page .main li strong {
-    font-weight: 600;
-    color: hsl(0, 0%, 20%);
-}
-
 .portico-landing.why-page .main blockquote {
     background-color: hsl(0, 0%, 100%);
     border-color: hsl(168, 24%, 51%);
