@@ -1,315 +1,310 @@
-.markdown .code-section ol {
-    margin-left: 15px;
-    margin-top: 10px;
-}
-
-.markdown h1[id]::before,
-.markdown h2[id]::before,
-.markdown h3[id]::before,
-.markdown h4[id]::before {
-    display: block;
-    content: " ";
-    visibility: hidden;
-}
-
-.markdown h1[id]::before {
-    margin-top: -30px;
-    height: 30px;
-}
-
-.markdown h2[id]::before,
-.markdown h3[id]::before,
-.markdown h4[id]::before {
-    margin-top: -10px;
-    height: 10px;
-}
-
-.markdown ul,
-.markdown ol {
-    margin-left: 30px;
-}
-
-.markdown li {
-    line-height: 150%;
-}
-
-.markdown ol {
-    counter-reset: item;
-    list-style: none;
-}
-
-.markdown ol > li {
-    counter-increment: item;
-    margin-bottom: 5px;
-}
-
-.markdown ol > li::before {
-    content: counter(item);
-    display: inline-block;
-    vertical-align: top;
-    padding: 3px 6.5px 3px 7.5px;
-    margin-right: 5px;
-    background-color: hsl(170, 48%, 54%);
-    color: hsl(0, 0%, 100%);
-    border-radius: 100%;
-    font-size: 0.9em;
-    line-height: 1.1;
-    text-align: center;
-}
-
-.markdown ol > li > p {
-    display: inline-block;
-    vertical-align: top;
-    max-width: calc(100% - 30px);
-    position: relative;
-    top: -2px;
-}
-
-ol > li > div.codehilite,
-.markdown ol > li > p:not(:first-child) {
-    padding-left: 24px;
-    margin-left: 5px;
-}
-
-li div.codehilite {
-    background-color: hsl(0, 0%, 100%);
-}
-
-.markdown .content ol li p:not(:first-child) {
-    display: block;
-}
-.markdown ol > li > ul {
-    padding-left: 20px;
-}
-
-.markdown ul > li::before {
-    content: none;
-}
-
 .markdown {
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
     overflow: auto;
     -webkit-font-smoothing: antialiased;
-}
 
-.markdown .content {
-    padding: 30px;
-    max-width: 768px;
-    background-color: hsl(0, 0%, 100%);
-}
-
-.markdown a {
-    color: hsl(176, 46%, 41%);
-    font-weight: 600;
-}
-
-.markdown strong {
-    font-weight: 600;
-}
-
-.markdown h1,
-.markdown h2,
-.markdown h3 {
-    font-weight: 700;
-}
-
-.markdown h1,
-.markdown h2,
-.markdown h3 {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-.markdown h1:hover,
-.markdown h2:hover,
-.markdown h3:hover {
-    cursor: pointer;
-}
-
-.markdown h1:hover::after,
-.markdown h2:hover::after,
-.markdown h3:hover::after {
-    display: inline-block;
-    font: normal normal normal 16px/1 FontAwesome;
-    text-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-
-    cursor: pointer;
-    content: "\f0c1";
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.markdown h1 {
-    border-bottom: 1px solid hsl(0, 0%, 93%);
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-}
-
-.markdown h1#using-zulip,
-.markdown h1#zulip-administration {
-    font-size: 1.75em;
-    padding: 10px 0;
-    margin-bottom: 0px;
-    line-height: 100%;
-}
-
-.markdown h2 {
-    font-size: 1.5em;
-    line-height: 1.25;
-    margin: 20px 0px 5px 0px;
-}
-
-.markdown h3 {
-    font-size: 1.25em;
-    line-height: 1.25;
-    opacity: 1;
-    margin-bottom: 7px;
-}
-
-.markdown img {
-    vertical-align: top;
-    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.05);
-    border: 1px solid hsl(0, 0%, 87%);
-    border-radius: 4px;
-}
-
-.markdown img.inline {
-    height: 1.4em;
-    box-shadow: none;
-}
-
-.markdown img.emoji-small {
-    width: 20px;
-    box-shadow: none;
-    border: none;
-    vertical-align: sub;
-}
-
-.markdown img.emoji-big {
-    width: 25px;
-    box-shadow: none;
-    border: none;
-}
-
-.markdown .warn,
-.markdown .tip,
-.markdown .keyboard_tip {
-    position: relative;
-    display: block;
-    background-color: hsl(210, 22%, 96%);
-    border: 1px solid hsl(210, 22%, 90%);
-    border-radius: 4px;
-    padding: 10px;
-    margin: 5px 0px;
-}
-
-.markdown .tip,
-.markdown .keyboard_tip {
-    background-color: hsl(46, 63%, 95%);
-    border: 1px solid hsl(46, 63%, 84%);
-}
-
-.markdown .warn p,
-.markdown .tip p,
-.markdown .keyboard_tip p {
-    margin-bottom: 0;
-}
-
-.markdown .tip::before {
-    display: inline;
-    content: "\f0eb   Tip:  ";
-    font-family: FontAwesome, "Yantramanav", Source Sans Pro;
-    font-weight: 600;
-}
-
-.markdown .keyboard_tip::before {
-    display: inline;
-    content: "\f11c   Keyboard Shortcut:  ";
-    font-family: FontAwesome, "Yantramanav", Source Sans Pro;
-    font-weight: 600;
-}
-
-.markdown .tip p:first-of-type,
-.markdown .keyboard_tip p:first-of-type {
-    display: inline;
-}
-
-.markdown ol > li > div.keyboard_tip,
-.markdown ol > li > div.tip,
-.markdown ol > li > div.warn {
-    margin: 5px 25px 5px;
-}
-
-.markdown ol p {
-    margin: 0 0 2px;
-}
-
-.markdown .indicator {
-    position: relative;
-    display: inline-block;
-    top: 1px;
-    padding: 5px;
-    border-radius: 6px;
-}
-
-.markdown .indicator.grey {
-    border: 1px solid hsl(0, 0%, 80%);
-}
-
-.markdown .indicator.grey-line {
-    border: 1px solid hsl(0, 0%, 80%);
-    top: 2px;
-
-    &::after {
-        content: '';
-        background: hsl(0, 0%, 80%);
-        height: 1.5px;
-        width: 6px;
-        display: block;
-        margin: .5px -2px;
+    .code-section {
+        ol {
+            margin-left: 15px;
+            margin-top: 10px;
+        }
     }
-}
 
-.markdown .indicator.orange {
-    border: 1px solid hsl(29, 84%, 51%);
-    background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%);
-}
+    h1[id],
+    h2[id],
+    h3[id],
+    h4[id] {
+        &::before {
+            display: block;
+            content: " ";
+            visibility: hidden;
+        }
+    }
 
-.markdown .indicator.green {
-    border: 1px solid hsl(106, 74%, 44%);
-    background-color: hsla(106, 74%, 44%, 0.3);
-}
+    h2[id],
+    h3[id],
+    h4[id] {
+        &::before {
+            margin-top: -10px;
+            height: 10px;
+        }
+    }
 
-.markdown .indicator.green.solid {
-    background-color: hsl(106, 74%, 44%);
-}
+    h1 {
+        border-bottom: 1px solid hsl(0, 0%, 93%);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
 
-.markdown ul {
-    margin: 0px 10px 15px 25px;
-}
+        &[id] {
+            &::before {
+                margin-top: -30px;
+                height: 30px;
+            }
+        }
+        &#using-zulip,
+        &#zulip-administration {
+            font-size: 1.75em;
+            padding: 10px 0;
+            margin-bottom: 0px;
+            line-height: 100%;
+        }
+    }
 
-.markdown ul li {
-    margin: 5px 0px;
-}
+    h2 {
+        font-size: 1.5em;
+        line-height: 1.25;
+        margin: 20px 0px 5px 0px;
+    }
 
-@media (max-width: 500px) {
+    h3 {
+        font-size: 1.25em;
+        line-height: 1.25;
+        opacity: 1;
+        margin-bottom: 7px;
+    }
 
-    .markdown {
+    h1,
+    h2,
+    h3 {
+        font-weight: 700;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+
+        &:hover {
+            cursor: pointer;
+
+            &::after {
+                display: inline-block;
+                font: normal normal normal 16px/1 FontAwesome;
+                text-rendering: auto;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+
+                cursor: pointer;
+                content: "\f0c1";
+                margin-left: 5px;
+                vertical-align: middle;
+            }
+        }
+    }
+
+
+    ul,
+    ol {
+        margin-left: 30px;
+    }
+
+    li {
+        line-height: 150%;
+    }
+
+    ol {
+        counter-reset: item;
+        list-style: none;
+
+        & > li {
+            counter-increment: item;
+            margin-bottom: 5px;
+
+            &::before {
+                content: counter(item);
+                display: inline-block;
+                vertical-align: top;
+                padding: 3px 6.5px 3px 7.5px;
+                margin-right: 5px;
+                background-color: hsl(170, 48%, 54%);
+                color: hsl(0, 0%, 100%);
+                border-radius: 100%;
+                font-size: 0.9em;
+                line-height: 1.1;
+                text-align: center;
+            }
+
+            & > p {
+                display: inline-block;
+                vertical-align: top;
+                max-width: calc(100% - 30px);
+                position: relative;
+                top: -2px;
+            }
+
+            & > .codehilite,
+            & > p:not(:first-child) {
+                padding-left: 24px;
+                margin-left: 5px;
+            }
+
+            & > ul {
+                padding-left: 20px;
+            }
+
+            .warn,
+            .tip,
+            .keyboard_tip {
+                margin: 5px 25px 5px;
+            }
+        }
+
+        p {
+            margin: 0 0 2px;
+        }
+
+        @media (max-width: 500px) {
+            margin-left: 0px;
+        }
+    }
+
+    ul {
+        margin: 0px 10px 15px 25px;
+
+        & > li {
+            margin: 5px 0px;
+
+            ::before {
+                content: none;
+            }
+        }
+    }
+
+    .content {
+        padding: 30px;
+        max-width: 768px;
+        background-color: hsl(0, 0%, 100%);
+
+        ol li p:not(:first-child) {
+            display: block;
+        }
+
+        @media (max-width: 500px) {
+            padding: 10px;
+        }
+    }
+
+    a {
+        color: hsl(176, 46%, 41%);
+        font-weight: 600;
+    }
+
+    strong {
+        font-weight: 600;
+    }
+
+    img {
+        vertical-align: top;
+        box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.05);
+        border: 1px solid hsl(0, 0%, 87%);
+        border-radius: 4px;
+
+        &.inline {
+            height: 1.4em;
+            box-shadow: none;
+        }
+
+
+        &.emoji-small {
+            width: 20px;
+            box-shadow: none;
+            border: none;
+            vertical-align: sub;
+        }
+
+        &.emoji-big {
+            width: 25px;
+            box-shadow: none;
+            border: none;
+        }
+    }
+
+    .warn,
+    .tip,
+    .keyboard_tip {
+        position: relative;
+        display: block;
+        background-color: hsl(210, 22%, 96%);
+        border: 1px solid hsl(210, 22%, 90%);
+        border-radius: 4px;
+        padding: 10px;
+        margin: 5px 0px;
+
+        p {
+            margin-bottom: 0;
+        }
+    }
+
+    .tip,
+    .keyboard_tip {
+        background-color: hsl(46, 63%, 95%);
+        border: 1px solid hsl(46, 63%, 84%);
+
+        p:first-of-type {
+            display: inline;
+        }
+    }
+
+    .tip::before {
+        display: inline;
+        content: "\f0eb   Tip:  ";
+        font-family: FontAwesome, "Yantramanav", Source Sans Pro;
+        font-weight: 600;
+    }
+
+    .keyboard_tip::before {
+        display: inline;
+        content: "\f11c   Keyboard Shortcut:  ";
+        font-family: FontAwesome, "Yantramanav", Source Sans Pro;
+        font-weight: 600;
+    }
+
+    .indicator {
+        position: relative;
+        display: inline-block;
+        top: 1px;
+        padding: 5px;
+        border-radius: 6px;
+
+        &.grey {
+            border: 1px solid hsl(0, 0%, 80%);
+        }
+
+        &.grey-line {
+            border: 1px solid hsl(0, 0%, 80%);
+            top: 2px;
+
+            &::after {
+                content: '';
+                background: hsl(0, 0%, 80%);
+                height: 1.5px;
+                width: 6px;
+                display: block;
+                margin: .5px -2px;
+            }
+        }
+
+        &.orange {
+            border: 1px solid hsl(29, 84%, 51%);
+            background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%);
+        }
+
+        &.green {
+            border: 1px solid hsl(106, 74%, 44%);
+            background-color: hsla(106, 74%, 44%, 0.3);
+        }
+
+        &.green.solid {
+            background-color: hsl(106, 74%, 44%);
+        }
+    }
+
+    @media (max-width: 500px) {
         height: calc(100vh - 39px);
         width: 100%;
     }
+}
 
-    .markdown .content {
-        padding: 10px;
-    }
-
-    .markdown ol {
-        margin-left: 0px;
-    }
+li div.codehilite {
+    background-color: hsl(0, 0%, 100%);
 }
