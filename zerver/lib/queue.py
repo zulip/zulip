@@ -305,9 +305,8 @@ def get_queue_client() -> SimpleQueueClient:
 queue_lock = threading.RLock()
 
 def queue_json_publish(queue_name: str,
-                       event: Union[Dict[str, Any], str],
+                       event: Dict[str, Any],
                        processor: Callable[[Any], None]=None) -> None:
-    # most events are dicts, but zerver.middleware.write_log_line uses a str
     with queue_lock:
         if settings.USING_RABBITMQ:
             get_queue_client().json_publish(queue_name, event)
