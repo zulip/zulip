@@ -104,7 +104,8 @@ def enforce_timely_test_completion(test_method: Any, test_name: str,
 
     if delay > max_delay:
         msg = '** Test is TOO slow: %s (%.3f s)\n' % (test_name, delay)
-        result.addInfo(test_method, msg)
+        if isinstance(result, TextTestResult):
+            result.addInfo(test_method, msg)
 
 def fast_tests_only() -> bool:
     return "FAST_TESTS_ONLY" in os.environ
