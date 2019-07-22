@@ -1054,6 +1054,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         # Set has_link and similar flags whenever a message is processed by bugdown
         if self.markdown.zulip_message:
+            # Filter out any URLs for which previews were previously removed
+            if self.markdown.zulip_message.has_link:
+                unique_previewable_urls = {
+                    url for url in unique_previewable_urls
+                    if url not in self.markdown.preview_removed_links}
+
             self.markdown.zulip_message.has_link = len(found_urls) > 0
             self.markdown.zulip_message.has_image = False  # This is updated in self.add_a
             self.markdown.zulip_message.potential_attachment_path_ids = []
@@ -2279,6 +2285,12 @@ def do_convert(content: str,
         message, message_realm, no_previews)
     _md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
         message, message_realm, no_previews)
+    # Check if the message has any links whose previews have been removed.
+    # NOTE: This code is called here, instead of being called directly in
+    # `InlineInterestingLinkProcessor.run` because that method is called inside
+    # a timeout thread, and we want to avoid making DB calls inside the thread.
+    _md_engine.preview_removed_links = (
+        message.preview_removed_links if hasattr(message, 'preview_removed_links') else set())
 
     # Pre-fetch data from the DB that is used in the bugdown thread
     if message is not None:

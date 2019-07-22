@@ -197,6 +197,8 @@ v1_api_and_json_patterns = [
          'DELETE': 'zerver.views.messages.delete_message_backend'}),
     url(r'^messages/render$', rest_dispatch,
         {'POST': 'zerver.views.messages.render_message_backend'}),
+    url(r'^messages/(?P<message_id>[0-9]+)/remove_preview$', rest_dispatch,
+        {'POST': 'zerver.views.messages.remove_preview'}),
     url(r'^messages/flags$', rest_dispatch,
         {'POST': 'zerver.views.messages.update_message_flags'}),
     url(r'^messages/(?P<message_id>\d+)/history$', rest_dispatch,

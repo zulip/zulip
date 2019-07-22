@@ -225,7 +225,7 @@ class FakeMessage:
     We just need a stub object for do_render_markdown
     to write stuff to.
     '''
-    pass
+    has_link = False
 
 def fix_message_rendered_content(realm: Realm,
                                  sender_map: Dict[int, Record],

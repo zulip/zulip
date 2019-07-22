@@ -68,6 +68,7 @@ from zerver.lib.actions import (
     do_remove_alert_words,
     do_remove_default_stream,
     do_remove_default_stream_group,
+    do_remove_preview,
     do_remove_reaction,
     do_remove_reaction_legacy,
     do_remove_realm_domain,
@@ -964,6 +965,26 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: do_remove_reaction(
                 self.user_profile, message, "1f389", "unicode_emoji"),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_remove_preview(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('update_message')),
+            ('flags', check_list(None)),
+            ('content', check_string),
+            ('message_id', check_int),
+            ('message_ids', check_list(check_int)),
+            ('rendered_content', check_string),
+            ('sender', check_string),
+        ])
+        url = "https://github.com/zulip/zulip"
+        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", url)
+        message = Message.objects.get(id=message_id)
+        events = self.do_test(
+            lambda: do_remove_preview(message, url),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])

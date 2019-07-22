@@ -51,7 +51,7 @@ import re
 from typing import cast, Any, Dict, List, Optional, Set, Tuple
 
 class FakeMessage:
-    pass
+    has_link = False
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:

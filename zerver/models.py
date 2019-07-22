@@ -1729,6 +1729,18 @@ class Message(AbstractMessage):
             return True
         return False
 
+    @property
+    def preview_removed_links(self) -> Set[str]:
+        """Return a set containing links for which previews have been removed."""
+        # If message was just sent, or has no links, we avoid making a DB query
+        if not self.has_link:
+            return set()
+        return set(PreviewRemoved.objects.filter(message_id=self.id).values_list('url', flat=True))
+
+    def clear_preview_removed(self) -> None:
+        """Delete all rows that keep track of removed previews."""
+        PreviewRemoved.objects.filter(message_id=self.id).delete()
+
 def get_context_for_message(message: Message) -> Sequence[Message]:
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
@@ -1823,6 +1835,22 @@ class Reaction(AbstractReaction):
 
 class ArchivedReaction(AbstractReaction):
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: ArchivedMessage
+
+class AbstractPreviewRemoved(models.Model):
+    url = models.TextField()  # type: str
+
+    def __str__(self) -> str:
+        return "%s / %s" % (self.message.id, self.url)
+
+    class Meta:
+        abstract = True
+        unique_together = ("message", "url")
+
+class PreviewRemoved(AbstractPreviewRemoved):
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
+
+class ArchivedPreviewRemoved(AbstractPreviewRemoved):
+    message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: Message
 
 # Whenever a message is sent, for each user subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage

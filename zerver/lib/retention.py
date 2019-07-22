@@ -9,7 +9,7 @@ from zerver.lib.logging_util import log_to_file
 from zerver.models import (Message, UserMessage, ArchivedUserMessage, Realm,
                            Attachment, ArchivedAttachment, Reaction, ArchivedReaction,
                            SubMessage, ArchivedSubMessage, Recipient, Stream, ArchiveTransaction,
-                           get_user_including_cross_realm)
+                           PreviewRemoved, ArchivedPreviewRemoved, get_user_including_cross_realm)
 
 from typing import Any, Dict, List, Optional
 
@@ -21,6 +21,12 @@ log_to_file(logger, settings.RETENTION_LOG_PATH)
 MESSAGE_BATCH_SIZE = 1000
 
 models_with_message_key = [
+    {
+        'class': PreviewRemoved,
+        'archive_class': ArchivedPreviewRemoved,
+        'table_name': 'zerver_previewremoved',
+        'archive_table_name': 'zerver_archivedpreviewremoved'
+    },
     {
         'class': Reaction,
         'archive_class': ArchivedReaction,

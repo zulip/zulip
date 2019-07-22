@@ -93,7 +93,7 @@ from zerver.lib.user_status import (
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
-    RealmDomain, Service, SubMessage, \
+    RealmDomain, Service, SubMessage, PreviewRemoved, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, MultiuseInvite, ScheduledMessage, UserStatus, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, \
@@ -1755,6 +1755,21 @@ def do_send_typing_notification(
     ]
 
     send_event(realm, event, user_ids_to_notify)
+
+def do_remove_preview(message: Message, url: str) -> None:
+    preview_removed = PreviewRemoved(message=message, url=url)
+    try:
+        preview_removed.save()
+    except django.db.utils.IntegrityError:  # nocoverage
+        raise JsonableError(_("Preview already removed for this URL."))
+
+    # We render the message to populate the message.links_for_preview attribute
+    render_incoming_message(message,
+                            message.content,
+                            set(),
+                            message.sender.realm)
+    event_data = get_queue_processor_event_data(message, message.sender.realm_id, message.links_for_preview)
+    queue_json_publish('embed_links', event_data)
 
 # check_send_typing_notification:
 # Checks the typing notification and sends it

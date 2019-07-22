@@ -19,7 +19,7 @@ from zerver.lib.actions import recipient_for_user_profiles, do_update_message_fl
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_private_recipients, render_incoming_message, do_delete_messages, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, extract_stream_indicator, \
-    get_user_info_for_message_updates, check_schedule_message
+    get_user_info_for_message_updates, check_schedule_message, do_remove_preview
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.message import (
@@ -1516,6 +1516,24 @@ def check_edit_time_expiry(message: Message, user_profile: UserProfile) -> None:
             raise JsonableError(_("The time limit for editing this message has passed"))
 
 PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
+
+@has_request_variables
+def remove_preview(request: HttpRequest, user_profile: UserMessage,
+                   message_id: int=REQ(converter=to_non_negative_int),
+                   url: str=REQ()) -> HttpResponse:
+
+    if not user_profile.realm.allow_message_editing:
+        return json_error(_("Your organization has turned off message editing"))
+
+    message, __ = access_message(user_profile, message_id)
+
+    if message.sender != user_profile:
+        raise JsonableError(_("You don't have permission to edit this message"))
+    check_edit_time_expiry(message, user_profile)
+
+    do_remove_preview(message, url)
+    return json_success()
+
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            message_id: int=REQ(converter=to_non_negative_int, path_only=True),
@@ -1586,6 +1604,11 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         )
         user_info = get_user_info_for_message_updates(message.id)
         prior_mention_user_ids = user_info['mention_user_ids']
+
+        # We clear the PreviewRemoved table for this message to restore any
+        # removed previews, since there is no other way to undo removing
+        # previews from the UI
+        message.clear_preview_removed()
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be

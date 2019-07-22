@@ -169,6 +169,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/me/presence',
         '/users/me/alert_words',
         '/users/me/status',
+        '/messages/{message_id}/remove_preview',
 
         #### These realm administration settings are valuable to document:
         # List all files uploaded by current user.  May want to add support
