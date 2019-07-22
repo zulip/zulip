@@ -2,8 +2,8 @@
 
 This document explains the system for documenting [Zulip's REST
 API](https://zulipchat.com/api/rest).  This documentation is an
-essential resource both for users and Zulip developers, and we a
-carefully designed system for both displaying it and helping ensure it
+essential resource both for users and Zulip developers. We carefully
+designed a system for both displaying it and helping ensure it
 stays up to date as Zulip's API changes.
 
 Our API documentation is defined by a few sets of files:
@@ -28,7 +28,7 @@ Our API documentation is defined by a few sets of files:
 
 This first section is focused on explaining how the API documentation
 system is put together; when actually documenting an endpoint, you'll
-want to also read the [step-by-step-guide][step-by-step].
+want to also read the [Step by step guide][#step-by-step-guide].
 
 ## How it works
 
@@ -40,8 +40,8 @@ environment at `http://localhost:9991/api/render-message`).
 
 We highly recommend looking at those resouces while reading this page.
 
-If you look at the documentation for existing endpoints (see a .
-you'll notice that a typical endpoint's documentation is divided into
+If you look at the documentation for existing endpoints (you'll notice
+that a typical endpoint's documentation is divided into
 four sections:
 
 * The top-level **Description**
@@ -53,8 +53,8 @@ The rest of this guide describes how each of these sections works.
 
 ### Description
 
-At the top of any REST endpoint documentation page, where you'll want
-to explain what the endpoint does in clear English, and any important
+At the top of any REST endpoint documentation page, you'll want
+to explain what the endpoint does in clear English. Including important
 notes on how to use it correctly or what it's good or bad for.  These
 sections should almost always contain a link to the documentation of
 the relevant feature in `/help/`.
@@ -71,7 +71,7 @@ Python and `curl` documentation; `JavaScript` is optional as we don't
 consider that API library to be fully supported.  The examples are
 defined using a special Markdown extension
 (`zerver/lib/bugdown/api_code_examples.py`).  To use this extension,
-one writes file a Markdown block that looks something like this:
+one writes a Markdown file block that looks something like this:
 
 ```
 {start_tabs}
@@ -114,17 +114,17 @@ def render_message(client):
 
 This is an actual Python function which (if registered correctly) will
 be run as part of the `tools/test-api` test suite.  The
-`validate_against_opanapi_schema` function will confirm the result of
+`validate_against_opanapi_schema` function will confirm if the result of
 that request is as defined in the examples in
-`zerver/openapi/zulip.yaml`.  To register these functions correctly:
+`zerver/openapi/zulip.yaml`.  To register a function correctly:
 
 * You need to add it to the `TEST_FUNCTIONS` map; this declares the
   relationship between function names like `render_message` and
   OpenAPI endpoints like `/messages/render:post`.
-* The `render_message` function needs to be called frmo
+* The `render_message` function needs to be called from
   `test_messages` (or one of the other functions at the bottom of the
   file).  The final function, `test_the_api`, is what actually runs
-  the tests.`
+  the tests.
 * Test that your code actually runs in `tools/test-api`; a good way to
   do this is to break your code and make sure `tools/test-api` fails.
 
@@ -186,10 +186,10 @@ above.
    tutorial][rest-api-tutorial], paying special attention to the
    details of `REQ` and `has_request_variables`.
 
-   Once you understand that, the best way to determine the supportd
+   Once you understand that, the best way to determine the supported
    arguments for an API endpoint is to find the corresponding URL
    pattern in `zprojects/urls.py`, look up the backend function for
-   that endpoint in `zerver/views/`, and inspecting its arguments
+   that endpoint in `zerver/views/`, and inspect its arguments
    declared using `REQ`.
 
    You can check your formatting using two helpful tools.
@@ -255,7 +255,7 @@ above.
 ## Why a custom system?
 
 Given that our documentation is written in large part using the
-OpenAPI format, why have our custom markdown system for displaying it?
+OpenAPI format, why use a custom markdown system for displaying it?
 There's several major benefits to this system:
 
 * It is extremely common for API documentation to become out of date
