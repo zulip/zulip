@@ -96,7 +96,7 @@ def report_slow_tests() -> None:
             print('      This may no longer be true: %s' % (slowness_reason,))
 
 def enforce_timely_test_completion(test_method: Any, test_name: str,
-                                   delay: float, result: TestResult) -> None:
+                                   delay: float, result: "TextTestResult") -> None:
     if hasattr(test_method, 'slowness_reason'):
         max_delay = 2.0  # seconds
     else:
