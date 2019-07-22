@@ -49,7 +49,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def tearDown(self) -> None:
         super().tearDown()
-        self.session_cookie = None  # type: Optional[Dict[str, str]]
+        self.session_cookie = None
 
     @override_settings(DEBUG=False)
     def get_app(self) -> Application:
