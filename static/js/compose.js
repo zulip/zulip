@@ -1074,6 +1074,16 @@ exports.initialize = function () {
         })
     );
 
+    $("#compose-textarea").focus(function () {
+        var opts = {
+            message_type: compose_state.get_message_type(),
+            stream: $('#stream_message_recipient_stream').val(),
+            topic: $('#stream_message_recipient_topic').val(),
+            private_message_recipient: compose_pm_pill.get_emails(),
+        };
+        compose_actions.update_placeholder_text(opts);
+    });
+
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
             compose_actions.start("stream", {topic: page_params.narrow_topic});

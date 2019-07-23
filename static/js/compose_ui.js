@@ -76,6 +76,60 @@ exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
     }));
 };
 
+exports.compute_placeholder_text = function (opts) {
+    if (opts.message_type === 'stream') {
+        if (opts.topic) {
+            return i18n.t("Message #__stream_name__ > __topic_name__",
+                          {stream_name: opts.stream,
+                           topic_name: opts.topic});
+        } else if (opts.stream) {
+            return i18n.t("Message #__stream_name__", {stream_name: opts.stream});
+        }
+    }
+
+    // For Private Messages
+    if (opts.private_message_recipient) {
+        var recipient_list = opts.private_message_recipient.split(",");
+
+        if (recipient_list.length > 1) {
+            var recipient_names = [];
+            var num_users = 0;
+            var recipients = '';
+
+            recipient_list.forEach(recipient => {
+                var user = people.get_by_email(recipient);
+                recipient_names[num_users] = user.full_name;
+                num_users = num_users + 1;
+            });
+
+            recipient_names.forEach(recipient_name => {
+                num_users = num_users - 1;
+                if (num_users > 0) {
+                    recipients += recipient_name + ", ";
+                } else {
+                    recipients += recipient_name;
+                }
+            });
+            return i18n.t("Message __recipient__",
+                          {recipient: recipients});
+        }
+
+        // Individual PMs
+        var user = people.get_by_email(recipient_list[0]);
+        var recipient_name = user.full_name;
+        var status = user_status.get_status_text(user.user_id);
+
+        if (status) {
+            return i18n.t("Message __recipient_name__ (__recipient_status__)",
+                          {recipient_name: recipient_name,
+                           recipient_status: status});
+        }
+        return i18n.t("Message __recipient_name__",
+                      {recipient_name: recipient_name});
+    }
+    return i18n.t("Compose your message here");
+};
+
 return exports;
 
 }());

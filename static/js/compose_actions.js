@@ -131,6 +131,7 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     exports.decorate_stream_bar(opts.stream);
     $(document).trigger($.Event('compose_started.zulip', opts));
     resize.resize_bottom_whitespace();
+    exports.update_placeholder_text(opts);
 };
 
 // In an attempt to decrease mixing, make the composebox's
@@ -195,6 +196,11 @@ function same_recipient_as_before(msg_type, opts) {
              msg_type === "private" &&
               opts.private_message_recipient === compose_state.recipient());
 }
+
+exports.update_placeholder_text = function (opts) {
+    var placeholder_text = compose_ui.compute_placeholder_text(opts);
+    $('#compose-textarea').attr('placeholder', placeholder_text);
+};
 
 exports.start = function (msg_type, opts) {
     exports.autosize_message_content();
