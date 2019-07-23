@@ -7,10 +7,7 @@ import configparser
 from collections import defaultdict
 import os
 import subprocess
-
-if False:
-    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Dict
+from typing import Dict
 
 states = {
     0: "OK",
