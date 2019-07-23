@@ -76,6 +76,42 @@ exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
     }));
 };
 
+exports.compute_placeholder_text = function (opts) {
+    // Computes clear placeholder text for the compose box, depending
+    // on what heading values have already been filled out.
+    if (opts.message_type === 'stream') {
+        if (opts.topic) {
+            return i18n.t("Message #__stream_name__ > __topic_name__",
+                          {stream_name: opts.stream,
+                           topic_name: opts.topic});
+        } else if (opts.stream) {
+            return i18n.t("Message #__stream_name__", {stream_name: opts.stream});
+        }
+    }
+
+    // For Private Messages
+    if (opts.private_message_recipient) {
+        var recipient_list = opts.private_message_recipient.split(",");
+        var recipient_names = _.map(recipient_list, (recipient) => {
+            var user = people.get_by_email(recipient);
+            return user.full_name;
+        }).join(", ");
+
+        if (recipient_list.length === 1) {
+            // If it's a single user, display status text if available
+            var user = people.get_by_email(recipient_list[0]);
+            var status = user_status.get_status_text(user.user_id);
+            if (status) {
+                return i18n.t("Message __recipient_name__ (__recipient_status__)",
+                              {recipient_name: recipient_names,
+                               recipient_status: status});
+            }
+        }
+        return i18n.t("Message __recipient_names__", {recipient_names: recipient_names});
+    }
+    return i18n.t("Compose your message here");
+};
+
 return exports;
 
 }());
