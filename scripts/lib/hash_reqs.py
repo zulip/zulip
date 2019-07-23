@@ -3,10 +3,7 @@ import os
 import sys
 import argparse
 import hashlib
-
-if False:
-    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Iterable, List, MutableSet
+from typing import Iterable, List, MutableSet
 
 def expand_reqs_helper(fpath, visited):
     # type: (str, MutableSet[str]) -> List[str]
