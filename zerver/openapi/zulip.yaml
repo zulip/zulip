@@ -1751,7 +1751,7 @@ paths:
           your client code. For most applications, one is only interested in
           messages, so one specifies: `event_types=['message']`"
         schema:
-          type: string
+          type: array
         example: event_types=['message']
       - name: all_public_streams
         in: query
@@ -1776,7 +1776,7 @@ paths:
           `fetch_event_types` is not provided, `event_types` is used and if
           `event_types` is not provided, this argument defaults to `None`.
         schema:
-          type: string
+          type: array
         example: event_types=['message']
       - name: narrow
         in: query
@@ -1786,7 +1786,7 @@ paths:
           `narrow=['stream', 'Denmark']`. Another example is
           `narrow=['is', 'private']` for private messages.
         schema:
-          type: string
+          type: array
           default: narrow=[]
         example: narrow=['stream', 'Denmark']
       security:
