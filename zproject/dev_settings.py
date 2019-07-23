@@ -146,3 +146,6 @@ THUMBNAIL_IMAGES = True
 SEARCH_PILLS_ENABLED = os.getenv('SEARCH_PILLS_ENABLED', False)
 
 BILLING_ENABLED = True
+
+# Test Custom TOS template rendering
+TERMS_OF_SERVICE = 'corporate/terms.md'
