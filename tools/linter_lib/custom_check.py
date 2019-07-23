@@ -330,21 +330,6 @@ python_rules = RuleList(
          'description': 'Most scripts are intended to run on systems without sudo.',
          'good_lines': ['subprocess.check_call(["ls"])'],
          'bad_lines': ['subprocess.check_call(["sudo", "ls"])']},
-        {'pattern': '^from typing import',
-         'strip': '\n',
-         'include_only': set([
-             'scripts/',
-             'puppet/',
-         ]),
-         'exclude': set([
-             # Not important, but should fix
-             'scripts/lib/process-mobile-i18n',
-             # Uses setup_path_on_import before importing.
-             'puppet/zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time',
-         ]),
-         'description': 'For scripts run as part of installer, cannot rely on typing existing; use `if False` workaround.',
-         'good_lines': ['    from typing import List'],
-         'bad_lines': ['from typing import List']},
         {'pattern': 'django.utils.translation',
          'include_only': set(['test/', 'zerver/views/development/']),
          'description': 'Test strings should not be tagged for translation',
@@ -798,10 +783,6 @@ markdown_rules = RuleList(
          'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
          'exclude': ['docs/overview/contributing.md', 'docs/overview/readme.md', 'docs/README.md'],
-         'exclude_line': set([
-             ('docs/testing/mypy.md',
-              '# See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts')
-         ]),
          'include_only': set(['docs/']),
          'description': "Use relative links (../foo/bar.html) to other documents in docs/",
          },

@@ -4,10 +4,7 @@ file output by the cron job is correct.
 """
 import sys
 import time
-
-if False:
-    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Tuple
+from typing import Tuple
 
 def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int, str]':
     """Returns a nagios-appropriate string and return code obtained by
