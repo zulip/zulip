@@ -310,11 +310,13 @@ EOF
 # Detect which features were selected for the below
 set +e
 [ -e "/etc/init.d/camo" ]; has_camo=$?
-[ -e "/etc/init.d/nginx" ]; has_nginx=$?
+[ -e "/etc/init.d/nginx" ]; has_nginx=$?                     # Debian
+[ -e "/usr/lib/systemd/system/nginx.service" ]; has_nginx=$? # RHEL
 [ -e "/etc/supervisor/conf.d/zulip.conf" ]; has_appserver=$?    # Debian
 [ -e "/etc/supervisord.d/conf.d/zulip.conf" ]; has_appserver=$? # RHEL
 [ -e "/etc/cron.d/rabbitmq-numconsumers" ]; has_rabbit=$?
-[ -e "/etc/init.d/postgresql" ]; has_postgres=$?
+[ -e "/etc/init.d/postgresql" ]; has_postgres=$?                        # Debian
+[ -e "/usr/lib/systemd/system/postgresql-10.service" ]; has_postgres=$? # RHEL
 set -e
 
 # Docker service setup is done in the docker config, not here
