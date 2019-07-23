@@ -44,16 +44,18 @@ class zulip::postgres_appdb_base {
     ensure => absent,
   }
 
-  file { "${tsearch_datadir}/en_us.dict":
-    ensure  => 'link',
-    require => Package[$postgresql],
-    target  => '/var/cache/postgresql/dicts/en_us.dict',  # TODO check cache dir on CentOS
-  }
-  file { "${tsearch_datadir}/en_us.affix":
-    ensure  => 'link',
-    require => Package[$postgresql],
-    target  => '/var/cache/postgresql/dicts/en_us.affix',  # TODO check cache dir on CentOS
+  if $::osfamily == 'debian' {
+    file { "${tsearch_datadir}/en_us.dict":
+        ensure  => 'link',
+        require => Package[$postgresql],
+        target  => '/var/cache/postgresql/dicts/en_us.dict',  # TODO check cache dir on CentOS
+    }
+    file { "${tsearch_datadir}/en_us.affix":
+        ensure  => 'link',
+        require => Package[$postgresql],
+        target  => '/var/cache/postgresql/dicts/en_us.affix',  # TODO check cache dir on CentOS
 
+    }
   }
   file { "${tsearch_datadir}/zulip_english.stop":
     ensure  => file,
