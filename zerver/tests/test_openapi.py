@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import re
+import sys
 import mock
 import inspect
-from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional
+import typing
+from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional, Iterable
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -304,17 +306,27 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
         needs to be mapped to list."""
 
-        origin = getattr(t, "__origin__", None)
+        if sys.version[:3] == "3.5" and type(t) == typing.UnionMeta:  # nocoverage # in python3.6+
+            origin = Union
+        else:  # nocoverage  # in python3.5. I.E. this is used in python3.6+
+            origin = getattr(t, "__origin__", None)
+
         if not origin:
             # Then it's most likely one of the fundamental data types
             # I.E. Not one of the data types from the "typing" module.
             return t
         elif origin == Union:
             subtypes = []
-            for st in t.__args__:
+            if sys.version[:3] == "3.5":  # nocoverage # in python3.6+
+                args = t.__union_params__
+            else:  # nocoverage # in python3.5
+                args = t.__args__
+            for st in args:
                 subtypes.append(self. get_standardized_argument_type(st))
             return self.get_type_by_priority(subtypes)
         elif origin == List:
+            return list
+        elif origin == Iterable:
             return list
         return self. get_standardized_argument_type(t.__args__[0])
 
