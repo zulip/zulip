@@ -407,24 +407,24 @@ class ZulipTestCase(TestCase):
         credentials = "%s:%s" % (identifier, api_key)
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
 
-    def api_get(self, email: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email, kwargs.get('realm', 'zulip'))
+    def api_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('realm', 'zulip'))
         return self.client_get(*args, **kwargs)
 
     def api_post(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('realm', 'zulip'))
         return self.client_post(*args, **kwargs)
 
-    def api_patch(self, email: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+    def api_patch(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier)
         return self.client_patch(*args, **kwargs)
 
-    def api_put(self, email: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+    def api_put(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier)
         return self.client_put(*args, **kwargs)
 
-    def api_delete(self, email: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+    def api_delete(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier)
         return self.client_delete(*args, **kwargs)
 
     def get_streams(self, email: str, realm: Realm) -> List[str]:
