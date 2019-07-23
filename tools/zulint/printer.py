@@ -3,9 +3,7 @@ from __future__ import absolute_import
 
 import sys
 from itertools import cycle
-if False:
-    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Union, Text
+from typing import Union, Text
 
 # Terminal Color codes for use in differentiatng linters
 BOLDRED = '\x1B[1;31m'
