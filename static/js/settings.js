@@ -101,7 +101,7 @@ function setup_settings_label() {
         enable_online_push_notifications: i18n.t("Send mobile notifications even if I'm online (useful for testing)"),
         enable_sounds: i18n.t("Audible desktop notifications"),
         pm_content_in_desktop_notifications: i18n.t("Include content of private messages in desktop notifications"),
-        desktop_icon_count_display: i18n.t("Unread messages counted in desktop app tray and webapp favicon"),
+        desktop_icon_count_display: i18n.t("Unread count summary (appears in desktop sidebar and browser tab)"),
 
         // other_notification_settings
         enable_digest_emails: i18n.t("Send digest emails when I'm away"),
