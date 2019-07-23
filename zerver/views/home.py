@@ -321,7 +321,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     realm_plan_type = 0
     if realm is not None:
         realm_plan_type = realm.plan_type
-        if realm.plan_type == Realm.SELF_HOSTED:
+        if realm.plan_type == Realm.SELF_HOSTED and settings.PRODUCTION:
             return HttpResponseRedirect('https://zulipchat.com/plans')
         if not request.user.is_authenticated():
             return redirect_to_login(next="plans")

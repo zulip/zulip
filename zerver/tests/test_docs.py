@@ -472,16 +472,23 @@ class PlansPageTest(ZulipTestCase):
         realm = get_realm("zulip")
         realm.plan_type = Realm.SELF_HOSTED
         realm.save(update_fields=["plan_type"])
-        result = self.client_get("/plans/", subdomain="zulip")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "https://zulipchat.com/plans")
 
-        self.login(self.example_email("iago"))
+        with self.settings(PRODUCTION=True):
+            result = self.client_get("/plans/", subdomain="zulip")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "https://zulipchat.com/plans")
 
-        # SELF_HOSTED should hide the local plans page, even if logged in
+            self.login(self.example_email("iago"))
+
+            # SELF_HOSTED should hide the local plans page, even if logged in
+            result = self.client_get("/plans/", subdomain="zulip")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "https://zulipchat.com/plans")
+
+        # But in the development environment, it renders a page
         result = self.client_get("/plans/", subdomain="zulip")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "https://zulipchat.com/plans")
+        self.assert_in_success_response([sign_up_now, buy_standard], result)
+        self.assert_not_in_success_response([current_plan], result)
 
         realm.plan_type = Realm.LIMITED
         realm.save(update_fields=["plan_type"])

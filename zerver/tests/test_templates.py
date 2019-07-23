@@ -15,6 +15,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.test_runner import slow
+from zerver.models import Realm
 
 
 class get_form_value:
@@ -177,6 +178,7 @@ class TemplateTestCase(ZulipTestCase):
                          "login_time": "9:33am NewYork, NewYork",
                          },
             api_uri_context={},
+            realm_plan_type=Realm.LIMITED,
             cloud_annual_price=80,
             seat_count=8,
             request=RequestFactory().get("/"),
