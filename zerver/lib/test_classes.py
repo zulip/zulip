@@ -408,23 +408,23 @@ class ZulipTestCase(TestCase):
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
 
     def api_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('realm', 'zulip'))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_get(*args, **kwargs)
 
     def api_post(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('realm', 'zulip'))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_post(*args, **kwargs)
 
     def api_patch(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier)
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_patch(*args, **kwargs)
 
     def api_put(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier)
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_put(*args, **kwargs)
 
     def api_delete(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier)
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_delete(*args, **kwargs)
 
     def get_streams(self, email: str, realm: Realm) -> List[str]:
@@ -637,7 +637,6 @@ class ZulipTestCase(TestCase):
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
-        kwargs['realm'] = kwargs.get('subdomain', 'zulip')
         result = self.api_post(email, "/api/v1/users/me/subscriptions", post_data, **kwargs)
         return result
 

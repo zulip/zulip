@@ -137,7 +137,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         result = self.api_post(self.example_email("hamlet"), endpoint, {'token': token,
                                                                         'user_id': 15,
                                                                         'token_kind': token_kind},
-                               realm="")
+                               subdomain="")
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_register_remote_push_user_paramas(self) -> None:
