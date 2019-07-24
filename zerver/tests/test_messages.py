@@ -428,7 +428,8 @@ class TestCrossRealmPMs(ZulipTestCase):
                                      sender_realm="1.example.com")
 
         with assert_invalid_email():
-            self.send_huddle_message(feedback_email, [user1_email, user2_email])
+            self.send_huddle_message(feedback_email, [user1_email, user2_email],
+                                     sender_realm=settings.SYSTEM_BOT_REALM)
 
         # Users on the different realms cannot PM each other
         with assert_invalid_email():
@@ -732,7 +733,7 @@ class PersonalMessagesTest(ZulipTestCase):
         with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
             self.assertEqual(str(message),
                              '<Message: recip /  / '
-                             '<UserProfile: test@zulip.com <Realm: zulip 1>>>')
+                             '<UserProfile: test@zulip.com %s>>' % (user_profile.realm,))
 
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(str(user_message),
@@ -968,14 +969,15 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertEqual(dct['stream_id'], stream.id)
 
     def test_stream_message_unicode(self) -> None:
-        user_profile = self.example_user('iago')
-        self.subscribe(user_profile, "Denmark")
-        self.send_stream_message(self.example_email("hamlet"), "Denmark",
+        receiving_user_profile = self.example_user('iago')
+        sending_user_profile = self.example_user('hamlet')
+        self.subscribe(receiving_user_profile, "Denmark")
+        self.send_stream_message(sending_user_profile.email, "Denmark",
                                  content="whatever", topic_name="my topic")
-        message = most_recent_message(user_profile)
+        message = most_recent_message(receiving_user_profile)
         self.assertEqual(str(message),
                          u'<Message: Denmark / my topic / '
-                         '<UserProfile: hamlet@zulip.com <Realm: zulip 1>>>')
+                         '<UserProfile: hamlet@zulip.com %s>>' % (sending_user_profile.realm,))
 
     def test_message_mentions(self) -> None:
         user_profile = self.example_user('iago')
@@ -1895,7 +1897,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_send_message_as_superuser_to_domain_that_dont_exist(self) -> None:
-        user = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+        user = self.example_user("default_bot")
         password = "test_password"
         user.set_password(password)
         user.is_api_super_user = True
@@ -3475,32 +3477,37 @@ class MessageAccessTests(ZulipTestCase):
 
 class AttachmentTest(ZulipTestCase):
     def test_basics(self) -> None:
+        zulip_realm = get_realm("zulip")
         self.assertFalse(Message.content_has_attachment('whatever'))
         self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
         self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
-        self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo'))
+        self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo' % (
+            zulip_realm.id,)))
 
         self.assertFalse(Message.content_has_image('whatever'))
         self.assertFalse(Message.content_has_image('yo http://foo.com'))
-        self.assertFalse(Message.content_has_image('yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo'))
+        self.assertFalse(Message.content_has_image('yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo' % (
+            zulip_realm.id,)))
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp", ".JPG"]:
-            content = 'yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (ext,)
+            content = 'yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (zulip_realm.id, ext)
             self.assertTrue(Message.content_has_image(content))
 
         self.assertFalse(Message.content_has_link('whatever'))
         self.assertTrue(Message.content_has_link('yo\n http://foo.com'))
         self.assertTrue(Message.content_has_link('yo\n https://example.com?spam=1&eggs=2'))
-        self.assertTrue(Message.content_has_link('yo /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo'))
+        self.assertTrue(Message.content_has_link('yo /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo' % (
+            zulip_realm.id,)))
 
     def test_claim_attachment(self) -> None:
 
         # Create dummy DB entry
         user_profile = self.example_user('hamlet')
         sample_size = 10
+        realm_id = user_profile.realm_id
         dummy_files = [
-            ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
-            ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
-            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size)
+            ('zulip.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt' % (realm_id,), sample_size),
+            ('temp_file.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py' % (realm_id,), sample_size),
+            ('abc.py', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py' % (realm_id,), sample_size)
         ]
 
         for file_name, path_id, size in dummy_files:
@@ -3509,9 +3516,9 @@ class AttachmentTest(ZulipTestCase):
         # Send message referring the attachment
         self.subscribe(user_profile, "Denmark")
 
-        body = "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +  \
-               "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." + \
-               "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
+        body = ("Some files here ...[zulip.txt](http://localhost:9991/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +
+                "http://localhost:9991/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." +
+                "http://localhost:9991/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py").format(realm_id=realm_id)
 
         self.send_stream_message(user_profile.email, "Denmark", body, "test")
 
