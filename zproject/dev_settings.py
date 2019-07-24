@@ -14,8 +14,8 @@ LOCAL_UPLOADS_DIR = os.path.join(DEPLOY_ROOT, 'var/uploads')
 
 FORWARD_ADDRESS_CONFIG_FILE = "var/forward_address.ini"
 # Check if test_settings.py set EXTERNAL_HOST.
-EXTERNAL_HOST = os.getenv('EXTERNAL_HOST')
-if EXTERNAL_HOST is None:
+external_host_env = os.getenv('EXTERNAL_HOST')
+if external_host_env is None:
     user_id = os.getuid()
     user_name = pwd.getpwuid(user_id).pw_name
     if user_name == "zulipdev":
@@ -31,6 +31,7 @@ if EXTERNAL_HOST is None:
             'zulip': 'localhost:9991'
         }
 else:
+    EXTERNAL_HOST = external_host_env
     REALM_HOSTS = {
         'zulip': EXTERNAL_HOST,
     }
