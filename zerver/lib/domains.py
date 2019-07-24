@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 import re
 
 def validate_domain(domain: str) -> None:
-    if domain is None or len(domain) == 0:
+    if not domain:
         raise ValidationError(_("Domain can't be empty."))
     if '.' not in domain:
         raise ValidationError(_("Domain must have at least one dot (.)"))
