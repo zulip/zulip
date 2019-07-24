@@ -44,7 +44,7 @@ from zerver.models import (
     Realm, Recipient, Stream, Subscription,
     DefaultStream, UserProfile, get_user_profile_by_id, active_non_guest_user_ids,
     get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup,
-    get_client, get_realm, get_user
+    get_client, get_realm, get_user, Message, UserMessage
 )
 
 from zerver.lib.actions import (
@@ -65,7 +65,8 @@ from zerver.lib.actions import (
     lookup_default_stream_groups,
     can_access_stream_user_ids,
     validate_user_access_to_subscribers_helper,
-    get_average_weekly_stream_traffic, round_to_2_significant_digits
+    get_average_weekly_stream_traffic, round_to_2_significant_digits,
+    get_stream_recipients,
 )
 
 from zerver.views.streams import (
@@ -238,6 +239,81 @@ class TestCreateStreams(ZulipTestCase):
         self.assertTrue(created)
         self.assertFalse(stream.invite_only)
         self.assertFalse(stream.history_public_to_subscribers)
+
+    def test_auto_mark_stream_created_message_as_read_for_stream_creator(self) -> None:
+        realm = Realm.objects.get(name='Zulip Dev')
+        iago = self.example_user('iago')
+        hamlet = self.example_user('hamlet')
+
+        # Establish a stream for notifications.
+        announce_stream = ensure_stream(realm, "announce", False, "announcements here.")
+        realm.notifications_stream_id = announce_stream.id
+        realm.save(update_fields=['notifications_stream_id'])
+
+        self.subscribe(iago, announce_stream.name)
+        self.subscribe(hamlet, announce_stream.name)
+
+        notification_bot = UserProfile.objects.get(full_name="Notification Bot")
+        self.login(iago.email)
+
+        initial_message_count = Message.objects.count()
+        initial_usermessage_count = UserMessage.objects.count()
+
+        data = {
+            "subscriptions": '[{"name":"brand new stream","description":""}]',
+            "history_public_to_subscribers": 'true',
+            "invite_only": 'false',
+            "announce": 'true',
+            "principals": '["iago@zulip.com", "AARON@zulip.com", "cordelia@zulip.com", "hamlet@zulip.com"]',
+            "is_announcement_only": 'false'
+        }
+
+        response = self.client_post("/json/users/me/subscriptions", data)
+
+        final_message_count = Message.objects.count()
+        final_usermessage_count = UserMessage.objects.count()
+
+        expected_response = {
+            "result": "success",
+            "msg": "",
+            "subscribed": {
+                "AARON@zulip.com": ["brand new stream"],
+                "cordelia@zulip.com": ["brand new stream"],
+                "hamlet@zulip.com": ["brand new stream"],
+                "iago@zulip.com": ["brand new stream"]
+            },
+            "already_subscribed": {}
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ujson.loads(response.content.decode()), expected_response)
+
+        # 2 messages should be created, one in announce and one in the new stream itself.
+        self.assertEqual(final_message_count - initial_message_count, 2)
+        # 4 UserMessages per subscriber: One for each of the subscribers, plus 1 for
+        # each user in the notifications stream.
+        announce_stream_subs = Subscription.objects.filter(recipient=get_stream_recipients([announce_stream.id])[0])
+        self.assertEqual(final_usermessage_count - initial_usermessage_count,
+                         4 + announce_stream_subs.count())
+
+        def get_unread_stream_data(user: UserProfile) -> List[Dict[str, Any]]:
+            raw_unread_data = get_raw_unread_data(user)
+            aggregated_data = aggregate_unread_data(raw_unread_data)
+            return aggregated_data['streams']
+
+        stream_id = Stream.objects.get(name='brand new stream').id
+        iago_unread_messages = get_unread_stream_data(iago)
+        hamlet_unread_messages = get_unread_stream_data(hamlet)
+
+        # The stream creation messages should be unread for Hamlet
+        self.assertEqual(len(hamlet_unread_messages), 2)
+
+        # According to the code in zerver/views/streams/add_subscriptions_backend
+        # the notification stream message is sent first, then the new stream's message.
+        self.assertEqual(hamlet_unread_messages[0]['sender_ids'][0], notification_bot.id)
+        self.assertEqual(hamlet_unread_messages[1]['stream_id'], stream_id)
+
+        # But it should be marked as read for Iago, the stream creator.
+        self.assertEqual(len(iago_unread_messages), 0)
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self) -> None:
