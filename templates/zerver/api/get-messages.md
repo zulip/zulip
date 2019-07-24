@@ -64,14 +64,13 @@ zulip(config).then((client) => {
 {tab|curl}
 
 ``` curl
-curl -X GET {{ api_url }}/v1/messages \
+curl -X GET -G {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "anchor=42" \
-    -d "use_first_unread_anchor=false" \
     -d "num_before=3" \
     -d "num_after=14" \
-    -d 'narrow=[{"operator":"stream", "operand":"party"}]' \
-
+    -d "anchor=42" \
+    -d "use_first_unread_anchor=false" \
+    --data-urlencode narrow='[{"operator":"stream", "operand":"Denmark"}]'
 ```
 
 {end_tabs}
