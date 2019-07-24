@@ -58,7 +58,7 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "python-six",
     "libxml2-devel",
     "libxslt-devel",
-    "postgresql-libs",  # libpq-dev on apt
+    "postgresql10-libs",  # libpq-dev on apt
     "openssl-devel",
     "jq",
 ]
