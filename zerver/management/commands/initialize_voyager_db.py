@@ -33,7 +33,7 @@ class Command(BaseCommand):
         if Realm.objects.count() > 0:
             print("Database already initialized; doing nothing.")
             return
-        realm = Realm.objects.create(string_id=settings.INTERNAL_BOT_DOMAIN.split('.')[0])
+        realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
 
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
         create_users(realm, names, bot_type=UserProfile.DEFAULT_BOT)

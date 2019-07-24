@@ -727,7 +727,7 @@ id    string_id                                name
 2                                              Zulip Community
 ```
 
-(Note that every Zulip server has a special `zulip` realm containing
+(Note that every Zulip server has a special `zulipinternal` realm containing
 system-internal bots like `welcome-bot`; you are unlikely to need to
 interact with that realm.)
 
