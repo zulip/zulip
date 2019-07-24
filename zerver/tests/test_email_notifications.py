@@ -849,6 +849,8 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(email_subjects, valid_email_subjects)
 
     def test_relative_to_full_url(self) -> None:
+        zulip_realm = get_realm("zulip")
+        zephyr_realm = get_realm("zephyr")
         # Run `relative_to_full_url()` function over test fixtures present in
         # 'markdown_test_cases.json' and check that it converts all the relative
         # URLs to absolute URLs.
@@ -873,10 +875,12 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(actual_output, expected_output)
 
         # An uploaded file
-        test_data = '<a href="/user_uploads/2/1f/some_random_value">/user_uploads/2/1f/some_random_value</a>'
+        test_data = '<a href="/user_uploads/{realm_id}/1f/some_random_value">/user_uploads/{realm_id}/1f/some_random_value</a>'
+        test_data = test_data.format(realm_id=zephyr_realm.id)
         actual_output = relative_to_full_url("http://example.com", test_data)
-        expected_output = '<a href="http://example.com/user_uploads/2/1f/some_random_value">' + \
-            '/user_uploads/2/1f/some_random_value</a>'
+        expected_output = '<a href="http://example.com/user_uploads/{realm_id}/1f/some_random_value">' + \
+            '/user_uploads/{realm_id}/1f/some_random_value</a>'
+        expected_output = expected_output.format(realm_id=zephyr_realm.id)
         self.assertEqual(actual_output, expected_output)
 
         # A profile picture like syntax, but not actually in an HTML tag
@@ -894,13 +898,15 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(actual_output, expected_output)
 
         # Scrub inline images.
-        test_data = '<p>See this <a href="/user_uploads/1/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" ' +   \
+        test_data = '<p>See this <a href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" ' +   \
                     'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p>' +    \
-                    '<div class="message_inline_image"><a href="/user_uploads/1/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" ' +    \
-                    'target="_blank" title="avatar_103.jpeg"><img src="/user_uploads/1/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"></a></div>'
+                    '<div class="message_inline_image"><a href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" ' +    \
+                    'target="_blank" title="avatar_103.jpeg"><img src="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"></a></div>'
+        test_data = test_data.format(realm_id=zulip_realm.id)
         actual_output = relative_to_full_url("http://example.com", test_data)
-        expected_output = '<div><p>See this <a href="http://example.com/user_uploads/1/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" ' +  \
+        expected_output = '<div><p>See this <a href="http://example.com/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" ' +  \
                           'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
+        expected_output = expected_output.format(realm_id=zulip_realm.id)
         self.assertEqual(actual_output, expected_output)
 
         # A message containing only an inline image URL preview, we do
