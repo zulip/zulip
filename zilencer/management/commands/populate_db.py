@@ -177,9 +177,10 @@ class Command(BaseCommand):
             # Start by clearing all the data in our database
             clear_database()
 
-            # Create our two default realms
+            # Create our three default realms
             # Could in theory be done via zerver.lib.actions.do_create_realm, but
             # welcome-bot (needed for do_create_realm) hasn't been created yet
+            internal_realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
             zulip_realm = Realm.objects.create(
                 string_id="zulip", name="Zulip Dev", emails_restricted_to_domains=True,
                 description="The Zulip development environment default organization."
@@ -223,17 +224,19 @@ class Command(BaseCommand):
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
-            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
-                              for bot in settings.INTERNAL_BOTS]
+            internal_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+                                   for bot in settings.INTERNAL_BOTS]
+            internal_realm_bots += [
+                ("Zulip Feedback Bot", "feedback@zulip.com"),
+            ]
             zulip_realm_bots = [
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
-                ("Welcome Bot", "welcome-bot@zulip.com"),
             ]
-
             for i in range(options["extra_bots"]):
                 zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
-            zulip_realm_bots.extend(all_realm_bots)
+
+            create_users(internal_realm, internal_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
             create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             # Initialize the email gateway bot as an API Super User
@@ -534,11 +537,6 @@ class Command(BaseCommand):
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                 ]
                 create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
-
-            zulip_cross_realm_bots = [
-                ("Zulip Feedback Bot", "feedback@zulip.com"),
-            ]
-            create_users(zulip_realm, zulip_cross_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             # Mark all messages as read
             UserMessage.objects.all().update(flags=UserMessage.flags.read)
