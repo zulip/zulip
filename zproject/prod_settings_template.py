@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 ################################################################
 # Zulip Server settings.
@@ -117,7 +117,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
-)
+)  # type: Tuple[str, ...]
 
 ########
 # Google OAuth.
