@@ -27,10 +27,10 @@ from zerver.models import (
 
 from datetime import timedelta
 from email.utils import formataddr
+import html2text
 from lxml.cssselect import CSSSelector
 import lxml.html
 import re
-import subprocess
 from collections import defaultdict
 import pytz
 from bs4 import BeautifulSoup
@@ -580,22 +580,9 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
             from_address=from_address, context=context, delay=followup_day2_email_delay(user))
 
 def convert_html_to_markdown(html: str) -> str:
-    # On Linux, the tool installs as html2markdown, and there's a command called
-    # html2text that does something totally different. On OSX, the tool installs
-    # as html2text.
-    commands = ["html2markdown", "html2text"]
+    parser = html2text.HTML2Text()
+    markdown = parser.handle(html).strip()
 
-    for command in commands:
-        try:
-            # A body width of 0 means do not try to wrap the text for us.
-            p = subprocess.Popen(
-                [command, "--body-width=0"], stdout=subprocess.PIPE,
-                stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
-            break
-        except OSError:
-            continue
-
-    markdown = p.communicate(input=html.encode('utf-8'))[0].decode('utf-8').strip()
     # We want images to get linked and inline previewed, but html2text will turn
     # them into links of the form `![](http://foo.com/image.png)`, which is
     # ugly. Run a regex over the resulting description, turning links of the
