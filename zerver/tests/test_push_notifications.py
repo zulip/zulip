@@ -32,6 +32,7 @@ from zerver.models import (
     receives_stream_notifications,
     get_client,
     get_realm,
+    get_stream,
     Recipient,
     Stream,
     Subscription,
@@ -1679,20 +1680,27 @@ class TestPushNotificationsContent(ZulipTestCase):
                 self.assertEqual(output, test["text_content"])
 
     def test_backend_only_fixtures(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        stream = get_stream("Verona", realm)
+
         fixtures = [
             {
                 'name': 'realm_emoji',
-                'rendered_content': '<p>Testing <img alt=":green_tick:" class="emoji" src="/user_avatars/1/emoji/green_tick.png" title="green tick"> realm emoji.</p>',
+                'rendered_content': '<p>Testing <img alt=":green_tick:" class="emoji" src="/user_avatars/%s/emoji/green_tick.png" title="green tick"> realm emoji.</p>' % (
+                    realm.id,),
                 'expected_output': 'Testing :green_tick: realm emoji.',
             },
             {
                 'name': 'mentions',
-                'rendered_content': '<p>Mentioning <span class="user-mention" data-user-id="3">@Cordelia Lear</span>.</p>',
+                'rendered_content': '<p>Mentioning <span class="user-mention" data-user-id="%s">@Cordelia Lear</span>.</p>' % (
+                    cordelia.id,),
                 'expected_output': 'Mentioning @Cordelia Lear.',
             },
             {
                 'name': 'stream_names',
-                'rendered_content': '<p>Testing stream names <a class="stream" data-stream-id="5" href="/#narrow/stream/Verona">#Verona</a>.</p>',
+                'rendered_content': '<p>Testing stream names <a class="stream" data-stream-id="%s" href="/#narrow/stream/Verona">#Verona</a>.</p>' % (
+                    stream.id,),
                 'expected_output': 'Testing stream names #Verona.',
             },
         ]
