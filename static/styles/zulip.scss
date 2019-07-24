@@ -1191,12 +1191,7 @@ a.dark_background:hover,
 }
 
 .message_top_line {
-    pointer-events: none;
     position: relative;
-}
-
-.message_top_line * {
-    pointer-events: auto;
 }
 
 .include-sender .message_top_line {
