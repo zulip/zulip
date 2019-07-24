@@ -116,7 +116,7 @@ avoid confusion as to why there's an extra realm when inspecting the
 Zulip database.
 
 Every Zulip server comes with 1 realm that isn't created by users: the
-`zulip` realm.  By default, this realm only contains the Zulip "system
+`zulipinternal` realm.  By default, this realm only contains the Zulip "system
 bots".  You can get a list of these on your system via
 `./scripts/get-django-setting INTERNAL_BOTS`, but this is where bots
 like "Notification Bot", "Welcome Bot", etc. exist.  In the future,
