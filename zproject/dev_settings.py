@@ -137,7 +137,7 @@ if FAKE_LDAP_MODE:
             "custom_profile_field__phone_number": "phoneNumber",
         }
     elif FAKE_LDAP_MODE == 'c':
-        LDAP_EMAIL_ATTR = 'email'  # type: Optional[str]
+        LDAP_EMAIL_ATTR = 'email'
         AUTH_LDAP_USER_ATTR_MAP = {
             "full_name": "cn",
         }
