@@ -336,8 +336,8 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual('1.png', os.listdir(fn)[0])
         records = full_data['emoji_dir_records']
         self.assertEqual(records[0]['file_name'], '1.png')
-        self.assertEqual(records[0]['path'], '1/emoji/images/1.png')
-        self.assertEqual(records[0]['s3_path'], '1/emoji/images/1.png')
+        self.assertEqual(records[0]['path'], '2/emoji/images/1.png')
+        self.assertEqual(records[0]['s3_path'], '2/emoji/images/1.png')
 
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
@@ -386,8 +386,8 @@ class ImportExportTest(ZulipTestCase):
         records = full_data['emoji_dir_records']
         self.assertEqual(records[0]['file_name'], '1.png')
         self.assertTrue('last_modified' in records[0])
-        self.assertEqual(records[0]['path'], '1/emoji/images/1.png')
-        self.assertEqual(records[0]['s3_path'], '1/emoji/images/1.png')
+        self.assertEqual(records[0]['path'], '2/emoji/images/1.png')
+        self.assertEqual(records[0]['s3_path'], '2/emoji/images/1.png')
         check_variable_type(records[0]['user_profile_id'], records[0]['realm_id'])
 
         # Test avatars
@@ -415,13 +415,12 @@ class ImportExportTest(ZulipTestCase):
         realm_emoji.save()
 
         data = full_data['realm']
-        self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
+        self.assertEqual(len(data['zerver_userprofile_crossrealm']), 3)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
         exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn('default-bot@zulip.com', exported_user_emails)
-        self.assertIn('emailgateway@zulip.com', exported_user_emails)
 
         exported_streams = self.get_set(data['zerver_stream'], 'name')
         self.assertEqual(
@@ -472,7 +471,6 @@ class ImportExportTest(ZulipTestCase):
         self.assertIn(self.example_email('cordelia'), dummy_user_emails)
         self.assertIn(self.example_email('othello'), dummy_user_emails)
         self.assertIn('default-bot@zulip.com', dummy_user_emails)
-        self.assertIn('emailgateway@zulip.com', dummy_user_emails)
         self.assertNotIn(self.example_email('iago'), dummy_user_emails)
         self.assertNotIn(self.example_email('hamlet'), dummy_user_emails)
 
@@ -541,7 +539,7 @@ class ImportExportTest(ZulipTestCase):
 
         data = full_data['realm']
 
-        self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
+        self.assertEqual(len(data['zerver_userprofile_crossrealm']), 3)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
         exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
@@ -550,7 +548,6 @@ class ImportExportTest(ZulipTestCase):
         self.assertIn(self.example_email('iago'), exported_user_emails)
         self.assertIn(self.example_email('othello'), exported_user_emails)
         self.assertIn('default-bot@zulip.com', exported_user_emails)
-        self.assertIn('emailgateway@zulip.com', exported_user_emails)
 
         exported_streams = self.get_set(data['zerver_stream'], 'name')
         self.assertEqual(

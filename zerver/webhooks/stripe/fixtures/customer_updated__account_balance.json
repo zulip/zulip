@@ -18,7 +18,7 @@
             "invoice_prefix": "6E2831C",
             "livemode": false,
             "metadata": {
-                "realm_id": "1",
+                "realm_id": "2",
                 "realm_str": "zulip"
             },
             "shipping": null,
