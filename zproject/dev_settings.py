@@ -3,7 +3,7 @@
 from .prod_settings_template import *
 import os
 import pwd
-from typing import Set
+from typing import Set, cast, Tuple, Any
 
 # We want LOCAL_UPLOADS_DIR to be an absolute path so that code can
 # chdir without having problems accessing it.  Unfortunately, this
@@ -40,13 +40,15 @@ ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that
 # for Google and GitHub auth you'll need to do some pre-setup.
-AUTHENTICATION_BACKENDS = (
+auth_backends = (
     'zproject.backends.DevAuthBackend',
     'zproject.backends.EmailAuthBackend',
     'zproject.backends.GitHubAuthBackend',
     'zproject.backends.GoogleAuthBackend',
     # 'zproject.backends.AzureADAuthBackend',
 )
+# Allows for typing with tuples of variable length
+AUTHENTICATION_BACKENDS = cast(Tuple[Any], auth_backends)
 
 EXTERNAL_URI_SCHEME = "http://"
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST.split(':')[0]
