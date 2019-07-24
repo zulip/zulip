@@ -12,6 +12,10 @@
     font-size: 1.1rem;
 }
 
+.portico-landing.integrations .markdown ol > li > p {
+    max-width: calc(100% - 31px);
+}
+
 .portico-landing.integrations .main {
     width: calc(100% - 100px);
     max-width: 1170px;
