@@ -1,9 +1,11 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
+from typing import Optional
+
 import re
 
-def validate_domain(domain: str) -> None:
+def validate_domain(domain: Optional[str]) -> None:
     if domain is None or len(domain) == 0:
         raise ValidationError(_("Domain can't be empty."))
     if '.' not in domain:
