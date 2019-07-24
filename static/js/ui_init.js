@@ -14,7 +14,6 @@ function message_unhover() {
         return;
     }
     current_message_hover.find('span.edit_content').html("");
-    current_message_hover.removeClass('message_hovered');
     current_message_hover = undefined;
 }
 
@@ -31,7 +30,6 @@ function message_hover(message_row) {
     }
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
-    message_row.addClass('message_hovered');
     current_message_hover = message_row;
 
     if (!message_edit.is_topic_editable(message)) {
