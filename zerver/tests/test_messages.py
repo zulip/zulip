@@ -1441,16 +1441,6 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "topic": "Test topic"})
         self.assert_json_success(result)
 
-        # Cross realm bots should be allowed.
-        notification_bot = get_system_bot("notification-bot@zulip.com")
-        result = self.api_post(notification_bot.email,
-                               "/api/v1/messages", {"type": "stream",
-                                                    "to": stream_name,
-                                                    "client": "test suite",
-                                                    "content": "Test message",
-                                                    "topic": "Test topic"})
-        self.assert_json_success(result)
-
         admin_owned_bot = self.create_test_bot(
             short_name='whatever',
             user_profile=user_profile,
@@ -1462,6 +1452,12 @@ class MessagePOSTTest(ZulipTestCase):
                                                     "content": "Test message",
                                                     "topic": "Test topic"})
         self.assert_json_success(result)
+
+        # Cross realm bots should be allowed (through internal_send_message)
+        notification_bot = get_system_bot("notification-bot@zulip.com")
+        internal_send_stream_message(stream.realm, notification_bot, stream,
+                                     'Test topic', 'Test message by notification bot')
+        self.assertEqual(self.get_last_message().content, 'Test message by notification bot')
 
     def test_message_fail_to_announce(self) -> None:
         """
@@ -2085,23 +2081,26 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.api_post(bot.email, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
-    def test_notification_bot(self) -> None:
-        sender = self.notification_bot()
+    def test_cross_realm_bots_can_use_api_on_own_subdomain(self) -> None:
+        # Cross realm bots should use internal_send_*_message, not the API:
+        notification_bot = self.notification_bot()
+        stream = self.make_stream("notify_channel", get_realm("zulipinternal"))
 
-        stream_name = 'private_stream'
-        self.make_stream(stream_name, invite_only=True)
+        result = self.api_post(notification_bot.email,
+                               "/api/v1/messages",
+                               {"type": "stream",
+                                "to": "notify_channel",
+                                "client": "test suite",
+                                "content": "Test message",
+                                "topic": "Test topic"},
+                               subdomain='zulipinternal')
 
-        payload = dict(
-            type="stream",
-            to=stream_name,
-            sender=sender.email,
-            client='test suite',
-            topic='whatever',
-            content='whatever',
-        )
-
-        result = self.api_post(sender.email, "/api/v1/messages", payload)
         self.assert_json_success(result)
+        message = self.get_last_message()
+
+        self.assertEqual(message.content, "Test message")
+        self.assertEqual(message.sender, notification_bot)
+        self.assertEqual(message.recipient.type_id, stream.id)
 
     def test_create_mirror_user_despite_race(self) -> None:
         realm = get_realm('zulip')

@@ -432,7 +432,7 @@ casper.then(function () {
         }, false);
         casper.click("#realm_icon_upload_button");
         casper.waitWhileVisible("#upload_icon_spinner .loading_indicator_spinner", function () {
-            casper.test.assertExists('img#realm-settings-icon[src^="/user_avatars/1/realm/icon.png?version=2"]');
+            casper.test.assertExists('img#realm-settings-icon[src^="/user_avatars/2/realm/icon.png?version=2"]');
             casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), true);
         });
     });

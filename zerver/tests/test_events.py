@@ -14,7 +14,7 @@ from django.utils.timezone import now as timezone_now
 from io import StringIO
 
 from zerver.models import (
-    get_client, get_stream_recipient, get_stream,
+    get_client, get_stream_recipient, get_stream, get_realm, get_system_bot,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
     Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite
@@ -108,6 +108,7 @@ from zerver.lib.actions import (
 from zerver.lib.events import (
     apply_events,
     fetch_initial_state_data,
+    get_raw_user_data,
     post_process_state,
 )
 from zerver.lib.message import (
@@ -2793,7 +2794,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         do_change_is_admin(user_profile, True)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
-        self.assertTrue(len(result['realm_bots']) > 5)
+        self.assertTrue(len(result['realm_bots']) > 2)
 
     def test_max_message_id_with_no_history(self) -> None:
         user_profile = self.example_user('aaron')
@@ -3607,3 +3608,12 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
         self.user_profile.save()
         result = _default_narrow(self.user_profile, [])
         self.assertEqual(result, [])
+
+class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
+    def test_get_raw_user_data_on_system_bot_realm(self) -> None:
+        result = get_raw_user_data(get_realm("zulipinternal"), True)
+
+        for bot_email in settings.CROSS_REALM_BOT_EMAILS:
+            bot_profile = get_system_bot(bot_email)
+            self.assertTrue(bot_profile.id in result)
+            self.assertTrue(result[bot_profile.id]['is_cross_realm_bot'])
