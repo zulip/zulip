@@ -173,7 +173,7 @@ def main(options: argparse.Namespace) -> int:
         if destroyed:
             print("Dropped %s stale test databases!" % (destroyed,))
 
-    run(["scripts/lib/clean-unused-caches"])
+    run(["scripts/lib/clean-unused-caches", "--threshold=6"])
 
     # Keeping this cache file around can cause eslint to throw
     # random TypeErrors when new/updated dependencies are added
