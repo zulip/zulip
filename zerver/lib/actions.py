@@ -1202,7 +1202,8 @@ def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
 
 
 def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, Any]]],
-                     email_gateway: Optional[bool]=False) -> List[int]:
+                     email_gateway: Optional[bool]=False,
+                     mark_as_read: List[int]=[]) -> List[int]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
@@ -1313,6 +1314,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 stream_push_user_ids = message['stream_push_user_ids'],
                 stream_email_user_ids = message['stream_email_user_ids'],
                 mentioned_user_ids=mentioned_user_ids,
+                mark_as_read=mark_as_read
             )
 
             for um in user_messages:
@@ -1471,7 +1473,8 @@ def create_user_messages(message: Message,
                          long_term_idle_user_ids: Set[int],
                          stream_push_user_ids: Set[int],
                          stream_email_user_ids: Set[int],
-                         mentioned_user_ids: Set[int]) -> List[UserMessageLite]:
+                         mentioned_user_ids: Set[int],
+                         mark_as_read: List[int]=[]) -> List[UserMessageLite]:
     ums_to_create = []
     for user_profile_id in um_eligible_user_ids:
         um = UserMessageLite(
@@ -1487,8 +1490,9 @@ def create_user_messages(message: Message,
     ids_with_alert_words = message.user_ids_with_alert_words
 
     for um in ums_to_create:
-        if um.user_profile_id == message.sender.id and \
-                message.sent_by_human():
+        if (um.user_profile_id == message.sender.id and
+                message.sent_by_human()) or \
+           um.user_profile_id in mark_as_read:
             um.flags |= UserMessage.flags.read
         if wildcard:
             um.flags |= UserMessage.flags.wildcard_mentioned

@@ -433,7 +433,7 @@ def add_subscriptions_backend(
             )
 
     if len(notifications) > 0:
-        do_send_messages(notifications)
+        do_send_messages(notifications, mark_as_read=[user_profile.id])
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
