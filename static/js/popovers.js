@@ -730,14 +730,17 @@ exports.register_click_handlers = function () {
         var id = $(this).attr('data-user-group-id');
         var row = $(this).closest(".message_row");
         e.stopPropagation();
-        if (page_params.is_guest) {
-            return; // hide user group popovers for guests
-        }
         var message = current_msg_list.get(rows.id(row));
         var group = user_groups.get_user_group_from_id(id, true);
         if (group === undefined) {
             // This user group has likely been deleted.
             blueslip.info('Unable to find user group in message' + message.sender_id);
+        } else if (page_params.is_guest) {
+            var mention = `@*${group.name}*`;
+            if (!compose_state.composing()) {
+                compose_actions.respond_to_message({trigger: 'guest clicked user group mention'});
+            }
+            compose_ui.insert_syntax_and_focus(mention);
         } else {
             show_user_group_info_popover(this, group, message);
         }
