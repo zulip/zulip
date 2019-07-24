@@ -29,7 +29,7 @@ from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
-from zerver.tornado.exceptions import BadEventQueueIdError
+from zerver.tornado.exceptions import BadEventQueueIdError, RequestedPrunedEventsError
 from zerver.tornado.sharding import get_tornado_uri, get_tornado_port, \
     notify_tornado_queue_name
 import copy
@@ -240,6 +240,7 @@ class EventQueue:
     def __init__(self, id: str) -> None:
         self.queue = deque()  # type: ignore # Should be Deque[Dict[str, Any]], but Deque isn't available in Python 3.4
         self.next_event_id = 0  # type: int
+        self.newest_pruned_id = -1  # type: int
         self.id = id  # type: str
         self.virtual_events = {}  # type: Dict[str, Dict[str, Any]]
 
@@ -295,6 +296,7 @@ class EventQueue:
     # See the comment on pop; that applies here as well
     def prune(self, through_id: int) -> None:
         while len(self.queue) != 0 and self.queue[0]['id'] <= through_id:
+            self.newest_pruned_id = max(self.newest_pruned_id, self.queue[0]['id'])
             self.pop()
 
     def contents(self) -> List[Dict[str, Any]]:
@@ -522,6 +524,30 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
                 raise BadEventQueueIdError(queue_id)
             if user_profile_id != client.user_profile_id:
                 raise JsonableError(_("You are not authorized to get events from this queue"))
+            if last_event_id < client.event_queue.newest_pruned_id:
+                # This code path is intended to catch misbehaving
+                # browsers that have incorrectly restored/reloaded a
+                # Zulip app browser window from cache, rather than
+                # re-fetching /, resulting in a window initialized
+                # from a stale version of page_params.  If this
+                # happens less than queue_lifespan_secs after the last
+                # request from the original browser window, the event
+                # queue will still exist, and requests from the new
+                # window will reach it.
+                #
+                # We detect this situation by looking at whether
+                # `last_event_id` (the ID the client has acked all
+                # events through, and is requesting all events newer
+                # than) is lower than the ID any events that have
+                # already been pruned.  If so, the request is invalid,
+                # and we return a special error for this situation.
+                #
+                # The client is responsible for doing something
+                # appropriate (usually destroying its event queue and
+                # reloading), because a harmless version of this sort
+                # of ID inversion is possible for cancelled/stale
+                # requests being retried at the network layer.
+                raise RequestedPrunedEventsError(last_event_id)
             client.event_queue.prune(last_event_id)
             was_connected = client.finish_current_handler()
 

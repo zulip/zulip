@@ -236,6 +236,21 @@ function get_events(options) {
                                      save_narrow: true,
                                      save_compose: true});
                 }
+                // If this browser window were incorrectly
+                // re-initialized from a browser cache, it will have a
+                // stale `last_event_id` in page_params, which will
+                // result in the REQUEST_PRUNED_EVENTS error from the server.
+                //
+                // In this case, we should destroy our event queue and
+                // reload the browser window.
+                if (xhr.status === 400 &&
+                    JSON.parse(xhr.responseText).code === 'REQUESTED_PRUNED_EVENTS') {
+                    exports.cleanup_event_queue();
+                    reload.initiate({immediate: true,
+                                     save_pointer: false,
+                                     save_narrow: true,
+                                     save_compose: true});
+                }
 
                 if (error_type === 'abort') {
                     // Don't restart if we explicitly aborted
