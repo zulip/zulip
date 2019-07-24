@@ -139,10 +139,7 @@ class RuleList:
         # type: (str, int, List[LineTup]) -> bool
         ok = True
         for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
-            if isinstance(line, bytes):
-                line_length = len(line.decode("utf-8"))
-            else:
-                line_length = len(line)
+            line_length = len(line)
             if (line_length > max_length and
                 '# type' not in line and 'test' not in fn and 'example' not in fn and
                 # Don't throw errors for markdown format URLs
