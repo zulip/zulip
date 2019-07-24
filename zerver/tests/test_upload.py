@@ -232,8 +232,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         '''
         Trying to download a file that was never uploaded will return a json_error
         '''
-        self.login(self.example_email("hamlet"))
-        response = self.client_get("http://localhost:9991/user_uploads/1/ff/gg/abc.py")
+        hamlet = self.example_user("hamlet")
+        self.login(hamlet.email)
+        response = self.client_get("http://localhost:9991/user_uploads/%s/ff/gg/abc.py" % (
+            hamlet.realm_id,))
         self.assertEqual(response.status_code, 404)
         self.assert_in_response('File not found.', response)
 
@@ -270,8 +272,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(not delete_message_image(d2_path_id))
 
     def test_attachment_url_without_upload(self) -> None:
-        self.login(self.example_email("hamlet"))
-        body = "Test message ...[zulip.txt](http://localhost:9991/user_uploads/1/64/fake_path_id.txt)"
+        hamlet = self.example_user("hamlet")
+        self.login(hamlet.email)
+        body = "Test message ...[zulip.txt](http://localhost:9991/user_uploads/%s/64/fake_path_id.txt)" % (
+            hamlet.realm_id,)
         self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
         self.assertFalse(Attachment.objects.filter(path_id = "1/64/fake_path_id.txt").exists())
 
@@ -849,7 +853,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         hamlet = self.example_email("hamlet")
         self.login(hamlet)
         cordelia = self.example_user('cordelia')
-        cross_realm_bot = self.example_user('welcome_bot')
+        cross_realm_bot = get_system_bot(settings.WELCOME_BOT)
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
@@ -1461,7 +1465,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         result = re.search(re.compile(r"([A-Za-z0-9\-_]{24})"), uri)
         if result is not None:
             random_name = result.group(1)
-        expected_url = "http://zulip.testserver/user_avatars/exports/1/{random_name}/tarball.tar.gz".format(
+        expected_url = "http://zulip.testserver/user_avatars/exports/{realm_id}/{random_name}/tarball.tar.gz".format(
+            realm_id=user_profile.realm_id,
             random_name=random_name,
         )
         self.assertEqual(expected_url, uri)
@@ -1762,8 +1767,11 @@ class S3Test(ZulipTestCase):
 
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:
-        self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/LUeQZUG5jxkagzVzp1Ox_amr/dummy.txt"), "dummy.txt")
-        self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/94/SzGYe0RFT-tEcOhQ6n-ZblFZ/zulip.txt"), "zulip.txt")
+        zulip_realm = get_realm("zulip")
+        self.assertEqual(url_filename("http://localhost:9991/user_uploads/%s/LUeQZUG5jxkagzVzp1Ox_amr/dummy.txt" % (
+            zulip_realm.id,)), "dummy.txt")
+        self.assertEqual(url_filename("http://localhost:9991/user_uploads/%s/94/SzGYe0RFT-tEcOhQ6n-ZblFZ/zulip.txt" % (
+            zulip_realm.id,)), "zulip.txt")
         self.assertEqual(url_filename("https://zulip.com/user_uploads/4142/LUeQZUG5jxkagzVzp1Ox_amr/pasted_image.png"), "pasted_image.png")
         self.assertEqual(url_filename("https://zulipchat.com/integrations"), "https://zulipchat.com/integrations")
         self.assertEqual(url_filename("https://example.com"), "https://example.com")
