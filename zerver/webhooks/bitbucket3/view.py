@@ -41,7 +41,10 @@ PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS_WITH_TITLE = """
 `{destination}` (assigned to {assignees} for review)
 """.strip()
 
-fixture_to_headers = lambda x: {"HTTP_X_EVENT_KEY": "diagnostics:ping"} if x == "diagnostics_ping" else None
+def fixture_to_headers(fixture_name: str) -> Dict[str, str]:
+    if fixture_name == "diagnostics_ping":
+        return {"HTTP_X_EVENT_KEY": "diagnostics:ping"}
+    return dict()
 
 def get_user_name(payload: Dict[str, Any]) -> str:
     user_name = "[{name}]({url})".format(name=payload["actor"]["name"],
