@@ -8,6 +8,9 @@
 .portico-landing.integrations h3:hover::after {
     content: none;
 }
+.portico-landing.integrations .markdown {
+    font-size: 1.1rem;
+}
 
 .portico-landing.integrations .main {
     width: calc(100% - 100px);
