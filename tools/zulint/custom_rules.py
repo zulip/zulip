@@ -7,13 +7,10 @@ import re
 import traceback
 
 from zulint.printer import print_err, colors, GREEN, ENDC, MAGENTA, BLUE, YELLOW
+from typing import Any, Dict, List, Optional, Tuple, Iterable
 
-if False:
-    from typing import Any, Dict, List, Optional, Tuple, Iterable
-
-    Rule = List[Dict[str, Any]]
-    LineTup = Tuple[int, str, str, str]
-
+Rule = List[Dict[str, Any]]
+LineTup = Tuple[int, str, str, str]
 
 class RuleList:
     """Defines and runs custom linting rules for the specified language."""
