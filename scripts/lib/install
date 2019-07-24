@@ -13,6 +13,7 @@ Other options:
   --no-init-db
   --cacert
   --no-dist-upgrade
+  --no-move-deployment
 
 The --hostname and --email options are required,
 unless --no-init-db is set and --certbot is not.
@@ -34,6 +35,7 @@ while true; do
         --email) ZULIP_ADMINISTRATOR="$2"; shift; shift;;
         --no-init-db) NO_INIT_DB=1; shift;;
         --no-dist-upgrade) NO_DIST_UPGRADE=1; shift;;
+        --no-move-deployment) NO_MOVE_DEPLOYMENT=1; shift;;
         --) shift; break;;
     esac
 done
@@ -398,8 +400,11 @@ fi
 
 if [ "$has_appserver" = 0 ]; then
     deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
-    mv "$ZULIP_PATH" "$deploy_path"
-    ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
+    deploy_path="/home/zulip/deployments/zulip"
+    if [ -z "$NO_MOVE_DEPLOYMENT" ]; then
+        mv "$ZULIP_PATH" "$deploy_path"
+        ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
+    fi
     ln -nsf "$deploy_path" /home/zulip/deployments/next
     ln -nsf "$deploy_path" /home/zulip/deployments/current
     ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
