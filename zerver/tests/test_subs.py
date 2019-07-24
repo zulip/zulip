@@ -604,11 +604,12 @@ class StreamAdminTest(ZulipTestCase):
         message = self.get_last_message()
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
         message_content = '@_**King Hamlet|{}** renamed stream **stream_name1** to **stream_name2**.'.format(user_profile.id)
-        self.assertEqual(message.sender.realm, user_profile.realm)
         self.assertEqual(actual_stream.name, 'stream_name2')
+        self.assertEqual(actual_stream.realm_id, user_profile.realm_id)
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertEqual(message.content, message_content)
         self.assertEqual(message.sender.email, 'notification-bot@zulip.com')
+        self.assertEqual(message.sender.realm, get_realm(settings.SYSTEM_BOT_REALM))
 
     def test_realm_admin_can_update_unsub_private_stream(self) -> None:
         iago = self.example_user('iago')
@@ -2933,7 +2934,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with mock.patch('zerver.models.Recipient.__str__', return_value='recip'):
             self.assertEqual(str(subscription),
                              u'<Subscription: '
-                             '<UserProfile: %s <Realm: zulip 1>> -> recip>' % (self.example_email('iago'),))
+                             '<UserProfile: %s %s> -> recip>' % (user_profile.email, user_profile.realm))
 
         self.assertIsNone(subscription.desktop_notifications)
         self.assertIsNone(subscription.push_notifications)
