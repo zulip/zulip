@@ -99,6 +99,16 @@ ul {
     }
 }
 
+@media (max-width: 1165px) {
+    .message_top_line {
+        margin-right: 14px;
+    }
+
+    .message_time {
+        margin-right: -14px;
+    }
+}
+
 .user_popover {
     width: 240px;
 

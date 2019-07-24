@@ -432,6 +432,18 @@ exports.toggle_actions_popover = function (element, id) {
             editability_menu_item = i18n.t("View source");
         }
         const topic = message.topic;
+        let topic_string_mute;
+        let topic_string_unmute;
+
+        if (message_viewport.is_narrow()) {
+            topic_string_mute = i18n.t("Mute this topic");
+            topic_string_unmute = i18n.t("Unmute this topic");
+        } else {
+            topic_string_mute = i18n.t("Mute the topic <strong>__topic__</strong>",
+                                       {topic: topic});
+            topic_string_unmute = i18n.t("Unmute the topic <strong>__topic__</strong>",
+                                         {topic: topic});
+        }
         const can_mute_topic =
                 message.stream &&
                 topic &&
@@ -475,6 +487,8 @@ exports.toggle_actions_popover = function (element, id) {
             topic: topic,
             use_edit_icon: use_edit_icon,
             editability_menu_item: editability_menu_item,
+            topic_string_mute: topic_string_mute,
+            topic_string_unmute: topic_string_unmute,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
             should_display_collapse: should_display_collapse,
@@ -498,6 +512,9 @@ exports.toggle_actions_popover = function (element, id) {
             html: true,
             trigger: "manual",
         });
+        if (message_viewport.width() <= 320) {
+            elt.data('popover').options.template = render_no_arrow_popover({class: "message-info-popover"});
+        }
         elt.popover("show");
         current_actions_popover_elem = elt;
     }
