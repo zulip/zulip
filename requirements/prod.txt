@@ -113,7 +113,7 @@ statsd==3.3.0             # via django-statsd-mozilla
 stripe==2.21.0
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
-twilio==6.26.2
+twilio==6.29.2
 typing==3.6.6
 urllib3==1.25.3           # via requests
 uwsgi==2.0.17.1
