@@ -24,8 +24,8 @@ from scripts.lib.setup_venv import (
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 from tools.setup import setup_venvs
 
+# `NoReturn` was introduced in python 3.5.4
 if False:
-    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import List, NoReturn
 
 SUPPORTED_PLATFORMS = {
