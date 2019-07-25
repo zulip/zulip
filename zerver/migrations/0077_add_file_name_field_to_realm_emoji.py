@@ -6,7 +6,7 @@ import logging
 import os
 import urllib
 from mimetypes import guess_type
-from typing import Dict, Optional, Text, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 import requests
 from boto.s3.connection import S3Connection
@@ -18,12 +18,10 @@ from django.db.migrations.state import StateApps
 from PIL import Image, ImageOps
 from requests import ConnectionError, Response
 
-def force_str(s: Union[Text, bytes], encoding: Text='utf-8') -> str:
-    """converts a string to a native string"""
+def force_str(s: Union[str, bytes], encoding: str = 'utf-8') -> str:
+    """converts a bytes type to a string"""
     if isinstance(s, str):
         return s
-    elif isinstance(s, Text):
-        return s.encode(str(encoding))
     elif isinstance(s, bytes):
         return s.decode(encoding)
     else:
@@ -36,10 +34,10 @@ class Uploader:
         self.emoji_size = (64, 64)
 
     def upload_files(self, response: Response, resized_image: bytes,
-                     dst_path_id: Text) -> None:
+                     dst_path_id: str) -> None:
         raise NotImplementedError()
 
-    def get_dst_path_id(self, realm_id: int, url: Text, emoji_name: Text) -> Tuple[Text, Text]:
+    def get_dst_path_id(self, realm_id: int, url: str, emoji_name: str) -> Tuple[str, str]:
         _, image_ext = os.path.splitext(url)
         file_name = ''.join((emoji_name, image_ext))
         return file_name, self.path_template.format(realm_id=realm_id, emoji_file_name=file_name)
@@ -54,8 +52,8 @@ class Uploader:
         im.save(out, format_)
         return out.getvalue()
 
-    def upload_emoji(self, realm_id: int, image_url: Text,
-                     emoji_name: Text) -> Optional[Text]:
+    def upload_emoji(self, realm_id: int, image_url: str,
+                     emoji_name: str) -> Optional[str]:
         file_name, dst_path_id = self.get_dst_path_id(realm_id, image_url, emoji_name)
         if image_url.startswith("/"):
             # Handle relative URLs.
@@ -79,18 +77,18 @@ class LocalUploader(Uploader):
         super().__init__()
 
     @staticmethod
-    def mkdirs(path: Text) -> None:
+    def mkdirs(path: str) -> None:
         dirname = os.path.dirname(path)
         if not os.path.isdir(dirname):
             os.makedirs(dirname)
 
-    def write_local_file(self, path: Text, file_data: bytes) -> None:
+    def write_local_file(self, path: str, file_data: bytes) -> None:
         self.mkdirs(path)
         with open(path, 'wb') as f:
             f.write(file_data)
 
     def upload_files(self, response: Response, resized_image: bytes,
-                     dst_path_id: Text) -> None:
+                     dst_path_id: str) -> None:
         dst_file = os.path.join(settings.LOCAL_UPLOADS_DIR, 'avatars', dst_path_id)
         if resized_image:
             self.write_local_file(dst_file, resized_image)
@@ -106,15 +104,15 @@ class S3Uploader(Uploader):
         bucket_name = settings.S3_AVATAR_BUCKET
         self.bucket = conn.get_bucket(bucket_name, validate=False)
 
-    def upload_to_s3(self, path: Text, file_data: bytes,
-                     headers: Optional[Dict[Text, Text]]) -> None:
+    def upload_to_s3(self, path: str, file_data: bytes,
+                     headers: Optional[Dict[str, str]]) -> None:
         key = Key(self.bucket)
         key.key = path
         key.set_contents_from_string(force_str(file_data), headers=headers)
 
     def upload_files(self, response: Response, resized_image: bytes,
-                     dst_path_id: Text) -> None:
-        headers = None  # type: Optional[Dict[Text, Text]]
+                     dst_path_id: str) -> None:
+        headers = None  # type: Optional[Dict[str, str]]
         content_type = response.headers.get(str("Content-Type")) or guess_type(dst_path_id)[0]
         if content_type:
             headers = {'Content-Type': content_type}
