@@ -16,7 +16,7 @@ git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/zulip/python-zulip-api.git@0.6.1#egg=zulip==0.6.1_git&subdirectory=zulip
 git+https://github.com/zulip/python-zulip-api.git@0.6.1#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
 alabaster==0.7.12         # via sphinx
-apns2==0.4.1
+apns2==0.5.0
 argon2-cffi==19.1.0
 arrow==0.10.0             # via gitlint
 asn1crypto==0.24.0        # via cryptography

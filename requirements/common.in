@@ -110,7 +110,7 @@ tornado==4.5.3
 django-webpack-loader==0.6.0
 
 # Needed for iOS push notifications
-apns2==0.4.1
+apns2==0.5.0
 
 python-twitter==3.5
 
