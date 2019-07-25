@@ -82,7 +82,7 @@ pyahocorasick==1.4.0
 pyasn1-modules==0.2.5     # via python-ldap
 pyasn1==0.4.5             # via pyasn1-modules, python-ldap
 pycparser==2.19           # via cffi
-pygments==2.3.1
+pygments==2.4.2
 pyjwt==1.7.1
 pylibmc==1.6.0
 pyoembed==0.1.2
