@@ -64,7 +64,7 @@ gitlint==0.11.0
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
-httplib2==0.12.3
+httplib2==0.13.0
 httpretty==0.9.6
 hypchat==0.21
 hyper==0.7.0              # via apns2
