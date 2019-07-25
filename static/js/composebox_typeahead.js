@@ -754,6 +754,19 @@ exports.compose_trigger_selection = function (event) {
     return false;
 };
 
+function get_header_text() {
+    var tip_text = '';
+    switch (this.completing) {
+    case 'stream':
+    case 'topic_list':
+        tip_text = i18n.t('Press > to mention a topic');
+        break;
+    default:
+        return false;
+    }
+    return '<em>' + tip_text + '</em>';
+}
+
 exports.initialize_compose_typeahead = function (selector) {
     var completions = {
         mention: true,
@@ -778,6 +791,7 @@ exports.initialize_compose_typeahead = function (selector) {
         completions: completions,
         automated: exports.compose_automated_selection,
         trigger_selection: exports.compose_trigger_selection,
+        header: get_header_text,
     });
 };
 
