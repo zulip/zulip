@@ -35,7 +35,7 @@ boto==2.49.0
 defusedxml==0.5.0
 
 # Needed for LDAP support
-django-auth-ldap==1.7.0
+django-auth-ldap==2.0.0
 
 # Django extension providing bitfield support
 django-bitfield==1.9.5
