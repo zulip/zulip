@@ -1,12 +1,15 @@
 
-from typing import Any, Dict
+from functools import wraps
+from typing import Any, Callable, Dict
 
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
+from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
-    process_as_post, authenticated_uploads_api_view
+    process_as_post, authenticated_uploads_api_view, RespondAsynchronously, \
+    ReturnT
 from zerver.lib.response import json_method_not_allowed, json_unauthorized
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.conf import settings
@@ -14,6 +17,26 @@ from django.conf import settings
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 FLAGS = ('override_api_url_scheme')
 
+def never_cache_responses(view_func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
+    """Patched version of the standard Django decorator that adds headers
+    to a response so that it will never be cached.
+
+    We need to patch this because our Django+Tornado
+    RespondAsynchronously hack involves returning a value that isn't a
+    Django response object, on which add_never_cache_headers would
+    crash.  This only occurs in a case where client-side caching
+    wouldn't be possible anyway (we aren't returning a response to the
+    client yet -- it's for longpolling).
+    """
+    @wraps(view_func)
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> ReturnT:
+        response = view_func(request, *args, **kwargs)
+        if response is not RespondAsynchronously:
+            add_never_cache_headers(response)
+        return response
+    return _wrapped_view_func
+
+@never_cache_responses
 @csrf_exempt
 def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     """Dispatch to a REST API endpoint.
