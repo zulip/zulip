@@ -20,7 +20,7 @@ argon2-cffi==19.1.0
 asn1crypto==0.24.0        # via cryptography
 babel==2.7.0              # via django-phonenumber-field
 backcall==0.1.0           # via ipython
-beautifulsoup4==4.7.1
+beautifulsoup4==4.8.0
 boto==2.49.0
 cachetools==3.1.1         # via premailer
 cchardet==2.1.4

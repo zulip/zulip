@@ -25,7 +25,7 @@ automat==0.7.0            # via twisted
 aws-xray-sdk==0.95        # via moto
 babel==2.5.3              # via django-phonenumber-field, sphinx
 backcall==0.1.0           # via ipython
-beautifulsoup4==4.7.1
+beautifulsoup4==4.8.0
 boto3==1.9.183            # via moto
 boto==2.49.0
 botocore==1.12.183        # via boto3, moto, s3transfer

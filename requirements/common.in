@@ -124,7 +124,7 @@ virtualenv-clone==0.5.3
 ijson==2.3
 
 # Needed for link preview
-beautifulsoup4==4.7.1
+beautifulsoup4==4.8.0
 pyoembed==0.1.2
 python-magic==0.4.15
 
