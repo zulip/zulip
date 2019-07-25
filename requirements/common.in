@@ -121,7 +121,7 @@ polib==1.1.0
 virtualenv-clone==0.5.3
 
 # Needed for reading json as stream
-ijson==2.3
+ijson==2.4
 
 # Needed for link preview
 beautifulsoup4==4.8.0
