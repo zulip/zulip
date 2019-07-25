@@ -296,7 +296,7 @@ class EventQueue:
     # See the comment on pop; that applies here as well
     def prune(self, through_id: int) -> None:
         while len(self.queue) != 0 and self.queue[0]['id'] <= through_id:
-            self.newest_pruned_id = max(self.newest_pruned_id, self.queue[0]['id'])
+            self.newest_pruned_id = self.queue[0]['id']
             self.pop()
 
     def contents(self) -> List[Dict[str, Any]]:
@@ -549,6 +549,8 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
                 # requests being retried at the network layer.
                 raise RequestedPrunedEventsError(last_event_id)
             client.event_queue.prune(last_event_id)
+            if last_event_id != client.event_queue.newest_pruned_id:
+                raise JsonableError(_("'last_event_id' %s was not in this queue") % (last_event_id,))
             was_connected = client.finish_current_handler()
 
         if not client.event_queue.empty() or dont_block:
