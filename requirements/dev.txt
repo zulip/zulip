@@ -116,7 +116,7 @@ pycparser==2.19           # via cffi
 pycryptodome==3.8.2       # via python-jose
 pydispatcher==2.0.5       # via scrapy
 pyflakes==2.1.1
-pygments==2.3.1
+pygments==2.4.2
 pyhamcrest==1.9.0         # via twisted
 pyinotify==0.9.6
 pyjwt==1.7.1
