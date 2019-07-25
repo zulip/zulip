@@ -736,6 +736,9 @@ exports.register_click_handlers = function () {
         if (offset) {
             ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(offset.position_y);
         }
+
+        $('.emoji-popover-tab-item.active').removeClass('active');
+        $(this).addClass('active');
     });
 
     $("body").on("click", ".emoji-popover-filter", function () {
