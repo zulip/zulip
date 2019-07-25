@@ -18,7 +18,7 @@ git+https://github.com/zulip/python-zulip-api.git@0.6.1#egg=zulip_bots==0.6.1+gi
 alabaster==0.7.12         # via sphinx
 apns2==0.5.0
 argon2-cffi==19.1.0
-arrow==0.10.0             # via gitlint
+arrow==0.14.2             # via gitlint
 asn1crypto==0.24.0        # via cryptography
 attrs==19.1.0             # via automat, service-identity, twisted
 automat==0.7.0            # via twisted
@@ -34,7 +34,7 @@ cchardet==2.1.4
 certifi==2019.3.9         # via requests
 cffi==1.12.3              # via argon2-cffi, cryptography
 chardet==3.0.4            # via requests
-click==6.7                # via gitlint, pip-tools
+click==7.0                # via gitlint, pip-tools
 commonmark==0.5.4
 constantly==15.1.0        # via twisted
 coverage==4.5.3
@@ -60,7 +60,7 @@ docutils==0.14            # via botocore, recommonmark, sphinx
 ecdsa==0.13.2             # via python-jose
 fakeldap==0.6.1
 first==2.0.2              # via pip-tools
-gitlint==0.11.0
+gitlint==0.12.0
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9

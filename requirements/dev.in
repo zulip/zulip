@@ -38,7 +38,7 @@ pyinotify==0.9.6
 tblib==1.3.2
 
 # Needed to lint Git commit messages
-gitlint==0.11.0
+gitlint==0.12.0
 
 # Needed for visualising cprofile reports
 snakeviz==2.0.0
