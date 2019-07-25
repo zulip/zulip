@@ -67,7 +67,7 @@ PyJWT==1.7.1
 markdown-include==0.5.1
 
 # Needed for mock objects in decorators
-mock==2.0.0
+mock==3.0.5
 
 # Needed to access rabbitmq
 # See #8466 for why we're not using the latest version.

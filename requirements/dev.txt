@@ -87,7 +87,7 @@ markdown-include==0.5.1
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
 matrix-client==0.3.2
-mock==2.0.0
+mock==3.0.5
 moto==1.3.7
 mypy-extensions==0.4.1
 mypy==0.711
@@ -95,7 +95,6 @@ oauthlib==3.0.1           # via requests-oauthlib, social-auth-core
 packaging==19.0           # via sphinx
 parsel==1.5.1             # via scrapy
 parso==0.5.0              # via jedi
-pbr==5.3.1                # via mock
 pexpect==4.7.0            # via ipython
 phonenumberslite==8.10.12
 pickleshare==0.7.5        # via ipython
