@@ -223,14 +223,14 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
         assert error_content_iter is not None
         error_content_list = list(error_content_iter)
-        if error_content_list:
+        if not error_content_list:
             error_data = u''
         elif isinstance(error_content_list[0], str):
             error_data = u''.join(error_content_list)
         elif isinstance(error_content_list[0], bytes):
             error_data = repr(b''.join(error_content_list))
-        if len(error_data) > 100:
-            error_data = u"[content more than 100 characters]"
+        if len(error_data) > 200:
+            error_data = u"[content more than 200 characters]"
         logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, email))
 
 class LogRequests(MiddlewareMixin):
