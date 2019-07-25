@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#!/bin/sh
+# -*- mode: python; -*-
+"exec" "`dirname \"$0\"`/../../zulip-py3-venv/bin/python3" "$0" "$@"
 
 import argparse
 import os
@@ -24,8 +26,6 @@ def restore_backup(tarball_file):
     # type: (IO[bytes]) -> None
 
     su_to_zulip(save_suid=True)
-
-    import scripts.lib.setup_path_on_import
 
     # First, we unpack the /etc/zulip configuration, so we know how
     # this server is supposed to be configured (and can import

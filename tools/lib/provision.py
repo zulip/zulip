@@ -431,9 +431,8 @@ def main(options):
     # bad idea, and empirically it can cause Python to segfault on
     # certain cffi-related imports.  Instead, start a new Python
     # process inside the virtualenv.
-    activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
+    os.environ["PATH"] = "/srv/zulip-py3-venv/bin" + os.pathsep + os.environ["PATH"]
     provision_inner = os.path.join(ZULIP_PATH, "tools", "lib", "provision_inner.py")
-    exec(open(activate_this).read(), dict(__file__=activate_this))
     os.execvp(
         provision_inner,
         [

@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#!/bin/sh
+# -*- mode: python; -*-
+"exec" "`dirname \"$0\"`/../zulip-py3-venv/bin/python3" "$0" "$@"
 
 # Updates static files for production.
 
@@ -9,7 +11,6 @@ import sys
 
 # We need settings so we can figure out where the prod-static directory is.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-import scripts.lib.setup_path_on_import
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 from scripts.lib.node_cache import setup_node_modules
