@@ -55,7 +55,7 @@ The main CircleCI configuration file is
 We run multiple jobs during a CircleCI build to test different
 supported platforms. They are currently:
 
-* xenial-backend-frontend-python-3.5
+* xenial-backend-frontend-python3.5
 * bionic-backend-python3.6
 
 Each runs the Zulip backend test suites, using the indicated
