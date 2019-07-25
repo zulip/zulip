@@ -151,7 +151,7 @@ requests-oauthlib==1.0.0  # via python-twitter, social-auth-core
 requests[security]==2.22.0  # via aws-xray-sdk, cfn-lint, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
 responses==0.10.6         # via moto
 s3transfer==0.2.1         # via boto3
-scrapy==1.6.0
+scrapy==1.7.2
 service-identity==18.1.0  # via scrapy
 sh==1.12.14               # via gitlint
 simplegeneric==0.8.1      # via ipython
