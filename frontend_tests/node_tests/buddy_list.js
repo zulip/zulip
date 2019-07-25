@@ -16,6 +16,7 @@ function init_simulated_scrolling() {
     });
 
     var elem = {
+        dataset: {},
         scrollTop: 0,
         scrollHeight: 0,
     };
