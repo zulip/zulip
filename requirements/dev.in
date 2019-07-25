@@ -5,7 +5,7 @@
 -r docs.in
 
 # moto s3 mock
-moto==1.3.7
+moto==1.3.13
 
 # Needed for running tools/run-dev.py
 Twisted==19.2.1
