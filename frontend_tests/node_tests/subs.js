@@ -9,10 +9,8 @@ zrequire('stream_data');
 zrequire('search_util');
 set_global('page_params', {});
 
-global.patch_builtin('window', {
-    location: {
-        hash: "#streams/1/announce",
-    },
+set_global('location', {
+    hash: "#streams/1/announce",
 });
 
 zrequire('subs');

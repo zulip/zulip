@@ -15,16 +15,8 @@ require('core-js/features/string/code-point-at');
 
 global._ = require('underscore/underscore.js');
 var _ = global._;
-const windowObj = {
-    location: {
-        hash: '#',
-    },
-};
-global.window = _.extend({}, windowObj, {
-    to_$: () => {
-        return windowObj;
-    },
-});
+global.window = global;
+global.to_$ = () => global;
 
 global.Dict = require('../../static/js/dict').Dict;
 
@@ -115,6 +107,9 @@ global.run_test = (label, f) => {
 
 try {
     files.forEach(function (file) {
+        set_global('location', {
+            hash: '#',
+        });
         global.patch_builtin('setTimeout', noop);
         global.patch_builtin('setInterval', noop);
         _.throttle = immediate;

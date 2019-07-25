@@ -25,8 +25,6 @@ set_global('document', {
     },
 });
 
-global.patch_builtin('window', {});
-
 set_global('csrf_token', 'whatever');
 
 set_global('$', () => {});
@@ -130,7 +128,7 @@ document_stub.on = () => {};
 document_stub.idle = () => {};
 
 const window_stub = $.create('window-stub');
-window.to_$ = () => window_stub;
+set_global('to_$', () => window_stub);
 window_stub.idle = () => {};
 
 ui_init.initialize_kitchen_sink_stuff = () => {};
