@@ -7,16 +7,14 @@ import sys
 from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING
 from scripts.lib.hash_reqs import expand_reqs
 
+from typing import List, Optional, Tuple, Set
+
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
 
 if 'TRAVIS' in os.environ:
     # In Travis CI, we don't have root access
     VENV_CACHE_PATH = "/home/travis/zulip-venv-cache"
-
-if False:
-    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import List, Optional, Tuple, Set
 
 VENV_DEPENDENCIES = [
     "build-essential",
