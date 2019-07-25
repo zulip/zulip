@@ -151,7 +151,7 @@ django-two-factor-auth==1.9.1
 # Developers can install either phonenumberslite or phonenumbers. Developers of
 # django-two-factor-auth has not specified which package to install so we are going
 # with phonenumberslite since it has less memory footprint.
-phonenumberslite==8.10.12
+phonenumberslite==8.10.15
 
 twilio==6.26.2
 

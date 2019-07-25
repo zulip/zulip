@@ -68,7 +68,7 @@ mypy_extensions==0.4.1
 oauthlib==3.0.1           # via requests-oauthlib, social-auth-core
 parso==0.5.0              # via jedi
 pexpect==4.7.0            # via ipython
-phonenumberslite==8.10.12
+phonenumberslite==8.10.15
 pickleshare==0.7.5        # via ipython
 pika==0.13.0
 pillow==6.1.0
