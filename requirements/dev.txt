@@ -82,7 +82,7 @@ jinja2==2.10.1
 jmespath==0.9.4           # via boto3, botocore
 jsondiff==1.1.1           # via moto
 jsonpickle==1.2           # via aws-xray-sdk, python-digitalocean
-lxml==4.3.3
+lxml==4.3.4
 markdown-include==0.5.1
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
