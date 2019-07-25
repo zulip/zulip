@@ -16,9 +16,7 @@ import json
 import uuid
 import configparser
 
-if False:
-    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Sequence, Set, Any, Dict, List
+from typing import Sequence, Set, Any, Dict, List
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
