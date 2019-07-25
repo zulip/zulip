@@ -145,7 +145,7 @@ social-auth-app-django==3.1.0
 lxml==4.3.3
 
 # Needed for 2-factor authentication
-django-two-factor-auth==1.8.0
+django-two-factor-auth==1.9.1
 
 # Required by django-phonenumber-field which is a dependency of django-two-factor-auth.
 # Developers can install either phonenumberslite or phonenumbers. Developers of
