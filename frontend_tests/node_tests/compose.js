@@ -1,6 +1,4 @@
-global.patch_builtin('window', {
-    bridge: false,
-});
+set_global('bridge', false);
 
 set_global('blueslip', global.make_zblueslip({
     error: false, // Ignore errors. We only check for warnings in this module.
@@ -873,10 +871,7 @@ run_test('initialize', () => {
         assert.equal('#compose-textarea', elem);
         resize_watch_manual_resize_checked = true;
     };
-    global.window = {
-        XMLHttpRequest: true,
-        bridge: true,
-    };
+    set_global('bridge', true);
     let xmlhttprequest_checked = false;
     set_global('XMLHttpRequest', function () {
         this.upload = true;

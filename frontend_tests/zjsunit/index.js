@@ -14,16 +14,6 @@ require("@babel/register")({
 global.assert = require('assert');
 global._ = require('underscore/underscore.js');
 const _ = global._;
-const windowObj = {
-    location: {
-        hash: '#',
-    },
-};
-global.window = _.extend({}, windowObj, {
-    to_$: () => {
-        return windowObj;
-    },
-});
 
 global.Dict = require('../../static/js/dict').Dict;
 
@@ -44,10 +34,15 @@ if (_.isEmpty(files)) {
 // Set up our namespace helpers.
 const namespace = require('./namespace.js');
 global.set_global = namespace.set_global;
-global.patch_builtin = namespace.patch_builtin;
+global.patch_builtin = namespace.set_global;
 global.zrequire = namespace.zrequire;
 global.stub_out_jquery = namespace.stub_out_jquery;
 global.with_overrides = namespace.with_overrides;
+
+global.window = new Proxy(global, {
+    set: (obj, prop, value) => namespace.set_global(prop, value),
+});
+global.to_$ = () => window;
 
 // Set up stub helpers.
 const stub = require('./stub.js');
@@ -114,6 +109,9 @@ global.run_test = (label, f) => {
 
 try {
     files.forEach(function (file) {
+        set_global('location', {
+            hash: '#',
+        });
         global.patch_builtin('setTimeout', noop);
         global.patch_builtin('setInterval', noop);
         _.throttle = immediate;

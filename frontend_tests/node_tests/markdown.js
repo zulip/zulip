@@ -11,10 +11,8 @@ zrequire('emoji');
 zrequire('message_store');
 zrequire('markdown');
 
-global.patch_builtin('window', {
-    location: {
-        origin: 'http://zulip.zulipdev.com',
-    },
+set_global('location', {
+    origin: 'http://zulip.zulipdev.com',
 });
 
 set_global('page_params', {

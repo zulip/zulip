@@ -15,12 +15,10 @@ set_global('ui_util', {
     place_caret_at_end: noop,
 });
 
-global.patch_builtin('window', {
-    getSelection: () => {
-        return {
-            anchorOffset: 0,
-        };
-    },
+set_global('getSelection', () => {
+    return {
+        anchorOffset: 0,
+    };
 });
 
 let id_seq = 0;

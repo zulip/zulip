@@ -3,7 +3,6 @@ const noop = function () {};
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
-global.patch_builtin('window', {});
 global.patch_builtin('setTimeout', func => func());
 
 // These dependencies are closer to the dispatcher, and they
@@ -913,13 +912,13 @@ with_overrides(function (override) {
     assert_same(page_params.realm_name, 'new_realm_name');
 
     let called = false;
-    window.electron_bridge = {
+    set_global('electron_bridge', {
         send_event: (key, val) => {
             assert_same(key, 'realm_name');
             assert_same(val, 'new_realm_name');
             called = true;
         },
-    };
+    });
 
     dispatch(event);
     assert_same(called, true);
@@ -954,13 +953,13 @@ with_overrides(function (override) {
     override('realm_icon.rerender', noop);
 
     called = false;
-    window.electron_bridge = {
+    set_global('electron_bridge', {
         send_event: (key, val) => {
             assert_same(key, 'realm_icon_url');
             assert_same(val, 'icon.png');
             called = true;
         },
-    };
+    });
 
     dispatch(event);
 
@@ -981,7 +980,7 @@ with_overrides(function (override) {
     assert_same(page_params.realm_night_logo_source, 'U');
 
     event = event_fixtures.realm__deactivated;
-    window.location = {};
+    set_global('location', {});
     dispatch(event);
     assert_same(window.location.href, "/accounts/deactivated/");
 });

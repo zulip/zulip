@@ -3,15 +3,11 @@ zrequire('stream_data');
 zrequire('people');
 zrequire('util');
 
-const _window = {
-    location: {
-        protocol: "https:",
-        host: "example.com",
-        pathname: "/",
-    },
-};
-
-global.patch_builtin('window', _window);
+set_global('location', {
+    protocol: "https:",
+    host: "example.com",
+    pathname: "/",
+});
 
 const hamlet = {
     user_id: 1,

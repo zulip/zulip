@@ -1,12 +1,10 @@
 set_global('$', global.make_zjquery());
 const window_stub = $.create('window-stub');
-global.patch_builtin('window', {
-    location: {
-        protocol: 'http:',
-        host: 'example.com',
-    },
-    to_$: () => window_stub,
+set_global('location', {
+    protocol: 'http:',
+    host: 'example.com',
 });
+set_global('to_$', () => window_stub);
 zrequire('people');
 zrequire('hash_util');
 zrequire('hashchange');

@@ -1,9 +1,7 @@
 const noop = function () {};
 
 set_global('document', {});
-global.patch_builtin('window', {
-    addEventListener: noop,
-});
+set_global('addEventListener', noop);
 global.stub_out_jquery();
 
 zrequire('message_store');

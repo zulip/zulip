@@ -1,17 +1,16 @@
 const _ = require('underscore/underscore.js');
 
-let dependencies = [];
 const requires = [];
-let old_builtins = {};
+const new_globals = new Set();
+let old_globals = {};
 
 exports.set_global = function (name, val) {
-    global[name] = val;
-    dependencies.push(name);
-    return val;
-};
-
-exports.patch_builtin = function (name, val) {
-    old_builtins[name] = global[name];
+    if (!(name in old_globals)) {
+        if (!(name in global)) {
+            new_globals.add(name);
+        }
+        old_globals[name] = global[name];
+    }
     global[name] = val;
     return val;
 };
@@ -31,16 +30,15 @@ exports.zrequire = function (name, fn) {
 };
 
 exports.restore = function () {
-    dependencies.forEach(function (name) {
-        delete global[name];
-    });
     requires.forEach(function (fn) {
         delete require.cache[require.resolve(fn)];
     });
-    dependencies = [];
-    delete global.window.electron_bridge;
-    _.extend(global, old_builtins);
-    old_builtins = {};
+    _.extend(global, old_globals);
+    old_globals = {};
+    for (const name of new_globals) {
+        delete global[name];
+    }
+    new_globals.clear();
 };
 
 exports.stub_out_jquery = function () {
