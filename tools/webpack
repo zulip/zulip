@@ -5,6 +5,7 @@ import os
 import json
 import subprocess
 
+# `NoReturn` wasn't introduced until python 3.5.4
 if False:
     from typing import NoReturn
 
