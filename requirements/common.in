@@ -58,7 +58,7 @@ hypchat==0.21
 -e git+https://github.com/zulip/line_profiler.git#egg=line_profiler==2.1.2.zulip1
 
 # Needed for inlining the CSS in emails
-premailer==3.4.0
+premailer==3.5.0
 
 # Needed for JWT-based auth
 PyJWT==1.7.1
