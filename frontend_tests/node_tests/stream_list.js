@@ -340,6 +340,9 @@ run_test('zoom_in_and_zoom_out', () => {
         f.call(elem(stream_li1));
         f.call(elem(stream_li2));
     };
+    $('#stream-filters-container')[0] = {
+        dataset: {},
+    };
     stream_list.set_event_handlers();
 
     stream_list.zoom_in_topics({stream_id: 42});

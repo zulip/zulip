@@ -1,6 +1,6 @@
 var ui = (function () {
 
-require("simplebar");
+var SimpleBar = require("simplebar").default;
 
 var exports = {};
 
@@ -27,6 +27,10 @@ exports.get_scroll_element = function (element_selector) {
     var element = element_selector.expectOne()[0];
     if (element.SimpleBar) {
         return $(element.SimpleBar.getScrollElement());
+    } else if ('simplebar' in element.dataset) {
+        // The SimpleBar mutation observer hasn’t processed this element yet.
+        // Create the SimpleBar early in case we need to add event listeners.
+        return $(new SimpleBar(element).getScrollElement());
     }
     return element_selector;
 };
