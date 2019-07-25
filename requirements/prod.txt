@@ -58,7 +58,7 @@ ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0
 jedi==0.14.0              # via ipython
 jinja2==2.10.1
-lxml==4.3.3
+lxml==4.3.4
 markdown-include==0.5.1
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
