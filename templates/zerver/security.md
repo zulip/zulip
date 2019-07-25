@@ -137,7 +137,7 @@ the industry:
   that the user who is making the request has access to that data.
 - Only a small handful of people have access to production servers or
   to sensitive customer data.
-- Our error handling systems are have been designed from the beginning to
+- Our error handling systems have been designed from the beginning to
   avoid including user message content in error reports, even in cases where
   this makes debugging quite difficult (e.g. bugs in the message rendering
   codebase).
