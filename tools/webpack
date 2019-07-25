@@ -6,6 +6,7 @@ import json
 import subprocess
 
 if False:
+    # `NoReturn` wasn't introduced until python 3.5.4
     from typing import NoReturn
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
