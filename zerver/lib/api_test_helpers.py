@@ -6,8 +6,7 @@ import os
 from zerver.lib import mdiff
 from zerver.lib.openapi import validate_against_openapi_schema
 
-if False:
-    from zulip import Client
+from zulip import Client
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FIXTURE_PATH = os.path.join(ZULIP_DIR, 'templates', 'zerver', 'api', 'fixtures.json')
