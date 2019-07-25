@@ -38,7 +38,7 @@ defusedxml==0.5.0
 django-auth-ldap==2.0.0
 
 # Django extension providing bitfield support
-django-bitfield==1.9.5
+django-bitfield==1.9.6
 
 # Django extension for sending data to statsd
 django-statsd-mozilla==0.4.0
