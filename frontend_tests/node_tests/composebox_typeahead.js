@@ -1288,6 +1288,7 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("@**a person** >", false);
     assert_typeahead_equals("#**stream**>", ['']); // this is deliberately a blank choice.
     assert_typeahead_equals("#**stream** >", ['']);
+    assert_typeahead_equals("#**Sweden>some topic** >", false); // Already completed a topic.
 
     // topic_list
     var sweden_topics_to_show = topic_data.get_recent_names(1); //includes "more ice"

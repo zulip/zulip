@@ -559,7 +559,7 @@ exports.compose_content_begins_typeahead = function (query) {
     if (this.options.completions.topic) {
         // Stream regex modified from marked.js
         // Matches '#**stream name** >' at the end of a split.
-        var stream_regex =  /#\*\*([^\*]+)\*\*\s?>$/;
+        var stream_regex =  /#\*\*([^\*>]+)\*\*\s?>$/;
         var should_jump_inside_typeahead = stream_regex.test(split[0]);
         if (should_jump_inside_typeahead) {
             this.completing = 'topic_jump';
