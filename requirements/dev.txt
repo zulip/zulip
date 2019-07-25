@@ -71,7 +71,7 @@ hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 hyperlink==19.0.0
 idna==2.8                 # via hyperlink, requests
-ijson==2.3
+ijson==2.4
 imagesize==1.1.0          # via sphinx
 incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
