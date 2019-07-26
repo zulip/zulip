@@ -73,7 +73,7 @@ exports.set_up = function () {
 
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
 
-    $("#timeformat").val(page_params.twenty_four_hour_time);
+    $("#timeformat").val(JSON.stringify(page_params.twenty_four_hour_time));
 
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
