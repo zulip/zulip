@@ -39,6 +39,16 @@
  *   pass the keyup event to the updater.
  *
  *   Our custom changes include all mentions of this.trigger_selection.
+ *
+ * 3. Header text:
+ *
+ *   This adds support for showing a custom header text like: "You are now
+ *   completing a user mention". Provide the function `this.header` that
+ *   returns a string containing the header text, or false.
+ *
+ *   Our custom changes include all mentions of this.header, some CSS changes
+ *   in compose.scss and splitting $container out of $menu so we can insert
+ *   additional HTML before $menu.
  * ============================================================ */
 
 !function($){
@@ -57,6 +67,7 @@
     this.highlighter = this.options.highlighter || this.highlighter
     this.updater = this.options.updater || this.updater
     this.$container = $(this.options.container).appendTo('body')
+    this.$header = $(this.options.header_html).appendTo(this.$container)
     this.$menu = $(this.options.menu).appendTo(this.$container)
     this.source = this.options.source
     this.shown = false
@@ -64,6 +75,7 @@
     this.fixed = this.options.fixed || false;
     this.automated = this.options.automated || this.automated;
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
+    this.header = this.options.header || this.header;
 
     if (this.fixed) {
       this.$container.css('position', 'fixed');
@@ -103,6 +115,11 @@
     return false;
   }
 
+  , header: function() {
+    // return a string to show in typeahead header or false.
+    return false;
+  }
+
   , show: function () {
       var pos;
 
@@ -129,6 +146,14 @@
         top: top_pos
        , left: pos.left
       })
+
+      var header_text = this.header();
+      if (header_text) {
+        this.$header.find('span#typeahead-header-text').html(header_text);
+        this.$header.show();
+      } else {
+        this.$header.hide();
+      }
 
       this.$container.show()
       this.shown = true
@@ -382,6 +407,7 @@
     source: []
   , items: 8
   , container: '<div class="typeahead dropdown-menu"></div>'
+  , header_html: '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>'
   , menu: '<ul class="typeahead-menu"></ul>'
   , item: '<li><a href="#"></a></li>'
   , minLength: 1
