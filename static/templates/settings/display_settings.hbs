@@ -46,11 +46,22 @@
         <div id="user-time-settings">
             <h3 class="inline-block">{{t "Time settings" }}</h3>
             <div class="alert-notification" id="time-settings-status"></div>
+<<<<<<< HEAD:static/templates/settings/display_settings.hbs
 
             {{> settings_checkbox
               setting_name="twenty_four_hour_time"
               is_checked=page_params.twenty_four_hour_time
               label=settings_label.twenty_four_hour_time}}
+=======
+            <div class="input-group">
+                <label for="timeformat" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
+                <select name="timeformat" id="timeformat">
+                    {{#each time_format_values}}
+                    <option value='{{ this.value }}'>{{ this.description }}</option>
+                    {{/each}}
+                </select>
+            </div>
+>>>>>>> changing 24-hour time setting to a dropdown:static/templates/settings/display-settings.handlebars
 
             <div class="input-group">
                 <label for="timezone" class="dropdown-title">{{t "Time zone" }}</label>

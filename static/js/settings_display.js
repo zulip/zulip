@@ -37,6 +37,17 @@ exports.demote_inactive_streams_values = {
     },
 };
 
+exports.time_format_values = {
+    twenty_four_hour_clock: {
+        value: true,
+        description: i18n.t("24-hour clock (17:00)"),
+    },
+    twelve_hour_clock: {
+        value: false,
+        description: i18n.t("12-hour clock (5:00 PM)"),
+    },
+};
+
 exports.all_display_settings = {
     settings: {
         user_display_settings: [
@@ -61,6 +72,8 @@ exports.set_up = function () {
     $("#user_timezone").val(page_params.timezone);
 
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
+
+    $("#timeformat").val(page_params.twenty_four_hour_time);
 
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
@@ -116,8 +129,8 @@ exports.set_up = function () {
         window.location.reload();
     });
 
-    $("#twenty_four_hour_time").change(function () {
-        var data = {twenty_four_hour_time: JSON.stringify(this.checked)};
+    $("#timeformat").change(function () {
+        var data = {twenty_four_hour_time: this.value};
         change_display_setting(data, '#time-settings-status');
     });
 
@@ -125,6 +138,7 @@ exports.set_up = function () {
         var data = {timezone: JSON.stringify(this.value)};
         change_display_setting(data, '#time-settings-status');
     });
+
     $(".emojiset_choice").click(function () {
         var data = {emojiset: JSON.stringify($(this).val())};
         var spinner = $("#emoji-settings-status").expectOne();
@@ -183,7 +197,6 @@ exports.report_emojiset_change = function () {
 };
 
 exports.update_page = function () {
-    $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
     $("#default_language_name").text(page_params.default_language_name);
     $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
