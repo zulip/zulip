@@ -5247,7 +5247,7 @@ def do_get_streams(
 
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.
-        query_filter = None
+        query_filter = None  # type: Optional[Q]
 
         def add_filter_option(option: Q) -> None:
             nonlocal query_filter
