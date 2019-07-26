@@ -45,7 +45,7 @@ cssselect==1.0.3          # via parsel, premailer, scrapy
 cssutils==1.0.2           # via premailer
 datetime==4.3             # via moto
 decorator==4.4.0          # via ipython, traitlets
-defusedxml==0.5.0
+defusedxml==0.6.0
 disposable-email-domains==0.0.52
 django-auth-ldap==2.0.0
 django-bitfield==1.9.6

@@ -32,7 +32,7 @@ argon2-cffi==19.1.0
 boto==2.49.0
 
 # Needed for integrations
-defusedxml==0.5.0
+defusedxml==0.6.0
 
 # Needed for LDAP support
 django-auth-ldap==2.0.0
