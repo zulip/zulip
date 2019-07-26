@@ -484,6 +484,12 @@ a#undo_markdown_preview {
     margin: auto;
 }
 
+.dropdown-menu ul {
+    list-style: none;
+    margin: 0;
+    background: hsl(0, 0%, 100%);
+}
+
 .compose_mobile_stream_button i,
 .compose_mobile_private_button i {
     margin-right: 4px;
