@@ -140,8 +140,20 @@ exports.initialize_custom_date_type_fields = function (element_id) {
     $(element_id).find(".custom_user_field .datepicker").flatpickr({
         altInput: true,
         altFormat: "F j, Y"});
-};
 
+    $(element_id).find(".custom_user_field ").on("mouseenter", function () {
+        if ($(element_id).find(".custom_user_field .datepicker").val() !== '') {
+            $(element_id).find(".remove_date").show();
+        } else {
+            $(element_id).find(".remove_date").hide();
+        }
+
+    });
+
+    $(element_id).find(".remove_date").on("click", function () {
+        $(element_id).find(".custom_user_field .datepicker").val('');
+    });
+};
 exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
                                                        set_handler_on_update) {
     var field_types = page_params.custom_profile_field_types;
