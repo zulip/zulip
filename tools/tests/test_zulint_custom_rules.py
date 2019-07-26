@@ -7,7 +7,7 @@ from zulint.custom_rules import RuleList
 from linter_lib.custom_check import python_rules, non_py_rules
 
 ROOT_DIR = os.path.abspath(os.path.join(__file__, '..', '..', '..'))
-CHECK_MESSAGE = "Fix the corresponding rule in `tools/zulint/custom_rules.py`."
+CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py`."
 
 class TestRuleList(TestCase):
 
