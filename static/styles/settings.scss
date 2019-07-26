@@ -679,9 +679,13 @@ input[type=checkbox].inline-block {
 }
 
 #account-settings .alert-notification.custom-field-status {
+    padding-top: 0px;
+    padding-bottom: 0px;
     margin-top: 0px;
     font-size: 14px;
-    margin-bottom: 4px;
+    padding-left: 0px;
+    margin-left: 5px;
+    border: none;
 }
 
 #realm_notifications_stream_label > button,
