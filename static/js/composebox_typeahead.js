@@ -689,16 +689,13 @@ exports.content_typeahead_selected = function (item, event) {
         beginning = beginning.substring(0, start) + item + '** ';
     }
 
-    // Keep the cursor after the newly inserted text.  Because Bootstrap's default
-    // textbox.change() handler will end up jumping the cursor to the end of the
-    // textbox, we overwrite it with a custom version that puts the cursor at the
-    // end of the completion.
-    this.$element.off('change').on('change', function () {
+    // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
+    // overwrite the text in the textbox.
+    setTimeout(function () {
         textbox.caret(beginning.length, beginning.length);
         // Also, trigger autosize to check if compose box needs to be resized.
         compose_ui.autosize_textarea();
-    });
-
+    }, 0);
     return beginning + rest;
 };
 
