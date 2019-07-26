@@ -335,7 +335,6 @@ python_rules = RuleList(
          'include_only': set([
              'scripts/',
              'puppet/',
-             'tools/zulint/',
          ]),
          'exclude': set([
              # Not important, but should fix
@@ -499,7 +498,6 @@ python_rules = RuleList(
              # We are likely to want to keep these dirs Python 2+3 compatible,
              # since the plan includes extracting them to a separate project eventually.
              'tools/lib',
-             'tools/zulint',
              # TODO: Update our migrations from Text->str.
              'zerver/migrations/',
              # thumbor is (currently) python2 only
