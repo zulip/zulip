@@ -3,7 +3,8 @@ import logging
 import time
 import traceback
 from typing import Any, AnyStr, Dict, \
-    Iterable, List, MutableMapping, Optional
+    Iterable, List, MutableMapping, Optional, \
+    Union
 
 from django.conf import settings
 from django.contrib.sessions.backends.base import UpdateError
@@ -337,7 +338,12 @@ class RateLimitMiddleware(MiddlewareMixin):
                 response['X-RateLimit-Remaining'] = str(ratelimit_user_results['remaining'])
         return response
 
-    def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
+    # TODO: When we have Django stubs, we should be able to fix the
+    # type of exception back to just Exception; the problem is without
+    # stubs, mypy doesn't know that RateLimited's superclass
+    # PermissionDenied inherits from Exception.
+    def process_exception(self, request: HttpRequest,
+                          exception: Union[Exception, RateLimited]) -> Optional[HttpResponse]:
         if isinstance(exception, RateLimited):
             entity_type = str(exception)  # entity type is passed to RateLimited when raising
             resp = json_error(
