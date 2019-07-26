@@ -43,4 +43,4 @@ def get_subject_and_body(payload: Mapping[str, Any], action_type: str) -> Option
     if action_type in SUPPORTED_BOARD_ACTIONS:
         return process_board_action(payload, action_type)
 
-    raise UnsupportedAction('{} if not supported'.format(action_type))
+    raise UnsupportedAction('{} is not supported'.format(action_type))
