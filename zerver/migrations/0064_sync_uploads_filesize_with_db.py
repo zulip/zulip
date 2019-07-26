@@ -4,10 +4,13 @@
 import os
 
 from boto.s3.connection import S3Connection
+from boto.s3.key import Key
 from django.conf import settings
 from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+
+from typing import Optional
 
 class MissingUploadFileException(Exception):
     pass
@@ -37,7 +40,7 @@ def sync_filesizes(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None
         bucket = conn.get_bucket(bucket_name, validate=False)
         for attachment in attachments.objects.all():
             if attachment.size is None:
-                file_key = bucket.get_key(attachment.path_id)
+                file_key = bucket.get_key(attachment.path_id)  # type: Optional[Key]
                 if file_key is None:
                     new_size = 0
                 else:
