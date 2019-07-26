@@ -360,7 +360,8 @@ def start_social_signup(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True)
 
-def authenticate_remote_user(realm: Realm, email_address: str) -> UserProfile:
+def authenticate_remote_user(realm: Realm,
+                             email_address: Optional[str]) -> Optional[UserProfile]:
     if email_address is None:
         # No need to authenticate if email address is None. We already
         # know that user_profile would be None as well. In fact, if we
