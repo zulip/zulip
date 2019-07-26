@@ -83,6 +83,17 @@ function CanvasFavicon() {
                 meta.default_icon();
             },
 
+            pm_notification: function (color) {
+                const cx = 13;
+                const cy = 13;
+                const r = 13;
+
+                context.beginPath();
+                context.arc(cx, cy, r, 0, Math.PI * 2);
+                context.fillStyle = color || "rgb(240, 123, 123)";
+                context.fill();
+            },
+
             pm_image: function () {
                 meta.blank();
 
@@ -206,6 +217,10 @@ function CanvasFavicon() {
         },
 
         paint: {
+            pm_notification: function () {
+                meta.proxy(meta.draw.pm_notification);
+            },
+
             pm_image: function () {
                 meta.proxy(meta.draw.pm_image);
             },
@@ -225,6 +240,9 @@ function CanvasFavicon() {
 
         default: function (payload) {
             prototype.paint.default();
+            if (payload.has_pm) {
+                prototype.paint.pm_notification();
+            }
             if (payload.unread_count > 0) {
                 prototype.paint.unread_count(payload.unread_count);
             }
@@ -235,6 +253,7 @@ function CanvasFavicon() {
         pm: function (payload) {
             prototype.paint.pm_image();
             prototype.paint.unread_count(payload.unread_count);
+            prototype.paint.pm_notification();
 
             return this;
         },
