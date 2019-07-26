@@ -229,11 +229,13 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .overlay .flex.overlay-content > div,
+    .dropdown-menu.typeahead,
     #settings_page,
     .informational-overlays .overlay-content {
         box-shadow: 0px 0px 30px hsl(212, 32%, 7%);
     }
 
+    .dropdown-menu ul,
     .dropdown .dropdown-menu,
     .popover,
     .popover-title,

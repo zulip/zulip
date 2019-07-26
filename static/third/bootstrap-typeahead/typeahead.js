@@ -56,7 +56,8 @@
     this.sorter = this.options.sorter || this.sorter
     this.highlighter = this.options.highlighter || this.highlighter
     this.updater = this.options.updater || this.updater
-    this.$menu = $(this.options.menu).appendTo('body')
+    this.$container = $(this.options.container).appendTo('body')
+    this.$menu = $(this.options.menu).appendTo(this.$container)
     this.source = this.options.source
     this.shown = false
     this.dropup = this.options.dropup
@@ -65,7 +66,7 @@
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
 
     if (this.fixed) {
-      this.$menu.css('position', 'fixed');
+      this.$container.css('position', 'fixed');
     }
     // The naturalSearch option causes arrow keys to immediately
     // update the search box with the underlying values from the
@@ -121,21 +122,21 @@
 
       var top_pos = pos.top + pos.height
       if (this.dropup) {
-        top_pos = pos.top - this.$menu.outerHeight()
+        top_pos = pos.top - this.$container.outerHeight()
       }
 
-      this.$menu.css({
+      this.$container.css({
         top: top_pos
        , left: pos.left
       })
 
-      this.$menu.show()
+      this.$container.show()
       this.shown = true
       return this
     }
 
   , hide: function () {
-      this.$menu.hide()
+      this.$container.hide()
       this.shown = false
       return this
     }
@@ -344,7 +345,7 @@
   , blur: function (e) {
       var that = this
       setTimeout(function () {
-        if (!that.$menu.is(':hover')) {
+        if (!that.$container.is(':hover')) {
           that.hide();
         }
       }, 150)
@@ -380,7 +381,8 @@
   $.fn.typeahead.defaults = {
     source: []
   , items: 8
-  , menu: '<ul class="typeahead dropdown-menu"></ul>'
+  , container: '<div class="typeahead dropdown-menu"></div>'
+  , menu: '<ul class="typeahead-menu"></ul>'
   , item: '<li><a href="#"></a></li>'
   , minLength: 1
   , stopAdvance: false
