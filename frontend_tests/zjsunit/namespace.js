@@ -23,10 +23,8 @@ exports.zrequire = function (name, fn) {
         fn = '../../static/' + fn;
     }
     delete require.cache[require.resolve(fn)];
-    const obj = require(fn);
     requires.push(fn);
-    set_global(name, obj);
-    return obj;
+    return require(fn);
 };
 
 exports.restore = function () {

@@ -14,7 +14,7 @@ zrequire('stream_data');
 zrequire('narrow');
 zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
-zrequire('actual_pygments_data', 'generated/pygments_data');
+const actual_pygments_data = zrequire('actual_pygments_data', 'generated/pygments_data');
 zrequire('settings_org');
 const th = zrequire('typeahead_helper');
 
@@ -111,7 +111,7 @@ run_test('sort_languages', () => {
     // We may eventually want to use human-readable names like
     // "JavaScript" with several machine-readable aliases for what the
     // user typed, which might help provide a better user experience.
-    global.pygments_data = global.actual_pygments_data;
+    global.pygments_data = actual_pygments_data;
     test_langs = ["j", "java", "javascript", "js"];
 
     // Sort acccording to priority only.
