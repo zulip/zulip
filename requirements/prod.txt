@@ -24,7 +24,7 @@ beautifulsoup4==4.8.0
 boto==2.49.0
 cachetools==3.1.1         # via premailer
 cchardet==2.1.4
-certifi==2019.3.9         # via requests
+certifi==2019.6.16        # via requests
 cffi==1.12.3              # via argon2-cffi, cryptography
 chardet==3.0.4            # via requests
 cryptography==2.6.1       # via apns2, pyopenssl, requests
