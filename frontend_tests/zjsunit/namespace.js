@@ -4,8 +4,9 @@ var _ = require('underscore/underscore.js');
 var exports = {};
 
 var dependencies = [];
-var requires = [];
 var old_builtins = {};
+
+exports.base_requires = undefined;
 
 exports.set_global = function (name, val) {
     global[name] = val;
@@ -19,28 +20,48 @@ exports.patch_builtin = function (name, val) {
     return val;
 };
 
-exports.zrequire = function (name, fn) {
+function resolve_name(name, fn) {
     if (fn === undefined) {
         fn = '../../static/js/' + name;
     } else if (/generated\/|js\/|third\//.test(fn)) {
         // FIXME: Stealing part of the NPM namespace is confusing.
         fn = '../../static/' + fn;
     }
-    delete require.cache[require.resolve(fn)];
-    var obj = require(fn);
-    requires.push(fn);
-    set_global(name, obj);
-    return obj;
+    return fn;
+}
+
+// Require a module and get a handle to it for monkey patching.
+// Can not patch if module.exports is not an object (only objects are passed by
+// reference) or the module is imported with ES6's import statement (it has a
+// separate cache).
+exports.zrequire = function (name, fn) {
+    fn = resolve_name(name, fn);
+    return require(fn);
+};
+
+// Completely stub out a module. Return a handle for further patching.
+exports.zstub = function (name, fn, stub) {
+    fn = resolve_name(name, fn);
+    const path = require.resolve(fn);
+    require.cache[path] = {
+        id: path,
+        filename: path,
+        loaded: true,
+        exports: stub,
+    };
+    return require(fn);
 };
 
 exports.restore = function () {
     dependencies.forEach(function (name) {
         delete global[name];
     });
-    requires.forEach(function (fn) {
-        delete require.cache[require.resolve(fn)];
-    });
     dependencies = [];
+    for (const key of Object.keys(require.cache)) {
+        if (!exports.base_requires.has(key)) {
+            delete require.cache[key];
+        }
+    }
     delete global.window.electron_bridge;
     _.extend(global, old_builtins);
     old_builtins = {};

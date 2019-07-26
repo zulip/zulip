@@ -10,7 +10,8 @@
         "document": false,
         "set_global": false,
         "window": false,
-        "zrequire": false
+        "zrequire": false,
+        "zstub": false
     },
     "rules": {
         "no-sync": 0,
