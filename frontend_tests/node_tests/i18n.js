@@ -1,6 +1,6 @@
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
-zrequire('i18n', 'i18next');
+set_global('i18n', zrequire('i18n', 'i18next'));
 
 i18n.init({
     nsSeparator: false,

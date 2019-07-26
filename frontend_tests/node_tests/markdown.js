@@ -1,12 +1,12 @@
 zrequire('hash_util');
-zrequire('katex', 'katex/dist/katex.min.js');
-zrequire('marked', 'third/marked/lib/marked');
+set_global('katex', zrequire('katex', 'katex/dist/katex.min.js'));
+set_global('marked', zrequire('marked', 'third/marked/lib/marked'));
 zrequire('util');
 zrequire('fenced_code');
 zrequire('stream_data');
 zrequire('people');
 zrequire('user_groups');
-zrequire('emoji_codes', 'generated/emoji/emoji_codes');
+set_global('emoji_codes', zrequire('emoji_codes', 'generated/emoji/emoji_codes'));
 zrequire('emoji');
 zrequire('message_store');
 zrequire('markdown');

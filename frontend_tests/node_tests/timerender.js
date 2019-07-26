@@ -3,7 +3,7 @@ set_global('i18n', global.stub_i18n);
 set_global('page_params', {
     twenty_four_hour_time: true,
 });
-zrequire('XDate', 'xdate');
+set_global('XDate', zrequire('XDate', 'xdate'));
 zrequire('timerender');
 
 run_test('render_now_returns_today', () => {

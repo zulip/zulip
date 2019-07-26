@@ -5,7 +5,7 @@ set_global('page_params', {
 set_global('upload_widget', {});
 set_global('blueslip', global.make_zblueslip());
 
-zrequire('emoji_codes', 'generated/emoji/emoji_codes');
+set_global('emoji_codes', zrequire('emoji_codes', 'generated/emoji/emoji_codes'));
 zrequire('emoji');
 zrequire('markdown');
 zrequire('util');

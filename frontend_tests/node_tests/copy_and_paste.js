@@ -11,7 +11,7 @@ const { document } = window;
 set_global('$', require('jquery')(window));
 set_global('document', document);
 
-zrequire('toMarkdown', 'to-markdown/dist/to-markdown.js');
+set_global('toMarkdown', zrequire('toMarkdown', 'to-markdown/dist/to-markdown.js'));
 var copy_and_paste = zrequire('copy_and_paste');
 
 // Super stripped down version of the code in the drag-mock library

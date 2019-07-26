@@ -172,8 +172,8 @@ run_test('user_timezone', () => {
     global.page_params.twenty_four_hour_time = false;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
-    zrequire('actual_moment', 'moment-timezone');
-    set_global('moment', function () { return global.actual_moment('20130208T080910'); });
+    const actual_moment = zrequire('actual_moment', 'moment-timezone');
+    set_global('moment', function () { return actual_moment('20130208T080910'); });
 
     global.page_params.twenty_four_hour_time = true;
     assert.equal(people.get_user_time(me.user_id), '0:09');

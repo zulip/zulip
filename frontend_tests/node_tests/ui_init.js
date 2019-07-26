@@ -92,7 +92,7 @@ zrequire('user_groups');
 zrequire('unread');
 zrequire('bot_data');
 zrequire('message_fetch');
-zrequire('marked', 'third/marked/lib/marked');
+set_global('marked', zrequire('marked', 'third/marked/lib/marked'));
 zrequire('fenced_code');
 zrequire('markdown');
 zrequire('upload');
@@ -117,7 +117,8 @@ zrequire('top_left_corner');
 zrequire('starred_messages');
 zrequire('user_status');
 zrequire('user_status_ui');
-zrequire('ui_init');
+const ui_init = zrequire('ui_init');
+
 zrequire('settings_display');
 
 set_global('$', global.make_zjquery());

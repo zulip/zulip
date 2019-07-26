@@ -3,7 +3,7 @@ set_global('i18n', global.stub_i18n);
 
 zrequire('localstorage');
 zrequire('drafts');
-zrequire('XDate', 'xdate');
+set_global('XDate', zrequire('XDate', 'xdate'));
 zrequire('timerender');
 set_global('Handlebars', global.make_handlebars());
 zrequire('util');
