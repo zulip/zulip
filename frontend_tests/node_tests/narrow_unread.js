@@ -1,5 +1,5 @@
 zrequire('Filter', 'js/filter');
-zrequire('people');
+const people = zrequire('people');
 zrequire('stream_data');
 zrequire('unread');
 zrequire('util');

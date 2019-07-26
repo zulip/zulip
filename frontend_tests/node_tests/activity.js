@@ -86,7 +86,7 @@ zrequire('hash_util');
 zrequire('narrow');
 zrequire('util');
 zrequire('presence');
-zrequire('people');
+const people = zrequire('people');
 zrequire('buddy_data');
 zrequire('buddy_list');
 zrequire('user_search');
@@ -131,8 +131,6 @@ const zoe = {
     user_id: 6,
     full_name: 'Zoe Yang',
 };
-
-const people = global.people;
 
 people.add_in_realm(alice);
 people.add_in_realm(fred);

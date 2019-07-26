@@ -1,4 +1,6 @@
 set_global('i18n', global.stub_i18n);
+zstub('md5', 'blueimp-md5', s => 'md5-' + s);
+
 zrequire('compose_state');
 zrequire('ui_util');
 zrequire('pm_conversations');
@@ -7,7 +9,7 @@ zrequire('util');
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 zrequire('typeahead_helper');
-zrequire('people');
+const people = zrequire('people');
 zrequire('user_groups');
 zrequire('stream_data');
 zrequire('user_pill');
@@ -15,9 +17,6 @@ zrequire('compose_pm_pill');
 zrequire('composebox_typeahead');
 zrequire('recent_senders');
 zrequire('settings_org');
-set_global('md5', function (s) {
-    return 'md5-' + s;
-});
 
 // To be eliminated in next commit:
 stream_data.update_calculated_fields = () => {};
@@ -212,14 +211,14 @@ var gael = {
     email: 'twin3@zulip.com',
 };
 
-global.people.add_in_realm(hamlet);
-global.people.add_in_realm(othello);
-global.people.add_in_realm(cordelia);
-global.people.add_in_realm(lear);
-global.people.add_in_realm(twin1);
-global.people.add_in_realm(twin2);
-global.people.add_in_realm(gael);
-global.people.add(deactivated_user);
+people.add_in_realm(hamlet);
+people.add_in_realm(othello);
+people.add_in_realm(cordelia);
+people.add_in_realm(lear);
+people.add_in_realm(twin1);
+people.add_in_realm(twin2);
+people.add_in_realm(gael);
+people.add(deactivated_user);
 
 var hamletcharacters = {
     name: "hamletcharacters",
@@ -1156,7 +1155,7 @@ run_test('begins_typeahead', () => {
         };
     });
 
-    var people_only = global.people.get_realm_persons();
+    var people_only = people.get_realm_persons();
     var people_with_all = people_only.concat(all_items);
     var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
     var lang_list = Object.keys(pygments_data.langs);
@@ -1411,7 +1410,7 @@ run_test('typeahead_results', () => {
             full_name: mention,
         };
     });
-    var people_with_all = global.people.get_realm_persons().concat(all_items);
+    var people_with_all = people.get_realm_persons().concat(all_items);
     var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
     var stream_list = [denmark_stream, sweden_stream, netherland_stream];
 

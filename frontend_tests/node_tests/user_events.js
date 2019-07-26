@@ -1,6 +1,6 @@
 set_global('$', global.make_zjquery());
 
-zrequire('people');
+const people = zrequire('people');
 zrequire('user_events');
 
 set_global('activity', {

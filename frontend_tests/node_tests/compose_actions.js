@@ -15,7 +15,7 @@ set_global('$', global.make_zjquery());
 set_global('compose_pm_pill', {
 });
 
-zrequire('people');
+const people = zrequire('people');
 zrequire('compose_ui');
 zrequire('compose');
 zrequire('util');

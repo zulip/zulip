@@ -22,7 +22,7 @@ zrequire('presence');
 zrequire('buddy_data');
 zrequire('hash_util');
 set_global('Handlebars', global.make_handlebars());
-zrequire('people');
+const people = zrequire('people');
 zrequire('pm_conversations');
 zrequire('pm_list');
 
@@ -41,10 +41,10 @@ var me = {
     user_id: 103,
     full_name: 'Me Myself',
 };
-global.people.add_in_realm(alice);
-global.people.add_in_realm(bob);
-global.people.add_in_realm(me);
-global.people.initialize_current_user(me.user_id);
+people.add_in_realm(alice);
+people.add_in_realm(bob);
+people.add_in_realm(me);
+people.initialize_current_user(me.user_id);
 
 run_test('get_conversation_li', () => {
     var test_conversation = 'foo@example.com,bar@example.com'; // people.ts

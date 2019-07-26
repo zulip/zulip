@@ -19,7 +19,6 @@ set_global('navigator', _navigator);
 
 zrequire('muting');
 zrequire('stream_data');
-zrequire('people');
 zrequire('ui');
 zrequire('util');
 

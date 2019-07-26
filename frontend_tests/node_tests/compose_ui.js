@@ -1,5 +1,5 @@
 zrequire('compose_ui');
-zrequire('people');
+const people = zrequire('people');
 zrequire('user_status');
 
 set_global('document', {
@@ -21,8 +21,8 @@ var bob = {
     full_name: 'Bob',
 };
 
-global.people.add_in_realm(alice);
-global.people.add_in_realm(bob);
+people.add_in_realm(alice);
+people.add_in_realm(bob);
 
 var noop = function () {};
 

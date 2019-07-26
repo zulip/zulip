@@ -1,11 +1,17 @@
+var noop = function () {};
+const people = zstub('people', undefined, {
+    my_current_user_id: noop,
+    small_avatar_url_for_person: function () {
+        return 'http://example.com/example.png';
+    },
+});
+
 zrequire('user_pill');
 zrequire('settings_user_groups');
 
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 set_global('confirm_dialog', {});
-
-var noop = function () {};
 
 var pills = {
     pill: {},
@@ -22,12 +28,6 @@ set_global('user_groups', {
     add: noop,
 });
 set_global('ui_report', {});
-set_global('people', {
-    my_current_user_id: noop,
-    small_avatar_url_for_person: function () {
-        return 'http://example.com/example.png';
-    },
-});
 set_global('page_params', {});
 
 function reset_test_setup(pill_container_stub) {

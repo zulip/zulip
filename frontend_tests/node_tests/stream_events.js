@@ -10,7 +10,7 @@ set_global('colorspace', {
     },
 });
 
-zrequire('people');
+const people = zrequire('people');
 zrequire('stream_data');
 zrequire('stream_events');
 var with_overrides = global.with_overrides;

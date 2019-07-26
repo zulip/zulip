@@ -4,7 +4,7 @@ set_global('marked', zrequire('marked', 'third/marked/lib/marked'));
 zrequire('util');
 zrequire('fenced_code');
 zrequire('stream_data');
-zrequire('people');
+const people = zrequire('people');
 zrequire('user_groups');
 set_global('emoji_codes', zrequire('emoji_codes', 'generated/emoji/emoji_codes'));
 zrequire('emoji');
@@ -54,8 +54,6 @@ set_global('document', doc);
 set_global('$', global.make_zjquery());
 
 set_global('feature_flags', {local_echo: true});
-
-var people = global.people;
 
 var cordelia = {
     full_name: 'Cordelia Lear',

@@ -12,16 +12,16 @@ const _page_params = {
 set_global('page_params', _page_params);
 set_global('settings_bots', _settings_bots);
 
-zrequire('people');
+const people = zrequire('people');
 zrequire('bot_data');
 
-global.people.add({
+people.add({
     email: 'owner@zulip.com',
     full_name: 'The Human Boss',
     user_id: 42,
 });
 
-global.people.initialize_current_user(42);
+people.initialize_current_user(42);
 
 bot_data.initialize();
 // Our startup logic should have added Bot 0 from page_params.

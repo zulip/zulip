@@ -2,7 +2,7 @@ set_global('$', global.make_zjquery());
 zrequire('hash_util');
 zrequire('hashchange');
 zrequire('narrow_state');
-zrequire('people');
+const people = zrequire('people');
 zrequire('stream_data');
 zrequire('util');
 zrequire('Filter', 'js/filter');

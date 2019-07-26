@@ -1,5 +1,14 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
+zstub('people', undefined, {
+    // Mocking get_by_email function, here we are
+    // just returning string before `@` in email
+    get_by_email: function (email) {
+        return {
+            full_name: email.split('@')[0],
+        };
+    },
+});
 
 zrequire('localstorage');
 zrequire('drafts');
@@ -35,15 +44,6 @@ set_global('stream_data', {
     },
 });
 set_global('blueslip', {});
-set_global('people', {
-    // Mocking get_by_email function, here we are
-    // just returning string before `@` in email
-    get_by_email: function (email) {
-        return {
-            full_name: email.split('@')[0],
-        };
-    },
-});
 set_global('markdown', {
     apply_markdown: noop,
 });

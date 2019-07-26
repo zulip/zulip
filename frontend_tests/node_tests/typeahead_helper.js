@@ -1,13 +1,11 @@
 set_global('i18n', global.stub_i18n);
 set_global('page_params', {realm_is_zephyr_mirror_realm: false});
-set_global('md5', function (s) {
-    return 'md5-' + s;
-});
+zstub('md5', 'blueimp-md5', s => 'md5-' + s);
 
 set_global('Handlebars', global.make_handlebars());
 zrequire('recent_senders');
 zrequire('pm_conversations');
-zrequire('people');
+const people = zrequire('people');
 zrequire('emoji');
 zrequire('util');
 zrequire('stream_data');
@@ -153,13 +151,13 @@ var matches = [
 ];
 
 _.each(matches, function (person) {
-    global.people.add_in_realm(person);
+    people.add_in_realm(person);
 });
 
 run_test('sort_recipients', () => {
     function get_typeahead_result(query, current_stream, current_topic) {
         var result = th.sort_recipients(
-            global.people.get_realm_persons(),
+            people.get_realm_persons(),
             query,
             current_stream,
             current_topic

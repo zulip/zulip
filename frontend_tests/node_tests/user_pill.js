@@ -1,7 +1,5 @@
-zrequire('people');
-set_global('md5', function (s) {
-    return 'md5-' + s;
-});
+zstub('md5', 'blueimp-md5', s => 'md5-' + s);
+const people = zrequire('people');
 zrequire('user_pill');
 
 set_global('page_params', {

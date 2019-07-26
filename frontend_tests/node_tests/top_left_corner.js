@@ -2,7 +2,7 @@ set_global('$', global.make_zjquery());
 
 zrequire('Filter', 'js/filter');
 zrequire('unread_ui');
-zrequire('people');
+const people = zrequire('people');
 zrequire('util');
 
 zrequire('top_left_corner');

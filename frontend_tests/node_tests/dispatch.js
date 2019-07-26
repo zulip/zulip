@@ -91,7 +91,7 @@ zrequire('topic_data');
 zrequire('stream_list');
 zrequire('message_flags');
 zrequire('message_store');
-zrequire('people');
+const people = zrequire('people');
 zrequire('starred_messages');
 zrequire('util');
 zrequire('user_status');

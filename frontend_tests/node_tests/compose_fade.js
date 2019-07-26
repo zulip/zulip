@@ -3,7 +3,7 @@ global.blueslip.warn = function () {};
 
 zrequire('util');
 zrequire('stream_data');
-zrequire('people');
+const people = zrequire('people');
 zrequire('compose_fade');
 
 var me = {

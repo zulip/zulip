@@ -1,4 +1,4 @@
-zrequire('people');
+const people = zrequire('people');
 zrequire('Filter', 'js/filter');
 zrequire('stream_data');
 zrequire('narrow_state');

@@ -19,7 +19,7 @@ set_global('sent_messages', {
 });
 set_global('blueslip', global.make_zblueslip());
 
-zrequire('people');
+const people = zrequire('people');
 zrequire('util');
 zrequire('transmit');
 

@@ -1,7 +1,7 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
-zrequire('people');
+const people = zrequire('people');
 zrequire('reactions');
 
 set_global('emoji', {

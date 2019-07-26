@@ -1,6 +1,6 @@
 zrequire('message_events');
 zrequire('message_store');
-zrequire('people');
+const people = zrequire('people');
 zrequire('util');
 
 set_global('alert_words', {});

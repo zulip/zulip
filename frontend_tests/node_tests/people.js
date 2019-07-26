@@ -1,13 +1,11 @@
 zrequire('util');
-zrequire('people');
+zstub('md5', 'blueimp-md5', s => 'md5-' + s);
+const people = zrequire('people');
 
 set_global('blueslip', global.make_zblueslip({
     error: false, // We check for errors in people_errors.js
 }));
 set_global('page_params', {});
-set_global('md5', function (s) {
-    return 'md5-' + s;
-});
 set_global('i18n', global.stub_i18n);
 
 var me = {

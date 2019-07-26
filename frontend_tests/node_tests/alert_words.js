@@ -4,16 +4,16 @@ var _page_params = {
 
 set_global('page_params', _page_params);
 
-zrequire('people');
+const people = zrequire('people');
 zrequire('alert_words');
 
-global.people.add({
+people.add({
     email: 'tester@zulip.com',
     full_name: 'Tester von Tester',
     user_id: 42,
 });
 
-global.people.initialize_current_user(42);
+people.initialize_current_user(42);
 
 
 const regular_message = {

@@ -16,7 +16,7 @@ zrequire('color_data');
 zrequire('util');
 zrequire('hash_util');
 zrequire('topic_data');
-zrequire('people');
+const people = zrequire('people');
 zrequire('stream_color');
 zrequire('stream_data');
 zrequire('marked', 'third/marked/lib/marked');

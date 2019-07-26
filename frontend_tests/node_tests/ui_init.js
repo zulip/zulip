@@ -86,7 +86,6 @@ zrequire('overlays');
 zrequire('invite');
 zrequire('tab_bar');
 zrequire('narrow_state');
-zrequire('people');
 zrequire('search_pill_widget');
 zrequire('user_groups');
 zrequire('unread');

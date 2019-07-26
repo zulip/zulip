@@ -8,7 +8,7 @@ zrequire('Filter', 'js/filter');
 zrequire('narrow_state');
 zrequire('stream_data');
 zrequire('topic_data');
-zrequire('people');
+const people = zrequire('people');
 zrequire('unread');
 zrequire('common');
 var search = zrequire('search_suggestion');

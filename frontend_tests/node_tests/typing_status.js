@@ -1,5 +1,4 @@
 zrequire('typing');
-zrequire('people');
 zrequire('compose_pm_pill');
 zrequire('typing_status');
 

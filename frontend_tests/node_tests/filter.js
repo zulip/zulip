@@ -1,7 +1,7 @@
 zrequire('util');
 zrequire('unread');
 zrequire('stream_data');
-zrequire('people');
+const people = zrequire('people');
 set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
 

@@ -15,7 +15,7 @@ assert(util.is_all_or_everyone_mentioned('mention @**everyone**'));
 //  * change the data
 //  * get a true value
 
-zrequire('people');
+const people = zrequire('people');
 const isaac = {
     email: 'isaac@example.com',
     user_id: 30,

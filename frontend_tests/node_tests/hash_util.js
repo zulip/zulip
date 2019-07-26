@@ -1,6 +1,6 @@
 zrequire('hash_util');
 zrequire('stream_data');
-zrequire('people');
+const people = zrequire('people');
 zrequire('util');
 
 set_global('location', {

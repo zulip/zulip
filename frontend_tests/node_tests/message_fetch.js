@@ -12,7 +12,7 @@ zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('message_list');
 zrequire('util');
-zrequire('people');
+const people = zrequire('people');
 
 set_global('page_params', {
     have_initial_messages: true,

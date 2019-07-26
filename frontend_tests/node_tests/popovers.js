@@ -4,7 +4,7 @@ set_global('i18n', global.stub_i18n);
 zrequire('hash_util');
 zrequire('narrow');
 zrequire('narrow_state');
-zrequire('people');
+const people = zrequire('people');
 zrequire('presence');
 zrequire('buddy_data');
 zrequire('user_status');

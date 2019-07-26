@@ -1,10 +1,9 @@
 zrequire('pm_conversations');
 zrequire('util');
-zrequire('people');
+const people = zrequire('people');
 zrequire('message_store');
 
 var noop = function () {};
-var people = global.people;
 
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
@@ -57,7 +56,7 @@ people.add_in_realm(alice);
 people.add_in_realm(bob);
 people.add_in_realm(cindy);
 
-global.people.initialize_current_user(me.user_id);
+people.initialize_current_user(me.user_id);
 
 run_test('add_message_metadata', () => {
     var message = {

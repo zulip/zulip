@@ -1,4 +1,4 @@
-zrequire('people');
+const people = zrequire('people');
 
 var return_false = function () { return false; };
 var return_true = function () { return true; };

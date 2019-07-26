@@ -68,7 +68,7 @@ zrequire('common');
 set_global('Handlebars', global.make_handlebars());
 zrequire('stream_data');
 zrequire('compose_state');
-zrequire('people');
+const people = zrequire('people');
 zrequire('input_pill');
 zrequire('user_pill');
 zrequire('compose_pm_pill');
