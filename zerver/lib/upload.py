@@ -316,7 +316,7 @@ def get_signed_upload_url(path: str) -> str:
 
 def get_realm_for_filename(path: str) -> Optional[int]:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    key = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET).get_key(path)
+    key = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET).get_key(path)  # type: Optional[Key]
     if key is None:
         # This happens if the key does not exist.
         return None
@@ -328,7 +328,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = get_bucket(conn, bucket_name)
 
         # check if file exists
-        key = bucket.get_key(path_id)
+        key = bucket.get_key(path_id)  # type: Optional[Key]
         if key is not None:
             bucket.delete_key(key)
             return True
