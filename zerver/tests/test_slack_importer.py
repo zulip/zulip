@@ -51,6 +51,7 @@ import logging
 import shutil
 import os
 import mock
+from mock import ANY
 from typing import Any, Dict, List, Set, Tuple, Iterator
 
 def remove_folder(path: str) -> None:
@@ -261,18 +262,9 @@ class SlackImporter(ZulipTestCase):
         zerver_userprofile = [{'id': 1}, {'id': 8}, {'id': 7}, {'id': 5}]
         realm_id = 3
 
-        channel_to_zerver_stream_output = channels_to_zerver_stream(self.fixture_file_name("", "slack_fixtures"),
-                                                                    realm_id, added_users, zerver_userprofile)
-
-        zerver_defaultstream = channel_to_zerver_stream_output[0]
-        zerver_stream = channel_to_zerver_stream_output[1]
-        zerver_huddle = channel_to_zerver_stream_output[2]
-        added_channels = channel_to_zerver_stream_output[3]
-        added_mpims = channel_to_zerver_stream_output[4]
-        dm_members = channel_to_zerver_stream_output[5]
-        zerver_subscription = channel_to_zerver_stream_output[6]
-        zerver_recipient = channel_to_zerver_stream_output[7]
-        added_recipient = channel_to_zerver_stream_output[8]
+        realm, added_channels, added_mpims, dm_members, \
+            added_recipient = channels_to_zerver_stream(self.fixture_file_name("", "slack_fixtures"), realm_id,
+                                                        {"zerver_userpresence": []}, added_users, zerver_userprofile)
 
         test_added_channels = {'feedback': ("C061A0HJG", 3), 'general': ("C061A0YJG", 1),
                                'general1': ("C061A0YJP", 2), 'random': ("C061A0WJG", 0)}
@@ -285,8 +277,8 @@ class SlackImporter(ZulipTestCase):
 
         self.assertDictEqual(test_added_channels, added_channels)
         # zerver defaultstream already tested in helper functions
-        self.assertEqual(zerver_defaultstream, [{'id': 0, 'realm': 3, 'stream': 0},
-                                                {'id': 1, 'realm': 3, 'stream': 1}])
+        self.assertEqual(realm["zerver_defaultstream"],
+                         [{'id': 0, 'realm': 3, 'stream': 0}, {'id': 1, 'realm': 3, 'stream': 1}])
 
         self.assertDictEqual(test_added_mpims, added_mpims)
         self.assertDictEqual(test_dm_members, dm_members)
@@ -299,6 +291,10 @@ class SlackImporter(ZulipTestCase):
         # functioning of zerver subscriptions are already tested in the helper functions
         # This is to check the concatenation of the output lists from the helper functions
         # subscriptions for stream
+        zerver_subscription = realm["zerver_subscription"]
+        zerver_recipient = realm["zerver_recipient"]
+        zerver_stream = realm["zerver_stream"]
+
         self.assertEqual(self.get_set(zerver_subscription, "recipient"), {i for i in range(11)})
         self.assertEqual(self.get_set(zerver_subscription, "user_profile"), {1, 5, 7, 8})
 
@@ -315,12 +311,13 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[2]['id'],
                          test_added_channels[zerver_stream[2]['name']][1])
 
-        self.assertEqual(self.get_set(zerver_huddle, "id"), {0, 1, 2})
+        self.assertEqual(self.get_set(realm["zerver_huddle"], "id"), {0, 1, 2})
+        self.assertEqual(realm["zerver_userpresence"], [])
 
     @mock.patch("zerver.data_import.slack.users_to_zerver_userprofile",
                 return_value=[[], [], {}, [], []])
     @mock.patch("zerver.data_import.slack.channels_to_zerver_stream",
-                return_value=[[], [], [], {}, {}, {}, [], [], {}])
+                return_value=[{"zerver_stream": []}, {}, {}, {}, {}])
     def test_slack_workspace_to_realm(self, mock_channels_to_zerver_stream: mock.Mock,
                                       mock_users_to_zerver_userprofile: mock.Mock) -> None:
 
@@ -337,12 +334,20 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(added_recipient, {})
         self.assertEqual(avatar_list, [])
 
-        zerver_realmdomain = realm['zerver_realmdomain']
+        mock_channels_to_zerver_stream.assert_called_once_with("./random_path", 1, ANY, {}, [])
+        passed_realm = mock_channels_to_zerver_stream.call_args_list[0][0][2]
+        zerver_realmdomain = passed_realm['zerver_realmdomain']
         self.assertListEqual(zerver_realmdomain, test_zerver_realmdomain)
-        self.assertEqual(realm['zerver_userpresence'], [])
+        self.assertEqual(passed_realm['zerver_realm'][0]['description'], 'Organization imported from Slack!')
+        self.assertEqual(passed_realm['zerver_userpresence'], [])
+        self.assertEqual(len(passed_realm.keys()), 14)
+
         self.assertEqual(realm['zerver_stream'], [])
         self.assertEqual(realm['zerver_userprofile'], [])
-        self.assertEqual(realm['zerver_realm'][0]['description'], 'Organization imported from Slack!')
+        self.assertEqual(realm['zerver_realmemoji'], [])
+        self.assertEqual(realm['zerver_customprofilefield'], [])
+        self.assertEqual(realm['zerver_customprofilefieldvalue'], [])
+        self.assertEqual(len(realm.keys()), 5)
 
     def test_get_message_sending_user(self) -> None:
         message_with_file = {'subtype': 'file', 'type': 'message',
