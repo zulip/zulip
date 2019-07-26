@@ -1486,7 +1486,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
     def run(self, lines: List[str]) -> List[str]:
         """ Insert a newline between a paragraph and ulist if missing """
         inserts = 0
-        fence = None
+        fence = None  # type: Optional[Match.group]
         copy = lines[:]
         for i in range(len(lines) - 1):
             # Ignore anything that is inside a fenced code block
