@@ -11,7 +11,7 @@ argparse==1.4.0           # via thumbor
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 botocore==1.12.183        # via tornado-botocore
-certifi==2018.10.15
+certifi==2019.6.16
 derpconf==0.8.3           # via thumbor
 django-auth-ldap==1.7.0
 django==1.11.14

@@ -32,7 +32,7 @@ boto==2.49.0
 botocore==1.12.183        # via boto3, moto, s3transfer
 cachetools==3.1.1         # via premailer
 cchardet==2.1.4
-certifi==2019.3.9         # via requests
+certifi==2019.6.16        # via requests
 cffi==1.12.3              # via argon2-cffi, cryptography
 cfn-lint==0.22.3          # via moto
 chardet==3.0.4            # via requests
