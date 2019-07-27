@@ -221,6 +221,11 @@ exports.start = function (msg_type, opts) {
         opts.private_message_recipient = '';
     }
 
+    var subbed_streams = stream_data.subscribed_subs();
+    if (subbed_streams.length === 1 && (opts.trigger === "new topic button" || opts.trigger === "compose_hotkey" && msg_type === "stream")) {
+        opts.stream = subbed_streams[0].name;
+    }
+
     if (compose_state.composing() && !same_recipient_as_before(msg_type, opts)) {
         // Clear the compose box if the existing message is to a different recipient
         clear_box();
