@@ -1,20 +1,10 @@
 import logging
+import multiprocessing
 import os
 import random
 import shutil
-from typing import (
-    AbstractSet,
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    TypeVar,
-)
+from functools import partial
+from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
 
 import orjson
 import requests
@@ -23,7 +13,6 @@ from django.forms.models import model_to_dict
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.parallel import run_parallel
 from zerver.models import (
     Attachment,
     Huddle,
@@ -501,6 +490,17 @@ def build_attachment(realm_id: int, message_ids: Set[int],
 
     zerver_attachment.append(attachment_dict)
 
+def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: List[str]) -> None:
+    avatar_url = avatar_upload_item[0]
+
+    image_path = os.path.join(avatar_dir, avatar_upload_item[1])
+    original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
+
+    response = requests.get(avatar_url + size_url_suffix, stream=True)
+    with open(image_path, 'wb') as image_file:
+        shutil.copyfileobj(response.raw, image_file)
+    shutil.copy(image_path, original_image_path)
+
 def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id: int,
                     threads: int, size_url_suffix: str='') -> List[ZerverFieldsT]:
     """
@@ -515,17 +515,6 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
     We use this for Slack and Gitter conversions, where avatars need to be
     downloaded.  For simpler conversions see write_avatar_png.
     """
-
-    def get_avatar(avatar_upload_item: List[str]) -> None:
-        avatar_url = avatar_upload_item[0]
-
-        image_path = os.path.join(avatar_dir, avatar_upload_item[1])
-        original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
-
-        response = requests.get(avatar_url + size_url_suffix, stream=True)
-        with open(image_path, 'wb') as image_file:
-            shutil.copyfileobj(response.raw, image_file)
-        shutil.copy(image_path, original_image_path)
 
     logging.info('######### GETTING AVATARS #########\n')
     logging.info('DOWNLOADING AVATARS .......\n')
@@ -551,9 +540,7 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
         avatar_original_list.append(avatar_original)
 
     # Run downloads in parallel
-    output = []
-    for (status, job) in run_parallel_wrapper(get_avatar, avatar_upload_list, threads=threads):
-        output.append(job)
+    run_parallel_wrapper(partial(get_avatar, avatar_dir, size_url_suffix), avatar_upload_list, threads=threads)
 
     logging.info('######### GETTING AVATARS FINISHED #########\n')
     return avatar_list + avatar_original_list
@@ -592,23 +579,32 @@ def write_avatar_png(avatar_folder: str,
     return metadata
 
 ListJobData = TypeVar('ListJobData')
+def wrapping_function(f: Callable[[ListJobData], None], item: ListJobData) -> None:
+    try:
+        f(item)
+    except Exception:
+        logging.exception("Error processing item: %s", item, stack_info=True)
+
 def run_parallel_wrapper(f: Callable[[ListJobData], None], full_items: List[ListJobData],
-                         threads: int=6) -> Iterator[Tuple[int, List[ListJobData]]]:
+                         threads: int=6) -> None:
     logging.info("Distributing %s items across %s threads", len(full_items), threads)
 
-    def wrapping_function(items: List[ListJobData]) -> int:
+    with multiprocessing.Pool(threads) as p:
         count = 0
-        for item in items:
-            try:
-                f(item)
-            except Exception:
-                logging.exception("Error processing item: %s", item, stack_info=True)
+        for out in p.imap_unordered(partial(wrapping_function, f), full_items):
             count += 1
             if count % 1000 == 0:
-                logging.info("A download thread finished %s items", count)
-        return 0
-    job_lists: List[List[ListJobData]] = [full_items[i::threads] for i in range(threads)]
-    return run_parallel(wrapping_function, job_lists, threads=threads)
+                logging.info("Finished %s items", count)
+
+def get_uploads(upload_dir: str, upload: List[str]) -> None:
+    upload_url = upload[0]
+    upload_path = upload[1]
+    upload_path = os.path.join(upload_dir, upload_path)
+
+    response = requests.get(upload_url, stream=True)
+    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+    with open(upload_path, 'wb') as upload_file:
+        shutil.copyfileobj(response.raw, upload_file)
 
 def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
                     threads: int) -> List[ZerverFieldsT]:
@@ -619,16 +615,6 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
     1. upload_list: List of uploads to be mapped in uploads records.json file
     2. upload_dir: Folder where the downloaded uploads are saved
     """
-    def get_uploads(upload: List[str]) -> None:
-        upload_url = upload[0]
-        upload_path = upload[1]
-        upload_path = os.path.join(upload_dir, upload_path)
-
-        response = requests.get(upload_url, stream=True)
-        os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-        with open(upload_path, 'wb') as upload_file:
-            shutil.copyfileobj(response.raw, upload_file)
-
     logging.info('######### GETTING ATTACHMENTS #########\n')
     logging.info('DOWNLOADING ATTACHMENTS .......\n')
     upload_url_list = []
@@ -639,9 +625,7 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
         upload['path'] = upload_s3_path
 
     # Run downloads in parallel
-    output = []
-    for (status, job) in run_parallel_wrapper(get_uploads, upload_url_list, threads=threads):
-        output.append(job)
+    run_parallel_wrapper(partial(get_uploads, upload_dir), upload_url_list, threads=threads)
 
     logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
     return upload_list
@@ -659,6 +643,16 @@ def build_realm_emoji(realm_id: int,
         ),
     )
 
+def get_emojis(emoji_dir: str, upload: List[str]) -> None:
+    emoji_url = upload[0]
+    emoji_path = upload[1]
+    upload_emoji_path = os.path.join(emoji_dir, emoji_path)
+
+    response = requests.get(emoji_url, stream=True)
+    os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
+    with open(upload_emoji_path, 'wb') as emoji_file:
+        shutil.copyfileobj(response.raw, emoji_file)
+
 def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
                    emoji_url_map: ZerverFieldsT, threads: int) -> List[ZerverFieldsT]:
     """
@@ -669,16 +663,6 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
     2. emoji_dir: Folder where the downloaded emojis are saved
     3. emoji_url_map: Maps emoji name to its url
     """
-    def get_emojis(upload: List[str]) -> None:
-        emoji_url = upload[0]
-        emoji_path = upload[1]
-        upload_emoji_path = os.path.join(emoji_dir, emoji_path)
-
-        response = requests.get(emoji_url, stream=True)
-        os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
-        with open(upload_emoji_path, 'wb') as emoji_file:
-            shutil.copyfileobj(response.raw, emoji_file)
-
     emoji_records = []
     upload_emoji_list = []
     logging.info('######### GETTING EMOJIS #########\n')
@@ -700,9 +684,7 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
         emoji_records.append(emoji_record)
 
     # Run downloads in parallel
-    output = []
-    for (status, job) in run_parallel_wrapper(get_emojis, upload_emoji_list, threads=threads):
-        output.append(job)
+    run_parallel_wrapper(partial(get_emojis, emoji_dir), upload_emoji_list, threads=threads)
 
     logging.info('######### GETTING EMOJIS FINISHED #########\n')
     return emoji_records
