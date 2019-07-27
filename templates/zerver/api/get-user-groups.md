@@ -1,6 +1,8 @@
 # Get user groups
 
 Fetches all of the user groups in the organization.
+Note: Only organization members or admins can contact this endpoint.
+This means that bots and guests cannot contact this endpoint.
 
 `GET {{ api_url }}/v1/user_groups`
 
@@ -15,7 +17,7 @@ Fetches all of the user groups in the organization.
 
 ``` curl
 curl -X GET {{ api_url }}/v1/user_groups \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+    -u USER_EMAIL_ADDRESS:USER_API_KEY
 ```
 
 {end_tabs}
