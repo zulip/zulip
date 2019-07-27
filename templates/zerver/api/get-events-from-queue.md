@@ -64,7 +64,7 @@ zulip(config).then((client) => {
 
 ``` curl
 curl -X GET {{ api_url }}/v1/events \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "queue_id=1375801870:2942" \
     -d "last_event_id=-1"
 ```
