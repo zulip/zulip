@@ -21,6 +21,7 @@ zrequire('compose');
 zrequire('util');
 zrequire('compose_state');
 zrequire('compose_actions');
+zrequire('stream_data');
 
 set_global('document', 'document-stub');
 
@@ -136,6 +137,52 @@ run_test('start', () => {
     assert.equal($('#stream_message_recipient_topic').val(), 'topic1');
     assert.equal(compose_state.get_message_type(), 'stream');
     assert(compose_state.composing());
+
+    // Autofill stream field for single subscription
+    var denmark = {
+        subscribed: true,
+        color: 'blue',
+        name: 'Denmark',
+        stream_id: 1,
+    };
+    stream_data.add_sub('Denmark', denmark);
+
+    global.narrow_state.set_compose_defaults = function () {
+        var opts = {};
+        opts.trigger = "new topic button";
+        return opts;
+    };
+
+    opts = {};
+    start('stream', opts);
+    assert.equal($('#stream_message_recipient_stream').val(), 'Denmark');
+    assert.equal($('#stream_message_recipient_topic').val(), '');
+
+    global.narrow_state.set_compose_defaults = function () {
+        var opts = {};
+        opts.trigger = "compose_hotkey";
+        return opts;
+    };
+
+    opts = {};
+    start('stream', opts);
+    assert.equal($('#stream_message_recipient_stream').val(), 'Denmark');
+    assert.equal($('#stream_message_recipient_topic').val(), '');
+
+    var social = {
+        subscribed: true,
+        color: 'red',
+        name: 'social',
+        stream_id: 2,
+    };
+    stream_data.add_sub('social', social);
+
+    // More than 1 subscription, do not autofill
+    opts = {};
+    start('stream', opts);
+    assert.equal($('#stream_message_recipient_stream').val(), '');
+    assert.equal($('#stream_message_recipient_topic').val(), '');
+    stream_data.clear_subscriptions();
 
     // Start PM
     global.narrow_state.set_compose_defaults = function () {
