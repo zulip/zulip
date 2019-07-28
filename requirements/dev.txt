@@ -146,7 +146,7 @@ pyyaml==5.1.1             # via cfn-lint, moto, yamole
 qrcode==6.1               # via django-two-factor-auth
 queuelib==1.5.0           # via scrapy
 recommonmark==0.4.0
-redis==2.10.6
+redis==3.2.1
 regex==2019.6.8
 requests-oauthlib==1.0.0  # via python-twitter, social-auth-core
 requests[security]==2.22.0  # via aws-xray-sdk, cfn-lint, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio

@@ -89,7 +89,7 @@ python-dateutil==2.8.0
 pytz==2019.1
 
 # Needed for redis
-redis==2.10.6
+redis==3.2.1
 
 # Needed for Python 2+3 compatibility
 six==1.12.0

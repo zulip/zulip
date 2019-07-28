@@ -224,7 +224,7 @@ def incr_ratelimit(entity: RateLimitedObject) -> None:
                 # Add our new value to the sorted set that we keep
                 # We need to put the score and val both as timestamp,
                 # as we sort by score but remove by value
-                pipe.zadd(set_key, now, now)
+                pipe.zadd(set_key, {str(now): now})
 
                 # Remove the trimmed value from our sorted set, if there was one
                 if last_val is not None:
