@@ -28,7 +28,6 @@ def move_local_file(type: Text, path_src: Text, path_dst: Text) -> None:
     if not os.path.exists(src_file_path):
         # This is likely caused by a user having previously changed their email
         raise MissingAvatarException()
-        return
     mkdirs(dst_file_path)
     os.rename(src_file_path, dst_file_path)
 
