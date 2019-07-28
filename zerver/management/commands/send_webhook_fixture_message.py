@@ -1,6 +1,6 @@
 import os
 import ujson
-from typing import Union, Dict
+from typing import Union, Dict, Optional
 
 from django.conf import settings
 from django.core.management.base import CommandParser
@@ -60,7 +60,7 @@ approach shown above.
                                'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
         return standardize_headers(custom_headers_dict)
 
-    def handle(self, **options: str) -> None:
+    def handle(self, **options: Optional[str]) -> None:
         if options['fixture'] is None or options['url'] is None:
             self.print_help('./manage.py', 'send_webhook_fixture_message')
             raise CommandError

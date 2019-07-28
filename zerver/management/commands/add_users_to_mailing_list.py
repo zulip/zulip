@@ -1,7 +1,7 @@
 
 import argparse
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 import requests
 import ujson
@@ -29,7 +29,7 @@ class Command(BaseCommand):
                             default=datetime.isoformat(timezone_now().replace(microsecond=0)),
                             help='Opt-in time of the users.')
 
-    def handle(self, *args: Any, **options: str) -> None:
+    def handle(self, *args: Any, **options: Optional[str]) -> None:
         api_key = options['api_key']
         if api_key is None:
             try:

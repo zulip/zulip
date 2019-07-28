@@ -1,6 +1,6 @@
 
 from argparse import ArgumentParser
-from typing import Any
+from typing import Any, Optional
 
 from django.core.management.base import BaseCommand
 
@@ -11,7 +11,7 @@ class Command(BaseCommand):
         parser.add_argument('--cache', dest="cache", default=None,
                             help="Populate the memcached cache of messages.")
 
-    def handle(self, *args: Any, **options: str) -> None:
+    def handle(self, *args: Any, **options: Optional[str]) -> None:
         if options["cache"] is not None:
             fill_remote_cache(options["cache"])
             return

@@ -15,7 +15,7 @@ from zerver.lib.management import ZulipBaseCommand, CommandError
 
 from zerver.models import Realm, get_stream, get_realm
 
-from typing import Dict
+from typing import Dict, Optional
 
 # This command loads an email from a specified file and sends it
 # to the email mirror. Simple emails can be passed in a JSON file,
@@ -54,7 +54,7 @@ Example:
 
         self.add_realm_args(parser, help="Specify which realm to connect to; default is zulip")
 
-    def handle(self, **options: str) -> None:
+    def handle(self, **options: Optional[str]) -> None:
         if options['fixture'] is None:
             self.print_help('./manage.py', 'send_to_email_mirror')
             raise CommandError
