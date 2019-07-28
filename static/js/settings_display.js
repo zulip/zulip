@@ -33,6 +33,17 @@ exports.demote_inactive_streams_values = {
     },
 };
 
+exports.twenty_four_hour_time_values = {
+    twenty_four_hour_clock: {
+        value: true,
+        description: i18n.t("24-hour clock (17:00)"),
+    },
+    twelve_hour_clock: {
+        value: false,
+        description: i18n.t("12-hour clock (5:00 PM)"),
+    },
+};
+
 exports.all_display_settings = {
     settings: {
         user_display_settings: [
@@ -57,6 +68,8 @@ exports.set_up = function () {
     $("#user_timezone").val(page_params.timezone);
 
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
+
+    $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
@@ -112,8 +125,9 @@ exports.set_up = function () {
         window.location.reload();
     });
 
+
     $("#twenty_four_hour_time").change(function () {
-        const data = {twenty_four_hour_time: JSON.stringify(this.checked)};
+        const data = {twenty_four_hour_time: this.value};
         change_display_setting(data, '#time-settings-status');
     });
 
@@ -179,11 +193,12 @@ exports.report_emojiset_change = function () {
 };
 
 exports.update_page = function () {
-    $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
     $("#default_language_name").text(page_params.default_language_name);
     $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
     $("#night_mode").prop('checked', page_params.night_mode);
+    $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
+
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function
 };

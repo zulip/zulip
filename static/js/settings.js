@@ -90,7 +90,7 @@ function setup_settings_label() {
         left_side_userlist: i18n.t("User list on left sidebar in narrow windows"),
         night_mode: i18n.t("Night mode"),
         starred_message_counts: i18n.t("Show counts for starred messages"),
-        twenty_four_hour_time: i18n.t("24-hour time (17:00 instead of 5:00 PM)"),
+        twenty_four_hour_time: i18n.t("Time format"),
         translate_emoticons: i18n.t("Convert emoticons before sending (<code>:)</code> becomes 😃)"),
     };
 }
@@ -109,6 +109,7 @@ exports.build_page = function () {
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label: exports.settings_label,
         demote_inactive_streams_values: settings_display.demote_inactive_streams_values,
+        twenty_four_hour_time_values: settings_display.twenty_four_hour_time_values,
         notification_settings: settings_notifications.all_notifications.settings,
         desktop_icon_count_display_values: settings_notifications.desktop_icon_count_display_values,
         push_notification_tooltip:
