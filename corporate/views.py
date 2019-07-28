@@ -1,6 +1,6 @@
 import logging
 import stripe
-from typing import Any, Dict, cast
+from typing import Any, Dict, cast, Optional, Union
 
 from django.core import signing
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -35,7 +35,7 @@ def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
         raise BillingError('tampered seat count')
 
 def check_upgrade_parameters(
-        billing_modality: str, schedule: str, license_management: str, licenses: int,
+        billing_modality: str, schedule: str, license_management: str, licenses: Optional[int],
         has_stripe_token: bool, seat_count: int) -> None:
     if billing_modality not in ['send_invoice', 'charge_automatically']:
         raise BillingError('unknown billing_modality')
@@ -57,7 +57,7 @@ def check_upgrade_parameters(
 
 # Should only be called if the customer is being charged automatically
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
-    stripe_source = stripe_customer.default_source
+    stripe_source = stripe_customer.default_source  # type: Optional[Union[stripe.Card, stripe.Source]]
     # In case of e.g. an expired card
     if stripe_source is None:  # nocoverage
         return _("No payment method on file")
