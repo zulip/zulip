@@ -510,9 +510,7 @@ def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
-            if (len(elem) != 2 or
-                any(not isinstance(x, str) and not isinstance(x, str)
-                    for x in elem)):
+            if (len(elem) != 2 or any(not isinstance(x, str) for x in elem)):
                 raise ValueError("element is not a string pair")
             return dict(operator=elem[0], operand=elem[1])
 
@@ -744,7 +742,7 @@ def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
-                         anchor: int=REQ(converter=int, default=None),
+                         anchor: Optional[int]=REQ(converter=int, default=None),
                          num_before: int=REQ(converter=to_non_negative_int),
                          num_after: int=REQ(converter=to_non_negative_int),
                          narrow: Optional[List[Dict[str, Any]]]=REQ('narrow', converter=narrow_parameter,
@@ -814,6 +812,9 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             narrow,
         )
 
+    # Hint to mypy that anchor is now unconditionally an integer,
+    # since its inference engine can't figure that out.
+    assert anchor is not None
     anchored_to_left = (anchor == 0)
 
     # Set value that will be used to short circuit the after_query
