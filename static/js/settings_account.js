@@ -154,6 +154,14 @@ exports.initialize_custom_date_type_fields = function (element_id) {
     $(element_id).find(".custom_user_field .datepicker").flatpickr({
         altInput: true,
         altFormat: "F j, Y"});
+
+    $(element_id).find(".custom_user_field .datepicker").on("mouseenter", function () {
+        if ($(this).val().length <= 0) {
+            $(this).parent().find(".remove_date").hide();
+        } else {
+            $(this).parent().find(".remove_date").show();
+        }
+    });
 };
 
 exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
