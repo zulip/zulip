@@ -1,8 +1,8 @@
 # Create a user
 
-Create a new user in a realm.
+{!api-admin-only.md!}
 
-**Note**: The requesting user must be an administrator.
+Create a new user account via the API.
 
 `POST {{ api_url }}/v1/users`
 

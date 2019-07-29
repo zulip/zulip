@@ -1,9 +1,8 @@
 # Get user groups
 
-Fetches all of the user groups in the organization.
+{!api-members-only.md!}
 
-**Note**: Only organization members or admins can contact this
-endpoint; bots and guests cannot contact this endpoint.
+Fetches all of the user groups in the organization.
 
 `GET {{ api_url }}/v1/user_groups`
 
