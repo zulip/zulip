@@ -22,7 +22,7 @@ class OpenAPISpec():
     def __init__(self, path: str) -> None:
         self.path = path
         self.last_update = None  # type: Optional[float]
-        self.data = None
+        self.data = None  # type: Optional[Dict[str, Any]]
 
     def reload(self) -> None:
         # Because importing yamole (and in turn, yaml) takes
