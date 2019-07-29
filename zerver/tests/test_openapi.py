@@ -6,11 +6,14 @@ import mock
 import inspect
 import typing
 from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional, Iterable, Mapping
+from unittest.mock import patch, MagicMock
 
 from django.conf import settings
 from django.http import HttpResponse
 
 import zerver.lib.openapi as openapi
+from zerver.lib.bugdown.api_code_examples import generate_curl_example, \
+    render_curl_example
 from zerver.lib.request import REQ
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.openapi import (
@@ -541,3 +544,207 @@ so maybe we shouldn't include it in pending_endpoints.
                     self.checked_endpoints.add(url_pattern)
 
         self.check_for_non_existant_openapi_endpoints()
+
+class TestCurlExampleGeneration(ZulipTestCase):
+
+    spec_mock_without_examples = {
+        "paths": {
+            "/mark_stream_as_read": {
+                "post": {
+                    "description": "Mark all the unread messages in a stream as read.",
+                    "parameters": [
+                        {
+                            "name": "stream_id",
+                            "in": "query",
+                            "description": "The ID of the stream whose messages should be marked as read.",
+                            "schema": {
+                                "type": "integer"
+                            },
+                            "required": True
+                        },
+                        {
+                            "name": "bool_param",
+                            "in": "query",
+                            "description": "Just a boolean parameter.",
+                            "schema": {
+                                "type": "boolean"
+                            },
+                            "required": True
+                        }
+                    ],
+                }
+            }
+        }
+    }
+
+    spec_mock_with_invalid_method = {
+        "paths": {
+            "/endpoint": {
+                "brew": {}  # the data is irrelevant as is should be rejected.
+            }
+        }
+    }  # type: Dict[str, Any]
+
+    spec_mock_using_object = {
+        "paths": {
+            "/endpoint": {
+                "get": {
+                    "description": "Get some info.",
+                    "parameters": [
+                        {
+                            "name": "param1",
+                            "in": "path",
+                            "description": "An object",
+                            "schema": {
+                                "type": "object"
+                            },
+                            "example": {
+                                "key": "value"
+                            },
+                            "required": True
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    spec_mock_using_object_without_example = {
+        "paths": {
+            "/endpoint": {
+                "get": {
+                    "description": "Get some info.",
+                    "parameters": [
+                        {
+                            "name": "param1",
+                            "in": "path",
+                            "description": "An object",
+                            "schema": {
+                                "type": "object"
+                            },
+                            "required": True
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    spec_mock_using_array_without_example = {
+        "paths": {
+            "/endpoint": {
+                "get": {
+                    "description": "Get some info.",
+                    "parameters": [
+                        {
+                            "name": "param1",
+                            "in": "path",
+                            "description": "An array",
+                            "schema": {
+                                "type": "array"
+                            },
+                            "required": True
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    def test_generate_and_render_curl_example(self) -> None:
+        generated_curl_example = generate_curl_example("/get_stream_id", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -X GET -G localhost:9991/api/v1/get_stream_id \\",
+            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -d 'stream=Denmark'",
+            "```"
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    def test_generate_and_render_curl_example_with_nonexistant_endpoints(self) -> None:
+        with self.assertRaises(KeyError):
+            generate_curl_example("/mark_this_stream_as_read", "POST")
+        with self.assertRaises(KeyError):
+            generate_curl_example("/mark_stream_as_read", "GET")
+
+    def test_generate_and_render_curl_without_auth(self) -> None:
+        generated_curl_example = generate_curl_example("/dev_fetch_api_key", "POST")
+        expected_curl_example = [
+            "```curl",
+            "curl -X POST localhost:9991/api/v1/dev_fetch_api_key \\",
+            "    -d 'username=iago@zulip.com'",
+            "```"
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    def test_generate_and_render_curl_with_default_examples(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_without_examples
+        generated_curl_example = generate_curl_example("/mark_stream_as_read", "POST")
+        expected_curl_example = [
+            "```curl",
+            "curl -X POST localhost:9991/api/v1/mark_stream_as_read \\",
+            "    -d 'stream_id=1' \\",
+            "    -d 'bool_param=false'",
+            "```"
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    def test_generate_and_render_curl_with_invalid_method(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_with_invalid_method
+        with self.assertRaises(ValueError):
+            generate_curl_example("/endpoint", "BREW")  # see: HTCPCP
+
+    def test_generate_and_render_curl_with_array_example(self) -> None:
+        generated_curl_example = generate_curl_example("/messages", "GET")
+        expected_curl_example = [
+            '```curl',
+            'curl -X GET -G localhost:9991/api/v1/messages \\',
+            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
+            "    -d 'anchor=42' \\",
+            "    -d 'use_first_unread_anchor=true' \\",
+            "    -d 'num_before=4' \\",
+            "    -d 'num_after=8' \\",
+            '    --data-urlencode narrow=\'[{"operand": "party", "operator": "stream"}]\' \\',
+            "    -d 'client_gravatar=true' \\",
+            "    -d 'apply_markdown=false'",
+            '```'
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    def test_generate_and_render_curl_with_object(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_using_object
+        generated_curl_example = generate_curl_example("/endpoint", "GET")
+        expected_curl_example = [
+            '```curl',
+            'curl -X GET -G localhost:9991/api/v1/endpoint \\',
+            '    --data-urlencode param1=\'{"key": "value"}\'',
+            '```'
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    def test_generate_and_render_curl_with_object_without_example(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_using_object_without_example
+        with self.assertRaises(ValueError):
+            generate_curl_example("/endpoint", "GET")
+
+    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    def test_generate_and_render_curl_with_array_without_example(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_using_array_without_example
+        with self.assertRaises(ValueError):
+            generate_curl_example("/endpoint", "GET")
+
+    def test_generate_and_render_curl_wrapper(self) -> None:
+        generated_curl_example = render_curl_example("/get_stream_id:GET:email:key:chat.zulip.org/api")
+        expected_curl_example = [
+            "```curl",
+            "curl -X GET -G chat.zulip.org/api/v1/get_stream_id \\",
+            "    -u email:key \\",
+            "    -d 'stream=Denmark'",
+            "```"
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
