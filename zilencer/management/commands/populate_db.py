@@ -42,6 +42,8 @@ settings.TORNADO_SERVER = None
 settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
 }
+# Set the appropriate path to avoid spamming the project directory.
+settings.LOCAL_UPLOADS_DIR = 'var/uploads'
 
 # Suppress spammy output from the push notifications logger
 push_notifications_logger.disabled = True
