@@ -334,7 +334,7 @@ paths:
           items:
             type: object
           default: []
-        example: [{"operator": "sender", "operand"}]
+        example: [{"operand": "party", "operator": "stream"}]
       - name: client_gravatar
         in: query
         description: Whether the client supports computing gravatars URLs.  If enabled,
