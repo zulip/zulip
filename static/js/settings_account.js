@@ -451,7 +451,7 @@ exports.set_up = function () {
         $("#deactivate_self_modal").modal("show");
     });
 
-    $('#settings_page').on('click', '.custom_user_field .remove_date', function (e) {
+    $('#account-settings').on('click', '.custom_user_field .remove_date', function (e) {
         e.preventDefault();
         e.stopPropagation();
         var field = $(e.target).closest('.custom_user_field').expectOne();
@@ -460,7 +460,7 @@ exports.set_up = function () {
         update_user_custom_profile_fields([field_id], channel.del);
     });
 
-    $('#settings_page').on('change', '.custom_user_field_value', function (e) {
+    $('#account-settings').on('change', '.custom_user_field_value', function (e) {
         var fields = [];
         var value = $(this).val();
         var field_id = parseInt($(e.target).closest('.custom_user_field').attr("data-field-id"), 10);
