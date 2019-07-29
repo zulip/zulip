@@ -109,8 +109,8 @@ function create_choice_row(container) {
 }
 
 function clear_form_data() {
-    $("#profile_field_name").val("");
-    $("#profile_field_hint").val("");
+    $("#profile_field_name").val("").closest(".control-group").show();
+    $("#profile_field_hint").val("").closest(".control-group").show();
     // Set default type "Short Text" in field type dropdown
     $("#profile_field_type").val(field_types.SHORT_TEXT.id);
     // Clear data from choice field form
@@ -122,7 +122,31 @@ function clear_form_data() {
     $("#custom_field_url_pattern").val("");
     $("#custom_external_account_url_pattern").hide();
     $("#profile_field_external_accounts").hide();
-    $("#profile_field_external_accounts_type").val(0);
+    $("#profile_field_external_accounts_type").val(
+        $("#profile_field_external_accounts_type option:first").val());
+}
+
+function set_up_create_field_form() {
+    var field_elem = $("#profile_field_external_accounts");
+    var field_url_pattern_elem = $("#custom_external_account_url_pattern");
+
+    if (parseInt($("#profile_field_type").val(), 10) === field_types.EXTERNAL_ACCOUNT.id) {
+        field_elem.show();
+        if ($("#profile_field_external_accounts_type").val() === 'custom') {
+            field_url_pattern_elem.show();
+            $("#profile_field_name").val("").closest(".control-group").show();
+            $("#profile_field_hint").val("").closest(".control-group").show();
+        } else {
+            field_url_pattern_elem.hide();
+            $("#profile_field_name").closest(".control-group").hide();
+            $("#profile_field_hint").closest(".control-group").hide();
+        }
+    } else {
+        $("#profile_field_name").closest(".control-group").show();
+        $("#profile_field_hint").closest(".control-group").show();
+        field_url_pattern_elem.hide();
+        field_elem.hide();
+    }
 }
 
 function read_field_data_from_form(field_type_id, field_elem) {
@@ -145,6 +169,7 @@ function create_profile_field(e) {
         success_continuation: clear_form_data,
     };
     field_data = read_field_data_from_form(parseInt(field_type, 10), $('.new-profile-field-form'));
+
     var form_data = {
         name: $("#profile_field_name").val(),
         field_type: field_type,
@@ -209,7 +234,11 @@ function set_up_external_account_field_edit_form(field_elem, url_pattern_val) {
     if (field_elem.form.find('select[name=external_acc_field_type]').val() === 'custom') {
         field_elem.form.find('input[name=url_pattern]').val(url_pattern_val);
         field_elem.form.find('.custom_external_account_detail').show();
+        field_elem.form.find('input[name=name]').val("").closest(".control-group").show();
+        field_elem.form.find('input[name=hint]').val("").closest(".control-group").show();
     } else {
+        field_elem.form.find('input[name=name]').closest(".control-group").hide();
+        field_elem.form.find('input[name=hint]').closest(".control-group").hide();
         field_elem.form.find('.custom_external_account_detail').hide();
     }
 }
@@ -276,6 +305,7 @@ function open_edit_form(e) {
         // For some reason jQuery's serialize() is not working with
         // channel.patch even though it is supported by $.ajax.
         var data = {};
+
         data.name = profile_field.form.find('input[name=name]').val();
         data.hint = profile_field.form.find('input[name=hint]').val();
         data.field_data = JSON.stringify(read_field_data_from_form(parseInt(field.type, 10),
@@ -395,29 +425,12 @@ function set_up_choices_field() {
 }
 
 function set_up_external_account_field() {
-    var field_elem = $("#profile_field_external_accounts");
-    var field_url_pattern_elem = $("#custom_external_account_url_pattern");
-
-    $('#profile_field_type').on('change', function (e) {
-        var selected_field_id = parseInt($(e.target).val(), 10);
-        if (selected_field_id === field_types.EXTERNAL_ACCOUNT.id) {
-            field_elem.show();
-            if ($("#profile_field_external_accounts_type").val() === 'custom') {
-                field_url_pattern_elem.show();
-            } else {
-                field_url_pattern_elem.hide();
-            }
-        } else {
-            field_url_pattern_elem.hide();
-            field_elem.hide();
-        }
+    $('#profile_field_type').on('change', function () {
+        set_up_create_field_form();
     });
+
     $("#profile_field_external_accounts_type").on("change", function () {
-        if ($("#profile_field_external_accounts_type").val() === 'custom') {
-            field_url_pattern_elem.show();
-        } else {
-            field_url_pattern_elem.hide();
-        }
+        set_up_create_field_form();
     });
 }
 
