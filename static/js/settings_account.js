@@ -162,6 +162,10 @@ exports.initialize_custom_date_type_fields = function (element_id) {
             $(this).parent().find(".remove_date").show();
         }
     });
+
+    $(element_id).find(".custom_user_field .remove_date").on("click", function () {
+        $(this).parent().find(".custom_user_field_value").val("");
+    });
 };
 
 exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
@@ -464,7 +468,6 @@ exports.set_up = function () {
         e.stopPropagation();
         var field = $(e.target).closest('.custom_user_field').expectOne();
         var field_id = parseInt($(field).attr("data-field-id"), 10);
-        field.find(".custom_user_field_value").val("");
         update_user_custom_profile_fields([field_id], channel.del);
     });
 
