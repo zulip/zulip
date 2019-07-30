@@ -3,7 +3,7 @@ from functools import partial
 import random
 
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
-    Type, cast, TypeVar
+    Type, TypeVar, Union
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult
 
@@ -489,7 +489,7 @@ class Runner(DiscoverRunner):
             pass
         return super().teardown_test_environment(*args, **kwargs)
 
-    def test_imports(self, test_labels: List[str], suite: unittest.TestSuite) -> None:
+    def test_imports(self, test_labels: List[str], suite: Union[TestSuite, ParallelTestSuite]) -> None:
         prefix_old = 'unittest.loader.ModuleImportFailure.'  # Python <= 3.4
         prefix_new = 'unittest.loader._FailedTest.'  # Python > 3.4
         error_prefixes = [prefix_old, prefix_new]
@@ -560,7 +560,7 @@ class Runner(DiscoverRunner):
             write_instrumentation_reports(full_suite=full_suite, include_webhooks=include_webhooks)
         return failed, result.failed_tests
 
-def get_test_names(suite: unittest.TestSuite) -> List[str]:
+def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
     if isinstance(suite, ParallelTestSuite):
         # suite is ParallelTestSuite. It will have a subsuites parameter of
         # type SubSuiteList. Each element of a SubsuiteList is a tuple whose
@@ -569,7 +569,6 @@ def get_test_names(suite: unittest.TestSuite) -> List[str]:
         # implementation details.
         return [name for subsuite in suite.subsuites for name in subsuite[1]]
     else:
-        suite = cast(TestSuite, suite)
         return [full_test_name(t) for t in get_tests_from_suite(suite)]
 
 def get_tests_from_suite(suite: unittest.TestSuite) -> TestCase:
