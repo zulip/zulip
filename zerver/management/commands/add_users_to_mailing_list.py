@@ -30,11 +30,12 @@ class Command(BaseCommand):
                             help='Opt-in time of the users.')
 
     def handle(self, *args: Any, **options: str) -> None:
-        if options['api_key'] is None:
+        api_key = options['api_key']
+        if api_key is None:
             try:
                 if settings.MAILCHIMP_API_KEY is None:
                     raise CommandError('MAILCHIMP_API_KEY is None. Check your server settings file.')
-                options['api_key'] = settings.MAILCHIMP_API_KEY
+                api_key = settings.MAILCHIMP_API_KEY
             except AttributeError:
                 raise CommandError('Please supply a MailChimp API key to --api-key, or add a '
                                    'MAILCHIMP_API_KEY to your server settings file.')
@@ -49,7 +50,7 @@ class Command(BaseCommand):
                                    'ZULIP_FRIENDS_LIST_ID to your server settings file.')
 
         endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
-                   (options['api_key'].split('-')[1], options['list_id'])
+                   (api_key.split('-')[1], options['list_id'])
 
         for user in UserProfile.objects.filter(is_bot=False, is_active=True) \
                                        .values('email', 'full_name', 'realm_id'):
@@ -63,7 +64,7 @@ class Command(BaseCommand):
                     'OPTIN_TIME': options['optin_time'],
                 },
             }
-            r = requests.post(endpoint, auth=('apikey', options['api_key']), json=data, timeout=10)
+            r = requests.post(endpoint, auth=('apikey', api_key), json=data, timeout=10)
             if r.status_code == 400 and ujson.loads(r.text)['title'] == 'Member Exists':
                 print("%s is already a part of the list." % (data['email_address'],))
             elif r.status_code >= 400:
