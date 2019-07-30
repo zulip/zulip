@@ -243,7 +243,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         if end is None:
             end = max(last_successful_fill(stat.property) or
                       datetime.min.replace(tzinfo=timezone_utc) for stat in stats)
-        if end is None or start > end:
+        if start > end:
             logging.warning("User from realm %s attempted to access /stats, but the computed "
                             "start time: %s (creation of realm or installation) is later than the computed "
                             "end time: %s (last successful analytics update). Is the "
