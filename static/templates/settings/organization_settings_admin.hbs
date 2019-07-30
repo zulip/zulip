@@ -157,18 +157,21 @@
             <p>{{t "Default settings for new users joining this organization." }}</p>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
-                    <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}:</label>
+                    <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}</label>
                     <select name="realm_default_language" class ="setting-widget prop-element" id="id_realm_default_language" data-setting-widget-type="text">
                         {{#each language_list}}
                         <option value='{{this.code}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
                 </div>
-                {{> settings_checkbox
-                  setting_name="realm_default_twenty_four_hour_time"
-                  prefix="id_"
-                  is_checked=realm_default_twenty_four_hour_time
-                  label=admin_settings_label.realm_default_twenty_four_hour_time}}
+                <div class="input-group">
+                    <label for="realm_default_twenty_four_hour_time" class="dropdown-title">{{ admin_settings_label.realm_default_twenty_four_hour_time }}</label>
+                    <select name="realm_default_twenty_four_hour_time" class ="setting-widget prop-element" id="id_realm_default_twenty_four_hour_time" data-setting-widget-type="text">
+                        {{#each realm_default_twenty_four_hour_time_values}}
+                        <option value='{{ this.value }}'>{{ this.description }}</option>
+                        {{/each}}
+                    </select>
+                </div>
             </div>
         </div>
 
