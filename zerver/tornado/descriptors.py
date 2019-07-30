@@ -1,6 +1,6 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, TYPE_CHECKING
 
-if False:
+if TYPE_CHECKING:
     from zerver.tornado.event_queue import ClientDescriptor
 
 descriptors_by_handler_id = {}  # type: Dict[int, ClientDescriptor]

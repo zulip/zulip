@@ -13,6 +13,8 @@ exclude_lines =
     def __str__[(]self[)] -> .*:
     # Don't require coverage for errors about unsupported webhook event types
     raise UnexpectedWebhookEventType
+    # Don't require coverage for blocks only run when type-checking
+    if TYPE_CHECKING:
 
 [run]
 omit =

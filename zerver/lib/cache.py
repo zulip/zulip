@@ -9,7 +9,8 @@ from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
 from django.http import HttpRequest
 
-from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar, Tuple
+from typing import Any, Callable, Dict, Iterable, List, \
+    Optional, TypeVar, Tuple, TYPE_CHECKING
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import time
@@ -19,7 +20,7 @@ import sys
 import os
 import hashlib
 
-if False:
+if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
     from zerver.models import UserProfile, Realm, Message

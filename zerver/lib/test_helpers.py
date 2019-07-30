@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from typing import (
     Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-    Optional, Tuple, Union, IO, TypeVar
+    Optional, Tuple, Union, IO, TypeVar, TYPE_CHECKING
 )
 
 from django.core import signing
@@ -38,7 +38,7 @@ from zerver.models import (
     UserProfile,
 )
 
-if False:
+if TYPE_CHECKING:
     # Avoid an import cycle; we only need these for type annotations.
     from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
 
