@@ -451,10 +451,10 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int,
         mpims = []
     process_mpims(mpims)
 
-    for username in added_users:
-        recipient = build_recipient(added_users[username], recipient_id_count, Recipient.PERSONAL)
-        added_recipient[username] = recipient_id_count
-        sub = build_subscription(recipient_id_count, added_users[username], subscription_id_count)
+    for slack_user_id, zulip_user_id in added_users.items():
+        recipient = build_recipient(zulip_user_id, recipient_id_count, Recipient.PERSONAL)
+        added_recipient[slack_user_id] = recipient_id_count
+        sub = build_subscription(recipient_id_count, zulip_user_id, subscription_id_count)
         realm["zerver_recipient"].append(recipient)
         realm["zerver_subscription"].append(sub)
         recipient_id_count += 1
