@@ -24,9 +24,10 @@ from scripts.lib.setup_venv import (
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 from tools.setup import setup_venvs
 
-if False:
-    # `NoReturn` was introduced in python 3.5.4
-    from typing import List, NoReturn
+from typing import List, TYPE_CHECKING
+if TYPE_CHECKING:
+    # mypy_extensions might not be installed yet
+    from mypy_extensions import NoReturn
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [

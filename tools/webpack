@@ -4,10 +4,7 @@ import argparse
 import os
 import json
 import subprocess
-
-if False:
-    # `NoReturn` wasn't introduced until python 3.5.4
-    from typing import NoReturn
+from mypy_extensions import NoReturn
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 STATIC_PATH = 'static/'
