@@ -280,7 +280,7 @@ function test_submit_settings_form(submit_form) {
         return "text";
     };
     const realm_default_twenty_four_hour_time_elem = $("#id_realm_default_twenty_four_hour_time");
-    realm_default_twenty_four_hour_time_elem.prop("checked", true);
+    realm_default_twenty_four_hour_time_elem.val('true');
     realm_default_twenty_four_hour_time_elem.attr('id', 'id_realm_default_twenty_four_hour_time');
     realm_default_twenty_four_hour_time_elem.data = () => {
         return "bool";
