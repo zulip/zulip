@@ -1202,15 +1202,6 @@ paths:
           type: boolean
           default: false
         example: true
-      - name: announce
-        in: query
-        description: If `announce` is `True` and one of the streams specified
-          in `subscriptions` has to be created (i.e. doesn't exist to begin
-          with), an announcement will be made notifying that a new stream was
-          created.
-        schema:
-          type: boolean
-        example: true
       - name: principals
         in: query
         description: A list of email addresses of the users that will be
