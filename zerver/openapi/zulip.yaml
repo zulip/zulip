@@ -1339,10 +1339,13 @@ paths:
             type: array
             items:
               type: object
-              items:
-                name: string
-                color: string
-                description: string
+              properties:
+                name:
+                  type: string
+                color:
+                  type: string
+                description:
+                  type: string
           example:
             [
               {
@@ -1426,7 +1429,7 @@ paths:
         to.
       parameters:
       - name: stream
-        in: query_function
+        in: query
         description: The name of the stream in which to mute the topic.
         schema:
           type: string
@@ -1490,6 +1493,7 @@ paths:
       description: Upload a single emoji file.
       parameters:
       - name: emoji_name
+        required: true
         in: path
         description: The name that should be associated with the uploaded
           emoji image/gif.
@@ -1621,10 +1625,9 @@ paths:
                       items:
                         type: array
                         items:
-                          type:
-                            anyOf:
-                            - string
-                            - integer
+                          oneOf:
+                            - type: string
+                            - type: integer
                       description: An array of tuples, each representing one of the
                         linkifiers set up in the organization. Each of these tuples contain the
                         pattern, the formatted URL and the filter's ID, in that order. See
@@ -1743,6 +1746,8 @@ paths:
           messages, so one specifies: `event_types=['message']`"
         schema:
           type: array
+          items:
+            type: string
         example: event_types=['message']
       - name: all_public_streams
         in: query
@@ -1768,6 +1773,8 @@ paths:
           `event_types` is not provided, this argument defaults to `None`.
         schema:
           type: array
+          items:
+            type: string
         example: event_types=['message']
       - name: narrow
         in: query
@@ -1778,6 +1785,10 @@ paths:
           `narrow=['is', 'private']` for private messages.
         schema:
           type: array
+          items:
+            anyOf:
+            - type: string
+            - type: integer
           default: narrow=[]
         example: narrow=['stream', 'Denmark']
       security:
@@ -2337,6 +2348,8 @@ paths:
         description: An array containing the user IDs of the initial members for the new user group.
         schema:
           type: array
+          items:
+            type: integer
         example: [1, 2, 3, 4]
         required: true
       security:
