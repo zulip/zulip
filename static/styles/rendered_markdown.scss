@@ -125,6 +125,19 @@
         vertical-align: text-bottom;
     }
 
+    /* Highlighting for message edit history */
+    .highlight_text_inserted {
+        color: hsl(122, 72%, 30%);
+        background-color: hsl(120, 64%, 95%);
+    }
+
+    .highlight_text_deleted {
+        color: hsl(0, 0%, 73%);
+        text-decoration: line-through;
+        background-color: hsl(7, 90%, 92%);
+        word-break: break-all;
+    }
+
     /* LaTeX styling */
     .katex-html {
         line-height: initial;
@@ -438,22 +451,7 @@ a:hover code {
     border-color: hsl(200, 100%, 25%);
 }
 
-/* embeds and related styling
-
-TODO: This should likely also be put inside .rendered_content */
-
+/* Search highlight used in both topics and rendered_markdown */
 .highlight {
     background-color: hsl(51, 94%, 74%);
-}
-
-.highlight_text_inserted {
-    color: hsl(122, 72%, 30%);
-    background-color: hsl(120, 64%, 95%);
-}
-
-.highlight_text_deleted {
-    color: hsl(0, 0%, 73%);
-    text-decoration: line-through;
-    background-color: hsl(7, 90%, 92%);
-    word-break: break-all;
 }
