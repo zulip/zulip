@@ -174,6 +174,99 @@
     }
 
     /* embedded link previews */
+    .message_inline_image_title {
+        font-weight: bold;
+    }
+
+    .twitter-image,
+    .message_inline_image {
+        position: relative;
+        margin-bottom: 5px;
+        margin-left: 5px;
+        height: 100px;
+        display: block !important;
+        border: none !important;
+    }
+
+    &.rtl .twitter-image,
+    &.rtl .message_inline_image {
+        margin-left: unset;
+        margin-right: 5px;
+    }
+
+    .twitter-tweet {
+        border: 1px solid hsl(0, 0%, 87%);
+        padding: .5em .75em;
+        margin-bottom: 0.25em;
+        word-break: break-word;
+        min-height: 48px;
+    }
+
+    .twitter-avatar {
+        float: left;
+        width: 48px;
+        height: 48px;
+        margin-right: .75em;
+    }
+
+    .message_inline_ref {
+        margin-bottom: 5px;
+        margin-left: 5px;
+        height: 50px;
+        display: block !important;
+        border: none !important;
+    }
+
+    &.rtl .message_inline_ref {
+        margin-left: unset;
+        margin-right: 5px;
+    }
+
+    .twitter-image img,
+    .message_inline_image img,
+    .message_inline_ref img {
+        height: auto;
+        max-height: 100%;
+        float: left;
+        margin-right: 10px;
+    }
+
+    .message_inline_image img {
+        cursor: zoom-in;
+    }
+
+    .youtube-video img,
+    .vimeo-video img,
+    .embed-video img {
+        cursor: pointer;
+    }
+
+    &.rtl .twitter-image img,
+    &.rtl .message_inline_image img,
+    &.rtl .message_inline_ref img {
+        float: right;
+        margin-right: unset;
+        margin-left: 10px;
+    }
+
+    li .message_inline_image img {
+        float: none;
+    }
+
+    .youtube-video .fa-play::before,
+    .embed-video .fa-play::before {
+        position: absolute;
+        margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
+        padding: 5px 8px 5px 10px;
+        font-size: 12px;
+        border-radius: 4px;
+        background-color: hsl(0, 0%, 0%);
+        color: hsl(0, 0%, 100%);
+        opacity: 0.7;
+        top: 0;
+        left: 0;
+    }
+
     .message_embed {
         display: block;
         position: relative;
@@ -349,37 +442,6 @@ a:hover code {
 
 TODO: This should likely also be put inside .rendered_content */
 
-.twitter-image,
-.message_inline_image {
-    position: relative;
-    margin-bottom: 5px;
-    margin-left: 5px;
-    height: 100px;
-    display: block !important;
-    border: none !important;
-}
-
-.rtl .twitter-image,
-.rtl .message_inline_image {
-    margin-left: unset;
-    margin-right: 5px;
-}
-
-.twitter-tweet {
-    border: 1px solid hsl(0, 0%, 87%);
-    padding: .5em .75em;
-    margin-bottom: 0.25em;
-    word-break: break-word;
-    min-height: 48px;
-}
-
-.twitter-avatar {
-    float: left;
-    width: 48px;
-    height: 48px;
-    margin-right: .75em;
-}
-
 .highlight {
     background-color: hsl(51, 94%, 74%);
 }
@@ -394,66 +456,4 @@ TODO: This should likely also be put inside .rendered_content */
     text-decoration: line-through;
     background-color: hsl(7, 90%, 92%);
     word-break: break-all;
-}
-
-.message_inline_ref {
-    margin-bottom: 5px;
-    margin-left: 5px;
-    height: 50px;
-    display: block !important;
-    border: none !important;
-}
-
-.rtl .message_inline_ref {
-    margin-left: unset;
-    margin-right: 5px;
-}
-
-.twitter-image img,
-.message_inline_image img,
-.message_inline_ref img {
-    height: auto;
-    max-height: 100%;
-    float: left;
-    margin-right: 10px;
-}
-
-.message_inline_image img {
-    cursor: zoom-in;
-}
-
-.youtube-video img,
-.vimeo-video img,
-.embed-video img {
-    cursor: pointer;
-}
-
-.rtl .twitter-image img,
-.rtl .message_inline_image img,
-.rtl .message_inline_ref img {
-    float: right;
-    margin-right: unset;
-    margin-left: 10px;
-}
-
-li .message_inline_image img {
-    float: none;
-}
-
-.youtube-video .fa-play::before,
-.embed-video .fa-play::before {
-    position: absolute;
-    margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
-    padding: 5px 8px 5px 10px;
-    font-size: 12px;
-    border-radius: 4px;
-    background-color: hsl(0, 0%, 0%);
-    color: hsl(0, 0%, 100%);
-    opacity: 0.7;
-    top: 0;
-    left: 0;
-}
-
-.message_inline_image_title {
-    font-weight: bold;
 }
