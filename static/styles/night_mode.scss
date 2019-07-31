@@ -1,14 +1,16 @@
 /* Default Colors */
 $color-primary-background: hsl(212, 28%, 18%);
+$color-primary-text: hsl(236, 33%, 90%);
+$color-primary-link-hover: hsl(200, 79%, 66% );
 
 /* Styles: Do not add color codes below */
 
 body.night-mode {
     background-color: $color-primary-background;
-    color: hsl(236, 33%, 90%);
+    color: $color-primary-text;
 
     a:hover {
-        color: hsl(200, 79%, 66%);
+        color: $color-primary-link-hover;
     }
 
     ul.filters a:hover {
@@ -107,7 +109,7 @@ on a dark background, and don't change the dark labels dark either. */
 
         &.btn-link {
             border-color: hsla(0, 0%, 0%, 0.6);
-            color: hsl(200, 79%, 66%);
+            color: $color-primary-link-hover;
         }
 
         &:hover,
@@ -134,7 +136,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     select option {
         background-color: $color-primary-background;
-        color: hsl(236, 33%, 90%);
+        color: $color-primary-text;
     }
 
     .topic-unread-count,
@@ -186,7 +188,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: inherit;
 
         &:hover {
-            border-color: hsl(236, 33%, 90%);
+            border-color: $color-primary-text;
         }
     }
 
@@ -443,7 +445,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .alert.home-error-bar {
-        color: hsl(236, 33%, 90%);
+        color: $color-primary-text;
         background-color: hsla(35, 84%, 62%, 0.25);
         border: 1px solid hsl(11, 46%, 54%);
     }
@@ -610,7 +612,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .collapse-settings-btn:hover {
-        color: hsl(200, 79%, 66%);
+        color: $color-primary-link-hover;
     }
 
     #loading_more_messages_indicator path {
