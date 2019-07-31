@@ -240,7 +240,6 @@ class EventQueue:
     def __init__(self, id: str) -> None:
         self.queue = deque()  # type: ignore # Should be Deque[Dict[str, Any]], but Deque isn't available in Python 3.4
         self.next_event_id = 0  # type: int
-        self.newest_pruned_id = -1  # type: int
         self.id = id  # type: str
         self.virtual_events = {}  # type: Dict[str, Dict[str, Any]]
 
@@ -296,7 +295,6 @@ class EventQueue:
     # See the comment on pop; that applies here as well
     def prune(self, through_id: int) -> None:
         while len(self.queue) != 0 and self.queue[0]['id'] <= through_id:
-            self.newest_pruned_id = self.queue[0]['id']
             self.pop()
 
     def contents(self) -> List[Dict[str, Any]]:
@@ -524,11 +522,7 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
                 raise BadEventQueueIdError(queue_id)
             if user_profile_id != client.user_profile_id:
                 raise JsonableError(_("You are not authorized to get events from this queue"))
-            if last_event_id < client.event_queue.newest_pruned_id:
-                raise JsonableError(_("An event newer than %s has already been pruned!") % (last_event_id,))
             client.event_queue.prune(last_event_id)
-            if last_event_id != client.event_queue.newest_pruned_id:
-                raise JsonableError(_("Event %s was not in this queue") % (last_event_id,))
             was_connected = client.finish_current_handler()
 
         if not client.event_queue.empty() or dont_block:

@@ -117,7 +117,7 @@ class EventsTestCase(TornadoWebTestCase):
         event_queue_id = self.create_queue()
         data = {
             'queue_id': event_queue_id,
-            'last_event_id': -1,
+            'last_event_id': 0,
         }
 
         path = '/json/events?{}'.format(urllib.parse.urlencode(data))
