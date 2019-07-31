@@ -518,7 +518,7 @@ IGNORED_EVENTS = {
 @has_request_variables
 def api_clubhouse_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Any]=REQ(argument_type='body')
+        payload: Optional[Dict[str, Any]]=REQ(argument_type='body')
 ) -> HttpResponse:
 
     # Clubhouse has a tendency to send empty POST requests to
