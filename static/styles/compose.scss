@@ -493,9 +493,8 @@ a#undo_markdown_preview {
     .typeahead-header {
         margin: 0;
         padding-left: 20px;
-        padding-bottom: 5px;
         padding-right: 20px;
-        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+        border-top: 1px solid hsla(0, 0%, 0%, 0.2);
         display: flex;
         align-items: center;
     }
