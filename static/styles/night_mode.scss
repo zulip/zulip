@@ -3,8 +3,15 @@ $color-primary-background: hsl(212, 28%, 18%);
 $color-primary-text: hsl(236, 33%, 90%);
 $color-primary-link-hover: hsl(200, 79%, 66% );
 $color-dark-border: hsla(0, 0%, 0%, 0.6);
+$color-medium-border: hsla(0, 0%, 100%, 0.4);
 $color-light-border: hsla(0, 0%, 0%, 0.2);
 $color-light-background: hsla(0, 0%, 0%, 0.2);
+$color-pm-alert-message-background: hsl(208, 17%, 29%);
+
+/* Colors to snap: These colors could be swapped with one of the ones above */
+
+$color-border-5-black: hsla(0, 0%, 0%, 0.5);
+$color-background-5-black: hsla(0, 0%, 0%, 0.5);
 
 /* Styles: Do not add color codes below */
 
@@ -51,7 +58,7 @@ body.night-mode {
     }
 
     .new-style label.checkbox input[type=checkbox] ~ span {
-        border-color: hsla(0, 0%, 100%, 0.4);
+        border-color: $color-medium-border;
     }
 
     .modal-bg {
@@ -84,7 +91,7 @@ body.night-mode {
     }
 
     .private-message .alert-msg {
-        background-color: hsl(208, 17%, 29%);
+        background-color: $color-pm-alert-message-background;
     }
 
     /* do not turn the .message_header .stream_label text dark on hover because they're
@@ -155,7 +162,7 @@ on a dark background, and don't change the dark labels dark either. */
     #search_arrows .pill,
     .pm_recipient .pill-container .pill {
         color: inherit;
-        border: 1px solid hsla(0, 0%, 0%, 0.50);
+        border: 1px solid $color-border-5-black;
         background-color: hsla(0, 0%, 0%, 0.25);
         font-weight: 600;
     }
@@ -172,7 +179,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .emoji-info-popover .emoji-popover .emoji-popover-category-tabs .emoji-popover-tab-item.active {
-        background-color: hsla(0, 0%, 0%, 0.5);
+        background-color: $color-background-5-black;
     }
 
     .new-style .tab-switcher .ind-tab.selected,
@@ -180,7 +187,7 @@ on a dark background, and don't change the dark labels dark either. */
     .table-striped thead th,
     .emoji-popover .reaction.reacted,
     .message_reactions .message_reaction.reacted {
-        background-color: hsla(0, 0%, 0%, 0.5);
+        background-color: $color-background-5-black;
         border-color: hsla(0, 0%, 0%, 0.9);
     }
 
@@ -552,7 +559,7 @@ on a dark background, and don't change the dark labels dark either. */
     .rendered_markdown code,
     .typeahead.dropdown-menu {
         background-color: hsl(212, 25%, 15%);
-        border-color: hsla(0, 0%, 0%, 0.5);
+        border-color: $color-border-5-black;
         color: inherit;
     }
 
