@@ -85,6 +85,7 @@
     "app": "./static/js/bundles/app.js",
     "archive-styles": [
         "katex/dist/katex.css",
+        "./static/styles/rendered_markdown.scss",
         "./static/styles/zulip.scss",
         "./static/styles/media.scss",
         "./static/styles/portico/archive.scss"
