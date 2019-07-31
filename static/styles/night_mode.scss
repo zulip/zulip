@@ -2,6 +2,9 @@
 $color-primary-background: hsl(212, 28%, 18%);
 $color-primary-text: hsl(236, 33%, 90%);
 $color-primary-link-hover: hsl(200, 79%, 66% );
+$color-dark-border: hsla(0, 0%, 0%, 0.6);
+$color-light-border: hsla(0, 0%, 0%, 0.2);
+$color-light-background: hsla(0, 0%, 0%, 0.2);
 
 /* Styles: Do not add color codes below */
 
@@ -38,7 +41,7 @@ body.night-mode {
     .column-left .left-sidebar,
     #settings_page .form-sidebar,
     .column-right .right-sidebar {
-        border-color: hsla(0, 0%, 0%, 0.2);
+        border-color: $color-light-border;
     }
 
     .dark .message_label_clickable.stream_label,
@@ -100,15 +103,15 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .new-style .button {
-        background-color: hsla(0, 0%, 0%, 0.2);
+        background-color: $color-light-background;
 
         &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link) {
-            border-color: hsla(0, 0%, 0%, 0.6);
+            border-color: $color-dark-border;
             color: inherit;
         }
 
         &.btn-link {
-            border-color: hsla(0, 0%, 0%, 0.6);
+            border-color: $color-dark-border;
             color: $color-primary-link-hover;
         }
 
@@ -129,8 +132,8 @@ on a dark background, and don't change the dark labels dark either. */
     .new-style .tab-switcher .ind-tab:not(.selected),
     select,
     .pill-container {
-        background-color: hsla(0, 0%, 0%, 0.2);
-        border-color: hsla(0, 0%, 0%, 0.6);
+        background-color: $color-light-background;
+        border-color: $color-dark-border;
         color: inherit;
     }
 
@@ -208,7 +211,7 @@ on a dark background, and don't change the dark labels dark either. */
     .message-header-contents,
     .message_header_private_message .message-header-contents,
     #tab_bar #tab_list li.active {
-        background-color: hsla(0, 0%, 0%, 0.2);
+        background-color: $color-light-background;
     }
 
     .message-header-contents,
@@ -222,11 +225,11 @@ on a dark background, and don't change the dark labels dark either. */
     .message_row,
     .draft-row .draft-info-box,
     .preview_message_area {
-        border-color: hsla(0, 0%, 0%, 0.2);
+        border-color: $color-light-border;
     }
 
     #searchbox_legacy {
-        border-color: hsla(0, 0%, 0%, 0.6);
+        border-color: $color-dark-border;
     }
 
     .overlay,
@@ -350,7 +353,7 @@ on a dark background, and don't change the dark labels dark either. */
     .emoji-info-popover .emoji-showcase-container,
     .emoji-info-popover .emoji-popover .emoji-popover-category-tabs,
     .emoji-info-popover .emoji-popover .emoji-popover-top {
-        background-color: hsla(0, 0%, 0%, 0.2);
+        background-color: $color-light-background;
     }
 
     thead,
@@ -370,8 +373,8 @@ on a dark background, and don't change the dark labels dark either. */
     .table-striped tbody tr:nth-child(odd) th,
     .modal-footer,
     .modal-bg .modal-header {
-        border-color: hsla(0, 0%, 0%, 0.2);
-        background-color: hsla(0, 0%, 0%, 0.2);
+        border-color: $color-light-border;
+        background-color: $color-light-background;
     }
 
     .table-striped tbody tr:nth-child(odd) td {
@@ -379,8 +382,8 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .modal-footer {
-        -webkit-box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
-        box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+        -webkit-box-shadow: inset 0 1px 0 $color-light-border;
+        box-shadow: inset 0 1px 0 $color-light-border;
     }
 
     #invite_user_form .modal-footer {
@@ -401,7 +404,7 @@ on a dark background, and don't change the dark labels dark either. */
     table,
     table th,
     table td {
-        border-color: hsla(0, 0%, 0%, 0.2);
+        border-color: $color-light-border;
     }
 
     .draft-row .draft-info-box,
@@ -426,10 +429,10 @@ on a dark background, and don't change the dark labels dark either. */
     .rendered_markdown .user-mention,
     .rendered_markdown .user-group-mention {
         background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsla(0, 0%, 0%, 0.1)), color-stop(100%, hsla(0, 0%, 0%, 0.0)));
-        background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
-        background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
-        background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
-        background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+        background: -webkit-linear-gradient(top, $color-light-background 0%, hsla(0, 0%, 0%, 0.1) 100%);
+        background: -o-linear-gradient(top, $color-light-background 0%, hsla(0, 0%, 0%, 0.1) 100%);
+        background: -ms-linear-gradient(top, $color-light-background 0%, hsla(0, 0%, 0%, 0.1) 100%);
+        background: linear-gradient(to bottom, $color-light-background 0%, hsla(0, 0%, 0%, 0.1) 100%);
         box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
     }
 
@@ -485,7 +488,7 @@ on a dark background, and don't change the dark labels dark either. */
     /* Popover: */
     .hotspot.overlay .hotspot-popover,
     #hotspot_intro_reply_icon {
-        border-color: hsla(0, 0%, 0%, 0.2) !important;
+        border-color: $color-light-border !important;
         /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
     color. */
         box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.4);
@@ -493,7 +496,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     /* Arrows: */
     .hotspot.overlay .hotspot-popover.arrow-right::before {
-        border-left-color: hsla(0, 0%, 0%, 0.2);
+        border-left-color: $color-light-border;
     }
 
     .hotspot.overlay .hotspot-popover.arrow-right::after {
@@ -501,7 +504,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .hotspot.overlay .hotspot-popover.arrow-bottom::before {
-        border-top-color: hsla(0, 0%, 0%, 0.2);
+        border-top-color: $color-light-border;
     }
 
     .hotspot.overlay .hotspot-popover.arrow-bottom::after {
@@ -509,7 +512,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .hotspot.overlay .hotspot-popover.arrow-left::before {
-        border-right-color: hsla(0, 0%, 0%, 0.2);
+        border-right-color: $color-light-border;
     }
 
     .hotspot.overlay .hotspot-popover.arrow-left::after {
@@ -517,7 +520,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .hotspot.overlay .hotspot-popover.arrow-top::before {
-        border-bottom-color: hsla(0, 0%, 0%, 0.2);
+        border-bottom-color: $color-light-border;
     }
 
     .hotspot.overlay .hotspot-popover.arrow-top::after {
@@ -542,7 +545,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .history-limited-box {
-        background-color: hsla(0, 0%, 0%, 0.2);
+        background-color: $color-light-background;
     }
 
     #feedback_container,
@@ -643,6 +646,6 @@ on a dark background, and don't change the dark labels dark either. */
 
 @-moz-document url-prefix() {
     body.night-mode #settings_page select {
-        background-color: hsla(0, 0%, 0%, 0.2);
+        background-color: $color-light-background;
     }
 }
