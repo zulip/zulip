@@ -36,8 +36,10 @@ parser.add_argument('-a', '--all', action='store_true',
                     help="check all files, bypassing the default exclude list")
 parser.add_argument('--force', action="store_true",
                     help="run tests despite possible provisioning problems")
-parser.add_argument('--warn-unreachable', action='store_true',
-                    help="warn of unreachable or redundant code.")
+parser.add_argument('--warn-unreachable',
+                    action='store_false',
+                    default=True,
+                    help="warn of unreachable or redundant code; defaults to true")
 args = parser.parse_args()
 
 assert_provisioning_status_ok(args.force)
