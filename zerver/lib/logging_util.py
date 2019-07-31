@@ -133,7 +133,7 @@ def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
         if f.f_code.co_filename == record.pathname:
             return f.f_globals.get('__name__')
         f = f.f_back
-    return None
+    return None  # type: ignore # required because of previous ignore on f
 
 logger_nicknames = {
     'root': '',  # This one is more like undoing a nickname.
