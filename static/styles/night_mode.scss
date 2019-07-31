@@ -6,12 +6,15 @@ $color-dark-border: hsla(0, 0%, 0%, 0.6);
 $color-medium-border: hsla(0, 0%, 100%, 0.4);
 $color-light-border: hsla(0, 0%, 0%, 0.2);
 $color-light-background: hsla(0, 0%, 0%, 0.2);
+$color-button-active-background: hsla(0, 0%, 0%, 0.15);
 $color-pm-alert-message-background: hsl(208, 17%, 29%);
 
 /* Colors to snap: These colors could be swapped with one of the ones above */
 
 $color-border-5-black: hsla(0, 0%, 0%, 0.5);
 $color-background-5-black: hsla(0, 0%, 0%, 0.5);
+$color-background-25-black: hsla(0, 0%, 0%, 0.25);
+$color-background-pm-counter: hsla(105, 2%, 50%, 0.5);
 
 /* Styles: Do not add color codes below */
 
@@ -125,7 +128,7 @@ on a dark background, and don't change the dark labels dark either. */
         &:hover,
         &:focus,
         &:active {
-            background-color: hsla(0, 0%, 0%, 0.15);
+            background-color: $color-button-active-background;
         }
     }
 
@@ -151,7 +154,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     .topic-unread-count,
     .private_message_count {
-        background-color: hsla(105, 2%, 50%, 0.5);
+        background-color: $color-background-pm-counter;
     }
 
     .pill-container {
@@ -163,7 +166,7 @@ on a dark background, and don't change the dark labels dark either. */
     .pm_recipient .pill-container .pill {
         color: inherit;
         border: 1px solid $color-border-5-black;
-        background-color: hsla(0, 0%, 0%, 0.25);
+        background-color: $color-background-25-black;
         font-weight: 600;
     }
 
