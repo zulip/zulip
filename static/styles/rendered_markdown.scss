@@ -396,14 +396,6 @@ TODO: This should likely also be put inside .rendered_content */
     word-break: break-all;
 }
 
-#message-edit-history .message_inline_image {
-    height: auto;
-    overflow-y: auto;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    margin: 0px;
-}
-
 .message_inline_ref {
     margin-bottom: 5px;
     margin-left: 5px;
@@ -442,10 +434,6 @@ TODO: This should likely also be put inside .rendered_content */
     float: right;
     margin-right: unset;
     margin-left: 10px;
-}
-
-#message-edit-history .message_inline_image img {
-    max-height: 100px;
 }
 
 li .message_inline_image img {
