@@ -125,6 +125,24 @@
         vertical-align: text-bottom;
     }
 
+    /* LaTeX styling */
+    .katex-html {
+        line-height: initial;
+        white-space: initial;
+    }
+
+    .katex-display .katex-html {
+        line-height: 3em;
+    }
+
+    .katex-display {
+        margin: 0em 0;
+    }
+
+    .tex-error {
+        color: hsl(0, 0%, 50%);
+    }
+
     /* CSS for message content widgets */
     table.tictactoe {
         width: 80px;
@@ -451,21 +469,3 @@ li .message_inline_image img {
 .message_inline_image_title {
     font-weight: bold;
 }
-
-.katex-html {
-    line-height: initial;
-    white-space: initial;
-}
-
-.katex-display .katex-html {
-    line-height: 3em;
-}
-
-.katex-display {
-    margin: 0em 0;
-}
-
-.tex-error {
-    color: hsl(0, 0%, 50%);
-}
-
