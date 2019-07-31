@@ -468,8 +468,8 @@ exports.initialize = function () {
     // We remove the |[\d+]\. that matches the numbering in a numbered list
     marked.Lexer.rules.tables.list = /^( *)((?:\*)) [\s\S]+?(?:\n+(?=(?: *[\-*_]){3,} *(?:\n+|$))|\n{2,}(?! )(?!\1(?:\*) )\n*|\s*$)/;
 
-    // Disable headings
-    disable_markdown_regex(marked.Lexer.rules.tables, 'heading');
+    // Disable lheadings
+    // We only keep the # Heading format.
     disable_markdown_regex(marked.Lexer.rules.tables, 'lheading');
 
     // Disable __strong__ (keeping **strong**)

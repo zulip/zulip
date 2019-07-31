@@ -90,9 +90,9 @@
     },
     {
       "name": "fenced_quote_with_hashtag",
-      "input": "```quote\n# line 1\n# line 2\n```",
-      "expected_output": "<blockquote>\n<p># line 1<br>\n# line 2</p>\n</blockquote>",
-      "text_content": "> # line 1\n> # line 2\n"
+      "input": "```quote\n# line 1\n#line 2\n```",
+      "expected_output": "<blockquote>\n<h1>line 1</h1>\n<p>#line 2</p>\n</blockquote>",
+      "text_content": "> line 1\n> #line 2\n"
     },
     {
       "name": "dangerous_block",
@@ -119,6 +119,31 @@
       "expected_output": "<p>notcode</p>",
       "marked_expected_output": "<p>  notcode</p>",
       "text_content": "notcode"
+    },
+    {
+      "name": "hashheading_enabled",
+      "input": "# Hello World",
+      "expected_output": "<h1>Hello World</h1>"
+    },
+    {
+      "name": "hashheading_needs_spaces",
+      "input": "#Hello World",
+      "expected_output": "<p>#Hello World</p>"
+    },
+    {
+      "name": "hashheading_multiple_spaces",
+      "input": "#  Hello World",
+      "expected_output": "<h1>Hello World</h1>"
+    },
+    {
+      "name": "hashheading_6_levels",
+      "input": "###### Hello World",
+      "expected_output": "<h6>Hello World</h6>"
+    },
+    {
+      "name": "hashheading_7_levels",
+      "input": "####### Hello World",
+      "expected_output": "<p>####### Hello World</p>"
     },
     {
       "name": "reference_links_disabled",
