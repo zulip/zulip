@@ -520,13 +520,10 @@ def api_clubhouse_webhook(
         request: HttpRequest, user_profile: UserProfile,
         payload: Dict[str, Any]=REQ(argument_type='body')
 ) -> HttpResponse:
-
-    # Clubhouse has a tendency to send empty POST requests to
-    # third-party endpoints. It is unclear as to which event type
-    # such requests correspond to. So, it is best to ignore such
-    # requests for now.
-    if payload is None:
-        return json_success()
+    # Note: Clubhouse has a tendency to send empty POST requests to
+    # third-party endpoints; right now, those will throw an exception
+    # inside has_request_variables; we removed some dead code here
+    # checking for payload being None.
 
     event = get_event(payload)
     if event is None:
