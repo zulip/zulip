@@ -67,8 +67,8 @@
     this.highlighter = this.options.highlighter || this.highlighter
     this.updater = this.options.updater || this.updater
     this.$container = $(this.options.container).appendTo('body')
-    this.$header = $(this.options.header_html).appendTo(this.$container)
     this.$menu = $(this.options.menu).appendTo(this.$container)
+    this.$header = $(this.options.header_html).appendTo(this.$container)
     this.source = this.options.source
     this.shown = false
     this.dropup = this.options.dropup
