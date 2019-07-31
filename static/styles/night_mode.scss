@@ -1,5 +1,10 @@
+/* Default Colors */
+$color-primary-background: hsl(212, 28%, 18%);
+
+/* Styles: Do not add color codes below */
+
 body.night-mode {
-    background-color: hsl(212, 28%, 18%);
+    background-color: $color-primary-background;
     color: hsl(236, 33%, 90%);
 
     a:hover {
@@ -21,11 +26,11 @@ body.night-mode {
     #subscription_overlay .right,
     #settings_page .form-sidebar,
     #settings_page .right {
-        background-color: hsl(212, 28%, 18%);
+        background-color: $color-primary-background;
     }
 
     .message_embed .data-container::after {
-        background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 100%);
+        background: linear-gradient(0deg, $color-primary-background, transparent 100%);
     }
 
     .column-left .left-sidebar,
@@ -37,7 +42,7 @@ body.night-mode {
     .dark .message_label_clickable.stream_label,
     .dark .stream_label,
     .stream_label {
-        color: hsl(212, 28%, 18%);
+        color: $color-primary-background;
     }
 
     .new-style label.checkbox input[type=checkbox] ~ span {
@@ -45,7 +50,7 @@ body.night-mode {
     }
 
     .modal-bg {
-        background-color: hsl(212, 28%, 18%);
+        background-color: $color-primary-background;
     }
 
     .streams_popover .sp-container {
@@ -70,7 +75,7 @@ body.night-mode {
        background colors for these, but this alert feature can't use a
        transparent background without creating other problems */
     .alert-msg {
-        background-color: hsl(212, 28%, 18%);
+        background-color: $color-primary-background;
     }
 
     .private-message .alert-msg {
@@ -81,7 +86,7 @@ body.night-mode {
 on a dark background, and don't change the dark labels dark either. */
     .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
     #tab_list li.stream:not(.dark_background) {
-        color: hsl(212, 28%, 18%) !important;
+        color: $color-primary-background !important;
     }
 
     /* these are converting grey things to "new grey" */
@@ -128,7 +133,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     select option {
-        background-color: hsl(212, 28%, 18%);
+        background-color: $color-primary-background;
         color: hsl(236, 33%, 90%);
     }
 
@@ -248,7 +253,7 @@ on a dark background, and don't change the dark labels dark either. */
     .dropdown .dropdown-menu li.divider,
     .popover hr,
     hr {
-        color: hsl(212, 28%, 18%);
+        color: $color-primary-background;
         opacity: 0.2;
     }
 
@@ -368,7 +373,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .table-striped tbody tr:nth-child(odd) td {
-        background-color: hsl(212, 28%, 18%);
+        background-color: $color-primary-background;
     }
 
     .modal-footer {
@@ -490,7 +495,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .hotspot.overlay .hotspot-popover.arrow-right::after {
-        border-left-color: hsl(212, 28%, 18%);
+        border-left-color: $color-primary-background;
     }
 
     .hotspot.overlay .hotspot-popover.arrow-bottom::before {
@@ -498,7 +503,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .hotspot.overlay .hotspot-popover.arrow-bottom::after {
-        border-top-color: hsl(212, 28%, 18%);
+        border-top-color: $color-primary-background;
     }
 
     .hotspot.overlay .hotspot-popover.arrow-left::before {
@@ -506,7 +511,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .hotspot.overlay .hotspot-popover.arrow-left::after {
-        border-right-color: hsl(212, 28%, 18%);
+        border-right-color: $color-primary-background;
     }
 
     .hotspot.overlay .hotspot-popover.arrow-top::before {
@@ -514,14 +519,14 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .hotspot.overlay .hotspot-popover.arrow-top::after {
-        border-bottom-color: hsl(212, 28%, 18%);
+        border-bottom-color: $color-primary-background;
     }
 
     /* Content: */
     .hotspot.overlay .hotspot-popover .hotspot-popover-content,
     #hotspot_intro_reply_icon,
     .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
-        background-color: hsl(212, 28%, 18%);
+        background-color: $color-primary-background;
     }
 
     .top-messages-logo svg path {
@@ -589,7 +594,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     #bots_lists_navbar .active a {
         color: hsl(0, 0%, 87%);
-        background-color: hsl(212, 28%, 18%);
+        background-color: $color-primary-background;
         border-color: hsl(0, 0%, 87%);
         border-bottom-color: transparent;
     }
