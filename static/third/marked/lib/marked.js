@@ -15,13 +15,14 @@ var block = {
   code: /^( {4}[^\n]+\n*)+/,
   fences: noop,
   hr: /^( *[-*_]){3,} *(?:\n+|$)/,
+  heading: /^ {0,3}(#{1,6}) +([^\n]*?)(?: +#+)? *(?:\n+|$)/,
   nptable: noop,
   blockquote: /^(?!( *>\s*($|\n))*($|\n))( *>[^\n]*(\n(?!def)[^\n]+)*\n*)+/,
   list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
   html: /^ *(?:comment *(?:\n|\s*$)|closed *(?:\n{2,}|\s*$)|closing *(?:\n{2,}|\s*$))/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
   table: noop,
-  paragraph: /^((?:[^\n]+\n?(?!hr|blockquote|tag|def))+)\n*/,
+  paragraph: /^((?:[^\n]+\n?(?!hr|heading|blockquote|tag|def))+)\n*/,
   text: /^[^\n]+/
 };
 
@@ -56,6 +57,7 @@ block.html = replace(block.html)
 
 block.paragraph = replace(block.paragraph)
   ('hr', block.hr)
+  ('heading', ' {0,3}#{1,6} +')
   ('blockquote', block.blockquote)
   ('tag', '<' + block._tag)
   ('def', block.def)
@@ -200,6 +202,17 @@ Lexer.prototype.token = function(src, top, bq) {
         type: 'code',
         lang: cap[2],
         text: cap[3] || ''
+      });
+      continue;
+    }
+
+    // heading
+    if (cap = this.rules.heading.exec(src)) {
+      src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: 'heading',
+        depth: cap[1].length,
+        text: cap[2]
       });
       continue;
     }
@@ -1009,6 +1022,11 @@ Renderer.prototype.html = function(html) {
   return html;
 };
 
+Renderer.prototype.heading = function(text, level, raw, slugger) {
+  // ignore IDs
+  return '<h' + level + '>' + text + '</h' + level + '>\n';
+};
+
 Renderer.prototype.hr = function() {
   return this.options.xhtml ? '<hr/>\n' : '<hr>\n';
 };
@@ -1202,6 +1220,13 @@ Parser.prototype.tok = function() {
   switch (this.token.type) {
     case 'space': {
       return '';
+    }
+    case 'heading': {
+      return this.renderer.heading(
+        this.inline.output(this.token.text),
+        this.token.depth,
+        unescape(this.token.text),
+        this.slugger);
     }
     case 'hr': {
       return this.renderer.hr();

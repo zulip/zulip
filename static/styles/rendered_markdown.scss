@@ -40,6 +40,21 @@
         margin-top: -3px;
     }
 
+    /* Headings: We need to make sure our headings are less prominent than our sender names styling. */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.4;
+        margin-top: 0px;
+        margin-bottom: 5px;
+        text-decoration: underline;
+    }
+
     /* Formatting for blockquotes */
     blockquote {
         padding-left: 5px;

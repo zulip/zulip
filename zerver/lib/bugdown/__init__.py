@@ -1454,6 +1454,16 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         super().__init__(parser)
         parser.markdown.tab_length = 4
 
+class HashHeaderProcessor(markdown.blockprocessors.HashHeaderProcessor):
+    """ Process Hash Headers.
+
+        Based on markdown.blockprocessors.HashHeaderProcessor, but requires space for heading.
+    """
+
+    # Original regex for hashheader is
+    # RE = re.compile(r'(?:^|\n)(?P<level>#{1,6})(?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)')
+    RE = re.compile(r'(?:^|\n)(?P<level>#{1,6})\s(?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)')
+
 class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     """ Process BlockQuotes.
 
@@ -1903,6 +1913,7 @@ class Bugdown(markdown.Markdown):
         parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 85)
         if not self.getConfig('code_block_processor_disabled'):
             parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 80)
+        parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 78)
         # We get priority 75 from 'table' extension
         parser.blockprocessors.register(markdown.blockprocessors.HRProcessor(parser), 'hr', 70)
         parser.blockprocessors.register(UListProcessor(parser), 'ulist', 65)
