@@ -90,6 +90,41 @@
         padding: 4px;
     }
 
+    /* Mentions and alert words */
+    .user-mention-me :not(.silent) {
+        background-color: hsl(112, 88%, 87%);
+    }
+
+    .user-group-mention,
+    .user-mention {
+        background-color: hsl(0, 0%, 93%);
+        border-radius: 3px;
+        padding: 0 0.2em;
+        box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
+        margin-right: 2px;
+        margin-left: 2px;
+        white-space: nowrap;
+        background: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsla(0, 0%, 0%, 0.1)), color-stop(100%, hsla(0, 0%, 0%, 0.0)));
+        background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+        background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+        background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+        background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+        display: inline-block;
+        margin-bottom: 1px;
+    }
+
+    .alert-word {
+        background-color: hsla(102, 85%, 57%, 0.5);
+    }
+
+    .message_body_gravatar {
+        width: 20px;
+        height: 20px;
+        margin: 2px 2px 2px 0px;
+        vertical-align: text-bottom;
+    }
+
     /* CSS for message content widgets */
     table.tictactoe {
         width: 80px;
@@ -434,36 +469,3 @@ li .message_inline_image img {
     color: hsl(0, 0%, 50%);
 }
 
-.message_body_gravatar {
-    width: 20px;
-    height: 20px;
-    margin: 2px 2px 2px 0px;
-    vertical-align: text-bottom;
-}
-
-.user-group-mention,
-.user-mention {
-    background-color: hsl(0, 0%, 93%);
-    border-radius: 3px;
-    padding: 0 0.2em;
-    box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
-    margin-right: 2px;
-    margin-left: 2px;
-    white-space: nowrap;
-    background: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsla(0, 0%, 0%, 0.1)), color-stop(100%, hsla(0, 0%, 0%, 0.0)));
-    background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    display: inline-block;
-    margin-bottom: 1px;
-}
-
-.user-mention-me :not(.silent) {
-    background-color: hsl(112, 88%, 87%);
-}
-
-.alert-word {
-    background-color: hsla(102, 85%, 57%, 0.5);
-}
