@@ -357,6 +357,9 @@ RATE_LIMITING_RULES = {
     'all': [
         (60, 200),  # 200 requests max every minute
     ],
+    'authenticate': [
+        (1800, 5),  # 5 login attempts within 30 minutes
+    ],
 }
 
 RATE_LIMITING_MIRROR_REALM_RULES = [
