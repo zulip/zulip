@@ -1126,6 +1126,7 @@ run_test('begins_typeahead', () => {
         stream: true,
         syntax: true,
         topic: true,
+        timestamp: true,
     }}};
 
     function get_values(input, rest) {
@@ -1301,6 +1302,15 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("#**Sweden>more ice", sweden_topics_to_show);
     sweden_topics_to_show.push('totally new topic');
     assert_typeahead_equals("#**Sweden>totally new topic", sweden_topics_to_show);
+
+    // time_jump
+    assert_typeahead_equals("!tim", false);
+    assert_typeahead_equals("!timerandom", false);
+    assert_typeahead_equals("!time", ['translated: Pick a date/time']);
+    assert_typeahead_equals("!time(", ['translated: Pick a date/time']);
+    assert_typeahead_equals("!time(something", ['translated: Pick a date/time']);
+    assert_typeahead_equals("!time(something)", ['translated: Pick a date/time']);
+    assert_typeahead_equals("!time(something) ", false); // Already completed a topic.
 
     // Following tests place the cursor before the second string
     assert_typeahead_equals("#test", "ing", false);
