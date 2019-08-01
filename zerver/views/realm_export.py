@@ -9,6 +9,9 @@ from zerver.models import RealmAuditLog, UserProfile
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_success
 from zerver.lib.export import get_realm_exports_serialized
+from zerver.lib.actions import do_delete_realm_export
+
+import ujson
 
 @require_realm_admin
 def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
@@ -45,3 +48,18 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
 def get_realm_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm_exports = get_realm_exports_serialized(user)
     return json_success({"exports": realm_exports})
+
+@require_realm_admin
+def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int) -> HttpResponse:
+    try:
+        audit_log_entry = RealmAuditLog.objects.get(id=export_id,
+                                                    realm=user.realm,
+                                                    event_type="realm_exported")
+    except RealmAuditLog.DoesNotExist:
+        return json_error(_("Invalid data export ID"))
+
+    export_data = ujson.loads(audit_log_entry.extra_data)
+    if 'deleted_timestamp' in export_data:
+        return json_error(_("Export already deleted"))
+    do_delete_realm_export(user, audit_log_entry)
+    return json_success()

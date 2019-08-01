@@ -183,6 +183,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/attachments',
         '/calls/create',
         '/export/realm',
+        '/export/realm/{export_id}',
         '/zcommand',
         '/realm',
         '/realm/deactivate',

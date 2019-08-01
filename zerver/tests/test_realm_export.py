@@ -10,7 +10,6 @@ from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets, \
 
 from zerver.models import RealmAuditLog
 from zerver.views.realm_export import export_realm
-import zerver.lib.upload
 
 import os
 import ujson
@@ -75,9 +74,20 @@ class RealmExportTest(ZulipTestCase):
                                event_type=RealmAuditLog.REALM_EXPORTED).count())
 
         # Finally, delete the file.
-        result = zerver.lib.upload.upload_backend.delete_export_tarball(path_id)
-        self.assertEqual(result, path_id)
+        result = self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id))
+        self.assert_json_success(result)
         self.assertIsNone(bucket.get_key(path_id))
+
+        # Try to delete an export with a `deleted_timestamp` key.
+        audit_log_entry.refresh_from_db()
+        export_data = ujson.loads(audit_log_entry.extra_data)
+        self.assertIn('deleted_timestamp', export_data)
+        result = self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id))
+        self.assert_json_error(result, "Export already deleted")
+
+        # Now try to delete a non-existent export.
+        result = self.client_delete('/json/export/realm/0')
+        self.assert_json_error(result, "Invalid data export ID")
 
     def test_endpoint_local_uploads(self) -> None:
         admin = self.example_user('iago')
@@ -121,10 +131,21 @@ class RealmExportTest(ZulipTestCase):
                                event_type=RealmAuditLog.REALM_EXPORTED).count())
 
         # Finally, delete the file.
-        result = zerver.lib.upload.upload_backend.delete_export_tarball(path_id)
-        self.assertEqual(result, path_id)
+        result = self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id))
+        self.assert_json_success(result)
         response = self.client_get(path_id)
         self.assertEqual(response.status_code, 404)
+
+        # Try to delete an export with a `deleted_timestamp` key.
+        audit_log_entry.refresh_from_db()
+        export_data = ujson.loads(audit_log_entry.extra_data)
+        self.assertIn('deleted_timestamp', export_data)
+        result = self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id))
+        self.assert_json_error(result, "Export already deleted")
+
+        # Now try to delete a non-existent export.
+        result = self.client_delete('/json/export/realm/0')
+        self.assert_json_error(result, "Invalid data export ID")
 
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user('iago')

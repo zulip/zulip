@@ -398,10 +398,12 @@ v1_api_and_json_patterns = [
     url(r'^calls/create$', rest_dispatch,
         {'GET': 'zerver.views.video_calls.get_zoom_url'}),
 
-    # Used realm data exporting
+    # export/realm -> zerver.views.realm_export
     url(r'^export/realm$', rest_dispatch,
         {'POST': 'zerver.views.realm_export.export_realm',
          'GET': 'zerver.views.realm_export.get_realm_exports'}),
+    url(r'^export/realm/(?P<export_id>.*)$', rest_dispatch,
+        {'DELETE': 'zerver.views.realm_export.delete_realm_export'}),
 ]
 
 # These views serve pages (HTML). As such, their internationalization

@@ -145,7 +145,8 @@ from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
-    claim_attachment, delete_message_image, upload_emoji_image, delete_avatar_image
+    claim_attachment, delete_message_image, upload_emoji_image, delete_avatar_image, \
+    delete_export_tarball
 from zerver.lib.video_calls import request_zoom_video_call_url
 from zerver.tornado.event_queue import send_event
 from zerver.lib.types import ProfileFieldData
@@ -5688,3 +5689,16 @@ def notify_realm_export(user_profile: UserProfile) -> None:
     event = dict(type='realm_export',
                  exports=get_realm_exports_serialized(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
+
+def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> None:
+    # Give mypy a hint so it knows `ujson.loads`
+    # isn't being passed an `Optional[str]`.
+    export_extra_data = export.extra_data
+    assert export_extra_data is not None
+    export_data = ujson.loads(export_extra_data)
+
+    delete_export_tarball(export_data.get('export_path'))
+    export_data.update({'deleted_timestamp': timezone_now().timestamp()})
+    export.extra_data = ujson.dumps(export_data)
+    export.save(update_fields=['extra_data'])
+    notify_realm_export(user_profile)
