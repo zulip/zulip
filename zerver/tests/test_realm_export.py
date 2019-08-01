@@ -12,6 +12,7 @@ from zerver.views.realm_export import export_realm
 import zerver.lib.upload
 
 import os
+import ujson
 
 def create_tarball_path() -> str:
     tarball_path = os.path.join(settings.TEST_WORKER_DIR, 'test-export.tar.gz')
@@ -48,7 +49,7 @@ class RealmExportTest(ZulipTestCase):
 
         export_object = RealmAuditLog.objects.filter(
             event_type='realm_exported').first()
-        path_id = getattr(export_object, 'extra_data')
+        path_id = ujson.loads(getattr(export_object, 'extra_data')).get('export_path')
         self.assertIsNotNone(path_id)
 
         self.assertEqual(bucket.get_key(path_id).get_contents_as_string(),
@@ -58,7 +59,7 @@ class RealmExportTest(ZulipTestCase):
         self.assert_json_success(result)
 
         export_dict = result.json()['exports']
-        self.assertEqual(export_dict[0]['path'], path_id)
+        self.assertEqual(export_dict[0]['extra_data'].get('export_path'), path_id)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
                            RealmAuditLog.objects.filter(
@@ -90,7 +91,7 @@ class RealmExportTest(ZulipTestCase):
             event_type='realm_exported').first()
         self.assertEqual(export_object.acting_user_id, admin.id)
 
-        path_id = getattr(export_object, 'extra_data')
+        path_id = ujson.loads(getattr(export_object, 'extra_data')).get('export_path')
         response = self.client_get(path_id)
         self.assertEqual(response.status_code, 200)
         self.assert_url_serves_contents_of_file(path_id, b'zulip!')
@@ -99,7 +100,7 @@ class RealmExportTest(ZulipTestCase):
         self.assert_json_success(result)
 
         export_dict = result.json()['exports']
-        self.assertEqual(export_dict[0]['path'], path_id)
+        self.assertEqual(export_dict[0]['extra_data'].get('export_path'), path_id)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
                            RealmAuditLog.objects.filter(

@@ -1711,6 +1711,6 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
             id=export.id,
             event_time=export.event_time.ctime(),
             acting_user_id=export.acting_user.id,
-            path=export.extra_data
+            extra_data=ujson.loads(export.extra_data)
         )
     return sorted(exports_dict.values(), key=lambda export_dict: export_dict['id'])

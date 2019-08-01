@@ -621,7 +621,8 @@ class DeferredWorker(QueueProcessingWorker):
 
             # Store the relative URL of the export.
             export_event = RealmAuditLog.objects.get(id=event['id'])
-            export_event.extra_data = urllib.parse.urlparse(public_url).path
+            export_event.extra_data = ujson.dumps({'export_path': urllib.parse.urlparse(public_url).path,
+                                                   'deleted_timestamp': None})
             export_event.save(update_fields=['extra_data'])
 
             # Send a private message notification letting the user who

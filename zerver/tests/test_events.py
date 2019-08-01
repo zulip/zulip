@@ -2768,7 +2768,10 @@ class EventsRegisterTest(ZulipTestCase):
                 ('id', check_string),
                 ('event_time', check_string),
                 ('acting_user_id', check_int),
-                ('path', check_string),
+                ('extra_data', check_dict_only([
+                    ('export_path', check_string),
+                    ('deleted_timestamp', equals(None))
+                ])),
             ])))
         ])
 
