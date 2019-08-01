@@ -16,7 +16,8 @@ from zerver.models import (
     get_client, get_stream_recipient, get_stream, get_realm, get_system_bot,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
-    Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite
+    Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite,
+    RealmAuditLog
 )
 
 from zerver.lib.actions import (
@@ -2782,6 +2783,28 @@ class EventsRegisterTest(ZulipTestCase):
 
         # The first event is a message from notification-bot.
         error = schema_checker('events[1]', events[1])
+        self.assert_on_error(error)
+
+        # Now we check the deletion of the export.
+        deletion_schema_checker = self.check_events_dict([
+            ('type', equals('realm_export')),
+            ('exports', check_list(check_dict_only([
+                ('id', check_int),
+                ('export_time', check_float),
+                ('acting_user_id', check_int),
+                ('export_data', check_dict_only([
+                    ('export_path', check_string),
+                    ('deleted_timestamp', check_float),
+                ])),
+            ]))),
+        ])
+
+        audit_log_entry = RealmAuditLog.objects.filter(
+            event_type='realm_exported').first()
+        events = self.do_test(
+            lambda: self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id)),
+            state_change_expected=False, num_events=1)
+        error = deletion_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
 class FetchInitialStateDataTest(ZulipTestCase):
