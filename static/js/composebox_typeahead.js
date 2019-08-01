@@ -2,6 +2,7 @@ const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
 const autosize = require('autosize');
 const settings_data = require("./settings_data");
+const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
 
 //************************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
@@ -328,6 +329,11 @@ exports.tokenize_compose_str = function (s) {
             // maybe topic_list; let's let the stream_topic_regex decide later.
             return '>topic_list';
         }
+    }
+
+    const timestamp_index = s.indexOf('!time');
+    if (timestamp_index >= 0) {
+        return s.slice(timestamp_index);
     }
 
     return '';
@@ -733,6 +739,14 @@ exports.get_candidates = function (query) {
             }
         }
     }
+    if (this.options.completions.timestamp) {
+        const time_jump_regex = /!time(\(([^\)]*?))?$/;
+        if (time_jump_regex.test(split[0])) {
+            this.completing = 'time_jump';
+            return [i18n.t('Mention a timezone-aware time')];
+
+        }
+    }
     return false;
 };
 
@@ -752,6 +766,8 @@ exports.content_highlighter = function (item) {
     } else if (this.completing === 'topic_jump') {
         return typeahead_helper.render_typeahead_item({ primary: item });
     } else if (this.completing === 'topic_list') {
+        return typeahead_helper.render_typeahead_item({ primary: item });
+    } else if (this.completing === 'time_jump') {
         return typeahead_helper.render_typeahead_item({ primary: item });
     }
 };
@@ -841,6 +857,56 @@ exports.content_typeahead_selected = function (item, event) {
         // with the topic and the final **.
         const start = beginning.length - this.token.length;
         beginning = beginning.substring(0, start) + item + '** ';
+    } else if (this.completing === 'time_jump') {
+        const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
+        let timeobject;
+        let timestring = beginning.substring(beginning.lastIndexOf('!time'));
+        if (timestring.startsWith('!time(') && timestring.endsWith(')')) {
+            timestring = timestring.substring(6, timestring.length - 1);
+            moment.suppressDeprecationWarnings = true;
+            try {
+                // If there's already a time in the compose box here,
+                // we use it to initialize the flatpickr instance.
+                timeobject = moment(timestring).toDate();
+            } catch {
+                // Otherwise, default to showing the current time.
+            }
+        }
+
+        const instance = flatpickr_input.flatpickr({
+            mode: 'single',
+            enableTime: true,
+            clickOpens: false,
+            defaultDate: timeobject || moment().format(),
+            plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
+            positionElement: this.$element[0],
+            dateFormat: 'Z',
+            formatDate: (date) => {
+                const dt = moment(date);
+                return dt.local().format();
+            },
+        });
+        const container = $($(instance.innerContainer).parent());
+        container.on('click', '.flatpickr-calendar', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+        });
+
+        container.on('click', '.flatpickr-confirm', () => {
+            const datestr = flatpickr_input.val();
+            beginning = beginning.substring(0, beginning.lastIndexOf('!time')) +  `!time(${datestr}) `;
+            if (rest.startsWith(')')) {
+                rest = rest.slice(1);
+            }
+            textbox.val(beginning + rest);
+            textbox.caret(beginning.length, beginning.length);
+            compose_ui.autosize_textarea();
+            instance.close();
+            instance.destroy();
+        });
+        instance.open();
+        container.find('.flatpickr-monthDropdown-months').focus();
+        return beginning + rest;
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
@@ -870,7 +936,8 @@ exports.compose_content_matcher = function (completing, token) {
     return function () {
         switch (completing) {
         case 'topic_jump':
-            // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
+        case 'time_jump':
+            // these don't actually have a typeahead popover, so we return quickly here.
             return true;
         }
     };
@@ -887,6 +954,7 @@ exports.sort_results = function (completing, matches, token) {
     case 'syntax':
         return typeahead_helper.sort_languages(matches, token);
     case 'topic_jump':
+    case 'time_jump':
         // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
         return matches;
     case 'topic_list':
@@ -942,6 +1010,7 @@ exports.initialize_compose_typeahead = function (selector) {
         stream: true,
         syntax: true,
         topic: true,
+        timestamp: true,
     };
 
     $(selector).typeahead({
