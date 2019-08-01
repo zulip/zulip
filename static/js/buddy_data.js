@@ -292,7 +292,7 @@ function maybe_shrink_list(user_ids, user_filter_text) {
     return user_ids;
 }
 
-exports.get_filtered_and_sorted_user_ids = function (user_filter_text) {
+function get_user_id_list(user_filter_text) {
     let user_ids;
 
     if (user_filter_text) {
@@ -317,10 +317,13 @@ exports.get_filtered_and_sorted_user_ids = function (user_filter_text) {
         // if the user is bot, do not show in presence data.
         return !person.is_bot;
     });
+    return user_ids;
+}
 
-
+exports.get_filtered_and_sorted_user_ids = function (user_filter_text) {
+    let user_ids;
+    user_ids = get_user_id_list(user_filter_text);
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
-
     return exports.sort_users(user_ids);
 };
 
