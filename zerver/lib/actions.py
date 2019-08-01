@@ -5675,7 +5675,7 @@ def get_zoom_video_call_url(realm: Realm) -> str:
 
     return response['join_url']
 
-def notify_export_completed(user_profile: UserProfile) -> None:
+def notify_realm_export(user_profile: UserProfile) -> None:
     # In the future, we may want to send this event to all realm admins.
     event = dict(type='realm_export',
                  exports=get_realm_exports_serialized(user_profile))

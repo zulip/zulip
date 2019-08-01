@@ -94,7 +94,7 @@ from zerver.lib.actions import (
     get_typing_user_profiles,
     log_event,
     lookup_default_stream_groups,
-    notify_export_completed,
+    notify_realm_export,
     notify_realm_custom_profile_fields,
     check_add_user_group,
     do_update_user_group_name,
@@ -2759,7 +2759,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-    def test_realm_export_notify_admins(self) -> None:
+    def test_notify_realm_export(self) -> None:
         # Create the `realm_exported` RealmAuditLog object
         with mock.patch('zerver.lib.export.do_export_realm',
                         return_value=create_dummy_file('test-export.tar.gz')):
@@ -2782,7 +2782,7 @@ class EventsRegisterTest(ZulipTestCase):
         # requires somewhat annoying mocking setup for what to do with
         # the export tarball.
         events = self.do_test(
-            lambda: notify_export_completed(self.user_profile),
+            lambda: notify_realm_export(self.user_profile),
             state_change_expected=False, num_events=1)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)

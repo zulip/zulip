@@ -28,7 +28,7 @@ from zerver.lib.push_notifications import handle_push_notification, handle_remov
     initialize_push_notifications
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, internal_send_private_message, notify_export_completed, \
+    internal_send_message, internal_send_private_message, notify_realm_export, \
     render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
@@ -639,4 +639,4 @@ class DeferredWorker(QueueProcessingWorker):
 
             # For future frontend use, also notify administrator
             # clients that the export happened.
-            notify_export_completed(user_profile)
+            notify_realm_export(user_profile)
