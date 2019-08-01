@@ -305,7 +305,7 @@ class OurAuthenticationForm(AuthenticationForm):
                 raise ValidationError("Realm does not exist")
 
             return_data = {}  # type: Dict[str, Any]
-            self.user_cache = authenticate(self.request, username=username, password=password,
+            self.user_cache = authenticate(request=self.request, username=username, password=password,
                                            realm=realm, return_data=return_data)
 
             if return_data.get("inactive_realm"):
