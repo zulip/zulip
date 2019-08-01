@@ -7,13 +7,24 @@ i18n.t = function (str, context) {
     if (context === undefined) {
         return 'translated: ' + str;
     }
-    var keyword_regex = /__(\w)+__/g;
+    var keyword_regex = /__(- )?(\w)+__/g;
     var keys_in_str = str.match(keyword_regex);
-    var keywords = _.map(keys_in_str, function (key) {
-        return key.slice(2, key.length - 2);
+    var substitutions = _.map(keys_in_str, function (key) {
+        var prefix_length;
+        if (key.startsWith("__- ")) {
+            prefix_length = 4;
+        } else {
+            prefix_length = 2;
+        }
+        return {
+            keyword: key.slice(prefix_length, key.length - 2),
+            prefix: key.slice(0, prefix_length),
+            suffix: key.slice(key.length - 2, key.length),
+        };
     });
-    _.each(keywords, function (keyword) {
-        str = str.replace('__' + keyword + '__', context[keyword]);
+    _.each(substitutions, function (item) {
+        str = str.replace(item.prefix + item.keyword + item.suffix,
+                          context[item.keyword]);
     });
     return 'translated: ' + str;
 };
