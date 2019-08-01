@@ -117,7 +117,8 @@ from zerver.lib.message import (
     UnreadMessagesResult,
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
-    get_test_image_file, stub_event_queue_user_events, queries_captured
+    get_test_image_file, stub_event_queue_user_events, queries_captured, \
+    create_dummy_file
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -2759,13 +2760,15 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_realm_export_notify_admins(self) -> None:
-        # TODO: This test is completely busted because the
-        # RealmAuditLog table is empty in it, so it's testing an event
-        # containing an empty list.
+        # Create the `realm_exported` RealmAuditLog object
+        with mock.patch('zerver.lib.export.do_export_realm',
+                        return_value=create_dummy_file('test-export.tar.gz')):
+            self.client_post('/json/export/realm')
+
         schema_checker = self.check_events_dict([
             ('type', equals('realm_export')),
             ('exports', check_list(check_dict_only([
-                ('id', check_string),
+                ('id', check_int),
                 ('event_time', check_string),
                 ('acting_user_id', check_int),
                 ('extra_data', check_dict_only([
