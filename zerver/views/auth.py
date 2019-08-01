@@ -779,7 +779,8 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
         # In case we don't authenticate against LDAP, check for a valid
         # email. LDAP backend can authenticate against a non-email.
         validate_login_email(username)
-    user_profile = authenticate(username=username,
+    user_profile = authenticate(request=request,
+                                username=username,
                                 password=password,
                                 realm=realm,
                                 return_data=return_data)
@@ -875,7 +876,7 @@ def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
     if password_auth_enabled(user_profile.realm):
-        if not authenticate(username=user_profile.delivery_email, password=password,
+        if not authenticate(request=request, username=user_profile.delivery_email, password=password,
                             realm=realm):
             return json_error(_("Your username or password is incorrect."))
 

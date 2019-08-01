@@ -68,7 +68,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         return_data = {}  # type: Dict[str, Any]
         if email_belongs_to_ldap(user_profile.realm, user_profile.delivery_email):
             return json_error(_("Your Zulip password is managed in LDAP"))
-        if not authenticate(username=user_profile.delivery_email, password=old_password,
+        if not authenticate(request=request, username=user_profile.delivery_email, password=old_password,
                             realm=user_profile.realm, return_data=return_data):
             return json_error(_("Wrong password!"))
         if not check_password_strength(new_password):

@@ -273,7 +273,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # pregeg_user.realm_creation carries the information about whether
             # we're in realm creation mode, and the ldap flow will handle
             # that and create the user with the appropriate parameters.
-            user_profile = authenticate(request,
+            user_profile = authenticate(request=request,
                                         username=email,
                                         password=password,
                                         realm=realm,
