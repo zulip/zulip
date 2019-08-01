@@ -30,7 +30,7 @@ chardet==3.0.4            # via requests
 cryptography==2.6.1       # via apns2, pyopenssl, requests
 cssselect==1.0.3          # via premailer
 cssutils==1.0.2           # via premailer
-decorator==4.4.0          # via ipython, traitlets
+decorator==4.4.0
 defusedxml==0.6.0
 disposable-email-domains==0.0.52
 django-auth-ldap==2.0.0

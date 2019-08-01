@@ -173,3 +173,7 @@ yamole==2.1.6
 
 # Needed for string matching in AlertWordProcessor
 pyahocorasick==1.4.0
+
+# Needed for function decorators that don't break introspection.
+# Used for rate limiting authentication.
+decorator==4.4.0
