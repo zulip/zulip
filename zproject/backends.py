@@ -16,19 +16,21 @@ import copy
 import logging
 import magic
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 from typing_extensions import TypedDict
 from zxcvbn import zxcvbn
 
 from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, \
     _LDAPUser, ldap_error
+from decorator import decorator
+
 from django.contrib.auth import get_backends
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.dispatch import receiver, Signal
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import ugettext as _
@@ -43,12 +45,14 @@ from social_core.backends.saml import SAMLAuth
 from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
+from zerver.decorator import client_is_exempt_from_rate_limiting
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
     do_update_user_custom_profile_data_if_changed, validate_email_for_realm
 from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.mobile_auth_otp import is_valid_otp
+from zerver.lib.rate_limiter import clear_history, rate_limit_request_by_entity, RateLimitedObject
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
@@ -164,6 +168,60 @@ def common_get_active_user(email: str, realm: Realm,
 
     return user_profile
 
+AuthFuncT = TypeVar('AuthFuncT', bound=Callable[..., Optional[UserProfile]])
+rate_limiting_rules = settings.RATE_LIMITING_RULES['authenticate']
+
+class RateLimitedAuthenticationByUsername(RateLimitedObject):
+    def __init__(self, username: str) -> None:
+        self.username = username
+
+    def __str__(self) -> str:
+        return "Username: {}".format(self.username)
+
+    def key_fragment(self) -> str:
+        return "{}:{}".format(type(self), self.username)
+
+    def rules(self) -> List[Tuple[int, int]]:
+        return rate_limiting_rules
+
+def rate_limit_authentication_by_username(request: HttpRequest, username: str) -> None:
+    entity = RateLimitedAuthenticationByUsername(username)
+    rate_limit_request_by_entity(request, entity)
+
+def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
+    return hasattr(request, '_ratelimit') and 'RateLimitedAuthenticationByUsername' in request._ratelimit
+
+# Django's authentication mechanism uses introspection on the various authenticate() functions
+# defined by backends, so we need a decorator that doesn't break function signatures.
+# @decorator does this for us.
+# The usual @wraps from functools breaks signatures, so it can't be used here.
+@decorator
+def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
+    if not settings.RATE_LIMITING_AUTHENTICATE:
+        return auth_func(*args, **kwargs)
+
+    request = kwargs['request']
+    username = kwargs['username']
+    if not hasattr(request, 'client') or not client_is_exempt_from_rate_limiting(request):
+        # Django cycles through enabled authentication backends until one succeeds,
+        # or all of them fail. If multiple backends are tried like this, we only want
+        # to execute rate_limit_authentication_* once, on the first attempt:
+        if auth_rate_limiting_already_applied(request):
+            pass
+        else:
+            # Apply rate limiting. If this request is above the limit,
+            # RateLimited will be raised, interrupting the authentication process.
+            # From there, the code calling authenticate() can either catch the exception
+            # and handle it on its own, or it will be processed by RateLimitMiddleware.
+            rate_limit_authentication_by_username(request, username)
+
+    result = auth_func(*args, **kwargs)
+    if result is not None:
+        # Authentication succeeded, clear the rate-limiting record.
+        clear_history(RateLimitedAuthenticationByUsername(username))
+
+    return result
+
 class ZulipAuthMixin:
     """This common mixin is used to override Django's default behavior for
     looking up a logged-in user by ID to use a version that fetches
@@ -219,7 +277,8 @@ class EmailAuthBackend(ZulipAuthMixin):
     Allows a user to sign in using an email/password pair.
     """
 
-    def authenticate(self, *, username: str, password: str,
+    @rate_limit_auth
+    def authenticate(self, *, request: HttpRequest, username: str, password: str,
                      realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         """ Authenticate a user based on email address as the user name. """
@@ -528,7 +587,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
-    def authenticate(self, *, username: str, password: str, realm: Realm,
+    @rate_limit_auth
+    def authenticate(self, *, request: HttpRequest, username: str, password: str, realm: Realm,
                      prereg_user: Optional[PreregistrationUser]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         self._realm = realm
