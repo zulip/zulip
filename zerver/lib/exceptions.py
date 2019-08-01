@@ -2,7 +2,6 @@ from enum import Enum
 from typing import Any, Dict, List, Type, TypeVar, Optional
 from typing_extensions import NoReturn
 
-from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 
 
@@ -179,7 +178,7 @@ class InvalidMarkdownIncludeStatement(JsonableError):
     def msg_format() -> str:
         return _("Invalid markdown include statement: {include_statement}")
 
-class RateLimited(PermissionDenied):
+class RateLimited(Exception):
     def __init__(self, msg: str="") -> None:
         super().__init__(msg)
 
