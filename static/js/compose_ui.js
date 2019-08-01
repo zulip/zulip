@@ -79,13 +79,17 @@ exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
 exports.compute_placeholder_text = function (opts) {
     // Computes clear placeholder text for the compose box, depending
     // on what heading values have already been filled out.
+    //
+    // We return text with the stream and topic name unescaped,
+    // because the caller is expected to insert this into the
+    // placeholder field in a way that does HTML escaping.
     if (opts.message_type === 'stream') {
         if (opts.topic) {
-            return i18n.t("Message #__stream_name__ > __topic_name__",
+            return i18n.t("Message #__- stream_name__ > __- topic_name__",
                           {stream_name: opts.stream,
                            topic_name: opts.topic});
         } else if (opts.stream) {
-            return i18n.t("Message #__stream_name__", {stream_name: opts.stream});
+            return i18n.t("Message #__- stream_name__", {stream_name: opts.stream});
         }
     }
 
@@ -102,12 +106,12 @@ exports.compute_placeholder_text = function (opts) {
             var user = people.get_by_email(recipient_list[0]);
             var status = user_status.get_status_text(user.user_id);
             if (status) {
-                return i18n.t("Message __recipient_name__ (__recipient_status__)",
+                return i18n.t("Message __- recipient_name__ (__- recipient_status__)",
                               {recipient_name: recipient_names,
                                recipient_status: status});
             }
         }
-        return i18n.t("Message __recipient_names__", {recipient_names: recipient_names});
+        return i18n.t("Message __- recipient_names__", {recipient_names: recipient_names});
     }
     return i18n.t("Compose your message here");
 };
