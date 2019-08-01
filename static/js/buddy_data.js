@@ -111,14 +111,14 @@ exports.sort_users = function (user_ids) {
     return user_ids;
 };
 
-function filter_user_ids(filter_text, user_ids) {
-    if (filter_text === '') {
+function filter_user_ids(user_filter_text, user_ids) {
+    if (user_filter_text === '') {
         return user_ids;
     }
 
     user_ids = user_ids.filter(user_id => !people.is_my_user_id(user_id));
 
-    let search_terms = filter_text.toLowerCase().split(/[|,]+/);
+    let search_terms = user_filter_text.toLowerCase().split(/[|,]+/);
     search_terms = search_terms.map(s => s.trim());
 
     const persons = user_ids.map(user_id => people.get_by_user_id(user_id));
@@ -127,10 +127,10 @@ function filter_user_ids(filter_text, user_ids) {
     return Array.from(user_id_dict.keys());
 }
 
-exports.matches_filter = function (filter_text, user_id) {
+exports.matches_filter = function (user_filter_text, user_id) {
     // This is a roundabout way of checking a user if you look
     // too hard at it, but it should be fine for now.
-    return filter_user_ids(filter_text, [user_id]).length === 1;
+    return filter_user_ids(user_filter_text, [user_id]).length === 1;
 };
 
 function get_num_unread(user_id) {
@@ -272,12 +272,12 @@ function user_is_recently_active(user_id) {
     return exports.level(user_id) <= 2;
 }
 
-function maybe_shrink_list(user_ids, filter_text) {
+function maybe_shrink_list(user_ids, user_filter_text) {
     if (user_ids.length <= exports.max_size_before_shrinking) {
         return user_ids;
     }
 
-    if (filter_text) {
+    if (user_filter_text) {
         // If the user types something, we want to show all
         // users matching the text, even if they have not been
         // online recently.
@@ -292,13 +292,13 @@ function maybe_shrink_list(user_ids, filter_text) {
     return user_ids;
 }
 
-exports.get_filtered_and_sorted_user_ids = function (filter_text) {
+exports.get_filtered_and_sorted_user_ids = function (user_filter_text) {
     let user_ids;
 
-    if (filter_text) {
+    if (user_filter_text) {
         // If there's a filter, select from all users, not just those
         // recently active.
-        user_ids = filter_user_ids(filter_text, people.get_active_user_ids());
+        user_ids = filter_user_ids(user_filter_text, people.get_active_user_ids());
     } else {
         // From large realms, the user_ids in presence may exclude
         // users who have been idle more than three weeks.  When the
@@ -319,7 +319,7 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
     });
 
 
-    user_ids = maybe_shrink_list(user_ids, filter_text);
+    user_ids = maybe_shrink_list(user_ids, user_filter_text);
 
     return exports.sort_users(user_ids);
 };
