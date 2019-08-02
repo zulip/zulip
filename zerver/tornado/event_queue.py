@@ -130,6 +130,15 @@ class ClientDescriptor:
         if 'client_gravatar' not in d:
             # Temporary migration for the addition of the client_gravatar field
             d['client_gravatar'] = False
+        if 'newest_pruned_id' not in d['event_queue']:
+            # Temporary migration for the addition of the newest_pruned_id field
+            if len(d['event_queue']['queue']) > 0 or len(d['event_queue']['virtual_events']) > 0:
+                d['event_queue']['newest_pruned_id'] = min(
+                    [event['id'] for event in d['event_queue']['queue']] +
+                    [event['id'] for event in d['event_queue']['virtual_events'].values()],
+                ) - 1
+            else:
+                d['event_queue']['newest_pruned_id'] = d['next_event_id'] - 1
 
         ret = cls(
             d['user_profile_id'],
@@ -238,6 +247,9 @@ def compute_full_event_type(event: Mapping[str, Any]) -> str:
 
 class EventQueue:
     def __init__(self, id: str) -> None:
+        # When extending this list of properties, one must be sure to
+        # update to_dict and from_dict.
+
         self.queue = deque()  # type: ignore # Should be Deque[Dict[str, Any]], but Deque isn't available in Python 3.4
         self.next_event_id = 0  # type: int
         self.newest_pruned_id = -1  # type: int
@@ -250,6 +262,7 @@ class EventQueue:
         # loading event queues that lack that key.
         return dict(id=self.id,
                     next_event_id=self.next_event_id,
+                    newest_pruned_id=self.newest_pruned_id,
                     queue=list(self.queue),
                     virtual_events=self.virtual_events)
 
@@ -258,6 +271,7 @@ class EventQueue:
         ret = cls(d['id'])
         ret.next_event_id = d['next_event_id']
         ret.queue = deque(d['queue'])
+        ret.newest_pruned_id = d['newest_pruned_id']
         ret.virtual_events = d.get("virtual_events", {})
         return ret
 

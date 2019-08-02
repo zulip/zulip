@@ -366,6 +366,11 @@ class EventQueueTest(ZulipTestCase):
         new_client = ClientDescriptor.from_dict(client_dict)
         self.assertEqual(client.to_dict(), new_client.to_dict())
 
+        client_dict = client.to_dict()
+        del client_dict['event_queue']['newest_pruned_id']
+        new_client = ClientDescriptor.from_dict(client_dict)
+        self.assertEqual(client.to_dict(), new_client.to_dict())
+
     def test_one_event(self) -> None:
         client = self.get_client_descriptor()
         queue = client.event_queue
