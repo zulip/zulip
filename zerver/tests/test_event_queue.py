@@ -10,7 +10,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications, \
-    allocate_client_descriptor, \
+    allocate_client_descriptor, EventQueue, \
     get_client_descriptor, missedmessage_hook, persistent_queue_filename
 from zerver.tornado.views import get_events
 
@@ -341,3 +341,132 @@ class FileReloadLogicTest(ZulipTestCase):
                              "/home/zulip/tornado/event_queues.9993.json")
             self.assertEqual(persistent_queue_filename(9993, last=True),
                              "/home/zulip/tornado/event_queues.9993.last.json")
+
+class EventQueueTest(ZulipTestCase):
+    def test_one_event(self) -> None:
+        queue = EventQueue("1")
+        queue.push({"type": "pointer",
+                    "pointer": 1,
+                    "timestamp": "1"})
+        self.assertFalse(queue.empty())
+        self.assertEqual(queue.contents(),
+                         [{'id': 0,
+                           'type': 'pointer',
+                           "pointer": 1,
+                           "timestamp": "1"}])
+
+    def test_event_collapsing(self) -> None:
+        queue = EventQueue("1")
+        for pointer_val in range(1, 10):
+            queue.push({"type": "pointer",
+                        "pointer": pointer_val,
+                        "timestamp": str(pointer_val)})
+        self.assertEqual(queue.contents(),
+                         [{'id': 8,
+                           'type': 'pointer',
+                           "pointer": 9,
+                           "timestamp": "9"}])
+
+        queue = EventQueue("2")
+        for pointer_val in range(1, 10):
+            queue.push({"type": "pointer",
+                        "pointer": pointer_val,
+                        "timestamp": str(pointer_val)})
+        queue.push({"type": "unknown"})
+        queue.push({"type": "restart", "server_generation": "1"})
+        for pointer_val in range(11, 20):
+            queue.push({"type": "pointer",
+                        "pointer": pointer_val,
+                        "timestamp": str(pointer_val)})
+        queue.push({"type": "restart", "server_generation": "2"})
+        self.assertEqual(queue.contents(),
+                         [{"type": "unknown",
+                           "id": 9},
+                          {'id': 19,
+                           'type': 'pointer',
+                           "pointer": 19,
+                           "timestamp": "19"},
+                          {"id": 20,
+                           "type": "restart",
+                           "server_generation": "2"}])
+        for pointer_val in range(21, 23):
+            queue.push({"type": "pointer",
+                        "pointer": pointer_val,
+                        "timestamp": str(pointer_val)})
+        self.assertEqual(queue.contents(),
+                         [{"type": "unknown",
+                           "id": 9},
+                          {'id': 19,
+                           'type': 'pointer',
+                           "pointer": 19,
+                           "timestamp": "19"},
+                          {"id": 20,
+                           "type": "restart",
+                           "server_generation": "2"},
+                          {'id': 22,
+                           'type': 'pointer',
+                           "pointer": 22,
+                           "timestamp": "22"},
+                          ])
+
+    def test_flag_add_collapsing(self) -> None:
+        queue = EventQueue("1")
+        queue.push({"type": "update_message_flags",
+                    "flag": "read",
+                    "operation": "add",
+                    "all": False,
+                    "messages": [1, 2, 3, 4],
+                    "timestamp": "1"})
+        queue.push({"type": "update_message_flags",
+                    "flag": "read",
+                    "all": False,
+                    "operation": "add",
+                    "messages": [5, 6],
+                    "timestamp": "1"})
+        self.assertEqual(queue.contents(),
+                         [{'id': 1,
+                           'type': 'update_message_flags',
+                           "all": False,
+                           "flag": "read",
+                           "operation": "add",
+                           "messages": [1, 2, 3, 4, 5, 6],
+                           "timestamp": "1"}])
+
+    def test_flag_remove_collapsing(self) -> None:
+        queue = EventQueue("1")
+        queue.push({"type": "update_message_flags",
+                    "flag": "collapsed",
+                    "operation": "remove",
+                    "all": False,
+                    "messages": [1, 2, 3, 4],
+                    "timestamp": "1"})
+        queue.push({"type": "update_message_flags",
+                    "flag": "collapsed",
+                    "all": False,
+                    "operation": "remove",
+                    "messages": [5, 6],
+                    "timestamp": "1"})
+        self.assertEqual(queue.contents(),
+                         [{'id': 1,
+                           'type': 'update_message_flags',
+                           "all": False,
+                           "flag": "collapsed",
+                           "operation": "remove",
+                           "messages": [1, 2, 3, 4, 5, 6],
+                           "timestamp": "1"}])
+
+    def test_collapse_event(self) -> None:
+        queue = EventQueue("1")
+        queue.push({"type": "pointer",
+                    "pointer": 1,
+                    "timestamp": "1"})
+        queue.push({"type": "unknown",
+                    "timestamp": "1"})
+        self.assertEqual(queue.contents(),
+                         [{'id': 0,
+                           'type': 'pointer',
+                           "pointer": 1,
+                           "timestamp": "1"},
+                          {'id': 1,
+                           'type': 'unknown',
+                           "timestamp": "1"}])

@@ -9,7 +9,6 @@ import sys
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 from io import StringIO
 
@@ -144,7 +143,6 @@ from zerver.tornado.event_queue import (
     clear_client_event_queues_for_testing,
     get_client_info_for_message_event,
     process_message_event,
-    EventQueue,
 )
 from zerver.tornado.views import get_events
 
@@ -3060,135 +3058,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         result = get_unread_data()
         self.assertEqual(result['mentions'], [stream_message_id])
-
-class EventQueueTest(TestCase):
-    def test_one_event(self) -> None:
-        queue = EventQueue("1")
-        queue.push({"type": "pointer",
-                    "pointer": 1,
-                    "timestamp": "1"})
-        self.assertFalse(queue.empty())
-        self.assertEqual(queue.contents(),
-                         [{'id': 0,
-                           'type': 'pointer',
-                           "pointer": 1,
-                           "timestamp": "1"}])
-
-    def test_event_collapsing(self) -> None:
-        queue = EventQueue("1")
-        for pointer_val in range(1, 10):
-            queue.push({"type": "pointer",
-                        "pointer": pointer_val,
-                        "timestamp": str(pointer_val)})
-        self.assertEqual(queue.contents(),
-                         [{'id': 8,
-                           'type': 'pointer',
-                           "pointer": 9,
-                           "timestamp": "9"}])
-
-        queue = EventQueue("2")
-        for pointer_val in range(1, 10):
-            queue.push({"type": "pointer",
-                        "pointer": pointer_val,
-                        "timestamp": str(pointer_val)})
-        queue.push({"type": "unknown"})
-        queue.push({"type": "restart", "server_generation": "1"})
-        for pointer_val in range(11, 20):
-            queue.push({"type": "pointer",
-                        "pointer": pointer_val,
-                        "timestamp": str(pointer_val)})
-        queue.push({"type": "restart", "server_generation": "2"})
-        self.assertEqual(queue.contents(),
-                         [{"type": "unknown",
-                           "id": 9},
-                          {'id': 19,
-                           'type': 'pointer',
-                           "pointer": 19,
-                           "timestamp": "19"},
-                          {"id": 20,
-                           "type": "restart",
-                           "server_generation": "2"}])
-        for pointer_val in range(21, 23):
-            queue.push({"type": "pointer",
-                        "pointer": pointer_val,
-                        "timestamp": str(pointer_val)})
-        self.assertEqual(queue.contents(),
-                         [{"type": "unknown",
-                           "id": 9},
-                          {'id': 19,
-                           'type': 'pointer',
-                           "pointer": 19,
-                           "timestamp": "19"},
-                          {"id": 20,
-                           "type": "restart",
-                           "server_generation": "2"},
-                          {'id': 22,
-                           'type': 'pointer',
-                           "pointer": 22,
-                           "timestamp": "22"},
-                          ])
-
-    def test_flag_add_collapsing(self) -> None:
-        queue = EventQueue("1")
-        queue.push({"type": "update_message_flags",
-                    "flag": "read",
-                    "operation": "add",
-                    "all": False,
-                    "messages": [1, 2, 3, 4],
-                    "timestamp": "1"})
-        queue.push({"type": "update_message_flags",
-                    "flag": "read",
-                    "all": False,
-                    "operation": "add",
-                    "messages": [5, 6],
-                    "timestamp": "1"})
-        self.assertEqual(queue.contents(),
-                         [{'id': 1,
-                           'type': 'update_message_flags',
-                           "all": False,
-                           "flag": "read",
-                           "operation": "add",
-                           "messages": [1, 2, 3, 4, 5, 6],
-                           "timestamp": "1"}])
-
-    def test_flag_remove_collapsing(self) -> None:
-        queue = EventQueue("1")
-        queue.push({"type": "update_message_flags",
-                    "flag": "collapsed",
-                    "operation": "remove",
-                    "all": False,
-                    "messages": [1, 2, 3, 4],
-                    "timestamp": "1"})
-        queue.push({"type": "update_message_flags",
-                    "flag": "collapsed",
-                    "all": False,
-                    "operation": "remove",
-                    "messages": [5, 6],
-                    "timestamp": "1"})
-        self.assertEqual(queue.contents(),
-                         [{'id': 1,
-                           'type': 'update_message_flags',
-                           "all": False,
-                           "flag": "collapsed",
-                           "operation": "remove",
-                           "messages": [1, 2, 3, 4, 5, 6],
-                           "timestamp": "1"}])
-
-    def test_collapse_event(self) -> None:
-        queue = EventQueue("1")
-        queue.push({"type": "pointer",
-                    "pointer": 1,
-                    "timestamp": "1"})
-        queue.push({"type": "unknown",
-                    "timestamp": "1"})
-        self.assertEqual(queue.contents(),
-                         [{'id': 0,
-                           'type': 'pointer',
-                           "pointer": 1,
-                           "timestamp": "1"},
-                          {'id': 1,
-                           'type': 'unknown',
-                           "timestamp": "1"}])
 
 class ClientDescriptorsTest(ZulipTestCase):
     def test_get_client_info_for_all_public_streams(self) -> None:
