@@ -304,7 +304,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         self.timer_event.start()
 
     def stop_timer(self) -> None:
-        if self.timer_event and self.timer_event.is_alive():  # type: ignore # Report mypy bug.
+        if self.timer_event and self.timer_event.is_alive():
             self.timer_event.cancel()
             self.timer_event = None
 
