@@ -1945,9 +1945,13 @@ def extract_recipients(
 ) -> Union[List[str], List[int]]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
-    try:
-        data = ujson.loads(s)  # type: ignore # This function has a super weird union argument.
-    except (ValueError, TypeError):
+
+    if isinstance(s, str):
+        try:
+            data = ujson.loads(s)
+        except (ValueError, TypeError):
+            data = s
+    else:
         data = s
 
     if isinstance(data, str):
