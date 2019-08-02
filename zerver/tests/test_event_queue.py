@@ -10,7 +10,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications, \
-    allocate_client_descriptor, EventQueue, \
+    allocate_client_descriptor, ClientDescriptor, \
     get_client_descriptor, missedmessage_hook, persistent_queue_filename
 from zerver.tornado.views import get_events
 
@@ -343,42 +343,80 @@ class FileReloadLogicTest(ZulipTestCase):
                              "/home/zulip/tornado/event_queues.9993.last.json")
 
 class EventQueueTest(ZulipTestCase):
+    def get_client_descriptor(self) -> ClientDescriptor:
+        hamlet = self.example_user('hamlet')
+        realm = hamlet.realm
+        queue_data = dict(
+            all_public_streams=False,
+            apply_markdown=False,
+            client_gravatar=True,
+            client_type_name='website',
+            event_types=None,
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+        return client
+
+    def verify_to_dict_end_to_end(self, client: ClientDescriptor) -> None:
+        client_dict = client.to_dict()
+        new_client = ClientDescriptor.from_dict(client_dict)
+        self.assertEqual(client.to_dict(), new_client.to_dict())
+
     def test_one_event(self) -> None:
-        queue = EventQueue("1")
+        client = self.get_client_descriptor()
+        queue = client.event_queue
         queue.push({"type": "pointer",
                     "pointer": 1,
                     "timestamp": "1"})
         self.assertFalse(queue.empty())
+        self.verify_to_dict_end_to_end(client)
         self.assertEqual(queue.contents(),
                          [{'id': 0,
                            'type': 'pointer',
                            "pointer": 1,
                            "timestamp": "1"}])
+        self.verify_to_dict_end_to_end(client)
 
     def test_event_collapsing(self) -> None:
-        queue = EventQueue("1")
+        client = self.get_client_descriptor()
+        queue = client.event_queue
         for pointer_val in range(1, 10):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
+            self.verify_to_dict_end_to_end(client)
         self.assertEqual(queue.contents(),
                          [{'id': 8,
                            'type': 'pointer',
                            "pointer": 9,
                            "timestamp": "9"}])
+        self.verify_to_dict_end_to_end(client)
 
-        queue = EventQueue("2")
+        client = self.get_client_descriptor()
+        queue = client.event_queue
         for pointer_val in range(1, 10):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
+            self.verify_to_dict_end_to_end(client)
+
         queue.push({"type": "unknown"})
+        self.verify_to_dict_end_to_end(client)
+
         queue.push({"type": "restart", "server_generation": "1"})
+        self.verify_to_dict_end_to_end(client)
+
         for pointer_val in range(11, 20):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
+            self.verify_to_dict_end_to_end(client)
         queue.push({"type": "restart", "server_generation": "2"})
+        self.verify_to_dict_end_to_end(client)
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
                            "id": 9},
@@ -389,10 +427,12 @@ class EventQueueTest(ZulipTestCase):
                           {"id": 20,
                            "type": "restart",
                            "server_generation": "2"}])
+        self.verify_to_dict_end_to_end(client)
         for pointer_val in range(21, 23):
             queue.push({"type": "pointer",
                         "pointer": pointer_val,
                         "timestamp": str(pointer_val)})
+            self.verify_to_dict_end_to_end(client)
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
                            "id": 9},
@@ -408,21 +448,25 @@ class EventQueueTest(ZulipTestCase):
                            "pointer": 22,
                            "timestamp": "22"},
                           ])
+        self.verify_to_dict_end_to_end(client)
 
     def test_flag_add_collapsing(self) -> None:
-        queue = EventQueue("1")
+        client = self.get_client_descriptor()
+        queue = client.event_queue
         queue.push({"type": "update_message_flags",
                     "flag": "read",
                     "operation": "add",
                     "all": False,
                     "messages": [1, 2, 3, 4],
                     "timestamp": "1"})
+        self.verify_to_dict_end_to_end(client)
         queue.push({"type": "update_message_flags",
                     "flag": "read",
                     "all": False,
                     "operation": "add",
                     "messages": [5, 6],
                     "timestamp": "1"})
+        self.verify_to_dict_end_to_end(client)
         self.assertEqual(queue.contents(),
                          [{'id': 1,
                            'type': 'update_message_flags',
@@ -431,21 +475,25 @@ class EventQueueTest(ZulipTestCase):
                            "operation": "add",
                            "messages": [1, 2, 3, 4, 5, 6],
                            "timestamp": "1"}])
+        self.verify_to_dict_end_to_end(client)
 
     def test_flag_remove_collapsing(self) -> None:
-        queue = EventQueue("1")
+        client = self.get_client_descriptor()
+        queue = client.event_queue
         queue.push({"type": "update_message_flags",
                     "flag": "collapsed",
                     "operation": "remove",
                     "all": False,
                     "messages": [1, 2, 3, 4],
                     "timestamp": "1"})
+        self.verify_to_dict_end_to_end(client)
         queue.push({"type": "update_message_flags",
                     "flag": "collapsed",
                     "all": False,
                     "operation": "remove",
                     "messages": [5, 6],
                     "timestamp": "1"})
+        self.verify_to_dict_end_to_end(client)
         self.assertEqual(queue.contents(),
                          [{'id': 1,
                            'type': 'update_message_flags',
@@ -454,14 +502,40 @@ class EventQueueTest(ZulipTestCase):
                            "operation": "remove",
                            "messages": [1, 2, 3, 4, 5, 6],
                            "timestamp": "1"}])
+        self.verify_to_dict_end_to_end(client)
 
     def test_collapse_event(self) -> None:
-        queue = EventQueue("1")
+        client = self.get_client_descriptor()
+        queue = client.event_queue
         queue.push({"type": "pointer",
                     "pointer": 1,
                     "timestamp": "1"})
+        # Verify the pointer event is stored as a virtual event
+        self.assertEqual(queue.virtual_events,
+                         {'pointer':
+                          {'id': 0,
+                           'type': 'pointer',
+                           'pointer': 1,
+                           "timestamp": "1"}})
+        # And we can reconstruct newest_pruned_id etc.
+        self.verify_to_dict_end_to_end(client)
+
         queue.push({"type": "unknown",
                     "timestamp": "1"})
+        self.assertEqual(list(queue.queue),
+                         [{'id': 1,
+                           'type': 'unknown',
+                           "timestamp": "1"}])
+        self.assertEqual(queue.virtual_events,
+                         {'pointer':
+                          {'id': 0,
+                           'type': 'pointer',
+                           'pointer': 1,
+                           "timestamp": "1"}})
+        # And we can still reconstruct newest_pruned_id etc. correctly
+        self.verify_to_dict_end_to_end(client)
+
+        # Verify virtual events are converted to real events by .contents()
         self.assertEqual(queue.contents(),
                          [{'id': 0,
                            'type': 'pointer',
@@ -470,3 +544,10 @@ class EventQueueTest(ZulipTestCase):
                           {'id': 1,
                            'type': 'unknown',
                            "timestamp": "1"}])
+
+        # And now verify to_dict after pruning
+        queue.prune(0)
+        self.verify_to_dict_end_to_end(client)
+
+        queue.prune(1)
+        self.verify_to_dict_end_to_end(client)
