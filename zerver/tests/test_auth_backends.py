@@ -570,7 +570,7 @@ class SocialAuthBase(ZulipTestCase):
             # TODO: Generalize this testing code for use with other
             # authentication backends; for now, we just assert that
             # it's definitely the GitHub authentication backend.
-            self.assert_in_success_response(["Select email"], result)
+            self.assert_in_success_response(["Select account"], result)
             assert self.AUTH_FINISH_URL == "/complete/github/"
 
             # Testing hack: When the pipeline goes to the partial

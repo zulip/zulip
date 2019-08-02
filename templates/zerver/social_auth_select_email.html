@@ -2,10 +2,9 @@
 
 {% block portico_content %}
 <div class="register-account flex full-page new-style" id="choose_email">
-
-    <div class="pitch">
+    <div class="lead">
         {% trans %}
-        <h1>Select email</h1>
+        <h1 class="get-started">Select account</h1>
         {% endtrans %}
     </div>
 
@@ -28,6 +27,9 @@
             </div>
         </form>
         {% endfor %}
+    </div>
+    <div class="bottom-text">
+        Only verified GitHub email addresses are listed.
     </div>
 </div>
 {% endblock %}
