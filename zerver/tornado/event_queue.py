@@ -15,7 +15,6 @@ import requests
 import atexit
 import sys
 import signal
-import tornado.autoreload
 import tornado.ioloop
 import random
 from zerver.models import UserProfile, Client, Realm
@@ -32,6 +31,7 @@ from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descr
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.sharding import get_tornado_uri, get_tornado_port, \
     notify_tornado_queue_name
+from zerver.tornado.autoreload import add_reload_hook
 import copy
 
 requests_client = requests.Session()
@@ -481,7 +481,7 @@ def setup_event_queue(port: int) -> None:
         atexit.register(dump_event_queues, port)
         # Make sure we dump event queues even if we exit via signal
         signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
-        tornado.autoreload.add_reload_hook(lambda: dump_event_queues(port))
+        add_reload_hook(lambda: dump_event_queues(port))
 
     try:
         os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
