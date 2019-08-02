@@ -66,7 +66,7 @@ def load_bot_config_template(bot: str) -> Dict[str, str]:
     if os.path.isfile(config_path):
         config = configparser.ConfigParser()
         with open(config_path) as conf:
-            config.readfp(conf)  # type: ignore # readfp->read_file in python 3, so not in stubs
+            config.readfp(conf)
         return dict(config.items(bot))
     else:
         return dict()
