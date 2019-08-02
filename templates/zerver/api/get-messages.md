@@ -63,15 +63,7 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-``` curl
-curl -X GET -G {{ api_url }}/v1/messages \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "num_before=3" \
-    -d "num_after=14" \
-    -d "anchor=42" \
-    -d "use_first_unread_anchor=false" \
-    --data-urlencode narrow='[{"operator":"stream", "operand":"Denmark"}]'
-```
+{generate_code_example(curl, exclude=["client_gravatar", "apply_markdown"])|/messages:get|example}
 
 {end_tabs}
 

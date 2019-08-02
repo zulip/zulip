@@ -730,7 +730,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
-            '    --data-urlencode narrow=\'[{"operand": "party", "operator": "stream"}]\' \\',
+            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    -d 'client_gravatar=true' \\",
             "    -d 'apply_markdown=false'",
             '```'
@@ -782,8 +782,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
-            '    --data-urlencode narrow=\'[{"operand": "party", "operator": "stream"}]\'',
+            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\'',
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
-
