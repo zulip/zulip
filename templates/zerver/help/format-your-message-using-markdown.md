@@ -65,7 +65,8 @@ patterns like `#1234` to your ticketing system.
 ```
 Auto-detected URL: zulipchat.com
 Named link: [Zulip homepage](zulipchat.com)
-Stream: #**announce**
+Stream: #**stream name**
+Topic: #**stream name>topic name**
 Custom linkifier: #1234 (links to ticket 1234 in your ticketing system)
 ```
 
