@@ -281,7 +281,7 @@ def upload_image_to_s3(
     else:
         headers = None
 
-    key.set_contents_from_string(contents, headers=headers)  # type: ignore # https://github.com/python/typeshed/issues/1552
+    key.set_contents_from_string(contents, headers=headers)
 
 def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
     upload_quota = realm.upload_quota_bytes()
@@ -430,10 +430,10 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_target_file_name = user_avatar_path(target_profile)
 
         key = self.get_avatar_key(s3_source_file_name + ".original")
-        image_data = key.get_contents_as_string()  # type: ignore # https://github.com/python/typeshed/issues/1552
+        image_data = key.get_contents_as_string()
         content_type = key.content_type
 
-        self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)  # type: ignore # image_data is `bytes`, boto subs are wrong
+        self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)
 
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         bucket = settings.S3_AVATAR_BUCKET
@@ -520,7 +520,7 @@ class S3UploadBackend(ZulipUploadBackend):
         key = bucket.get_key(file_path + ".original")
         image_data = key.get_contents_as_string()
 
-        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)  # type: ignore # image_data is `bytes`, boto subs are wrong
+        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         upload_image_to_s3(
             bucket_name,
             s3_file_name + "-medium.png",
@@ -541,7 +541,7 @@ class S3UploadBackend(ZulipUploadBackend):
         key = bucket.get_key(file_path + ".original")
         image_data = key.get_contents_as_string()
 
-        resized_avatar = resize_avatar(image_data)  # type: ignore # image_data is `bytes`, boto subs are wrong
+        resized_avatar = resize_avatar(image_data)
         upload_image_to_s3(
             bucket_name,
             s3_file_name,
