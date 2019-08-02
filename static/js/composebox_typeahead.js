@@ -758,8 +758,7 @@ function get_header_text() {
     var tip_text = '';
     switch (this.completing) {
     case 'stream':
-    case 'topic_list':
-        tip_text = i18n.t('Press > to mention a topic');
+        tip_text = i18n.t('Press > for list of topics');
         break;
     default:
         return false;
