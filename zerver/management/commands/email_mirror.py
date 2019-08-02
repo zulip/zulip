@@ -51,7 +51,7 @@ def get_imap_messages() -> Generator[Message, None, None]:
     try:
         mbox.select(settings.EMAIL_GATEWAY_IMAP_FOLDER)
         try:
-            status, num_ids_data = mbox.search(None, 'ALL')  # type: ignore # https://github.com/python/typeshed/pull/1762
+            status, num_ids_data = mbox.search(None, 'ALL')
             for msgid in num_ids_data[0].split():
                 status, msg_data = mbox.fetch(msgid, '(RFC822)')
                 msg_as_bytes = msg_data[0][1]
