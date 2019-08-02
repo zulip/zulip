@@ -23,7 +23,8 @@ from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
-from zerver.lib.message import MessageDict
+from zerver.lib.message import MessageDict, apply_unread_message_event, \
+    aggregate_unread_data, remove_message_id_from_unread_mgs, RawUnreadMessagesResult
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
@@ -68,6 +69,7 @@ class ClientDescriptor:
                  event_types: Optional[Sequence[str]],
                  client_type_name: str,
                  apply_markdown: bool=True,
+                 downgradeable: bool=False,
                  client_gravatar: bool=True,
                  all_public_streams: bool=False,
                  lifespan_secs: int=0,
@@ -83,6 +85,7 @@ class ClientDescriptor:
         self.current_client_name = None  # type: Optional[str]
         self.event_queue = event_queue
         self.event_types = event_types
+        self.downgradeable = downgradeable
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
         self.client_gravatar = client_gravatar
@@ -130,6 +133,10 @@ class ClientDescriptor:
         if 'client_gravatar' not in d:
             # Temporary migration for the addition of the client_gravatar field
             d['client_gravatar'] = False
+        if 'downgradeable' not in d:
+            d['downgradeable'] = False
+        if 'downgraded' not in d['event_queue']:
+            d['event_queue']['downgraded'] = False
 
         ret = cls(
             d['user_profile_id'],
@@ -139,6 +146,7 @@ class ClientDescriptor:
             d['event_types'],
             d['client_type_name'],
             d['apply_markdown'],
+            d['downgradeable'],
             d['client_gravatar'],
             d['all_public_streams'],
             d['queue_timeout'],
@@ -183,7 +191,16 @@ class ClientDescriptor:
     def accepts_messages(self) -> bool:
         return self.event_types is None or "message" in self.event_types
 
+    # TODO: Clean up the variables for downgradeable queues; this
+    # reuses the lifespan awkwardly
     def expired(self, now: float) -> bool:
+        if self.downgradeable:
+            return (self.current_handler_id is None and
+                    now - self.last_connection_time >= MAX_QUEUE_TIMEOUT_SECS)
+        return (self.current_handler_id is None and
+                now - self.last_connection_time >= self.queue_timeout)
+
+    def downgrade_expired(self, now: float) -> bool:
         return (self.current_handler_id is None and
                 now - self.last_connection_time >= self.queue_timeout)
 
@@ -242,28 +259,100 @@ class EventQueue:
         self.next_event_id = 0  # type: int
         self.id = id  # type: str
         self.virtual_events = {}  # type: Dict[str, Dict[str, Any]]
+        self.downgraded = False
+        self.init_unread_data()
+
+    def init_unread_data(self) -> None:
+        self.unread_data = dict(
+            pm_dict={},
+            stream_dict={},
+            huddle_dict={},
+            mentions=set(),
+            # TODO: Clean up handling of muting.
+            unmuted_stream_msgs=set(),
+            muted_stream_ids=[],
+        )  # type: RawUnreadMessagesResult
 
     def to_dict(self) -> Dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
         # migration code in from_dict or load_event_queues to account for
         # loading event queues that lack that key.
         return dict(id=self.id,
+                    downgraded=self.downgraded,
                     next_event_id=self.next_event_id,
                     queue=list(self.queue),
+                    unread_data=self.unread_data,
                     virtual_events=self.virtual_events)
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> 'EventQueue':
         ret = cls(d['id'])
+        ret.downgraded = d['downgraded']
         ret.next_event_id = d['next_event_id']
         ret.queue = deque(d['queue'])
         ret.virtual_events = d.get("virtual_events", {})
+        if 'unread_data' in d:
+            ret.unread_data = d['unread_data']
+        else:
+            ret.init_unread_data()
         return ret
 
     def push(self, event: Dict[str, Any]) -> None:
+        full_event_type = compute_full_event_type(event)
+        if self.downgraded:
+            # Downgraded event queues exist to support the mobile
+            # apps.  The model is that we downgrade an event queue
+            # after a reasonable expiration period without any contact
+            # from the app.  A downgraded queue still receives most
+            # event types (user, stream, etc.), but not the highest
+            # traffic ones (e.g. message, presence):
+            #
+            # * Presence the app is responsible for fetching itself.
+            #
+            # * `message` events are dropped, but we use the same
+            #   raw_unread_msgs code originally implemented for the
+            #   unread_msgs part of /register to maintain the data
+            #   needed to send the client a full update of the
+            #   `unread_msgs` data structure as required by any new
+            #   messages that have been sent.
+            #
+            # When a client returns, we will add a special unread_data
+            # event to the queue containing the updates on newly
+            # arrived messages needed to fully extend the client's
+            # understanding of what unread messages exist.
+            #
+            # The client is expected to use its knowledge of muted
+            # streams and topics to drop items from the unread_data
+            # structure it receives; this code path doesn't track
+            # which streams/topics are muted.
+            #
+            # TODO: Implement support for mentions here.
+            if full_event_type == "message":
+                apply_unread_message_event(None, self.unread_data, event['message'],
+                                           event['flags'], skip_database=True)
+
+                # TODO: Cleanup skip_database code path
+                return
+            if full_event_type == "delete_message":
+                remove_id = event['message_id']
+                remove_message_id_from_unread_mgs(self.unread_data, remove_id)
+                # Don't return; we want that event to go in the queue
+            if full_event_type == "flags/add/read":
+                # TODO: Make sure the message ID isn't already in our
+                # pre-existing queue; if it is, we need to actually
+                # include the event or this message won't be marked as read.
+                for remove_id in event['messages']:
+                    remove_message_id_from_unread_mgs(self.unread_data, remove_id)
+                return
+            if full_event_type in ["presence"]:
+                # We just skip these event types on a downgraded queue.
+                return
+
+            # We ignore `update_message` events; the client is
+            # responsible for updating its data structures for those.
+
         event['id'] = self.next_event_id
         self.next_event_id += 1
-        full_event_type = compute_full_event_type(event)
         if (full_event_type in ["pointer", "restart"] or
                 full_event_type.startswith("flags/")):
             if full_event_type not in self.virtual_events:
@@ -316,9 +405,25 @@ class EventQueue:
             contents.append(virtual_id_map[virtual_ids[index]])
             index += 1
 
+        if self.downgraded:
+            # We mark the queue as no longerdowngraded
+            self.downgraded = False
+            unread_data_event = cast(Dict[str, Any], aggregate_unread_data(self.unread_data))
+            unread_data_event['type'] = 'unread_data'
+            contents.append(unread_data_event)
+            # Clean the unread_data data structure so we're read to be
+            # downgraded again in the future.
+            self.init_unread_data()
+
         self.virtual_events = {}
         self.queue = deque(contents)
         return contents
+
+    def downgrade(self) -> None:
+        # Downgrades an event queue.
+        self.downgraded = True
+
+        # TODO: Modify existing events?
 
 # maps queue ids to client descriptors
 clients = {}  # type: Dict[str, ClientDescriptor]
@@ -395,9 +500,14 @@ def do_gc_event_queues(to_remove: AbstractSet[str], affected_users: AbstractSet[
             cb(clients[id].user_profile_id, clients[id], clients[id].user_profile_id not in user_clients)
         del clients[id]
 
+def do_downgrade_event_queues(to_downgrade: List[ClientDescriptor]) -> None:
+    for client in to_downgrade:
+        client.event_queue.downgrade()
+
 def gc_event_queues(port: int) -> None:
     start = time.time()
     to_remove = set()  # type: Set[str]
+    to_downgrade = []  # type: List[ClientDescriptor]
     affected_users = set()  # type: Set[int]
     affected_realms = set()  # type: Set[int]
     for (id, client) in clients.items():
@@ -405,11 +515,14 @@ def gc_event_queues(port: int) -> None:
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
             affected_realms.add(client.realm_id)
+        elif client.downgradeable and client.downgrade_expired(start):
+            to_downgrade.append(client)
 
     # We don't need to call e.g. finish_current_handler on the clients
     # being removed because they are guaranteed to be idle (because
     # they are expired) and thus not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
+    do_downgrade_event_queues(to_downgrade)
 
     if settings.PRODUCTION:
         logging.info(('Tornado %d removed %d expired event queues owned by %d users in %.3fs.' +
