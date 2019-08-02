@@ -180,6 +180,13 @@ def _check_file(modify_times, module, path):
     else:
         return
 
+    if path == __file__ or path == os.path.join(os.path.dirname(__file__),
+                                                "event_queue.py"):
+        # Assume that the autoreload library itself imports correctly,
+        # because reloading this file will destroy its state,
+        # including _reload_hooks
+        return True
+
     try:
         importlib.reload(module)
     except Exception:
@@ -193,6 +200,8 @@ def _reload():
     _reload_attempted = True
     for fn in _reload_hooks:
         fn()
+    # Make sure any output from reload hooks makes it to stdout.
+    sys.stdout.flush()
     if hasattr(signal, "setitimer"):
         # Clear the alarm signal set by
         # ioloop.set_blocking_log_threshold so it doesn't fire
