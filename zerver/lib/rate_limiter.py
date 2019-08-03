@@ -43,7 +43,7 @@ class RateLimitedObject:
         raise NotImplementedError()
 
 class RateLimitedUser(RateLimitedObject):
-    def __init__(self, user: UserProfile, domain: str='all') -> None:
+    def __init__(self, user: UserProfile, domain: str='api_by_user') -> None:
         self.user = user
         self.domain = domain
 
@@ -54,8 +54,8 @@ class RateLimitedUser(RateLimitedObject):
         return "{}:{}:{}".format(type(self.user), self.user.id, self.domain)
 
     def rules(self) -> List[Tuple[int, int]]:
-        # user.rate_limits are general limits, applicable to the domain 'all'
-        if self.user.rate_limits != "" and self.domain == 'all':
+        # user.rate_limits are general limits, applicable to the domain 'api_by_user'
+        if self.user.rate_limits != "" and self.domain == 'api_by_user':
             result = []  # type: List[Tuple[int, int]]
             for limit in self.user.rate_limits.split(','):
                 (seconds, requests) = limit.split(':', 2)
@@ -75,7 +75,7 @@ def max_api_window(entity: RateLimitedObject) -> int:
     "Returns the API time window for the highest limit"
     return entity.rules()[-1][0]
 
-def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='all') -> None:
+def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='api_by_user') -> None:
     "Add a rate-limiting rule to the ratelimiter"
     global rules
 
@@ -87,7 +87,7 @@ def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='all')
     rules[domain].append((range_seconds, num_requests))
     rules[domain].sort(key=lambda x: x[0])
 
-def remove_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='all') -> None:
+def remove_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='api_by_user') -> None:
     global rules
     rules[domain] = [x for x in rules[domain] if x[0] != range_seconds and x[1] != num_requests]
 
