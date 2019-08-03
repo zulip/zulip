@@ -5,7 +5,7 @@ from typing import Optional
 from django.utils.translation import ugettext as _
 
 from zerver.lib.validator import check_required_string, \
-    check_url_pattern, check_dict_only
+    check_external_account_url_pattern, check_dict_only
 from zerver.lib.types import ProfileFieldData
 
 DEFAULT_EXTERNAL_ACCOUNTS = {
@@ -22,7 +22,7 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
 def validate_external_account_field_data(field_data: ProfileFieldData) -> Optional[str]:
     field_validator = check_dict_only(
         [('subtype', check_required_string)],
-        [('url_pattern', check_url_pattern)],
+        [('url_pattern', check_external_account_url_pattern)],
     )
     error = field_validator('field_data', field_data)
     if error:
