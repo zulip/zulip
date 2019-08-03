@@ -53,7 +53,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         data["name"] = ""
         data["field_type"] = 100
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, u'Name cannot be blank.')
+        self.assert_json_error(result, u'Label cannot be blank.')
 
         data["name"] = "*" * 41
         data["field_type"] = 100
@@ -82,7 +82,7 @@ class CustomProfileFieldTest(ZulipTestCase):
 
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result,
-                               u'A field with that name already exists.')
+                               u'A field with that label already exists.')
 
     def test_create_choice_field(self) -> None:
         self.login(self.example_email("iago"))
@@ -205,14 +205,14 @@ class CustomProfileFieldTest(ZulipTestCase):
             'url_pattern': 'invalid',
         })
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, 'username should appear exactly once in pattern.')
+        self.assert_json_error(result, 'Malformed URL pattern.')
 
         data["field_data"] = ujson.dumps({
             'subtype': 'custom',
             'url_pattern': 'https://www.reddit.com/%(username)s/user/%(username)s',
         })
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, 'username should appear exactly once in pattern.')
+        self.assert_json_error(result, 'Malformed URL pattern.')
 
         data["field_data"] = ujson.dumps({
             'subtype': 'custom',
@@ -236,7 +236,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assertEqual(field_data['url_pattern'], 'https://www.reddit.com/user/%(username)s')
 
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "A field with that name already exists.")
+        self.assert_json_error(result, "A field with that label already exists.")
 
     def test_not_realm_admin(self) -> None:
         self.login(self.example_email("hamlet"))
@@ -266,7 +266,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             info={'name': '',
                   'field_type': CustomProfileField.SHORT_TEXT}
         )
-        self.assert_json_error(result, u'Name cannot be blank.')
+        self.assert_json_error(result, u'Label cannot be blank.')
 
         result = self.client_patch(
             "/json/realm/profile_fields/100",
@@ -360,7 +360,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             "/json/realm/profile_fields/{}".format(field_2.id),
             info={'name': 'Phone', 'field_type': CustomProfileField.SHORT_TEXT})
         self.assert_json_error(
-            result, u'A field with that name already exists.')
+            result, u'A field with that label already exists.')
 
     def assert_error_update_invalid_value(self, field_name: str, new_value: object, error_msg: str) -> None:
         self.login(self.example_email("iago"))
