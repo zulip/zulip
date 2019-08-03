@@ -1006,12 +1006,14 @@ ul.grey-box {
         max-width: 95%;
     }
 
-    #subscription_overlay .left {
-        width: 40%;
-    }
+    #subscription_overlay {
+        .left {
+            width: 40%;
+        }
 
-    #subscription_overlay .right {
-        width: calc(60% - 1px);
+        .right {
+            width: calc(60% - 1px);
+        }
     }
 
     #search_stream_name {
@@ -1036,21 +1038,23 @@ ul.grey-box {
         width: calc(50% - 45px);
     }
 
-    #subscription_overlay .stream-header .button-group {
-        float: none;
-        display: block;
-        clear: both;
-        margin-top: 10px;
-    }
+    #subscription_overlay .stream-header {
+        .button-group {
+            float: none;
+            display: block;
+            clear: both;
+            margin-top: 10px;
 
-    #subscription_overlay .stream-header .button-group > * {
-        float: none !important;
-        vertical-align: top;
-    }
+            > * {
+                float: none !important;
+                vertical-align: top;
+            }
+        }
 
-    #subscription_overlay .stream-header .deactivate,
-    #subscription_overlay .stream-header .subscribe-button {
-        margin-top: -7px;
+        .deactivate,
+        .subscribe-button {
+            margin-top: -7px;
+        }
     }
 }
 
