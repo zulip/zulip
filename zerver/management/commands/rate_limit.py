@@ -24,8 +24,8 @@ class Command(ZulipBaseCommand):
                             help="Seconds to block for.")
         parser.add_argument('-d', '--domain',
                             dest='domain',
-                            default='all',
-                            help="Rate-limiting domain. Defaults to 'all'.")
+                            default='api_by_user',
+                            help="Rate-limiting domain. Defaults to 'api_by_user'.")
         parser.add_argument('-b', '--all-bots',
                             dest='bots',
                             action='store_true',
