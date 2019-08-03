@@ -357,7 +357,7 @@ def api_key_only_webhook_view(
                                             client_name=full_webhook_client_name(webhook_client_name))
 
             if settings.RATE_LIMITING:
-                rate_limit_user(request, user_profile, domain='all')
+                rate_limit_user(request, user_profile, domain='api_by_user')
             try:
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
@@ -783,7 +783,7 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     entity = RateLimitedUser(user, domain=domain)
     rate_limit_request_by_entity(request, entity)
 
-def rate_limit(domain: str='all') -> Callable[[ViewFuncT], ViewFuncT]:
+def rate_limit(domain: str='api_by_user') -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to
     rate limit different types of API calls independently.
 

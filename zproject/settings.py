@@ -346,7 +346,7 @@ CACHES = {
 ########################################################################
 
 RATE_LIMITING_RULES = {
-    'all': [
+    'api_by_user': [
         (60, 200),  # 200 requests max every minute
     ],
     'authenticate': [
