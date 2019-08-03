@@ -38,7 +38,7 @@ from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
     do_update_user_custom_profile_data, validate_email_for_realm
-from zerver.lib.avatar import is_avatar_new
+from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
@@ -658,10 +658,17 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
             chosen_email = backend.strategy.request_data().get('email')
 
         if not chosen_email:
+            avatars = {}  # Dict[str, str]
+            for email in verified_emails:
+                existing_account = common_get_active_user(email, realm, {})
+                if existing_account is not None:
+                    avatars[email] = avatar_url(existing_account)
+
             return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
                 'primary_email': verified_emails[0],
                 'verified_non_primary_emails': verified_emails[1:],
-                'backend': 'github'
+                'backend': 'github',
+                'avatar_urls': avatars,
             })
 
         try:

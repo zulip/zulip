@@ -181,6 +181,7 @@ class TemplateTestCase(ZulipTestCase):
             request=RequestFactory().get("/"),
             invite_as={"MEMBER": 1},
             max_file_upload_size = 25,
+            avatar_urls={"john@gmail.com": "www.zulip.com"},
         )
 
         context.update(kwargs)
