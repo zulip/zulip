@@ -895,7 +895,7 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
     return result
 
 def apply_unread_message_event(user_profile: UserProfile,
-                               state: Dict[str, Any],
+                               state: RawUnreadMessagesResult,
                                message: Dict[str, Any],
                                flags: List[str]) -> None:
     message_id = message['id']
@@ -950,13 +950,13 @@ def apply_unread_message_event(user_profile: UserProfile,
     if 'mentioned' in flags:
         state['mentions'].add(message_id)
 
-def remove_message_id_from_unread_mgs(state: Dict[str, Any],
+def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult,
                                       message_id: int) -> None:
     # The opposite of apply_unread_message_event; removes a read or
     # deleted message from a raw_unread_msgs data structure.
-    for key in ['pm_dict', 'stream_dict', 'huddle_dict']:
-        state[key].pop(message_id, None)
-
+    state['pm_dict'].pop(message_id, None)
+    state['stream_dict'].pop(message_id, None)
+    state['huddle_dict'].pop(message_id, None)
     state['unmuted_stream_msgs'].discard(message_id)
     state['mentions'].discard(message_id)
 
