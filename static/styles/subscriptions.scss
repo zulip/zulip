@@ -1063,6 +1063,14 @@ ul.grey-box {
         position: relative;
     }
 
+    .subscriptions-container {
+        overflow: hidden;
+    }
+
+    .subscriptions-container .search-container {
+        text-align: left;
+    }
+
     .subscriptions-container .subscriptions-header .fa-chevron-left {
         display: block;
     }
@@ -1078,14 +1086,6 @@ ul.grey-box {
         height: calc(100% - 45px);
 
         border: none;
-    }
-
-    .subscriptions-container {
-        overflow: hidden;
-    }
-
-    .subscriptions-container .search-container {
-        text-align: left;
     }
 
     #subscription_overlay .right,
