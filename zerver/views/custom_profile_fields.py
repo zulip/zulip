@@ -33,7 +33,7 @@ name_validator = check_capped_string(CustomProfileField.NAME_MAX_LENGTH)
 
 def validate_field_name_and_hint(name: str, hint: str) -> None:
     if not name.strip():
-        raise JsonableError(_("Name cannot be blank."))
+        raise JsonableError(_("Label cannot be blank."))
 
     error = hint_validator('hint', hint)
     if error:
@@ -82,7 +82,7 @@ def create_realm_custom_profile_field(request: HttpRequest,
         )
         return json_success({'id': field.id})
     except IntegrityError:
-        return json_error(_("A field with that name already exists."))
+        return json_error(_("A field with that label already exists."))
 
 @require_realm_admin
 def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
@@ -118,7 +118,7 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
         try_update_realm_custom_profile_field(realm, field, name, hint=hint,
                                               field_data=field_data)
     except IntegrityError:
-        return json_error(_('A field with that name already exists.'))
+        return json_error(_('A field with that label already exists.'))
     return json_success()
 
 @require_realm_admin

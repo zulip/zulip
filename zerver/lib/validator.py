@@ -235,7 +235,7 @@ def check_url_pattern(var_name: str, val: object) -> Optional[str]:
     val = cast(str, val)
 
     if val.count('%(username)s') != 1:
-        return _('username should appear exactly once in pattern.')
+        return _('Misformed URL pattern.')
     url_val = val.replace('%(username)s', 'username')
 
     error = check_url(var_name, url_val)
