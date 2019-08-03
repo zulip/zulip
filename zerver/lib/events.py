@@ -360,10 +360,8 @@ def fetch_initial_state_data(user_profile: UserProfile,
     return state
 
 
-def remove_message_id_from_unread_mgs(state: Dict[str, Dict[str, Any]],
+def remove_message_id_from_unread_mgs(raw_unread: Dict[str, Any],
                                       message_id: int) -> None:
-    raw_unread = state['raw_unread_msgs']
-
     for key in ['pm_dict', 'stream_dict', 'huddle_dict']:
         raw_unread[key].pop(message_id, None)
 
@@ -687,8 +685,9 @@ def apply_event(state: Dict[str, Any],
         else:
             state['max_message_id'] = -1
 
-        remove_id = event['message_id']
-        remove_message_id_from_unread_mgs(state, remove_id)
+        if 'raw_unread_msgs' in state:
+            remove_id = event['message_id']
+            remove_message_id_from_unread_mgs(state['raw_unread_msgs'], remove_id)
 
         # The remainder of this block is about maintaining recent_private_conversations
         if 'raw_recent_private_conversations' not in state or event['message_type'] != 'private':
@@ -731,9 +730,9 @@ def apply_event(state: Dict[str, Any],
         # We don't return messages in `/register`, so most flags we
         # can ignore, but we do need to update the unread_msgs data if
         # unread state is changed.
-        if event['flag'] == 'read' and event['operation'] == 'add':
+        if 'raw_unread_msgs' in state and event['flag'] == 'read' and event['operation'] == 'add':
             for remove_id in event['messages']:
-                remove_message_id_from_unread_mgs(state, remove_id)
+                remove_message_id_from_unread_mgs(state['raw_unread_msgs'], remove_id)
         if event['flag'] == 'starred' and event['operation'] == 'add':
             state['starred_messages'] += event['messages']
         if event['flag'] == 'starred' and event['operation'] == 'remove':
