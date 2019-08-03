@@ -25,6 +25,7 @@ from zerver.lib.message import (
     get_recent_conversations_recipient_id,
     get_recent_private_conversations,
     get_starred_message_ids,
+    remove_message_id_from_unread_mgs,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
 from zerver.lib.push_notifications import push_notifications_enabled
@@ -358,15 +359,6 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['zulip_version'] = ZULIP_VERSION
 
     return state
-
-
-def remove_message_id_from_unread_mgs(raw_unread: Dict[str, Any],
-                                      message_id: int) -> None:
-    for key in ['pm_dict', 'stream_dict', 'huddle_dict']:
-        raw_unread[key].pop(message_id, None)
-
-    raw_unread['unmuted_stream_msgs'].discard(message_id)
-    raw_unread['mentions'].discard(message_id)
 
 def apply_events(state: Dict[str, Any], events: Iterable[Dict[str, Any]],
                  user_profile: UserProfile, client_gravatar: bool,

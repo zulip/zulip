@@ -950,6 +950,16 @@ def apply_unread_message_event(user_profile: UserProfile,
     if 'mentioned' in flags:
         state['mentions'].add(message_id)
 
+def remove_message_id_from_unread_mgs(state: Dict[str, Any],
+                                      message_id: int) -> None:
+    # The opposite of apply_unread_message_event; removes a read or
+    # deleted message from a raw_unread_msgs data structure.
+    for key in ['pm_dict', 'stream_dict', 'huddle_dict']:
+        state[key].pop(message_id, None)
+
+    state['unmuted_stream_msgs'].discard(message_id)
+    state['mentions'].discard(message_id)
+
 def estimate_recent_messages(realm: Realm, hours: int) -> int:
     stat = COUNT_STATS['messages_sent:is_bot:hour']
     d = timezone_now() - datetime.timedelta(hours=hours)
