@@ -15,19 +15,21 @@ page can be easily identified in it's respective JavaScript file -->
             <div class="lead">
                 <h1 class="get-started">{{ _("Create a new Zulip organization") }}</h1>
             </div>
-            <form class="form-inline" id="send_confirm" name="email_form"
-              action="{{ current_url() }}" method="post">
-                {{ csrf_input }}
-                <div class="input-box horizontal">
-                    <div class="inline-block relative">
-                        <input type="text" class="email required" placeholder="{{ _("Enter your email address") }}"
-                          id="email" name="email" required />
-                        <label for="email">{{ _('Email') }}</label>
-                    </div>
+            <div class="white-box">
+                <form class="form-inline" id="send_confirm" name="email_form"
+                  action="{{ current_url() }}" method="post">
+                    {{ csrf_input }}
+                    <div class="input-box horizontal">
+                        <div class="inline-block relative">
+                            <input type="text" class="email required" placeholder="{{ _("Enter your email address") }}"
+                              id="email" name="email" required />
+                            <label for="email">{{ _('Email') }}</label>
+                        </div>
 
-                    <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
-                </div>
-            </form>
+                        <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
+                    </div>
+                </form>
+            </div>
             <div class="alert alert-error email-frontend-error"></div>
             {% if form.email.errors %}
                 {% for error in form.email.errors %}
