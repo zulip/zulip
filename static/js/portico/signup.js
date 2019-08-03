@@ -214,4 +214,9 @@ $(function () {
         clearTimeout(timer);
         timer = setTimeout(check_subdomain_avilable, 250, $('#id_team_subdomain').val());
     });
+
+    // GitHub auth
+    $("body").on("click", "#choose_email .choose-email-box", function () {
+        this.parentNode.submit();
+    });
 });

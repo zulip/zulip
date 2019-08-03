@@ -31,6 +31,15 @@ html {
     margin-top: 20px;
     font-weight: 500;
     font-size: 0.9em;
+
+    a {
+        color: hsl(164, 100%, 23%);
+
+        &:hover {
+            text-decoration: none;
+            color: hsl(156, 62%, 61%);
+        }
+    }
 }
 
 .grey {
@@ -1088,26 +1097,62 @@ button.login-social-button:active {
 #choose_email {
     flex-direction: column;
 
+    .white-box {
+        min-width: 450px;
+        padding: 30px 0 50px 0;
+    }
+
     form {
         padding: 0;
         margin: 0;
+
+        &.form-horizontal:hover {
+            background-color: hsl(202, 56%, 91%);
+            cursor: pointer;
+
+            i.fa {
+                color: hsl(203, 63%, 76%);
+            }
+        }
     }
 
-    button {
-        color: hsl(0, 0%, 0%);
-        background-color: hsl(0, 0%, 100%);
-        width: 100%;
-        margin-top: 15px;
-        border: 1px solid hsl(0, 0%, 80%);
-        border-radius: 4px;
-    }
+    .choose-email-box {
+        padding: 13px 0;
+        margin: 0 30px;
+        border-bottom: 1px solid hsl(0, 0%, 95%);
+        display: flex;
+        align-items: center;
 
-    button:hover {
-        border-color: hsl(0, 0%, 0%);
-    }
+        p {
+            margin: 0;
+            font-size: 0.8em;
 
-    button:active {
-        border-color: hsl(0, 0%, 60%);
-        background-color: hsl(0, 0%, 95%);
+            &:last-child {
+                line-height: 1.2em;
+            }
+        }
+
+        .email {
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        img,
+        i {
+            width: 35px;
+            height: 35px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+
+        i.fa {
+            color: hsl(0, 0%, 67%);
+            text-align: center;
+            line-height: 38px;
+
+            &::before {
+                font-size: 30px;
+            }
+        }
     }
 }
