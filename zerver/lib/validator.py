@@ -228,7 +228,7 @@ def check_url(var_name: str, val: object) -> Optional[str]:
     except ValidationError:
         return _('%s is not a URL') % (var_name,)
 
-def check_url_pattern(var_name: str, val: object) -> Optional[str]:
+def check_external_account_url_pattern(var_name: str, val: object) -> Optional[str]:
     error = check_string(var_name, val)
     if error:
         return error
