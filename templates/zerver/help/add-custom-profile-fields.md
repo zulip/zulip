@@ -25,11 +25,12 @@ profiles until they fill them out.
 
 There are several different types of fields available.
 
-* **Short text**: For one line responses, like "Twitter handle" or
+* **Short text**: For one line responses, like
     "Job title". Responses are limited to 50 characters.
 * **Long text**: For multiline responses, like "Biography".
 * **Date picker**: For dates, like "Birthday".
-* **Link**: For links to websites, like "LinkedIn profile".
+* **Link**: For links to websites.
+* **External account**: For linking to GitHub, Twitter, etc.
 * **List of options**: Creates a dropdown with a list of options.
 * **Person picker**: For selecting other users, like "Manager" or
     "Direct reports".
