@@ -80,29 +80,29 @@ img.task-completed {
     width: 15px;
 }
 
-input.add-task,
-button.add-task,
-input.poll-option,
-button.poll-option,
-input.poll-question,
-button.poll-question {
-    padding: 4px 6px;
-    margin: 2px 0px 2px 0px;
+input,
+button {
+    &.add-task,
+    &.poll-option,
+    &.poll-question {
+        padding: 4px 6px;
+        margin: 2px 0px 2px 0px;
+    }
 }
 
-button.add-task,
-button.poll-option,
-button.poll-question {
-    border-radius: 3px;
-    border: 1px solid hsl(0, 0%, 80%);
-    background-color: hsl(0, 0%, 100%);
-    width: 100px;
-}
+button {
+    &.add-task,
+    &.poll-option,
+    &.poll-question {
+        border-radius: 3px;
+        border: 1px solid hsl(0, 0%, 80%);
+        background-color: hsl(0, 0%, 100%);
+        width: 100px;
 
-button.add-task:hover,
-button.poll-option:hover,
-button.poll-question:hover {
-    border-color: hsl(0, 0%, 60%);
+        &:hover {
+            border-color: hsl(0, 0%, 60%);
+        }
+    }
 }
 
 .widget-error {
