@@ -13,7 +13,7 @@ from django.http import HttpResponse
 
 import zerver.lib.openapi as openapi
 from zerver.lib.bugdown.api_code_examples import generate_curl_example, \
-    render_curl_example
+    render_curl_example, get_language_and_mods
 from zerver.lib.request import REQ
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.openapi import (
@@ -525,6 +525,49 @@ so maybe we shouldn't include it in pending_endpoints.
 
         self.check_for_non_existant_openapi_endpoints()
 
+
+class ModifyExampleGenerationTestCase(ZulipTestCase):
+
+    def test_no_mod_argument(self) -> None:
+        res = get_language_and_mods("python")
+        self.assertEqual(res, ("python", {}))
+
+    def test_single_simple_mod_argument(self) -> None:
+        res = get_language_and_mods("curl, mod=1")
+        self.assertEqual(res, ("curl", {"mod": 1}))
+
+        res = get_language_and_mods("curl, mod='somevalue'")
+        self.assertEqual(res, ("curl", {"mod": "somevalue"}))
+
+        res = get_language_and_mods("curl, mod=\"somevalue\"")
+        self.assertEqual(res, ("curl", {"mod": "somevalue"}))
+
+    def test_multiple_simple_mod_argument(self) -> None:
+        res = get_language_and_mods("curl, mod1=1, mod2='a'")
+        self.assertEqual(res, ("curl", {"mod1": 1, "mod2": "a"}))
+
+        res = get_language_and_mods("curl, mod1=\"asdf\", mod2='thing', mod3=3")
+        self.assertEqual(res, ("curl", {"mod1": "asdf", "mod2": "thing", "mod3": 3}))
+
+    def test_single_list_mod_argument(self) -> None:
+        res = get_language_and_mods("curl, exclude=['param1', 'param2']")
+        self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"]}))
+
+        res = get_language_and_mods("curl, exclude=[\"param1\", \"param2\"]")
+        self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"]}))
+
+        res = get_language_and_mods("curl, exclude=['param1', \"param2\"]")
+        self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"]}))
+
+    def test_multiple_list_mod_argument(self) -> None:
+        res = get_language_and_mods("curl, exclude=['param1', \"param2\"], special=['param3']")
+        self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"], "special": ["param3"]}))
+
+    def test_multiple_mixed_mod_arguments(self) -> None:
+        res = get_language_and_mods("curl, exclude=[\"asdf\", 'sdfg'], other_key='asdf', more_things=\"asdf\", another_list=[1, \"2\"]")
+        self.assertEqual(res, ("curl", {"exclude": ["asdf", "sdfg"], "other_key": "asdf", "more_things": "asdf", "another_list": [1, "2"]}))
+
+
 class TestCurlExampleGeneration(ZulipTestCase):
 
     spec_mock_without_examples = {
@@ -728,3 +771,19 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "```"
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
+
+    def test_generate_and_render_curl_example_with_excludes(self) -> None:
+        generated_curl_example = generate_curl_example("/messages", "GET", exclude=["client_gravatar", "apply_markdown"])
+        expected_curl_example = [
+            '```curl',
+            'curl -X GET -G localhost:9991/api/v1/messages \\',
+            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
+            "    -d 'anchor=42' \\",
+            "    -d 'use_first_unread_anchor=true' \\",
+            "    -d 'num_before=4' \\",
+            "    -d 'num_after=8' \\",
+            '    --data-urlencode narrow=\'[{"operand": "party", "operator": "stream"}]\'',
+            '```'
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
