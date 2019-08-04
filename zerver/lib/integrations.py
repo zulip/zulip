@@ -1,7 +1,6 @@
 import os
 
 from typing import Dict, List, Optional, Any
-from django.conf import settings
 from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls.resolvers import LocaleRegexProvider
@@ -127,10 +126,6 @@ class BotIntegration(Integration):
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
-
-class EmailIntegration(Integration):
-    def is_enabled(self) -> bool:
-        return settings.EMAIL_GATEWAY_PATTERN != ""
 
 class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = 'zerver.webhooks.{name}.view.api_{name}_webhook'
@@ -354,8 +349,8 @@ INTEGRATIONS = {
                             doc='zerver/integrations/codebase.md'),
     'discourse': Integration('discourse', 'discourse', ['communication'],
                              doc='zerver/integrations/discourse.md'),
-    'email': EmailIntegration('email', 'email', ['communication'],
-                              doc='zerver/integrations/email.md'),
+    'email': Integration('email', 'email', ['communication'],
+                         doc='zerver/integrations/email.md'),
     'errbot': Integration('errbot', 'errbot', ['meta-integration', 'bots'],
                           doc='zerver/integrations/errbot.md'),
     'git': Integration('git', 'git', ['version-control'],
