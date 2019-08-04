@@ -127,6 +127,10 @@ exports.initialize = function () {
             return;
         }
 
+        if ($(e.target).is(".message_edit_notice")) {
+            return;
+        }
+
         // A tricky issue here is distinguishing hasty clicks (where
         // the mouse might still move a few pixels between mouseup and
         // mousedown) from selecting-for-copy.  We handle this issue
@@ -190,6 +194,33 @@ exports.initialize = function () {
         var message_id = rows.get_message_id(this);
         reactions.process_reaction_click(message_id, local_id);
         $(".tooltip").remove();
+    });
+
+    $('body').on('mouseenter', '.message_edit_notice', function (e) {
+        if (page_params.realm_allow_edit_history) {
+            $(e.currentTarget).addClass("message_edit_notice_hover");
+        }
+    });
+
+    $('body').on('mouseleave', '.message_edit_notice', function (e) {
+        if (page_params.realm_allow_edit_history) {
+            $(e.currentTarget).removeClass("message_edit_notice_hover");
+        }
+    });
+
+    $('body').on('click', '.message_edit_notice', function (e) {
+        popovers.hide_all();
+        var message_id = rows.id($(e.currentTarget).closest(".message_row"));
+        var row = current_msg_list.get_row(message_id);
+        var message = current_msg_list.get(rows.id(row));
+        var message_history_cancel_btn = $('#message-history-cancel');
+
+        if (page_params.realm_allow_edit_history) {
+            message_edit.show_history(message);
+            message_history_cancel_btn.focus();
+        }
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     // TOOLTIP FOR MESSAGE REACTIONS
