@@ -232,16 +232,16 @@
         p {
             margin-bottom: 0;
         }
+
+        p:first-of-type {
+            display: inline;
+        }
     }
 
     .tip,
     .keyboard_tip {
         background-color: hsl(46, 63%, 95%);
         border: 1px solid hsl(46, 63%, 84%);
-
-        p:first-of-type {
-            display: inline;
-        }
     }
 
     .tip::before {
