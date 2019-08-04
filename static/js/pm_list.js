@@ -85,7 +85,7 @@ exports._build_private_messages_list = function (active_conversation) {
 
         let user_circle_class = buddy_data.get_user_circle_class(user_ids_string);
 
-        let fraction_present;
+        let fraction_present = false;
         if (is_group) {
             user_circle_class = 'user_circle_fraction';
             fraction_present = buddy_data.huddle_fraction_present(user_ids_string);

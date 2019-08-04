@@ -2,10 +2,12 @@ const _page_params = {};
 
 set_global('page_params', _page_params);
 set_global('i18n', global.stub_i18n);
+set_global('$', global.make_zjquery());
 zrequire('people');
 zrequire('presence');
 zrequire('util');
 zrequire('user_status');
+
 zrequire('buddy_data');
 set_global('timerender', {});
 
@@ -36,6 +38,16 @@ const bot = {
     full_name: 'Red Herring Bot',
     email: 'bot@example.com',
     is_bot: true,
+    bot_owner_id: null,
+};
+
+const bot_with_owner = {
+    user_id: 55556,
+    full_name: 'Blue Herring Bot',
+    email: 'bot_with_owner@example.com',
+    is_bot: true,
+    bot_owner_id: 1001,
+    bot_owner_full_name: 'Human Myself',
 };
 
 function make_people() {
@@ -49,6 +61,7 @@ function make_people() {
     });
 
     people.add_in_realm(bot);
+    people.add_in_realm(bot_with_owner);
     people.add_in_realm(selma);
     people.add_in_realm(me);
     people.add_in_realm(old_user);
@@ -113,13 +126,69 @@ run_test('buddy_status', () => {
     assert.equal(buddy_data.buddy_status(me.user_id), 'active');
 });
 
-run_test('user_title', () => {
-    assert.equal(buddy_data.user_title(me.user_id), 'Human Myself is active');
+run_test('title_data', () => {
+    // Groups
+    var is_group = 'true';
+    var user_ids_string = "9999,1000";
+    var expected_group_data = {
+        is_group: is_group,
+        recipients: "Human Selma, Old User",
+        is_bot: false,
+    };
+    assert.deepEqual(buddy_data.get_title_data(user_ids_string, is_group), expected_group_data);
+
+    is_group = '';
+
+    // Bots with owners.
+    var bot_owner_exists = true;
+    expected_group_data = {
+        is_group: '',
+        name: 'Blue Herring Bot',
+        is_bot: true,
+        bot_owner_exists: bot_owner_exists,
+        bot_owner_name: 'Human Myself',
+    };
+    assert.deepEqual(buddy_data.get_title_data(bot_with_owner.user_id, is_group),
+                     expected_group_data);
+
+    // Bots without owners.
+    bot_owner_exists = false;
+    expected_group_data = {
+        is_group: '',
+        name: 'Red Herring Bot',
+        is_bot: true,
+        bot_owner_exists: bot_owner_exists,
+        bot_owner_name: undefined,
+    };
+    assert.deepEqual(buddy_data.get_title_data(bot.user_id, is_group), expected_group_data);
+
+    // Individual Users.
     user_status.set_status_text({
         user_id: me.user_id,
         status_text: 'out to lunch',
     });
-    assert.equal(buddy_data.user_title(me.user_id), 'out to lunch');
+
+    var expected_data = {
+        is_group: is_group,
+        status_text: 'out to lunch',
+        last_seen: 'translated: Active now',
+        is_away: false,
+        name: 'Human Myself',
+        online_now: true,
+        is_bot: false,
+    };
+    assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
+
+    expected_data = {
+        is_group: is_group,
+        status_text: undefined,
+        last_seen: 'translated: More than 2 weeks ago',
+        is_away: false,
+        name: 'Old User',
+        online_now: false,
+        is_bot: false,
+    };
+    assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
 });
 
 run_test('simple search', () => {

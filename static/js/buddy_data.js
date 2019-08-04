@@ -9,13 +9,6 @@
 
 exports.max_size_before_shrinking = 600;
 
-var presence_descriptions = {
-    away_me: 'is unavailable',
-    away_them: 'is unavailable',
-    active: 'is active',
-    idle: 'is not active',
-};
-
 var fade_config = {
     get_user_id: function (item) {
         return item.user_id;
@@ -41,6 +34,22 @@ exports.get_user_circle_class = function (user_id) {
         return 'user_circle_empty_line';
     default:
         return 'user_circle_empty';
+    }
+};
+
+exports.status_description = function (user_id) {
+    var status = exports.buddy_status(user_id);
+
+    switch (status) {
+    case 'active':
+        return 'Active';
+    case 'idle':
+        return 'Idle';
+    case 'away_them':
+    case 'away_me':
+        return 'Unavailable';
+    default:
+        return 'Offline';
     }
 };
 
@@ -170,33 +179,11 @@ exports.user_last_seen_time_status = function (user_id) {
     return timerender.last_seen_status_from_date(last_active_date.clone());
 };
 
-exports.user_title = function (user_id) {
-    var buddy_status = exports.buddy_status(user_id);
-    var type_desc = presence_descriptions[buddy_status];
-    var status_text = user_status.get_status_text(user_id);
-    var person = people.get_person_from_user_id(user_id);
-    var title;
-
-    if (status_text) {
-        // The user-set status, like "out to lunch",
-        // is more important than actual presence.
-        title = status_text;
-    } else {
-        title = person.full_name;
-        if (type_desc) {
-            // example: "Cordelia Lear is unavailable"
-            title += ' ' + type_desc;
-        }
-    }
-
-    return title;
-};
-
 exports.info_for = function (user_id) {
     var user_circle_class = exports.get_user_circle_class(user_id);
     var person = people.get_person_from_user_id(user_id);
     var my_user_status = exports.my_user_status(user_id);
-    var title = exports.user_title(user_id);
+    var user_circle_status = exports.status_description(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
@@ -206,7 +193,55 @@ exports.info_for = function (user_id) {
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class: user_circle_class,
-        title: title,
+        user_circle_status: user_circle_status,
+    };
+};
+
+exports.get_title_data = function (user_ids_string, is_group) {
+    if (is_group === 'true') {
+        // For groups, just return a string with recipient names.
+        return {
+            is_group: is_group,
+            recipients: people.get_recipients(user_ids_string),
+            is_bot: false,
+        };
+    }
+
+    var person = people.get_person_from_user_id(user_ids_string);
+    var bot_owner_exists = false;
+
+    if (person.is_bot) {
+        if (person.bot_owner_id !== null) {
+            // Only show bot-owner name if it exists, otherwise just show bot name.
+            bot_owner_exists = true;
+            person.bot_owner_full_name = people.get_person_from_user_id(
+                person.bot_owner_id).full_name;
+        }
+
+        return {
+            is_group: '',
+            name: person.full_name,
+            is_bot: true,
+            bot_owner_exists: bot_owner_exists,
+            bot_owner_name: person.bot_owner_full_name,
+        };
+    }
+
+    // For buddy list and individual PMS.
+    var last_seen = exports.user_last_seen_time_status(user_ids_string);
+    var online_now = false;
+    if (last_seen.indexOf("Active now") !== -1) {
+        online_now = true;
+    }
+
+    return {
+        is_group: '',
+        status_text: user_status.get_status_text(user_ids_string),
+        last_seen: last_seen,
+        is_away: user_status.is_away(user_ids_string),
+        name: person.full_name,
+        online_now: online_now,
+        is_bot: false,
     };
 };
 

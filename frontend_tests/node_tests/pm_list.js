@@ -149,7 +149,7 @@ run_test('build_private_messages_list_bot', () => {
                 is_zero: false,
                 url: '#narrow/pm-with/314-outgoingwebhook',
                 user_circle_class: 'user_circle_green',
-                fraction_present: undefined,
+                fraction_present: false,
                 is_group: false,
             },
             {
