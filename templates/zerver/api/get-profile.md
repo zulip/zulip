@@ -9,7 +9,7 @@ Get the profile of the user/bot that requests this endpoint.
 {start_tabs}
 {tab|python}
 
-{generate_code_example(python)|get-profile|example}
+{generate_code_example(python)|/users/me:get|example}
 
 {tab|js}
 
@@ -56,4 +56,4 @@ The rest of the return values are quite self-descriptive.
 
 A typical successful JSON response may look like:
 
-{generate_code_example|get-profile|fixture}
+{generate_code_example|/users/me:get|fixture(200)}
