@@ -193,7 +193,7 @@ above.
    declared using `REQ`.
 
    You can check your formatting using two helpful tools.
-   * `tools/check-swagger` will verify the syntax of `zerver/openapi/zulip.yaml`.
+   * `tools/check-openapi` will verify the syntax of `zerver/openapi/zulip.yaml`.
    * `test-backend zerver/tests/test_openapi.py`; this test compares
       your documentation against the code and can find many common
       mistakes in how arguments are declared.
