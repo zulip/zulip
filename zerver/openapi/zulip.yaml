@@ -1048,6 +1048,99 @@ paths:
                         "result": "success",
                         "msg": ""
                     }
+  /users/me:
+    get:
+      description: Get the requesting user's profile data from the backend.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    client_id:
+                      type: string
+                      description: NA
+                      example: "74c768b081076fdb3c4326256c17467e"
+                    email:
+                      type: string
+                      description: Email of the requesting user.
+                      example: "iago@zulip.com"
+                    full_name:
+                      type: string
+                      description: Full name of the requesting user.
+                      example: "Iago"
+                    is_admin:
+                      type: boolean
+                      description: A boolean indicating if the requesting user is an admin.
+                      example: true
+                    is_bot:
+                      type: boolean
+                      description: A boolean indicating if the requesting user is a bot.
+                      example: false
+                    max_message_id:
+                      type: integer
+                      description: NA.
+                      example: 30
+                    pointer:
+                      type: integer
+                      description: NA
+                      example: -1
+                    short_name:
+                      type: string
+                      description: Short name of the requesting user.
+                      example: "iago"
+                    user_id:
+                      type: integer
+                      description: The user's ID.
+                      example: 1
+                - example:
+                    {
+                        "client_id": "74c768b081076fdb3c4326256c17467e",
+                        "email": "iago@zulip.com",
+                        "full_name": "Iago",
+                        "is_admin": true,
+                        "is_bot": false,
+                        "max_message_id": 30,
+                        "msg": "",
+                        "pointer": -1,
+                        "result": "success",
+                        "short_name": "iago",
+                        "user_id": 5
+                    }
+    delete:
+      description: Delete the requesting user from the realm.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                    {
+                      "msg": "",
+                      "result": "success",
+                    }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "msg": "Cannot deactivate the only organization administrator",
+                        "result": "error"
+                    }
   /users/me/{stream_id}/topics:
     get:
       description: Get all the topics in a specific stream.

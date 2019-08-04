@@ -205,12 +205,7 @@ def get_profile(client):
     result = client.get_profile()
     # {code_example|end}
 
-    fixture = FIXTURES['get-profile']
-    check_if_equal = ['email', 'full_name', 'msg', 'result', 'short_name']
-    check_if_exists = ['client_id', 'is_admin', 'is_bot', 'max_message_id',
-                       'pointer', 'user_id']
-    test_against_fixture(result, fixture, check_if_equal=check_if_equal,
-                         check_if_exists=check_if_exists)
+    validate_against_openapi_schema(result, '/users/me', 'get', '200')
 
 def get_stream_id(client):
     # type: (Client) -> int
@@ -969,7 +964,7 @@ TEST_FUNCTIONS = {
     '/streams/{stream_id}:patch': update_stream,
     '/streams:get': get_streams,
     '/users:post': create_user,
-    'get-profile': get_profile,
+    '/users/me:get': get_profile,
     'add-subscriptions': add_subscriptions,
     '/users/{email}/presence:get': get_user_presence,
     '/users/me/presence:post': update_presence,

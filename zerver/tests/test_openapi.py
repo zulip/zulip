@@ -167,7 +167,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/me/profile_data',
         '/users/me/pointer',
         '/users/me/presence',
-        '/users/me',
         '/bot_storage',
         '/users/me/api_key/regenerate',
         '/default_streams',
