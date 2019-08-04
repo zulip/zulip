@@ -52,10 +52,10 @@
     border-color: hsl(156, 28%, 70%);
     margin-right: 4px;
     background-color: hsl(0, 0%, 100%);
-}
 
-.poll-vote:hover {
-    border-color: hsl(156, 30%, 50%);
+    &:hover {
+        border-color: hsl(156, 30%, 50%);
+    }
 }
 
 button.task {
