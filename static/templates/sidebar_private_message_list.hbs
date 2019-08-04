@@ -1,7 +1,7 @@
 <ul class='expanded_private_messages' data-name='private'>
     {{#each messages}}
     <li class='{{#if is_zero}}zero-pm-unreads{{/if}} top_left_row expanded_private_message' data-user-ids-string='{{user_ids_string}}'>
-        <span class='pm-box'>
+        <span class='pm-box' id='pm_user_status' data-user-ids-string='{{user_ids_string}}' data-is-group='{{is_group}}'>
 
             <div class="pm_left_col">
                 {{#if is_group}}
@@ -15,7 +15,7 @@
                 {{/if}}
             </div>
 
-            <a href='{{url}}' class="conversation-partners" title="{{ recipients }}">
+            <a href='{{url}}' class="conversation-partners">
                 {{recipients}}
             </a>
             <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
