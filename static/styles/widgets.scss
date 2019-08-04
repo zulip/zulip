@@ -18,31 +18,33 @@
     }
 }
 
-.todo-widget h4,
-.poll-widget h4 {
-    font-size: 18px;
-    font-weight: 600;
+.todo-widget,
+.poll-widget {
+    h4 {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    li {
+        list-style: none;
+        margin: 2px 2px 2px 0px;
+    }
+
+    ul {
+        margin: 0px 0px 5px 0px;
+        padding: 0;
+    }
 }
 
-.todo-widget li,
-.poll-widget li {
-    list-style: none;
-    margin: 2px 2px 2px 0px;
-}
+.poll-widget {
+    .poll-names .todo-widget {
+        font-size: 14px;
+        color: hsl(120, 100%, 25%);
+    }
 
-.todo-widget ul,
-.poll-widget ul {
-    margin: 0px 0px 5px 0px;
-    padding: 0;
-}
-
-.poll-widget .poll-names .todo-widget {
-    font-size: 14px;
-    color: hsl(120, 100%, 25%);
-}
-
-.poll-widget .poll-option {
-    font-weight: 600;
+    .poll-option {
+        font-weight: 600;
+    }
 }
 
 .poll-vote {
