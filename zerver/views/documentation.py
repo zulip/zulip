@@ -10,7 +10,7 @@ import random
 import re
 
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, \
-    WebhookIntegration, EmailIntegration
+    WebhookIntegration
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
@@ -193,9 +193,6 @@ def integration_doc(request: HttpRequest, integration_name: str=REQ(default=None
         context['integration_url'] = integration.url[3:]
     if isinstance(integration, HubotIntegration):
         context['hubot_docs_url'] = integration.hubot_docs_url
-    if isinstance(integration, EmailIntegration):
-        context['email_gateway_example'] = settings.EMAIL_GATEWAY_EXAMPLE
-        context['email_gateway_example_with_options'] = settings.EMAIL_GATEWAY_EXAMPLE_WITH_OPTIONS
 
     doc_html_str = render_markdown_path(integration.doc, context)
 

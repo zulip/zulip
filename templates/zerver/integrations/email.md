@@ -28,7 +28,7 @@ The default behavior of this integration is designed to be convenient
 in the common case.  We offer a few options for overriding the default
 behavior, configured by editing the Zulip email address:
 
-Example: `{{ email_gateway_example_with_options }}`
+Example: `general.abcd1234.show-sender.include-footer@example.zulipchat.com`
 
 * `show-sender`: Will cause `From: <Sender email address>` to be
   displayed at the top of Zulip messages sent via this integration.
