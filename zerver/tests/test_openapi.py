@@ -5,7 +5,7 @@ import sys
 import mock
 import inspect
 import typing
-from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional, Iterable
+from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional, Iterable, Mapping
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -31,6 +31,7 @@ VARMAP = {
     'boolean': bool,
     'array': list,
     'Typing.List': list,
+    'object': dict,
     'NoneType': None,
 }
 
@@ -288,17 +289,19 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
                 msg += "\n + {}".format(undocumented_path)
             raise AssertionError(msg)
 
-    def get_type_by_priority(self, types: List[type]) -> type:
-        priority = {list: 1, str: 2, int: 3, bool: 4}
-        tyiroirp = {1: list, 2: str, 3: int, 4: bool}
-        val = 5
+    def get_type_by_priority(self, types: List[Union[type, Tuple[type, type]]]) -> Union[type, Tuple[type, type]]:
+        priority = {list: 1, dict: 2, str: 3, int: 4, bool: 5}
+        tyiroirp = {1: list, 2: dict, 3: str, 4: int, 5: bool}
+        val = 6
         for t in types:
-            v = priority.get(t, 5)
+            if type(t) is tuple:
+                return t  # e.g. (list, dict) or (list ,str)
+            v = priority.get(t, 6)  # type: ignore # if t was a Tuple then we would have returned by this point
             if v < val:
                 val = v
         return tyiroirp.get(val, types[0])
 
-    def get_standardized_argument_type(self, t: Any) -> type:
+    def get_standardized_argument_type(self, t: Any) -> Union[type, Tuple[type, type]]:
         """ Given a type from the typing module such as List[str] or Union[str, int],
         convert it into a corresponding Python type. Unions are mapped to a canonical
         choice among the options.
@@ -321,18 +324,19 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
             else:  # nocoverage # in python3.5
                 args = t.__args__
             for st in args:
-                subtypes.append(self. get_standardized_argument_type(st))
+                subtypes.append(self.get_standardized_argument_type(st))
             return self.get_type_by_priority(subtypes)
-        elif origin == List:
-            return list
-        elif origin == Iterable:
-            return list
-        return self. get_standardized_argument_type(t.__args__[0])
+        elif origin in [List, Iterable]:
+            subtypes = [self.get_standardized_argument_type(st) for st in t.__args__]
+            return (list, self.get_type_by_priority(subtypes))  # type: ignore # this might be a Tuple[Type[List[Any]], Union[type, Tuple[type, type]]] but that means that it's a Tuple[type, Union[type, Tuple[type, type]]] too.
+        elif origin in [Dict, Mapping]:
+            return dict
+        return self.get_standardized_argument_type(t.__args__[0])
 
     def render_openapi_type_exception(self, function:  Callable[..., HttpResponse],
-                                      openapi_params: Set[Tuple[Any, Optional[type]]],
-                                      function_params: Set[Tuple[str, type]],
-                                      diff: Set[Tuple[Any, Optional[type]]]) -> None:  # nocoverage
+                                      openapi_params: Set[Tuple[str, Union[type, Tuple[type, type]]]],
+                                      function_params: Set[Tuple[str, Union[type, Tuple[type, type]]]],
+                                      diff: Set[Tuple[str, Union[type, Tuple[type, type]]]]) -> None:  # nocoverage
         """ Print a *VERY* clear and verbose error message for when the types
         (between the OpenAPI documentation and the function declaration) don't match. """
 
@@ -365,10 +369,27 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         OpenAPI data defines a different type than that actually accepted by the function.
         Otherwise, we print out the exact differences for convenient debugging and raise an
         AssertionError. """
-        openapi_params = set([(element["name"], VARMAP[element["schema"]["type"]]) for
-                             element in openapi_parameters])
+        openapi_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, type]]]]
+        for element in openapi_parameters:
+            name = element["name"]  # type: str
+            _type = VARMAP[element["schema"]["type"]]
+            if _type == list:
+                items = element["schema"]["items"]
+                if "anyOf" in items.keys():
+                    subtypes = []
+                    for st in items["anyOf"]:
+                        st = st["type"]
+                        subtypes.append(VARMAP[st])
+                    self.assertTrue(len(subtypes) > 1)
+                    sub_type = self.get_type_by_priority(subtypes)  # type: ignore # sub_type is not List[Optional[type]], it's a List[type], handled in above step.
+                else:
+                    sub_type = VARMAP[element["schema"]["items"]["type"]]  # type: ignore # we handle the case of None in the next step.
+                    self.assertIsNotNone(sub_type)
+                openapi_params.add((name, (_type, sub_type)))  # type: ignore # things are pretty dynamic at this point and we make some inferences so mypy gets confused.
+            else:
+                openapi_params.add((name, _type))  # type: ignore # in our given case, in this block, _type will always be a regular type.
 
-        function_params = set()  # type: Set[Tuple[str, type]]
+        function_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, type]]]]
 
         # Iterate through the decorators to find the original
         # function, wrapped by has_request_variables, so we can parse
