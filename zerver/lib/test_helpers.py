@@ -595,3 +595,9 @@ def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocove
                 zerver_test_classes_patch:
             method(self, apps)
     return method_patched_with_mock
+
+def create_dummy_file(filename: str) -> str:
+    filepath = os.path.join(settings.TEST_WORKER_DIR, filename)
+    with open(filepath, 'w') as f:
+        f.write('zulip!')
+    return filepath

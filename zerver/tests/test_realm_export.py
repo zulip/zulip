@@ -5,7 +5,8 @@ from django.conf import settings
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets
+from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets, \
+    create_dummy_file
 
 from zerver.models import RealmAuditLog
 from zerver.views.realm_export import export_realm
@@ -13,12 +14,6 @@ import zerver.lib.upload
 
 import os
 import ujson
-
-def create_tarball_path() -> str:
-    tarball_path = os.path.join(settings.TEST_WORKER_DIR, 'test-export.tar.gz')
-    with open(tarball_path, 'w') as f:
-        f.write('zulip!')
-    return tarball_path
 
 class RealmExportTest(ZulipTestCase):
     def test_export_as_not_admin(self) -> None:
@@ -32,7 +27,7 @@ class RealmExportTest(ZulipTestCase):
         admin = self.example_user('iago')
         self.login(admin.email)
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
-        tarball_path = create_tarball_path()
+        tarball_path = create_dummy_file('test-export.tar.gz')
 
         with patch('zerver.lib.export.do_export_realm',
                    return_value=tarball_path) as mock_export:
@@ -73,7 +68,7 @@ class RealmExportTest(ZulipTestCase):
     def test_endpoint_local_uploads(self) -> None:
         admin = self.example_user('iago')
         self.login(admin.email)
-        tarball_path = create_tarball_path()
+        tarball_path = create_dummy_file('test-export.tar.gz')
 
         with patch('zerver.lib.export.do_export_realm',
                    return_value=tarball_path) as mock_export:
