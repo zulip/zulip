@@ -398,7 +398,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
         existing_values = {}
         for data in user_profile.profile_data:
-            var_name = '_'.join(data['name'].lower().split(' '))    # type: ignore # data field values can also be int
+            var_name = '_'.join(data['name'].lower().split(' '))
             existing_values[var_name] = data['value']
 
         profile_data = []   # type: List[Dict[str, Union[int, str, List[int]]]]
