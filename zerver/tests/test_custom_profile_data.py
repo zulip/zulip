@@ -556,9 +556,9 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_patch("/json/users/me/profile_data",
                                    {'data': ujson.dumps(data)})
         self.assert_json_success(result)
-        for f in iago.profile_data:
-            if f['id'] == field.id:
-                self.assertEqual(f['value'], 'foobar')
+        for field_dict in iago.profile_data:
+            if field_dict['id'] == field.id:
+                self.assertEqual(field_dict['value'], 'foobar')
 
     def test_update_invalid_choice_field(self) -> None:
         field_name = "Favorite editor"

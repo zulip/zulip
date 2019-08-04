@@ -1010,9 +1010,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 converter = field.FIELD_CONVERTERS[field_type]
                 value = converter(value)
 
-            field_data = {}  # type: ProfileDataElement
-            for k, v in field.as_dict().items():
-                field_data[k] = v
+            field_data = field.as_dict()
             field_data['value'] = value
             field_data['rendered_value'] = rendered_value
             data.append(field_data)
