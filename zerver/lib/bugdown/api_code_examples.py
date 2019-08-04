@@ -7,7 +7,7 @@ from markdown.preprocessors import Preprocessor
 from typing import Any, Dict, Optional, List
 import markdown
 
-import zerver.lib.api_test_helpers
+import zerver.openapi.python_examples
 from zerver.lib.openapi import get_openapi_fixture
 
 MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
@@ -55,7 +55,7 @@ def extract_python_code_example(source: List[str], snippet: List[str]) -> List[s
     return extract_python_code_example(source, snippet)
 
 def render_python_code_example(function: str, admin_config: Optional[bool]=False) -> List[str]:
-    method = zerver.lib.api_test_helpers.TEST_FUNCTIONS[function]
+    method = zerver.openapi.python_examples.TEST_FUNCTIONS[function]
     function_source_lines = inspect.getsourcelines(method)[0]
 
     if admin_config:
@@ -144,7 +144,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
             path, method = function.rsplit(':', 1)
             fixture_dict = get_openapi_fixture(path, method, name)
         else:
-            fixture_dict = zerver.lib.api_test_helpers.FIXTURES[function]
+            fixture_dict = zerver.openapi.python_examples.FIXTURES[function]
 
         fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True,
                                   separators=(',', ': '))

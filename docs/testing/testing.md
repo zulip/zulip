@@ -68,7 +68,7 @@ Zulip also has about a dozen smaller tests suites:
   `/help` user documentation site, and related pages.
 - `tools/test-api`: Tests that the API documentation at `/api`
   actually works; the actual code for this is defined in
-  `zerver/lib/api_test_helpers.py`.
+  `zerver/openapi/python_examples.py`.
 - `test-locked-requirements`: Verifies that developers didn't forget
   to run `tools/update-locked-requirements` after modifying
   `requirements/*.in`.  See
