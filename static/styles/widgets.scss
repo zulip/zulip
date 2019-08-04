@@ -1,15 +1,17 @@
-.widget-choices ul {
-    padding: 3px;
-}
+.widget-choices {
+    ul {
+        padding: 3px;
+    }
 
-.widget-choices li {
-    padding: 2px;
-    list-style: none;
-}
+    li {
+        padding: 2px;
+        list-style: none;
+    }
 
-.widget-choices button {
-    font-weight: 700;
-    color: hsl(240, 100%, 50%);
+    button {
+        font-weight: 700;
+        color: hsl(240, 100%, 50%);
+    }
 }
 
 .widget-choices-heading {
