@@ -13,7 +13,7 @@ the arguments (see below).
 {start_tabs}
 {tab|python}
 
-{generate_code_example(python)|add-subscriptions|example}
+{generate_code_example(python)|/users/me/subscriptions:post|example}
 
 {tab|js}
 
