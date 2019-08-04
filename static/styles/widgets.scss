@@ -54,6 +54,10 @@
     background-color: hsl(0, 0%, 100%);
 }
 
+.poll-vote:hover {
+    border-color: hsl(156, 30%, 50%);
+}
+
 button.task {
     height: 20px;
     width: 20px;
@@ -74,10 +78,6 @@ button.task-completed {
 
 img.task-completed {
     width: 15px;
-}
-
-.poll-vote:hover {
-    border-color: hsl(156, 30%, 50%);
 }
 
 input.add-task,
