@@ -4,7 +4,7 @@ import inspect
 
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, Tuple
 import markdown
 
 import zerver.openapi.python_examples
@@ -42,6 +42,22 @@ DEFAULT_EXAMPLE = {
     "string": "demo",
     "boolean": False,
 }
+
+def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str, Any]]:
+    if not input_str:
+        return ("", {})
+    language_and_options = re.match(r"(?P<language>\w+)(,\s*(?P<options>[\"\'\w\d\[\],= ]+))?", input_str)
+    assert(language_and_options is not None)
+    kwargs_pattern = re.compile(r"(?P<key>\w+)\s*=\s*(?P<value>[\'\"\w\d]+|\[[\'\",\w\d ]+\])")
+    language = language_and_options.group("language")
+    assert(language is not None)
+    if language_and_options.group("options"):
+        _options = kwargs_pattern.finditer(language_and_options.group("options"))
+        options = {}
+        for m in _options:
+            options[m.group("key")] = json.loads(m.group("value").replace("'", '"'))
+        return (language, options)
+    return (language, {})
 
 def extract_python_code_example(source: List[str], snippet: List[str]) -> List[str]:
     start = -1
@@ -107,7 +123,8 @@ def curl_method_arguments(endpoint: str, method: str,
 def generate_curl_example(endpoint: str, method: str,
                           auth_email: str=DEFAULT_AUTH_EMAIL,
                           auth_api_key: str=DEFAULT_AUTH_API_KEY,
-                          api_url: str=DEFAULT_API_URL) -> List[str]:
+                          api_url: str=DEFAULT_API_URL,
+                          exclude: List[str]=[]) -> List[str]:
     lines = ["```curl"]
     openapi_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
 
@@ -122,6 +139,8 @@ def generate_curl_example(endpoint: str, method: str,
     openapi_example_params = get_openapi_parameters(endpoint, method)
     for packet in openapi_example_params:
         param_name = packet["name"]
+        if param_name in exclude:
+            continue
         param_type = packet["schema"]["type"]
         if param_type in ["object", "array"]:
             example_value = packet.get("example", None)
@@ -147,18 +166,19 @@ cURL example.""".format(endpoint, method, param_name)
 
     return lines
 
-def render_curl_example(function: str) -> List[str]:
+def render_curl_example(function: str, exclude: List[str]=[]) -> List[str]:
     """ A simple wrapper around generate_curl_example. """
     parts = function.split(":")
     endpoint = parts[0]
     method = parts[1]
-    kwargs = dict()
+    kwargs = dict()  # type: Dict[str, Any]
     if len(parts) > 2:
         kwargs["auth_email"] = parts[2]
     if len(parts) > 3:
         kwargs["auth_api_key"] = parts[3]
     if len(parts) > 4:
         kwargs["api_url"] = parts[4]
+    kwargs["exclude"] = exclude
     return generate_curl_example(endpoint, method, **kwargs)
 
 SUPPORTED_LANGUAGES = {
@@ -190,7 +210,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
                 match = MACRO_REGEXP.search(line)
 
                 if match:
-                    language = match.group(2)
+                    language, options = parse_language_and_options(match.group(2))
                     function = match.group(3)
                     key = match.group(4)
                     argument = match.group(6)
@@ -204,7 +224,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
                         if argument == 'admin_config=True':
                             text = SUPPORTED_LANGUAGES[language]['render'](function, admin_config=True)
                         else:
-                            text = SUPPORTED_LANGUAGES[language]['render'](function)
+                            text = SUPPORTED_LANGUAGES[language]['render'](function, **options)
 
                     # The line that contains the directive to include the macro
                     # may be preceded or followed by text or tags, in that case
