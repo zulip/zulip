@@ -129,10 +129,10 @@ button {
     opacity: 0.4;
     display: inline-block;
     margin-left: 5px;
-}
 
-.poll-edit-question:hover {
-    opacity: 1.0;
+    &:hover {
+        opacity: 1.0;
+    }
 }
 
 .poll-question-header {
