@@ -47,7 +47,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/tests/test_email_mirror.py',
 
     # These are tied more to our API than our DB model.
-    'zerver/lib/api_test_helpers.py',
+    'zerver/openapi/python_examples.py',
     'zerver/tests/test_openapi.py',
 
     # This has lots of query data embedded, so it's hard
@@ -449,7 +449,7 @@ python_rules = RuleList(
              'puppet/',
              # Zerver files that we should just clean.
              'zerver/tests',
-             'zerver/lib/api_test_helpers.py',
+             'zerver/openapi/python_examples.py',
              'zerver/lib/request.py',
              'zerver/views/streams.py',
              # thumbor is (currently) python2 only

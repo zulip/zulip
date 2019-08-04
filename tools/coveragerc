@@ -26,7 +26,7 @@ omit =
     zerver/lib/test_fixtures.py
     zerver/lib/test_runner.py
     # Has its own independent test suite
-    zerver/lib/api_test_helpers.py
+    zerver/openapi/python_examples.py
     zerver/lib/parallel.py
     # Debugging tools that don't lend themselves well to unit tests
     zerver/lib/debug.py
