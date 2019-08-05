@@ -2,7 +2,7 @@
 # high-level documentation on how this system works.
 from typing import cast, AbstractSet, Any, Callable, Dict, List, \
     Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Union
-from mypy_extensions import TypedDict
+from typing_extensions import Deque, TypedDict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -238,7 +238,7 @@ def compute_full_event_type(event: Mapping[str, Any]) -> str:
 
 class EventQueue:
     def __init__(self, id: str) -> None:
-        self.queue = deque()  # type: ignore # Should be Deque[Dict[str, Any]], but Deque isn't available in Python 3.4
+        self.queue = deque()  # type: Deque[Dict[str, Any]]
         self.next_event_id = 0  # type: int
         self.id = id  # type: str
         self.virtual_events = {}  # type: Dict[str, Dict[str, Any]]

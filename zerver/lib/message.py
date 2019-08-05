@@ -52,7 +52,7 @@ from zerver.models import (
 )
 
 from typing import Any, Dict, List, Optional, Set, Tuple, Union, Sequence
-from mypy_extensions import TypedDict
+from typing_extensions import TypedDict
 
 RealmAlertWords = Dict[int, List[str]]
 

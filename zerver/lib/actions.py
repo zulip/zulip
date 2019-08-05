@@ -2,7 +2,7 @@ from typing import (
     AbstractSet, Any, Callable, Dict, Iterable, List, Mapping, MutableMapping,
     Optional, Sequence, Set, Tuple, Union, cast
 )
-from mypy_extensions import TypedDict
+from typing_extensions import TypedDict
 
 import django.db.utils
 from django.db.models import Count

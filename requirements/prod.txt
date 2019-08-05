@@ -64,7 +64,6 @@ markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
 matrix-client==0.3.2
 mock==3.0.5
-mypy_extensions==0.4.1
 oauthlib==3.0.1           # via requests-oauthlib, social-auth-core
 parso==0.5.0              # via jedi
 pexpect==4.7.0            # via ipython
@@ -115,6 +114,7 @@ tornado==4.5.3
 traitlets==4.3.2          # via ipython
 twilio==6.29.2
 typing==3.6.6
+typing_extensions==3.7.4
 urllib3==1.25.3           # via requests
 uwsgi==2.0.17.1
 virtualenv-clone==0.5.3

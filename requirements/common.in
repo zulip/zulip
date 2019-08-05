@@ -5,8 +5,8 @@
 # Django itself
 Django==1.11.22
 
-# needed for mypy TypedDict
-mypy_extensions==0.4.1
+# needed for Deque (in Python < 3.5.4) and TypedDict
+typing_extensions==3.7.4
 
 # Needed for rendering backend templates
 Jinja2==2.10.1

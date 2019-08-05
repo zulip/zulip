@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Any, Dict, List, Type, Optional
-from mypy_extensions import NoReturn
+from typing_extensions import NoReturn
 
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _

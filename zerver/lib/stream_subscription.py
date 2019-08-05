@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Tuple
-from mypy_extensions import TypedDict
+from typing_extensions import TypedDict
 
 from django.db.models.query import QuerySet
 from zerver.models import (
