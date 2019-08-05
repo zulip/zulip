@@ -238,8 +238,12 @@ def compute_full_event_type(event: Mapping[str, Any]) -> str:
 
 class EventQueue:
     def __init__(self, id: str) -> None:
+        # When extending this list of properties, one must be sure to
+        # update to_dict and from_dict.
+
         self.queue = deque()  # type: ignore # Should be Deque[Dict[str, Any]], but Deque isn't available in Python 3.4
         self.next_event_id = 0  # type: int
+        self.newest_pruned_id = -1  # type: Optional[int] # will only be None for migration from old versions
         self.id = id  # type: str
         self.virtual_events = {}  # type: Dict[str, Dict[str, Any]]
 
@@ -247,15 +251,21 @@ class EventQueue:
         # If you add a new key to this dict, make sure you add appropriate
         # migration code in from_dict or load_event_queues to account for
         # loading event queues that lack that key.
-        return dict(id=self.id,
-                    next_event_id=self.next_event_id,
-                    queue=list(self.queue),
-                    virtual_events=self.virtual_events)
+        d = dict(
+            id=self.id,
+            next_event_id=self.next_event_id,
+            queue=list(self.queue),
+            virtual_events=self.virtual_events,
+        )
+        if self.newest_pruned_id is not None:
+            d['newest_pruned_id'] = self.newest_pruned_id
+        return d
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> 'EventQueue':
         ret = cls(d['id'])
         ret.next_event_id = d['next_event_id']
+        ret.newest_pruned_id = d.get('newest_pruned_id', None)
         ret.queue = deque(d['queue'])
         ret.virtual_events = d.get("virtual_events", {})
         return ret
@@ -295,6 +305,7 @@ class EventQueue:
     # See the comment on pop; that applies here as well
     def prune(self, through_id: int) -> None:
         while len(self.queue) != 0 and self.queue[0]['id'] <= through_id:
+            self.newest_pruned_id = self.queue[0]['id']
             self.pop()
 
     def contents(self) -> List[Dict[str, Any]]:
@@ -522,7 +533,17 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
                 raise BadEventQueueIdError(queue_id)
             if user_profile_id != client.user_profile_id:
                 raise JsonableError(_("You are not authorized to get events from this queue"))
+            if (
+                client.event_queue.newest_pruned_id is not None
+                and last_event_id < client.event_queue.newest_pruned_id
+            ):
+                raise JsonableError(_("An event newer than %s has already been pruned!") % (last_event_id,))
             client.event_queue.prune(last_event_id)
+            if (
+                client.event_queue.newest_pruned_id is not None
+                and last_event_id != client.event_queue.newest_pruned_id
+            ):
+                raise JsonableError(_("Event %s was not in this queue") % (last_event_id,))
             was_connected = client.finish_current_handler()
 
         if not client.event_queue.empty() or dont_block:
