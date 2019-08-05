@@ -1113,7 +1113,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         # As emails ending with `noreply.github.com` are excluded from
         # verified_emails, choosing it as an email should raise a `email
         # not associated` warning.
-        account_data_dict = dict(email="hamlet@noreply.github.com", name=self.name)
+        account_data_dict = dict(email="hamlet@users.noreply.github.com", name=self.name)
         email_data = [
             dict(email="notprimary@zulip.com",
                  verified=True),

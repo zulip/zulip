@@ -887,15 +887,16 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         return verified_emails
 
     def filter_usable_emails(self, emails: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        # We only let users login using email addresses that are verified
-        # by GitHub, because the whole point is for the user to
-        # demonstrate that they control the target email address.  We also
-        # disallow the @noreply.github.com email addresses, because
-        # structurally, we only want to allow email addresses that can
-        # receive emails, and those cannot.
+        # We only let users login using email addresses that are
+        # verified by GitHub, because the whole point is for the user
+        # to demonstrate that they control the target email address.
+        # We also disallow the
+        # @noreply.github.com/@users.noreply.github.com email
+        # addresses, because structurally, we only want to allow email
+        # addresses that can receive emails, and those cannot.
         return [
             email for email in emails
-            if email.get('verified') and not email["email"].endswith("@noreply.github.com")
+            if email.get('verified') and not email["email"].endswith("noreply.github.com")
         ]
 
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
