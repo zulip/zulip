@@ -2,8 +2,8 @@
 # detailed documentation on our markdown syntax.
 from typing import (Any, Callable, Dict, Iterable, List, NamedTuple,
                     Optional, Set, Tuple, TypeVar, Union)
-from mypy_extensions import TypedDict
 from typing.re import Match, Pattern
+from typing_extensions import TypedDict
 
 import markdown
 import logging
@@ -310,7 +310,7 @@ def walk_tree_with_family(root: Element,
         currElementPair = queue.popleft()
         for child in currElementPair.value.getchildren():
             if child.getchildren():
-                queue.append(ElementPair(parent=currElementPair, value=child))  # type: ignore  # Lack of Deque support in typing module for Python <=3.5.3
+                queue.append(ElementPair(parent=currElementPair, value=child))
             result = processor(child)
             if result is not None:
                 if currElementPair.parent is not None:

@@ -26,8 +26,8 @@ from tools.setup import setup_venvs
 
 from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
-    # mypy_extensions might not be installed yet
-    from mypy_extensions import NoReturn
+    # typing_extensions might not be installed yet
+    from typing_extensions import NoReturn
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [

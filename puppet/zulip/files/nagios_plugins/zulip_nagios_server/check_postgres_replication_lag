@@ -8,7 +8,7 @@ secondary Postgres servers' xlog location.
 import subprocess
 import re
 
-from mypy_extensions import NoReturn
+from typing_extensions import NoReturn
 
 states = {
     "OK": 0,

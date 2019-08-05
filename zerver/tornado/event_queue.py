@@ -2,7 +2,7 @@
 # high-level documentation on how this system works.
 from typing import cast, AbstractSet, Any, Callable, Dict, List, \
     Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Union
-from mypy_extensions import TypedDict
+from typing_extensions import Deque, TypedDict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -241,7 +241,7 @@ class EventQueue:
         # When extending this list of properties, one must be sure to
         # update to_dict and from_dict.
 
-        self.queue = deque()  # type: ignore # Should be Deque[Dict[str, Any]], but Deque isn't available in Python 3.4
+        self.queue = deque()  # type: Deque[Dict[str, Any]]
         self.next_event_id = 0  # type: int
         self.newest_pruned_id = -1  # type: Optional[int] # will only be None for migration from old versions
         self.id = id  # type: str
