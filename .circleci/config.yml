@@ -81,6 +81,13 @@ aliases:
        pip install codecov && codecov \
          || echo "Error in uploading coverage reports to codecov.io."
 
+  - &get_cache_directory
+      run:
+       name: get_cache_directory
+       command: |
+         . srv/zulip-py3-venv/bin/activate
+         echo "./var/mypy-cache-`git rev-parse HEAD`"
+
 jobs:
   "xenial-backend-frontend-python3.5":
     docker:
@@ -114,7 +121,10 @@ jobs:
           destination: test-reports
 
       - store_test_results:
-            path: ./var/xunit-test-results/casper/
+          path: ./var/xunit-test-results/casper/
+
+      - store_artifacts:
+          path: ./var/mypy-cache
 
   "bionic-backend-python3.6":
     docker:

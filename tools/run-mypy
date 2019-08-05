@@ -80,7 +80,16 @@ if args.quick:
 elif args.warn_unreachable:
     extra_args.append("--warn-unreachable")
 
-mypy_args = extra_args + python_files + pyi_files
+# We name our cache directory based on the HEAD of our working branch.
+cache_commit_id = subprocess.Popen(['git', 'rev-parse', 'HEAD'],
+                                   stdout=subprocess.PIPE).stdout.read().decode()
+cache_args = ['--cache-dir=var/mypy-cache-%s' % (cache_commit_id,)]
+if args.no_daemon:
+    cache_args.append('--cache-fine-grained')
+else:
+    cache_args.append('--use-fine-grained-cache')
+
+mypy_args = extra_args + python_files + pyi_files + cache_args
 if args.no_daemon:
     rc = subprocess.call([mypy_command] + mypy_args)
 else:
