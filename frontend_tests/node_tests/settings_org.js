@@ -382,56 +382,6 @@ function test_upload_realm_icon(upload_realm_icon) {
     assert(posted);
 }
 
-function test_disable_notifications_stream(disable_notifications_stream) {
-    let success_callback;
-    let error_callback;
-    channel.patch = function (req) {
-        assert.equal(req.url, '/json/realm');
-        assert.equal(req.data.notifications_stream_id, '-1');
-        success_callback = req.success;
-        error_callback = req.error;
-    };
-
-    disable_notifications_stream();
-
-    const response_data = {
-        notifications_stream_id: -1,
-    };
-
-    success_callback(response_data);
-    assert.equal($('#admin-realm-notifications-stream-status').val(),
-                 'translated: Notifications stream disabled!');
-
-    error_callback({});
-    assert.equal($('#admin-realm-notifications-stream-status').val(),
-                 'translated: Failed to change notifications stream!');
-}
-
-function test_disable_signup_notifications_stream(disable_signup_notifications_stream) {
-    let success_callback;
-    let error_callback;
-    channel.patch = function (req) {
-        assert.equal(req.url, '/json/realm');
-        assert.equal(req.data.signup_notifications_stream_id, '-1');
-        success_callback = req.success;
-        error_callback = req.error;
-    };
-
-    disable_signup_notifications_stream();
-
-    const response_data = {
-        signup_notifications_stream_id: -1,
-    };
-
-    success_callback(response_data);
-    assert.equal($('#admin-realm-signup-notifications-stream-status').val(),
-                 'translated: Signup notifications stream disabled!');
-
-    error_callback({});
-    assert.equal($('#admin-realm-signup-notifications-stream-status').val(),
-                 'translated: Failed to change signup notifications stream!');
-}
-
 function test_change_allow_subdomains(change_allow_subdomains) {
     const ev = {
         stopPropagation: noop,
@@ -793,8 +743,6 @@ run_test('set_up', () => {
     $('#id_realm_video_chat_provider').change = set_callback('realm_video_chat_provider');
     $("#id_realm_org_join_restrictions").change = set_callback('change_org_join_restrictions');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
-    $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');
-    $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
 
     let submit_settings_form;
     let discard_changes;
@@ -852,8 +800,6 @@ run_test('set_up', () => {
     test_realms_domain_modal(callbacks.add_realm_domain);
     test_submit_settings_form(submit_settings_form);
     test_upload_realm_icon(upload_realm_icon);
-    test_disable_notifications_stream(callbacks.disable_notifications_stream);
-    test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
     test_extract_property_name();
     test_change_save_button_state();
