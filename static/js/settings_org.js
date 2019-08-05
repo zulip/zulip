@@ -699,6 +699,14 @@ exports.build_page = function () {
         // they do, we transition to the "unsaved" state showing the
         // save/discard widget; otherwise, we hide that widget (the
         // "discarded" state).
+
+        if ($(e.target).hasClass("no-input-change-detection")) {
+            // This is to prevent input changes detection in elements
+            // within a subsection whose changes should not affect the
+            // visibility of the discard button
+            return false;
+        }
+
         const subsection = $(e.target).closest('.org-subsection-parent');
         subsection.find('.subsection-failed-status p').hide();
         subsection.find('.save-button').show();
@@ -1060,33 +1068,18 @@ exports.build_page = function () {
         });
     });
 
-    const notifications_stream_status = $("#admin-realm-notifications-stream-status").expectOne();
+    function notification_stream_update(data) {
+        _.each(get_subsection_property_elements($("#org-discard-notifications")),
+               discard_property_element_changes);
+        const nearest_save_button = $("#org-submit-notifications");
+        exports.save_organization_settings(data, nearest_save_button);
+    }
+
     function update_notifications_stream(new_notifications_stream_id) {
         exports.render_notifications_stream_ui(new_notifications_stream_id,
                                                $('#realm_notifications_stream_name'));
-        notifications_stream_status.hide();
-
-        const url = "/json/realm";
-        const data = {
+        notification_stream_update({
             notifications_stream_id: JSON.stringify(parseInt(new_notifications_stream_id, 10)),
-        };
-
-        channel.patch({
-            url: url,
-            data: data,
-
-            success: function (response_data) {
-                if (response_data.notifications_stream_id !== undefined) {
-                    if (response_data.notifications_stream_id < 0) {
-                        ui_report.success(i18n.t("Notifications stream disabled!"), notifications_stream_status);
-                    } else {
-                        ui_report.success(i18n.t("Notifications stream changed!"), notifications_stream_status);
-                    }
-                }
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Failed to change notifications stream!"), xhr, notifications_stream_status);
-            },
         });
     }
 
@@ -1108,33 +1101,12 @@ exports.build_page = function () {
         update_notifications_stream(-1);
     });
 
-    const signup_notifications_stream_status = $("#admin-realm-signup-notifications-stream-status").expectOne();
     function update_signup_notifications_stream(new_signup_notifications_stream_id) {
         exports.render_notifications_stream_ui(new_signup_notifications_stream_id,
                                                $('#realm_signup_notifications_stream_name'));
-        signup_notifications_stream_status.hide();
-        const stringified_id = JSON.stringify(parseInt(new_signup_notifications_stream_id, 10));
-        const url = "/json/realm";
-        const data = {
-            signup_notifications_stream_id: stringified_id,
-        };
-
-        channel.patch({
-            url: url,
-            data: data,
-
-            success: function (response_data) {
-                if (response_data.signup_notifications_stream_id !== undefined) {
-                    if (response_data.signup_notifications_stream_id < 0) {
-                        ui_report.success(i18n.t("Signup notifications stream disabled!"), signup_notifications_stream_status);
-                    } else {
-                        ui_report.success(i18n.t("Signup notifications stream changed!"), signup_notifications_stream_status);
-                    }
-                }
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Failed to change signup notifications stream!"), xhr, signup_notifications_stream_status);
-            },
+        notification_stream_update({
+            signup_notifications_stream_id: JSON.stringify(
+                parseInt(new_signup_notifications_stream_id, 10)),
         });
     }
 
