@@ -1083,11 +1083,10 @@ exports.build_page = function () {
         });
     }
 
-    let dropdown_menu = $("#id_realm_notifications_stream .dropdown-menu");
     $("#id_realm_notifications_stream .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
         if (e.type === "keypress") {
             if (e.which === 13) {
-                dropdown_menu.dropdown("toggle");
+                $("#id_realm_notifications_stream .dropdown-menu").dropdown("toggle");
             } else {
                 return;
             }
@@ -1110,11 +1109,10 @@ exports.build_page = function () {
         });
     }
 
-    dropdown_menu = $("#id_realm_signup_notifications_stream .dropdown-menu");
     $("#id_realm_signup_notifications_stream .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
         if (e.type === "keypress") {
             if (e.which === 13) {
-                dropdown_menu.dropdown("toggle");
+                $("#id_realm_signup_notifications_stream .dropdown-menu").dropdown("toggle");
             } else {
                 return;
             }
