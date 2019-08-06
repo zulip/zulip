@@ -897,7 +897,8 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
 def apply_unread_message_event(user_profile: UserProfile,
                                state: RawUnreadMessagesResult,
                                message: Dict[str, Any],
-                               flags: List[str]) -> None:
+                               flags: List[str],
+                               skip_database: bool=False) -> None:
     message_id = message['id']
     if message['type'] == 'stream':
         message_type = 'stream'
@@ -925,7 +926,7 @@ def apply_unread_message_event(user_profile: UserProfile,
         )
         state['stream_dict'][message_id] = new_row
 
-        if stream_id not in state['muted_stream_ids']:
+        if not skip_database and stream_id not in state['muted_stream_ids']:
             # This next check hits the database.
             if not topic_is_muted(user_profile, stream_id, topic):
                 state['unmuted_stream_msgs'].add(message_id)
