@@ -177,4 +177,3 @@ run_test('close_status_message', () => {
     close(event);
     assert(!alert.visible());
 });
-

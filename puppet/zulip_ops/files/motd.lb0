@@ -11,4 +11,3 @@ To connect to an app server, you need to run:
     ssh <servername>.zulip.net
 
 Note the [1m.net[0m, not the .com.
-

@@ -9,4 +9,3 @@ This directory contains scripts that:
 
 For more details, see
 https://zulip.readthedocs.io/en/latest/overview/directory-structure.html.
-

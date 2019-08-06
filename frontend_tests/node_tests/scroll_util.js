@@ -93,4 +93,3 @@ run_test('scroll_element_into_container', () => {
     scroll_util.scroll_element_into_container(elem2, container);
     assert.equal(container.scrollTop(), 250 - 100 + 3 + 15);
 });
-

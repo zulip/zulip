@@ -382,4 +382,3 @@ run_test('remove_deactivated_user_from_all_streams', () => {
 
     assert(!dev_help.subscribers.has(george.user_id));
 });
-

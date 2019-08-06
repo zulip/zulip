@@ -175,6 +175,3 @@ run_test('populate_profile_fields', () => {
         is_admin: true,
     });
 });
-
-
-

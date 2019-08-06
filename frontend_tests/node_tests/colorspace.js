@@ -64,5 +64,3 @@ run_test('getHexColor', () => {
     var actual_value = colorspace.getHexColor(rgb_color);
     assert.equal(actual_value, expected_value);
 });
-
-

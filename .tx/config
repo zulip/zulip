@@ -31,4 +31,3 @@ file_filter = locale/<lang>/translations.json
 source_file = locale/en/translations.json
 source_lang = en
 type = KEYVALUEJSON
-

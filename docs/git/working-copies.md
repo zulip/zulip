@@ -50,4 +50,3 @@ working copies:
 - `git push`: This pushes code from your local repo to one of the remotes.
 - `git remote`: This helps you configure short names for remotes.
 - `git pull`: This pulls code, but by default creates a merge commit. **Do not use this, please**!
-

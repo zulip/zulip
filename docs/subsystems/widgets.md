@@ -414,5 +414,3 @@ If certain widget features are behind feature flags,
 this will slightly complicate the typeahead
 implementation.  Mostly we just need the server
 to share any relevant settings with the client.
-
-

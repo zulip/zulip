@@ -5,4 +5,3 @@ Note that tools that are also useful in production belong in
 
 For more details, see
 https://zulip.readthedocs.io/en/latest/overview/directory-structure.html.
-
