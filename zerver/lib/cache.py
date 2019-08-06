@@ -322,6 +322,11 @@ def preview_url_cache_key(url: str) -> str:
 def display_recipient_cache_key(recipient_id: int) -> str:
     return "display_recipient_dict:%d" % (recipient_id,)
 
+def display_recipient_bulk_get_users_by_id_cache_key(user_id: int) -> str:
+    # Cache key function for a function for bulk fetching users, used internally
+    # by display_recipient code.
+    return 'bulk_fetch_display_recipients:' + user_profile_by_id_cache_key(user_id)
+
 def user_profile_by_email_cache_key(email: str) -> str:
     # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
@@ -399,6 +404,7 @@ def delete_display_recipient_cache(user_profile: 'UserProfile') -> None:
     recipient_ids = Subscription.objects.filter(user_profile=user_profile)
     recipient_ids = recipient_ids.values_list('recipient_id', flat=True)
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
+    keys.append(display_recipient_bulk_get_users_by_id_cache_key(user_profile.id))
     cache_delete_many(keys)
 
 def changed(kwargs: Any, fields: List[str]) -> bool:
