@@ -1,4 +1,3 @@
-
 from django.http import HttpResponse, HttpRequest
 from typing import Optional
 

@@ -1,4 +1,3 @@
-
 import time
 from psycopg2.extensions import cursor, connection
 

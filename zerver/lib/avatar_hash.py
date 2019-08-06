@@ -1,4 +1,3 @@
-
 from django.conf import settings
 
 from zerver.lib.utils import make_safe_digest

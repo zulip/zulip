@@ -1,4 +1,3 @@
-
 from argparse import ArgumentParser
 
 from zerver.lib.management import ZulipBaseCommand, CommandError

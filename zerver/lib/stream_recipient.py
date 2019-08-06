@@ -1,4 +1,3 @@
-
 from typing import (Dict, List)
 
 from django.db import connection

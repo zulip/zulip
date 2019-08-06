@@ -1,4 +1,3 @@
-
 """
 Forward messages sent to the configured email gateway to Zulip.
 

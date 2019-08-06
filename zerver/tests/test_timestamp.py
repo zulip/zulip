@@ -1,4 +1,3 @@
-
 from django.utils.timezone import utc as timezone_utc
 
 from zerver.lib.test_classes import ZulipTestCase

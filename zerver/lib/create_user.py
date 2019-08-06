@@ -1,4 +1,3 @@
-
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream

@@ -1,4 +1,3 @@
-
 There are a lot of team chat apps. So why did we build Zulip?
 
 We talk about Slack in the discussion below, but the problems apply equally

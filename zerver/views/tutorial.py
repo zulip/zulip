@@ -1,4 +1,3 @@
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import human_users_only
