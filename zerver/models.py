@@ -2025,6 +2025,12 @@ def get_user_profile_by_id(uid: int) -> UserProfile:
 
 @cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
 def get_user_profile_by_email(email: str) -> UserProfile:
+    """This should only be used by our unit tests and for manual manage.py
+    shell work; robust code must use get_user instead, because Zulip
+    supports multiple users with a given email address existing (in
+    different realms).  Also, for many applications, we should prefer
+    get_user_by_delivery_email.
+    """
     return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600*24*7)
@@ -2034,7 +2040,10 @@ def get_user_profile_by_api_key(api_key: str) -> UserProfile:
 def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     # Fetches users by delivery_email for use in
     # authentication/registration contexts. Do not use for user-facing
-    # views (e.g. Zulip API endpoints); for that, you want get_user.
+    # views (e.g. Zulip API endpoints); for that, you want get_user,
+    # both because it does lookup by email (not delivery_email) and
+    # because it correctly handles Zulip's support for multiple users
+    # with the same email address in different realms.
     return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip(), realm=realm)
 
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
