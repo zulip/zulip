@@ -18,6 +18,7 @@ from zerver.lib.cache import (
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
+from zerver.lib.display_recipient import DisplayRecipientCacheT, bulk_fetch_display_recipients
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
@@ -182,16 +183,16 @@ class MessageDict:
         processor.
         '''
         MessageDict.bulk_hydrate_sender_info([obj])
-        MessageDict.hydrate_recipient_info(obj)
+        MessageDict.bulk_hydrate_recipient_info([obj])
 
         return obj
 
     @staticmethod
     def post_process_dicts(objs: List[Dict[str, Any]], apply_markdown: bool, client_gravatar: bool) -> None:
         MessageDict.bulk_hydrate_sender_info(objs)
+        MessageDict.bulk_hydrate_recipient_info(objs)
 
         for obj in objs:
-            MessageDict.hydrate_recipient_info(obj)
             MessageDict.finalize_payload(obj, apply_markdown, client_gravatar)
 
     @staticmethod
@@ -419,7 +420,7 @@ class MessageDict:
             obj['sender_is_mirror_dummy'] = user_row['is_mirror_dummy']
 
     @staticmethod
-    def hydrate_recipient_info(obj: Dict[str, Any]) -> None:
+    def hydrate_recipient_info(obj: Dict[str, Any], display_recipient: DisplayRecipientCacheT) -> None:
         '''
         This method hyrdrates recipient info with things
         like full names and emails of senders.  Eventually
@@ -427,7 +428,6 @@ class MessageDict:
         themselves with info they already have on users.
         '''
 
-        display_recipient = obj['raw_display_recipient']
         recipient_type = obj['recipient_type']
         recipient_type_id = obj['recipient_type_id']
         sender_is_mirror_dummy = obj['sender_is_mirror_dummy']
@@ -460,6 +460,20 @@ class MessageDict:
         obj['type'] = display_type
         if obj['type'] == 'stream':
             obj['stream_id'] = recipient_type_id
+
+    @staticmethod
+    def bulk_hydrate_recipient_info(objs: List[Dict[str, Any]]) -> None:
+        recipient_tuples = set(  # We use set to eliminate duplicate tuples.
+            (
+                obj['recipient_id'],
+                obj['recipient_type'],
+                obj['recipient_type_id']
+            ) for obj in objs
+        )
+        display_recipients = bulk_fetch_display_recipients(recipient_tuples)
+
+        for obj in objs:
+            MessageDict.hydrate_recipient_info(obj, display_recipients[obj['recipient_id']])
 
     @staticmethod
     def set_sender_avatar(obj: Dict[str, Any], client_gravatar: bool) -> None:
