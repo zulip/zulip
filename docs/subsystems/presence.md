@@ -52,4 +52,3 @@ about that data structure:
   desktop or the mobile app, but for a basic client, you will likely
   only want to parse the "aggregated" key, which shows the summary
   answer for "is this user online".
-

@@ -623,4 +623,3 @@ run_test('errors', () => {
     assert.equal(counts.private_message_count, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
-

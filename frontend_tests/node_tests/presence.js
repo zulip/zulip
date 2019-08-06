@@ -240,4 +240,3 @@ run_test('set_info_for_user', () => {
     var expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
 });
-

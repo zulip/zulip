@@ -28,4 +28,3 @@ run_test('insert_recent_private_message', () => {
 
     assert.deepEqual(pmc.recent.get_strings(), ['1', '2']);
 });
-

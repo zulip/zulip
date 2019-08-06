@@ -45,4 +45,3 @@ if a user sends a message to a user we don't yet know about,
 the third party will confirm that the user exists, and we
 subsequently create a "mirror dummy" user on-demand for that
 account.)
-

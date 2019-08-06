@@ -100,4 +100,3 @@ significant risk of introducing regressions from typos, refactors that
 don't quite work how they were expected to, etc.
 
 [typescript-handbook]: https://www.typescriptlang.org/docs/handbook/basic-types.html
-
