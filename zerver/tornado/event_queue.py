@@ -152,6 +152,11 @@ class ClientDescriptor:
         self._timeout_handle = None
 
     def add_event(self, event: Dict[str, Any]) -> None:
+        # Any dictionary passed into this function must be a unique
+        # dictionary (potentially a shallow copy of a shared data
+        # structure), since the event_queue data structures will
+        # mutate it to add the queue-specific unique `id` of that
+        # event to the outer event dictionary.
         if self.current_handler_id is not None:
             handler = get_handler_by_id(self.current_handler_id)
             async_request_timer_restart(handler._request)
@@ -889,6 +894,9 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         if ('mirror' in sending_client and
                 sending_client.lower() == client.client_type_name.lower()):
             continue
+
+        # We don't need to create a new dict here, since the
+        # `user_event` was already constructed from scratch above.
         client.add_event(user_event)
 
 def process_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
@@ -907,7 +915,9 @@ def process_userdata_event(event_template: Mapping[str, Any], users: Iterable[Ma
 
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(user_event):
-                client.add_event(user_event)
+                # We need to do another shallow copy, or we risk
+                # sending the same event to multiple clients.
+                client.add_event(dict(user_event))
 
 def process_message_update_event(event_template: Mapping[str, Any],
                                  users: Iterable[Mapping[str, Any]]) -> None:
