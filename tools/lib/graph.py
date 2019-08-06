@@ -1,4 +1,3 @@
-
 from collections import defaultdict
 
 from typing import Callable, DefaultDict, Iterator, List, Optional, Set, Tuple

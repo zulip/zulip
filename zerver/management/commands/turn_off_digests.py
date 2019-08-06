@@ -1,4 +1,3 @@
-
 from django.core.management.base import CommandParser
 
 from zerver.lib.actions import do_change_notification_settings

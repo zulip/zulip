@@ -1,4 +1,3 @@
-
 from django.http import HttpResponse, HttpRequest
 import re
 from typing import List, Optional, Tuple

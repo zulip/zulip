@@ -1,4 +1,3 @@
-
 from django.db.models import Q
 from zerver.models import UserProfile, Realm
 from zerver.lib.cache import cache_with_key, realm_alert_words_cache_key, \

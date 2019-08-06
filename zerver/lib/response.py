@@ -1,4 +1,3 @@
-
 from django.http import HttpResponse, HttpResponseNotAllowed
 import ujson
 

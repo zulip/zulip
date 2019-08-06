@@ -1,4 +1,3 @@
-
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from confirmation.models import one_click_unsubscribe_link

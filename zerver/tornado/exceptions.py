@@ -1,4 +1,3 @@
-
 from django.utils.translation import ugettext as _
 
 from zerver.lib.exceptions import ErrorCode, JsonableError

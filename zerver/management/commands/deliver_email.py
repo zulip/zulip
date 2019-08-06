@@ -1,4 +1,3 @@
-
 """\
 Deliver email messages that have been queued by various things
 (at this time invitation reminders and day1/day2 followup emails).

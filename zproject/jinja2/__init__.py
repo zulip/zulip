@@ -1,4 +1,3 @@
-
 from typing import Any
 
 from django.template.defaultfilters import slugify, pluralize

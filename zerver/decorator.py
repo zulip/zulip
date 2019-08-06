@@ -1,4 +1,3 @@
-
 import django_otp
 from two_factor.utils import default_device
 from django_otp import user_has_device, _user_is_authenticated

@@ -1,4 +1,3 @@
-
 """
 Shows backlog count of ScheduledEmail
 """

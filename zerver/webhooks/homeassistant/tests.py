@@ -1,4 +1,3 @@
-
 from zerver.lib.test_classes import WebhookTestCase
 
 class HomeAssistantHookTests(WebhookTestCase):

@@ -1,4 +1,3 @@
-
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import do_create_user, do_deactivate_user, \

@@ -1,4 +1,3 @@
-
 from typing import List, Set, Tuple
 
 import os

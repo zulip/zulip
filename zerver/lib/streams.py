@@ -1,4 +1,3 @@
-
 from typing import Any, Iterable, List, Mapping, Set, Tuple, Optional
 
 from django.utils.translation import ugettext as _
