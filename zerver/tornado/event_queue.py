@@ -943,7 +943,9 @@ def process_message_update_event(event_template: Mapping[str, Any],
 
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(user_event):
-                client.add_event(user_event)
+                # We need to do another shallow copy, or we risk
+                # sending the same event to multiple clients.
+                client.add_event(dict(user_event))
 
 def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
                                                    message_id: int,
