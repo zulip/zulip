@@ -1,6 +1,3 @@
-# NOTE: When editing stubs, we recommend using `tools/run-mypy --no-daemon`,
-# because the mypy daemon's caching system has some bugs around editing stubs
-#
 # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-stubs-for-third-party-modules
 # for notes on how we manage mypy stubs.
 

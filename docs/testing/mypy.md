@@ -48,14 +48,6 @@ To run mypy on Zulip's python code, you can run the command:
 
     tools/run-mypy
 
-This will take a while to start running, since it runs mypy as a
-long-running daemon (server) process and send type-checking requests
-to the server; this makes checking mypy about 100x faster.  But if
-you're debugging or for whatever reason don't want the daemon, you can
-use:
-
-    tools/run-mypy --no-daemon
-
 Mypy outputs errors in the same style as a compiler would.  For
 example, if your code has a type error like this:
 
@@ -117,10 +109,6 @@ For any third-party modules that don't have stubs, `mypy` treats
 everything in the third-party module as an `Any`, which is the right
 model (one certainly wouldn't want to need stubs for everything just
 to use `mypy`!), but means the code can't be fully type-checked.
-
-**Note**: When editing stubs, we recommend using
-`tools/run-mypy --no-daemon`, because the mypy daemon's caching
-system has some bugs around editing stubs that can be confusing.
 
 ## `type_debug.py`
 
