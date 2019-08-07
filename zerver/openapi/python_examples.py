@@ -605,7 +605,7 @@ def send_message(client):
 def add_reaction(client, message_id):
     # type: (Client, int) -> None
     request = {
-        'message_id': message_id,
+        'message_id': str(message_id),
         'emoji_name': 'joy',
         'emoji_code': '1f602',
         'emoji_type': 'unicode_emoji'
@@ -618,7 +618,7 @@ def add_reaction(client, message_id):
 def remove_reaction(client, message_id):
     # type: (Client, int) -> None
     request = {
-        'message_id': message_id,
+        'message_id': str(message_id),
         'emoji_name': 'joy',
         'emoji_code': '1f602',
         'reaction_type': 'unicode_emoji'
