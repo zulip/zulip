@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional, Iterable
+from typing import Dict, Any, Optional, Iterable, Callable
 
 import json
 import os
@@ -11,6 +11,18 @@ from zulip import Client
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FIXTURE_PATH = os.path.join(ZULIP_DIR, 'templates', 'zerver', 'api', 'fixtures.json')
 
+TEST_FUNCTIONS = dict()  # type: Dict[str, Callable[..., None]]
+
+def openapi_test_function(endpoint: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """ A very simple decorator that just takes attendance of which openapi test functions are
+    being used for which endpoint. While this may be slower than hardcoding a dictionary, it's
+    easier to maintain.
+        Example usage: @openapi_test_function("/messages/render:post") """
+    def wrapper(test_func: Callable[..., Any]) -> Callable[..., Any]:
+        TEST_FUNCTIONS[endpoint] = test_func
+        return test_func
+    return wrapper
+
 def load_api_fixtures():
     # type: () -> Dict[str, Any]
     with open(FIXTURE_PATH, 'r') as fp:
@@ -19,6 +31,7 @@ def load_api_fixtures():
 
 FIXTURES = load_api_fixtures()
 
+@openapi_test_function("/users/me/subscriptions:post")
 def add_subscriptions(client):
     # type: (Client) -> None
 
@@ -97,6 +110,7 @@ def test_authorization_errors_fatal(client, nonadmin_client):
     validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
                                     '400_unauthorized_errors_fatal_true')
 
+@openapi_test_function("/users/{email}/presence:get")
 def get_user_presence(client):
     # type: (Client) -> None
 
@@ -107,6 +121,7 @@ def get_user_presence(client):
 
     validate_against_openapi_schema(result, '/users/{email}/presence', 'get', '200')
 
+@openapi_test_function("/users/me/presence:post")
 def update_presence(client):
     # type: (Client) -> None
     request = {
@@ -119,6 +134,7 @@ def update_presence(client):
 
     assert result['result'] == 'success'
 
+@openapi_test_function("/users:post")
 def create_user(client):
     # type: (Client) -> None
 
@@ -140,6 +156,7 @@ def create_user(client):
 
     validate_against_openapi_schema(result, '/users', 'post', '400')
 
+@openapi_test_function("/users:get")
 def get_members(client):
     # type: (Client) -> None
 
@@ -164,6 +181,7 @@ def get_members(client):
     validate_against_openapi_schema(result, '/users', 'get', '200')
     assert result['members'][0]['avatar_url'] is None
 
+@openapi_test_function("/realm/filters:get")
 def get_realm_filters(client):
     # type: (Client) -> None
 
@@ -174,6 +192,7 @@ def get_realm_filters(client):
 
     validate_against_openapi_schema(result, '/realm/filters', 'get', '200')
 
+@openapi_test_function("/realm/filters:post")
 def add_realm_filter(client):
     # type: (Client) -> None
 
@@ -186,6 +205,7 @@ def add_realm_filter(client):
 
     validate_against_openapi_schema(result, '/realm/filters', 'post', '200')
 
+@openapi_test_function("/realm/filters/{filter_id}:delete")
 def remove_realm_filter(client):
     # type: (Client) -> None
 
@@ -196,6 +216,7 @@ def remove_realm_filter(client):
 
     validate_against_openapi_schema(result, '/realm/filters/{filter_id}', 'delete', '200')
 
+@openapi_test_function("/users/me:get")
 def get_profile(client):
     # type: (Client) -> None
 
@@ -207,6 +228,7 @@ def get_profile(client):
 
     validate_against_openapi_schema(result, '/users/me', 'get', '200')
 
+@openapi_test_function("/get_stream_id:get")
 def get_stream_id(client):
     # type: (Client) -> int
 
@@ -220,6 +242,7 @@ def get_stream_id(client):
 
     return result['stream_id']
 
+@openapi_test_function("/streams/{stream_id}:delete")
 def delete_stream(client, stream_id):
     # type: (Client, int) -> None
     result = client.add_subscriptions(
@@ -240,6 +263,7 @@ def delete_stream(client, stream_id):
 
     assert result['result'] == 'success'
 
+@openapi_test_function("/streams:get")
 def get_streams(client):
     # type: (Client) -> None
 
@@ -261,6 +285,7 @@ def get_streams(client):
     validate_against_openapi_schema(result, '/streams', 'get', '200')
     assert len(result['streams']) == 4
 
+@openapi_test_function("/streams/{stream_id}:patch")
 def update_stream(client, stream_id):
     # type: (Client, int) -> None
 
@@ -278,6 +303,7 @@ def update_stream(client, stream_id):
     validate_against_openapi_schema(result, '/streams/{stream_id}', 'patch', '200')
     assert result['result'] == 'success'
 
+@openapi_test_function("/user_groups:get")
 def get_user_groups(client):
     # type: (Client) -> int
 
@@ -314,6 +340,7 @@ def get_user_agent(client):
     result = client.get_user_agent()
     assert result.startswith('ZulipPython/')
 
+@openapi_test_function("/users/me/subscriptions:get")
 def list_subscriptions(client):
     # type: (Client) -> None
     # {code_example|start}
@@ -327,6 +354,7 @@ def list_subscriptions(client):
     streams = [s for s in result['subscriptions'] if s['name'] == 'new stream']
     assert streams[0]['description'] == 'New stream for testing'
 
+@openapi_test_function("/users/me/subscriptions:delete")
 def remove_subscriptions(client):
     # type: (Client) -> None
 
@@ -357,6 +385,7 @@ def remove_subscriptions(client):
     validate_against_openapi_schema(result, '/users/me/subscriptions',
                                     'delete', '200')
 
+@openapi_test_function("/users/me/subscriptions/muted_topics:patch")
 def toggle_mute_topic(client):
     # type: (Client) -> None
 
@@ -401,6 +430,7 @@ def toggle_mute_topic(client):
                                     '/users/me/subscriptions/muted_topics',
                                     'patch', '200')
 
+@openapi_test_function("/mark_all_as_read:post")
 def mark_all_as_read(client):
     # type: (Client) -> None
 
@@ -411,6 +441,7 @@ def mark_all_as_read(client):
 
     validate_against_openapi_schema(result, '/mark_all_as_read', 'post', '200')
 
+@openapi_test_function("/mark_stream_as_read:post")
 def mark_stream_as_read(client):
     # type: (Client) -> None
 
@@ -421,6 +452,7 @@ def mark_stream_as_read(client):
 
     validate_against_openapi_schema(result, '/mark_stream_as_read', 'post', '200')
 
+@openapi_test_function("/mark_topic_as_read:post")
 def mark_topic_as_read(client):
     # type: (Client) -> None
 
@@ -434,6 +466,7 @@ def mark_topic_as_read(client):
 
     validate_against_openapi_schema(result, '/mark_stream_as_read', 'post', '200')
 
+@openapi_test_function("/users/me/subscriptions/properties:post")
 def update_subscription_settings(client):
     # type: (Client) -> None
 
@@ -456,6 +489,7 @@ def update_subscription_settings(client):
                                     '/users/me/subscriptions/properties',
                                     'POST', '200')
 
+@openapi_test_function("/messages/render:post")
 def render_message(client):
     # type: (Client) -> None
 
@@ -469,6 +503,7 @@ def render_message(client):
 
     validate_against_openapi_schema(result, '/messages/render', 'post', '200')
 
+@openapi_test_function("/messages:get")
 def get_messages(client):
     # type: (Client) -> None
 
@@ -489,6 +524,7 @@ def get_messages(client):
     validate_against_openapi_schema(result, '/messages', 'get', '200')
     assert len(result['messages']) <= request['num_before']
 
+@openapi_test_function("/messages/{message_id}:get")
 def get_raw_message(client, message_id):
     # type: (Client, int) -> None
 
@@ -502,6 +538,7 @@ def get_raw_message(client, message_id):
     validate_against_openapi_schema(result, '/messages/{message_id}', 'get',
                                     '200')
 
+@openapi_test_function("/messages:post")
 def send_message(client):
     # type: (Client) -> int
 
@@ -564,6 +601,7 @@ def add_reaction(client, message_id):
 
     assert result['result'] == 'success'
 
+@openapi_test_function("/messages/{message_id}/reactions:delete")
 def remove_reaction(client, message_id):
     # type: (Client, int) -> None
     request = {
@@ -602,6 +640,7 @@ def test_private_message_invalid_recipient(client):
     validate_against_openapi_schema(result, '/messages', 'post',
                                     '400_non_existing_user')
 
+@openapi_test_function("/messages/{message_id}:patch")
 def update_message(client, message_id):
     # type: (Client, int) -> None
 
@@ -649,6 +688,7 @@ def test_update_message_edit_permission_error(client, nonadmin_client):
     fixture = FIXTURES['update-message-edit-permission-error']
     test_against_fixture(result, fixture)
 
+@openapi_test_function("/messages/{message_id}:delete")
 def delete_message(client, message_id):
     # type: (Client, int) -> None
 
@@ -675,6 +715,7 @@ def test_delete_message_edit_permission_error(client, nonadmin_client):
     validate_against_openapi_schema(result, '/messages/{message_id}', 'delete',
                                     '400_not_admin')
 
+@openapi_test_function("/messages/{message_id}/history:get")
 def get_message_history(client, message_id):
     # type: (Client, int) -> None
 
@@ -686,6 +727,7 @@ def get_message_history(client, message_id):
     validate_against_openapi_schema(result, '/messages/{message_id}/history',
                                     'get', '200')
 
+@openapi_test_function("/realm/emoji:get")
 def get_realm_emoji(client):
     # type: (Client) -> None
 
@@ -695,6 +737,7 @@ def get_realm_emoji(client):
 
     validate_against_openapi_schema(result, '/realm/emoji', 'GET', '200')
 
+@openapi_test_function("/messages/flags:post")
 def update_message_flags(client):
     # type: (Client) -> None
 
@@ -735,6 +778,7 @@ def update_message_flags(client):
     validate_against_openapi_schema(result, '/messages/flags', 'post',
                                     '200')
 
+@openapi_test_function("/register:post")
 def register_queue(client):
     # type: (Client) -> str
 
@@ -748,6 +792,7 @@ def register_queue(client):
     validate_against_openapi_schema(result, '/register', 'post', '200')
     return result['queue_id']
 
+@openapi_test_function("/events:delete")
 def deregister_queue(client, queue_id):
     # type: (Client, str) -> None
 
@@ -763,6 +808,7 @@ def deregister_queue(client, queue_id):
     result = client.deregister(queue_id)
     validate_against_openapi_schema(result, '/events', 'delete', '400')
 
+@openapi_test_function("/server_settings:get")
 def get_server_settings(client):
     # type: (Client) -> None
 
@@ -773,6 +819,7 @@ def get_server_settings(client):
 
     validate_against_openapi_schema(result, '/server_settings', 'get', '200')
 
+@openapi_test_function("/settings/notifications:patch")
 def update_notification_settings(client):
     # type: (Client) -> None
 
@@ -787,6 +834,7 @@ def update_notification_settings(client):
 
     validate_against_openapi_schema(result, '/settings/notifications', 'patch', '200')
 
+@openapi_test_function("/user_uploads:post")
 def upload_file(client):
     # type: (Client) -> None
     path_to_file = os.path.join(ZULIP_DIR, 'zerver', 'tests', 'images', 'img.jpg')
@@ -803,6 +851,7 @@ def upload_file(client):
 
     validate_against_openapi_schema(result, '/user_uploads', 'post', '200')
 
+@openapi_test_function("/users/me/{stream_id}/topics:get")
 def get_stream_topics(client, stream_id):
     # type: (Client, int) -> None
 
@@ -813,6 +862,7 @@ def get_stream_topics(client, stream_id):
     validate_against_openapi_schema(result, '/users/me/{stream_id}/topics',
                                     'get', '200')
 
+@openapi_test_function("/typing:post")
 def set_typing_status(client):
     # type: (Client) -> None
 
@@ -838,6 +888,7 @@ def set_typing_status(client):
 
     validate_against_openapi_schema(result, '/typing', 'post', '200')
 
+@openapi_test_function("/realm/emoji/{emoji_name}:post")
 def upload_custom_emoji(client):
     # type: (Client) -> None
     emoji_path = os.path.join(ZULIP_DIR, 'zerver', 'tests', 'images', 'img.jpg')
@@ -857,12 +908,14 @@ def upload_custom_emoji(client):
                                     '/realm/emoji/{emoji_name}',
                                     'post', '200')
 
+@openapi_test_function("/users/me/alert_words:get")
 def get_alert_words(client):
     # type: (Client) -> None
     result = client.get_alert_words()
 
     assert result['result'] == 'success'
 
+@openapi_test_function("/users/me/alert_words:post")
 def add_alert_words(client):
     # type: (Client) -> None
     word = ['foo', 'bar']
@@ -871,6 +924,7 @@ def add_alert_words(client):
 
     assert result['result'] == 'success'
 
+@openapi_test_function("/users/me/alert_words:delete")
 def remove_alert_words(client):
     # type: (Client) -> None
     word = ['foo']
@@ -879,6 +933,7 @@ def remove_alert_words(client):
 
     assert result['result'] == 'success'
 
+@openapi_test_function("/user_groups/create:post")
 def create_user_group(client):
     # type: (Client) -> None
     # {code_example|start}
@@ -894,6 +949,7 @@ def create_user_group(client):
 
     assert result['result'] == 'success'
 
+@openapi_test_function("/user_groups/{group_id}:patch")
 def update_user_group(client, group_id):
     # type: (Client, int) -> None
     # {code_example|start}
@@ -907,6 +963,7 @@ def update_user_group(client, group_id):
     # {code_example|end}
     assert result['result'] == 'success'
 
+@openapi_test_function("/user_groups/{group_id}:delete")
 def remove_user_group(client, group_id):
     # type: (Client, int) -> None
     # {code_example|start}
@@ -916,6 +973,7 @@ def remove_user_group(client, group_id):
     validate_against_openapi_schema(result, '/user_groups/{group_id}', 'delete', '200')
     assert result['result'] == 'success'
 
+@openapi_test_function("/user_groups/{group_id}/members:post")
 def update_user_group_members(client, group_id):
     # type: (Client, int) -> None
     request = {
@@ -947,57 +1005,8 @@ def test_invalid_stream_error(client):
 
     validate_against_openapi_schema(result, '/get_stream_id', 'get', '400')
 
-TEST_FUNCTIONS = {
-    '/mark_all_as_read:post': mark_all_as_read,
-    '/mark_stream_as_read:post': mark_stream_as_read,
-    '/mark_topic_as_read:post': mark_topic_as_read,
-    '/messages/render:post': render_message,
-    '/messages:get': get_messages,
-    '/messages:post': send_message,
-    '/messages/{message_id}:get': get_raw_message,
-    '/messages/{message_id}:patch': update_message,
-    '/messages/{message_id}:delete': delete_message,
-    '/messages/{message_id}/history:get': get_message_history,
-    '/messages/flags:post': update_message_flags,
-    '/get_stream_id:get': get_stream_id,
-    '/streams/{stream_id}:delete': delete_stream,
-    '/streams/{stream_id}:patch': update_stream,
-    '/streams:get': get_streams,
-    '/users:post': create_user,
-    '/users/me:get': get_profile,
-    '/users/{email}/presence:get': get_user_presence,
-    '/users/me/presence:post': update_presence,
-    '/users/me/subscriptions:get': list_subscriptions,
-    '/users/me/subscriptions:post': add_subscriptions,
-    '/users/me/subscriptions:delete': remove_subscriptions,
-    '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
-    '/users/me/subscriptions/properties:post': update_subscription_settings,
-    '/users:get': get_members,
-    '/realm/emoji:get': get_realm_emoji,
-    '/realm/emoji/{emoji_name}:post': upload_custom_emoji,
-    '/realm/filters:get': get_realm_filters,
-    '/realm/filters:post': add_realm_filter,
-    '/realm/filters/{filter_id}:delete': remove_realm_filter,
-    '/register:post': register_queue,
-    '/events:delete': deregister_queue,
-    '/server_settings:get': get_server_settings,
-    '/settings/notifications:patch': update_notification_settings,
-    '/user_uploads:post': upload_file,
-    '/users/me/{stream_id}/topics:get': get_stream_topics,
-    '/typing:post': set_typing_status,
-    '/user_groups:get': get_user_groups,
-    '/user_groups/create:post': create_user_group,
-    '/user_groups/{group_id}:patch': update_user_group,
-    '/user_groups/{group_id}:delete': remove_user_group,
-    '/user_groups/{group_id}/members:post': update_user_group_members,
-    '/users/me/alert_words:get': get_alert_words,
-    '/users/me/alert_words:post': add_alert_words,
-    '/users/me/alert_words:delete': remove_alert_words,
-    '/messages/{message_id}/reactions:delete': remove_reaction
-}
 
 # SETUP METHODS FOLLOW
-
 def test_against_fixture(result, fixture, check_if_equal=[], check_if_exists=[]):
     # type: (Dict[str, Any], Dict[str, Any], Optional[Iterable[str]], Optional[Iterable[str]]) -> None
     assertLength(result, fixture)
