@@ -110,7 +110,7 @@ function get_messages_success(data, opts) {
 // because doing so breaks the app in various modules that expect emails string.
 function handle_operators_supporting_id_based_api(data) {
     var operators_supporting_ids = ['pm-with'];
-    var operators_supporting_id = ['sender', 'group-pm-with'];
+    var operators_supporting_id = ['sender', 'group-pm-with', 'stream'];
 
     if (data.narrow === undefined) {
         return data;
@@ -123,6 +123,15 @@ function handle_operators_supporting_id_based_api(data) {
         }
 
         if (operators_supporting_id.indexOf(filter.operator) !== -1) {
+            if (filter.operator === 'stream') {
+                const stream_id = stream_data.get_stream_id(filter.operand);
+                if (stream_id !== undefined) {
+                    filter.operand = stream_id;
+                }
+
+                return filter;
+            }
+
             var person = people.get_by_email(filter.operand);
             if (person !== undefined) {
                 filter.operand = person.user_id;
