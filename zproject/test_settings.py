@@ -130,8 +130,7 @@ TEST_WORKER_DIR = ''
 # Casper/API tests in test_server.py can control this.
 if "LOCAL_UPLOADS_DIR" in os.environ:
     LOCAL_UPLOADS_DIR = os.getenv("LOCAL_UPLOADS_DIR")
-else:
-    LOCAL_UPLOADS_DIR = ''
+# Otherwise, we use the default value from dev_settings.py
 
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
