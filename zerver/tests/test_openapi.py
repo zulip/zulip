@@ -14,7 +14,7 @@ from django.http import HttpResponse
 import zerver.lib.openapi as openapi
 from zerver.lib.bugdown.api_code_examples import generate_curl_example, \
     render_curl_example, parse_language_and_options
-from zerver.lib.request import REQ
+from zerver.lib.request import _REQ
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.openapi import (
     get_openapi_fixture, get_openapi_parameters,
@@ -414,7 +414,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         # of its parameters.
         for vname, defval in inspect.signature(function).parameters.items():
             defval = defval.default
-            if defval.__class__ == REQ:
+            if defval.__class__ is _REQ:
                 # TODO: The below inference logic in cases where
                 # there's a converter function declared is incorrect.
                 # Theoretically, we could restructure the converter
@@ -423,7 +423,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 # possible.
 
                 vtype = self.get_standardized_argument_type(function.__annotations__[vname])
-                vname = defval.post_var_name  # type: ignore # See zerver/lib/request.pyi
+                vname = defval.post_var_name  # type: ignore # See zerver/lib/request.py
                 function_params.add((vname, vtype))
 
         diff = openapi_params - function_params
