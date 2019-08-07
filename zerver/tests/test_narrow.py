@@ -1283,14 +1283,14 @@ class GetOldMessagesTest(ZulipTestCase):
         messages = get_user_messages(self.example_user('hamlet'))
         stream_messages = [msg for msg in messages if msg.is_stream_message()]
         stream_name = get_display_recipient(stream_messages[0].recipient)
-        stream_id = stream_messages[0].recipient.id
+        stream_recipient_id = stream_messages[0].recipient.id
 
         narrow = [dict(operator='stream', operand=stream_name)]
         result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
         for message in result["messages"]:
             self.assertEqual(message["type"], "stream")
-            self.assertEqual(message["recipient_id"], stream_id)
+            self.assertEqual(message["recipient_id"], stream_recipient_id)
 
     def test_get_visible_messages_with_narrow_stream(self) -> None:
         self.login(self.example_email('hamlet'))
