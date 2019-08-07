@@ -1157,6 +1157,7 @@ input[type=checkbox].inline-block {
 
         #user-avatar-source {
             visibility: visible;
+            z-index: 99;
         }
     }
 }
