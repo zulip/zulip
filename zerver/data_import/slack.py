@@ -25,6 +25,7 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
+from urllib.parse import urlencode
 
 # stubs
 AddedUsersT = Dict[str, int]
@@ -970,9 +971,10 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
 
     # We get the user data from the legacy token method of slack api, which is depreciated
     # but we use it as the user email data is provided only in this method
-    user_list = get_slack_api_data(token, "https://slack.com/api/users.list", "members")
+    user_list = get_slack_api_data("https://slack.com/api/users.list", "members", token=token)
+
     # Get custom emoji from slack api
-    custom_emoji_list = get_slack_api_data(token, "https://slack.com/api/emoji.list", "emoji")
+    custom_emoji_list = get_slack_api_data("https://slack.com/api/emoji.list", "emoji", token=token)
 
     realm, added_users, added_recipient, added_channels, added_mpims, dm_members, avatar_list, \
         emoji_url_map = slack_workspace_to_realm(domain_name, realm_id, user_list,
@@ -1023,8 +1025,12 @@ def get_data_file(path: str) -> Any:
         data = ujson.load(fp)
         return data
 
-def get_slack_api_data(token: str, slack_api_url: str, get_param: str) -> Any:
-    data = requests.get('%s?token=%s' % (slack_api_url, token))
+def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any:
+    data = requests.get("{}?{}".format(slack_api_url, urlencode(kwargs)))
+
+    if not kwargs.get("token"):
+        raise Exception("Pass slack token in kwargs")
+
     if data.status_code == requests.codes.ok:
         if 'error' in data.json():
             raise Exception('Enter a valid token!')
