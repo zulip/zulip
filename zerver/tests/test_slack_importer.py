@@ -84,17 +84,17 @@ class SlackImporter(ZulipTestCase):
     def test_get_slack_api_data(self, mock_get: mock.Mock) -> None:
         token = 'valid-token'
         slack_user_list_url = "https://slack.com/api/users.list"
-        self.assertEqual(get_slack_api_data(token, slack_user_list_url, "members"),
+        self.assertEqual(get_slack_api_data(slack_user_list_url, "members", token=token),
                          "user_data")
         token = 'invalid-token'
         with self.assertRaises(Exception) as invalid:
-            get_slack_api_data(token, slack_user_list_url, "members")
+            get_slack_api_data(slack_user_list_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ('Enter a valid token!',),)
 
         token = 'status404'
         wrong_url = "https://slack.com/api/wrong"
         with self.assertRaises(Exception) as invalid:
-            get_slack_api_data(token, wrong_url, "members")
+            get_slack_api_data(wrong_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ('Something went wrong. Please try again!',),)
 
     def test_build_zerver_realm(self) -> None:
