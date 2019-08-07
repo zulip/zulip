@@ -1,23 +1,17 @@
-# When adding new functions/classes to this file, you need to also add
-# their types to request.pyi in this directory (a mypy stubs file that
-# we use to ensure mypy does correct type inference with REQ, which it
-# can't do by default due to the dynamic nature of REQ).
-#
-# Because request.pyi exists, the type annotations in this file are
-# mostly not processed by mypy.
 from collections import defaultdict
 from functools import wraps
+from types import FunctionType
 import ujson
 
 from django.utils.translation import ugettext as _
 
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
     InvalidJSONError
-from zerver.lib.types import ViewFuncT
+from zerver.lib.types import Validator, ViewFuncT
 
 from django.http import HttpRequest, HttpResponse
 
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar, Union, cast
 
 class RequestConfusingParmsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
@@ -55,7 +49,9 @@ class RequestVariableConversionError(JsonableError):
         return _("Bad value for '{var_name}': {bad_value}")
 
 # Used in conjunction with @has_request_variables, below
-class REQ:
+ResultT = TypeVar('ResultT')
+
+class _REQ(Generic[ResultT]):
     # NotSpecified is a sentinel value for determining whether a
     # default value was specified for a request variable.  We can't
     # use None because that could be a valid, user-specified default
@@ -63,13 +59,20 @@ class REQ:
         pass
     NotSpecified = _NotSpecified()
 
-    def __init__(self, whence: str=None, *, converter: Callable[[Any], Any]=None,
-                 default: Any=NotSpecified, validator: Callable[[Any], Any]=None,
-                 str_validator: Callable[[Any], Any]=None,
-                 argument_type: str=None, type: Type=None,
-                 intentionally_undocumented=False,
-                 documentation_pending=False,
-                 aliases: Optional[List[str]]=None) -> None:
+    def __init__(
+        self,
+        whence: Optional[str] = None,
+        *,
+        type: Type[ResultT] = Type[None],
+        converter: Optional[Callable[[str], ResultT]] = None,
+        default: Union[_NotSpecified, ResultT, None] = NotSpecified,
+        validator: Optional[Validator] = None,
+        str_validator: Optional[Validator] = None,
+        argument_type: Optional[str] = None,
+        intentionally_undocumented: bool=False,
+        documentation_pending: bool=False,
+        aliases: Optional[List[str]] = None
+    ) -> None:
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
         same name as the parameter.
@@ -98,7 +101,7 @@ class REQ:
         """
 
         self.post_var_name = whence
-        self.func_var_name = None  # type: str
+        self.func_var_name = None  # type: Optional[str]
         self.converter = converter
         self.validator = validator
         self.str_validator = str_validator
@@ -115,6 +118,40 @@ class REQ:
             # Not user-facing, so shouldn't be tagged for translation
             raise AssertionError('validator and str_validator are mutually exclusive')
 
+# This factory function ensures that mypy can correctly analyze REQ.
+#
+# Note that REQ claims to return a type matching that of the parameter
+# of which it is the default value, allowing type checking of view
+# functions using has_request_variables. In reality, REQ returns an
+# instance of class _REQ to enable the decorator to scan the parameter
+# list for _REQ objects and patch the parameters as the true types.
+
+def REQ(
+    whence: Optional[str] = None,
+    *,
+    type: Type[ResultT] = Type[None],
+    converter: Optional[Callable[[str], ResultT]] = None,
+    default: Union[_REQ._NotSpecified, ResultT, None] = _REQ.NotSpecified,
+    validator: Optional[Validator] = None,
+    str_validator: Optional[Validator] = None,
+    argument_type: Optional[str] = None,
+    intentionally_undocumented: bool=False,
+    documentation_pending: bool=False,
+    aliases: Optional[List[str]] = None
+) -> ResultT:
+    return cast(ResultT, _REQ(
+        whence,
+        type=type,
+        converter=converter,
+        default=default,
+        validator=validator,
+        str_validator=str_validator,
+        argument_type=argument_type,
+        intentionally_undocumented=intentionally_undocumented,
+        documentation_pending=documentation_pending,
+        aliases=aliases,
+    ))
+
 arguments_map = defaultdict(list)  # type: Dict[str, List[str]]
 
 # Extracts variables from the request object and passes them as
@@ -122,7 +159,7 @@ arguments_map = defaultdict(list)  # type: Dict[str, List[str]]
 # argument to the function.
 #
 # To use, assign a function parameter a default value that is an
-# instance of the REQ class.  That parameter will then be automatically
+# instance of the _REQ class.  That parameter will then be automatically
 # populated from the HTTP request.  The request object must be the
 # first argument to the decorated function.
 #
@@ -135,21 +172,18 @@ arguments_map = defaultdict(list)  # type: Dict[str, List[str]]
 # internally when it encounters an error
 def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
     num_params = view_func.__code__.co_argcount
-    if view_func.__defaults__ is None:
-        num_default_params = 0
-    else:
-        num_default_params = len(view_func.__defaults__)
-    default_param_names = view_func.__code__.co_varnames[num_params - num_default_params:]
-    default_param_values = view_func.__defaults__
+    default_param_values = cast(FunctionType, view_func).__defaults__
     if default_param_values is None:
-        default_param_values = []
+        default_param_values = ()
+    num_default_params = len(default_param_values)
+    default_param_names = view_func.__code__.co_varnames[num_params - num_default_params:]
 
     post_params = []
 
     view_func_full_name = '.'.join([view_func.__module__, view_func.__name__])
 
     for (name, value) in zip(default_param_names, default_param_values):
-        if isinstance(value, REQ):
+        if isinstance(value, _REQ):
             value.func_var_name = name
             if value.post_var_name is None:
                 value.post_var_name = name
@@ -163,15 +197,17 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         for param in post_params:
-            if param.func_var_name in kwargs:
+            func_var_name = param.func_var_name
+            if func_var_name in kwargs:
                 continue
+            assert func_var_name is not None
 
             if param.argument_type == 'body':
                 try:
                     val = ujson.loads(request.body)
                 except ValueError:
                     raise InvalidJSONError(_("Malformed JSON"))
-                kwargs[param.func_var_name] = val
+                kwargs[func_var_name] = val
                 continue
             elif param.argument_type is not None:
                 # This is a view bug, not a user error, and thus should throw a 500.
@@ -194,12 +230,14 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 except KeyError:
                     continue
                 if post_var_name is not None:
+                    assert req_var is not None
                     raise RequestConfusingParmsError(post_var_name, req_var)
                 post_var_name = req_var
 
             if post_var_name is None:
                 post_var_name = param.post_var_name
-                if param.default is REQ.NotSpecified:
+                assert post_var_name is not None
+                if param.default is _REQ.NotSpecified:
                     raise RequestVariableMissingError(post_var_name)
                 val = param.default
                 default_assigned = True
@@ -229,8 +267,8 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 if error:
                     raise JsonableError(error)
 
-            kwargs[param.func_var_name] = val
+            kwargs[func_var_name] = val
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func
+    return cast(ViewFuncT, _wrapped_view_func)
