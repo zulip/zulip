@@ -44,7 +44,7 @@ from zerver.lib.redis_utils import get_redis_client
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services, RealmAuditLog
-from zulip_bots.lib import extract_query_without_mention
+from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.export import export_realm_wrapper
@@ -586,7 +586,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 if event['trigger'] == 'mention':
                     message['content'] = extract_query_without_mention(
                         message=message,
-                        client=self.get_bot_api_client(user_profile),
+                        client=cast(ExternalBotHandler, self.get_bot_api_client(user_profile)),
                     )
                     assert message['content'] is not None
                 bot_handler.handle_message(

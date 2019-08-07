@@ -13,8 +13,8 @@ git+https://github.com/zulip/libthumbor.git@60ed2431c07686a12f2770b2d852c5650f3c
 git+https://github.com/zulip/line_profiler.git#egg=line_profiler==2.1.2.zulip1
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
-git+https://github.com/zulip/python-zulip-api.git@0.6.1#egg=zulip==0.6.1_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@0.6.1#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
+git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip==0.6.1_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
 apns2==0.5.0
 argon2-cffi==19.1.0
 asn1crypto==0.24.0        # via cryptography
@@ -113,7 +113,6 @@ stripe==2.21.0
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
 twilio==6.29.2
-typing==3.6.6
 typing_extensions==3.7.4
 urllib3==1.25.3           # via requests
 uwsgi==2.0.17.1

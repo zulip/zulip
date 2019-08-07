@@ -14,8 +14,8 @@ git+https://github.com/zulip/line_profiler.git#egg=line_profiler==2.1.2.zulip1
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/zulip/zulint@aaed679f1ad38b230090eadd3870b7682500f60c#egg=zulint==0.0.1
-git+https://github.com/zulip/python-zulip-api.git@0.6.1#egg=zulip==0.6.1_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@0.6.1#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
+git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip==0.6.1_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
 alabaster==0.7.12         # via sphinx
 apns2==0.5.0
 argon2-cffi==19.1.0
@@ -179,7 +179,6 @@ twilio==6.29.2
 twisted==19.2.1
 typed-ast==1.4.0          # via mypy
 typing-extensions==3.7.4
-typing==3.6.6
 urllib3==1.25.3           # via botocore, requests, transifex-client
 virtualenv-clone==0.5.3
 w3lib==1.20.0             # via parsel, scrapy
