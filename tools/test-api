@@ -29,6 +29,7 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     # Zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
     from zerver.openapi.python_examples import test_the_api, test_invalid_api_key
+    from zerver.openapi.test_curl_examples import test_generated_curl_examples_for_success
     from zerver.lib.actions import do_create_user
     from zerver.lib.users import get_api_key
     from zerver.models import get_user, get_realm
@@ -41,14 +42,24 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     user = get_user(email, realm)
     api_key = get_api_key(user)
     site = 'http://zulip.zulipdev.com:9981'
-
     client = Client(
         email=email,
         api_key=api_key,
         site=site
     )
 
-    # Prepare the admin client
+    # Prepare a generic bot client for curl testing
+    email = 'default-bot@zulip.com'
+    realm = get_realm("zulip")
+    bot_user = get_user(email, realm)
+    api_key = get_api_key(bot_user)
+    bot_client = Client(
+        email=email,
+        api_key=api_key,
+        site=site
+    )
+
+    # Prepare the non-admin client
     email = 'guest@zulip.com'  # guest is not an admin
     guest_user = do_create_user('guest@zulip.com', 'secret',
                                 get_realm('zulip'), 'Mr. Guest', 'guest')
@@ -59,6 +70,7 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
         site=site
     )
 
+    test_generated_curl_examples_for_success(bot_client)
     test_the_api(client, nonadmin_client)
 
     # Test error payloads
