@@ -6,8 +6,8 @@
 # scan the parameter list for REQ objects and patch the parameters as the true
 # types.
 
-from typing import Any, Dict, Callable, List, TypeVar, Optional, Union, Type
-from zerver.lib.types import ViewFuncT, Validator, ExtractRecipients
+from typing import Dict, Callable, List, TypeVar, Optional, Union, Type
+from zerver.lib.types import ViewFuncT, Validator
 from zerver.lib.exceptions import JsonableError as JsonableError
 
 ResultT = TypeVar('ResultT')
@@ -22,8 +22,8 @@ NotSpecified = _NotSpecified()
 def REQ(whence: Optional[str] = None,
         *,
         type: Type[ResultT] = Type[None],
-        converter: Union[Optional[Callable[[str], ResultT]], ExtractRecipients] = None,
-        default: Union[_NotSpecified, ResultT, None] = Optional[NotSpecified],
+        converter: Optional[Callable[[str], ResultT]] = None,
+        default: Union[_NotSpecified, ResultT, None] = NotSpecified,
         validator: Optional[Validator] = None,
         str_validator: Optional[Validator] = None,
         argument_type: Optional[str] = None,
