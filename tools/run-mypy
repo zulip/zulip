@@ -7,7 +7,6 @@ import argparse
 import subprocess
 
 from zulint import lister
-from typing import cast, Dict, List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
@@ -58,11 +57,12 @@ if args.all:
     exclude = []
 
 # find all non-excluded files in current directory
-files_dict = cast(Dict[str, List[str]],
-                  lister.list_files(targets=args.targets, ftypes=['py', 'pyi'],
-                                    use_shebang=True, modified_only=args.modified,
-                                    exclude=exclude, group_by_ftype=True,
-                                    extless_only=args.scripts_only))
+files_dict = lister.list_files(
+    targets=args.targets, ftypes=['py', 'pyi'],
+    use_shebang=True, modified_only=args.modified,
+    exclude=exclude, group_by_ftype=True,
+    extless_only=args.scripts_only,
+)
 pyi_files = list(files_dict['pyi'])
 python_files = [fpath for fpath in files_dict['py']
                 if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]

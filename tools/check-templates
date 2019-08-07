@@ -11,7 +11,7 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 from zulint import lister
-from typing import cast, Dict, Iterable, List
+from typing import Dict, Iterable, List
 
 EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests
@@ -24,13 +24,12 @@ EXCLUDED_FILES = [
 
 def check_our_files(modified_only, all_dups, fix, targets):
     # type: (bool, bool, bool, List[str]) -> None
-    by_lang = cast(
-        Dict[str, List[str]],
-        lister.list_files(
-            targets=targets,
-            modified_only=args.modified,
-            ftypes=['hbs', 'html'],
-            group_by_ftype=True, exclude=EXCLUDED_FILES))
+    by_lang = lister.list_files(
+        targets=targets,
+        modified_only=args.modified,
+        ftypes=['hbs', 'html'],
+        group_by_ftype=True, exclude=EXCLUDED_FILES,
+    )
 
     check_handlebar_templates(by_lang['hbs'], fix)
     check_html_templates(by_lang['html'], all_dups, fix)
