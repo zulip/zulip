@@ -1283,14 +1283,17 @@ class GetOldMessagesTest(ZulipTestCase):
         messages = get_user_messages(self.example_user('hamlet'))
         stream_messages = [msg for msg in messages if msg.is_stream_message()]
         stream_name = get_display_recipient(stream_messages[0].recipient)
+        assert isinstance(stream_name, str)
+        stream_id = get_stream(stream_name, stream_messages[0].get_realm()).id
         stream_recipient_id = stream_messages[0].recipient.id
 
-        narrow = [dict(operator='stream', operand=stream_name)]
-        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+        for operand in [stream_name, stream_id]:
+            narrow = [dict(operator='stream', operand=operand)]
+            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
-        for message in result["messages"]:
-            self.assertEqual(message["type"], "stream")
-            self.assertEqual(message["recipient_id"], stream_recipient_id)
+            for message in result["messages"]:
+                self.assertEqual(message["type"], "stream")
+                self.assertEqual(message["recipient_id"], stream_recipient_id)
 
     def test_get_visible_messages_with_narrow_stream(self) -> None:
         self.login(self.example_email('hamlet'))
@@ -2097,16 +2100,41 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assert_json_error_contains(result,
                                             "Invalid narrow operator: unknown operator")
 
-    def test_non_string_narrow_operand_in_dict(self) -> None:
-        """
-        We expect search operands to be strings, not integers.
-        """
+    def test_invalid_narrow_operand_in_dict(self) -> None:
         self.login(self.example_email("hamlet"))
-        not_a_string = 42
-        narrow = [dict(operator='stream', operand=not_a_string)]
-        params = dict(anchor=0, num_before=0, num_after=0, narrow=ujson.dumps(narrow))
-        result = self.client_get("/json/messages", params)
-        self.assert_json_error_contains(result, 'elem["operand"] is not a string')
+
+        # str or int is required for sender, group-pm-with, stream
+        invalid_operands = [['1'], [2], None]
+        error_msg = 'elem["operand"] is not a string or integer'
+        for operand in ['sender', 'group-pm-with', 'stream']:
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+
+        # str or int list is required for pm-with operator
+        invalid_operands = [None]
+        error_msg = 'elem["operand"] is not a string or an integer list'
+        self.exercise_bad_narrow_operand_using_dict_api('pm-with', invalid_operands, error_msg)
+
+        invalid_operands = [['2']]
+        error_msg = 'elem["operand"][0] is not an integer'
+        self.exercise_bad_narrow_operand_using_dict_api('pm-with', invalid_operands, error_msg)
+
+        # For others only str is acceptable
+        invalid_operands = [2, None, [1]]
+        error_msg = 'elem["operand"] is not a string'
+        for operand in ['is', 'near', 'has', 'id']:
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
+
+    # The exercise_bad_narrow_operand helper method uses legacy tuple format to
+    # test bad narrow, this method uses the current dict api format
+    def exercise_bad_narrow_operand_using_dict_api(self, operator: str,
+                                                   operands: Sequence[Any],
+                                                   error_msg: str) -> None:
+
+        for operand in operands:
+            narrow = [dict(operator=operator, operand=operand)]
+            params = dict(anchor=0, num_before=0, num_after=0, narrow=ujson.dumps(narrow))
+            result = self.client_get('/json/messages', params)
+            self.assert_json_error_contains(result, error_msg)
 
     def exercise_bad_narrow_operand(self, operator: str,
                                     operands: Sequence[Any],
@@ -2142,6 +2170,10 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         self.exercise_bad_narrow_operand("stream", ['non-existent stream'],
                                          "Invalid narrow operator: unknown stream")
+
+        non_existing_stream_id = 1232891381239
+        self.exercise_bad_narrow_operand_using_dict_api('stream', [non_existing_stream_id],
+                                                        'Invalid narrow operator: unknown stream')
 
     def test_bad_narrow_nonexistent_email(self) -> None:
         self.login(self.example_email("hamlet"))
@@ -2432,6 +2464,13 @@ class GetOldMessagesTest(ZulipTestCase):
         # should return an empty list.
         narrow = [
             dict(operator='stream', operand='Scotland'),
+        ]
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        self.assertEqual(muting_conditions, [])
+
+        # Also test that passing stream ID works
+        narrow = [
+            dict(operator='stream', operand=get_stream('Scotland', realm).id)
         ]
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
         self.assertEqual(muting_conditions, [])
