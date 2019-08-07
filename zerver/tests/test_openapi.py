@@ -703,7 +703,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         generated_curl_example = self.curl_example("/get_stream_id", "GET")
         expected_curl_example = [
             "```curl",
-            "curl -X GET -G http://localhost:9991/api/v1/get_stream_id \\",
+            "curl -sSX GET -G http://localhost:9991/api/v1/get_stream_id \\",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    -d 'stream=Denmark'",
             "```"
@@ -720,7 +720,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         generated_curl_example = self.curl_example("/dev_fetch_api_key", "POST")
         expected_curl_example = [
             "```curl",
-            "curl -X POST http://localhost:9991/api/v1/dev_fetch_api_key \\",
+            "curl -sSX POST http://localhost:9991/api/v1/dev_fetch_api_key \\",
             "    -d 'username=iago@zulip.com'",
             "```"
         ]
@@ -732,7 +732,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         generated_curl_example = self.curl_example("/mark_stream_as_read", "POST")
         expected_curl_example = [
             "```curl",
-            "curl -X POST http://localhost:9991/api/v1/mark_stream_as_read \\",
+            "curl -sSX POST http://localhost:9991/api/v1/mark_stream_as_read \\",
             "    -d 'stream_id=1' \\",
             "    -d 'bool_param=false'",
             "```"
@@ -749,7 +749,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         generated_curl_example = self.curl_example("/messages", "GET")
         expected_curl_example = [
             '```curl',
-            'curl -X GET -G http://localhost:9991/api/v1/messages \\',
+            'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             "    -d 'anchor=42' \\",
             "    -d 'use_first_unread_anchor=true' \\",
@@ -768,7 +768,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         generated_curl_example = self.curl_example("/endpoint", "GET")
         expected_curl_example = [
             '```curl',
-            'curl -X GET -G http://localhost:9991/api/v1/endpoint \\',
+            'curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\',
             '    --data-urlencode param1=\'{"key": "value"}\'',
             '```'
         ]
@@ -791,7 +791,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
                                                      api_url="https://zulip.example.com/api")
         expected_curl_example = [
             "```curl",
-            "curl -X GET -G https://zulip.example.com/api/v1/get_stream_id \\",
+            "curl -sSX GET -G https://zulip.example.com/api/v1/get_stream_id \\",
             "    -u email:key \\",
             "    -d 'stream=Denmark'",
             "```"
@@ -803,7 +803,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
                                                    exclude=["client_gravatar", "apply_markdown"])
         expected_curl_example = [
             '```curl',
-            'curl -X GET -G http://localhost:9991/api/v1/messages \\',
+            'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             "    -d 'anchor=42' \\",
             "    -d 'use_first_unread_anchor=true' \\",
