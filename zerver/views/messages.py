@@ -31,7 +31,7 @@ from zerver.lib.message import (
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name, \
-    get_stream_by_narrow_operand_access_unchecked
+    can_access_stream_history_by_id, get_stream_by_narrow_operand_access_unchecked
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
@@ -204,14 +204,14 @@ class NarrowBuilder:
                     s[i] = '\\' + c
         return ''.join(s)
 
-    def by_stream(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_stream(self, query: Query, operand: Union[str, int], maybe_negate: ConditionTransform) -> Query:
         try:
             # Because you can see your own message history for
             # private streams you are no longer subscribed to, we
             # need get_stream_by_narrow_operand_access_unchecked here.
             stream = get_stream_by_narrow_operand_access_unchecked(operand, self.user_profile.realm)
         except Stream.DoesNotExist:
-            raise BadNarrowOperator('unknown stream ' + operand)
+            raise BadNarrowOperator('unknown stream ' + str(operand))
 
         if self.user_profile.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to "social" to also show messages to
@@ -522,7 +522,7 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
             # that supports user IDs. Relevant code is located in static/js/message_fetch.js
             # in handle_operators_supporting_id_based_api function where you will need to update
             # operators_supporting_id, or operators_supporting_ids array.
-            operators_supporting_id = ['sender', 'group-pm-with']
+            operators_supporting_id = ['sender', 'group-pm-with', 'stream']
             operators_supporting_ids = ['pm-with']
 
             operator = elem.get('operator', '')
@@ -568,8 +568,11 @@ def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: UserProfile
     if narrow is not None:
         for term in narrow:
             if term['operator'] == "stream" and not term.get('negated', False):
-                if can_access_stream_history_by_name(user_profile, term['operand']):
-                    include_history = True
+                operand = term['operand']  # type: Union[str, int]
+                if isinstance(operand, str):
+                    include_history = can_access_stream_history_by_name(user_profile, operand)
+                else:
+                    include_history = can_access_stream_history_by_id(user_profile, operand)
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.

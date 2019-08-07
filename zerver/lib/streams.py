@@ -186,6 +186,13 @@ def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: st
         return False
     return can_access_stream_history(user_profile, stream)
 
+def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -> bool:
+    try:
+        stream = get_stream_by_id_in_realm(stream_id, user_profile.realm)
+    except Stream.DoesNotExist:
+        return False
+    return can_access_stream_history(user_profile, stream)
+
 def filter_stream_authorization(user_profile: UserProfile,
                                 streams: Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]:
     streams_subscribed = set()  # type: Set[int]
