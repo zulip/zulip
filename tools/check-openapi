@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var SwaggerParser = require('swagger-parser'),
     _             = require('underscore');
 

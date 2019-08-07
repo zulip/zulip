@@ -10,6 +10,7 @@ EXCLUDED_FILES = [
     # newlines; there's nothing other than trailing newlines we'd be
     # checking for in these anyway.
     "locale",
+    "tools/check-openapi",
 ]
 
 PUPPET_CHECK_RULES_TO_EXCLUDE = [
