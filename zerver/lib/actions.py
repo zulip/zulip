@@ -1682,7 +1682,7 @@ def do_send_typing_notification(realm: Realm, notification: Dict[str, Any]) -> N
 
 # check_send_typing_notification:
 # Checks the typing notification and sends it
-def check_send_typing_notification(sender: UserProfile, notification_to: Sequence[str],
+def check_send_typing_notification(sender: UserProfile, notification_to: Union[Sequence[str], Sequence[int]],
                                    operator: str) -> None:
     typing_notification = check_typing_notification(sender, notification_to, operator)
     do_send_typing_notification(sender.realm, typing_notification)
