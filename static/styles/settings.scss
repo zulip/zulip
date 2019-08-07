@@ -1098,6 +1098,7 @@ input[type=checkbox].inline-block {
 }
 
 #user-settings-avatar {
+    position: relative;
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
     width: 200px;
@@ -1116,8 +1117,8 @@ input[type=checkbox].inline-block {
         opacity: 0;
         font-size: 3rem;
         position: absolute;
-        top: 67px; // 31.5px + 5px + 30px
-        right: 30px;
+        top: 10px; // 31.5px + 5px + 30px
+        right: 10px;
         z-index: 99;
     }
 
@@ -1126,7 +1127,7 @@ input[type=checkbox].inline-block {
         width: 200px;
         height: 20px;
         position: absolute;
-        bottom: 19%;
+        bottom: 6px;
         left: 0%;
         font-size: 0.9em;
         visibility: hidden;
