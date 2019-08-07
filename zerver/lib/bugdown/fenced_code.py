@@ -116,7 +116,7 @@ Missing required -X argument in curl command:
 """.strip()
 
     for line in lines:
-        regex = r'curl [-]X "?(GET|DELETE|PATCH|POST)"?'
+        regex = r'curl [-](sS)?X "?(GET|DELETE|PATCH|POST)"?'
         if line.startswith('curl'):
             if re.search(regex, line) is None:
                 raise BugdownRenderingException(error_msg.format(command=line.strip()))

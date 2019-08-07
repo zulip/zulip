@@ -105,16 +105,17 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
 
 def curl_method_arguments(endpoint: str, method: str,
                           api_url: str) -> List[str]:
+    # We also include the -sS verbosity arguments here.
     method = method.upper()
     url = "{}/v1{}".format(api_url, endpoint)
     valid_methods = ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
-    if method == valid_methods[0]:
+    if method == "GET":
         # Then we need to make sure that each -d option translates to becoming
         # a GET parameter (in the URL) and not a POST parameter (in the body).
         # TODO: remove the -X part by updating the linting rule. It's redundant.
-        return ["-X", "GET", "-G", url]
+        return ["-sSX", "GET", "-G", url]
     elif method in valid_methods:
-        return ["-X", method, url]
+        return ["-sSX", method, url]
     else:
         msg = "The request method {} is not one of {}".format(method,
                                                               valid_methods)
