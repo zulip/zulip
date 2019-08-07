@@ -17,10 +17,7 @@ set -x
 # We run mypy after the backend tests so we get output from the
 # backend tests, which tend to uncover more serious problems, first.
 ./tools/run-mypy --version
-# We run mypy without daemon mode, since that's faster given that
-# we're only going to run it once, and catches more errors since
-# daemon mode doesn't follow package imports.
-./tools/run-mypy --no-daemon
+./tools/run-mypy
 
 ./tools/test-migrations
 ./tools/setup/optimize-svg
