@@ -74,6 +74,12 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
+#
+# This local cache has a lifetime of just a single request; it is
+# cleared inside `flush_per_request_caches` in our middleware.  It
+# could be replaced with smarter bulk-fetching logic that deduplicates
+# queries for the same recipient; this is just a convenient way to
+# write that code.
 per_request_display_recipient_cache = {}  # type: Dict[int, Union[str, List[Dict[str, Any]]]]
 def get_display_recipient_by_id(recipient_id: int, recipient_type: int,
                                 recipient_type_id: Optional[int]) -> Union[str, List[Dict[str, Any]]]:
