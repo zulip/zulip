@@ -478,9 +478,9 @@ fixtures:
 For an example, check out the [giphy bot](
 https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy).
 
-*Tip: You can use [requestbin](https://requestbin.fullcontact.com/)
-or a similar tool to capture payloads from the
-service your bot is interacting with.*
+*Tip: You can use [requestbin](https://requestbin.com/) or a similar
+tool to capture payloads from the service your bot is interacting
+with.*
 
 #### Examples
 
