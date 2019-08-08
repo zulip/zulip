@@ -127,11 +127,14 @@ def get_display_recipient_remote_cache(recipient_id: int, recipient_type: int,
     user_profile_list = (UserProfile.objects.filter(subscription__recipient_id=recipient_id)
                                             .select_related()
                                             .order_by('id'))
-    return [{'email': user_profile.email,
-             'full_name': user_profile.full_name,
-             'short_name': user_profile.short_name,
-             'id': user_profile.id,
-             'is_mirror_dummy': user_profile.is_mirror_dummy} for user_profile in user_profile_list]
+    return [user_profile_to_display_recipient_dict(user_profile) for user_profile in user_profile_list]
+
+def user_profile_to_display_recipient_dict(user_profile: 'UserProfile') -> Dict[str, Any]:
+    return {'email': user_profile.email,
+            'full_name': user_profile.full_name,
+            'short_name': user_profile.short_name,
+            'id': user_profile.id,
+            'is_mirror_dummy': user_profile.is_mirror_dummy}
 
 def get_realm_emoji_cache_key(realm: 'Realm') -> str:
     return u'realm_emoji:%s' % (realm.id,)
