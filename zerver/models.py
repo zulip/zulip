@@ -1435,10 +1435,16 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
             where=[where_clause],
             params=stream_names)
 
-    return generic_bulk_cached_fetch(lambda stream_name: get_stream_cache_key(stream_name, realm.id),
+    def stream_name_to_cache_key(stream_name: str) -> str:
+        return get_stream_cache_key(stream_name, realm.id)
+
+    def stream_to_lower_name(stream: Stream) -> str:
+        return stream.name.lower()
+
+    return generic_bulk_cached_fetch(stream_name_to_cache_key,
                                      fetch_streams_by_name,
                                      [stream_name.lower() for stream_name in stream_names],
-                                     id_fetcher=lambda stream: stream.name.lower())
+                                     id_fetcher=stream_to_lower_name)
 
 def get_recipient_cache_key(type: int, type_id: int) -> str:
     return u"%s:get_recipient:%s:%s" % (cache.KEY_PREFIX, type, type_id,)
@@ -1477,8 +1483,11 @@ def bulk_get_recipients(type: int, type_ids: List[int]) -> Dict[int, Any]:
         # TODO: Change return type to QuerySet[Recipient]
         return Recipient.objects.filter(type=type, type_id__in=type_ids)
 
+    def recipient_to_type_id(recipient: Recipient) -> int:
+        return recipient.type_id
+
     return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
-                                     id_fetcher=lambda recipient: recipient.type_id)
+                                     id_fetcher=recipient_to_type_id)
 
 def get_stream_recipients(stream_ids: List[int]) -> List[Recipient]:
 

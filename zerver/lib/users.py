@@ -124,13 +124,16 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
             where=[where_clause],
             params=emails)
 
+    def user_to_email(user_profile: UserProfile) -> str:
+        return user_profile.email.lower()
+
     return generic_bulk_cached_fetch(
         # Use a separate cache key to protect us from conflicts with
         # the get_user cache.
         lambda email: 'bulk_get_users:' + user_profile_cache_key_id(email, realm_id),
         fetch_users_by_email,
         [email.lower() for email in emails],
-        id_fetcher=lambda user_profile: user_profile.email.lower()
+        id_fetcher=user_to_email,
     )
 
 def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:

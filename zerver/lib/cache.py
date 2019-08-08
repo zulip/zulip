@@ -216,9 +216,21 @@ def cache_delete_many(items: Iterable[str], cache_name: Optional[str]=None) -> N
         KEY_PREFIX + item for item in items)
     remote_cache_stats_finish()
 
-# Generic_bulk_cached fetch and its helpers
+# Generic_bulk_cached fetch and its helpers.  We start with declaring
+# a few type variables that help define its interface.
+
+# Type for the cache's keys; will typically be int or str.
 ObjKT = TypeVar('ObjKT')
+
+# Type for items to be fetched from the database (e.g. a Django model object)
 ItemT = TypeVar('ItemT')
+
+# Type for items to be stored in the cache (e.g. a dictionary serialization).
+# Will equal ItemT unless a cache_transformer is specified.
+CacheItemT = TypeVar('CacheItemT')
+
+# Type for compressed items for storage in the cache.  For
+# serializable objects, will be the object; if encoded, bytes.
 CompressedItemT = TypeVar('CompressedItemT')
 
 def default_extractor(obj: CompressedItemT) -> ItemT:
@@ -230,8 +242,8 @@ def default_setter(obj: ItemT) -> CompressedItemT:
 def default_id_fetcher(obj: ItemT) -> ObjKT:
     return obj.id  # type: ignore # Need ItemT/CompressedItemT typevars to be a Django protocol
 
-def default_cache_transformer(obj: ItemT) -> ItemT:
-    return obj
+def default_cache_transformer(obj: ItemT) -> CacheItemT:
+    return obj  # type: ignore # Need a type assert that ItemT=CacheItemT
 
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
@@ -249,19 +261,19 @@ def default_cache_transformer(obj: ItemT) -> ItemT:
 #   function of the objects, not the objects themselves)
 def generic_bulk_cached_fetch(
         cache_key_function: Callable[[ObjKT], str],
-        query_function: Callable[[List[ObjKT]], Iterable[Any]],
+        query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
         object_ids: Iterable[ObjKT],
-        extractor: Callable[[CompressedItemT], ItemT] = default_extractor,
-        setter: Callable[[ItemT], CompressedItemT] = default_setter,
+        extractor: Callable[[CompressedItemT], CacheItemT] = default_extractor,
+        setter: Callable[[CacheItemT], CompressedItemT] = default_setter,
         id_fetcher: Callable[[ItemT], ObjKT] = default_id_fetcher,
-        cache_transformer: Callable[[ItemT], ItemT] = default_cache_transformer
-) -> Dict[ObjKT, ItemT]:
+        cache_transformer: Callable[[ItemT], CacheItemT] = default_cache_transformer,
+) -> Dict[ObjKT, CacheItemT]:
     cache_keys = {}  # type: Dict[ObjKT, str]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
     cached_objects_compressed = cache_get_many([cache_keys[object_id]
                                                 for object_id in object_ids])  # type: Dict[str, Tuple[CompressedItemT]]
-    cached_objects = {}  # type: Dict[str, ItemT]
+    cached_objects = {}  # type: Dict[str, CacheItemT]
     for (key, val) in cached_objects_compressed.items():
         cached_objects[key] = extractor(cached_objects_compressed[key][0])
     needed_ids = [object_id for object_id in object_ids if
