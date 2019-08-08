@@ -156,6 +156,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "puppet-lint",
     "netcat",               # Used for flushing memcached
     "libfontconfig1",       # Required by phantomjs
+    "default-jre-headless",  # Required by vnu-jar
 ] + VENV_DEPENDENCIES + THUMBOR_VENV_DEPENDENCIES
 
 COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
