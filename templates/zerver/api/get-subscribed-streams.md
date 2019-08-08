@@ -37,11 +37,18 @@ curl -X GET {{ api_url }}/v1/users/me/subscriptions \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY
 ```
 
+You may pass the `include_subscribers` query parameter as follows:
+
+``` curl
+curl -X GET {{ api_url }}/v1/users/me/subscriptions?include_subscribers=true \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+```
+
 {end_tabs}
 
 ## Arguments
 
-This request takes no arguments.
+{generate_api_arguments_table|zulip.yaml|/users/me/subscriptions:get}
 
 ## Response
 
@@ -55,7 +62,7 @@ This request takes no arguments.
     * `invite-only`: Specifies whether a stream is private or not.
       Only people who have been invited can access a private stream.
     * `subscribers`: A list of email addresses of users who are also subscribed
-      to a given stream.
+      to a given stream. Included only if `include_subscribers` is `true`.
     * `desktop_notifications`: A boolean specifiying whether desktop notifications
       are enabled for the given stream.
     * `push_notifications`: A boolean specifiying whether push notifications

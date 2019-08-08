@@ -4736,20 +4736,28 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             sorted(unsubscribed, key=lambda x: x['name']),
             sorted(never_subscribed, key=lambda x: x['name']))
 
-def gather_subscriptions(user_profile: UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(user_profile)
-    user_ids = set()
-    for subs in [subscribed, unsubscribed, never_subscribed]:
-        for sub in subs:
-            if 'subscribers' in sub:
-                for subscriber in sub['subscribers']:
-                    user_ids.add(subscriber)
-    email_dict = get_emails_from_user_ids(list(user_ids))
+def gather_subscriptions(
+    user_profile: UserProfile,
+    include_subscribers: bool=False,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    subscribed, unsubscribed, _ = gather_subscriptions_helper(
+        user_profile, include_subscribers=include_subscribers)
 
-    for subs in [subscribed, unsubscribed]:
-        for sub in subs:
-            if 'subscribers' in sub:
-                sub['subscribers'] = sorted([email_dict[user_id] for user_id in sub['subscribers']])
+    if include_subscribers:
+        user_ids = set()
+        for subs in [subscribed, unsubscribed]:
+            for sub in subs:
+                if 'subscribers' in sub:
+                    for subscriber in sub['subscribers']:
+                        user_ids.add(subscriber)
+        email_dict = get_emails_from_user_ids(list(user_ids))
+
+        for subs in [subscribed, unsubscribed]:
+            for sub in subs:
+                if 'subscribers' in sub:
+                    sub['subscribers'] = sorted([
+                        email_dict[user_id] for user_id in sub['subscribers']
+                    ])
 
     return (subscribed, unsubscribed)
 

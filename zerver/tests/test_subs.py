@@ -3515,9 +3515,10 @@ class GetSubscribersTest(ZulipTestCase):
         self.assert_user_got_subscription_notification(msg)
 
         with queries_captured() as queries:
-            subscriptions = gather_subscriptions(self.user_profile)
-        self.assertTrue(len(subscriptions[0]) >= 11)
-        for sub in subscriptions[0]:
+            subscribed_streams, _ = gather_subscriptions(
+                self.user_profile, include_subscribers=True)
+        self.assertTrue(len(subscribed_streams) >= 11)
+        for sub in subscribed_streams:
             if not sub["name"].startswith("stream_"):
                 continue
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
@@ -3695,10 +3696,11 @@ class GetSubscribersTest(ZulipTestCase):
         self.assert_json_success(ret)
 
         with queries_captured() as queries:
-            subscriptions = gather_subscriptions(mit_user_profile)
+            subscribed_streams, _ = gather_subscriptions(
+                mit_user_profile, include_subscribers=True)
 
-        self.assertTrue(len(subscriptions[0]) >= 2)
-        for sub in subscriptions[0]:
+        self.assertTrue(len(subscribed_streams) >= 2)
+        for sub in subscribed_streams:
             if not sub["name"].startswith("mit_"):
                 raise AssertionError("Unexpected stream!")
             if sub["name"] == "mit_invite_only":
@@ -3752,11 +3754,12 @@ class GetSubscribersTest(ZulipTestCase):
     def test_json_get_subscribers(self) -> None:
         """
         json_get_subscribers in zerver/views/streams.py
-        also returns the list of subscribers for a stream.
+        also returns the list of subscribers for a stream, when requested.
         """
         stream_name = gather_subscriptions(self.user_profile)[0][0]['name']
         stream_id = get_stream(stream_name, self.user_profile.realm).id
-        expected_subscribers = gather_subscriptions(self.user_profile)[0][0]['subscribers']
+        expected_subscribers = gather_subscriptions(
+            self.user_profile, include_subscribers=True)[0][0]['subscribers']
         result = self.client_get("/json/streams/%d/members" % (stream_id,))
         self.assert_json_success(result)
         result_dict = result.json()
