@@ -1,7 +1,9 @@
-from typing import Dict, Any, Optional, Iterable, Callable
+from typing import Dict, Any, Optional, Iterable, Callable, Set
 
 import json
 import os
+import sys
+from functools import wraps
 
 from zerver.lib import mdiff
 from zerver.lib.openapi import validate_against_openapi_schema
@@ -12,15 +14,26 @@ ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 FIXTURE_PATH = os.path.join(ZULIP_DIR, 'templates', 'zerver', 'api', 'fixtures.json')
 
 TEST_FUNCTIONS = dict()  # type: Dict[str, Callable[..., None]]
+REGISTERED_TEST_FUNCTIONS = set()  # type: Set[str]
+CALLED_TEST_FUNCTIONS = set()  # type: Set[str]
 
 def openapi_test_function(endpoint: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """ A very simple decorator that just takes attendance of which openapi test functions are
-    being used for which endpoint. While this may be slower than hardcoding a dictionary, it's
-    easier to maintain.
-        Example usage: @openapi_test_function("/messages/render:post") """
+    """This decorator is used to register an openapi test function with
+    its endpoint. Example usage:
+
+    @openapi_test_function("/messages/render:post")
+    def ...
+    """
     def wrapper(test_func: Callable[..., Any]) -> Callable[..., Any]:
-        TEST_FUNCTIONS[endpoint] = test_func
-        return test_func
+        @wraps(test_func)
+        def _record_calls_wrapper(*args: Any, **kwargs: Any) -> Any:
+            CALLED_TEST_FUNCTIONS.add(test_func.__name__)
+            return test_func(*args, **kwargs)
+
+        REGISTERED_TEST_FUNCTIONS.add(test_func.__name__)
+        TEST_FUNCTIONS[endpoint] = _record_calls_wrapper
+
+        return _record_calls_wrapper
     return wrapper
 
 def load_api_fixtures():
@@ -1150,3 +1163,9 @@ def test_the_api(client, nonadmin_client):
     test_queues(client)
     test_server_organizations(client)
     test_errors(client)
+
+    sys.stdout.flush()
+    if REGISTERED_TEST_FUNCTIONS != CALLED_TEST_FUNCTIONS:
+        print("Error!  Some @openapi_test_function tests were never called:")
+        print("  ", REGISTERED_TEST_FUNCTIONS - CALLED_TEST_FUNCTIONS)
+        sys.exit(1)
