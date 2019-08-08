@@ -8,6 +8,8 @@ class zulip::app_frontend_base {
   $web_packages = [
     # Needed to access our database
     "postgresql-client-${zulip::base::postgres_version}",
+    # Needed for Slack import
+    'unzip',
   ]
   zulip::safepackage { $web_packages: ensure => 'installed' }
 

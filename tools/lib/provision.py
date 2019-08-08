@@ -147,6 +147,7 @@ COMMON_DEPENDENCIES = [
     "gettext",              # Used by makemessages i18n
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "moreutils",            # Used for sponge command
+    "unzip",                # Needed for Slack import
 ]
 
 UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
