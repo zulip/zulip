@@ -180,8 +180,16 @@ def update_stream_backend(
         do_change_stream_invite_only(stream, is_private, history_public_to_subscribers)
     return json_success()
 
-def list_subscriptions_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
+@has_request_variables
+def list_subscriptions_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    include_subscribers: bool=REQ(validator=check_bool, default=False),
+) -> HttpResponse:
+    subscribed, _ = gather_subscriptions(
+        user_profile, include_subscribers=include_subscribers
+    )
+    return json_success({"subscriptions": subscribed})
 
 FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Union[int, Iterable[Any]]]]
 

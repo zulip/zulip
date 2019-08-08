@@ -1210,6 +1210,16 @@ paths:
   /users/me/subscriptions:
     get:
       description: Get information on every stream the user is subscribed to.
+      parameters:
+      - name: include_subscribers
+        in: query
+        description: Set to `true` if you would like each stream's info to include a
+          list of current subscribers to that stream. (This may be significantly slower
+          in organizations with thousands of users.)
+        schema:
+          type: boolean
+          default: false
+        example: true
       security:
       - basicAuth: []
       responses:
