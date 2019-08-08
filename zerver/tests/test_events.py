@@ -2763,13 +2763,13 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_export')),
             ('exports', check_list(check_dict_only([
                 ('id', check_int),
-                ('event_time', check_string),
+                ('export_time', check_float),
                 ('acting_user_id', check_int),
                 ('extra_data', check_dict_only([
                     ('export_path', check_string),
                     ('deleted_timestamp', equals(None))
                 ])),
-            ])))
+            ]))),
         ])
 
         do_change_is_admin(self.user_profile, True)

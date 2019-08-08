@@ -1709,7 +1709,7 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
     for export in all_exports:
         exports_dict[export.id] = dict(
             id=export.id,
-            event_time=export.event_time.ctime(),
+            export_time=export.event_time.timestamp(),
             acting_user_id=export.acting_user.id,
             extra_data=ujson.loads(export.extra_data)
         )
