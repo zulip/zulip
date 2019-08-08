@@ -418,7 +418,9 @@ exports.start_topic_edit = function (recipient_row) {
     if (topic === compose.empty_topic_placeholder()) {
         topic = '';
     }
-    form.find(".inline_topic_edit").val(topic).select().focus();
+    const inline_topic_edit = form.find(".inline_topic_edit");
+    inline_topic_edit.val(topic).select().focus();
+    composebox_typeahead.add_topic_edit_typeahead(inline_topic_edit);
 };
 
 exports.is_editing = function (id) {

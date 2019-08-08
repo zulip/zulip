@@ -790,6 +790,30 @@ exports.initialize_compose_typeahead = function (selector) {
     });
 };
 
+exports.add_topic_edit_typeahead = function (inline_edit_selector) {
+    inline_edit_selector.typeahead({
+        source: function () {
+            const parent_selector = inline_edit_selector.parents(".message-header-contents");
+            const href = parent_selector.children()[0].href;
+            const slug = href.split("/")[5];
+            const stream_name = stream_data.slug_to_name(slug);
+            return composebox_typeahead.topics_seen_for(stream_name);
+        },
+        items: 3,
+        fixed: true,
+        highlighter: function (item) {
+            return typeahead_helper.render_typeahead_item({ primary: item });
+        },
+        sorter: function (items) {
+            const sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
+            if (sorted.length > 0 && sorted.indexOf(this.query) === -1) {
+                sorted.unshift(this.query);
+            }
+            return sorted;
+        },
+    });
+};
+
 exports.initialize = function () {
     exports.update_emoji_data();
     select_on_focus("stream_message_recipient_stream");
