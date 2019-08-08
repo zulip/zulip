@@ -6,6 +6,7 @@ from zerver.data_import.slack import (
     get_slack_api_data,
     get_admin,
     get_user_timezone,
+    fetch_shared_channel_users,
     users_to_zerver_userprofile,
     get_subscription,
     channels_to_zerver_stream,
@@ -51,7 +52,7 @@ import logging
 import shutil
 import os
 import mock
-from mock import ANY
+from mock import ANY, call
 from typing import Any, Dict, List, Set, Tuple, Iterator
 
 def remove_folder(path: str) -> None:
@@ -91,6 +92,10 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_user_list_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ('Enter a valid token!',),)
 
+        with self.assertRaises(Exception) as invalid:
+            get_slack_api_data(slack_user_list_url, "members")
+        self.assertEqual(invalid.exception.args, ('Pass slack token in kwargs',),)
+
         token = 'status404'
         wrong_url = "https://slack.com/api/wrong"
         with self.assertRaises(Exception) as invalid:
@@ -129,6 +134,57 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
     @mock.patch("zerver.data_import.slack.get_data_file")
+    @mock.patch("zerver.data_import.slack.get_slack_api_data")
+    @mock.patch("zerver.data_import.slack.get_messages_iterator")
+    def test_fetch_shared_channel_users(self, messages_mock: mock.Mock, api_mock: mock.Mock,
+                                        data_file_mock: mock.Mock) -> None:
+        users = [{"id": "U061A1R2R"}, {"id": "U061A5N1G"}, {"id": "U064KUGRJ"}]
+        data_file_mock.side_effect = [
+            [
+                {"name": "general", "members": ["U061A1R2R", "U061A5N1G"]},
+                {"name": "sharedchannel", "members": ["U061A1R2R", "U061A3E0G"]}
+            ],
+            []
+        ]
+        api_mock.side_effect = [
+            {"id": "U061A3E0G", "team_id": "T6LARQE2Z"},
+            {"domain": "foreignteam1"},
+            {"id": "U061A8H1G", "team_id": "T7KJRQE8Y"},
+            {"domain": "foreignteam2"},
+        ]
+        messages_mock.return_value = [
+            {"user": "U061A1R2R"},
+            {"user": "U061A5N1G"},
+            {"user": "U061A8H1G"},
+        ]
+        slack_data_dir = self.fixture_file_name('', type='slack_fixtures')
+        fetch_shared_channel_users(users, slack_data_dir, "token")
+
+        # Normal users
+        self.assertEqual(len(users), 5)
+        self.assertEqual(users[0]["id"], "U061A1R2R")
+        self.assertEqual(users[0]["is_mirror_dummy"], False)
+        self.assertFalse("team_domain" in users[0])
+        self.assertEqual(users[1]["id"], "U061A5N1G")
+        self.assertEqual(users[2]["id"], "U064KUGRJ")
+
+        # Shared channel users
+        self.assertEqual(users[3]["id"], "U061A3E0G")
+        self.assertEqual(users[3]["team_domain"], "foreignteam1")
+        self.assertEqual(users[3]["is_mirror_dummy"], True)
+        self.assertEqual(users[4]["id"], "U061A8H1G")
+        self.assertEqual(users[4]["team_domain"], "foreignteam2")
+        self.assertEqual(users[4]["is_mirror_dummy"], True)
+
+        api_calls = [
+            call("https://slack.com/api/users.info", "user", token="token", user="U061A3E0G"),
+            call("https://slack.com/api/team.info", "team", token="token", team="T6LARQE2Z"),
+            call("https://slack.com/api/users.info", "user", token="token", user="U061A8H1G"),
+            call("https://slack.com/api/team.info", "team", token="token", team="T7KJRQE8Y")
+        ]
+        api_mock.assert_has_calls(api_calls, any_order=True)
+
+    @mock.patch("zerver.data_import.slack.get_data_file")
     def test_users_to_zerver_userprofile(self, mock_get_data_file: mock.Mock) -> None:
         custom_profile_field_user1 = {"Xf06054BBB": {"value": "random1"},
                                       "Xf023DSCdd": {"value": "employee"}}
@@ -138,6 +194,7 @@ class SlackImporter(ZulipTestCase):
                       "team_id": "T5YFFM2QY",
                       "name": "john",
                       "deleted": False,
+                      "is_mirror_dummy": False,
                       "real_name": "John Doe",
                       "profile": {"image_32": "", "email": "jon@gmail.com", "avatar_hash": "hash",
                                   "phone": "+1-123-456-77-868",
@@ -151,6 +208,7 @@ class SlackImporter(ZulipTestCase):
                       'name': 'Jane',
                       "real_name": "Jane Doe",
                       "deleted": False,
+                      "is_mirror_dummy": False,
                       "profile": {"image_32": "https://secure.gravatar.com/avatar/random.png",
                                   "fields": custom_profile_field_user2,
                                   "email": "jane@foo.com", "avatar_hash": "hash"}},
@@ -160,16 +218,26 @@ class SlackImporter(ZulipTestCase):
                       "real_name": "Bot",
                       "is_bot": True,
                       "deleted": False,
+                      "is_mirror_dummy": False,
                       "profile": {"image_32": "https://secure.gravatar.com/avatar/random1.png",
                                   "skype": "test_skype_name",
-                                  "email": "bot1@zulipchat.com", "avatar_hash": "hash"}}]
+                                  "email": "bot1@zulipchat.com", "avatar_hash": "hash"}},
+                     {"id": "UHSG7OPQN",
+                      "team_id": "T6LARQE2Z",
+                      'name': 'matt.perry',
+                      "color": '9d8eee',
+                      "is_bot": False,
+                      "is_app_user": False,
+                      "is_mirror_dummy": True,
+                      "team_domain": "foreignteam",
+                      "profile": {"image_32": "https://secure.gravatar.com/avatar/random6.png",
+                                  "avatar_hash": "hash", "first_name": "Matt", "last_name": "Perry",
+                                  "real_name": "Matt Perry", "display_name": "matt.perry", "team": "T6LARQE2Z"}}]
 
         mock_get_data_file.return_value = user_data
         # As user with slack_id 'U0CBK5KAT' is the primary owner, that user should be imported first
         # and hence has zulip_id = 1
-        test_added_users = {'U08RGD1RD': 1,
-                            'U0CBK5KAT': 0,
-                            'U09TYF5Sk': 2}
+        test_added_users = {'U08RGD1RD': 1, 'U0CBK5KAT': 0, 'U09TYF5Sk': 2, 'UHSG7OPQN': 3}
         slack_data_dir = './random_path'
         timestamp = int(timezone_now().timestamp())
         mock_get_data_file.return_value = user_data
@@ -196,19 +264,43 @@ class SlackImporter(ZulipTestCase):
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(added_users, test_added_users)
-        self.assertEqual(len(avatar_list), 3)
+        self.assertEqual(len(avatar_list), 4)
+
+        self.assertEqual(len(zerver_userprofile), 4)
+
+        self.assertEqual(zerver_userprofile[0]['is_staff'], False)
+        self.assertEqual(zerver_userprofile[0]['is_bot'], False)
+        self.assertEqual(zerver_userprofile[0]['is_active'], True)
+        self.assertEqual(zerver_userprofile[0]['is_mirror_dummy'], False)
+        self.assertEqual(zerver_userprofile[0]['is_realm_admin'], False)
+        self.assertEqual(zerver_userprofile[0]['enable_desktop_notifications'], True)
+        self.assertEqual(zerver_userprofile[0]['email'], 'jon@gmail.com')
+        self.assertEqual(zerver_userprofile[0]['full_name'], 'John Doe')
 
         self.assertEqual(zerver_userprofile[1]['id'], test_added_users['U0CBK5KAT'])
-        self.assertEqual(len(zerver_userprofile), 3)
-        self.assertEqual(zerver_userprofile[1]['id'], 0)
         self.assertEqual(zerver_userprofile[1]['is_realm_admin'], True)
         self.assertEqual(zerver_userprofile[1]['is_staff'], False)
         self.assertEqual(zerver_userprofile[1]['is_active'], True)
-        self.assertEqual(zerver_userprofile[0]['is_staff'], False)
-        self.assertEqual(zerver_userprofile[0]['is_bot'], False)
-        self.assertEqual(zerver_userprofile[0]['enable_desktop_notifications'], True)
+        self.assertEqual(zerver_userprofile[0]['is_mirror_dummy'], False)
+
+        self.assertEqual(zerver_userprofile[2]['id'], test_added_users['U09TYF5Sk'])
+        self.assertEqual(zerver_userprofile[2]['is_bot'], True)
+        self.assertEqual(zerver_userprofile[2]['is_active'], True)
+        self.assertEqual(zerver_userprofile[2]['is_mirror_dummy'], False)
+        self.assertEqual(zerver_userprofile[2]['email'], 'bot1@zulipchat.com')
         self.assertEqual(zerver_userprofile[2]['bot_type'], 1)
         self.assertEqual(zerver_userprofile[2]['avatar_source'], 'U')
+
+        self.assertEqual(zerver_userprofile[3]['id'], test_added_users['UHSG7OPQN'])
+        self.assertEqual(zerver_userprofile[3]['is_realm_admin'], False)
+        self.assertEqual(zerver_userprofile[3]['is_staff'], False)
+        self.assertEqual(zerver_userprofile[3]['is_active'], False)
+        self.assertEqual(zerver_userprofile[3]['email'], 'matt.perry@foreignteam.slack.com')
+        self.assertEqual(zerver_userprofile[3]['realm'], 1)
+        self.assertEqual(zerver_userprofile[3]['full_name'], 'Matt Perry')
+        self.assertEqual(zerver_userprofile[3]['short_name'], 'matt.perry')
+        self.assertEqual(zerver_userprofile[3]['is_mirror_dummy'], True)
+        self.assertEqual(zerver_userprofile[3]['is_api_super_user'], False)
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1
@@ -266,7 +358,7 @@ class SlackImporter(ZulipTestCase):
             added_recipient = channels_to_zerver_stream(self.fixture_file_name("", "slack_fixtures"), realm_id,
                                                         {"zerver_userpresence": []}, added_users, zerver_userprofile)
 
-        test_added_channels = {'feedback': ("C061A0HJG", 3), 'general': ("C061A0YJG", 1),
+        test_added_channels = {'sharedchannel': ("C061A0HJG", 3), 'general': ("C061A0YJG", 1),
                                'general1': ("C061A0YJP", 2), 'random': ("C061A0WJG", 0)}
         test_added_mpims = {'mpdm-user9--user2--user10-1': ('G9HBG2A5D', 0),
                             'mpdm-user6--user7--user4-1': ('G6H1Z0ZPS', 1),

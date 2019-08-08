@@ -187,7 +187,8 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         userprofile = UserProfile(
             full_name=get_user_full_name(user),
             short_name=user['name'],
-            is_active=not user['deleted'],
+            is_active=not user.get('deleted', False) and not user["is_mirror_dummy"],
+            is_mirror_dummy=user["is_mirror_dummy"],
             id=user_id,
             email=email,
             delivery_email=email,
@@ -287,6 +288,8 @@ def process_customprofilefields(customprofilefield: List[ZerverFieldsT],
 def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     if 'email' in user['profile']:
         return user['profile']['email']
+    if user['is_mirror_dummy']:
+        return "{}@{}.slack.com".format(user["name"], user["team_domain"])
     if 'bot_id' in user['profile']:
         if 'real_name_normalized' in user['profile']:
             slack_bot_name = user['profile']['real_name_normalized']
@@ -609,7 +612,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
     return total_reactions, total_uploads, total_attachments
 
-def get_messages_iterator(slack_data_dir: str, added_channels: AddedChannelsT,
+def get_messages_iterator(slack_data_dir: str, added_channels: Dict[str, Any],
                           added_mpims: AddedMPIMsT, dm_members: DMMembersT) -> Iterator[ZerverFieldsT]:
     """This function is an iterator that returns all the messages across
        all Slack channels, in order by timestamp.  It's important to
@@ -950,6 +953,45 @@ def get_message_sending_user(message: ZerverFieldsT) -> Optional[str]:
         return message['file'].get('user')
     return None
 
+def fetch_shared_channel_users(user_list: List[ZerverFieldsT], slack_data_dir: str, token: str) -> None:
+    normal_user_ids = set()
+    mirror_dummy_user_ids = set()
+    added_channels = {}
+    team_id_to_domain = {}  # type: Dict[str, str]
+    for user in user_list:
+        user["is_mirror_dummy"] = False
+        normal_user_ids.add(user["id"])
+
+    public_channels = get_data_file(slack_data_dir + '/channels.json')
+    try:
+        private_channels = get_data_file(slack_data_dir + '/groups.json')
+    except FileNotFoundError:
+        private_channels = []
+    for channel in public_channels + private_channels:
+        added_channels[channel["name"]] = True
+        for user_id in channel["members"]:
+            if user_id not in normal_user_ids:
+                mirror_dummy_user_ids.add(user_id)
+
+    all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {})
+    for message in all_messages:
+        user_id = get_message_sending_user(message)
+        if user_id is None or user_id in normal_user_ids:
+            continue
+        mirror_dummy_user_ids.add(user_id)
+
+    # Fetch data on the mirror_dummy_user_ids from the Slack API (it's
+    # not included in the data export file).
+    for user_id in mirror_dummy_user_ids:
+        user = get_slack_api_data("https://slack.com/api/users.info", "user", token=token, user=user_id)
+        team_id = user["team_id"]
+        if team_id not in team_id_to_domain:
+            team = get_slack_api_data("https://slack.com/api/team.info", "team", token=token, team=team_id)
+            team_id_to_domain[team_id] = team["domain"]
+        user["team_domain"] = team_id_to_domain[team_id]
+        user["is_mirror_dummy"] = True
+        user_list.append(user)
+
 def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: int=6) -> None:
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
@@ -972,6 +1014,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     # We get the user data from the legacy token method of slack api, which is depreciated
     # but we use it as the user email data is provided only in this method
     user_list = get_slack_api_data("https://slack.com/api/users.list", "members", token=token)
+    fetch_shared_channel_users(user_list, slack_data_dir, token)
 
     # Get custom emoji from slack api
     custom_emoji_list = get_slack_api_data("https://slack.com/api/emoji.list", "emoji", token=token)
