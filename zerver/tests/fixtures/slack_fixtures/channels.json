@@ -43,10 +43,10 @@
     },
     {
         "id": "C061A0HJG",
-        "name": "feedback",
+        "name": "sharedchannel",
         "created": "1433558359",
         "is_general": false,
-        "members": ["U061A3E0G"],
+        "members": ["U061A3E0G", "U061A1R2R"],
         "is_archived": false,
         "topic": {
             "value": ""
