@@ -141,6 +141,11 @@ class AddNewUserHistoryTest(ZulipTestCase):
         self.send_stream_message(self.example_email('hamlet'), streams[0].name, "test")
         add_new_user_history(user_profile, streams)
 
+        # last_n_messages = 80
+        unreadmsgs = UserMessage.objects.filter(user_profile=user_profile)
+        for msg in unreadmsgs:
+            self.assertFalse(msg.flags.read.is_set)
+
 class InitialPasswordTest(ZulipTestCase):
     def test_none_initial_password_salt(self) -> None:
         with self.settings(INITIAL_PASSWORD_SALT=None):

@@ -310,6 +310,12 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     if len(message_ids_to_use) == 0:
         return
 
+    # flag last n messages as unread
+    # last_n_messages = 80  # currently set to 80
+    # mark_last_n_messages_as_unread = message_ids_to_use[-last_n_messages:]
+    UserMessage.objects.filter(user_profile=user_profile).update(
+        flags=F('flags').bitand(~UserMessage.flags.read))
+
     # Handle the race condition where a message arrives between
     # bulk_add_subscriptions above and the Message query just above
     already_ids = set(UserMessage.objects.filter(message_id__in=message_ids_to_use,
