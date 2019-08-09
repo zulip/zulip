@@ -5,7 +5,7 @@ import sys
 import mock
 import inspect
 import typing
-from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional, Iterable, Mapping
+from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional, Iterable, Mapping, Sequence
 from unittest.mock import patch, MagicMock
 
 from django.conf import settings
@@ -35,7 +35,7 @@ VARMAP = {
     'array': list,
     'Typing.List': list,
     'object': dict,
-    'NoneType': None,
+    'NoneType': type(None),
 }
 
 class OpenAPIToolsTest(ZulipTestCase):
@@ -76,7 +76,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 'msg': '',
                 'result': 'success',
                 'foo': 'bar'
-            }  # type: Dict[str, Any]
+            }  # type: Dict[str, object]
             validate_against_openapi_schema(bad_content,
                                             TEST_ENDPOINT,
                                             TEST_METHOD,
@@ -292,26 +292,26 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
                 msg += "\n + {}".format(undocumented_path)
             raise AssertionError(msg)
 
-    def get_type_by_priority(self, types: List[Union[type, Tuple[type, type]]]) -> Union[type, Tuple[type, type]]:
+    def get_type_by_priority(self, types: Sequence[Union[type, Tuple[type, object]]]) -> Union[type, Tuple[type, object]]:
         priority = {list: 1, dict: 2, str: 3, int: 4, bool: 5}
         tyiroirp = {1: list, 2: dict, 3: str, 4: int, 5: bool}
         val = 6
         for t in types:
-            if type(t) is tuple:
+            if isinstance(t, tuple):
                 return t  # e.g. (list, dict) or (list ,str)
-            v = priority.get(t, 6)  # type: ignore # if t was a Tuple then we would have returned by this point
+            v = priority.get(t, 6)
             if v < val:
                 val = v
         return tyiroirp.get(val, types[0])
 
-    def get_standardized_argument_type(self, t: Any) -> Union[type, Tuple[type, type]]:
+    def get_standardized_argument_type(self, t: Any) -> Union[type, Tuple[type, object]]:
         """ Given a type from the typing module such as List[str] or Union[str, int],
         convert it into a corresponding Python type. Unions are mapped to a canonical
         choice among the options.
         E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
         needs to be mapped to list."""
 
-        if sys.version[:3] == "3.5" and type(t) == typing.UnionMeta:  # nocoverage # in python3.6+
+        if sys.version_info < (3, 6) and type(t) == typing.UnionMeta:  # nocoverage # in python3.6+
             origin = Union
         else:  # nocoverage  # in python3.5. I.E. this is used in python3.6+
             origin = getattr(t, "__origin__", None)
@@ -322,7 +322,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
             return t
         elif origin == Union:
             subtypes = []
-            if sys.version[:3] == "3.5":  # nocoverage # in python3.6+
+            if sys.version_info < (3, 6):  # nocoverage # in python3.6+
                 args = t.__union_params__
             else:  # nocoverage # in python3.5
                 args = t.__args__
@@ -331,15 +331,15 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
             return self.get_type_by_priority(subtypes)
         elif origin in [List, Iterable]:
             subtypes = [self.get_standardized_argument_type(st) for st in t.__args__]
-            return (list, self.get_type_by_priority(subtypes))  # type: ignore # this might be a Tuple[Type[List[Any]], Union[type, Tuple[type, type]]] but that means that it's a Tuple[type, Union[type, Tuple[type, type]]] too.
+            return (list, self.get_type_by_priority(subtypes))
         elif origin in [Dict, Mapping]:
             return dict
         return self.get_standardized_argument_type(t.__args__[0])
 
     def render_openapi_type_exception(self, function:  Callable[..., HttpResponse],
-                                      openapi_params: Set[Tuple[str, Union[type, Tuple[type, type]]]],
-                                      function_params: Set[Tuple[str, Union[type, Tuple[type, type]]]],
-                                      diff: Set[Tuple[str, Union[type, Tuple[type, type]]]]) -> None:  # nocoverage
+                                      openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]],
+                                      function_params: Set[Tuple[str, Union[type, Tuple[type, object]]]],
+                                      diff: Set[Tuple[str, Union[type, Tuple[type, object]]]]) -> None:  # nocoverage
         """ Print a *VERY* clear and verbose error message for when the types
         (between the OpenAPI documentation and the function declaration) don't match. """
 
@@ -372,7 +372,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         OpenAPI data defines a different type than that actually accepted by the function.
         Otherwise, we print out the exact differences for convenient debugging and raise an
         AssertionError. """
-        openapi_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, type]]]]
+        openapi_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, object]]]]
         for element in openapi_parameters:
             name = element["name"]  # type: str
             _type = VARMAP[element["schema"]["type"]]
@@ -384,15 +384,15 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                         st = st["type"]
                         subtypes.append(VARMAP[st])
                     self.assertTrue(len(subtypes) > 1)
-                    sub_type = self.get_type_by_priority(subtypes)  # type: ignore # sub_type is not List[Optional[type]], it's a List[type], handled in above step.
+                    sub_type = self.get_type_by_priority(subtypes)
                 else:
-                    sub_type = VARMAP[element["schema"]["items"]["type"]]  # type: ignore # we handle the case of None in the next step.
+                    sub_type = VARMAP[element["schema"]["items"]["type"]]
                     self.assertIsNotNone(sub_type)
-                openapi_params.add((name, (_type, sub_type)))  # type: ignore # things are pretty dynamic at this point and we make some inferences so mypy gets confused.
+                openapi_params.add((name, (_type, sub_type)))
             else:
-                openapi_params.add((name, _type))  # type: ignore # in our given case, in this block, _type will always be a regular type.
+                openapi_params.add((name, _type))
 
-        function_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, type]]]]
+        function_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, object]]]]
 
         # Iterate through the decorators to find the original
         # function, wrapped by has_request_variables, so we can parse
@@ -626,7 +626,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
                 "brew": {}  # the data is irrelevant as is should be rejected.
             }
         }
-    }  # type: Dict[str, Any]
+    }  # type: Dict[str, object]
 
     spec_mock_using_object = {
         "paths": {
