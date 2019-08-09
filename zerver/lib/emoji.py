@@ -25,10 +25,10 @@ with open(EMOTICON_CONVERSIONS_PATH) as fp:
     EMOTICON_CONVERSIONS = ujson.load(fp)
 
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
-possible_emoticon_regexes = map(re.escape, possible_emoticons)  # type: ignore # AnyStr/str issues
-terminal_symbols = ',.;?!()\\[\\] "\'\\n\\t'  # type: str # from composebox_typeahead.js
+possible_emoticon_regexes = (re.escape(emoticon) for emoticon in possible_emoticons)
+terminal_symbols = ',.;?!()\\[\\] "\'\\n\\t'  # from composebox_typeahead.js
 emoticon_regex = ('(?<![^{0}])(?P<emoticon>('.format(terminal_symbols)
-                  + ')|('.join(possible_emoticon_regexes)  # type: ignore # AnyStr/str issues
+                  + ')|('.join(possible_emoticon_regexes)
                   + '))(?![^{0}])'.format(terminal_symbols))
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
