@@ -115,8 +115,9 @@ def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
 def get_user_mentions(token: str, users: List[ZerverFieldsT],
                       added_users: AddedUsersT) -> Tuple[str, Optional[int]]:
     slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
-    short_name = slack_usermention_match.group(4)  # type: ignore # slack_usermention_match exists and is not None
-    slack_id = slack_usermention_match.group(2)  # type: ignore # slack_usermention_match exists and is not None
+    assert slack_usermention_match is not None
+    short_name = slack_usermention_match.group(4)
+    slack_id = slack_usermention_match.group(2)
     for user in users:
         if (user['id'] == slack_id and user['name'] == short_name and short_name) or \
            (user['id'] == slack_id and short_name is None):
