@@ -14,8 +14,8 @@ server {
     listen 80;
     listen [::]:80;
 <% else -%>
-    listen <%= @nginx_listen_port %>;
-    listen [::]:<%= @nginx_listen_port %>;
+    listen <%= @nginx_listen_port %> http2;
+    listen [::]:<%= @nginx_listen_port %> http2;
 
     ssl on;
     ssl_certificate <%= @ssl_dir %>/certs/zulip.combined-chain.crt;
