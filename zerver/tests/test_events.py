@@ -187,7 +187,7 @@ class EventsEndpointTest(ZulipTestCase):
         self.assert_json_error(result, "Could not allocate event queue")
 
         return_event_queue = '15:11'
-        return_user_events = []  # type: (List[Any])
+        return_user_events = []  # type: List[Dict[str, Any]]
 
         # Test that call is made to deal with a returning soft deactivated user.
         with mock.patch('zerver.lib.events.reactivate_user_if_soft_deactivated') as fa:
@@ -479,7 +479,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-    def do_test(self, action: Callable[[], Any], event_types: Optional[List[str]]=None,
+    def do_test(self, action: Callable[[], object], event_types: Optional[List[str]]=None,
                 include_subscribers: bool=True, state_change_expected: bool=True,
                 notification_settings_null: bool=False,
                 client_gravatar: bool=False, num_events: int=1) -> List[Dict[str, Any]]:
@@ -642,7 +642,7 @@ class EventsRegisterTest(ZulipTestCase):
         )
 
     def test_stream_send_message_events(self) -> None:
-        def check_none(var_name: str, val: Any) -> Optional[str]:
+        def check_none(var_name: str, val: object) -> Optional[str]:
             assert(val is None)
             return None
 
@@ -2470,7 +2470,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('is_old_stream', check_bool),
         ]
         if include_subscribers:
-            subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore
+            subscription_fields.append(('subscribers', check_list(check_int)))
         subscription_schema_checker = check_list(
             check_dict_only(subscription_fields),
         )
@@ -2540,7 +2540,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
-        action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")  # type: Callable[[], Any]
+        action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")  # type: Callable[[], object]
         events = self.do_test(action, event_types=["subscription", "realm_user"],
                               include_subscribers=include_subscribers)
         error = add_schema_checker('events[0]', events[0])
@@ -3265,7 +3265,7 @@ class ClientDescriptorsTest(ZulipTestCase):
         # Setting users to `[]` bypasses code we don't care about
         # for this test--we assume client_info is correct in our mocks,
         # and we are interested in how messages are put on event queue.
-        users = []  # type: List[Any]
+        users = []  # type: List[Dict[str, Any]]
 
         with mock.patch('zerver.tornado.event_queue.get_client_info_for_message_event',
                         return_value=client_info):
