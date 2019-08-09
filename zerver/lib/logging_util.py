@@ -128,7 +128,7 @@ def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
     # The logging call should still be on the stack somewhere; search until
     # we find something in the same source file, and that should give the
     # right module name.
-    f = logging.currentframe()  # type: ignore  # Not in typeshed, and arguably shouldn't be
+    f = logging.currentframe()
     while f is not None:
         if f.f_code.co_filename == record.pathname:
             return f.f_globals.get('__name__')
