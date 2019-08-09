@@ -437,8 +437,7 @@ class PermissionTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         for field_dict in cordelia.profile_data:
             with self.subTest(field_name=field_dict['name']):
-                self.assertEqual(field_dict['value'], fields[field_dict['name']])  # type: ignore # Reason in comment
-            # Invalid index type for dict key, it must be str but field_dict values can be anything
+                self.assertEqual(field_dict['value'], fields[field_dict['name']])
 
         # Test admin user cannot set invalid profile data
         invalid_fields = [
