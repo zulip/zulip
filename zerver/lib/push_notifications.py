@@ -7,7 +7,7 @@ import lxml.html
 import re
 import time
 
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
@@ -32,6 +32,9 @@ from zerver.models import PushDeviceToken, Message, Recipient, \
     receives_online_notifications, get_user_profile_by_id, \
     ArchivedMessage
 
+if TYPE_CHECKING:
+    from apns2.client import APNsClient
+
 logger = logging.getLogger(__name__)
 
 if settings.ZILENCER_ENABLED:
@@ -53,10 +56,10 @@ def hex_to_b64(data: str) -> bytes:
 # Sending to APNs, for iOS
 #
 
-_apns_client = None  # type: Optional[Any]
+_apns_client = None  # type: Optional[APNsClient]
 _apns_client_initialized = False
 
-def get_apns_client() -> Any:
+def get_apns_client() -> 'Optional[APNsClient]':
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
     from apns2.client import APNsClient
@@ -110,10 +113,9 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
     # notification queue worker, it's best to only import them in the
     # code that needs them.
     from apns2.payload import Payload as APNsPayload
-    from apns2.client import APNsClient
     from hyper.http20.exceptions import HTTP20Error
 
-    client = get_apns_client()  # type: APNsClient
+    client = get_apns_client()
     if client is None:
         logger.debug("APNs: Dropping a notification because nothing configured.  "
                      "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
@@ -161,7 +163,7 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
         if result[0] == "Unregistered":
             # For some reason, "Unregistered" result values have a
             # different format, as a tuple of the pair ("Unregistered", 12345132131).
-            result = result[0]  # type: ignore # APNS API is inconsistent
+            result = result[0]
         if result == 'Success':
             logger.info("APNs: Success sending for user %d to device %s",
                         user_id, device.token)
@@ -550,7 +552,8 @@ def get_apns_alert_title(message: Message) -> str:
     On an iOS notification, this is the first bolded line.
     """
     if message.recipient.type == Recipient.HUDDLE:
-        recipients = cast(List[Dict[str, Any]], get_display_recipient(message.recipient))
+        recipients = get_display_recipient(message.recipient)
+        assert isinstance(recipients, list)
         return ', '.join(sorted(r['full_name'] for r in recipients))
     elif message.is_stream_message():
         return "#%s > %s" % (get_display_recipient(message.recipient), message.topic_name(),)
