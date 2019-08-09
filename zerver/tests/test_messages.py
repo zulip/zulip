@@ -632,7 +632,7 @@ class ExtractedRecipientsTest(TestCase):
         s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
         # sorted() gets confused by extract_recipients' return type
         # For testing, ignorance here is better than manual casting
-        result = sorted(extract_recipients(s))  # type: ignore
+        result = sorted(extract_recipients(s))
         self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # simple string with one name
@@ -645,12 +645,12 @@ class ExtractedRecipientsTest(TestCase):
 
         # bare comma-delimited string
         s = 'bob@zulip.com, alice@zulip.com'
-        result = sorted(extract_recipients(s))  # type: ignore
+        result = sorted(extract_recipients(s))
         self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
-        result = sorted(extract_recipients(s))  # type: ignore
+        result = sorted(extract_recipients(s))
         self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # Invalid data
@@ -669,7 +669,7 @@ class ExtractedRecipientsTest(TestCase):
     def test_extract_recipient_ids(self) -> None:
         # JSON list w/dups
         s = ujson.dumps([3, 3, 12])
-        result = sorted(extract_recipients(s))  # type: ignore
+        result = sorted(extract_recipients(s))
         self.assertEqual(result, [3, 12])
 
         # Invalid data
@@ -3016,7 +3016,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
                 create_mirrored_message_users(request, user, recipients)
 
     @mock.patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
-    def test_zephyr_mirror_new_recipient(self, ignored: Any) -> None:
+    def test_zephyr_mirror_new_recipient(self, ignored: object) -> None:
         """Test mirror dummy user creation for PM recipients"""
         client = get_client(name='zephyr_mirror')
 
@@ -3045,7 +3045,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertTrue(bob.is_mirror_dummy)
 
     @mock.patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
-    def test_zephyr_mirror_new_sender(self, ignored: Any) -> None:
+    def test_zephyr_mirror_new_sender(self, ignored: object) -> None:
         """Test mirror dummy user creation for sender when sending to stream"""
         client = get_client(name='zephyr_mirror')
 
