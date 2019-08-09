@@ -578,15 +578,6 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
 
 # The following functions are called from Django
 
-# Workaround to support the Python-requests 1.0 transition of .json
-# from a property to a function
-requests_json_is_function = callable(requests.Response.json)
-def extract_json_response(resp: requests.Response) -> Dict[str, Any]:
-    if requests_json_is_function:
-        return resp.json()
-    else:
-        return resp.json  # type: ignore # mypy trusts the stub, not the runtime type checking of this fn
-
 def request_event_queue(user_profile: UserProfile, user_client: Client, apply_markdown: bool,
                         client_gravatar: bool, queue_lifespan_secs: int,
                         event_types: Optional[Iterable[str]]=None,
@@ -620,11 +611,11 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
 
         resp.raise_for_status()
 
-        return extract_json_response(resp)['queue_id']
+        return resp.json()['queue_id']
 
     return None
 
-def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int) -> List[Dict[Any, Any]]:
+def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int) -> List[Dict[str, Any]]:
     if settings.TORNADO_SERVER:
         tornado_uri = get_tornado_uri(user_profile.realm)
         post_data = {
@@ -639,7 +630,7 @@ def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int
                                     data=post_data)
         resp.raise_for_status()
 
-        return extract_json_response(resp)['events']
+        return resp.json()['events']
     return []
 
 # Send email notifications to idle users
