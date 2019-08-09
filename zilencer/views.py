@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union
 import datetime
 import logging
 
@@ -26,16 +26,18 @@ from zerver.views.push_notifications import validate_token
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     RemoteRealmCount, RemoteInstallationCount
 
-def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> None:
+def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZulipServer:
     if not isinstance(entity, RemoteZulipServer):
         raise JsonableError(err_("Must validate with valid Zulip server API key"))
+    return entity
 
 def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer],
-                                   token: bytes, kind: int) -> None:
+                                   token: bytes, kind: int) -> RemoteZulipServer:
     if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.GCM]:
         raise JsonableError(err_("Invalid token type"))
-    validate_entity(entity)
+    server = validate_entity(entity)
     validate_token(token, kind)
+    return server
 
 @csrf_exempt
 @require_post
@@ -85,8 +87,7 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
                                 user_id: int=REQ(), token: bytes=REQ(),
                                 token_kind: int=REQ(validator=check_int),
                                 ios_app_id: Optional[str]=None) -> HttpResponse:
-    validate_bouncer_token_request(entity, token, token_kind)
-    server = cast(RemoteZulipServer, entity)
+    server = validate_bouncer_token_request(entity, token, token_kind)
 
     try:
         with transaction.atomic():
@@ -109,8 +110,7 @@ def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfil
                                   token_kind: int=REQ(validator=check_int),
                                   user_id: int=REQ(),
                                   ios_app_id: Optional[str]=None) -> HttpResponse:
-    validate_bouncer_token_request(entity, token, token_kind)
-    server = cast(RemoteZulipServer, entity)
+    server = validate_bouncer_token_request(entity, token, token_kind)
     deleted = RemotePushDeviceToken.objects.filter(token=token,
                                                    kind=token_kind,
                                                    user_id=user_id,
@@ -123,8 +123,7 @@ def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfil
 @has_request_variables
 def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                               payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
-    validate_entity(entity)
-    server = cast(RemoteZulipServer, entity)
+    server = validate_entity(entity)
 
     user_id = payload['user_id']
     gcm_payload = payload['gcm_payload']
@@ -181,8 +180,7 @@ def remote_server_post_analytics(request: HttpRequest,
                                          ('subgroup', check_none_or(check_string)),
                                          ('value', check_int),
                                      ])))) -> HttpResponse:
-    validate_entity(entity)
-    server = cast(RemoteZulipServer, entity)
+    server = validate_entity(entity)
 
     validate_count_stats(server, RemoteRealmCount, realm_counts)
     validate_count_stats(server, RemoteInstallationCount, installation_counts)
@@ -239,8 +237,7 @@ def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
 @has_request_variables
 def remote_server_check_analytics(request: HttpRequest,
                                   entity: Union[UserProfile, RemoteZulipServer]) -> HttpResponse:
-    validate_entity(entity)
-    server = cast(RemoteZulipServer, entity)
+    server = validate_entity(entity)
 
     result = {
         'last_realm_count_id': get_last_id_from_server(server, RemoteRealmCount),
