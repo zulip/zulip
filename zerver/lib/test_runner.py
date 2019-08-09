@@ -3,7 +3,7 @@ import random
 
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Type, TypeVar, Union
-from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
+from unittest import loader, runner
 from unittest.result import TestResult
 
 from django.conf import settings
@@ -55,13 +55,13 @@ def slow(slowness_reason: str) -> Callable[[Callable[..., ReturnT]], Callable[..
     as attributes of the function.  Other code can use this annotation
     as needed, e.g. to exclude these tests in "fast" mode.
     '''
-    def decorator(f: Any) -> ReturnT:
-        f.slowness_reason = slowness_reason
+    def decorator(f: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
+        setattr(f, 'slowness_reason', slowness_reason)
         return f
 
     return decorator
 
-def is_known_slow_test(test_method: Any) -> bool:
+def is_known_slow_test(test_method: Callable[..., ReturnT]) -> bool:
     return hasattr(test_method, 'slowness_reason')
 
 def full_test_name(test: TestCase) -> str:
@@ -94,7 +94,7 @@ def report_slow_tests() -> None:
             print('      consider removing @slow decorator')
             print('      This may no longer be true: %s' % (slowness_reason,))
 
-def enforce_timely_test_completion(test_method: Any, test_name: str,
+def enforce_timely_test_completion(test_method: Callable[..., ReturnT], test_name: str,
                                    delay: float, result: unittest.TestResult) -> None:
     if hasattr(test_method, 'slowness_reason'):
         max_delay = 2.0  # seconds
@@ -126,7 +126,7 @@ def run_test(test: TestCase, result: TestResult) -> bool:
 
     if not hasattr(test, "_pre_setup"):
         msg = "Test doesn't have _pre_setup; something is wrong."
-        error_pre_setup = (Exception, Exception(msg), None)  # type: Tuple[Any, Any, Any]
+        error_pre_setup = (Exception, Exception(msg), None)
         result.addError(test, error_pre_setup)
         return True
     test._pre_setup()
@@ -226,7 +226,7 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
 from django.db.backends.postgresql.creation import DatabaseCreation
 def _replacement_destroy_test_db(self: DatabaseCreation,
                                  test_database_name: str,
-                                 verbosity: Any) -> None:
+                                 verbosity: int) -> None:
     """Replacement for Django's _destroy_test_db that removes the
     unnecessary sleep(1)."""
     with self.connection._nodb_connection.cursor() as cursor:
