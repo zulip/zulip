@@ -119,18 +119,16 @@ def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
         # work, and connections to 127.0.0.1 are secure without SSL.
         verify_ssl = False
 
-    request_context = {}
-    if not verify_ssl and sys.version_info > (2, 7, 9):
-        # Python version below 2.7.9 doesn't support request context
-        # and doesn't check ssl certificates.
-        request_context['context'] = ssl.create_default_context()
-        request_context['context'].check_hostname = False
-        request_context['context'].verify_mode = ssl.CERT_NONE
+    context = None
+    if not verify_ssl:
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
     data = {"data": json.dumps(request_data),
             "secret": shared_secret}
     req = Request(url=urljoin(host, url), data=urlencode(data).encode('utf8'))
     try:
-        urlopen(req, **request_context)  # type: ignore # urllib.request
+        urlopen(req, context=context)
     except HTTPError as err:
         process_response_error(err)
 
