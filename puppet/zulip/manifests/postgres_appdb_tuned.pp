@@ -12,9 +12,6 @@ class zulip::postgres_appdb_tuned {
     'redhat' => "systemctl restart postgresql-${zulip::base::postgres_version}",
   }
 
-  $half_memory = $zulip::base::total_memory / 2
-  $half_memory_pages = $half_memory / 4096
-
   $work_mem = $zulip::base::total_memory_mb / 512
   $shared_buffers = $zulip::base::total_memory_mb / 8
   $effective_cache_size = $zulip::base::total_memory_mb * 10 / 32
