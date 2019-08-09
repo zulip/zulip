@@ -60,13 +60,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   ubuntu_mirror = ""
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  if (/darwin/ =~ RUBY_PLATFORM) != nil
-    config.vm.synced_folder ".", "/srv/zulip", type: "nfs",
-        linux__nfs_options: ['rw']
-    config.vm.network "private_network", type: "dhcp"
-  else
-    config.vm.synced_folder ".", "/srv/zulip"
-  end
+  config.vm.synced_folder ".", "/srv/zulip"
 
   vagrant_config_file = ENV['HOME'] + "/.zulip-vagrant-config"
   if File.file?(vagrant_config_file)
