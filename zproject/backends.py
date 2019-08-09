@@ -792,7 +792,7 @@ def social_auth_finish(backend: Any,
     # being incorrectly authenticated.
     assert return_data.get('valid_attestation') is True
 
-    strategy = backend.strategy  # type: ignore # This comes from Python Social Auth.
+    strategy = backend.strategy
     email_address = return_data['validated_email']
     full_name = return_data['full_name']
     is_signup = strategy.session_get('is_signup') == '1'
