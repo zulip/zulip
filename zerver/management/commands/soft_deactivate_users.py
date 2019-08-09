@@ -10,8 +10,8 @@ from zerver.lib.soft_deactivation import do_soft_activate_users, \
     do_soft_deactivate_users, do_auto_soft_deactivate_users, logger
 from zerver.models import Realm, UserProfile
 
-def get_users_from_emails(emails: Any,
-                          filter_kwargs: Any) -> List[UserProfile]:
+def get_users_from_emails(emails: List[str],
+                          filter_kwargs: Dict[str, Realm]) -> List[UserProfile]:
     users = UserProfile.objects.filter(
         email__in=emails,
         **filter_kwargs)
@@ -45,13 +45,13 @@ class Command(ZulipBaseCommand):
         parser.add_argument('users', metavar='<users>', type=str, nargs='*', default=[],
                             help="A list of user emails to soft activate/deactivate.")
 
-    def handle(self, *args: Any, **options: str) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         if settings.STAGING:
             print('This is a Staging server. Suppressing management command.')
             sys.exit(0)
 
         realm = self.get_realm(options)
-        user_emails = options['users']  # type: ignore  # mypy thinks this is a str, not List[str] #
+        user_emails = options['users']
         activate = options['activate']
         deactivate = options['deactivate']
 
