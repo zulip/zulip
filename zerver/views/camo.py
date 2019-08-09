@@ -7,7 +7,7 @@ from django.http import (
 from zerver.lib.camo import is_camo_url_valid
 from zerver.lib.thumbnail import generate_thumbnail_url
 
-import codecs
+import binascii
 
 def handle_camo_url(request: HttpRequest, digest: str,
                     received_url: str) -> HttpResponse:
@@ -15,8 +15,8 @@ def handle_camo_url(request: HttpRequest, digest: str,
         return HttpResponseNotFound()
 
     hex_encoded_url = received_url.encode('utf-8')
-    hex_decoded_url = codecs.decode(hex_encoded_url, 'hex')
-    original_url = hex_decoded_url.decode('utf-8')  # type: ignore # https://github.com/python/typeshed/issues/300
+    hex_decoded_url = binascii.a2b_hex(hex_encoded_url)
+    original_url = hex_decoded_url.decode('utf-8')
     if is_camo_url_valid(digest, original_url):
         return redirect(generate_thumbnail_url(original_url, is_camo_url=True))
     else:
