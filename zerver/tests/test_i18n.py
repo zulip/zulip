@@ -93,7 +93,7 @@ class TranslationTestCase(ZulipTestCase):
         for lang, word in languages:
             # Applying str function to LANGUAGE_COOKIE_NAME to convert unicode
             # into an ascii otherwise SimpleCookie will raise an exception
-            self.client.cookies = SimpleCookie({str(settings.LANGUAGE_COOKIE_NAME): lang})  # type: ignore # https://github.com/python/typeshed/issues/1476
+            self.client.cookies = SimpleCookie({str(settings.LANGUAGE_COOKIE_NAME): lang})
 
             response = self.fetch('get', '/integrations/', 200)
             self.assert_in_response(word, response)
