@@ -32,7 +32,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
     def test_process_success_response(self) -> None:
         class Stub:
             def __init__(self, text: str) -> None:
-                self.text = text  # type: ignore
+                self.text = text
 
         def make_response(text: str) -> requests.Response:
             return cast(requests.Response, Stub(text=text))
