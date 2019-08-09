@@ -139,7 +139,7 @@ if FAKE_LDAP_MODE:
         AUTH_LDAP_USER_ATTR_MAP = {
             "full_name": "cn",
         }
-    AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPAuthBackend',)  # type: ignore # tuple hackery
+    AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPAuthBackend',)
 
 THUMBOR_URL = 'http://127.0.0.1:9995'
 THUMBNAIL_IMAGES = True
