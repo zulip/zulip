@@ -1842,7 +1842,7 @@ def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
     else:
         return get_personal_recipient(list(recipient_profile_ids)[0])
 
-def validate_recipient_user_profiles(user_profiles: List[UserProfile],
+def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
                                      sender: UserProfile,
                                      allow_deactivated: bool=False) -> Set[int]:
     recipient_profile_ids = set()
@@ -1904,7 +1904,7 @@ def recipient_for_user_ids(user_ids: Iterable[int], sender: UserProfile) -> Reci
         sender=sender
     )
 
-def recipient_for_user_profiles(user_profiles: List[UserProfile], forwarded_mirror_message: bool,
+def recipient_for_user_profiles(user_profiles: Sequence[UserProfile], forwarded_mirror_message: bool,
                                 forwarder_user_profile: Optional[UserProfile],
                                 sender: UserProfile, allow_deactivated: bool=False) -> Recipient:
 

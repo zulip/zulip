@@ -91,9 +91,10 @@ class Addressee:
     def is_private(self) -> bool:
         return self._msg_type == 'private'
 
-    def user_profiles(self) -> List[UserProfile]:
+    def user_profiles(self) -> Sequence[UserProfile]:
         assert(self.is_private())
-        return self._user_profiles  # type: ignore # assertion protects us
+        assert self._user_profiles is not None
+        return self._user_profiles
 
     def stream(self) -> Optional[Stream]:
         assert(self.is_stream())
