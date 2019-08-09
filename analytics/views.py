@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from typing import Any, Callable, Dict, List, \
-    Optional, Set, Tuple, Type, Union, cast
+    Optional, Set, Tuple, Type, Union
 
 import pytz
 from django.conf import settings
@@ -264,7 +264,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
     id_value = {
         InstallationCount: -1,
         RealmCount: realm.id,
-        RemoteInstallationCount: cast(RemoteZulipServer, server).id if server is not None else None,
+        RemoteInstallationCount: server.id if server is not None else None,
         # TODO: RemoteRealmCount logic doesn't correctly handle
         # filtering by server_id as well.
         RemoteRealmCount: remote_realm_id,
