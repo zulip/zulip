@@ -12,6 +12,8 @@ ARCH=amd64  # TODO: maybe i686 too
 case "$RELEASE" in
     xenial) extra_packages=(virtualenv postgresql-9.5)
         ;;
+    bionic) extra_packages=(virtualenv postgresql-10)
+        ;;
     *)
         echo "error: unsupported target release: $RELEASE" >&2
         exit 1
