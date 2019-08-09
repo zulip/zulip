@@ -8,7 +8,7 @@ JSON data for the /team page contributors section.
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union
 from typing_extensions import TypedDict
 
 import os
@@ -118,7 +118,8 @@ def run_production() -> None:
             duplicate_commits = json.loads(f.read())
             for committer in duplicate_commits:
                 if committer in contribs_list and contribs_list[committer].get('server'):
-                    total_commits = cast(int, contribs_list[committer]['server'])
+                    total_commits = contribs_list[committer]['server']
+                    assert isinstance(total_commits, int)
                     duplicate_commits_count = duplicate_commits[committer]
                     original_commits = total_commits - duplicate_commits_count
                     contribs_list[committer]['server'] = original_commits
