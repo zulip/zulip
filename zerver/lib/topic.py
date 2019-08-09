@@ -63,7 +63,7 @@ def REQ_topic() -> Optional[str]:
         aliases=['subject'],
         converter=lambda x: x.strip(),
         default=None,
-    )  # type: ignore # see comment above
+    )
 
 '''
 TRY TO KEEP THIS DIVIDING LINE.
