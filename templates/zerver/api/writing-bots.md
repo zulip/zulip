@@ -32,7 +32,7 @@ On this page you'll find:
 
 *Hint: `provision` installs the `zulip`, `zulip_bots`, and
  `zulip_botserver` packages in developer mode. This enables you to
- make modify these packages and then run your modified code without
+ modify these packages and then run your modified code without
  having to first re-install the packages or re-provision.*
 
 ## Writing a bot
