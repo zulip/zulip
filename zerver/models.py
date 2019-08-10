@@ -1430,8 +1430,6 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         #
         # But chaining __in and __iexact doesn't work with Django's
         # ORM, so we have the following hack to construct the relevant where clause
-        if len(stream_names) == 0:
-            return []
         upper_list = ", ".join(["UPPER(%s)"] * len(stream_names))
         where_clause = "UPPER(zerver_stream.name::text) IN (%s)" % (upper_list,)
         return get_active_streams(realm.id).select_related("realm").extra(

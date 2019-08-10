@@ -10,7 +10,7 @@ from django.core.cache.backends.base import BaseCache
 from django.http import HttpRequest
 
 from typing import Any, Callable, Dict, Iterable, List, \
-    Optional, TypeVar, Tuple, TYPE_CHECKING
+    Optional, Sequence, TypeVar, Tuple, TYPE_CHECKING
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import time
@@ -262,12 +262,16 @@ def default_cache_transformer(obj: ItemT) -> CacheItemT:
 def generic_bulk_cached_fetch(
         cache_key_function: Callable[[ObjKT], str],
         query_function: Callable[[List[ObjKT]], Iterable[ItemT]],
-        object_ids: Iterable[ObjKT],
+        object_ids: Sequence[ObjKT],
         extractor: Callable[[CompressedItemT], CacheItemT] = default_extractor,
         setter: Callable[[CacheItemT], CompressedItemT] = default_setter,
         id_fetcher: Callable[[ItemT], ObjKT] = default_id_fetcher,
         cache_transformer: Callable[[ItemT], CacheItemT] = default_cache_transformer,
 ) -> Dict[ObjKT, CacheItemT]:
+    if len(object_ids) == 0:
+        # Nothing to fetch.
+        return {}
+
     cache_keys = {}  # type: Dict[ObjKT, str]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
@@ -278,7 +282,12 @@ def generic_bulk_cached_fetch(
         cached_objects[key] = extractor(cached_objects_compressed[key][0])
     needed_ids = [object_id for object_id in object_ids if
                   cache_keys[object_id] not in cached_objects]
-    db_objects = query_function(needed_ids)
+
+    # Only call query_function if there are some ids to fetch from the database:
+    if len(needed_ids) > 0:
+        db_objects = query_function(needed_ids)
+    else:
+        db_objects = []
 
     items_for_remote_cache = {}  # type: Dict[str, Tuple[CompressedItemT]]
     for obj in db_objects:

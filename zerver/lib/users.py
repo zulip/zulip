@@ -115,9 +115,6 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         #
         # But chaining __in and __iexact doesn't work with Django's
         # ORM, so we have the following hack to construct the relevant where clause
-        if len(emails) == 0:
-            return []
-
         upper_list = ", ".join(["UPPER(%s)"] * len(emails))
         where_clause = "UPPER(zerver_userprofile.email::text) IN (%s)" % (upper_list,)
         return query.select_related("realm").extra(
@@ -141,9 +138,6 @@ def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
     # users should be included.
 
     def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
-        if len(user_ids) == 0:
-            return []
-
         return list(UserProfile.objects.filter(id__in=user_ids).select_related())
 
     user_profiles_by_id = generic_bulk_cached_fetch(
