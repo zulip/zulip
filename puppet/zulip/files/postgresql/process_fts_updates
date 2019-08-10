@@ -105,36 +105,53 @@ if 'host' in pg_args:
 else:
     pg_args['user'] = 'zulip'
 
-conn = psycopg2.connect(**pg_args)
-cursor = conn.cursor()
+conn = None
 
-conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+retries = 1
 
-first_check = True
-while not am_master(cursor):
-    if first_check:
-        first_check = False
-        logger.info("In recovery; sleeping")
-    time.sleep(5)
-
-logger.info("Not in recovery; listening for FTS updates")
-
-cursor.execute("LISTEN fts_update_log;")
-# Catch up on any historical columns
 while True:
-    rows_updated = update_fts_columns(cursor)
-    logger.info("Processed %s rows catching up" % (rows_updated,))
-    if rows_updated != BATCH_SIZE:
-        # We're caught up, so proceed to the listening for updates phase.
-        break
+    try:
+        if conn is None:
+            conn = psycopg2.connect(**pg_args)
+            cursor = conn.cursor()
+            retries = 30
 
-# TODO: If we go back into recovery, we should stop processing updates
-try:
-    while True:
+            conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+
+            first_check = True
+            while not am_master(cursor):
+                if first_check:
+                    first_check = False
+                    logger.info("In recovery; sleeping")
+                time.sleep(5)
+
+            logger.info("Not in recovery; listening for FTS updates")
+
+            cursor.execute("LISTEN fts_update_log;")
+            # Catch up on any historical columns
+            while True:
+                rows_updated = update_fts_columns(cursor)
+                logger.info("Processed %s rows catching up" % (rows_updated,))
+                if rows_updated != BATCH_SIZE:
+                    # We're caught up, so proceed to the listening for updates phase.
+                    break
+
+        # TODO: If we go back into recovery, we should stop processing updates
         if select.select([conn], [], [], 30) != ([], [], []):
             conn.poll()
             while conn.notifies:
                 conn.notifies.pop()
                 update_fts_columns(cursor)
-except KeyboardInterrupt:
-    print(sys.argv[0], "exited after receiving KeyboardInterrupt")
+    except psycopg2.OperationalError as e:
+        retries -= 1
+        if retries <= 0:
+            raise
+        logger.info(e)
+        logger.info("Sleeping and reconnecting")
+        time.sleep(5)
+        if conn is not None:
+            conn.close()
+            conn = None
+    except KeyboardInterrupt:
+        print(sys.argv[0], "exited after receiving KeyboardInterrupt")
+        break
