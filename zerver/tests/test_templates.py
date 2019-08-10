@@ -9,6 +9,8 @@ from django.test import override_settings
 from django.template.loader import get_template
 from django.test.client import RequestFactory
 
+from jinja2.exceptions import UndefinedError
+
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
 from zerver.lib.test_helpers import get_all_templates
 from zerver.lib.test_classes import (
@@ -117,6 +119,16 @@ class TemplateTestCase(ZulipTestCase):
             template = get_template(template_name)
             try:
                 template.render(context)
+            except UndefinedError as e:  # nocoverage # ideally, this block shouldn't have to execute
+                raise UndefinedError(e.message + """\n
+This test is designed to confirm that every Jinja2 template is free
+of syntax errors.  There are two common causes for this test failing:
+
+* One of Zulip's HTML templates doesn't render.
+* A new context variable was added to a template, without a sample
+  value being added to `get_context` in zerver/tests/test_templates.py.
+
+""")
             except Exception:  # nocoverage # nicer error handler
                 logging.error("Exception while rendering '{}'".format(template.template.name))
                 raise
