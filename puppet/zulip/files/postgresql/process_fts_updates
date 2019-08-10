@@ -123,7 +123,7 @@ cursor.execute("LISTEN fts_update_log;")
 # Catch up on any historical columns
 while True:
     rows_updated = update_fts_columns(cursor)
-    logger.info("Processed %s columns catching up" % (BATCH_SIZE,))
+    logger.info("Processed %s rows catching up" % (rows_updated,))
     if rows_updated != BATCH_SIZE:
         # We're caught up, so proceed to the listening for updates phase.
         break
