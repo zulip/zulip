@@ -108,7 +108,7 @@ function get_messages_success(data, opts) {
 // instead of emails string if it is supported. We currently don't set
 // or convert the emails string to user IDs directly into the Filter code
 // because doing so breaks the app in various modules that expect emails string.
-function handle_user_ids_supported_operators(data) {
+function handle_operators_supporting_id_based_api(data) {
     var operators_supporting_ids = ['pm-with'];
     var operators_supporting_id = ['sender', 'group-pm-with'];
 
@@ -170,7 +170,7 @@ exports.load_messages = function (opts) {
     }
 
     data.client_gravatar = true;
-    data = handle_user_ids_supported_operators(data);
+    data = handle_operators_supporting_id_based_api(data);
 
     channel.get({
         url: '/json/messages',

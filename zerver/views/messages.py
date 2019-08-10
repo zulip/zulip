@@ -519,7 +519,7 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
         if isinstance(elem, dict):
             # Make sure to sync this list to frontend also when adding a new operator.
             # that supports user IDs. Relevant code is located in static/js/message_fetch.js
-            # in handle_user_ids_supported_operators function where you will need to update
+            # in handle_operators_supporting_id_based_api function where you will need to update
             # operators_supporting_id, or operators_supporting_ids array.
             operators_supporting_id = ['sender', 'group-pm-with']
             operators_supporting_ids = ['pm-with']
