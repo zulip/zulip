@@ -489,15 +489,31 @@ def get_mobile_push_content(rendered_content: str) -> str:
         quote_text += '\n'
         return quote_text
 
+    def render_olist(ol: lxml.html.HtmlElement) -> str:
+        items = []
+        counter = int(ol.get('start')) if ol.get('start') else 1
+        nested_levels = len(list(ol.iterancestors('ol')))
+        indent = ('\n' + '  ' * nested_levels) if nested_levels else ''
+
+        for li in ol:
+            items.append(indent + str(counter) + '. ' + process(li).strip())
+            counter += 1
+
+        return '\n'.join(items)
+
     def process(elem: lxml.html.HtmlElement) -> str:
-        plain_text = get_text(elem)
-        sub_text = ''
-        for child in elem:
-            sub_text += process(child)
-        if elem.tag == 'blockquote':
-            sub_text = format_as_quote(sub_text)
-        plain_text += sub_text
-        plain_text += elem.tail or ""
+        plain_text = ''
+        if elem.tag == 'ol':
+            plain_text = render_olist(elem)
+        else:
+            plain_text = get_text(elem)
+            sub_text = ''
+            for child in elem:
+                sub_text += process(child)
+            if elem.tag == 'blockquote':
+                sub_text = format_as_quote(sub_text)
+            plain_text += sub_text
+            plain_text += elem.tail or ""
         return plain_text
 
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:

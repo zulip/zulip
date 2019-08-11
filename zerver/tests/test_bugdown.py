@@ -463,7 +463,7 @@ class BugdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted, expected)
 
-        content = '>- http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg\n\nAwesome!'
+        content = '>* http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg\n\nAwesome!'
         expected = '<blockquote>\n<ul>\n<li><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></li>\n</ul>\n</blockquote>\n<p>Awesome!</p>'
         sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))

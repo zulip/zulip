@@ -27,7 +27,7 @@ import requests
 from django.conf import settings
 from django.db.models import Q
 
-from markdown.extensions import codehilite, nl2br, tables
+from markdown.extensions import codehilite, nl2br, tables, sane_lists
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
@@ -1421,23 +1421,23 @@ class AutoLink(CompiledPattern):
         db_data = self.markdown.zulip_db_data
         return url_to_a(db_data, url)
 
-class UListProcessor(markdown.blockprocessors.UListProcessor):
-    """ Process unordered list blocks.
-
-        Based on markdown.blockprocessors.UListProcessor, but does not accept
-        '+' or '-' as a bullet character."""
-
-    TAG = 'ul'
-    RE = re.compile('^[ ]{0,3}[*][ ]+(.*)')
-
+class OListProcessor(sane_lists.SaneOListProcessor):
     def __init__(self, parser: Any) -> None:
-
-        # HACK: Set the tab length to 2 just for the initialization of
-        # this class, so that bulleted lists (and only bulleted lists)
-        # work off 2-space indentation.
         parser.markdown.tab_length = 2
         super().__init__(parser)
         parser.markdown.tab_length = 4
+
+class UListProcessor(sane_lists.SaneUListProcessor):
+    """ Does not accept '+' or '-' as a bullet character. """
+
+    def __init__(self, parser: Any) -> None:
+        parser.markdown.tab_length = 2
+        super().__init__(parser)
+        parser.markdown.tab_length = 4
+
+        self.RE = re.compile('^[ ]{0,%d}[*][ ]+(.*)' % (self.tab_length - 1,))
+        self.CHILD_RE = re.compile(r'^[ ]{0,%d}(([*]))[ ]+(.*)' %
+                                   (self.tab_length - 1,))
 
 class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
     """ Process unordered list blocks.
@@ -1482,16 +1482,15 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
 
-class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
-    """ Allows unordered list blocks that come directly after a
-        paragraph to be rendered as an unordered list
+class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
+    """ Allows list blocks that come directly after another block
+        to be rendered as a list.
 
         Detects paragraphs that have a matching list item that comes
         directly after a line of text, and inserts a newline between
         to satisfy Markdown"""
 
-    LI_RE = re.compile('^[ ]{0,3}[*][ ]+(.*)', re.MULTILINE)
-    HANGING_ULIST_RE = re.compile('^.+\\n([ ]{0,3}[*][ ]+.*)', re.MULTILINE)
+    LI_RE = re.compile(r'^[ ]{0,3}(\*|\d\.)[ ]+(.*)', re.MULTILINE)
 
     def run(self, lines: List[str]) -> List[str]:
         """ Insert a newline between a paragraph and ulist if missing """
@@ -1509,90 +1508,16 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
                 fence = None
 
             # If we're not in a fenced block and we detect an upcoming list
-            #  hanging off a paragraph, add a newline
-            if (not fence and lines[i] and
-                self.LI_RE.match(lines[i+1]) and
-                    not self.LI_RE.match(lines[i])):
-
-                copy.insert(i+inserts+1, '')
-                inserts += 1
+            # hanging off any block (including a list of another type), add
+            # a newline.
+            li1 = self.LI_RE.match(lines[i])
+            li2 = self.LI_RE.match(lines[i+1])
+            if not fence and lines[i]:
+                if (li2 and not li1) or (li1 and li2 and
+                                         (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1)):
+                    copy.insert(i+inserts+1, '')
+                    inserts += 1
         return copy
-
-class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
-    """ Finds a sequence of lines numbered by the same number"""
-    RE = re.compile(r'^([ ]*)(\d+)\.[ ]+(.*)')
-    TAB_LENGTH = 2
-
-    def run(self, lines: List[str]) -> List[str]:
-        new_lines = []  # type: List[str]
-        current_list = []  # type: List[Match[str]]
-        current_indent = 0
-
-        for line in lines:
-            m = self.RE.match(line)
-
-            # Remember if this line is a continuation of already started list
-            is_next_item = (m and current_list
-                            and current_indent == len(m.group(1)) // self.TAB_LENGTH)
-
-            is_blank_line = line.strip() == ""
-
-            if not is_next_item and not is_blank_line:
-                # This is a non-blank line that doesn't start with a
-                # bullet, so we're done with the previous numbered
-                # list and can start a new one.
-                new_lines.extend(self.renumber(current_list))
-                current_list = []
-
-            if not m:
-                # This line doesn't start with a bullet.  If it's not
-                # between bullets of a list (i.e. `current_list =
-                # []`), this is just normal content outside a bulleted
-                # list and we can append it to `new_lines`.
-                if not current_list:
-                    # Ordinary line
-                    new_lines.append(line)
-
-                # Otherwise, it's a blank line in between bullets,
-                # because if this was a bullet, `m` would be truthy,
-                # and if it wasn't blank, we could have terminated the
-                # list (see above).  We can just skip this blank line
-                # syntax, as our bulleted list CSS styling will
-                # control vertical spacing between bullets.
-            elif is_next_item:
-                # Another list item
-                current_list.append(m)
-            else:
-                # First list item
-                current_list = [m]
-                current_indent = len(m.group(1)) // self.TAB_LENGTH
-
-        new_lines.extend(self.renumber(current_list))
-
-        return new_lines
-
-    def renumber(self, mlist: List[Match[str]]) -> List[str]:
-        if not mlist:
-            return []
-
-        start_number = int(mlist[0].group(2))
-
-        # Change numbers only if every one is the same
-        change_numbers = True
-        for m in mlist:
-            if int(m.group(2)) != start_number:
-                change_numbers = False
-                break
-
-        lines = []  # type: List[str]
-        counter = start_number
-
-        for m in mlist:
-            number = str(counter) if change_numbers else m.group(2)
-            lines.append('%s%s. %s' % (m.group(1), number, m.group(3)))
-            counter += 1
-
-        return lines
 
 # Name for the outer capture group we use to separate whitespace and
 # other delimiters from the actual content.  This value won't be an
@@ -1874,8 +1799,7 @@ class Bugdown(markdown.Markdown):
         # html_block - insecure
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry()
-        preprocessors.register(AutoNumberOListPreprocessor(self), 'auto_number_olist', 40)
-        preprocessors.register(BugdownUListPreprocessor(self), 'hanging_ulists', 35)
+        preprocessors.register(BugdownListPreprocessor(self), 'hanging_lists', 35)
         preprocessors.register(markdown.preprocessors.NormalizeWhitespace(self), 'normalize_whitespace', 30)
         preprocessors.register(fenced_code.FencedBlockPreprocessor(self), 'fenced_code_block', 25)
         preprocessors.register(AlertWordsNotificationProcessor(self), 'custom_text_notifications', 20)
@@ -1897,6 +1821,7 @@ class Bugdown(markdown.Markdown):
         parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 78)
         # We get priority 75 from 'table' extension
         parser.blockprocessors.register(markdown.blockprocessors.HRProcessor(parser), 'hr', 70)
+        parser.blockprocessors.register(OListProcessor(parser), 'olist', 68)
         parser.blockprocessors.register(UListProcessor(parser), 'ulist', 65)
         parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 60)
         parser.blockprocessors.register(BlockQuoteProcessor(parser), 'quote', 55)
