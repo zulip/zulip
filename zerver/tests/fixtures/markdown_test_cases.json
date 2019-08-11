@@ -427,9 +427,9 @@
     },
     {
       "name": "inline_image_link_without_space_before",
-      "input": "Hello![hello](https://github.com). This text will get swallowed up as we wouldn't be rendering any image for it either.",
-      "expected_output": "<p>Hello<a href=\"https://github.com\" target=\"_blank\" title=\"hello\"></a>. This text will get swallowed up as we wouldn't be rendering any image for it either.</p>",
-      "marked_expected_output": "<p>Hello<a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\"></a>. This text will get swallowed up as we wouldn't be rendering any image for it either.</p>"
+      "input": "Hello![this is an invalid image](https://github.com).",
+      "expected_output": "<p>Hello<a href=\"https://github.com\" target=\"_blank\" title=\"this is an invalid image\"></a>.</p>\n<div class=\"message_inline_image\"><a href=\"https://github.com\" target=\"_blank\" title=\"this is an invalid image\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fgithub.com&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fgithub.com&amp;size=thumbnail\"></a></div>",
+      "marked_expected_output": "<p>Hello<a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\"></a>.</p>"
     },
     {
       "name": "nl2br",
