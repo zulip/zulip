@@ -1,4 +1,4 @@
-from typing import Any, Iterable, List, Mapping, Set, Tuple, Optional
+from typing import Any, Iterable, List, Mapping, Set, Tuple, Optional, Union
 
 from django.utils.translation import ugettext as _
 
@@ -6,7 +6,7 @@ from zerver.lib.actions import check_stream_name, create_streams_if_needed
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
-    bulk_get_streams, get_realm_stream, DefaultStreamGroup
+    bulk_get_streams, get_realm_stream, DefaultStreamGroup, get_stream_by_id_in_realm
 
 def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[str]) -> None:
     if stream_id is None and stream is None:
@@ -282,3 +282,12 @@ def access_default_stream_group_by_id(realm: Realm, group_id: int) -> DefaultStr
         return DefaultStreamGroup.objects.get(realm=realm, id=group_id)
     except DefaultStreamGroup.DoesNotExist:
         raise JsonableError(_("Default stream group with id '%s' does not exist.") % (group_id,))
+
+def get_stream_by_narrow_operand_access_unchecked(operand: Union[str, int], realm: Realm) -> Stream:
+    """This is required over access_stream_* in certain cases where
+    we need the stream data only to prepare a response that user can access
+    and not send it out to unauthorized recipients.
+    """
+    if isinstance(operand, str):
+        return get_stream(operand, realm)
+    return get_stream_by_id_in_realm(operand, realm)
