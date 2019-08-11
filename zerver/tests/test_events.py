@@ -3513,7 +3513,7 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
 
 class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
     def test_get_raw_user_data_on_system_bot_realm(self) -> None:
-        result = get_raw_user_data(get_realm("zulipinternal"), True)
+        result = get_raw_user_data(get_realm("zulipinternal"), self.example_user('hamlet'), True)
 
         for bot_email in settings.CROSS_REALM_BOT_EMAILS:
             bot_profile = get_system_bot(bot_email)
