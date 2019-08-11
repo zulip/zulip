@@ -355,10 +355,13 @@ exports.initialize = function () {
     };
 
     // Our links have title= and target=_blank
-    r.link = function (href, title, text) {
+    r.link = function (href, title, text, is_link = true) {
         title = title || href;
         if (!text.trim()) {
             text = href;
+        }
+        if (!is_link) {
+            text = '';  // We're dealing with an inline image, hide text.
         }
         const out = '<a href="' + href + '"' + ' target="_blank" title="' +
                   title + '"' + '>' + text + '</a>';

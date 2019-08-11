@@ -976,6 +976,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         parent = found_url.family.parent
         ahref_element = found_url.family.child
         (url, text) = found_url.result
+        if not text:
+            text = ahref_element.get('title', '')
         actual_url = self.get_actual_image_url(url)
 
         # url != text usually implies a named link, which we opt not to remove
@@ -1765,6 +1767,8 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
         return lines
 
 class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
+    IS_LINK = True
+
     def zulip_specific_link_changes(self, el: Element) -> Union[None, Element]:
         href = el.get('href')
 
@@ -1785,6 +1789,12 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         if not el.text.strip():
             el.text = href
 
+        # Inline images;
+        # Hide text from link, but keep it in title so our image-inlining logic shows the title.
+        if not self.IS_LINK:
+            el.set('title', el.text)
+            el.text = ''
+
         # Prevent realm_filters from running on the content of a Markdown link, breaking up the link.
         # This is a monkey-patch, but it might be worth sending a version of this change upstream.
         if not isinstance(el, str):
@@ -1797,6 +1807,9 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         if el is not None:
             el = self.zulip_specific_link_changes(el)
         return el, match_start, index
+
+class ImageInlineProcessor(LinkInlineProcessor):
+    IS_LINK = False
 
 def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
     # Registry is a new class added by py-markdown to replace Ordered List.
@@ -1925,6 +1938,7 @@ class Bugdown(markdown.Markdown):
         reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), 'link', 60)
+        reg.register(ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), 'image_link', 58)
         reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
         # Reserve priority 45-54 for Realm Filters
         reg = self.register_realm_filters(reg)

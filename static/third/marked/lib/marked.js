@@ -862,8 +862,8 @@ InlineLexer.prototype.outputLink = function(cap, link) {
     , title = link.title ? escape(link.title) : null;
 
   return cap[0].charAt(0) !== '!'
-    ? this.renderer.link(href, title, this.output(cap[1]))
-    : this.renderer.image(href, title, escape(cap[1]));
+    ? this.renderer.link(href, title, this.output(cap[1]), true)
+    : this.renderer.link(href, title, escape(cap[1]), false);
 };
 InlineLexer.prototype.emoji = function (name) {
   name = escape(name)
