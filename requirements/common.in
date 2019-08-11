@@ -159,7 +159,7 @@ twilio==6.29.2
 stripe==2.21.0
 
 # Needed for serving uploaded files from nginx but perform auth checks in django.
-django-sendfile==0.3.11
+django-sendfile2==0.4.2
 
 # For checking whether email of the user is from a disposable email provider.
 disposable-email-domains==0.0.52

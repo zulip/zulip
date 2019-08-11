@@ -708,14 +708,14 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 else:
                     self.assertEqual(response.get('Content-disposition'), None)
 
-        check_xsend_links('zulip.txt', 'zulip.txt', "filename*=UTF-8''zulip.txt")
+        check_xsend_links('zulip.txt', 'zulip.txt', 'filename="zulip.txt"')
         check_xsend_links('áéБД.txt', '%C3%A1%C3%A9%D0%91%D0%94.txt',
                           "filename*=UTF-8''%C3%A1%C3%A9%D0%91%D0%94.txt")
-        check_xsend_links('zulip.html', 'zulip.html', "filename*=UTF-8''zulip.html")
-        check_xsend_links('zulip.sh', 'zulip.sh', "filename*=UTF-8''zulip.sh")
+        check_xsend_links('zulip.html', 'zulip.html', 'filename="zulip.html"')
+        check_xsend_links('zulip.sh', 'zulip.sh', 'filename="zulip.sh"')
         check_xsend_links('zulip.jpeg', 'zulip.jpeg')
         check_xsend_links('áéБД.pdf', '%C3%A1%C3%A9%D0%91%D0%94.pdf')
-        check_xsend_links('zulip', 'zulip', "filename*=UTF-8''zulip")
+        check_xsend_links('zulip', 'zulip', 'filename="zulip"')
 
     def tearDown(self) -> None:
         destroy_uploads()
