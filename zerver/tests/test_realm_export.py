@@ -16,6 +16,15 @@ import os
 import ujson
 
 class RealmExportTest(ZulipTestCase):
+    """
+    API endpoint testing covers the full end-to-end flow
+    from both the S3 and local uploads perspective.
+
+    `test_endpoint_s3` and `test_endpoint_local_uploads` follow
+    an identical pattern, which is documented in both test
+    functions.
+    """
+
     def test_export_as_not_admin(self) -> None:
         user = self.example_user('hamlet')
         self.login(user.email)
@@ -29,31 +38,35 @@ class RealmExportTest(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
         tarball_path = create_dummy_file('test-export.tar.gz')
 
+        # Test the export logic.
         with patch('zerver.lib.export.do_export_realm',
                    return_value=tarball_path) as mock_export:
             with self.settings(LOCAL_UPLOADS_DIR=None):
                 result = self.client_post('/json/export/realm')
-            self.assert_json_success(result)
-            self.assertFalse(os.path.exists(tarball_path))
-
+        self.assert_json_success(result)
+        self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args['realm'], admin.realm)
         self.assertEqual(args['public_only'], True)
         self.assertIn('/tmp/zulip-export-', args['output_dir'])
         self.assertEqual(args['threads'], 6)
 
-        export_object = RealmAuditLog.objects.filter(
+        # Get the entry and test that iago initiated it.
+        audit_log_entry = RealmAuditLog.objects.filter(
             event_type='realm_exported').first()
-        path_id = ujson.loads(getattr(export_object, 'extra_data')).get('export_path')
-        self.assertIsNotNone(path_id)
+        self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
-        self.assertEqual(bucket.get_key(path_id).get_contents_as_string(),
-                         b'zulip!')
+        # Test that the file is hosted, and the contents are as expected.
+        path_id = ujson.loads(audit_log_entry.extra_data).get('export_path')
+        self.assertIsNotNone(path_id)
+        self.assertEqual(bucket.get_key(path_id).get_contents_as_string(), b'zulip!')
 
         result = self.client_get('/json/export/realm')
         self.assert_json_success(result)
 
+        # Test that the export we have is the export we created.
         export_dict = result.json()['exports']
+        self.assertEqual(export_dict[0]['id'], audit_log_entry.id)
         self.assertEqual(export_dict[0]['export_data'].get('export_path'), path_id)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
@@ -61,6 +74,7 @@ class RealmExportTest(ZulipTestCase):
                                realm=admin.realm,
                                event_type=RealmAuditLog.REALM_EXPORTED).count())
 
+        # Finally, delete the file.
         result = zerver.lib.upload.upload_backend.delete_export_tarball(path_id)
         self.assertEqual(result, path_id)
         self.assertIsNone(bucket.get_key(path_id))
@@ -70,23 +84,25 @@ class RealmExportTest(ZulipTestCase):
         self.login(admin.email)
         tarball_path = create_dummy_file('test-export.tar.gz')
 
+        # Test the export logic.
         with patch('zerver.lib.export.do_export_realm',
                    return_value=tarball_path) as mock_export:
             result = self.client_post('/json/export/realm')
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
-
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args['realm'], admin.realm)
         self.assertEqual(args['public_only'], True)
         self.assertIn('/tmp/zulip-export-', args['output_dir'])
         self.assertEqual(args['threads'], 6)
 
-        export_object = RealmAuditLog.objects.filter(
+        # Get the entry and test that iago initiated it.
+        audit_log_entry = RealmAuditLog.objects.filter(
             event_type='realm_exported').first()
-        self.assertEqual(export_object.acting_user_id, admin.id)
+        self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
-        path_id = ujson.loads(getattr(export_object, 'extra_data')).get('export_path')
+        # Test that the file is hosted, and the contents are as expected.
+        path_id = ujson.loads(audit_log_entry.extra_data).get('export_path')
         response = self.client_get(path_id)
         self.assertEqual(response.status_code, 200)
         self.assert_url_serves_contents_of_file(path_id, b'zulip!')
@@ -94,7 +110,9 @@ class RealmExportTest(ZulipTestCase):
         result = self.client_get('/json/export/realm')
         self.assert_json_success(result)
 
+        # Test that the export we have is the export we created.
         export_dict = result.json()['exports']
+        self.assertEqual(export_dict[0]['id'], audit_log_entry.id)
         self.assertEqual(export_dict[0]['export_data'].get('export_path'), path_id)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
@@ -102,6 +120,7 @@ class RealmExportTest(ZulipTestCase):
                                realm=admin.realm,
                                event_type=RealmAuditLog.REALM_EXPORTED).count())
 
+        # Finally, delete the file.
         result = zerver.lib.upload.upload_backend.delete_export_tarball(path_id)
         self.assertEqual(result, path_id)
         response = self.client_get(path_id)
