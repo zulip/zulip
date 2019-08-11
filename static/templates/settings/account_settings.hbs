@@ -156,7 +156,7 @@
                 <div id="user-settings-avatar">
                     <div id="user-avatar-block" style="background-image: url({{ page_params.avatar_url_medium }})" {{#if page_params.is_guest}} class="guest-avatar"{{/if}}/>
                     <span id="user_avatar_delete_button" aria-label="{{t 'Delete profile picture'}}" role="button" tabindex="0"
-                      {{#unless page_params.is_admin}}{{#if page_params.realm_avatar_changes_disabled}}style="display:none"{{else}}{{#if page_params.server_avatar_changes_disabled}}style="display:none"{{/if}}{{/if}}{{/unless}}>
+                      {{#unless user_can_change_avatar}}style="display:none"{{/unless}}>
                         &times;
                     </span>
                     <div id="user-avatar-source">
