@@ -776,6 +776,7 @@
       "name": "auto_renumbered_list_blankline",
       "input": "1. A\n\n1. B\n\n1. C\n\n1. D\nordinary paragraph\n1. AA\n\n1. BB",
       "expected_output": "<ol>\n<li>\n<p>A</p>\n</li>\n<li>\n<p>B</p>\n</li>\n<li>\n<p>C</p>\n</li>\n<li>\n<p>D<br>\nordinary paragraph</p>\n</li>\n<li>\n<p>AA</p>\n</li>\n<li>\n<p>BB</p>\n</li>\n</ol>",
+      "marked_expected_output": "<ol>\n<li><p>A</p>\n</li>\n<li><p>B</p>\n</li>\n<li><p>C</p>\n</li>\n<li><p>D<br>\nordinary paragraph</p>\n</li>\n<li><p>AA</p>\n</li>\n<li><p>BB</p>\n</li>\n</ol>",
       "text_content": "1. A\n2. B\n3. C\n4. D\nordinary paragraph\n5. AA\n6. BB"
     }
   ],

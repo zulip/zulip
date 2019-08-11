@@ -341,82 +341,6 @@ exports.set_realm_filters = function (realm_filters) {
     marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
 };
 
-var preprocess_auto_olists = (function () {
-    var TAB_LENGTH = 2;
-    var re = /^( *)(\d+)\. +(.*)/;
-
-    function getIndent(match) {
-        return Math.floor(match[1].length / TAB_LENGTH);
-    }
-
-    function extendArray(arr, arr2) {
-        Array.prototype.push.apply(arr, arr2);
-    }
-
-    function renumber(mlist) {
-        if (!mlist.length) {
-            return [];
-        }
-
-        var startNumber = parseInt(mlist[0][2], 10);
-        var changeNumbers = _.every(mlist, function (m) {
-            return startNumber === parseInt(m[2], 10);
-        });
-
-        var counter = startNumber;
-        return _.map(mlist, function (m) {
-            var number = changeNumbers ? counter.toString() : m[2];
-            counter += 1;
-            return m[1] + number + '. ' + m[3];
-        });
-    }
-
-    return function (src) {
-        var newLines = [];
-        var currentList = [];
-        var currentIndent = 0;
-
-        _.each(src.split('\n'), function (line) {
-            var m = line.match(re);
-            var isNextItem = m && currentList.length && currentIndent === getIndent(m);
-            var isBlankLine = line.trim() === "";
-            if (!isNextItem && !isBlankLine) {
-                // This is a non-blank line that doesn't start with a
-                // bullet, so we're done with the previous numbered
-                // list and can start a new one.
-                extendArray(newLines, renumber(currentList));
-                currentList = [];
-            }
-
-            if (!m) {
-                // This line doesn't start with a bullet.  If it's not
-                // between bullets of a list (i.e. `currentList =
-                // []`), this is just normal content outside a bulleted
-                // list and we can append it to `new_lines`.
-                if (!currentList.length) {
-                    newLines.push(line);
-                }
-
-                // Otherwise, it's a blank line in between bullets,
-                // because if this was a bullet, `m` would be truthy,
-                // and if it wasn't blank, we could have terminated the
-                // list (see above).  We can just skip this blank line
-                // syntax, as our bulleted list CSS styling will
-                // control vertical spacing between bullets.
-            } else if (isNextItem) {
-                currentList.push(m);
-            } else {
-                currentList = [m];
-                currentIndent = getIndent(m);
-            }
-        });
-
-        extendArray(newLines, renumber(currentList));
-
-        return newLines.join('\n');
-    };
-}());
-
 exports.initialize = function () {
 
     function disable_markdown_regex(rules, name) {
@@ -466,11 +390,6 @@ exports.initialize = function () {
         return emoji.translate_emoticons_to_names(src);
     }
 
-    // Disable ordered lists
-    // We used GFM + tables, so replace the list start regex for that ruleset
-    // We remove the |[\d+]\. that matches the numbering in a numbered list
-    marked.Lexer.rules.tables.list = /^( *)((?:\*)) [\s\S]+?(?:\n+(?=(?: *[\-*_]){3,} *(?:\n+|$))|\n{2,}(?! )(?!\1(?:\*) )\n*|\s*$)/;
-
     // Disable lheadings
     // We only keep the # Heading format.
     disable_markdown_regex(marked.Lexer.rules.tables, 'lheading');
@@ -517,7 +436,6 @@ exports.initialize = function () {
         renderer: r,
         preprocessors: [
             preprocess_code_blocks,
-            preprocess_auto_olists,
             preprocess_translate_emoticons,
         ],
     });

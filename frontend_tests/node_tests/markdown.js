@@ -284,7 +284,7 @@ run_test('marked', () => {
         {input: 'Some text first\n* a\n* list \n* here\n\nand then after',
          expected: '<p>Some text first</p>\n<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>\n<p>and then after</p>'},
         {input: '1. an\n2. ordered \n3. list',
-         expected: '<p>1. an<br>\n2. ordered<br>\n3. list</p>'},
+         expected: '<ol>\n<li>an</li>\n<li>ordered </li>\n<li>list</li>\n</ol>'},
         {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
          expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
         {input: 'This is a @**Cordelia Lear** mention',
