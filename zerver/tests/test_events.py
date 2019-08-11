@@ -2767,7 +2767,6 @@ class EventsRegisterTest(ZulipTestCase):
                 ('acting_user_id', check_int),
                 ('export_data', check_dict_only([
                     ('export_path', check_string),
-                    ('deleted_timestamp', equals(None))
                 ])),
             ]))),
         ])
