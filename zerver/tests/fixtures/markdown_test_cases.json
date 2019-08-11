@@ -374,6 +374,21 @@
       "expected_output": "<p><a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
     },
     {
+      "name": "link_with_text",
+      "input": "[hello](https://github.com)",
+      "expected_output": "<p><a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">hello</a></p>"
+    },
+    {
+      "name": "link_without_text",
+      "input": "[](https://github.com)",
+      "expected_output": "<p><a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
+    },
+    {
+      "name": "link_with_empty_text",
+      "input": "[  ](https://github.com)",
+      "expected_output": "<p><a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
+    },
+    {
       "name": "nl2br",
       "input": "test\nbar",
       "expected_output": "<p>test<br>\nbar</p>",

@@ -1802,6 +1802,10 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         el.set("href", href)
         fixup_link(el, target_blank=(href[:1] != '#'))
 
+        # Show link href if title is empty
+        if not el.text.strip():
+            el.text = href
+
         # Prevent realm_filters from running on the content of a Markdown link, breaking up the link.
         # This is a monkey-patch, but it might be worth sending a version of this change upstream.
         if not isinstance(el, str):

@@ -439,6 +439,9 @@ exports.initialize = function () {
     // Our links have title= and target=_blank
     r.link = function (href, title, text) {
         title = title || href;
+        if (!text.trim()) {
+            text = href;
+        }
         var out = '<a href="' + href + '"' + ' target="_blank" title="' +
                   title + '"' + '>' + text + '</a>';
         return out;
