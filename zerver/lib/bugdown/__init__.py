@@ -1594,32 +1594,6 @@ class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
 
         return lines
 
-# We need the following since upgrade from py-markdown 2.6.11 to 3.0.1
-# modifies the link handling significantly. The following is taken from
-# py-markdown 2.6.11 markdown/inlinepatterns.py.
-@one_time
-def get_link_re() -> str:
-    '''
-    Very important--if you need to change this code to depend on
-    any arguments, you must eliminate the "one_time" decorator
-    and consider performance implications.  We only want to compute
-    this value once.
-    '''
-
-    NOBRACKET = r'[^\]\[]*'
-    BRK = (
-        r'\[(' +
-        (NOBRACKET + r'(\[')*6 +
-        (NOBRACKET + r'\])*')*6 +
-        NOBRACKET + r')\]'
-    )
-    NOIMG = r'(?<!\!)'
-
-    # [text](url) or [text](<url>) or [text](url "title")
-    LINK_RE = NOIMG + BRK + \
-        r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\12\s*)?\)'''
-    return normal_compile(LINK_RE)
-
 def prepare_realm_pattern(source: str) -> str:
     """ Augment a realm filter so it only matches after start-of-string,
     whitespace, or opening delimiters, won't match if there are word
@@ -1811,37 +1785,35 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
                         self.markdown.zulip_message.user_ids_with_alert_words.update(user_ids)
         return lines
 
-# This prevents realm_filters from running on the content of a
-# Markdown link, breaking up the link.  This is a monkey-patch, but it
-# might be worth sending a version of this change upstream.
-class AtomicLinkPattern(CompiledPattern):
-    def get_element(self, m: Match[str]) -> Optional[Element]:
-        href = m.group(9)
-        if not href:
-            return None
+class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
+    def zulip_specific_link_changes(self, el: Element) -> Union[None, Element]:
+        href = el.get('href')
 
-        if href[0] == "<":
-            href = href[1:-1]
+        # Sanitize url or don't parse link. See linkify_tests in markdown_test_cases for banned syntax.
         href = sanitize_url(self.unescape(href.strip()))
         if href is None:
-            return None
+            return None  # no-op; the link is not processed.
 
+        # Rewrite local links to be relative
         db_data = self.markdown.zulip_db_data
         href = rewrite_local_links_to_relative(db_data, href)
 
-        el = markdown.util.etree.Element('a')
-        el.text = m.group(2)
-        el.set('href', href)
+        # Make changes to <a> tag attributes
+        el.set("href", href)
         fixup_link(el, target_blank=(href[:1] != '#'))
+
+        # Prevent realm_filters from running on the content of a Markdown link, breaking up the link.
+        # This is a monkey-patch, but it might be worth sending a version of this change upstream.
+        if not isinstance(el, str):
+            el.text = markdown.util.AtomicString(el.text)
+
         return el
 
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
-        ret = self.get_element(m)
-        if ret is None:
-            return None
-        if not isinstance(ret, str):
-            ret.text = markdown.util.AtomicString(ret.text)
-        return ret
+    def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[None, Element], int, int]:
+        el, match_start, index = super().handleMatch(m, data)
+        if el is not None:
+            el = self.zulip_specific_link_changes(el)
+        return el, match_start, index
 
 def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
     # Registry is a new class added by py-markdown to replace Ordered List.
@@ -1969,7 +1941,7 @@ class Bugdown(markdown.Markdown):
         # Note that !gravatar syntax should be deprecated long term.
         reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
-        reg.register(AtomicLinkPattern(get_link_re(), self), 'link', 60)
+        reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), 'link', 60)
         reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
         # Reserve priority 45-54 for Realm Filters
         reg = self.register_realm_filters(reg)
