@@ -2777,7 +2777,7 @@ class EventsRegisterTest(ZulipTestCase):
         with mock.patch('zerver.lib.export.do_export_realm',
                         return_value=create_dummy_file('test-export.tar.gz')):
             events = self.do_test(
-                lambda: print(self.client_post('/json/export/realm').content),
+                lambda: self.client_post('/json/export/realm'),
                 state_change_expected=True, num_events=2)
 
         # The first event is a message from notification-bot.
