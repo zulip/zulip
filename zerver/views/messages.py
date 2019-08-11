@@ -30,7 +30,8 @@ from zerver.lib.message import (
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name
+from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name, \
+    get_stream_by_narrow_operand_access_unchecked
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
@@ -50,8 +51,8 @@ from zerver.lib.validator import \
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
-    get_stream, email_to_domain, get_realm, get_active_streams, \
-    get_user_including_cross_realm, get_user_by_id_in_realm_including_cross_realm, get_stream_recipient
+    email_to_domain, get_realm, get_active_streams, get_user_including_cross_realm, \
+    get_user_by_id_in_realm_including_cross_realm, get_stream_recipient
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -207,8 +208,8 @@ class NarrowBuilder:
         try:
             # Because you can see your own message history for
             # private streams you are no longer subscribed to, we
-            # need get_stream, not access_stream, here.
-            stream = get_stream(operand, self.user_profile.realm)
+            # need get_stream_by_narrow_operand_access_unchecked here.
+            stream = get_stream_by_narrow_operand_access_unchecked(operand, self.user_profile.realm)
         except Stream.DoesNotExist:
             raise BadNarrowOperator('unknown stream ' + operand)
 
@@ -593,11 +594,11 @@ def exclude_muting_conditions(user_profile: UserProfile,
     stream_id = None
     if stream_name is not None:
         try:
-            # Note that this code works around a lint rule that
-            # says we should use access_stream_by_name to get the
-            # stream.  It is okay here, because we are only using
-            # the stream id to exclude data, not to include results.
-            stream_id = get_stream(stream_name, user_profile.realm).id
+            # Note: It is okay here to not check access to stream
+            # because we are only using the stream id to exclude data,
+            # not to include results.
+            stream = get_stream_by_narrow_operand_access_unchecked(stream_name, user_profile.realm)
+            stream_id = stream.id
         except Stream.DoesNotExist:
             pass
 
