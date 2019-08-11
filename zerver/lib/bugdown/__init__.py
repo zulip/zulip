@@ -1812,9 +1812,9 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
             el.text = ''
 
         # Prevent realm_filters from running on the content of a Markdown link, breaking up the link.
-        # This is a monkey-patch, but it might be worth sending a version of this change upstream.
-        if not isinstance(el, str):
-            el.text = markdown.util.AtomicString(el.text)
+        # We should find out some other way to deal with the above, current solution disables any
+        # further parsing inside links. Example: [**hello** world](google.com) doesn't trigger 'strong'.
+        el.text = markdown.util.AtomicString(el.text)
 
         return el
 
