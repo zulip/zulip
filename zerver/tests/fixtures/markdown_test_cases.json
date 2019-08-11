@@ -292,27 +292,27 @@
     },
     {
       "name": "numbered_list",
-      "input": "1. A\n 2. B",
-      "expected_output": "<p>1. A<br>\n 2. B</p>",
-      "text_content": "1. A\n 2. B"
+      "input": "1. A\n2. B\n  3. C",
+      "expected_output": "<ol>\n<li>A</li>\n<li>B<ol start=\"3\">\n<li>C</li>\n</ol>\n</li>\n</ol>",
+      "text_content": "1. A\n2. B\n  3. C"
     },
     {
       "name": "auto_renumbered_list",
-      "input": "1. A\n1. B\n 1. C\n1. D",
-      "expected_output": "<p>1. A<br>\n2. B<br>\n 3. C<br>\n4. D</p>",
-      "text_content": "1. A\n2. B\n 3. C\n4. D"
+      "input": "1. A\n1. B\n  1. C\n1. D",
+      "expected_output": "<ol>\n<li>A</li>\n<li>B<ol>\n<li>C</li>\n</ol>\n</li>\n<li>D</li>\n</ol>",
+      "text_content": "1. A\n2. B\n  1. C\n3. D"
     },
     {
       "name": "auto_renumbered_list_from",
       "input": "3. A\n3. B\n3. C\n3. D",
-      "expected_output": "<p>3. A<br>\n4. B<br>\n5. C<br>\n6. D</p>",
+      "expected_output": "<ol start=\"3\">\n<li>A</li>\n<li>B</li>\n<li>C</li>\n<li>D</li>\n</ol>",
       "text_content": "3. A\n4. B\n5. C\n6. D"
     },
     {
       "name": "not_auto_renumbered_list",
-      "input": "1. A\n3. B\n 2. C\n1. D",
-      "expected_output": "<p>1. A<br>\n3. B<br>\n 2. C<br>\n1. D</p>",
-      "text_content": "1. A\n3. B\n 2. C\n1. D"
+      "input": "1. A\n3. B\n  2. C\n1. D",
+      "expected_output": "<ol>\n<li>A</li>\n<li>B<ol start=\"2\">\n<li>C</li>\n</ol>\n</li>\n<li>D</li>\n</ol>",
+      "text_content": "1. A\n2. B\n  2. C\n3. D"
     },
     {
       "name": "linkify_interference",
@@ -775,8 +775,8 @@
     {
       "name": "auto_renumbered_list_blankline",
       "input": "1. A\n\n1. B\n\n1. C\n\n1. D\nordinary paragraph\n1. AA\n\n1. BB",
-      "expected_output": "<p>1. A<br>\n2. B<br>\n3. C<br>\n4. D<br>\nordinary paragraph<br>\n1. AA<br>\n2. BB</p>",
-      "text_content": "1. A\n2. B\n3. C\n4. D\nordinary paragraph\n1. AA\n2. BB"
+      "expected_output": "<ol>\n<li>\n<p>A</p>\n</li>\n<li>\n<p>B</p>\n</li>\n<li>\n<p>C</p>\n</li>\n<li>\n<p>D<br>\nordinary paragraph</p>\n</li>\n<li>\n<p>AA</p>\n</li>\n<li>\n<p>BB</p>\n</li>\n</ol>",
+      "text_content": "1. A\n2. B\n3. C\n4. D\nordinary paragraph\n5. AA\n6. BB"
     }
   ],
   "linkify_tests": [
