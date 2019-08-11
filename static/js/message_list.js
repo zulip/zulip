@@ -329,6 +329,7 @@ exports.MessageList.prototype = {
         recipient_row.find(".stream_topic").show();
         recipient_row.find('.fa-pencil').show();
         recipient_row.find(".topic_edit").hide();
+        recipient_row.find(".topic_edit_form").empty();
     },
 
     show_message_as_read: function (message, options) {
