@@ -304,7 +304,7 @@ exports.show_user_profile = function (user) {
 
     var args = {
         full_name: user.full_name,
-        email: user.email,
+        email: get_visible_email(user),
         profile_data: profile_data,
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
