@@ -619,10 +619,11 @@ class DeferredWorker(QueueProcessingWorker):
                                               delete_after_upload=True)
             assert public_url is not None
 
-            # Store the relative URL of the export.
+            # Update the extra_data field now that the export is complete.
             export_event = RealmAuditLog.objects.get(id=event['id'])
-            export_event.extra_data = ujson.dumps({'export_path': urllib.parse.urlparse(public_url).path,
-                                                   'deleted_timestamp': None})
+            export_event.extra_data = ujson.dumps(dict(
+                export_path=urllib.parse.urlparse(public_url).path,
+            ))
             export_event.save(update_fields=['extra_data'])
 
             # Send a private message notification letting the user who
