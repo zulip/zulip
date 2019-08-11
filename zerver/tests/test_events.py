@@ -2825,7 +2825,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertNotIn(api_key, str(result))
 
     # Admin users have access to all bots in the realm_bots field
-    def test_realm_bots_admin(self) -> None:
+    def test_realm_bots_e(self) -> None:
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
         self.assertTrue(user_profile.is_realm_admin)
@@ -2838,6 +2838,39 @@ class FetchInitialStateDataTest(ZulipTestCase):
         UserMessage.objects.filter(user_profile=user_profile).delete()
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
+
+    def test_delivery_email_presence_for_non_admins(self) -> None:
+        user_profile = self.example_user('aaron')
+        self.assertFalse(user_profile.is_realm_admin)
+
+        do_set_realm_property(user_profile.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        for key, value in result['raw_users'].items():
+            self.assertNotIn('delivery_email', value)
+
+        do_set_realm_property(user_profile.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        for key, value in result['raw_users'].items():
+            self.assertNotIn('delivery_email', value)
+
+    def test_delivery_email_presence_for_admins(self) -> None:
+        user_profile = self.example_user('iago')
+        self.assertTrue(user_profile.is_realm_admin)
+
+        do_set_realm_property(user_profile.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        for key, value in result['raw_users'].items():
+            self.assertNotIn('delivery_email', value)
+
+        do_set_realm_property(user_profile.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        for key, value in result['raw_users'].items():
+            self.assertIn('delivery_email', value)
+
 
 class GetUnreadMsgsTest(ZulipTestCase):
     def mute_stream(self, user_profile: UserProfile, stream: Stream) -> None:
@@ -3585,7 +3618,7 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
 
 class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
     def test_get_raw_user_data_on_system_bot_realm(self) -> None:
-        result = get_raw_user_data(get_realm("zulipinternal"), True)
+        result = get_raw_user_data(get_realm("zulipinternal"), self.example_user('hamlet'), True)
 
         for bot_email in settings.CROSS_REALM_BOT_EMAILS:
             bot_profile = get_system_bot(bot_email)

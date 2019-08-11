@@ -56,7 +56,8 @@ from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 
-def get_raw_user_data(realm: Realm, client_gravatar: bool) -> Dict[int, Dict[str, str]]:
+def get_raw_user_data(realm: Realm, user_profile: UserProfile,
+                      client_gravatar: bool) -> Dict[int, Dict[str, str]]:
     user_dicts = get_realm_user_dicts(realm.id)
 
     # TODO: Consider optimizing this query away with caching.
@@ -102,6 +103,11 @@ def get_raw_user_data(realm: Realm, client_gravatar: bool) -> Dict[int, Dict[str
             is_active = row['is_active'],
             date_joined = row['date_joined'].isoformat(),
         )
+
+        if (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
+                user_profile.is_realm_admin):
+            result['delivery_email'] = row['delivery_email']
+
         if is_bot:
             if row['email'] in settings.CROSS_REALM_BOT_EMAILS:
                 result['is_cross_realm_bot'] = True
@@ -248,6 +254,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('realm_user'):
         state['raw_users'] = get_raw_user_data(
             realm=realm,
+            user_profile=user_profile,
             client_gravatar=client_gravatar,
         )
 
