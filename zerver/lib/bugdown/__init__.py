@@ -964,20 +964,22 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             bugdown_logger.warning(traceback.format_exc())
             return None
 
-    def get_url_data(self, e: Element) -> Optional[Tuple[str, str]]:
+    def get_url_data(self, e: Element) -> Optional[Tuple[str, str, str]]:
         if e.tag == "a":
+            img_title = e.get('data-img-title', '')
+            e.attrib.pop('data-img-title', '')  # Don't let data-img-title leak into the final message
             if e.text is not None:
-                return (e.get("href"), e.text)
-            return (e.get("href"), e.get("href"))
+                return (e.get("href"), e.text, img_title)
+            return (e.get("href"), e.get("href"), img_title)
         return None
 
     def handle_image_inlining(self, root: Element, found_url: ResultWithFamily) -> None:
         grandparent = found_url.family.grandparent
         parent = found_url.family.parent
         ahref_element = found_url.family.child
-        (url, text) = found_url.result
+        (url, text, img_title) = found_url.result
         if not text:
-            text = ahref_element.get('title', '')
+            text = img_title
         actual_url = self.get_actual_image_url(url)
 
         # url != text usually implies a named link, which we opt not to remove
@@ -1089,14 +1091,18 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         rendered_tweet_count = 0
 
         for found_url in found_urls:
-            (url, text) = found_url.result
+            (url, text, img_title) = found_url.result
 
             if url in unique_previewable_urls and url not in processed_urls:
                 processed_urls.add(url)
             else:
                 continue
 
-            if not self.is_absolute_url(url):
+            if not img_title == '':
+                # we are coming from inline image syntax, render a preview even for incorrect urls.
+                self.handle_image_inlining(root, found_url)
+                continue
+            elif not self.is_absolute_url(url):
                 if self.is_image(url):
                     self.handle_image_inlining(root, found_url)
                 # We don't have a strong use case for doing url preview for relative links.
@@ -1121,7 +1127,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if image_source is not None:
                     found_url = ResultWithFamily(
                         family=found_url.family,
-                        result=(image_source, image_source)
+                        result=(image_source, image_source, '')
                     )
                 self.handle_image_inlining(root, found_url)
                 continue
@@ -1792,6 +1798,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         # Inline images;
         # Hide text from link, but keep it in title so our image-inlining logic shows the title.
         if not self.IS_LINK:
+            el.set('data-img-title', el.text)
             el.set('title', el.text)
             el.text = ''
 
