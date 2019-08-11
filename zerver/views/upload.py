@@ -24,11 +24,12 @@ def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
     # an attachment (and thus clicking a link to it should download)
     # or like a link (and thus clicking a link to it should display it
     # in a browser tab).  This is controlled by the
-    # Content-Disposition header; `django-sendfile` sends the
+    # Content-Disposition header; `django-sendfile2` sends the
     # attachment-style version of that header if and only if the
     # attachment argument is passed to it.  For attachments,
-    # django-sendfile sets the response['Content-disposition'] like
-    # this: `attachment; filename="b'zulip.txt'"; filename*=UTF-8''zulip.txt`.
+    # django-sendfile2 sets the response['Content-disposition'] like
+    # this: `attachment; filename="zulip.txt"; filename*=UTF-8''zulip.txt`.
+    # The filename* parameter is omitted for ASCII filenames like this one.
     #
     # The "filename" field (used to name the file when downloaded) is
     # unreliable because it doesn't have a well-defined encoding; the
