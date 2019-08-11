@@ -39,6 +39,16 @@ exports.user_can_change_name = function () {
     return true;
 };
 
+exports.user_can_change_avatar = function () {
+    if (page_params.is_admin) {
+        return true;
+    }
+    if (page_params.realm_avatar_changes_disabled || page_params.server_avatar_changes_disabled) {
+        return false;
+    }
+    return true;
+};
+
 exports.update_name_change_display = function () {
     if (!exports.user_can_change_name()) {
         $('#full_name').attr('disabled', 'disabled');
@@ -60,9 +70,7 @@ exports.update_email_change_display = function () {
 };
 
 exports.update_avatar_change_display = function () {
-    if ((page_params.realm_avatar_changes_disabled ||
-         page_params.server_avatar_changes_disabled)
-            && !page_params.is_admin) {
+    if (!exports.user_can_change_avatar()) {
         $('#user_avatar_upload_button .button').attr('disabled', 'disabled');
         $('#user_avatar_delete_button .button').attr('disabled', 'disabled');
     } else {
