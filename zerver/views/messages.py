@@ -82,6 +82,8 @@ Query = Any
 # TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted
 ConditionTransform = Any
 
+OptionalNarrowListT = Optional[List[Dict[str, Any]]]
+
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder:
     '''
@@ -497,7 +499,7 @@ def get_search_fields(rendered_content: str, topic_name: str, content_matches: I
         MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
     }
 
-def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
+def narrow_parameter(json: str) -> OptionalNarrowListT:
 
     data = ujson.loads(json)
     if not isinstance(data, list):
@@ -550,7 +552,7 @@ def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
     return list(map(convert_term, data))
 
-def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], user_profile: UserProfile) -> bool:
+def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: UserProfile) -> bool:
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
     # reading a public stream that might include messages that
@@ -576,7 +578,7 @@ def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], user_profi
 
     return include_history
 
-def get_stream_name_from_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> Optional[str]:
+def get_stream_name_from_narrow(narrow: OptionalNarrowListT) -> Optional[str]:
     if narrow is not None:
         for term in narrow:
             if term['operator'] == 'stream':
@@ -584,7 +586,7 @@ def get_stream_name_from_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> O
     return None
 
 def exclude_muting_conditions(user_profile: UserProfile,
-                              narrow: Optional[Iterable[Dict[str, Any]]]) -> List[Selectable]:
+                              narrow: OptionalNarrowListT) -> List[Selectable]:
     conditions = []
     stream_name = get_stream_name_from_narrow(narrow)
 
@@ -646,7 +648,7 @@ def get_base_query_for_search(user_profile: UserProfile,
 def add_narrow_conditions(user_profile: UserProfile,
                           inner_msg_id_col: ColumnElement,
                           query: Query,
-                          narrow: Optional[List[Dict[str, Any]]]) -> Tuple[Query, bool]:
+                          narrow: OptionalNarrowListT) -> Tuple[Query, bool]:
     is_search = False  # for now
 
     if narrow is None:
@@ -678,7 +680,7 @@ def add_narrow_conditions(user_profile: UserProfile,
 
 def find_first_unread_anchor(sa_conn: Any,
                              user_profile: UserProfile,
-                             narrow: Optional[List[Dict[str, Any]]]) -> int:
+                             narrow: OptionalNarrowListT) -> int:
     # We always need UserMessage in our query, because it has the unread
     # flag for the user.
     need_user_message = True
@@ -745,8 +747,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          anchor: Optional[int]=REQ(converter=int, default=None),
                          num_before: int=REQ(converter=to_non_negative_int),
                          num_after: int=REQ(converter=to_non_negative_int),
-                         narrow: Optional[List[Dict[str, Any]]]=REQ('narrow', converter=narrow_parameter,
-                                                                    default=None),
+                         narrow: OptionalNarrowListT=REQ('narrow', converter=narrow_parameter, default=None),
                          use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
@@ -1565,7 +1566,7 @@ def render_message_backend(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
                                msg_ids: List[int]=REQ(validator=check_list(check_int)),
-                               narrow: Optional[List[Dict[str, Any]]]=REQ(converter=narrow_parameter)
+                               narrow: OptionalNarrowListT=REQ(converter=narrow_parameter)
                                ) -> HttpResponse:
 
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
