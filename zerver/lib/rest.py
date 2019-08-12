@@ -68,6 +68,9 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             supported_methods[arg] = kwargs[arg]
             del kwargs[arg]
 
+    if 'GET' in supported_methods:
+        supported_methods.setdefault('HEAD', supported_methods['GET'])
+
     if request.method == 'OPTIONS':
         response = HttpResponse(status=204)  # No content
         response['Allow'] = ', '.join(sorted(supported_methods.keys()))

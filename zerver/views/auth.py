@@ -11,7 +11,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import SimpleTemplateResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_safe
 from django.utils.translation import ugettext as _
 from django.utils.http import is_safe_url
 from django.core import signing
@@ -555,9 +555,7 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     # To support previewing the Zulip login pages, we have a special option
     # that disables the default behavior of redirecting logged-in users to the
     # logged-in app.
-    is_preview = False
-    if request.method == "GET" and request.GET and request.GET.get('preview'):
-        is_preview = True
+    is_preview = 'preview' in request.GET
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         if request.user and request.user.is_verified():
             return HttpResponseRedirect(request.user.realm.uri)
@@ -565,7 +563,7 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         return HttpResponseRedirect(request.user.realm.uri)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse('zerver.views.registration.realm_redirect')
-        if request.method == "GET" and request.GET:
+        if request.GET:
             redirect_url = "{}?{}".format(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)
 
@@ -790,7 +788,7 @@ def check_server_incompatibility(request: HttpRequest) -> bool:
     user_agent = parse_user_agent(request.META.get("HTTP_USER_AGENT", "Missing User-Agent"))
     return user_agent['name'] == "ZulipInvalid"
 
-@require_GET
+@require_safe
 @csrf_exempt
 def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     # Log which client is making this request.

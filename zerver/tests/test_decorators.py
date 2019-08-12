@@ -1709,7 +1709,7 @@ class RestAPITest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         result = self.client_options('/json/users')
         self.assertEqual(result.status_code, 204)
-        self.assertEqual(str(result['Allow']), 'GET, POST')
+        self.assertEqual(str(result['Allow']), 'GET, HEAD, POST')
 
         result = self.client_options('/json/streams/15')
         self.assertEqual(result.status_code, 204)

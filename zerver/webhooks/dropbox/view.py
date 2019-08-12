@@ -7,10 +7,10 @@ from zerver.models import UserProfile
 @api_key_only_webhook_view('Dropbox', notify_bot_owner_on_invalid_json=False)
 @has_request_variables
 def api_dropbox_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    if request.method == 'GET':
-        return HttpResponse(request.GET['challenge'])
-    elif request.method == 'POST':
+    if request.method == 'POST':
         topic = 'Dropbox'
         check_send_webhook_message(request, user_profile, topic,
                                    "File has been updated on Dropbox!")
         return json_success()
+    else:
+        return HttpResponse(request.GET['challenge'])

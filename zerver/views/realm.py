@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_safe
 
 from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
 from zerver.lib.actions import (
@@ -204,7 +204,7 @@ def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     do_deactivate_realm(realm, user)
     return json_success()
 
-@require_GET
+@require_safe
 def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpResponse:
     try:
         check_subdomain(subdomain)
