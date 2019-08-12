@@ -1,3 +1,3 @@
-/.*\+.*@.*/ zulip@localhost
-/.*\..*@.*/ zulip@localhost
-/^mm.*/ zulip@localhost
+/\+.*@/ zulip@localhost
+/\..*@/ zulip@localhost
+/^mm/ zulip@localhost
