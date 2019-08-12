@@ -579,28 +579,26 @@ def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: UserProfile
 
     return include_history
 
-def get_stream_name_from_narrow(narrow: OptionalNarrowListT) -> Optional[str]:
+def get_stream_from_narrow_access_unchecked(narrow: OptionalNarrowListT, realm: Realm) -> Optional[Stream]:
     if narrow is not None:
         for term in narrow:
             if term['operator'] == 'stream':
-                return term['operand'].lower()
+                return get_stream_by_narrow_operand_access_unchecked(term['operand'], realm)
     return None
 
 def exclude_muting_conditions(user_profile: UserProfile,
                               narrow: OptionalNarrowListT) -> List[Selectable]:
     conditions = []
-    stream_name = get_stream_name_from_narrow(narrow)
-
     stream_id = None
-    if stream_name is not None:
-        try:
-            # Note: It is okay here to not check access to stream
-            # because we are only using the stream id to exclude data,
-            # not to include results.
-            stream = get_stream_by_narrow_operand_access_unchecked(stream_name, user_profile.realm)
+    try:
+        # Note: It is okay here to not check access to stream
+        # because we are only using the stream id to exclude data,
+        # not to include results.
+        stream = get_stream_from_narrow_access_unchecked(narrow, user_profile.realm)
+        if stream is not None:
             stream_id = stream.id
-        except Stream.DoesNotExist:
-            pass
+    except Stream.DoesNotExist:
+        pass
 
     if stream_id is None:
         rows = Subscription.objects.filter(
