@@ -302,12 +302,9 @@ class CombineHandler(BaseWebsocketHandler):
             self._headers = httputil.HTTPHeaders()  # clear tornado default header
 
             for header, v in response.headers.get_all():
-                if header != 'Content-Length':
-                    # some header appear multiple times, eg 'Set-Cookie'
-                    self.add_header(header, v)
+                # some header appear multiple times, eg 'Set-Cookie'
+                self.add_header(header, v)
             if response.body:
-                # rewrite Content-Length Header by the response
-                self.set_header('Content-Length', len(response.body))
                 self.write(response.body)
         self.finish()
 
