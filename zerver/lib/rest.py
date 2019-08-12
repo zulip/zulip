@@ -71,7 +71,6 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if request.method == 'OPTIONS':
         response = HttpResponse(status=204)  # No content
         response['Allow'] = ', '.join(sorted(supported_methods.keys()))
-        response['Content-Length'] = "0"
         return response
 
     # Override requested method if magic method=??? parameter exists
