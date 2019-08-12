@@ -47,14 +47,7 @@ class zulip::postfix_localmail {
     group   => root,
     source  => 'puppet:///modules/zulip/postfix/virtual',
     require => Package[postfix],
-  }
-  exec {'postmap /etc/postfix/virtual':
-    subscribe   => File['/etc/postfix/virtual'],
-    refreshonly => true,
-    require     => [
-      File['/etc/postfix/main.cf'],
-      Package[postfix],
-    ],
+    notify  => Service['postfix'],
   }
 
   file {'/etc/postfix/transport':
