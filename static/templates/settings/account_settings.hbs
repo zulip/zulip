@@ -213,31 +213,7 @@
                 <button class="button rounded" id="api_key_button">{{t "Show/change your API key" }}</button>
             </div>
         </div>
-        <div id="get_api_key_box">
-            <p>{{t "Please re-enter your password to confirm your identity." }}
-              <a href="/accounts/password/reset/" target="_blank">{{t "Never had one? Forgotten it?" }}</a></p>
-            <form cslass="form-horizontal" id="get_api_key_form">
-                <div class="control-group">
-                    <label for="password" class="control-label">{{t "Current password" }}</label>
-                    <input type="password" autocomplete="off"
-                      name="password" id="get_api_key_password" value="" />
-                    <button type="submit" name="view_api_key" id="get_api_key_button"
-                      class="button sea-green">{{t 'Get API key' }}</button>
-                </div>
-            </form>
-        </div>
-        <div id="show_api_key_box">
-            <p>{{t "Your API key:" }}</p>
-            <p><b><span id="api_key_value"></span></b></p>
-            <div id="api_key_buttons">
-                <button type="submit" class="button white rounded regenerate_api_key">
-                    {{t "Generate new API key" }}
-                </button>
-                <a id="download_zuliprc" download="{{zuliprc}}" class="button sea-green">
-                    {{t "Download .zuliprc" }}
-                </a>
-            </div>
-            <div id="user_api_key_error" class="text-error"></div>
-        </div>
+        <!-- Render /settings/api_key_modal.hbs after #api_key_button is clicked
+        to avoid password being inserted by password manager too aggressively. -->
     </div>
 </div>

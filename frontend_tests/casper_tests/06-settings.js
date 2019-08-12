@@ -68,13 +68,13 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#get_api_key_button', function () {
-        casper.fill('#get_api_key_form', {password: test_credentials.default_user.password});
+        casper.fill('#api_key_form', {password: test_credentials.default_user.password});
         casper.click('#get_api_key_button');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#show_api_key_box', function () {
+    casper.waitUntilVisible('#show_api_key', function () {
         casper.test.assertMatch(casper.fetchText('#api_key_value'), /[a-zA-Z0-9]{32}/, "Looks like an API key");
 
         /*
@@ -90,7 +90,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#show_api_key_box', function () {
+    casper.waitUntilVisible('#show_api_key', function () {
         casper.test.assertExists('#download_zuliprc', '~/.zuliprc button exists');
         casper.click('#download_zuliprc');
     });
@@ -106,6 +106,8 @@ casper.then(function () {
 });
 
 casper.then(function () {
+    casper.click('#api_key_modal .close');
+
     // casper.waitUntilVisible('#account-settings-status', function () {
     casper.click('[data-section="your-bots"]');
     // });
