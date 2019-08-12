@@ -54,7 +54,7 @@ class RealmExportTest(ZulipTestCase):
         self.assert_json_success(result)
 
         export_dict = result.json()['exports']
-        self.assertEqual(export_dict[0]['extra_data'].get('export_path'), path_id)
+        self.assertEqual(export_dict[0]['export_data'].get('export_path'), path_id)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
                            RealmAuditLog.objects.filter(
@@ -95,7 +95,7 @@ class RealmExportTest(ZulipTestCase):
         self.assert_json_success(result)
 
         export_dict = result.json()['exports']
-        self.assertEqual(export_dict[0]['extra_data'].get('export_path'), path_id)
+        self.assertEqual(export_dict[0]['export_data'].get('export_path'), path_id)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
         self.assert_length(export_dict,
                            RealmAuditLog.objects.filter(
