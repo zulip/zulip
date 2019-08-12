@@ -53,6 +53,6 @@ python-digitalocean==1.14.0
 pip-tools==2.0.2
 
 # zulip's linting framework - zulint
--e git+https://github.com/zulip/zulint@9e0da9f6c9ffc617e0782ab69617f6bcf90a4271#egg=zulint==0.0.1
+-e git+https://github.com/zulip/zulint@aaed679f1ad38b230090eadd3870b7682500f60c#egg=zulint==0.0.1
 
 -r mypy.in
