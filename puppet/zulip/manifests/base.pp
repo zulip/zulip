@@ -90,7 +90,7 @@ class zulip::base {
 
   # $::memorysize_mb is a string in Facter < 3.0 and a double in Facter ≥ 3.0.
   # Either way, convert it to an integer.
-  $total_memory_mb_array = scanf("${::memorysize_mb}", "%i")
+  $total_memory_mb_array = scanf("${::memorysize_mb} ", '%i')
   $total_memory_mb = $total_memory_mb_array[0]
 
   group { 'zulip':
