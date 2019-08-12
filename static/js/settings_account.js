@@ -1,5 +1,6 @@
 var render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 var render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
+var render_settings_api_key_modal = require('../templates/settings/api_key_modal.hbs');
 
 var settings_account = (function () {
 
@@ -254,67 +255,67 @@ exports.set_up = function () {
     // Add custom profile fields elements to user account settings.
     exports.add_custom_profile_fields_to_settings();
     $("#account-settings-status").hide();
-    $("#api_key_value").text("");
-    $("#get_api_key_box").hide();
-    $("#show_api_key_box").hide();
-    $("#api_key_button_box").show();
 
-    $('#api_key_button').click(function () {
-        if (page_params.realm_password_auth_enabled !== false) {
-            $("#get_api_key_box").show();
-        } else {
+    var setup_api_key_modal = _.once(function () {
+        $('.account-settings-form').append(render_settings_api_key_modal());
+        $("#api_key_value").text("");
+        $("#show_api_key").hide();
+
+        if (page_params.realm_password_auth_enabled === false) {
             // Skip the password prompt step, since the user doesn't have one.
             $("#get_api_key_button").click();
         }
-        $("#api_key_button_box").hide();
-    });
 
-    $("#get_api_key_box").hide();
-    $("#show_api_key_box").hide();
+        $("#get_api_key_button").on("click", function (e) {
+            var data = {};
+            e.preventDefault();
+            e.stopPropagation();
 
-    $("#get_api_key_button").on("click", function (e) {
-        var data = {};
-        e.preventDefault();
-        e.stopPropagation();
+            data.password = $("#get_api_key_password").val();
+            channel.post({
+                url: '/json/fetch_api_key',
+                data: data,
+                success: function (data) {
+                    $("#get_api_key_password").val("");
+                    $("#api_key_value").text(data.api_key);
+                    // The display property on the error bar is set to important
+                    // so instead of making display: none !important we just
+                    // remove it.
+                    $('#api_key_status').remove();
+                    $("#password_confirmation").hide();
+                    $("#show_api_key").show();
+                },
+                error: function (xhr) {
+                    ui_report.error(i18n.t("Error"), xhr, $('#api_key_status').expectOne());
+                    $("#show_api_key").hide();
+                    $("#api_key_modal").show();
+                },
+            });
+        });
 
-        data.password = $("#get_api_key_password").val();
-        channel.post({
-            url: '/json/fetch_api_key',
-            data: data,
-            success: function (data) {
-                var settings_status = $('#account-settings-status').expectOne();
+        $("#show_api_key").on("click", "button.regenerate_api_key", function () {
+            channel.post({
+                url: '/json/users/me/api_key/regenerate',
+                idempotent: true,
+                success: function (data) {
+                    $('#api_key_value').text(data.api_key);
+                },
+                error: function (xhr) {
+                    $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
+                },
+            });
+        });
 
-                $("#get_api_key_password").val("");
-                $("#api_key_value").text(data.api_key);
-                $("#show_api_key_box").show();
-                $("#get_api_key_box").hide();
-                settings_status.hide();
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
-                $("#show_api_key_box").hide();
-                $("#get_api_key_box").show();
-            },
+        $("#download_zuliprc").on("click", function () {
+            var data = settings_bots.generate_zuliprc_content(people.my_current_email(),
+                                                              $("#api_key_value").text());
+            $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
         });
     });
 
-    $("#show_api_key_box").on("click", "button.regenerate_api_key", function () {
-        channel.post({
-            url: '/json/users/me/api_key/regenerate',
-            idempotent: true,
-            success: function (data) {
-                $('#api_key_value').text(data.api_key);
-            },
-            error: function (xhr) {
-                $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
-            },
-        });
-    });
-
-    $("#download_zuliprc").on("click", function () {
-        var data = settings_bots.generate_zuliprc_content(people.my_current_email(),
-                                                          $("#api_key_value").text());
-        $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
+    $('#api_key_button').click(function () {
+        setup_api_key_modal();
+        overlays.open_modal('api_key_modal');
     });
 
     function clear_password_change() {
