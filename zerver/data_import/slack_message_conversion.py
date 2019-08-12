@@ -3,7 +3,7 @@ from typing import Any, Dict, Tuple, List, Optional
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
-AddedUsersT = Dict[str, int]
+SlackToZulipUserIDT = Dict[str, int]
 AddedChannelsT = Dict[str, Tuple[str, int]]
 
 # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
@@ -67,7 +67,8 @@ def get_user_full_name(user: ZerverFieldsT) -> str:
 # Markdown mapping
 def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
                               added_channels: AddedChannelsT,
-                              added_users: AddedUsersT) -> Tuple[str, List[int], bool]:
+                              slack_user_id_to_zulip_user_id: SlackToZulipUserIDT) -> \
+        Tuple[str, List[int], bool]:
     mentioned_users_id = []
     text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
     text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
@@ -92,8 +93,8 @@ def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
         # Check user mentions and change mention format from
         # '<@slack_id|short_name>' to '@**full_name**'
         if (re.findall(SLACK_USERMENTION_REGEX, tokens[iterator], re.VERBOSE)):
-            tokens[iterator], user_id = get_user_mentions(tokens[iterator],
-                                                          users, added_users)
+            tokens[iterator], user_id = get_user_mentions(tokens[iterator], users,
+                                                          slack_user_id_to_zulip_user_id)
             if user_id is not None:
                 mentioned_users_id.append(user_id)
 
@@ -112,7 +113,7 @@ def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
     return text, mentioned_users_id, message_has_link
 
 def get_user_mentions(token: str, users: List[ZerverFieldsT],
-                      added_users: AddedUsersT) -> Tuple[str, Optional[int]]:
+                      slack_user_id_to_zulip_user_id: SlackToZulipUserIDT) -> Tuple[str, Optional[int]]:
     slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
     assert slack_usermention_match is not None
     short_name = slack_usermention_match.group(4)
@@ -121,7 +122,7 @@ def get_user_mentions(token: str, users: List[ZerverFieldsT],
         if (user['id'] == slack_id and user['name'] == short_name and short_name) or \
            (user['id'] == slack_id and short_name is None):
             full_name = get_user_full_name(user)
-            user_id = added_users[slack_id]
+            user_id = slack_user_id_to_zulip_user_id[slack_id]
             mention = "@**" + full_name + "**"
             token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
             return token, user_id
