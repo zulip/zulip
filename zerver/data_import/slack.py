@@ -636,11 +636,11 @@ def get_messages_iterator(slack_data_dir: str, added_channels: Dict[str, Any],
             dir_name = os.path.basename(dir_path)
             for message in messages:
                 # To give every message the channel information
-                if dir_name in added_channels.keys():
+                if dir_name in added_channels:
                     message['channel_name'] = dir_name
-                elif dir_name in added_mpims.keys():
+                elif dir_name in added_mpims:
                     message['mpim_name'] = dir_name
-                elif dir_name in dm_members.keys():
+                elif dir_name in dm_members:
                     message['pm_name'] = dir_name
             messages_for_one_day += messages
 
