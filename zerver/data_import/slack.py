@@ -146,7 +146,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
     # We have only one primary owner in slack, see link
     # https://get.slack.help/hc/en-us/articles/201912948-Owners-and-Administrators
     # This is to import the primary owner first from all the users
-    user_id_count = custom_field_id_count = customprofilefield_id = 0
+    user_id_count = custom_profile_field_value_id_count = customprofilefield_id = 0
     primary_owner_id = user_id_count
     user_id_count += 1
 
@@ -182,10 +182,10 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
                                           customprofilefield_id, realm_id,
                                           slack_custom_field_name_to_zulip_custom_field_id)
             # Store the custom field values for the corresponding user
-            custom_field_id_count = build_customprofilefields_values(
+            custom_profile_field_value_id_count = build_customprofilefields_values(
                 slack_custom_field_name_to_zulip_custom_field_id,
                 slack_user_id_to_custom_profile_fields[slack_user_id], user_id,
-                custom_field_id_count, zerver_customprofilefield_values)
+                custom_profile_field_value_id_count, zerver_customprofilefield_values)
 
         userprofile = UserProfile(
             full_name=get_user_full_name(user),
