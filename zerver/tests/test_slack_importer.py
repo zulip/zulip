@@ -356,10 +356,10 @@ class SlackImporter(ZulipTestCase):
         zerver_userprofile = [{'id': 1}, {'id': 8}, {'id': 7}, {'id': 5}]
         realm_id = 3
 
-        realm, added_channels, added_mpims, dm_members, \
-            added_recipient = channels_to_zerver_stream(self.fixture_file_name("", "slack_fixtures"), realm_id,
-                                                        {"zerver_userpresence": []}, slack_user_id_to_zulip_user_id,
-                                                        zerver_userprofile)
+        realm, added_channels, added_mpims, dm_members, slack_recipient_name_to_zulip_recipient_id = \
+            channels_to_zerver_stream(self.fixture_file_name("", "slack_fixtures"), realm_id,
+                                      {"zerver_userpresence": []}, slack_user_id_to_zulip_user_id,
+                                      zerver_userprofile)
 
         test_added_channels = {'sharedchannel': ("C061A0HJG", 3), 'general': ("C061A0YJG", 1),
                                'general1': ("C061A0YJP", 2), 'random': ("C061A0WJG", 0)}
@@ -368,7 +368,7 @@ class SlackImporter(ZulipTestCase):
                             'mpdm-user4--user1--user5-1': ('G6N944JPL', 2)}
         test_dm_members = {'DJ47BL849': ('U061A1R2R', 'U061A5N1G'), 'DHX1UP7EG': ('U061A5N1G', 'U064KUGRJ'),
                            'DK8HSJDHS': ('U061A1R2R', 'U064KUGRJ'), 'DRS3PSLDK': ('U064KUGRJ', 'U064KUGRJ')}
-        test_added_recipient_keys = set(slack_user_id_to_zulip_user_id.keys()) | set(test_added_channels.keys()) \
+        slack_recipient_names = set(slack_user_id_to_zulip_user_id.keys()) | set(test_added_channels.keys()) \
             | set(test_added_mpims.keys())
 
         self.assertDictEqual(test_added_channels, added_channels)
@@ -381,8 +381,8 @@ class SlackImporter(ZulipTestCase):
 
         # We can't do an assertDictEqual since during the construction of Personal
         # recipients, slack_user_id_to_zulip_user_id are iterated in diffrent order in Python 3.5 and 3.6.
-        self.assertEqual(set(added_recipient.keys()), test_added_recipient_keys)
-        self.assertEqual(set(added_recipient.values()), set(i for i in range(11)))
+        self.assertEqual(set(slack_recipient_name_to_zulip_recipient_id.keys()), slack_recipient_names)
+        self.assertEqual(set(slack_recipient_name_to_zulip_recipient_id.values()), set(i for i in range(11)))
 
         # functioning of zerver subscriptions are already tested in the helper functions
         # This is to check the concatenation of the output lists from the helper functions
@@ -419,7 +419,7 @@ class SlackImporter(ZulipTestCase):
 
         realm_id = 1
         user_list = []  # type: List[Dict[str, Any]]
-        realm, slack_user_id_to_zulip_user_id, added_recipient, \
+        realm, slack_user_id_to_zulip_user_id, slack_recipient_name_to_zulip_recipient_id, \
             added_channels, added_mpims, dm_members, \
             avatar_list, em = slack_workspace_to_realm('testdomain', realm_id, user_list, 'test-realm',
                                                        './random_path', {})
@@ -429,7 +429,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(slack_user_id_to_zulip_user_id, {})
         self.assertEqual(added_channels, {})
         self.assertEqual(added_mpims, {})
-        self.assertEqual(added_recipient, {})
+        self.assertEqual(slack_recipient_name_to_zulip_recipient_id, {})
         self.assertEqual(avatar_list, [])
 
         mock_channels_to_zerver_stream.assert_called_once_with("./random_path", 1, ANY, {}, [])
@@ -538,9 +538,9 @@ class SlackImporter(ZulipTestCase):
                          "text": "<@U061A5N1G>: Are you in Kochi?", "user": "U066MTL5U",
                          "ts": "1553607595.000700", "pm_name": "DJ47BL849"}]  # type: List[Dict[str, Any]]
 
-        added_recipient = {'random': 2, 'general': 1, 'mpdm-user9--user2--user10-1': 5,
-                           'mpdm-user6--user7--user4-1': 6, 'U066MTL5U': 7, 'U061A5N1G': 8,
-                           'U061A1R2R': 8}
+        slack_recipient_name_to_zulip_recipient_id = {'random': 2, 'general': 1, 'mpdm-user9--user2--user10-1': 5,
+                                                      'mpdm-user6--user7--user4-1': 6, 'U066MTL5U': 7, 'U061A5N1G': 8,
+                                                      'U061A1R2R': 8}
         dm_members = {'DJ47BL849': ('U066MTL5U', 'U061A5N1G'), 'DHX1UP7EG': ('U061A5N1G', 'U061A1R2R')}
 
         zerver_usermessage = []  # type: List[Dict[str, Any]]
@@ -549,9 +549,8 @@ class SlackImporter(ZulipTestCase):
 
         zerver_message, zerver_usermessage, attachment, uploads, reaction = \
             channel_message_to_zerver_message(
-                1, user_data, slack_user_id_to_zulip_user_id, added_recipient,
-                all_messages, [], subscriber_map,
-                added_channels, dm_members, 'domain', set())
+                1, user_data, slack_user_id_to_zulip_user_id, slack_recipient_name_to_zulip_recipient_id,
+                all_messages, [], subscriber_map, added_channels, dm_members, 'domain', set())
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -574,13 +573,13 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], 'imported from slack')
         self.assertEqual(zerver_message[3]['content'], '/me added bot')
-        self.assertEqual(zerver_message[4]['recipient'], added_recipient['general'])
+        self.assertEqual(zerver_message[4]['recipient'], slack_recipient_name_to_zulip_recipient_id['general'])
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], 'imported from slack')
-        self.assertEqual(zerver_message[1]['recipient'], added_recipient['random'])
-        self.assertEqual(zerver_message[5]['recipient'], added_recipient['mpdm-user9--user2--user10-1'])
-        self.assertEqual(zerver_message[6]['recipient'], added_recipient['mpdm-user6--user7--user4-1'])
-        self.assertEqual(zerver_message[7]['recipient'], added_recipient['U061A5N1G'])
-        self.assertEqual(zerver_message[7]['recipient'], added_recipient['U061A5N1G'])
+        self.assertEqual(zerver_message[1]['recipient'], slack_recipient_name_to_zulip_recipient_id['random'])
+        self.assertEqual(zerver_message[5]['recipient'], slack_recipient_name_to_zulip_recipient_id['mpdm-user9--user2--user10-1'])
+        self.assertEqual(zerver_message[6]['recipient'], slack_recipient_name_to_zulip_recipient_id['mpdm-user6--user7--user4-1'])
+        self.assertEqual(zerver_message[7]['recipient'], slack_recipient_name_to_zulip_recipient_id['U061A5N1G'])
+        self.assertEqual(zerver_message[7]['recipient'], slack_recipient_name_to_zulip_recipient_id['U061A5N1G'])
 
         self.assertEqual(zerver_message[3]['id'], zerver_message[0]['id'] + 3)
         self.assertEqual(zerver_message[4]['id'], zerver_message[0]['id'] + 4)
