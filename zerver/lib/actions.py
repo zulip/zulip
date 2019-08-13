@@ -5233,7 +5233,7 @@ def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
 def do_get_streams(
         user_profile: UserProfile, include_public: bool=True,
         include_subscribed: bool=True, include_all_active: bool=False,
-        include_default: bool=False, include_owner_subscribed: bool=False
+        include_default: bool=False, include_owner_subscribed: bool=False,
 ) -> List[Dict[str, Any]]:
     if include_all_active and not user_profile.is_api_super_user:
         raise JsonableError(_("User not authorized for this query"))

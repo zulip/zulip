@@ -78,6 +78,7 @@ function get_stream_suggestions(last, operators) {
     var valid = ['stream', 'search', ''];
     var invalid = [
         {operator: 'stream'},
+        {operator: 'streams'},
         {operator: 'is', operand: 'private'},
         {operator: 'pm-with'},
     ];
@@ -395,6 +396,24 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     return suggestions;
 }
 
+function get_streams_filter_suggestions(last, operators) {
+    var suggestions = [
+        {
+            search_string: 'streams:public',
+            description: 'Public streams with all history',
+            invalid: [
+                {operator: 'is', operand: 'private'},
+                {operator: 'stream'},
+                {operator: 'group-pm-with'},
+                {operator: 'pm-with'},
+                {operator: 'in'},
+                {operator: 'streams'},
+            ],
+
+        },
+    ];
+    return get_special_filter_suggestions(last, operators, suggestions);
+}
 function get_is_filter_suggestions(last, operators) {
     var suggestions = [
         {
@@ -621,6 +640,9 @@ exports.get_suggestions = function (base_query, query) {
 
     // Get all individual suggestions, and then attach_suggestions
     // mutates the list 'result' to add a properly-formatted suggestion
+    suggestions = get_streams_filter_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
     suggestions = get_is_filter_suggestions(last, base_operators);
     attach_suggestions(result, base, suggestions);
 
@@ -741,6 +763,9 @@ exports.get_suggestions_legacy = function (query) {
 
     // Get all individual suggestions, and then attach_suggestions
     // mutates the list 'result' to add a properly-formatted suggestion
+    suggestions = get_streams_filter_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
     suggestions = get_is_filter_suggestions(last, base_operators);
     attach_suggestions(result, base, suggestions);
 

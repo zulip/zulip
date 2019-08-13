@@ -30,7 +30,7 @@ def is_web_public_compatible(narrow: Iterable[Dict[str, str]]) -> bool:
         operator = element['operator']
         if 'operand' not in element:
             return False
-        if operator not in ["stream", "topic", "sender", "has", "search", "near", "id"]:
+        if operator not in ["streams", "stream", "topic", "sender", "has", "search", "near", "id"]:
             return False
     return True
 

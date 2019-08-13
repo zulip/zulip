@@ -8,6 +8,8 @@ from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
     bulk_get_streams, get_realm_stream, DefaultStreamGroup, get_stream_by_id_in_realm
 
+from django.db.models.query import QuerySet
+
 def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[str]) -> None:
     if stream_id is None and stream is None:
         raise JsonableError(_("Please supply 'stream'."))
@@ -89,6 +91,9 @@ def access_stream_by_id(user_profile: UserProfile,
                                             require_active=require_active,
                                             allow_realm_admin=allow_realm_admin)
     return (stream, recipient, sub)
+
+def access_stream_by_invite_only(realm: Realm, invite_only: bool) -> 'QuerySet[Stream]':
+    return Stream.objects.filter(realm=realm, invite_only=invite_only)
 
 def get_stream_by_id(stream_id: int) -> Stream:
     error = _("Invalid stream id")

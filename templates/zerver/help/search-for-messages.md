@@ -25,6 +25,10 @@ Here is the **full list of search operators**.
 
 * `stream:design`: Search within the stream `#design`.
 * `stream:design topic:emoji+picker`: Search within the topic `emoji picker`.
+* `streams:public`: Any `stream` or `streams` restriction searches all history,
+  otherwise it just searches received messages" and "you're only allowed one `stream`
+  or `streams` operator at a time. Search within all `public` streams
+  (both subscibed and unsubscribed).
 * `is:private`: Search all your private messages.
 * `pm-with:ada@zulip.com`: Search 1-on-1 messages with Ada.
 * `group-pm-with:ada@zulip.com`: Search group private messages that

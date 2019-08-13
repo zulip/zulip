@@ -448,6 +448,7 @@ run_test('empty_query_suggestions', () => {
 
     var expected = [
         "",
+        "streams:public",
         "is:private",
         "is:starred",
         "is:mentioned",
@@ -613,6 +614,7 @@ run_test('check_is_suggestions', () => {
     suggestions = search.get_suggestions('', query);
     expected = [
         '',
+        'streams:public',
         'is:private',
         'is:starred',
         'is:mentioned',
@@ -673,6 +675,7 @@ run_test('check_is_suggestions', () => {
     suggestions = search.get_suggestions('', query);
     expected = [
         'st',
+        'streams:public',
         'is:starred',
         'stream:',
     ];
@@ -1092,6 +1095,7 @@ run_test('operator_suggestions', () => {
     suggestions = search.get_suggestions('', query);
     expected = [
         'st',
+        'streams:public',
         'is:starred',
         'stream:',
     ];
@@ -1109,6 +1113,7 @@ run_test('operator_suggestions', () => {
     suggestions = search.get_suggestions('', query);
     expected = [
         '-s',
+        '-streams:public',
         '-sender:bob@zulip.com',
         '-stream:',
         '-sender:',

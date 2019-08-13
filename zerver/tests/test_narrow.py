@@ -9,11 +9,15 @@ from sqlalchemy.sql import (
 from sqlalchemy.sql import compiler
 
 from zerver.models import (
-    Realm, Subscription,
+    Realm, Subscription, Recipient, Stream,
     get_display_recipient, get_personal_recipient, get_realm, get_stream,
     UserMessage, get_stream_recipient, Message
 )
-from zerver.lib.actions import do_set_realm_property, do_deactivate_user
+from zerver.lib.actions import (
+    do_set_realm_property,
+    do_deactivate_user,
+    create_streams_if_needed
+)
 from zerver.lib.message import (
     MessageDict,
 )
@@ -47,7 +51,7 @@ from zerver.views.messages import (
     LARGER_THAN_MAX_MESSAGE_ID,
 )
 
-from typing import Dict, List, Sequence, Tuple, Union, Any, Optional
+from typing import Dict, Mapping, List, Sequence, Tuple, Union, Any, Optional
 import mock
 import os
 import re
@@ -105,6 +109,71 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
         term = dict(operator='is', operand='private')
         self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
+
+    def test_add_term_using_streams_operator_and_invalid_operand_should_raise_error(
+            self) -> None:  # NEGATED
+        term = dict(operator='streams', operand='invalid_operands')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
+    def test_add_term_using_streams_operator_and_public_stream_operand(self) -> None:
+        term = dict(operator='streams', operand='public')
+        self._do_add_term_test(term, 'WHERE recipient_id IN (:recipient_id_1, :recipient_id_2, :recipient_id_3, :recipient_id_4, :recipient_id_5)')
+
+        # Add new streams
+        stream_dicts = [
+            {
+                "name": "publicstream",
+                "description": "Public stream with public history"
+            },
+            {
+                "name": "privatestream",
+                "description": "Private stream with non-public history",
+                "invite_only": True
+            },
+            {
+                "name": "privatewithhistory",
+                "description": "Private stream with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True
+            }
+        ]  # type: List[Mapping[str, Any]]
+        realm = get_realm('zulip')
+        created, existing = create_streams_if_needed(realm, stream_dicts)
+        self.assertEqual(len(created), 3)
+        self.assertEqual(len(existing), 0)
+
+        # Number of recipient ids will increase by 1 and not 3
+        self._do_add_term_test(term, 'WHERE recipient_id IN (:recipient_id_1, :recipient_id_2, :recipient_id_3, :recipient_id_4, :recipient_id_5, :recipient_id_6)')
+
+    def test_add_term_using_streams_operator_and_public_stream_operand_negated(self) -> None:
+        term = dict(operator='streams', operand='public', negated=True)
+        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1, :recipient_id_2, :recipient_id_3, :recipient_id_4, :recipient_id_5)')
+
+        # Add new streams
+        stream_dicts = [
+            {
+                "name": "publicstream",
+                "description": "Public stream with public history"
+            },
+            {
+                "name": "privatestream",
+                "description": "Private stream with non-public history",
+                "invite_only": True
+            },
+            {
+                "name": "privatewithhistory",
+                "description": "Private stream with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True
+            }
+        ]  # type: List[Mapping[str, Any]]
+        realm = get_realm('zulip')
+        created, existing = create_streams_if_needed(realm, stream_dicts)
+        self.assertEqual(len(created), 3)
+        self.assertEqual(len(existing), 0)
+
+        # Number of recipient ids will increase by 1 and not 3
+        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1, :recipient_id_2, :recipient_id_3, :recipient_id_4, :recipient_id_5, :recipient_id_6)')
 
     def test_add_term_using_is_operator_private_operand_and_negated(
             self) -> None:  # NEGATED
@@ -414,6 +483,8 @@ class NarrowLibraryTest(TestCase):
                                                     "operand": "starred"}]))
         self.assertFalse(is_web_public_compatible([{"operator": "is",
                                                     "operand": "private"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "streams",
+                                                   "operand": "public"}]))
         # Malformed input not allowed
         self.assertFalse(is_web_public_compatible([{"operator": "has"}]))
 
@@ -425,6 +496,18 @@ class IncludeHistoryTest(ZulipTestCase):
         # Negated stream searches should not include history.
         narrow = [
             dict(operator='stream', operand='public_stream', negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
+
+        # streams:public searches should include history for non-guest members.
+        narrow = [
+            dict(operator='streams', operand='public'),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile))
+
+        # Negated -streams:public searches should not include history.
+        narrow = [
+            dict(operator='streams', operand='public', negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile))
 
@@ -469,6 +552,24 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile))
 
+        # No point in searching history for is operator even if included with
+        # streams:public
+        narrow = [
+            dict(operator='streams', operand='public'),
+            dict(operator='is', operand='mentioned'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        narrow = [
+            dict(operator='streams', operand='public'),
+            dict(operator='is', operand='unread'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
+        narrow = [
+            dict(operator='streams', operand='public'),
+            dict(operator='is', operand='alerted'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
+
         # simple True case
         narrow = [
             dict(operator='stream', operand='public_stream'),
@@ -486,6 +587,12 @@ class IncludeHistoryTest(ZulipTestCase):
         guest_user_profile = self.example_user("polonius")
         # Using 'Cordelia' to compare between a guest and a normal user
         subscribed_user_profile = self.example_user("cordelia")
+
+        # streams:public searches should not include history for guest members.
+        narrow = [
+            dict(operator='streams', operand='public'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile))
 
         # Guest user can't access public stream
         self.subscribe(subscribed_user_profile, 'public_stream_2')
@@ -958,11 +1065,11 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             assert(message["id"] in message_ids)
 
-    def get_query_ids(self) -> Dict[str, int]:
+    def get_query_ids(self) -> Dict[str, Union[int, str]]:
         hamlet_user = self.example_user('hamlet')
         othello_user = self.example_user('othello')
 
-        query_ids = {}  # type: Dict[str, int]
+        query_ids = {}  # type: Dict[str, Union[int, str]]
 
         scotland_stream = get_stream('Scotland', hamlet_user.realm)
         query_ids['scotland_recipient'] = get_stream_recipient(scotland_stream.id).id
@@ -970,7 +1077,10 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids['othello_id'] = othello_user.id
         query_ids['hamlet_recipient'] = get_personal_recipient(hamlet_user.id).id
         query_ids['othello_recipient'] = get_personal_recipient(othello_user.id).id
-
+        recipients = Recipient.objects.filter(type=Recipient.STREAM,
+                                              type_id__in=Stream.objects.filter(
+                                                  realm=hamlet_user.realm, invite_only=False)).values('id')
+        query_ids['public_streams_recipents'] = ", ".join(str(r['id']) for r in recipients)
         return query_ids
 
     def test_content_types(self) -> None:
@@ -2593,6 +2703,18 @@ class GetOldMessagesTest(ZulipTestCase):
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["stream", "Scotland"]]'},
+                                             sql)
+
+        sql_template = 'SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id IN ({public_streams_recipents}) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql = sql_template.format(**query_ids)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
+                                              'narrow': '[["streams", "public"]]'},
+                                             sql)
+
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND recipient_id NOT IN ({public_streams_recipents}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql = sql_template.format(**query_ids)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
+                                              'narrow': '[{"operator":"streams", "operand":"public", "negated": true}]'},
                                              sql)
 
         sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND upper(subject) = upper('blah') ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
