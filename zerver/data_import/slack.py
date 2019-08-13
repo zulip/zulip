@@ -146,7 +146,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
     # We have only one primary owner in slack, see link
     # https://get.slack.help/hc/en-us/articles/201912948-Owners-and-Administrators
     # This is to import the primary owner first from all the users
-    user_id_count = custom_profile_field_value_id_count = customprofilefield_id = 0
+    user_id_count = custom_profile_field_value_id_count = custom_profile_field_id_count = 0
     primary_owner_id = user_id_count
     user_id_count += 1
 
@@ -176,10 +176,10 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         # Check for custom profile fields
         if slack_user_id in slack_user_id_to_custom_profile_fields:
             # For processing the fields
-            slack_custom_field_name_to_zulip_custom_field_id, customprofilefield_id = \
+            slack_custom_field_name_to_zulip_custom_field_id, custom_profile_field_id_count = \
                 build_customprofile_field(zerver_customprofilefield,
                                           slack_user_id_to_custom_profile_fields[slack_user_id],
-                                          customprofilefield_id, realm_id,
+                                          custom_profile_field_id_count, realm_id,
                                           slack_custom_field_name_to_zulip_custom_field_id)
             # Store the custom field values for the corresponding user
             custom_profile_field_value_id_count = build_customprofilefields_values(
@@ -220,7 +220,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         zerver_customprofilefield_values
 
 def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: ZerverFieldsT,
-                              customprofilefield_id: int, realm_id: int,
+                              custom_profile_field_id: int, realm_id: int,
                               slack_custom_field_name_to_zulip_custom_field_id: ZerverFieldsT) \
         -> Tuple[ZerverFieldsT, int]:
     # The name of the custom profile field is not provided in the slack data
@@ -232,9 +232,9 @@ def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: 
             if field in slack_custom_fields:
                 field_name = field
             else:
-                field_name = "slack custom field %s" % (str(customprofilefield_id + 1),)
+                field_name = "slack custom field %s" % (str(custom_profile_field_id + 1),)
             customprofilefield = CustomProfileField(
-                id=customprofilefield_id,
+                id=custom_profile_field_id,
                 name=field_name,
                 field_type=1  # For now this is defaulted to 'SHORT_TEXT'
                               # Processing is done in the function 'process_customprofilefields'
@@ -244,10 +244,10 @@ def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: 
                                                     exclude=['realm'])
             customprofilefield_dict['realm'] = realm_id
 
-            slack_custom_field_name_to_zulip_custom_field_id[field] = customprofilefield_id
-            customprofilefield_id += 1
+            slack_custom_field_name_to_zulip_custom_field_id[field] = custom_profile_field_id
+            custom_profile_field_id += 1
             customprofile_field.append(customprofilefield_dict)
-    return slack_custom_field_name_to_zulip_custom_field_id, customprofilefield_id
+    return slack_custom_field_name_to_zulip_custom_field_id, custom_profile_field_id
 
 def process_slack_custom_fields(user: ZerverFieldsT,
                                 slack_user_id_to_custom_profile_fields: ZerverFieldsT) -> None:
