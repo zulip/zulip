@@ -1478,6 +1478,27 @@ def get_huddle_user_ids(recipient: Recipient) -> List[int]:
         recipient=recipient
     ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
 
+def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]]:
+    """
+    Takes a list of huddle-type recipients, returns a dict
+    mapping recipient id to list of user ids in the huddle.
+    """
+    assert all(recipient.type == Recipient.HUDDLE for recipient in recipients)
+    if not recipients:
+        return {}
+
+    subscriptions = Subscription.objects.filter(
+        recipient__in=recipients
+    ).order_by('user_profile_id')
+
+    result_dict = {}  # type: Dict[int, List[int]]
+    for recipient in recipients:
+        result_dict[recipient.id] = [subscription.user_profile_id
+                                     for subscription in subscriptions
+                                     if subscription.recipient_id == recipient.id]
+
+    return result_dict
+
 def bulk_get_recipients(type: int, type_ids: List[int]) -> Dict[int, Any]:
     def cache_key_function(type_id: int) -> str:
         return get_recipient_cache_key(type, type_id)

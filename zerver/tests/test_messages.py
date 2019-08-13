@@ -86,7 +86,8 @@ from zerver.models import (
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
     RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
     get_stream, get_stream_recipient, get_system_bot, get_user, Reaction,
-    flush_per_request_caches, ScheduledMessage, get_huddle_recipient
+    flush_per_request_caches, ScheduledMessage, get_huddle_recipient,
+    bulk_get_huddle_user_ids, get_huddle_user_ids
 )
 
 
@@ -4330,3 +4331,27 @@ class MessageVisibilityTest(ZulipTestCase):
         with mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
             maybe_update_first_visible_message_id(realm, lookback_hours)
         m.assert_called_once_with(realm)
+
+class TestBulkGetHuddleUserIds(ZulipTestCase):
+    def test_bulk_get_huddle_user_ids(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+        iago = self.example_user('iago')
+        message_ids = [
+            self.send_huddle_message(hamlet.email, [cordelia.email, othello.email], 'test'),
+            self.send_huddle_message(cordelia.email, [hamlet.email, othello.email, iago.email], 'test')
+        ]
+
+        messages = Message.objects.filter(id__in=message_ids).order_by("id")
+        first_huddle_recipient = messages[0].recipient
+        first_huddle_user_ids = list(get_huddle_user_ids(first_huddle_recipient))
+        second_huddle_recipient = messages[1].recipient
+        second_huddle_user_ids = list(get_huddle_user_ids(second_huddle_recipient))
+
+        huddle_user_ids = bulk_get_huddle_user_ids([first_huddle_recipient, second_huddle_recipient])
+        self.assertEqual(huddle_user_ids[first_huddle_recipient.id], first_huddle_user_ids)
+        self.assertEqual(huddle_user_ids[second_huddle_recipient.id], second_huddle_user_ids)
+
+    def test_bulk_get_huddle_user_ids_empty_list(self) -> None:
+        self.assertEqual(bulk_get_huddle_user_ids([]), {})
