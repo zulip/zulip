@@ -150,7 +150,7 @@ def access_stream_for_unmute_topic_by_id(user_profile: UserProfile,
         raise JsonableError(error)
     return stream
 
-def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: str) -> bool:
+def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool:
     """Determine whether the provided user is allowed to access the
     history of the target stream.  The stream is specified by name.
 
@@ -166,23 +166,25 @@ def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: st
     access_stream is being called elsewhere to confirm that the user
     can actually see this stream.
     """
-    try:
-        stream = get_stream(stream_name, user_profile.realm)
-    except Stream.DoesNotExist:
-        return False
-
     if stream.is_history_realm_public() and not user_profile.is_guest:
         return True
 
     if stream.is_history_public_to_subscribers():
         # In this case, we check if the user is subscribed.
-        error = _("Invalid stream name '%s'") % (stream_name,)
+        error = _("Invalid stream name '%s'") % (stream.name,)
         try:
             (recipient, sub) = access_stream_common(user_profile, stream, error)
         except JsonableError:
             return False
         return True
     return False
+
+def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: str) -> bool:
+    try:
+        stream = get_stream(stream_name, user_profile.realm)
+    except Stream.DoesNotExist:
+        return False
+    return can_access_stream_history(user_profile, stream)
 
 def filter_stream_authorization(user_profile: UserProfile,
                                 streams: Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]:
