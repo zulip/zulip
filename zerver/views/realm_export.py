@@ -1,5 +1,8 @@
 from datetime import timedelta
 
+from analytics.models import RealmCount
+
+from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse, HttpRequest
@@ -19,16 +22,30 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     event_type = RealmAuditLog.REALM_EXPORTED
     event_time = timezone_now()
     realm = user.realm
-    time_delta_limit = 5
-    event_time_delta = event_time - timedelta(days=7)
+    EXPORT_LIMIT = 5
+    # Conservative limit on the size of message history in
+    # organizations being exported; this exists to protect Zulip
+    # against a possible unmonitored accidental DoS caused by trying
+    # to export an organization with huge history.
+    MAX_MESSAGE_HISTORY = 250000
+    MAX_UPLOAD_QUOTA = 10 * 1024 * 1024 * 1024
 
     # Filter based upon the number of events that have occurred in the delta
     # If we are at the limit, the incoming request is rejected
+    event_time_delta = event_time - timedelta(days=7)
     limit_check = RealmAuditLog.objects.filter(realm=realm,
                                                event_type=event_type,
                                                event_time__gte=event_time_delta)
-    if len(limit_check) >= time_delta_limit:
+    if len(limit_check) >= EXPORT_LIMIT:
         return json_error(_('Exceeded rate limit.'))
+
+    total_messages = sum(realm_count.value for realm_count in
+                         RealmCount.objects.filter(realm=user.realm,
+                                                   property='messages_sent:client:day'))
+    if (total_messages > MAX_MESSAGE_HISTORY or
+            user.realm.currently_used_upload_space_bytes() > MAX_UPLOAD_QUOTA):
+        return json_error(_('Please request a manual export from %s.') % (
+            settings.ZULIP_ADMINISTRATOR,))
 
     row = RealmAuditLog.objects.create(realm=realm,
                                        event_type=event_type,
