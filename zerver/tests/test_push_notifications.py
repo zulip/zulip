@@ -1675,8 +1675,10 @@ class TestPushNotificationsContent(ZulipTestCase):
         tests = fixtures["regular_tests"]
         for test in tests:
             if "text_content" in test:
-                output = get_mobile_push_content(test["expected_output"])
-                self.assertEqual(output, test["text_content"])
+                with self.subTest(markdown_test_case=test["name"]):
+                    print("Running markdown fixture test %s" % (test["name"],))
+                    output = get_mobile_push_content(test["expected_output"])
+                    self.assertEqual(output, test["text_content"])
 
     def test_backend_only_fixtures(self) -> None:
         realm = get_realm("zulip")
