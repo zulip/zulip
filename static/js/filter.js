@@ -394,6 +394,10 @@ Filter.prototype = {
             this.has_operator("pm-with") || this.has_operator("group-pm-with");
     },
 
+    includes_full_stream_history: function () {
+        return this.has_operator("stream") || this.has_operator("streams");
+    },
+
     can_apply_locally: function () {
         if (this.is_search()) {
             // The semantics for matching keywords are implemented

@@ -71,6 +71,7 @@ run_test('basics', () => {
     assert(filter.can_mark_messages_read());
     assert(!filter.contains_only_private_messages());
     assert(filter.allow_use_first_unread_when_narrowing());
+    assert(filter.includes_full_stream_history());
     assert(filter.can_apply_locally());
 
     operators = [
@@ -115,6 +116,7 @@ run_test('basics', () => {
     filter = new Filter(operators);
     assert(filter.has_operator('has'));
     assert(!filter.can_apply_locally());
+    assert(!filter.includes_full_stream_history());
 
     operators = [
         {operator: 'streams', operand: 'public', negated: true},
@@ -133,6 +135,7 @@ run_test('basics', () => {
     assert(filter.has_operator('streams'));
     assert(!filter.has_negated_operand('streams', 'public'));
     assert(!filter.can_apply_locally());
+    assert(filter.includes_full_stream_history());
 
     operators = [
         {operator: 'is', operand: 'private'},

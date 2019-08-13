@@ -68,10 +68,15 @@ keywords are ignored, we'll return 0 search results.
 
 ## Messages sent before you joined
 
-In most cases, Zulip only searches messages that you received. In particular,
-this means Zulip will not search messages sent before you joined.
+Zulip's [stream permissions](/help/stream-permissions) model allows
+full access to the full history of public streams and [private streams
+with shared history](/help/stream-permissions), including messages
+sent before you joined the stream (or organization) or those sent to
+public streams you are not subscribed to.
 
-However, if a) the search includes a `stream:` operator and b) that stream
-is either public or [private with shared history](/help/stream-permissions),
-Zulip will search the entire history of the stream, including messages
-that were sent before you joined.
+By default, Zulip searches messages in your personal history,
+i.e. the messages you actually received.
+
+If you'd like to search the organization's shared history, any query
+using the `stream:` or `streams:` operators will search all messages
+that you have access to in the selected stream(s).

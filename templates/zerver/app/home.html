@@ -18,6 +18,16 @@
             {% endtrans %}
         </p>
     </div>
+    <div class="all-messages-search-caution" hidden>
+        <p>
+            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+            {% trans %}
+            Additional results may be available if you add a <code>stream:</code>
+            or <code>streams</code> operator to your search.
+            <a href="/help/search-for-messages#messages-sent-before-you-joined" target="_blank">Learn more</a>.
+            {% endtrans %}
+        </p>
+    </div>
     <div id="loading_more_messages_indicator"></div>
     <div id="page_loading_indicator"></div>
     <div id="first_run_message" class="empty_feed_notice">
