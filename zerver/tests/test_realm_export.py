@@ -1,5 +1,7 @@
 from mock import patch
 
+from analytics.models import RealmCount
+
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
 
@@ -164,3 +166,26 @@ class RealmExportTest(ZulipTestCase):
 
         result = export_realm(self.client_post, admin)
         self.assert_json_error(result, 'Exceeded rate limit.')
+
+    def test_upload_and_message_limit(self) -> None:
+        admin = self.example_user('iago')
+        self.login(admin.email)
+        realm_count = RealmCount.objects.create(realm_id=admin.realm.id,
+                                                end_time=timezone_now(),
+                                                subgroup=1,
+                                                value=0,
+                                                property='messages_sent:client:day')
+
+        # Space limit is set as 10 GiB
+        with patch('zerver.models.Realm.currently_used_upload_space_bytes',
+                   return_value=11 * 1024 * 1024 * 1024):
+            result = self.client_post('/json/export/realm')
+        self.assert_json_error(result, 'Please request a manual export from %s.' %
+                               settings.ZULIP_ADMINISTRATOR)
+
+        # Message limit is set as 250000
+        realm_count.value = 250001
+        realm_count.save(update_fields=['value'])
+        result = self.client_post('/json/export/realm')
+        self.assert_json_error(result, 'Please request a manual export from %s.' %
+                               settings.ZULIP_ADMINISTRATOR)
