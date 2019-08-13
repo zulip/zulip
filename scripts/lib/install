@@ -100,7 +100,7 @@ os_info="$(lsb_release --short --id --release --codename)"
 { read -r os_id; read -r os_release; read -r os_codename; } <<< "$os_info"
 
 case "$os_codename" in
-    xenial|stretch|bionic) ;;
+    xenial|stretch|bionic|buster) ;;
     *)
         set +x
         cat <<EOF
@@ -109,6 +109,7 @@ Unsupported OS release: $os_codename
 
 Zulip in production is supported only on:
  - Debian 9 "stretch"
+ - Debian 10 "buster"
  - Ubuntu 16.04 LTS "xenial"
  - Ubuntu 18.04 LTS "bionic"
 
