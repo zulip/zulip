@@ -380,11 +380,8 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int,
                                   description, stream_id, channel["is_archived"], invite_only)
             realm["zerver_stream"].append(stream)
 
-            # construct defaultstream object
-            # slack has the default channel 'general' and 'random'
-            # where every user is subscribed
-            default_channels = ['general', 'random']  # Slack specific
-            if channel['name'] in default_channels:
+            slack_default_channels = ['general', 'random']
+            if channel['name'] in slack_default_channels:
                 defaultstream = build_defaultstream(realm_id, stream_id,
                                                     defaultstream_id)
                 realm["zerver_defaultstream"].append(defaultstream)
