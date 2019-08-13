@@ -3,11 +3,14 @@ class zulip::postgres_common {
   case $::osfamily {
     'debian': {
       $postgresql = "postgresql-${zulip::base::postgres_version}"
+      $postgresql_dev = "postgresql-server-dev-${zulip::base::postgres_version}"
       $postgres_packages = [
         # The database itself
         $postgresql,
-        # tools for database monitoring
-        'ptop',
+        # Developer pacakge for building extensions (such as tsearch_extras)
+        $postgresql_dev,
+        # tools for database monitoring; formerly ptop
+        'pgtop',
         # Needed just to support adding postgres user to 'zulip' group
         'ssl-cert',
         # our dictionary
