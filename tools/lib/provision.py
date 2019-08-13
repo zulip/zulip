@@ -391,15 +391,13 @@ def main(options):
     ]
     run_as_root(proxy_env + ["scripts/lib/install-node"], sudo_args = ['-H'])
 
+    if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
+        run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
+        run_as_root(["chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
+
     # This is a wrapper around `yarn`, which we run last since
     # it can often fail due to network issues beyond our control.
     try:
-        # Hack: We remove `node_modules` as root to work around an
-        # issue with the symlinks being improperly owned by root.
-        if os.path.islink("node_modules"):
-            run_as_root(["rm", "-f", "node_modules"])
-        run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
-        run_as_root(["chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
         setup_node_modules(prefer_offline=True)
     except subprocess.CalledProcessError:
         print(WARNING + "`yarn install` failed; retrying..." + ENDC)
