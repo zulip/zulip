@@ -280,7 +280,6 @@ exports.set_up = function () {
         data.password = $("#get_api_key_password").val();
         channel.post({
             url: '/json/fetch_api_key',
-            dataType: 'json',
             data: data,
             success: function (data) {
                 var settings_status = $('#account-settings-status').expectOne();
