@@ -1,6 +1,7 @@
 import os
 import hashlib
 import json
+import shutil
 
 from typing import Optional, List, IO, Any
 from scripts.lib.zulip_tools import subprocess_text_output, run
@@ -65,31 +66,27 @@ def setup_node_modules(production=DEFAULT_PRODUCTION, stdout=None, stderr=None,
                         stderr=stderr)
 
     print("Using cached node modules from %s" % (cached_node_modules,))
-    cmds = [
-        ['rm', '-rf', 'node_modules'],
-        ["ln", "-nsf", cached_node_modules, 'node_modules'],
-    ]
-    for cmd in cmds:
-        run(cmd, stdout=stdout, stderr=stderr)
+    if os.path.islink('node_modules'):
+        os.remove('node_modules')
+    elif os.path.isdir('node_modules'):
+        shutil.rmtree('node_modules')
+    os.symlink(cached_node_modules, 'node_modules')
 
 def do_yarn_install(target_path, yarn_args, success_stamp, stdout=None, stderr=None):
     # type: (str, List[str], str, Optional[IO[Any]], Optional[IO[Any]]) -> None
-    cmds = [
-        ['mkdir', '-p', target_path],
-        ['cp', 'package.json', "yarn.lock", target_path],
-    ]
+    os.makedirs(target_path, exist_ok=True)
+    shutil.copy('package.json', target_path)
+    shutil.copy("yarn.lock", target_path)
     cached_node_modules = os.path.join(target_path, 'node_modules')
     print("Cached version not found! Installing node modules.")
 
     # Copy the existing node_modules to speed up install
     if os.path.exists("node_modules"):
-        cmds.append(["cp", "-R", "node_modules/", cached_node_modules])
-    cd_exec = os.path.join(ZULIP_PATH, "scripts/lib/cd_exec")
+        shutil.copytree("node_modules/", cached_node_modules)
     if os.environ.get('CUSTOM_CA_CERTIFICATES'):
-        cmds.append([YARN_BIN, "config", "set", "cafile", os.environ['CUSTOM_CA_CERTIFICATES']])
-    cmds.append([cd_exec, target_path, YARN_BIN, "install", "--non-interactive", "--frozen-lockfile"] +
-                yarn_args)
-    cmds.append(['touch', success_stamp])
-
-    for cmd in cmds:
-        run(cmd, stdout=stdout, stderr=stderr)
+        run([YARN_BIN, "config", "set", "cafile", os.environ['CUSTOM_CA_CERTIFICATES']],
+            stdout=stdout, stderr=stderr)
+    run([YARN_BIN, "install", "--non-interactive", "--frozen-lockfile"] + yarn_args,
+        cwd=target_path, stdout=stdout, stderr=stderr)
+    with open(success_stamp, 'w'):
+        pass
