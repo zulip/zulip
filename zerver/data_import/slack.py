@@ -138,8 +138,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
     slack_data_file_user_list = get_data_file(slack_data_dir + '/users.json')
 
     slack_user_id_to_custom_profile_fields = {}  # type: ZerverFieldsT
-    # To store custom fields corresponding to their ids
-    custom_field_map = {}  # type: ZerverFieldsT
+    slack_custom_field_name_to_zulip_custom_field_id = {}  # type: ZerverFieldsT
 
     for user in slack_data_file_user_list:
         process_slack_custom_fields(user, slack_user_id_to_custom_profile_fields)
@@ -177,12 +176,15 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         # Check for custom profile fields
         if slack_user_id in slack_user_id_to_custom_profile_fields:
             # For processing the fields
-            custom_field_map, customprofilefield_id = build_customprofile_field(
-                zerver_customprofilefield, slack_user_id_to_custom_profile_fields[slack_user_id],
-                customprofilefield_id, realm_id, custom_field_map)
+            slack_custom_field_name_to_zulip_custom_field_id, customprofilefield_id = \
+                build_customprofile_field(zerver_customprofilefield,
+                                          slack_user_id_to_custom_profile_fields[slack_user_id],
+                                          customprofilefield_id, realm_id,
+                                          slack_custom_field_name_to_zulip_custom_field_id)
             # Store the custom field values for the corresponding user
             custom_field_id_count = build_customprofilefields_values(
-                custom_field_map, slack_user_id_to_custom_profile_fields[slack_user_id], user_id,
+                slack_custom_field_name_to_zulip_custom_field_id,
+                slack_user_id_to_custom_profile_fields[slack_user_id], user_id,
                 custom_field_id_count, zerver_customprofilefield_values)
 
         userprofile = UserProfile(
@@ -219,12 +221,13 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
 
 def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: ZerverFieldsT,
                               customprofilefield_id: int, realm_id: int,
-                              custom_field_map: ZerverFieldsT) -> Tuple[ZerverFieldsT, int]:
+                              slack_custom_field_name_to_zulip_custom_field_id: ZerverFieldsT) \
+        -> Tuple[ZerverFieldsT, int]:
     # The name of the custom profile field is not provided in the slack data
     # Hash keys of the fields are provided
     # Reference: https://api.slack.com/methods/users.profile.set
     for field, value in fields.items():
-        if field not in custom_field_map:
+        if field not in slack_custom_field_name_to_zulip_custom_field_id:
             slack_custom_fields = ['phone', 'skype']
             if field in slack_custom_fields:
                 field_name = field
@@ -241,10 +244,10 @@ def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: 
                                                     exclude=['realm'])
             customprofilefield_dict['realm'] = realm_id
 
-            custom_field_map[field] = customprofilefield_id
+            slack_custom_field_name_to_zulip_custom_field_id[field] = customprofilefield_id
             customprofilefield_id += 1
             customprofile_field.append(customprofilefield_dict)
-    return custom_field_map, customprofilefield_id
+    return slack_custom_field_name_to_zulip_custom_field_id, customprofilefield_id
 
 def process_slack_custom_fields(user: ZerverFieldsT,
                                 slack_user_id_to_custom_profile_fields: ZerverFieldsT) -> None:
@@ -257,8 +260,8 @@ def process_slack_custom_fields(user: ZerverFieldsT,
         if field in user['profile']:
             slack_user_id_to_custom_profile_fields[user['id']][field] = {'value': user['profile'][field]}
 
-def build_customprofilefields_values(custom_field_map: ZerverFieldsT, fields: ZerverFieldsT,
-                                     user_id: int, custom_field_id: int,
+def build_customprofilefields_values(slack_custom_field_name_to_zulip_custom_field_id: ZerverFieldsT,
+                                     fields: ZerverFieldsT, user_id: int, custom_field_id: int,
                                      custom_field_values: List[ZerverFieldsT]) -> int:
     for field, value in fields.items():
         if value['value'] == "":
@@ -271,7 +274,7 @@ def build_customprofilefields_values(custom_field_map: ZerverFieldsT, fields: Ze
         custom_field_value_dict = model_to_dict(custom_field_value,
                                                 exclude=['user_profile', 'field'])
         custom_field_value_dict['user_profile'] = user_id
-        custom_field_value_dict['field'] = custom_field_map[field]
+        custom_field_value_dict['field'] = slack_custom_field_name_to_zulip_custom_field_id[field]
 
         custom_field_values.append(custom_field_value_dict)
         custom_field_id += 1
