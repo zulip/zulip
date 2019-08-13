@@ -33,6 +33,8 @@ Here is the **full list of search operators**.
 * `sender:me`: Search sent messages.
 * `near:12345`: Show messages around the message with ID `12345`.
 * `id:12345`: Show only message `12345`.
+* `streams:public`: Search the history of all [public
+  streams](/help/change-the-privacy-of-a-stream) in the organization.
 
 * `is:alerted`: See [alert words](/help/add-an-alert-word).
 * `is:mentioned`: See [mentions](/help/mention-a-user-or-group).

@@ -30,8 +30,9 @@ from zerver.lib.message import (
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name, \
-    can_access_stream_history_by_id, get_stream_by_narrow_operand_access_unchecked
+from zerver.lib.streams import access_stream_by_id, get_public_streams_queryset, \
+    can_access_stream_history_by_name, can_access_stream_history_by_id, \
+    get_stream_by_narrow_operand_access_unchecked
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
@@ -240,6 +241,18 @@ class NarrowBuilder:
         recipient = get_stream_recipient(stream.id)
         cond = column("recipient_id") == recipient.id
         return query.where(maybe_negate(cond))
+
+    def by_streams(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+        if operand == 'public':
+            # Get all both subscribed and non subscribed public streams
+            # but exclude any private subscribed streams.
+            public_streams_queryset = get_public_streams_queryset(self.user_profile.realm)
+            recipient_ids = Recipient.objects.filter(
+                type=Recipient.STREAM,
+                type_id__in=public_streams_queryset).values_list('id', flat=True)
+            cond = column("recipient_id").in_(recipient_ids)
+            return query.where(maybe_negate(cond))
+        raise BadNarrowOperator('unknown streams operand ' + operand)
 
     def by_topic(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if self.user_profile.realm.is_zephyr_mirror_realm:
@@ -573,6 +586,9 @@ def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: UserProfile
                     include_history = can_access_stream_history_by_name(user_profile, operand)
                 else:
                     include_history = can_access_stream_history_by_id(user_profile, operand)
+            elif (term['operator'] == "streams" and term['operand'] == "public"
+                    and not term.get('negated', False) and user_profile.can_access_public_streams()):
+                include_history = True
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.

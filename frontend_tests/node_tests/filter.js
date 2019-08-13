@@ -111,6 +111,23 @@ run_test('basics', () => {
     filter = new Filter(operators);
     assert(filter.has_operator('has'));
     assert(!filter.can_apply_locally());
+
+    operators = [
+        {operator: 'streams', operand: 'public', negated: true},
+    ];
+    filter = new Filter(operators);
+    assert(!filter.has_operator('streams'));
+    assert(filter.has_negated_operand('streams', 'public'));
+    assert(!filter.can_apply_locally());
+
+    operators = [
+        {operator: 'streams', operand: 'public'},
+    ];
+    filter = new Filter(operators);
+    assert(filter.has_operator('streams'));
+    assert(!filter.has_negated_operand('streams', 'public'));
+    assert(!filter.can_apply_locally());
+
 });
 run_test('show_first_unread', () => {
     var operators = [
@@ -284,6 +301,9 @@ run_test('predicate_basics', () => {
     assert(predicate({type: 'private'}));
     assert(!predicate({type: 'stream'}));
 
+    predicate = get_predicate([['streams', 'public']]);
+    assert(predicate({}));
+
     predicate = get_predicate([['is', 'starred']]);
     assert(predicate({starred: true}));
     assert(!predicate({starred: false}));
@@ -395,6 +415,13 @@ run_test('negated_predicates', () => {
     predicate = new Filter(narrow).predicate();
     assert(predicate({type: 'stream', stream_id: 999999}));
     assert(!predicate({type: 'stream', stream_id: social_stream_id}));
+
+    narrow = [
+        {operator: 'streams', operand: 'public', negated: true},
+    ];
+    predicate = new Filter(narrow).predicate();
+    assert(predicate({}));
+
 });
 
 run_test('mit_exceptions', () => {
@@ -534,6 +561,25 @@ run_test('parse', () => {
     ];
     _test();
 
+    string = 'text streams:public more text';
+    operators = [
+        {operator: 'streams', operand: 'public'},
+        {operator: 'search', operand: 'text more text'},
+    ];
+    _test();
+
+    string = 'streams:public';
+    operators = [
+        {operator: 'streams', operand: 'public'},
+    ];
+    _test();
+
+    string = '-streams:public';
+    operators = [
+        {operator: 'streams', operand: 'public', negated: true},
+    ];
+    _test();
+
     string = 'stream:foo :emoji: are cool';
     operators = [
         {operator: 'stream', operand: 'foo'},
@@ -580,6 +626,26 @@ run_test('unparse', () => {
     assert.deepEqual(Filter.unparse(operators), string);
 
     operators = [
+        {operator: 'streams', operand: 'public'},
+        {operator: 'search', operand: 'text'},
+    ];
+
+    string = 'streams:public text';
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [
+        {operator: 'streams', operand: 'public'},
+    ];
+    string = 'streams:public';
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [
+        {operator: 'streams', operand: 'public', negated: true},
+    ];
+    string = '-streams:public';
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [
         {operator: 'id', operand: 50},
     ];
     string = 'id:50';
@@ -601,6 +667,18 @@ run_test('unparse', () => {
 run_test('describe', () => {
     var narrow;
     var string;
+
+    narrow = [
+        {operator: 'streams', operand: 'public'},
+    ];
+    string = 'streams public';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'streams', operand: 'public', negated: true},
+    ];
+    string = 'exclude streams public';
+    assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: 'stream', operand: 'devel'},
@@ -815,6 +893,7 @@ run_test('term_type', () => {
         };
     }
 
+    assert_term_type(term('streams', 'public'), 'streams');
     assert_term_type(term('stream', 'whatever'), 'stream');
     assert_term_type(term('pm-with', 'whomever'), 'pm-with');
     assert_term_type(term('pm-with', 'whomever', true), 'not-pm-with');
