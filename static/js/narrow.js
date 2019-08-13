@@ -282,6 +282,13 @@ exports.activate = function (raw_operators, opts) {
         compose.update_closed_compose_buttons_for_stream();
     }
 
+    // Toggle the notice that lets users know that not all messages were searched.
+    if (filter.is_search && !filter.includes_full_stream_history()) {
+        $(".all-messages-search-caution").show();
+    } else {
+        $(".all-messages-search-caution").hide();
+    }
+
     // Put the narrow operators in the search bar.
     $('#search_query').val(Filter.unparse(operators));
     search.update_button_visibility();
@@ -691,6 +698,7 @@ function handle_post_narrow_deactivate_processes() {
     exports.narrow_title = "home";
     notifications.redraw_title();
     notifications.hide_or_show_history_limit_message(home_msg_list);
+    $(".all-messages-search-caution").hide();
 }
 
 exports.deactivate = function () {

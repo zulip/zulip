@@ -18,6 +18,16 @@
             {% endtrans %}
         </p>
     </div>
+    <div class="all-messages-search-caution" hidden>
+        <p>
+            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+            {% trans %}
+            This search may exclude some messages you have access to,
+            such as messages sent to public streams before you joined the stream.
+            <a href="/help/search-for-messages#messages-sent-before-you-joined" target="_blank">[Learn more]</a>
+            {% endtrans %}
+        </p>
+    </div>
     <div id="loading_more_messages_indicator"></div>
     <div id="page_loading_indicator"></div>
     <div id="first_run_message" class="empty_feed_notice">

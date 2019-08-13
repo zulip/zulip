@@ -531,7 +531,8 @@ on a dark background, and don't change the dark labels dark either. */
         stroke: hsl(0, 0%, 100%);
     }
 
-    .history-limited-box {
+    .history-limited-box,
+    .all-messages-search-caution {
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
