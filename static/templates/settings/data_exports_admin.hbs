@@ -1,10 +1,18 @@
 <div id="data-exports" class="settings-section" data-name="data-exports-admin">
-    <p class="alert-word-settings-note">{{#tr this}}Depending on the size of your organization, the time to complete an export can range from several minutes to an hour.{{/tr}}</p>
     <h3>{{t "Data exports" }}
         <a href="/help/export-your-organization" target="_blank">
             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
         </a>
     </h3>
+    <p>
+        {{t 'Exports all users, settings, and all data visible in public streams.' }}
+        {{t 'Any organization administrator can conduct an export.'}}
+        {{t 'Depending on the size of your organization, an export can take anywhere from several minutes to an hour.' }}
+    </p>
+    <p>
+        {{#tr this}}<a href="/help/export-your-organization" target="_blank">Click here</a> to learn about exporting private streams and messages.{{/tr}}
+        {{t 'Note that organizations are limited to five exports per week.' }}
+    </p>
 
     {{#if is_admin}}
     <div class="alert" id="export_status" role="alert">
@@ -17,11 +25,9 @@
                     {{t 'Start public export' }}
                 </button>
             </div>
-            <p class="alert-word-settings-note">{{#tr this}}Zulip also supports exporting private streams and messages under some circumstances. <a href="/help/export-your-organization" target="_blank">Read more</a>{{/tr}}</p>
         </div>
     </form>
     {{/if}}
-    <p class="alert-word-settings-note">{{#tr this}}Any member with administrative access can conduct an export.  Please note that individual organizations are limited to five exports per week.{{/tr}}</p>
     <div class="admin-table-wrapper">
         <table class="table table-condensed table-striped wrapped-table admin_exports_table">
             <thead>
