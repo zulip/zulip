@@ -148,7 +148,7 @@ If you want to do it manually, here are the steps:
 
 ```
 sudo virtualenv /srv/zulip-py3-venv -p python3 # Create a python3 virtualenv
-sudo chown -R `whoami`:`whoami` /srv/zulip-py3-venv
+sudo chown -R `whoami`: /srv/zulip-py3-venv
 source /srv/zulip-py3-venv/bin/activate # Activate python3 virtualenv
 pip install --upgrade pip # upgrade pip itself because older versions have known issues
 pip install --no-deps -r requirements/dev.txt # install python packages required for development
@@ -160,7 +160,7 @@ Now run these commands:
 sudo ./scripts/lib/install-node
 yarn install
 sudo mkdir /srv/zulip-emoji-cache
-sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
+sudo chown -R `whoami`: /srv/zulip-emoji-cache
 ./tools/setup/emoji/build_emoji
 ./tools/inline-email-css
 ./tools/setup/build_pygments_data

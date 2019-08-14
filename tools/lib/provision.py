@@ -247,8 +247,6 @@ REPO_STOPWORDS_PATH = os.path.join(
     "zulip_english.stop",
 )
 
-user_id = os.getuid()
-
 def install_system_deps():
     # type: () -> None
 
@@ -393,7 +391,7 @@ def main(options):
 
     if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
         run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
-        run_as_root(["chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
+        run_as_root(["chown", "%s:%s" % (os.getuid(), os.getgid()), NODE_MODULES_CACHE_PATH])
 
     # This is a wrapper around `yarn`, which we run last since
     # it can often fail due to network issues beyond our control.

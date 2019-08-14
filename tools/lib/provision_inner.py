@@ -34,8 +34,6 @@ if is_travis:
 
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
-user_id = os.getuid()
-
 def setup_shell_profile(shell_profile):
     # type: (str) -> None
     shell_profile_path = os.path.expanduser(shell_profile)
@@ -82,7 +80,7 @@ def main(options: argparse.Namespace) -> int:
     # packages.
     if not os.access(EMOJI_CACHE_PATH, os.W_OK):
         run_as_root(["mkdir", "-p", EMOJI_CACHE_PATH])
-        run_as_root(["chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
+        run_as_root(["chown", "%s:%s" % (os.getuid(), os.getgid()), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
 
     # copy over static files from the zulip_bots package
