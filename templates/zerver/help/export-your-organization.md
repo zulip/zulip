@@ -21,55 +21,60 @@ three types of zulipchat.com exports.
 All organizations have access to the first two kinds of export. Only corporate
 Zulip Standard customers have access to **full export without member consent**.
 
-## Request an export
+## Public export
 
-The general pattern for all three types of export is
+{start_tabs}
 
-1. Email support@zulipchat.com with your zulipchat.com subdomain, the type
-   of export you need, and additional information as needed for full exports
-   (see below). Email us from the same address that you use to sign in
-   to Zulip.
+{settings_tab|data-exports-admin}
 
-2. We will check that you are an organization administrator, and email you
-   and all other organization administrators asking for a confirmation.
+1. Click **Start public export**.
 
-3. Reply confirming.
+1. After a few minutes, you'll be able to download the export as a `.tar.gz`
+file from that page.
 
-4. We will email a download link with the export to all administrators in
-   the organization.
+{end_tabs}
 
-We can work with you to schedule a time for the export, to minimize downtime
-during a transition from Zulip Cloud to an on-premises installation.
+Note that generating the export can take up to an hour for organizations
+with lots of messages or uploaded files.
 
-## Additional info needed for full exports
+## Full export with member consent
 
-For **full export with member consent**, you will need to prove to us
-which members' data you have consent to export (there are a few secure
-and convenient options for doing this; contact support for details).
+{start_tabs}
 
-Such an export will include all the messages received by any user in
-the organization that consented to the data export.  In particular, it
-will include all public stream content and any private stream or
-private message content where at least one of the participants gave
-consent.
+1. Email support@zulipchat.com with your zulipchat.com subdomain, asking for
+   a full export with member consent. Email us from the same address that
+   you use to sign in to Zulip.
+
+1. We will verify that you are an organization administrator, and email you
+   instructions on how to collect member consent.
+
+{end_tabs}
+
+Note that such an export will include all the messages received by any user
+in the organization that consents to the data export.  In particular, it
+will include all public stream content and any private stream or private
+message content where at least one of the participants gives consent.
 
 Users who do not provide consent will have their settings and stream
 subscriptions exported, but will otherwise be treated as new users after
 import.
 
-For **full export without member consent**, we will additionally need
-evidence that you have authority to read members' private
-messages. Typically, this will be because the zulipchat.com subdomain
-is administered by a corporation, and you are an official
-representative of that corporation. By requesting and approving this
-export, you also assume full legal responsibility that the appropriate
-employment agreements and corporate policy for this type of export are
-in place. Note that many countries have laws that require employers to
-notify employees of their use of such an export.
+## Full export without member consent
 
-**Full export without member consent** is additionally limited to paid
-Zulip Standard customers, though in rare cases may be available to
-other organizations in case of due legal process.
+This export is limited to paid Zulip Standard customers, though in rare
+cases may be available to other organizations in case of due legal process.
+
+To start this export, email support@zulipchat.com with your zulipchat.com
+subdomain, asking for a full export without member consent.
+
+You'll also need to email us evidence that you have authority to read
+members' private messages. Typically, this will be because the zulipchat.com
+subdomain is administered by a corporation, and you are an official
+representative of that corporation. By requesting and approving this export,
+you will also assume full legal responsibility that the appropriate employment
+agreements and corporate policy for this type of export are in place. Note
+that many countries have laws that require employers to notify employees of
+their use of such an export.
 
 ## Related articles
 

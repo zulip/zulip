@@ -47,6 +47,8 @@ link_mapping = {
                                '/#organization/profile-field-settings'],
     'invites-list-admin': ['Manage organization', 'Invitations',
                            '/#organization/invites-list-admin'],
+    'data-exports-admin': ['Manage organization', 'Data exports',
+                           '/#organization/data-exports-admin'],
 }
 
 settings_markdown = """
