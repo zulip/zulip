@@ -88,7 +88,8 @@ You can use the command list_realms to find ID of the realms in this server."""
                                (options["realm_id"],))
 
     def get_users(self, options: Dict[str, Any], realm: Optional[Realm],
-                  is_bot: Optional[bool]=None) -> List[UserProfile]:
+                  is_bot: Optional[bool]=None,
+                  include_deactivated: bool=False) -> List[UserProfile]:
         if "all_users" in options:
             all_users = options["all_users"]
 
@@ -103,6 +104,8 @@ You can use the command list_realms to find ID of the realms in this server."""
 
             if all_users:
                 user_profiles = UserProfile.objects.filter(realm=realm)
+                if not include_deactivated:
+                    user_profiles = user_profiles.filter(is_active=True)
                 if is_bot is not None:
                     return user_profiles.filter(is_bot=is_bot)
                 return user_profiles

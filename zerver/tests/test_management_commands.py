@@ -82,8 +82,8 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(get_user_profile_by_email(email), user_profile)
 
     def get_users_sorted(self, options: Dict[str, Any], realm: Optional[Realm],
-                         is_bot: Optional[bool]=None) -> List[UserProfile]:
-        user_profiles = self.command.get_users(options, realm, is_bot=is_bot)
+                         **kwargs: Any) -> List[UserProfile]:
+        user_profiles = self.command.get_users(options, realm, **kwargs)
         return sorted(user_profiles, key = lambda x: x.email)
 
     def test_get_users(self) -> None:
@@ -116,9 +116,30 @@ class TestZulipBaseCommand(ZulipTestCase):
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_users(dict(users=user_emails, all_users=True), None)
 
-        expected_user_profiles = sorted(UserProfile.objects.filter(realm=self.zulip_realm),
+        # Test the default mode excluding bots and deactivated users
+        expected_user_profiles = sorted(UserProfile.objects.filter(realm=self.zulip_realm,
+                                                                   is_active=True, is_bot=False),
                                         key = lambda x: x.email)
-        user_profiles = self.get_users_sorted(dict(users=None, all_users=True), self.zulip_realm)
+        user_profiles = self.get_users_sorted(dict(users=None, all_users=True),
+                                              self.zulip_realm,
+                                              is_bot=False)
+        self.assertEqual(user_profiles, expected_user_profiles)
+
+        # Test the default mode excluding bots and deactivated users
+        expected_user_profiles = sorted(UserProfile.objects.filter(realm=self.zulip_realm,
+                                                                   is_active=True),
+                                        key = lambda x: x.email)
+        user_profiles = self.get_users_sorted(dict(users=None, all_users=True),
+                                              self.zulip_realm)
+        self.assertEqual(user_profiles, expected_user_profiles)
+
+        # Test include_deactivated
+        expected_user_profiles = sorted(UserProfile.objects.filter(realm=self.zulip_realm,
+                                                                   is_bot=False),
+                                        key = lambda x: x.email)
+        user_profiles = self.get_users_sorted(dict(users=None, all_users=True),
+                                              self.zulip_realm,
+                                              is_bot=False, include_deactivated=True)
         self.assertEqual(user_profiles, expected_user_profiles)
 
         error_message = "You have to pass either -u/--users or -a/--all-users."
