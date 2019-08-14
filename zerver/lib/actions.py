@@ -29,6 +29,7 @@ from zerver.lib.bot_config import (
 )
 from zerver.lib.cache import (
     bot_dict_fields,
+    display_recipient_cache_key,
     delete_user_profile_caches,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
@@ -96,7 +97,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, \
     get_user_profile_by_id, PreregistrationUser, \
     bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
-    email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
+    email_allowed_for_realm, email_to_username, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, stream_name_in_use, \

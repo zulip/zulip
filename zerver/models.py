@@ -17,7 +17,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_api_key_cache_key, active_non_guest_user_ids_cache_key, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     user_profile_cache_key, generic_bulk_cached_fetch, cache_set, flush_stream, \
-    display_recipient_cache_key, cache_delete, active_user_ids_cache_key, \
+    cache_delete, active_user_ids_cache_key, \
     get_stream_cache_key, realm_user_dicts_cache_key, \
     bot_dicts_in_realm_cache_key, realm_user_dict_fields, \
     bot_dict_fields, flush_message, flush_submessage, bot_profile_cache_key, \
@@ -88,6 +88,9 @@ def get_display_recipient_by_id(recipient_id: int, recipient_type: int,
     If the type is a stream, the type_id must be an int; a string is returned.
     Otherwise, type_id may be None; an array of recipient dicts is returned.
     """
+    # Have to import here, to avoid circular dependency.
+    from zerver.lib.display_recipient import get_display_recipient_remote_cache
+
     if recipient_id not in per_request_display_recipient_cache:
         result = get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id)
         per_request_display_recipient_cache[recipient_id] = result
@@ -105,36 +108,6 @@ def flush_per_request_caches() -> None:
     per_request_display_recipient_cache = {}
     global per_request_realm_filters_cache
     per_request_realm_filters_cache = {}
-
-DisplayRecipientCacheT = Union[str, List[Dict[str, Any]]]
-@cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
-                timeout=3600*24*7)
-def get_display_recipient_remote_cache(recipient_id: int, recipient_type: int,
-                                       recipient_type_id: Optional[int]) -> DisplayRecipientCacheT:
-    """
-    returns: an appropriate object describing the recipient.  For a
-    stream this will be the stream name as a string.  For a huddle or
-    personal, it will be an array of dicts about each recipient.
-    """
-    if recipient_type == Recipient.STREAM:
-        assert recipient_type_id is not None
-        stream = Stream.objects.get(id=recipient_type_id)
-        return stream.name
-
-    # The main priority for ordering here is being deterministic.
-    # Right now, we order by ID, which matches the ordering of user
-    # names in the left sidebar.
-    user_profile_list = (UserProfile.objects.filter(subscription__recipient_id=recipient_id)
-                                            .select_related()
-                                            .order_by('id'))
-    return [user_profile_to_display_recipient_dict(user_profile) for user_profile in user_profile_list]
-
-def user_profile_to_display_recipient_dict(user_profile: 'UserProfile') -> Dict[str, Any]:
-    return {'email': user_profile.email,
-            'full_name': user_profile.full_name,
-            'short_name': user_profile.short_name,
-            'id': user_profile.id,
-            'is_mirror_dummy': user_profile.is_mirror_dummy}
 
 def get_realm_emoji_cache_key(realm: 'Realm') -> str:
     return u'realm_emoji:%s' % (realm.id,)
