@@ -1560,13 +1560,13 @@ class TestClearOnRead(ZulipTestCase):
         hamlet.save()
         stream = self.subscribe(hamlet, "Denmark")
 
-        msgids = [self.send_stream_message(self.example_email("iago"),
-                                           stream.name,
-                                           "yo {}".format(i))
-                  for i in range(n_msgs)]
+        message_ids = [self.send_stream_message(self.example_email("iago"),
+                                                stream.name,
+                                                "yo {}".format(i))
+                       for i in range(n_msgs)]
         UserMessage.objects.filter(
             user_profile_id=hamlet.id,
-            message_id__in=msgids,
+            message_id__in=message_ids,
         ).update(
             flags=F('flags').bitor(
                 UserMessage.flags.active_mobile_push_notification))
@@ -1577,11 +1577,11 @@ class TestClearOnRead(ZulipTestCase):
             queue_items = [c[0][1] for c in mock_publish.call_args_list]
             groups = [item['message_ids'] for item in queue_items]
 
-        self.assertEqual(len(groups), min(len(msgids), max_unbatched))
+        self.assertEqual(len(groups), min(len(message_ids), max_unbatched))
         for g in groups[:-1]:
             self.assertEqual(len(g), 1)
-        self.assertEqual(sum(len(g) for g in groups), len(msgids))
-        self.assertEqual(set(id for g in groups for id in g), set(msgids))
+        self.assertEqual(sum(len(g) for g in groups), len(message_ids))
+        self.assertEqual(set(id for g in groups for id in g), set(message_ids))
 
 class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self) -> None:
