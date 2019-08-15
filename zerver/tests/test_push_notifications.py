@@ -1561,9 +1561,9 @@ class TestClearOnRead(ZulipTestCase):
         stream = self.subscribe(hamlet, "Denmark")
 
         message_ids = [self.send_stream_message(self.example_email("iago"),
-                                           stream.name,
-                                           "yo {}".format(i))
-                  for i in range(n_msgs)]
+                                                stream.name,
+                                                "yo {}".format(i))
+                       for i in range(n_msgs)]
         UserMessage.objects.filter(
             user_profile_id=hamlet.id,
             message_id__in=message_ids,
