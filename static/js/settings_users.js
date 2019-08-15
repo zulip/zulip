@@ -161,9 +161,7 @@ function populate_users(realm_people_data) {
         modifier: function (item) {
             var activity_rendered;
             var today = new XDate();
-            if (people.is_current_user(item.email)) {
-                activity_rendered = timerender.render_date(today, undefined, today);
-            } else if (presence.presence_info[item.user_id]) {
+            if (presence.presence_info[item.user_id]) {
                 // XDate takes number of milliseconds since UTC epoch.
                 var last_active = presence.presence_info[item.user_id].last_active * 1000;
 
