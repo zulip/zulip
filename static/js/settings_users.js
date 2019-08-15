@@ -148,7 +148,7 @@ function populate_users(realm_people_data) {
     };
 
     var $bots_table = $("#admin_bots_table");
-    list_render.create($bots_table, bots, {
+    var bot_list = list_render.create($bots_table, bots, {
         name: "admin_bot_list",
         modifier: function (item) {
             return render_admin_user_list({
@@ -168,7 +168,22 @@ function populate_users(realm_people_data) {
             },
             onupdate: reset_scrollbar($bots_table),
         },
+        parent_container: $("#admin-bot-list").expectOne(),
     }).init();
+
+    bot_list.sort("alphabetic", "full_name");
+
+    bot_list.add_sort_function("bot_owner", function (a, b) {
+        if (!a.bot_owner) { return 1; }
+        if (!b.bot_owner) { return -1; }
+
+        if (a.bot_owner === b.bot_owner) {
+            return 0;
+        } else if (a.bot_owner > b.bot_owner) {
+            return 1;
+        }
+        return -1;
+    });
 
     function get_rendered_last_activity(item) {
         var today = new XDate();
