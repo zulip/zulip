@@ -43,12 +43,12 @@ exports.make_menu = function (opts) {
     };
 
     self.prev = function () {
-        curr_li.prev().focus().click();
+        curr_li.prevAll(":visible:first").focus().click();
         return true;
     };
 
     self.next = function () {
-        curr_li.next().focus().click();
+        curr_li.nextAll(":visible:first").focus().click();
         return true;
     };
 
