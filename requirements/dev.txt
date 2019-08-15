@@ -58,7 +58,7 @@ django-sendfile2==0.4.2
 django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.9.1
 django-webpack-loader==0.6.0
-django==1.11.22
+django==1.11.23
 docker==4.0.2             # via moto
 docutils==0.14            # via botocore, recommonmark, sphinx
 ecdsa==0.13.2             # via python-jose, sshpubkeys

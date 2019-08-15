@@ -43,7 +43,7 @@ django-sendfile2==0.4.2
 django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.9.1
 django-webpack-loader==0.6.0
-django==1.11.22
+django==1.11.23
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
