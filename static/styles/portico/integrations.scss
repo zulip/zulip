@@ -262,7 +262,8 @@
 .portico-landing.integrations .integration-instruction-block .integration-lozenge {
     width: 125px;
     height: 170px;
-    margin: 0 21px;
+    margin: 0 21px 20px;
+    order: 1;
 }
 
 .portico-landing.integrations .integration-instruction-block .integration-lozenge .integration-category {
@@ -278,8 +279,7 @@
 }
 
 .portico-landing.integrations .integration-instruction-block .categories {
-    position: absolute;
-    top: 230px;
+    order: 2;
 }
 
 .portico-landing.integrations .integration-instruction-block .categories .integration-category {
@@ -333,15 +333,17 @@
 }
 
 #integration-list-link {
-    position: absolute;
-    text-align: center;
     display: none;
-    margin-left: 5px;
+    margin-left: 30px;
 }
 
 #integration-list-link span {
     display: inline-block;
     margin-left: 5px;
+}
+
+#integration-instruction-block {
+    flex-direction: column;
 }
 
 /* -- media queries -- */
@@ -351,8 +353,7 @@
     }
 
     #integration-list-link {
-        top: 200px;
-        left: 30px;
+        margin-top: 15px;
     }
 }
 
@@ -470,7 +471,7 @@
     }
 
     #integration-instruction-block {
-        display: flex !important;
+        flex-direction: row;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
@@ -483,7 +484,6 @@
     }
 
     #integration-instruction-block .integration-lozenge {
-        order: 1;
         border: none;
 
         display: flex !important;
@@ -534,7 +534,6 @@
     }
 
     #integration-list-link {
-        order: 2;
         position: unset;
         font-size: 22px;
     }

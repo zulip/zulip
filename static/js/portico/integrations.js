@@ -169,7 +169,7 @@ function hide_catalog_show_integration() {
         $('#integration-instruction-block .integration-lozenge').remove();
         $("#integration-instruction-block")
             .append($lozenge_icon)
-            .css('display', 'block');
+            .css('display', 'flex');
         $('.integration-instructions#' + state.integration).css('display', 'block');
         $("#integration-list-link").css('display', 'block');
 
