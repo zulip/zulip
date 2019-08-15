@@ -1220,63 +1220,60 @@ input[type=checkbox].inline-block {
             opacity: 0.5;
         }
     }
-}
 
-#user-groups .user-group-status {
-    margin-bottom: 10px;
-}
+    .user-group-status {
+        margin-bottom: 10px;
+    }
 
-#user-groups p {
-    line-height: 2;
-    margin: 0;
-}
+    p {
+        line-height: 2;
+        margin: 0;
+    }
 
-#user-groups .spacer {
-    margin: 0 2px;
-}
+    .spacer {
+        margin: 0 2px;
+    }
 
-#user-groups .subscribers,
-#user-groups .user-group h4 > .name {
-    font-weight: bold;
-}
+    .subscribers, .user-group h4 > .name {
+        font-weight: bold;
+    }
 
-#user-groups .ntm {
-    cursor: not-allowed;
-}
+    .ntm {
+        cursor: not-allowed;
+        h4 > .button {
+            cursor: not-allowed;
+            display: none;
+            &:hover {
+                border-color: hsl(4, 56%, 82%);
+            }
+        }
+    }
 
-#user-groups .ntm h4 > .button {
-    cursor: not-allowed;
-    display: none;
-}
+    .save-status {
+        background-color: transparent;
+        padding: 2px 5px;
+        border-radius: 4px;
+        margin-left: 10px;
+        border-style: solid;
+        border-width: 1px;
+        display: none;
+        opacity: 0;
+    }
 
-#user-groups .ntm h4 > .button:hover {
-    border-color: hsl(4, 56%, 82%);
-}
+    .checkmark {
+        height: 12px;
+    }
 
-#user-groups .save-status {
-    background-color: transparent;
-    padding: 2px 5px;
-    border-radius: 4px;
-    margin-left: 10px;
-    border-style: solid;
-    border-width: 1px;
-    display: none;
-    opacity: 0;
-}
+    .delete {
+        margin-left: auto;
+    }
 
-#user-groups .checkmark {
-    height: 12px;
-}
-
-#user-groups .delete {
-    margin-left: auto;
-}
-
-#user-groups .save-instructions {
-    display: none;
-    opacity: 0;
-    color: hsl(0, 0%, 20%);
-    font-size: 0.9em;
+    .save-instructions {
+        display: none;
+        opacity: 0;
+        color: hsl(0, 0%, 20%);
+        font-size: 0.9em;
+    }
 }
 
 /* -- new settings overlay -- */
