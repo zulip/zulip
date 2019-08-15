@@ -491,12 +491,13 @@
                 .integration-category {
                     font-size: 0.90em;
                     font-weight: 400;
-                    padding: 6px 10px 6px 3px;
-                    margin: 3px 0;
+                    padding: 6px 3px;
+                    margin: 7px 0;
                     width: 165px;
                     text-align: center;
                     border-radius: 5px;
                     transition: all 0.3s ease;
+                    background-color: hsl(208, 46%, 93%);
                     color: hsl(219, 23%, 33%);
 
                     &:hover {
