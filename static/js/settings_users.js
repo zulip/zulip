@@ -105,6 +105,20 @@ function failed_listing_users(xhr) {
     ui_report.error(i18n.t("Error listing users or bots"), xhr, status);
 }
 
+var LAST_ACTIVE_NEVER = -1;
+var LAST_ACTIVE_UNKNOWN = -2;
+
+function get_last_active(user) {
+    var presence_info = presence.presence_info[user.user_id];
+    if (!presence_info) {
+        return LAST_ACTIVE_UNKNOWN;
+    }
+    if (!isNaN(presence_info.last_active)) {
+        return presence_info.last_active;
+    }
+    return LAST_ACTIVE_NEVER;
+}
+
 function populate_users(realm_people_data) {
     var active_users = [];
     var deactivated_users = [];
@@ -116,6 +130,7 @@ function populate_users(realm_people_data) {
             user.bot_type = settings_bots.type_id_to_string(user.bot_type);
             bots.push(user);
         } else if (user.is_active) {
+            user.last_active = get_last_active(user);
             active_users.push(user);
         } else {
             deactivated_users.push(user);
