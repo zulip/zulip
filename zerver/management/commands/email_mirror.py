@@ -51,12 +51,12 @@ def get_imap_messages() -> Generator[Message, None, None]:
         mbox.select(settings.EMAIL_GATEWAY_IMAP_FOLDER)
         try:
             status, num_ids_data = mbox.search(None, 'ALL')
-            for msgid in num_ids_data[0].split():
-                status, msg_data = mbox.fetch(msgid, '(RFC822)')
+            for message_id in num_ids_data[0].split():
+                status, msg_data = mbox.fetch(message_id, '(RFC822)')
                 msg_as_bytes = msg_data[0][1]
                 message = email.message_from_bytes(msg_as_bytes)
                 yield message
-                mbox.store(msgid, '+FLAGS', '\\Deleted')
+                mbox.store(message_id, '+FLAGS', '\\Deleted')
             mbox.expunge()
         finally:
             mbox.close()

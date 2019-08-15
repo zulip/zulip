@@ -23,7 +23,7 @@ po = polib.pofile(os.path.join(root_dir, 'locale', 'de', 'LC_MESSAGES', 'django.
 for entry in po:
     tag = entry.comment
     if tag:
-        keys = [entry.msgid, entry.msgctxt or '']
+        keys = [entry.message_id, entry.msgctxt or '']
         msg_hash = md5(':'.join(keys).encode('utf-8')).hexdigest()
         curl_call = 'curl -i -L --user {} -X PUT -H "Content-Type: application/json" ' \
                     '--data \'{{"tags": ["{}"]}}\' https://www.transifex.com/api/2/project/{}/resource' \

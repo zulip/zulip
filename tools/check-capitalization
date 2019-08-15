@@ -16,7 +16,7 @@ from scripts.lib.zulip_tools import WARNING, FAIL, ENDC
 
 from tools.lib.capitalization import check_capitalization
 
-DJANGO_PO_REGEX = re.compile('msgid "(.*?)"')
+DJANGO_PO_REGEX = re.compile('message_id "(.*?)"')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
