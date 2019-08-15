@@ -1190,10 +1190,6 @@ input[type=checkbox].inline-block {
     border-radius: 5px;
 }
 
-#user-groups .user-group-status {
-    margin-bottom: 10px;
-}
-
 #user-groups .user-group h4 {
     font-weight: normal;
     margin: 0px;
@@ -1202,27 +1198,9 @@ input[type=checkbox].inline-block {
     justify-content: left;
 }
 
-#user-groups p {
-    line-height: 2;
-    margin: 0;
-}
-
-#user-groups .spacer {
-    margin: 0 2px;
-}
-
-#user-groups .subscribers,
-#user-groups .user-group h4 > .name {
-    font-weight: bold;
-}
-
 #user-groups .user-group span[contenteditable] {
     display: inline-block;
     word-break: break-all;
-}
-
-#user-groups .ntm {
-    cursor: not-allowed;
 }
 
 #user-groups .user-group span[contenteditable]:empty::before {
@@ -1241,6 +1219,28 @@ input[type=checkbox].inline-block {
 #user-groups .user-group .pill-container .input[contenteditable]:empty::after {
     content: attr(data-placeholder);
     opacity: 0.5;
+}
+
+#user-groups .user-group-status {
+    margin-bottom: 10px;
+}
+
+#user-groups p {
+    line-height: 2;
+    margin: 0;
+}
+
+#user-groups .spacer {
+    margin: 0 2px;
+}
+
+#user-groups .subscribers,
+#user-groups .user-group h4 > .name {
+    font-weight: bold;
+}
+
+#user-groups .ntm {
+    cursor: not-allowed;
 }
 
 #user-groups .ntm h4 > .button {
