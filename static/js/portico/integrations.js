@@ -171,7 +171,6 @@ function hide_catalog_show_integration() {
             .append($lozenge_icon)
             .css('display', 'flex');
         $('.integration-instructions#' + state.integration).css('display', 'block');
-        $("#integration-list-link").css('display', 'block');
 
         $("html, body").animate(
             { scrollTop: 0 },
