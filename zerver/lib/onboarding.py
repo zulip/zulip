@@ -3,7 +3,8 @@ from django.conf import settings
 from zerver.lib.actions import \
     internal_prep_stream_message_by_name, internal_send_private_message, \
     do_send_messages, \
-    do_add_reaction_legacy, create_users, missing_any_realm_internal_bots
+    do_add_reaction, create_users, missing_any_realm_internal_bots
+from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.models import Message, Realm, UserProfile, get_system_bot
 
 from typing import Dict, List
@@ -101,4 +102,5 @@ def send_initial_realm_messages(realm: Realm) -> None:
     turtle_message = Message.objects.get(
         id__in=message_ids,
         content__icontains='cute/turtle.png')
-    do_add_reaction_legacy(welcome_bot, turtle_message, 'turtle')
+    (emoji_code, reaction_type) = emoji_name_to_emoji_code(realm, 'turtle')
+    do_add_reaction(welcome_bot, turtle_message, 'turtle', emoji_code, reaction_type)
