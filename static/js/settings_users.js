@@ -170,29 +170,29 @@ function populate_users(realm_people_data) {
         },
     }).init();
 
+    function get_rendered_last_activity(item) {
+        var today = new XDate();
+        if (item.last_active === LAST_ACTIVE_UNKNOWN) {
+            return $("<span></span>").text(i18n.t("Unknown"));
+        }
+        if (item.last_active === LAST_ACTIVE_NEVER) {
+            return $("<span></span>").text(i18n.t("Never"));
+        }
+        return timerender.render_date(
+            new XDate(item.last_active * 1000), undefined, today);
+    }
+
     var $users_table = $("#admin_users_table");
     list_render.create($users_table, active_users, {
         name: "users_table_list",
         modifier: function (item) {
-            var activity_rendered;
-            var today = new XDate();
-            if (item.last_active === LAST_ACTIVE_UNKNOWN) {
-                activity_rendered = $("<span></span>").text(i18n.t("Unknown"));
-            } else if (item.last_active === LAST_ACTIVE_NEVER) {
-                activity_rendered = $("<span></span>").text(i18n.t("Never"));
-            } else {
-                activity_rendered = timerender.render_date(
-                    new XDate(item.last_active * 1000), undefined, today);
-            }
-
             var $row = $(render_admin_user_list({
                 can_modify: page_params.is_admin,
                 is_current_user: people.is_my_user_id(item.user_id),
                 show_email: settings_org.show_email(),
                 user: item,
             }));
-            $row.find(".last_active").append(activity_rendered);
-
+            $row.find(".last_active").append(get_rendered_last_activity(item));
             return $row;
         },
         filter: {
