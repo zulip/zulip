@@ -1184,41 +1184,42 @@ input[type=checkbox].inline-block {
     margin-right: 5px;
 }
 
-#user-groups .user-group {
-    margin-bottom: 20px;
-    padding: 10px;
-    border-radius: 5px;
-}
+#user-groups {
+    .user-group {
+        margin-bottom: 20px;
+        padding: 10px;
+        border-radius: 5px;
 
-#user-groups .user-group h4 {
-    font-weight: normal;
-    margin: 0px;
-    display: flex;
-    align-items: center;
-    justify-content: left;
-}
+        h4 {
+            font-weight: normal;
+            margin: 0px;
+            display: flex;
+            align-items: center;
+            justify-content: left;
+        }
 
-#user-groups .user-group span[contenteditable] {
-    display: inline-block;
-    word-break: break-all;
-}
+        span[contenteditable] {
+            display: inline-block;
+            word-break: break-all;
+            &:empty::before {
+                opacity: 0.5;
+                display: inline-block;
+                content: attr(data-placeholder);
+            }
+        }
 
-#user-groups .user-group span[contenteditable]:empty::before {
-    opacity: 0.5;
-    display: inline-block;
-    content: attr(data-placeholder);
-}
+        span[contenteditable]:focus,
+        span[contenteditable="true"]:hover {
+            border-bottom: 1px solid hsl(0, 0%, 80%);
+            margin-bottom: -1px;
+            outline: none;
+        }
 
-#user-groups .user-group span[contenteditable]:focus,
-#user-groups .user-group span[contenteditable="true"]:hover {
-    border-bottom: 1px solid hsl(0, 0%, 80%);
-    margin-bottom: -1px;
-    outline: none;
-}
-
-#user-groups .user-group .pill-container .input[contenteditable]:empty::after {
-    content: attr(data-placeholder);
-    opacity: 0.5;
+        .pill-container .input[contenteditable]:empty::after {
+            content: attr(data-placeholder);
+            opacity: 0.5;
+        }
+    }
 }
 
 #user-groups .user-group-status {
