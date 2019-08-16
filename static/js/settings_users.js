@@ -234,21 +234,22 @@ function populate_users(realm_people_data) {
 
     users_list.sort("alphabetic", "full_name");
 
-    users_list.add_sort_function("role", function (a, b) {
+    function sort_role(a, b) {
         function role(user) {
             if (user.is_admin) { return 0; }
             if (user.is_guest) { return 2; }
             return 1; // member
         }
         return compare_a_b(role(a), role(b));
-    });
+    }
+    users_list.add_sort_function("role", sort_role);
 
     users_list.add_sort_function("last_active", function (a, b) {
         return compare_a_b(b.last_active, a.last_active);
     });
 
     var $deactivated_users_table = $("#admin_deactivated_users_table");
-    list_render.create($deactivated_users_table, deactivated_users, {
+    var deactivated_users_list = list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         modifier: function (item) {
             return render_admin_user_list({
@@ -272,7 +273,11 @@ function populate_users(realm_people_data) {
             },
             onupdate: reset_scrollbar($deactivated_users_table),
         },
+        parent_container: $("#admin-deactivated-users-list").expectOne(),
     }).init();
+
+    deactivated_users_list.sort("alphabetic", "full_name");
+    deactivated_users_list.add_sort_function("role", sort_role);
 
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
