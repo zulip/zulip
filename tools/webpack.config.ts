@@ -13,6 +13,7 @@ export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";
     const publicPath = production ? '/static/webpack-bundles/' : '/webpack/';
     const config: webpack.Configuration = {
+        name: "frontend",
         mode: production ? "production" : "development",
         context: resolve(__dirname, "../"),
         entry: assets,
@@ -192,9 +193,6 @@ export default (env?: string): webpack.Configuration[] => {
         config.devServer = {
             clientLogLevel: "error",
             stats: "errors-only",
-            watchOptions: {
-                poll: 100,
-            },
         };
     }
 
