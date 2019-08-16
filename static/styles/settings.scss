@@ -244,13 +244,7 @@ td .button {
     margin: 20px;
 }
 
-.settings-wrapper {
-    display: none;
-}
-
-.settings-section.show,
-.settings-wrapper.show,
-.settings-wrapper.show .settings-section {
+.settings-section.show {
     display: block;
 }
 
