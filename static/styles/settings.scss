@@ -183,7 +183,6 @@ label {
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
-#admin_filters_table > tr > td:nth-of-type(1),
 .upload-file-name {
     width: 30%;
     word-break: break-all;
@@ -801,10 +800,6 @@ input[type=checkbox].inline-block {
             }
         }
     }
-}
-
-#filter-settings .admin_filters_table {
-    margin-top: 20px;
 }
 
 #admin-filter-pattern-status,

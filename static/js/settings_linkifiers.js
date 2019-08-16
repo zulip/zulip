@@ -27,7 +27,7 @@ exports.populate_filters = function (filters_data) {
     }
 
     var filters_table = $("#admin_filters_table").expectOne();
-    list_render.create(filters_table, filters_data, {
+    var filters_list = list_render.create(filters_table, filters_data, {
         name: "linkifiers_list",
         modifier: function (filter) {
             return render_admin_filter_list({
@@ -53,6 +53,31 @@ exports.populate_filters = function (filters_data) {
         },
         parent_container: $("#filter-settings").expectOne(),
     }).init();
+
+    function compare_by_index(a, b, i) {
+        if (a[i] > b[i]) {
+            return 1;
+        } else if (a[i] === b[i]) {
+            return 0;
+        }
+        return -1;
+    }
+
+    filters_list.add_sort_function("pattern", function (a, b) {
+        return compare_by_index(a, b, 0);
+    });
+
+    filters_list.add_sort_function("url", function (a, b) {
+        return compare_by_index(a, b, 1);
+    });
+
+    var active_col = $('.admin_filters_table th.active').expectOne();
+    filters_list.sort(
+        active_col.data('sort'),
+        undefined,
+        undefined,
+        undefined,
+        active_col.hasClass('descend'));
 
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
 };
