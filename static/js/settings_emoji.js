@@ -62,7 +62,7 @@ exports.populate_emoji = function (emoji_data) {
     }
 
     var emoji_table = $('#admin_emoji_table').expectOne();
-    list_render.create(emoji_table, Object.values(emoji_data), {
+    var emoji_list = list_render.create(emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
         modifier: function (item) {
             if (item.deactivated !== true) {
@@ -89,6 +89,17 @@ exports.populate_emoji = function (emoji_data) {
         },
         parent_container: $("#emoji-settings").expectOne(),
     }).init();
+
+    emoji_list.sort("alphabetic", "name");
+
+    emoji_list.add_sort_function("author_full_name", function (a, b) {
+        if (a.author.full_name > b.author.full_name) {
+            return 1;
+        } else if (a.author.full_name === b.author.full_name) {
+            return 0;
+        }
+        return -1;
+    });
 
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };

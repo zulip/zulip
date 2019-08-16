@@ -31,9 +31,9 @@
       aria-label="{{t 'Filter linkifiers' }}"/>
     <table class="table table-condensed table-striped wrapped-table admin_emoji_table">
         <thead>
-            <th>{{t "Name" }}</th>
+            <th class="active" data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}</th>
             <th class="image">{{t "Image" }}</th>
-            <th class="image">{{t "Author" }}</th>
+            <th class="image" data-sort="author_full_name">{{t "Author" }}</th>
             <th class="actions">{{t "Actions" }}</th>
         </thead>
     </table>
