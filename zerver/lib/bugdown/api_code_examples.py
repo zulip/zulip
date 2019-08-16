@@ -34,7 +34,6 @@ client = zulip.Client(config_file="~/zuliprc-admin")
 
 """
 
-DEFAULT_API_URL = "localhost:9991/api"
 DEFAULT_AUTH_EMAIL = "BOT_EMAIL_ADDRESS"
 DEFAULT_AUTH_API_KEY = "BOT_API_KEY"
 DEFAULT_EXAMPLE = {
@@ -80,7 +79,8 @@ def extract_python_code_example(source: List[str], snippet: List[str]) -> List[s
     source = source[end + 1:]
     return extract_python_code_example(source, snippet)
 
-def render_python_code_example(function: str, admin_config: Optional[bool]=False) -> List[str]:
+def render_python_code_example(function: str, admin_config: Optional[bool]=False,
+                               **kwargs: Any) -> List[str]:
     method = zerver.openapi.python_examples.TEST_FUNCTIONS[function]
     function_source_lines = inspect.getsourcelines(method)[0]
 
@@ -121,9 +121,9 @@ def curl_method_arguments(endpoint: str, method: str,
         raise ValueError(msg)
 
 def generate_curl_example(endpoint: str, method: str,
+                          api_url: str,
                           auth_email: str=DEFAULT_AUTH_EMAIL,
                           auth_api_key: str=DEFAULT_AUTH_API_KEY,
-                          api_url: str=DEFAULT_API_URL,
                           exclude: List[str]=[]) -> List[str]:
     lines = ["```curl"]
     openapi_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
@@ -166,7 +166,8 @@ cURL example.""".format(endpoint, method, param_name)
 
     return lines
 
-def render_curl_example(function: str, exclude: List[str]=[]) -> List[str]:
+def render_curl_example(function: str, api_url: str,
+                        exclude: List[str]=[]) -> List[str]:
     """ A simple wrapper around generate_curl_example. """
     parts = function.split(":")
     endpoint = parts[0]
@@ -176,8 +177,7 @@ def render_curl_example(function: str, exclude: List[str]=[]) -> List[str]:
         kwargs["auth_email"] = parts[2]
     if len(parts) > 3:
         kwargs["auth_api_key"] = parts[3]
-    if len(parts) > 4:
-        kwargs["api_url"] = parts[4]
+    kwargs["api_url"] = api_url
     kwargs["exclude"] = exclude
     return generate_curl_example(endpoint, method, **kwargs)
 
@@ -193,6 +193,14 @@ SUPPORTED_LANGUAGES = {
 }  # type: Dict[str, Any]
 
 class APICodeExamplesGenerator(Extension):
+    def __init__(self, api_url: Optional[str]) -> None:
+        self.config = {
+            'api_url': [
+                api_url,
+                'API URL to use when rendering curl examples'
+            ]
+        }
+
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
             'generate_code_example', APICodeExamplesPreprocessor(md, self.getConfigs()), '_begin'
@@ -201,6 +209,7 @@ class APICodeExamplesGenerator(Extension):
 class APICodeExamplesPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
         super(APICodeExamplesPreprocessor, self).__init__(md)
+        self.api_url = config['api_url']
 
     def run(self, lines: List[str]) -> List[str]:
         done = False
@@ -214,6 +223,9 @@ class APICodeExamplesPreprocessor(Preprocessor):
                     function = match.group(3)
                     key = match.group(4)
                     argument = match.group(6)
+                    if self.api_url is None:
+                        raise AssertionError("Cannot render curl API examples without API URL set.")
+                    options['api_url'] = self.api_url
 
                     if key == 'fixture':
                         if argument:
@@ -262,4 +274,4 @@ class APICodeExamplesPreprocessor(Preprocessor):
         return fixture
 
 def makeExtension(*args: Any, **kwargs: str) -> APICodeExamplesGenerator:
-    return APICodeExamplesGenerator(**kwargs)
+    return APICodeExamplesGenerator(*args, **kwargs)
