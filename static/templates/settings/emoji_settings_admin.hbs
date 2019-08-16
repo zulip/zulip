@@ -26,14 +26,19 @@
         </div>
     </form>
     <p>{{#tr this}}Add extra emoji for members of the __realm_name__ organization.{{/tr}}</p>
-    <div class="admin-table-wrapper">
+
+    <input type="text" class="search" placeholder="{{t 'Filter emojis' }}"
+      aria-label="{{t 'Filter linkifiers' }}"/>
+    <table class="table table-condensed table-striped wrapped-table admin_emoji_table">
+        <thead>
+            <th>{{t "Name" }}</th>
+            <th class="image">{{t "Image" }}</th>
+            <th class="image">{{t "Author" }}</th>
+            <th class="actions">{{t "Actions" }}</th>
+        </thead>
+    </table>
+    <div class="progressive-table-wrapper" data-simplebar data-list-render="emoji_list">
         <table class="table table-condensed table-striped wrapped-table admin_emoji_table">
-            <thead>
-                <th>{{t "Name" }}</th>
-                <th class="image">{{t "Image" }}</th>
-                <th class="image">{{t "Author" }}</th>
-                <th class="actions">{{t "Actions" }}</th>
-            </thead>
             <tbody id="admin_emoji_table" class="required-text" data-empty="{{t 'No custom emoji.' }}"></tbody>
         </table>
     </div>
