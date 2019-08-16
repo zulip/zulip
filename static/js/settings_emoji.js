@@ -62,20 +62,34 @@ exports.populate_emoji = function (emoji_data) {
     }
 
     var emoji_table = $('#admin_emoji_table').expectOne();
-    emoji_table.find('tr.emoji_row').remove();
-    _.each(emoji_data, function (data) {
-        if (data.deactivated !== true) {
-            emoji_table.append(render_admin_emoji_list({
-                emoji: {
-                    name: data.name,
-                    display_name: data.name.replace(/_/g, ' '),
-                    source_url: data.source_url,
-                    author: data.author || '',
-                    can_admin_emoji: can_admin_emoji(data),
-                },
-            }));
-        }
-    });
+    list_render.create(emoji_table, Object.values(emoji_data), {
+        name: "emoji_list",
+        modifier: function (item) {
+            if (item.deactivated !== true) {
+                return render_admin_emoji_list({
+                    emoji: {
+                        name: item.name,
+                        display_name: item.name.replace(/_/g, ' '),
+                        source_url: item.source_url,
+                        author: item.author || '',
+                        can_admin_emoji: can_admin_emoji(item),
+                    },
+                });
+            }
+            return "";
+        },
+        filter: {
+            element: emoji_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return item.name.toLowerCase().indexOf(value) >= 0;
+            },
+            onupdate: function () {
+                ui.reset_scrollbar(emoji_table);
+            },
+        },
+        parent_container: $("#emoji-settings").expectOne(),
+    }).init();
+
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };
 
