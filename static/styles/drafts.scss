@@ -32,15 +32,15 @@
             right: 10px;
             color: hsl(0, 0%, 67%);
             cursor: pointer;
-        }
 
-        .exit-sign {
-            position: relative;
-            top: 3px;
-            margin-left: 3px;
-            font-size: 1.5rem;
-            font-weight: 600;
-            cursor: pointer;
+            .exit-sign {
+                position: relative;
+                top: 3px;
+                margin-left: 3px;
+                font-size: 1.5rem;
+                font-weight: 600;
+                cursor: pointer;
+            }
         }
     }
 }
