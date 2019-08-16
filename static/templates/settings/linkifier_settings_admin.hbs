@@ -40,6 +40,31 @@
             {{/tr}}
         </p>
 
+        {{#if is_admin}}
+        <form class="form-horizontal admin-filter-form">
+            <div class="add-new-filter-box grey-box">
+                <div class="new-filter-form wrapper">
+                    <div class="settings-section-title new-filter-section-title">{{t "Add a new linkifier" }}</div>
+                    <div class="alert" id="admin-filter-status"></div>
+                    <div class="control-group">
+                        <label for="filter_pattern" class="control-label">{{t "Pattern" }}</label>
+                        <input type="text" id="filter_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
+                        <div class="alert" id="admin-filter-pattern-status"></div>
+                    </div>
+                    <div class="control-group">
+                        <label for="filter_format_string" class="control-label">{{t "URL format string" }}</label>
+                        <input type="text" id="filter_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
+                        <div class="alert" id="admin-filter-format-status"></div>
+                    </div>
+                    <button type="submit" class="button rounded sea-green">
+                        {{t 'Add linkifier' }}
+                    </button>
+                </div>
+            </div>
+        </form>
+        {{/if}}
+
+        <input type="text" class="search" placeholder="{{t 'Filter linkifiers' }}" aria-label="{{t 'Filter linkifiers' }}"/>
         <table class="table table-condensed table-striped admin_filters_table">
             <thead>
                 <th>{{t "Pattern" }}</th>
@@ -50,28 +75,10 @@
             </thead>
             <tbody id="admin_filters_table" {{#if is_admin}}{{else}}class="required-text" data-empty="{{t 'No linkifiers set.' }}"{{/if}}></tbody>
         </table>
-    </div>
-    {{#if is_admin}}
-    <form class="form-horizontal admin-filter-form">
-        <div class="add-new-filter-box grey-box">
-            <div class="new-filter-form wrapper">
-                <div class="settings-section-title new-filter-section-title">{{t "Add a new linkifier" }}</div>
-                <div class="alert" id="admin-filter-status"></div>
-                <div class="control-group">
-                    <label for="filter_pattern" class="control-label">{{t "Pattern" }}</label>
-                    <input type="text" id="filter_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
-                    <div class="alert" id="admin-filter-pattern-status"></div>
-                </div>
-                <div class="control-group">
-                    <label for="filter_format_string" class="control-label">{{t "URL format string" }}</label>
-                    <input type="text" id="filter_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
-                    <div class="alert" id="admin-filter-format-status"></div>
-                </div>
-                <button type="submit" class="button rounded sea-green">
-                    {{t 'Add linkifier' }}
-                </button>
-            </div>
+        <div class="progressive-table-wrapper" data-simplebar data-list-render="linkifiers_list">
+            <table class="table table-condensed table-striped admin_filters_table">
+                <tbody id="admin_filters_table" {{#if is_admin}}{{else}}class="required-text" data-empty="{{t 'No linkifiers set.' }}"{{/if}}></tbody>
+            </table>
         </div>
-    </form>
-    {{/if}}
+    </div>
 </div>
