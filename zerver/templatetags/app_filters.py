@@ -107,7 +107,6 @@ def render_markdown_path(markdown_file_path: str,
             ),
             zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),
-            zerver.lib.bugdown.api_code_examples.makeExtension(),
             zerver.lib.bugdown.nested_code_blocks.makeExtension(),
             zerver.lib.bugdown.tabbed_sections.makeExtension(),
             zerver.lib.bugdown.help_settings_links.makeExtension(),
@@ -117,11 +116,20 @@ def render_markdown_path(markdown_file_path: str,
     if md_macro_extension is None:
         md_macro_extension = zerver.lib.bugdown.include.makeExtension(
             base_path='templates/zerver/help/include/')
+    extensions = md_extensions
+    if 'api_url' in context:
+        # We need to generate the API code examples extension each
+        # time so the `api_url` config parameter can be set dynamically.
+        #
+        # TODO: Convert this to something more efficient involving
+        # passing the API URL as a direct parameter.
+        extensions = extensions + [zerver.lib.bugdown.api_code_examples.makeExtension(
+            api_url=context["api_url"],
+        )]
+    if not any(doc in markdown_file_path for doc in docs_without_macros):
+        extensions = extensions + [md_macro_extension]
 
-    if any(doc in markdown_file_path for doc in docs_without_macros):
-        md_engine = markdown.Markdown(extensions=md_extensions)
-    else:
-        md_engine = markdown.Markdown(extensions=md_extensions + [md_macro_extension])
+    md_engine = markdown.Markdown(extensions=extensions)
     md_engine.reset()
 
     jinja = engines['Jinja2']
