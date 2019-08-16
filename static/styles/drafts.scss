@@ -10,24 +10,24 @@
     max-height: 1000px;
     display: flex;
     flex-direction: column;
-}
 
-.drafts-container .exit {
-    font-weight: 400;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: hsl(0, 0%, 67%);
-    cursor: pointer;
-}
+    .exit {
+        font-weight: 400;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: hsl(0, 0%, 67%);
+        cursor: pointer;
+    }
 
-.drafts-container .exit-sign {
-    position: relative;
-    top: 3px;
-    margin-left: 3px;
-    font-size: 1.5rem;
-    font-weight: 600;
-    cursor: pointer;
+    .exit-sign {
+        position: relative;
+        top: 3px;
+        margin-left: 3px;
+        font-size: 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
 }
 
 .drafts-header {
@@ -37,34 +37,34 @@
     }
     text-align: center;
     border-bottom: 1px solid hsl(0, 0%, 87%);
-}
 
-.drafts-header h1 {
-    margin: 0;
-    font-size: 1.1em;
-    text-transform: uppercase;
+    h1 {
+        margin: 0;
+        font-size: 1.1em;
+        text-transform: uppercase;
+    }
 }
 
 .drafts-list {
     padding: 10px 0;
     overflow: auto;
-}
 
-.drafts-list .no-drafts {
-    display: block;
-    margin-top: calc(45vh - 30px - 1.5em);
-    text-align: center;
-    font-size: 1.5em;
-    color: hsl(0, 0%, 67%);
-    pointer-events: none;
-}
+    .no-drafts {
+        display: block;
+        margin-top: calc(45vh - 30px - 1.5em);
+        text-align: center;
+        font-size: 1.5em;
+        color: hsl(0, 0%, 67%);
+        pointer-events: none;
+    }
 
-.drafts-list .removed-drafts {
-    display: block;
-    text-align: center;
-    font-size: 1em;
-    color: hsl(0, 0%, 67%);
-    pointer-events: none;
+    .removed-drafts {
+        display: block;
+        text-align: center;
+        font-size: 1em;
+        color: hsl(0, 0%, 67%);
+        pointer-events: none;
+    }
 }
 
 .draft-row {
