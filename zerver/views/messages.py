@@ -1402,7 +1402,8 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
 
 @has_request_variables
 def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
-                             message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
+                             message_id: int=REQ(converter=to_non_negative_int,
+                                                 path_only=True)) -> HttpResponse:
     if not user_profile.realm.allow_edit_history:
         return json_error(_("Message edit history is disabled in this organization"))
     message, ignored_user_message = access_message(user_profile, message_id)
@@ -1539,7 +1540,8 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
 
 @has_request_variables
 def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
-                           message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
+                           message_id: int=REQ(converter=to_non_negative_int,
+                                               path_only=True)) -> HttpResponse:
     message, ignored_user_message = access_message(user_profile, message_id)
     validate_can_delete_message(user_profile, message)
     try:

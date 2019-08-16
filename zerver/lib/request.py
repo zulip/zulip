@@ -71,7 +71,8 @@ class _REQ(Generic[ResultT]):
         argument_type: Optional[str] = None,
         intentionally_undocumented: bool=False,
         documentation_pending: bool=False,
-        aliases: Optional[List[str]] = None
+        aliases: Optional[List[str]] = None,
+        path_only: bool=False,
     ) -> None:
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
@@ -98,6 +99,9 @@ class _REQ(Generic[ResultT]):
         be inferred in another way (eg. via converter).
 
         aliases: alternate names for the POST var
+
+        path_only: Used for parameters included in the URL that we still want
+        to validate via REQ's hooks.
         """
 
         self.post_var_name = whence
@@ -110,6 +114,7 @@ class _REQ(Generic[ResultT]):
         self.aliases = aliases
         self.intentionally_undocumented = intentionally_undocumented
         self.documentation_pending = documentation_pending
+        self.path_only = path_only
 
         if converter and (validator or str_validator):
             # Not user-facing, so shouldn't be tagged for translation
@@ -137,7 +142,8 @@ def REQ(
     argument_type: Optional[str] = None,
     intentionally_undocumented: bool=False,
     documentation_pending: bool=False,
-    aliases: Optional[List[str]] = None
+    aliases: Optional[List[str]] = None,
+    path_only: bool = False,
 ) -> ResultT:
     return cast(ResultT, _REQ(
         whence,
@@ -150,6 +156,7 @@ def REQ(
         intentionally_undocumented=intentionally_undocumented,
         documentation_pending=documentation_pending,
         aliases=aliases,
+        path_only=path_only,
     ))
 
 arguments_map = defaultdict(list)  # type: Dict[str, List[str]]
@@ -191,13 +198,23 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
             # Record arguments that should be documented so that our
             # automated OpenAPI docs tests can compare these against the code.
-            if not value.intentionally_undocumented and not value.documentation_pending:
+            if (not value.intentionally_undocumented
+                    and not value.documentation_pending
+                    and not value.path_only):
                 arguments_map[view_func_full_name].append(value.post_var_name)
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         for param in post_params:
             func_var_name = param.func_var_name
+            if param.path_only:
+                # For path_only parameters, they should already have
+                # been passed via the URL, so there's no need for REQ
+                # to do anything.
+                #
+                # TODO: Either run validators for path_only parameters
+                # or don't declare them using REQ.
+                assert func_var_name in kwargs
             if func_var_name in kwargs:
                 continue
             assert func_var_name is not None

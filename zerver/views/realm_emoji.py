@@ -20,7 +20,7 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 @require_member_or_admin
 @has_request_variables
 def upload_emoji(request: HttpRequest, user_profile: UserProfile,
-                 emoji_name: str=REQ()) -> HttpResponse:
+                 emoji_name: str=REQ(path_only=True)) -> HttpResponse:
     emoji_name = emoji_name.strip().replace(' ', '_')
     check_valid_emoji_name(emoji_name)
     check_emoji_admin(user_profile)

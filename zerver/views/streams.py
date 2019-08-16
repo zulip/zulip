@@ -479,7 +479,8 @@ def get_streams_backend(
 
 @has_request_variables
 def get_topics_backend(request: HttpRequest, user_profile: UserProfile,
-                       stream_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
+                       stream_id: int=REQ(converter=to_non_negative_int,
+                                          path_only=True)) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
     result = get_topic_history_for_stream(

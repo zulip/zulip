@@ -3686,6 +3686,14 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(test_bot.last_reminder, None)
 
 class DeleteMessageTest(ZulipTestCase):
+    def test_delete_message_invalid_request_format(self) -> None:
+        self.login("iago@zulip.com")
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
+        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id + 1),
+                                    {'message_id': msg_id})
+        self.assert_json_error(result, "Invalid message(s)")
+        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        self.assert_json_success(result)
 
     def test_delete_message_by_user(self) -> None:
         def set_message_deleting_params(allow_message_deleting: bool,
