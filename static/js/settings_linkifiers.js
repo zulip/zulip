@@ -27,19 +27,33 @@ exports.populate_filters = function (filters_data) {
     }
 
     var filters_table = $("#admin_filters_table").expectOne();
-    filters_table.find("tr.filter_row").remove();
-    _.each(filters_data, function (filter) {
-        filters_table.append(
-            render_admin_filter_list({
+    list_render.create(filters_table, filters_data, {
+        name: "linkifiers_list",
+        modifier: function (filter) {
+            return render_admin_filter_list({
                 filter: {
                     pattern: filter[0],
                     url_format_string: filter[1],
                     id: filter[2],
                 },
                 can_modify: page_params.is_admin,
-            })
-        );
-    });
+            });
+        },
+        filter: {
+            element: filters_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return (
+                    item[0].toLowerCase().indexOf(value) >= 0 ||
+                    item[1].toLowerCase().indexOf(value) >= 0
+                );
+            },
+            onupdate: function () {
+                ui.reset_scrollbar(filters_table);
+            },
+        },
+        parent_container: $("#filter-settings").expectOne(),
+    }).init();
+
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
 };
 
