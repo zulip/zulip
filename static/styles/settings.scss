@@ -265,6 +265,16 @@ td .button {
     color: inherit;
 }
 
+.settings-section .settings-section-title .table-title {
+    display: inline-block;
+    padding: 6px 0px;
+    margin-left: 5px;
+}
+
+.settings-section .settings-section-title .table-title i {
+    margin-right: 5px;
+}
+
 .settings-section form {
     margin: 0;
 }
@@ -294,16 +304,6 @@ td .button {
     margin: 2px 5px 2px 0px;
     padding: 2px 5px;
     font-size: 0.9em;
-}
-
-.settings-section .settings-section-title .table-title {
-    display: inline-block;
-    padding: 6px 0px;
-    margin-left: 5px;
-}
-
-.settings-section .settings-section-title .table-title i {
-    margin-right: 5px;
 }
 
 .settings-section .upgrade-tip,
