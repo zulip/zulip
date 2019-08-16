@@ -29,7 +29,7 @@ exports.build_default_stream_table = function (streams_data) {
 
     var table = $("#admin_default_streams_table").expectOne();
 
-    list_render.create(table, streams_data, {
+    var streams_list = list_render.create(table, streams_data, {
         name: "default_streams_list",
         modifier: function (item) {
             var row = $(render_admin_default_streams_list({
@@ -48,7 +48,10 @@ exports.build_default_stream_table = function (streams_data) {
                 ui.reset_scrollbar(table);
             },
         },
+        parent_container: $("#admin-default-streams-list").expectOne(),
     }).init();
+
+    streams_list.sort("alphabetic", "name");
 
     loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
 
