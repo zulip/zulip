@@ -217,120 +217,123 @@ td .button {
     display: none;
     width: calc(100% - 40px);
     margin: 20px;
-}
 
-.settings-section.show {
-    display: block;
-}
+    &.show {
+        display: block;
+    }
 
-.settings-section form {
-    margin: 0;
-}
+    form {
+        margin: 0;
+    }
 
-.settings-section .no-padding {
-    padding: 0;
-}
+    .no-padding {
+        padding: 0;
+    }
 
-.settings-section label > a,
-.settings-section h3 > a {
-    color: inherit;
-}
+    label > a,
+    h3 > a {
+        color: inherit;
+    }
 
-.settings-section label .fa-question-circle-o {
-    top: 1px;
-    left: 2px;
-}
+    label .fa-question-circle-o {
+        top: 1px;
+        left: 2px;
+    }
 
-.settings-section h3 .fa-question-circle-o {
-    top: 1px;
-    left: 5px;
-}
+    h3 .fa-question-circle-o {
+        top: 1px;
+        left: 5px;
+    }
 
-.settings-section .fa-question-circle-o {
-    opacity: 0.4;
-    position: relative;
-}
+    .fa-question-circle-o {
+        opacity: 0.4;
+        position: relative;
 
-.settings-section .fa-question-circle-o:hover {
-    opacity: 1;
-}
+        &:hover {
+            opacity: 1;
+        }
+    }
 
-.settings-section .settings-section-title {
-    font-size: 1.4em;
-    font-weight: 500;
-    margin: 10px 0px 10px 0px;
-}
+    .settings-section-title {
+        font-size: 1.4em;
+        font-weight: 500;
+        margin: 10px 0px 10px 0px;
 
-.settings-section .settings-section-title.transparent {
-    background-color: transparent;
-    color: inherit;
-}
+        &.transparent {
+            background-color: transparent;
+            color: inherit;
+        }
 
-.settings-section .settings-section-title .table-title {
-    display: inline-block;
-    padding: 6px 0px;
-    margin-left: 5px;
-}
+        .table-title {
+            display: inline-block;
+            padding: 6px 0px;
+            margin-left: 5px;
 
-.settings-section .settings-section-title .table-title i {
-    margin-right: 5px;
-}
+            i {
+                margin-right: 5px;
+            }
+        }
+    }
 
-.settings-section .table-striped tbody {
-    border-bottom: none;
-}
+    .table-striped {
+        tbody {
+            border-bottom: none;
+        }
 
-.settings-section .table-striped thead th {
-    background-color: inherit;
-    color: inherit;
-    border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
-    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
-}
+        thead th {
+            background-color: inherit;
+            color: inherit;
+            border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+            border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+        }
+    }
 
-.settings-section input[type=text].search {
-    float: right;
-    margin: 2px 5px 2px 0px;
-    padding: 2px 5px;
-    font-size: 0.9em;
-}
+    input[type=text].search {
+        float: right;
+        margin: 2px 5px 2px 0px;
+        padding: 2px 5px;
+        font-size: 0.9em;
+    }
 
-.settings-section .upgrade-tip,
-.settings-section .tip {
-    position: relative;
-    display: block;
-    background-color: hsl(46, 63%, 95%);
-    border: 1px solid hsl(49, 20%, 84%);
-    border-radius: 4px;
-    padding: 10px;
-    margin: 10px 0px;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: hsl(0, 0%, 40%);
-}
+    .upgrade-tip,
+    .tip {
+        position: relative;
+        display: block;
+        background-color: hsl(46, 63%, 95%);
+        border: 1px solid hsl(49, 20%, 84%);
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: hsl(0, 0%, 40%);
 
-.settings-section .upgrade-tip::before,
-.settings-section .tip::before {
-    display: inline;
-    margin-right: 8px;
+        &::before {
+            display: inline;
+            margin-right: 8px;
 
-    font-family: FontAwesome, "Yantramanav", Source Sans Pro;
-    font-weight: 600;
-}
+            font-family: FontAwesome, "Yantramanav", Source Sans Pro;
+            font-weight: 600;
+        }
+    }
 
-.settings-section .upgrade-tip::before {
-    content: "\f135";
-}
+    .upgrade-tip {
+        &::before {
+            content: "\f135";
+        }
 
-.settings-section .upgrade-tip:hover {
-    color: hsl(0, 0%, 20%);
-    border: 1px solid hsl(49, 20%, 60%);
-    box-shadow: 0px 0px 4px hsla(199, 79%, 56%, .2);
+        &:hover {
+            color: hsl(0, 0%, 20%);
+            border: 1px solid hsl(49, 20%, 60%);
+            box-shadow: 0px 0px 4px hsla(199, 79%, 56%, .2);
 
-    text-decoration: none;
-}
+            text-decoration: none;
+        }
+    }
 
-.settings-section .tip::before {
-    content: "\f0a2";
+    .tip::before {
+        content: "\f0a2";
+    }
 }
 
 #admin-user-list .table tr:first-of-type td,
