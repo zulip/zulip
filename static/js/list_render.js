@@ -191,11 +191,6 @@ var list_render = (function () {
             sort: function (sorting_function, prop, map, do_not_display, reverse) {
                 meta.prop = prop;
 
-                if (reverse === true) {
-                    // simple mutable array reversal.
-                    meta.filtered_list.reverse();
-                }
-
                 if (typeof sorting_function === "function") {
                     meta.sorting_function = sorting_function;
                 } else if (typeof sorting_function === "string") {
@@ -207,9 +202,15 @@ var list_render = (function () {
                     }
                 }
 
-                // we do not want to sort if we are just looking to reverse.
-                if (meta.sorting_function && !reverse) {
+                // we do not want to sort if we are just looking to reverse
+                // by calling with no sorting_function
+                if (meta.sorting_function) {
                     meta.filtered_list = meta.filtered_list.sort(meta.sorting_function);
+                }
+
+                if (reverse) {
+                    // simple mutable array reversal.
+                    meta.filtered_list.reverse();
                 }
 
                 if (!do_not_display) {
