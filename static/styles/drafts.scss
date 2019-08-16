@@ -80,6 +80,26 @@
         border: 1px solid hsl(0, 0%, 88%);
         margin-bottom: 10px;
 
+        &.active {
+            outline: 2px solid hsl(215, 47%, 50%);
+        }
+
+        .message_row {
+            border: 0;
+        }
+
+        .messagebox {
+            cursor: auto;
+            box-shadow: none;
+        }
+
+        .message_content {
+            line-height: 1;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            margin-left: 0px;
+        }
+
         .draft_controls {
             display: inline-block;
             position: absolute;
@@ -87,28 +107,6 @@
             right: -80px;
             font-size: 0.9em;
         }
-    }
-}
-
-.draft-info-box {
-    &.active {
-        outline: 2px solid hsl(215, 47%, 50%);
-    }
-
-    .message_row {
-        border: 0;
-    }
-
-    .messagebox {
-        cursor: auto;
-        box-shadow: none;
-    }
-
-    .message_content {
-        line-height: 1;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        margin-left: 0px;
     }
 }
 
