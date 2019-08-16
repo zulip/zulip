@@ -43,27 +43,27 @@
             }
         }
     }
-}
 
-.drafts-list {
-    padding: 10px 0;
-    overflow: auto;
+    .drafts-list {
+        padding: 10px 0;
+        overflow: auto;
 
-    .no-drafts {
-        display: block;
-        margin-top: calc(45vh - 30px - 1.5em);
-        text-align: center;
-        font-size: 1.5em;
-        color: hsl(0, 0%, 67%);
-        pointer-events: none;
-    }
+        .no-drafts {
+            display: block;
+            margin-top: calc(45vh - 30px - 1.5em);
+            text-align: center;
+            font-size: 1.5em;
+            color: hsl(0, 0%, 67%);
+            pointer-events: none;
+        }
 
-    .removed-drafts {
-        display: block;
-        text-align: center;
-        font-size: 1em;
-        color: hsl(0, 0%, 67%);
-        pointer-events: none;
+        .removed-drafts {
+            display: block;
+            text-align: center;
+            font-size: 1em;
+            color: hsl(0, 0%, 67%);
+            pointer-events: none;
+        }
     }
 }
 
