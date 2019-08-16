@@ -71,10 +71,6 @@
     padding: 5px 25px;
 }
 
-.draft-info-box.active {
-    outline: 2px solid hsl(215, 47%, 50%);
-}
-
 .draft-row > div {
     display: inline-block;
     vertical-align: top;
@@ -84,6 +80,18 @@
     width: 100%;
     border: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
+}
+
+.draft-row .draft-info-box .draft_controls {
+    display: inline-block;
+    position: absolute;
+    top: 9px;
+    right: -80px;
+    font-size: 0.9em;
+}
+
+.draft-info-box.active {
+    outline: 2px solid hsl(215, 47%, 50%);
 }
 
 .draft-info-box .message_row {
@@ -100,14 +108,6 @@
     padding-top: 10px;
     padding-bottom: 10px;
     margin-left: 0px;
-}
-
-.draft-row .draft-info-box .draft_controls {
-    display: inline-block;
-    position: absolute;
-    top: 9px;
-    right: -80px;
-    font-size: 0.9em;
 }
 
 .draft_controls .restore-draft {
