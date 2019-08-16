@@ -7,7 +7,6 @@ import sys
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-import django
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ZULIP_PATH)
 os.chdir(ZULIP_PATH)
@@ -16,13 +15,6 @@ from zulip import Client
 
 from tools.lib.test_script import assert_provisioning_status_ok
 from tools.lib.test_server import test_server_running
-from zerver.openapi.python_examples import test_the_api, test_invalid_api_key
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
-django.setup()
-from zerver.lib.actions import do_create_user
-from zerver.lib.users import get_api_key
-from zerver.models import get_user, get_realm
 
 usage = """test-api [options]"""
 parser = argparse.ArgumentParser(usage)
@@ -34,6 +26,13 @@ options = parser.parse_args()
 assert_provisioning_status_ok(options.force)
 
 with test_server_running(force=options.force, external_host='zulipdev.com:9981'):
+    # Zerver imports should happen after `django.setup()` is run
+    # by the test_server_running decorator.
+    from zerver.openapi.python_examples import test_the_api, test_invalid_api_key
+    from zerver.lib.actions import do_create_user
+    from zerver.lib.users import get_api_key
+    from zerver.models import get_user, get_realm
+
     print("Running API tests...")
 
     # Prepare the admin client
