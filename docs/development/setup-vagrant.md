@@ -274,6 +274,7 @@ development environment with `vagrant up`:
 ```
 # On Windows or macOS:
 cd zulip
+vagrant plugin install vagrant-vbguest
 vagrant up --provider=virtualbox
 
 # On Linux:
