@@ -215,9 +215,20 @@ td .button {
 
 .settings-section {
     display: none;
-
     width: calc(100% - 40px);
     margin: 20px;
+}
+
+.settings-section.show {
+    display: block;
+}
+
+.settings-section form {
+    margin: 0;
+}
+
+.settings-section .no-padding {
+    padding: 0;
 }
 
 .settings-section label > a,
@@ -244,10 +255,6 @@ td .button {
     opacity: 1;
 }
 
-.settings-section.show {
-    display: block;
-}
-
 .settings-section .settings-section-title {
     font-size: 1.4em;
     font-weight: 500;
@@ -267,14 +274,6 @@ td .button {
 
 .settings-section .settings-section-title .table-title i {
     margin-right: 5px;
-}
-
-.settings-section form {
-    margin: 0;
-}
-
-.settings-section .no-padding {
-    padding: 0;
 }
 
 .settings-section .table.table-condensed.table-striped tbody {
