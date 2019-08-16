@@ -96,5 +96,5 @@ label "travis updates"`, and **@zulipbot** will let you know the build status
 If you wish to help develop and contribute to **@zulipbot**, check out the
 [zulip/zulipbot](https://github.com/zulip/zulipbot) repository on GitHub and read
 the project's [contributing
-guidelines](https://github.com/zulip/zulipbot/blob/master/.github/CONTRIBUTING.md) for
+guidelines](https://github.com/zulip/zulipbot/blob/master/.github/CONTRIBUTING.md#contributing) for
 more information.

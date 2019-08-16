@@ -38,7 +38,7 @@ cffi==1.12.3              # via argon2-cffi, cryptography
 cfn-lint==0.22.3          # via moto
 chardet==3.0.4            # via requests
 click==7.0                # via gitlint, pip-tools
-commonmark==0.5.4
+commonmark==0.9.0
 constantly==15.1.0        # via twisted
 coverage==4.5.3
 cryptography==2.6.1       # via apns2, moto, pyopenssl, requests, service-identity, sshpubkeys
@@ -145,7 +145,7 @@ pytz==2019.1
 pyyaml==5.1.1             # via cfn-lint, moto, yamole
 qrcode==6.1               # via django-two-factor-auth
 queuelib==1.5.0           # via scrapy
-recommonmark==0.4.0
+recommonmark==0.5.0
 redis==3.2.1
 regex==2019.6.8
 requests-oauthlib==1.0.0  # via python-twitter, social-auth-core

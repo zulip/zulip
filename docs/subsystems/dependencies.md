@@ -231,7 +231,7 @@ super fast internet. You can use tmux or screen to make sure that the
 from the SSH session.
 
 [mypy-docs]: ../testing/mypy.html
-[requirements-readme]: https://github.com/zulip/zulip/blob/master/requirements/README.md
+[requirements-readme]: https://github.com/zulip/zulip/blob/master/requirements/README.md#requirements
 [stack-overflow]: https://askubuntu.com/questions/8653/how-to-keep-processes-running-after-ending-ssh-session
 [caching]: https://help.github.com/en/articles/caching-your-github-password-in-git
 
