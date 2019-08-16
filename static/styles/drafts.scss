@@ -12,21 +12,6 @@
     flex-direction: column;
 }
 
-.drafts-header {
-    padding: {
-        top: 4px;
-        bottom: 8px;
-    }
-    text-align: center;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-}
-
-.drafts-header h1 {
-    margin: 0;
-    font-size: 1.1em;
-    text-transform: uppercase;
-}
-
 .drafts-container .exit {
     font-weight: 400;
     position: absolute;
@@ -43,6 +28,21 @@
     font-size: 1.5rem;
     font-weight: 600;
     cursor: pointer;
+}
+
+.drafts-header {
+    padding: {
+        top: 4px;
+        bottom: 8px;
+    }
+    text-align: center;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+.drafts-header h1 {
+    margin: 0;
+    font-size: 1.1em;
+    text-transform: uppercase;
 }
 
 .drafts-list {
