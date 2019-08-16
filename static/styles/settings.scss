@@ -71,30 +71,6 @@ label {
     }
 }
 
-.settings-section label > a,
-.settings-section h3 > a {
-    color: inherit;
-}
-
-.settings-section label .fa-question-circle-o {
-    top: 1px;
-    left: 2px;
-}
-
-.settings-section h3 .fa-question-circle-o {
-    top: 1px;
-    left: 5px;
-}
-
-.settings-section .fa-question-circle-o {
-    opacity: 0.4;
-    position: relative;
-}
-
-.settings-section .fa-question-circle-o:hover {
-    opacity: 1;
-}
-
 .user-avatar-section,
 .realm-logo-section,
 .realm-icon-section {
@@ -244,6 +220,30 @@ td .button {
     margin: 20px;
 }
 
+.settings-section label > a,
+.settings-section h3 > a {
+    color: inherit;
+}
+
+.settings-section label .fa-question-circle-o {
+    top: 1px;
+    left: 2px;
+}
+
+.settings-section h3 .fa-question-circle-o {
+    top: 1px;
+    left: 5px;
+}
+
+.settings-section .fa-question-circle-o {
+    opacity: 0.4;
+    position: relative;
+}
+
+.settings-section .fa-question-circle-o:hover {
+    opacity: 1;
+}
+
 .settings-section.show {
     display: block;
 }
@@ -286,11 +286,6 @@ td .button {
     color: inherit;
     border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
     border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
-}
-
-#admin-user-list .table tr:first-of-type td,
-#admin-bot-list .table tr:first-of-type td {
-    border-top: none;
 }
 
 .settings-section input[type=text].search {
@@ -337,6 +332,11 @@ td .button {
 
 .settings-section .tip::before {
     content: "\f0a2";
+}
+
+#admin-user-list .table tr:first-of-type td,
+#admin-bot-list .table tr:first-of-type td {
+    border-top: none;
 }
 
 .dynamic-input {
