@@ -91,8 +91,8 @@ exports.schedule_message = function (request) {
     transmit.send_message(request, success, error);
 };
 
-exports.do_set_reminder_for_message = function (msgid, timestamp) {
-    var row = $("[zid='" + msgid + "']");
+exports.do_set_reminder_for_message = function (message_id, timestamp) {
+    var row = $("[zid='" + message_id + "']");
     function error() {
         row.find(".alert-msg")
             .text(i18n.t("Reminder not set!"))
@@ -103,7 +103,7 @@ exports.do_set_reminder_for_message = function (msgid, timestamp) {
             });
     }
 
-    var message = current_msg_list.get(msgid);
+    var message = current_msg_list.get(message_id);
 
     if (!message.raw_content) {
         var msg_list = current_msg_list;
@@ -113,7 +113,7 @@ exports.do_set_reminder_for_message = function (msgid, timestamp) {
             success: function (data) {
                 if (current_msg_list === msg_list) {
                     message.raw_content = data.raw_content;
-                    exports.do_set_reminder_for_message(msgid, timestamp);
+                    exports.do_set_reminder_for_message(message_id, timestamp);
                 }
             },
             error: error,
