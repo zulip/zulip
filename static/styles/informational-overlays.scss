@@ -1,53 +1,55 @@
-.informational-overlays .overlay-content {
-    /* because zoom breaks at 525px perhaps due to rounding errors, so add a
-       trivial amount of width so it doesn't break. */
-    width: 550px;
-    margin: 0 auto;
-    position: relative;
-    top: calc((30vh - 50px) / 2);
-    border-radius: 4px;
-    overflow: hidden;
+.informational-overlays {
+    .overlay-content {
+        /* because zoom breaks at 525px perhaps due to rounding errors, so add a
+           trivial amount of width so it doesn't break. */
+        width: 550px;
+        margin: 0 auto;
+        position: relative;
+        top: calc((30vh - 50px) / 2);
+        border-radius: 4px;
+        overflow: hidden;
 
-    background-color: hsl(0, 0%, 100%);
-}
+        background-color: hsl(0, 0%, 100%);
+    }
 
-.informational-overlays .overlay-tabs {
-    padding: 10px 0px;
-    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
-}
+    .overlay-tabs {
+        padding: 10px 0px;
+        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 
-.informational-overlays .overlay-tabs .tab-switcher {
-    margin-left: 15px;
-}
+        .tab-switcher {
+            margin-left: 15px;
+        }
 
-.informational-overlays .overlay-tabs .exit {
-    float: right;
-    font-size: 1.5rem;
-    color: hsl(0, 0%, 67%);
-    font-weight: 600;
-    margin: 1px 15px;
-}
+        .exit {
+            float: right;
+            font-size: 1.5rem;
+            color: hsl(0, 0%, 67%);
+            font-weight: 600;
+            margin: 1px 15px;
+        }
+    }
 
-.informational-overlays .overlay-modal {
-    padding-bottom: 10px;
-}
+    .overlay-modal {
+        padding-bottom: 10px;
 
-.informational-overlays .overlay-modal .modal-header h3 {
-    font-weight: 300;
-}
+        .modal-header h3 {
+            font-weight: 300;
+        }
 
-.informational-overlays .overlay-modal .modal-body {
-    height: 70vh;
-    text-align: center;
-    outline: none;
-}
+        .modal-body {
+            height: 70vh;
+            text-align: center;
+            outline: none;
 
-.informational-overlays .overlay-modal .modal-body th {
-    font-weight: 400;
-}
+            th {
+                font-weight: 400;
+            }
+        }
+    }
 
-.informational-overlays td.operator {
-    font-size: 0.9em;
+    td.operator {
+        font-size: 0.9em;
+    }
 }
 
 .help-table {
@@ -126,25 +128,27 @@
 }
 
 @media only screen and (max-width: 768px) {
-    .informational-overlays .overlay-content {
-        width: calc(100% - 20px);
-    }
+    .informational-overlays {
+        .overlay-content {
+            width: calc(100% - 20px);
+        }
 
-    .informational-overlays .tab-switcher {
-        display: flex;
-    }
+        .tab-switcher {
+            display: flex;
 
-    .informational-overlays .tab-switcher.large .ind-tab {
-        width: 100%;
-    }
+            &.large .ind-tab {
+                width: 100%;
+            }
+        }
 
-    .informational-overlays .table.table-condensed.table-striped {
-        margin-left: auto;
-        margin-right: auto;
-    }
+        .table.table-condensed.table-striped {
+            margin-left: auto;
+            margin-right: auto;
+        }
 
-    .informational-overlays .hotkeys_table {
-        width: 100%;
-        display: table;
+        .hotkeys_table {
+            width: 100%;
+            display: table;
+        }
     }
 }
