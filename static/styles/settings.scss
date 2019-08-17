@@ -1360,7 +1360,7 @@ input[type=checkbox].inline-block {
     background-color: hsla(0, 0%, 0%, 0.02);
 }
 
-#settings_page .table-striped thead th.active {
+.settings-section .table-striped thead th.active {
     opacity: 1;
     transition: opacity 100ms ease-out;
 }
@@ -1372,7 +1372,7 @@ input[type=checkbox].inline-block {
     transform: translateY(-50%);
 }
 
-#settings_page .table-striped thead th.active::after {
+.settings-section .table-striped thead th.active::after {
     content: " \f0d8";
     white-space: pre;
     display: inline-block;
@@ -1381,7 +1381,7 @@ input[type=checkbox].inline-block {
     text-rendering: auto;
 }
 
-#settings_page .table-striped thead th.active.descend::after {
+.settings-section .table-striped thead th.active.descend::after {
     content: " \f0d7";
 }
 
