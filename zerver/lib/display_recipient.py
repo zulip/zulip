@@ -1,10 +1,10 @@
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple
+from zerver.lib.types import DisplayRecipientCacheT, UserDisplayRecipient
 
 from zerver.lib.cache import cache_with_key, display_recipient_cache_key, generic_bulk_cached_fetch, \
     display_recipient_bulk_get_users_by_id_cache_key
 from zerver.models import Recipient, Stream, UserProfile, bulk_get_huddle_user_ids
 
-DisplayRecipientCacheT = Union[str, List[Dict[str, Any]]]
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)
 def get_display_recipient_remote_cache(recipient_id: int, recipient_type: int,
@@ -27,7 +27,7 @@ def get_display_recipient_remote_cache(recipient_id: int, recipient_type: int,
                                             .order_by('id'))
     return [user_profile_to_display_recipient_dict(user_profile) for user_profile in user_profile_list]
 
-def user_profile_to_display_recipient_dict(user_profile: 'UserProfile') -> Dict[str, Any]:
+def user_profile_to_display_recipient_dict(user_profile: 'UserProfile') -> UserDisplayRecipient:
     return {'email': user_profile.email,
             'full_name': user_profile.full_name,
             'short_name': user_profile.short_name,
@@ -133,7 +133,7 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
         return result
 
     def personal_and_huddle_cache_transformer(db_object: Tuple[int, List[UserProfile]]
-                                              ) -> List[Dict[str, Any]]:
+                                              ) -> List[UserDisplayRecipient]:
         """
         Takes an element of the list returned by the query_function, maps it to the final
         display_recipient list.
@@ -149,7 +149,7 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
         return db_object[0]
 
     # ItemT = Tuple[int, List[UserProfile]] (recipient_id, list of corresponding users)
-    # CacheItemT = List[Dict[str, Any]] (display_recipient list)
+    # CacheItemT = List[UserDisplayRecipient] (display_recipient list)
     # ObjKT = int (recipient_id)
     personal_and_huddle_display_recipients = generic_bulk_cached_fetch(
         cache_key_function=display_recipient_cache_key,

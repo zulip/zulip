@@ -37,6 +37,7 @@ from zerver.lib.topic import (
 from zerver.lib.topic_mutes import (
     set_topic_mutes,
 )
+from zerver.lib.types import UserDisplayRecipient
 from zerver.views.messages import (
     exclude_muting_conditions,
     get_messages_backend, ok_to_include_history,
@@ -1068,11 +1069,11 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         me = self.example_email('hamlet')
 
-        def dr_emails(dr: Union[str, List[Dict[str, Any]]]) -> str:
+        def dr_emails(dr: Union[str, List[UserDisplayRecipient]]) -> str:
             assert isinstance(dr, list)
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
-        def dr_ids(dr: Union[str, List[Dict[str, Any]]]) -> List[int]:
+        def dr_ids(dr: Union[str, List[UserDisplayRecipient]]) -> List[int]:
             assert isinstance(dr, list)
             return list(sorted(set([r['id'] for r in dr] + [self.example_user('hamlet').id])))
 

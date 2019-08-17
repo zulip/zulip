@@ -18,7 +18,8 @@ from zerver.lib.cache import (
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
-from zerver.lib.display_recipient import DisplayRecipientCacheT, bulk_fetch_display_recipients
+from zerver.lib.display_recipient import UserDisplayRecipient, DisplayRecipientCacheT, \
+    bulk_fetch_display_recipients
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
@@ -448,7 +449,7 @@ class MessageDict:
                          'full_name': sender_full_name,
                          'short_name': sender_short_name,
                          'id': sender_id,
-                         'is_mirror_dummy': sender_is_mirror_dummy}
+                         'is_mirror_dummy': sender_is_mirror_dummy}  # type: UserDisplayRecipient
                 if recip['email'] < display_recipient[0]['email']:
                     display_recipient = [recip, display_recipient[0]]
                 elif recip['email'] > display_recipient[0]['email']:
@@ -666,7 +667,7 @@ def do_render_markdown(message: Message,
 def huddle_users(recipient_id: int) -> str:
     display_recipient = get_display_recipient_by_id(recipient_id,
                                                     Recipient.HUDDLE,
-                                                    None)  # type: Union[str, List[Dict[str, Any]]]
+                                                    None)  # type: Union[str, List[UserDisplayRecipient]]
 
     # str is for streams.
     assert not isinstance(display_recipient, str)
