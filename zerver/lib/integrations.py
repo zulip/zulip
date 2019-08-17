@@ -1,12 +1,13 @@
 import os
 
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls.resolvers import LocaleRegexProvider
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
 from zerver.lib.storage import static_path
+from zerver.lib.types import Validator
 
 
 """This module declares all of the (documented) integrations available
@@ -52,12 +53,18 @@ class Integration:
     def __init__(self, name: str, client_name: str, categories: List[str],
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
-                 stream_name: Optional[str]=None, legacy: Optional[bool]=False) -> None:
+                 stream_name: Optional[str]=None, legacy: Optional[bool]=False,
+                 config_options: List[Tuple[str, str, Validator]]=[]) -> None:
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
         self.legacy = legacy
         self.doc = doc
+
+        # Note: Currently only incoming webhook type bots use this list for
+        # defining how the bot's BotConfigData should be. Embedded bots follow
+        # a different approach.
+        self.config_options = config_options
 
         for category in categories:
             if category not in CATEGORIES:
@@ -137,7 +144,8 @@ class WebhookIntegration(Integration):
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
                  function: Optional[str]=None, url: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
-                 stream_name: Optional[str]=None, legacy: Optional[bool]=None) -> None:
+                 stream_name: Optional[str]=None, legacy: Optional[bool]=None,
+                 config_options: List[Tuple[str, str, Validator]]=[]) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(
@@ -148,7 +156,8 @@ class WebhookIntegration(Integration):
             secondary_line_text=secondary_line_text,
             display_name=display_name,
             stream_name=stream_name,
-            legacy=legacy
+            legacy=legacy,
+            config_options=config_options
         )
 
         if function is None:
