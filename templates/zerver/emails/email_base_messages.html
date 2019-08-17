@@ -4,6 +4,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <title>Zulip</title>
     </head>
+    {% if has_preheader %}
     <span style="display:none !important;
       visibility:hidden;
       color:transparent;
@@ -19,6 +20,7 @@
       overflow:hidden;">
         {% block preheader %}{% endblock %}
     </span>
+    {% endif %}
     {% block content %}{% endblock %}
     {% block manage_preferences %}{% endblock %}
 </html>
