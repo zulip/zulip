@@ -236,8 +236,10 @@ def get_add_team_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_release_body(payload: Dict[str, Any]) -> str:
-    return u"{} published [the release]({}).".format(
+    return u"{} {} [release for tag {}]({}).".format(
         get_sender_name(payload),
+        payload['action'],
+        payload['release']['tag_name'],
         payload['release']['html_url'],
     )
 
@@ -502,7 +504,7 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> O
         # Unsupported pull_request events
         if action in ('labeled', 'unlabeled', 'review_request_removed'):
             return None
-    if event == 'push':
+    elif event == 'push':
         if is_commit_push_event(payload):
             if branches is not None:
                 branch = get_branch_name_from_ref(payload['ref'])

@@ -205,7 +205,7 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('team_add', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_release_msg(self) -> None:
-        expected_message = u"baxterthehacker published [the release](https://github.com/baxterthehacker/public-repo/releases/tag/0.0.1)."
+        expected_message = u"baxterthehacker published [release for tag 0.0.1](https://github.com/baxterthehacker/public-repo/releases/tag/0.0.1)."
         self.send_and_test_stream_message('release', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_page_build_msg(self) -> None:
