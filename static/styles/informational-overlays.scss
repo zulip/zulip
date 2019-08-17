@@ -105,22 +105,22 @@
         font-size: 1.5em;
         padding: 0.1em 0.2em;
     }
-}
 
-.hotkeys_table th {
-    width: 245px;
-    text-align: center;
-    // aligns table name with dividing line
-}
+    th {
+        width: 245px;
+        text-align: center;
+        // aligns table name with dividing line
+    }
 
-.hotkeys_table td:not(.definition) {
-    text-align: left;
-    white-space: nowrap;
-    font-weight: bold;
-}
+    td:not(.definition) {
+        text-align: left;
+        white-space: nowrap;
+        font-weight: bold;
 
-.hotkeys_table td:not(.definition) :not(kbd) {
-    font-size: 14px;
+        :not(kbd) {
+            font-size: 14px;
+        }
+    }
 }
 
 #keyboard-shortcuts table {
