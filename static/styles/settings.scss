@@ -285,6 +285,24 @@ td .button {
             color: inherit;
             border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
             border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+
+            &.active {
+                opacity: 1;
+                transition: opacity 100ms ease-out;
+
+                &::after {
+                    content: " \f0d8";
+                    white-space: pre;
+                    display: inline-block;
+                    font: normal normal normal 12px/1 FontAwesome;
+                    font-size: inherit;
+                    text-rendering: auto;
+                }
+
+                &.descend::after {
+                    content: " \f0d7";
+                }
+            }
         }
     }
 
@@ -1360,29 +1378,11 @@ input[type=checkbox].inline-block {
     background-color: hsla(0, 0%, 0%, 0.02);
 }
 
-.settings-section .table-striped thead th.active {
-    opacity: 1;
-    transition: opacity 100ms ease-out;
-}
-
 .modal.fade {
     /* Ensure the modal is entirely off-screen while we fade the background */
     top: -50%;
     transition: opacity 0.3s linear;
     transform: translateY(-50%);
-}
-
-.settings-section .table-striped thead th.active::after {
-    content: " \f0d8";
-    white-space: pre;
-    display: inline-block;
-    font: normal normal normal 12px/1 FontAwesome;
-    font-size: inherit;
-    text-rendering: auto;
-}
-
-.settings-section .table-striped thead th.active.descend::after {
-    content: " \f0d7";
 }
 
 #settings_page input.search {
