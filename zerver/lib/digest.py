@@ -202,6 +202,8 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
     context["new_streams"] = new_streams
     context["new_streams_count"] = new_streams_count
 
+    # TODO: Set has_preheader if we want to include a preheader.
+
     if render_to_web:
         return context
 
