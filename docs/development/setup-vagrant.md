@@ -46,7 +46,7 @@ an active internet connection throughout the entire installation
 processes. (See [Specifying a proxy](#specifying-a-proxy) if you need
 a proxy to access the internet.)
 
-- **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
+- **All**: 2.5 GiB available RAM, active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 18.04 or 16.04 64-bit
   - or **Debian**: 9.0 "stretch" 64-bit
@@ -989,16 +989,16 @@ for the IP address that means any IP address can connect to your development ser
 
 ### Customizing CPU and RAM allocation
 
-When running Vagrant using a VM-based provider such as VirtualBox or
-VMWare Fusion, CPU and RAM resources must be explicitly allocated to
-the guest system (with Docker and other container-based Vagrant
+When running Vagrant using a VM-based provider such as VirtualBox,
+CPU and RAM resources must be explicitly allocated to
+the guest system.  (With Docker and other container-based Vagrant
 providers, explicit allocation is unnecessary and the settings
-described here are ignored).
+described here are ignored.)
 
-Our default Vagrant settings allocate 2 cpus with 2GiB of memory for
+Our default Vagrant settings allocate 2 CPUs with 2.5 GiB of memory for
 the guest, which is sufficient to run everything in the development
 environment.  If your host system has more CPUs, or you have enough
-RAM that you'd like to allocate more than 2GiB to the guest, you can
+RAM that you'd like to allocate more than 2.5 GiB to the guest, you can
 improve performance of the Zulip development environment by allocating
 more resources.
 
@@ -1007,7 +1007,7 @@ following lines:
 
 ```
 GUEST_CPUS <number of cpus>
-GUEST_MEMORY_MB <system memory (in MB)>
+GUEST_MEMORY_MB <system memory (in MiB)>
 ```
 
 For example:

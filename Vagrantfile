@@ -55,7 +55,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # System settings for the virtual machine.
   vm_num_cpus = "2"
-  vm_memory = "2048"
+  vm_memory = "2560"
 
   ubuntu_mirror = ""
 

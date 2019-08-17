@@ -3,8 +3,8 @@
 ## Requirements
 
 The Zulip development environment can be installed on **macOS,
-Windows, and Linux** (Debian or Ubuntu recommended). You'll need at least **2GB
-of available RAM**.
+Windows, and Linux** (Debian or Ubuntu recommended). You'll need at least
+**2.5 GiB of available RAM**.
 
 Installing the Zulip development environment requires downloading several hundred
 megabytes of dependencies, so you will need an **active, reasonably fast,
@@ -60,7 +60,7 @@ machines.
 We recommend giving the Zulip development environment its **own
 virtual machine**, running one of
 [the supported platforms for direct installation][install-direct],
-with at least **2GB of memory**.
+with at least **2.5 GiB of memory**.
 
 If the Zulip development environment will be the only thing running on
 the remote virtual machine, we recommend installing
