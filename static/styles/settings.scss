@@ -1360,11 +1360,6 @@ input[type=checkbox].inline-block {
     background-color: hsla(0, 0%, 0%, 0.02);
 }
 
-#settings_page .table-striped thead th {
-    background-color: inherit;
-    color: inherit;
-}
-
 #settings_page .table-striped thead th.active {
     opacity: 1;
     transition: opacity 100ms ease-out;
