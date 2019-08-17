@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional, Set, Tuple
-from zerver.lib.types import DisplayRecipientCacheT, UserDisplayRecipient
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 
 from zerver.lib.cache import cache_with_key, display_recipient_cache_key, generic_bulk_cached_fetch, \
     display_recipient_bulk_get_users_by_id_cache_key
@@ -8,7 +8,7 @@ from zerver.models import Recipient, Stream, UserProfile, bulk_get_huddle_user_i
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)
 def get_display_recipient_remote_cache(recipient_id: int, recipient_type: int,
-                                       recipient_type_id: Optional[int]) -> DisplayRecipientCacheT:
+                                       recipient_type_id: Optional[int]) -> DisplayRecipientT:
     """
     returns: an appropriate object describing the recipient.  For a
     stream this will be the stream name as a string.  For a huddle or
@@ -45,7 +45,7 @@ def bulk_get_user_profile_by_id(uids: List[int]) -> Dict[int, UserProfile]:
     )
 
 def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
-                                  ) -> Dict[int, DisplayRecipientCacheT]:
+                                  ) -> Dict[int, DisplayRecipientT]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
     Returns dict mapping recipient_id to corresponding display_recipient

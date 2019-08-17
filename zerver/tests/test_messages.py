@@ -74,7 +74,7 @@ from zerver.lib.topic import (
     DB_TOPIC_NAME,
 )
 
-from zerver.lib.types import UserDisplayRecipient
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.lib.soft_deactivation import (
     add_missing_messages,
     do_soft_activate_users,
@@ -4327,7 +4327,7 @@ class MessageHydrationTest(ZulipTestCase):
         self.assertEqual(cordelia_display_recipient['email'], cordelia_new_email)
 
 class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
-    def _verify_display_recipient(self, display_recipient: Union[str, List[UserDisplayRecipient]],
+    def _verify_display_recipient(self, display_recipient: DisplayRecipientT,
                                   expected_recipient_objects: Union[Stream, List[UserProfile]]) -> None:
         if isinstance(expected_recipient_objects, Stream):
             self.assertEqual(display_recipient, expected_recipient_objects.name)

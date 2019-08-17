@@ -1,5 +1,5 @@
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
-from zerver.lib.types import UserDisplayRecipient
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+from zerver.lib.types import DisplayRecipientT
 
 from confirmation.models import one_click_unsubscribe_link
 from django.conf import settings
@@ -251,7 +251,7 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     return messages_to_render
 
 def get_narrow_url(user_profile: UserProfile, message: Message,
-                   display_recipient: Optional[Union[str, List[UserDisplayRecipient]]]=None,
+                   display_recipient: Optional[DisplayRecipientT]=None,
                    stream: Optional[Stream]=None) -> str:
     """The display_recipient and stream arguments are optional.  If not
     provided, we'll compute them from the message; they exist as a
