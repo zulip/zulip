@@ -32,14 +32,14 @@
     padding-bottom: 10px;
 }
 
+.informational-overlays .overlay-modal .modal-header h3 {
+    font-weight: 300;
+}
+
 .informational-overlays .overlay-modal .modal-body {
     height: 70vh;
     text-align: center;
     outline: none;
-}
-
-.informational-overlays .overlay-modal .modal-header h3 {
-    font-weight: 300;
 }
 
 .informational-overlays .overlay-modal .modal-body th {
@@ -50,7 +50,6 @@
     font-size: 0.9em;
 }
 
-
 .help-table {
     table-layout: fixed;
 }
@@ -60,6 +59,7 @@
     width: 100%;
     vertical-align: middle;
     display: table;
+
     td.definition {
         // keeps dividing line at same width for all tables in model.
         width: calc(50% - 11px);
@@ -73,6 +73,7 @@
     .small_hotkey {
         font-size: 0.9em !important;
         line-height: 12px;
+
         kbd {
             font-size: 0.9em;
         }
@@ -97,6 +98,7 @@
         -ms-user-select: none;
         user-select: none;
     }
+
     .arrow-key {
         font-size: 1.5em;
         padding: 0.1em 0.2em;
@@ -114,6 +116,7 @@
     white-space: nowrap;
     font-weight: bold;
 }
+
 .hotkeys_table td:not(.definition) :not(kbd) {
     font-size: 14px;
 }
@@ -127,12 +130,12 @@
         width: calc(100% - 20px);
     }
 
-    .informational-overlays .tab-switcher.large .ind-tab {
-        width: 100%;
-    }
-
     .informational-overlays .tab-switcher {
         display: flex;
+    }
+
+    .informational-overlays .tab-switcher.large .ind-tab {
+        width: 100%;
     }
 
     .informational-overlays .table.table-condensed.table-striped {
