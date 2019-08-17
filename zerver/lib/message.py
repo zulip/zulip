@@ -18,7 +18,7 @@ from zerver.lib.cache import (
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
-from zerver.lib.display_recipient import UserDisplayRecipient, DisplayRecipientCacheT, \
+from zerver.lib.display_recipient import UserDisplayRecipient, DisplayRecipientT, \
     bulk_fetch_display_recipients
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
@@ -52,7 +52,7 @@ from zerver.models import (
     get_usermessage_by_message_id,
 )
 
-from typing import Any, Dict, List, Optional, Set, Tuple, Union, Sequence
+from typing import Any, Dict, List, Optional, Set, Tuple, Sequence
 from typing_extensions import TypedDict
 
 RealmAlertWords = Dict[int, List[str]]
@@ -421,7 +421,7 @@ class MessageDict:
             obj['sender_is_mirror_dummy'] = user_row['is_mirror_dummy']
 
     @staticmethod
-    def hydrate_recipient_info(obj: Dict[str, Any], display_recipient: DisplayRecipientCacheT) -> None:
+    def hydrate_recipient_info(obj: Dict[str, Any], display_recipient: DisplayRecipientT) -> None:
         '''
         This method hyrdrates recipient info with things
         like full names and emails of senders.  Eventually
@@ -667,7 +667,7 @@ def do_render_markdown(message: Message,
 def huddle_users(recipient_id: int) -> str:
     display_recipient = get_display_recipient_by_id(recipient_id,
                                                     Recipient.HUDDLE,
-                                                    None)  # type: Union[str, List[UserDisplayRecipient]]
+                                                    None)  # type: DisplayRecipientT
 
     # str is for streams.
     assert not isinstance(display_recipient, str)

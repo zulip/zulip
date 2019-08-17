@@ -37,7 +37,7 @@ from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator, ExtendedValidator, \
     ProfileDataElement, ProfileData, RealmUserValidator, \
     ExtendedFieldElement, UserFieldElement, FieldElement, \
-    UserDisplayRecipient
+    DisplayRecipientT
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -81,9 +81,9 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
 # could be replaced with smarter bulk-fetching logic that deduplicates
 # queries for the same recipient; this is just a convenient way to
 # write that code.
-per_request_display_recipient_cache = {}  # type: Dict[int, Union[str, List[UserDisplayRecipient]]]
+per_request_display_recipient_cache = {}  # type: Dict[int, DisplayRecipientT]
 def get_display_recipient_by_id(recipient_id: int, recipient_type: int,
-                                recipient_type_id: Optional[int]) -> Union[str, List[UserDisplayRecipient]]:
+                                recipient_type_id: Optional[int]) -> DisplayRecipientT:
     """
     returns: an object describing the recipient (using a cache).
     If the type is a stream, the type_id must be an int; a string is returned.
@@ -97,7 +97,7 @@ def get_display_recipient_by_id(recipient_id: int, recipient_type: int,
         per_request_display_recipient_cache[recipient_id] = result
     return per_request_display_recipient_cache[recipient_id]
 
-def get_display_recipient(recipient: 'Recipient') -> Union[str, List[UserDisplayRecipient]]:
+def get_display_recipient(recipient: 'Recipient') -> DisplayRecipientT:
     return get_display_recipient_by_id(
         recipient.id,
         recipient.type,
