@@ -74,6 +74,7 @@ from zerver.lib.topic import (
     DB_TOPIC_NAME,
 )
 
+from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.soft_deactivation import (
     add_missing_messages,
     do_soft_activate_users,
@@ -4207,8 +4208,11 @@ class MessageHydrationTest(ZulipTestCase):
             dict(
                 email='aaron@example.com',
                 full_name='Aaron Smith',
+                short_name='Aaron',
+                id=999,
+                is_mirror_dummy=False
             ),
-        ]
+        ]   # type: List[UserDisplayRecipient]
 
         obj = dict(
             recipient_type=Recipient.PERSONAL,
@@ -4228,6 +4232,9 @@ class MessageHydrationTest(ZulipTestCase):
                 dict(
                     email='aaron@example.com',
                     full_name='Aaron Smith',
+                    short_name='Aaron',
+                    id=999,
+                    is_mirror_dummy=False
                 ),
                 dict(
                     email=cordelia.email,
@@ -4328,7 +4335,7 @@ class MessageHydrationTest(ZulipTestCase):
         self.assertEqual(cordelia_display_recipient['email'], cordelia_new_email)
 
 class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
-    def _verify_display_recipient(self, display_recipient: Union[str, List[Dict[str, Any]]],
+    def _verify_display_recipient(self, display_recipient: Union[str, List[UserDisplayRecipient]],
                                   expected_recipient_objects: Union[Stream, List[UserProfile]]) -> None:
         if isinstance(expected_recipient_objects, Stream):
             self.assertEqual(display_recipient, expected_recipient_objects.name)
@@ -4339,7 +4346,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
                                   'full_name': user_profile.full_name,
                                   'short_name': user_profile.short_name,
                                   'id': user_profile.id,
-                                  'is_mirror_dummy': user_profile.is_mirror_dummy}
+                                  'is_mirror_dummy': user_profile.is_mirror_dummy}  # type: UserDisplayRecipient
                 self.assertTrue(recipient_dict in display_recipient)
 
     def test_display_recipient_personal(self) -> None:
