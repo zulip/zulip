@@ -1,15 +1,5 @@
 {% extends "zerver/emails/email_base_messages.html" %}
 
-{% block preheader %}
-    {% for recipient_block in messages %}
-        {% for sender_block in recipient_block.senders %}
-            {% for message_block in sender_block.content %}
-            {{ message_block.html|safe }}
-            {% endfor %}
-        {% endfor %}
-    {% endfor %}
-{% endblock %}
-
 {% block content %}
     {% if show_message_content %}
         {% for recipient_block in messages %}
