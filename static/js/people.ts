@@ -60,6 +60,18 @@ export const init = function (): void {
 // We initialize data structures the first time people.ts is imported.
 init();
 
+export const initialize_current_user = function (user_id: UserId): void {
+    my_user_id = user_id;
+};
+
+export const my_current_email = function (): Person['email'] {
+    return people_by_user_id_dict.get(my_user_id).email;
+};
+
+export const my_current_user_id = function (): Person['user_id'] {
+    return Number(my_user_id);
+};
+
 export const get_person_from_user_id = function (user_id: UserId): Person | undefined {
     if (!people_by_user_id_dict.has(user_id)) {
         blueslip.error('Unknown user_id in get_person_from_user_id: ' + user_id);
@@ -130,6 +142,13 @@ export const get_user_id = function (email: Person['email']): UserId | undefined
     return user_id;
 };
 
+export const is_my_user_id = function (user_id: UserId): boolean {
+    if (!user_id) {
+        return false;
+    }
+    return user_id.toString() === my_user_id.toString();
+};
+
 export const is_known_user_id = function (user_id: UserId): boolean {
     /*
     For certain low-stakes operations, such as emoji reactions,
@@ -139,6 +158,14 @@ export const is_known_user_id = function (user_id: UserId): boolean {
     expedient thing we can check.)
     */
     return people_by_user_id_dict.has(user_id);
+};
+
+export const is_current_user = function (email: Person['email']): boolean {
+    if (email === null || email === undefined) {
+        return false;
+    }
+
+    return email.toLowerCase() === my_current_email().toLowerCase();
 };
 
 function sort_numerically(user_ids: UserId[]): Person['user_id'][] {
@@ -208,6 +235,27 @@ export const user_ids_string_to_ids_array = function (user_ids_string: string): 
         return Number(id);
     });
     return ids;
+};
+
+export const email_list_to_user_ids_string = function (emails: Person['email'][]): string | undefined {
+    let user_ids = _.map(emails, function (email) {
+        const person = get_by_email(email);
+        return person ? person.user_id : undefined;
+    });
+
+    if (!_.all(user_ids)) {
+        blueslip.warn('Unknown emails: ' + emails);
+        return undefined;
+    }
+
+    user_ids = sort_numerically(user_ids);
+
+    return user_ids.join(',');
+};
+
+export const emails_strings_to_user_ids_string = function (emails_string: string): string {
+    const emails = emails_string.split(',');
+    return email_list_to_user_ids_string(emails);
 };
 
 export const emails_strings_to_user_ids_array = function (
@@ -280,27 +328,6 @@ export const get_user_type = function (user_id: UserId): string {
     return i18n.t("Member");
 };
 
-export const emails_strings_to_user_ids_string = function (emails_string: string): string {
-    const emails = emails_string.split(',');
-    return email_list_to_user_ids_string(emails);
-};
-
-export const email_list_to_user_ids_string = function (emails: Person['email'][]): string | undefined {
-    let user_ids = _.map(emails, function (email) {
-        const person = get_by_email(email);
-        return person ? person.user_id : undefined;
-    });
-
-    if (!_.all(user_ids)) {
-        blueslip.warn('Unknown emails: ' + emails);
-        return undefined;
-    }
-
-    user_ids = sort_numerically(user_ids);
-
-    return user_ids.join(',');
-};
-
 export const safe_full_names = function (user_ids: UserId[]): string {
     let names = _.map(user_ids, function (user_id) {
         const person = people_by_user_id_dict.get(user_id);
@@ -316,6 +343,10 @@ export const get_full_name = function (user_id: UserId): Person['full_name'] {
     return people_by_user_id_dict.get(user_id).full_name;
 };
 
+export const my_full_name = function (): Person['full_name'] {
+    return people_by_user_id_dict.get(my_user_id).full_name;
+};
+
 export const get_recipients = function (user_ids_string: string): string {
     // See message_store.get_pm_full_names() for a similar function.
 
@@ -329,6 +360,23 @@ export const get_recipients = function (user_ids_string: string): string {
 
     const names = _.map(other_ids, get_full_name).sort();
     return names.join(', ');
+};
+
+export const pm_with_user_ids = function (message: Message): Person['user_id'][] | undefined {
+    if (message.type !== 'private') {
+        return undefined;
+    }
+
+    if (message.display_recipient.length === 0) {
+        blueslip.error('Empty recipient list in message');
+        return undefined;
+    }
+
+    const user_ids = _.map(message.display_recipient, function (elem) {
+        return elem.user_id || elem.id;
+    });
+
+    return sorted_other_user_ids(user_ids);
 };
 
 export const pm_reply_user_string = function (message: Message): string | undefined {
@@ -402,23 +450,6 @@ export const all_user_ids_in_pm = function (message: Message): Person['user_id']
 
     user_ids = sort_numerically(user_ids);
     return user_ids;
-};
-
-export const pm_with_user_ids = function (message: Message): Person['user_id'][] | undefined {
-    if (message.type !== 'private') {
-        return undefined;
-    }
-
-    if (message.display_recipient.length === 0) {
-        blueslip.error('Empty recipient list in message');
-        return undefined;
-    }
-
-    const user_ids = _.map(message.display_recipient, function (elem) {
-        return elem.user_id || elem.id;
-    });
-
-    return sorted_other_user_ids(user_ids);
 };
 
 export const group_pm_with_user_ids = function (
@@ -574,16 +605,6 @@ export const emails_to_slug = function (emails_string: string): string | undefin
     return slug;
 };
 
-export const slug_to_emails = function (slug: string): string | undefined {
-    const m = /^([\d,]+)-/.exec(slug);
-    if (m) {
-        let user_ids_string = m[1];
-        user_ids_string = exclude_me_from_string(user_ids_string);
-        return user_ids_string_to_emails_string(user_ids_string);
-    }
-    return undefined;
-};
-
 export const exclude_me_from_string = function (user_ids_string: string): string {
     // Exclude me from a user_ids_string UNLESS I'm the
     // only one in it.
@@ -599,6 +620,16 @@ export const exclude_me_from_string = function (user_ids_string: string): string
     user_ids = _.reject(user_ids, is_my_user_id);
 
     return user_ids.join(',');
+};
+
+export const slug_to_emails = function (slug: string): string | undefined {
+    const m = /^([\d,]+)-/.exec(slug);
+    if (m) {
+        let user_ids_string = m[1];
+        user_ids_string = exclude_me_from_string(user_ids_string);
+        return user_ids_string_to_emails_string(user_ids_string);
+    }
+    return undefined;
 };
 
 export const format_small_avatar_url = function (raw_url: string): string {
@@ -679,6 +710,11 @@ export const small_avatar_url = function (message: Message): string {
     return gravatar_url_for_email(email);
 };
 
+export const is_cross_realm_email = function (email: Person['email']): boolean | undefined {
+    const person = get_by_email(email);
+    return person ? cross_realm_dict.has(person.user_id) : undefined;
+};
+
 export const is_valid_email_for_compose = function (email: Person['email']): boolean {
     if (is_cross_realm_email(email)) {
         return true;
@@ -747,11 +783,6 @@ export const get_active_human_persons = function (): Person[] {
 export const get_active_user_ids = function (): Person['user_id'][] {
     // This includes active users and active bots.
     return active_user_dict.keys();
-};
-
-export const is_cross_realm_email = function (email: Person['email']): boolean | undefined {
-    const person = get_by_email(email);
-    return person ? cross_realm_dict.has(person.user_id) : undefined;
 };
 
 export const get_recipient_count = function (person: Recipient | FakePerson): number {
@@ -1055,38 +1086,6 @@ export const set_custom_profile_field_data = function (
     };
 };
 
-export const is_current_user = function (email: Person['email']): boolean {
-    if (email === null || email === undefined) {
-        return false;
-    }
-
-    return email.toLowerCase() === my_current_email().toLowerCase();
-};
-
-export const initialize_current_user = function (user_id: UserId): void {
-    my_user_id = user_id;
-};
-
-export const my_full_name = function (): Person['full_name'] {
-    return people_by_user_id_dict.get(my_user_id).full_name;
-};
-
-export const my_current_email = function (): Person['email'] {
-    return people_by_user_id_dict.get(my_user_id).email;
-};
-
-export const my_current_user_id = function (): Person['user_id'] {
-    return Number(my_user_id);
-};
-
-export const my_custom_profile_data = function (field_id?: number): ProfileEntry | undefined {
-    if (field_id === undefined) {
-        blueslip.error("Undefined field id");
-        return undefined;
-    }
-    return get_custom_profile_data(my_user_id, field_id);
-};
-
 export const get_custom_profile_data = function (
     user_id: UserId,
     field_id: number
@@ -1098,11 +1097,12 @@ export const get_custom_profile_data = function (
     return profile_data[field_id];
 };
 
-export const is_my_user_id = function (user_id: UserId): boolean {
-    if (!user_id) {
-        return false;
+export const my_custom_profile_data = function (field_id?: number): ProfileEntry | undefined {
+    if (field_id === undefined) {
+        blueslip.error("Undefined field id");
+        return undefined;
     }
-    return user_id.toString() === my_user_id.toString();
+    return get_custom_profile_data(my_user_id, field_id);
 };
 
 export const initialize = function (): void {
