@@ -151,6 +151,7 @@ class HomeTest(ZulipTestCase):
             "realm_google_hangouts_domain",
             "realm_icon_source",
             "realm_icon_url",
+            "realm_incoming_webhook_bots",
             "realm_inline_image_preview",
             "realm_inline_url_embed_preview",
             "realm_invite_by_admins_only",

@@ -17,7 +17,7 @@ from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.hotspots import get_next_hotspots
-from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
     aggregate_unread_data,
     apply_unread_message_event,
@@ -289,6 +289,17 @@ def fetch_initial_state_data(user_profile: UserProfile,
             realm_embedded_bots.append({'name': bot.name,
                                         'config': load_bot_config_template(bot.name)})
         state['realm_embedded_bots'] = realm_embedded_bots
+
+    # This does not have an apply_events counterpart either since
+    # this data is mostly static.
+    if want('realm_incoming_webhook_bots'):
+        realm_incoming_webhook_bots = []
+        for integration in WEBHOOK_INTEGRATIONS:
+            realm_incoming_webhook_bots.append({
+                'name': integration.name,
+                'config': {c[1]: c[2] for c in integration.config_options}
+            })
+        state['realm_incoming_webhook_bots'] = realm_incoming_webhook_bots
 
     if want('recent_private_conversations'):
         # A data structure containing records of this form:

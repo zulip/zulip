@@ -3399,6 +3399,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,
+            realm_incoming_webhook_bots=0,
             realm_emoji=1,
             realm_filters=1,
             realm_user=3,
