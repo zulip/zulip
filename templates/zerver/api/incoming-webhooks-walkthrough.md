@@ -204,6 +204,29 @@ At this point, if you're following along and/or writing your own Hello World
 webhook, you have written enough code to test your integration. There are three
 tools which you can use to test your webhook - 2 command line tools and a GUI.
 
+### Webhooks requiring custom configuration
+
+In rare cases, it's necessary for an incoming webhook to require
+additional user configuration beyond what is specified in the post
+URL.  The typical use case for this is APIs like the Stripe API that
+require clients to do a callback to get details beyond an opaque
+object ID that one would want to include in a Zulip notification.
+
+These configuration options are declared as follows:
+
+```
+    WebhookIntegration('helloworld', ['misc'], display_name='Hello World',
+                       config_options=[('HelloWorld API Key', 'hw_api_key', check_string)])
+```
+
+`config_options` is a list describing the parameters the user should
+configure:
+    1. A user-facing string describing the field to display to users.
+    2. The field name you'll use to access this from your `view.py` function.
+    3. A Validator, used to verify the input is valid.
+
+Common validators are available in `zerver/lib/validators.py`.
+
 ## Step 4: Manually testing the webhook
 
 For either one of the command line tools, first, you'll need to get an API key

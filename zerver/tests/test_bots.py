@@ -4,10 +4,10 @@ import ujson
 
 from django.core import mail
 from mock import patch, MagicMock
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, List, Mapping, Optional
 
 from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user
-from zerver.lib.bot_config import get_bot_config
+from zerver.lib.bot_config import get_bot_config, ConfigError
 from zerver.models import get_realm, get_stream, \
     Realm, UserProfile, get_user, get_bot_services, Service, \
     is_cross_realm_bot_email
@@ -18,10 +18,21 @@ from zerver.lib.test_helpers import (
     queries_captured,
     tornado_redirected_to_list,
 )
-from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.bot_lib import get_bot_handler
-
 from zulip_bots.custom_exceptions import ConfigValidationError
+
+
+# A test validator
+def _check_string(var_name: str, val: object) -> Optional[str]:
+    if str(val).startswith("_"):
+        return ('%s starts with a "_" and is hence invalid.') % (var_name,)
+    return None
+
+stripe_sample_config_options = [
+    WebhookIntegration('stripe', ['financial'], display_name='Stripe',
+                       config_options=[("Stripe API Key", "stripe_api_key", _check_string)])
+]
 
 class BotTest(ZulipTestCase, UploadSerializeMixin):
     def get_bot_user(self, email: str) -> UserProfile:
@@ -1441,3 +1452,81 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.settings(CROSS_REALM_BOT_EMAILS={"random-bot@zulip.com"}):
             self.assertTrue(is_cross_realm_bot_email("random-bot@zulip.com"))
             self.assertFalse(is_cross_realm_bot_email("notification-bot@zulip.com"))
+
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:
+        self.login(self.example_email('hamlet'))
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "service_name": "stripe",
+            "config_data": ujson.dumps({"stripe_api_key": "sample-api-key"})
+        }
+        self.create_bot(**bot_metadata)
+        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        config_data = get_bot_config(new_bot)
+        self.assertEqual(config_data, {"integration_id": "stripe",
+                                       "stripe_api_key": "sample-api-key"})
+
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    def test_create_incoming_webhook_bot_with_service_name_incorrect_keys(self) -> None:
+        self.login(self.example_email('hamlet'))
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "service_name": "stripe",
+            "config_data": ujson.dumps({"stripe_api_key": "_invalid_key"})
+        }
+        response = self.client_post("/json/bots", bot_metadata)
+        self.assertEqual(response.status_code, 400)
+        expected_error_message = 'Invalid stripe_api_key value _invalid_key (stripe_api_key starts with a "_" and is hence invalid.)'
+        self.assertEqual(ujson.loads(response.content.decode('utf-8'))["msg"], expected_error_message)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            UserProfile.objects.get(full_name="My Stripe Bot")
+
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    def test_create_incoming_webhook_bot_with_service_name_without_keys(self) -> None:
+        self.login(self.example_email('hamlet'))
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "service_name": "stripe",
+        }
+        response = self.client_post("/json/bots", bot_metadata)
+        self.assertEqual(response.status_code, 400)
+        expected_error_message = "Missing configuration parameters: {'stripe_api_key'}"
+        self.assertEqual(ujson.loads(response.content.decode('utf-8'))["msg"], expected_error_message)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            UserProfile.objects.get(full_name="My Stripe Bot")
+
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    def test_create_incoming_webhook_bot_without_service_name(self) -> None:
+        self.login(self.example_email('hamlet'))
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+        }
+        self.create_bot(**bot_metadata)
+        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        with self.assertRaises(ConfigError):
+            get_bot_config(new_bot)
+
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    def test_create_incoming_webhook_bot_with_incorrect_service_name(self) -> None:
+        self.login(self.example_email('hamlet'))
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "service_name": "stripes",
+        }
+        response = self.client_post("/json/bots", bot_metadata)
+        self.assertEqual(response.status_code, 400)
+        expected_error_message = "Invalid integration 'stripes'."
+        self.assertEqual(ujson.loads(response.content.decode('utf-8'))["msg"], expected_error_message)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            UserProfile.objects.get(full_name="My Stripe Bot")
