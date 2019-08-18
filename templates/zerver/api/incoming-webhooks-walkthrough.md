@@ -200,6 +200,30 @@ integrations page using `static/images/integrations/logos/helloworld.png` as its
 icon. The second positional argument defines a list of categories for the
 integration.
 
+If you'd like to allow your bot's users to be able to configure your bot
+according specific parameters (in a key-value format), then you can do
+that by specifying a "config_options" when adding a "WebhookIntegration"
+entry like so:
+
+```
+    WebhookIntegration('helloworld', ['misc'], display_name='Hello World',
+                       config_options=[('HelloWorld API Key', 'hw_api_key', check_string)])
+```
+
+`config_options` is supposed to be a list containing details of all of the
+parameters you want to allow your user to configure. Each element of this list
+is a tuple containing 3 things:
+    1. A user-facing string that should be displayed in the UI when configuring the bot.
+    2. A string representing the name of the key under which to represent the parameter.
+    3. A `Validator` which will check to see if the key follows a particular format.
+You can check out `zerver/lib/validators.py` for some ready-made validators or if you
+want an example for being able to write your own validator.
+
+In the above example, The 'helloworld' integration will take exactly one configuration
+parameter which the user will see as "HelloWorld API Key" but we will handle in the
+backend as "hw_api_key". This value must simply be a string (this validator already
+exists in `zerver/lib/validators.py`) and we place no other restrictions on it.
+
 At this point, if you're following along and/or writing your own Hello World
 webhook, you have written enough code to test your integration. There are three
 tools which you can use to test your webhook - 2 command line tools and a GUI.

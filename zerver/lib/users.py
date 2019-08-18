@@ -49,7 +49,32 @@ def check_short_name(short_name_raw: str) -> str:
 
 def check_valid_bot_config(bot_type: int, service_name: str,
                            config_data: Dict[str, str]) -> None:
-    if bot_type == UserProfile.EMBEDDED_BOT:
+    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+        from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+        config_options = None
+        for integration in WEBHOOK_INTEGRATIONS:
+            if integration.name == service_name:
+                # key: validator
+                config_options = {c[1]: c[2] for c in integration.config_options}
+                break
+        if not config_options:
+            raise JsonableError(_("\"{}\" is not an integration that's \
+supported by Zulip.").format(service_name))
+
+        missing_keys = set(config_options.keys()) - set(config_data.keys())
+        if missing_keys:
+            raise JsonableError(_("The following keys are missing and \
+are required to be able to set up an integration with {}: {}").format(
+                                service_name, missing_keys))
+
+        for key, validator in config_options.items():
+            value = config_data[key]
+            error = validator(key, value)
+            if error:
+                raise JsonableError(_("{} is an invalid input for {} ({})").format(
+                                    value, key, error))
+
+    elif bot_type == UserProfile.EMBEDDED_BOT:
         try:
             from zerver.lib.bot_lib import get_bot_handler
             bot_handler = get_bot_handler(service_name)

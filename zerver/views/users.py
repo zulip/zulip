@@ -1,7 +1,6 @@
 from typing import Union, Optional, Dict, Any, List
 
 import ujson
-
 from django.http import HttpRequest, HttpResponse
 
 from django.utils.translation import ugettext as _
@@ -273,7 +272,8 @@ def add_bot_backend(
         default_all_public_streams: Optional[bool]=REQ(validator=check_bool, default=None)
 ) -> HttpResponse:
     short_name = check_short_name(short_name_raw)
-    service_name = service_name or short_name
+    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
+        service_name = service_name or short_name
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
@@ -320,7 +320,7 @@ def add_bot_backend(
         (default_events_register_stream, ignored_rec, ignored_sub) = access_stream_by_name(
             user_profile, default_events_register_stream_name)
 
-    if bot_type == UserProfile.EMBEDDED_BOT:
+    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT) and service_name:
         check_valid_bot_config(bot_type, service_name, config_data)
 
     bot_profile = do_create_user(email=email, password='',
@@ -337,15 +337,19 @@ def add_bot_backend(
         upload_avatar_image(user_file, user_profile, bot_profile)
 
     if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+        assert(isinstance(service_name, str))
         add_service(name=service_name,
                     user_profile=bot_profile,
                     base_url=payload_url,
                     interface=interface_type,
                     token=generate_api_key())
 
-    if bot_type == UserProfile.EMBEDDED_BOT:
+    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
         for key, value in config_data.items():
             set_bot_config(bot_profile, key, value)
+
+    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
+        set_bot_config(bot_profile, "integration_id", service_name)
 
     notify_created_bot(bot_profile)
 
