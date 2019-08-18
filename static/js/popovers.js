@@ -855,13 +855,17 @@ exports.register_click_handlers = function () {
 
         if (String(current_user_sidebar_user_id) === user_id) {
             // If the popover is already shown, clicking again should toggle it.
-            popovers.hide_all();
+            // We don't want to hide the sidebars on smaller browser windows.
+            popovers.hide_all_except_sidebars();
             return;
         }
         popovers.hide_all();
 
         if (userlist_placement === "right") {
             popovers.show_userlist_sidebar();
+        } else {
+            // Maintain the same behavior when displaying with the streamlist.
+            stream_popover.show_streamlist_sidebar();
         }
 
         var user = people.get_person_from_user_id(user_id);
