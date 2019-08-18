@@ -543,7 +543,7 @@ exports.change_save_button_state = function ($element, state) {
     }
 
     if (state === "discarded") {
-        show_hide_element($element, false);
+        show_hide_element($element, false, 0);
         return;
     }
 
@@ -673,7 +673,7 @@ exports.build_page = function () {
         });
 
         var save_btn_controls = subsection.find('.subsection-header .save-button-controls');
-        var button_state = show_change_process_button ? "unsaved" : "saved";
+        var button_state = show_change_process_button ? "unsaved" : "discarded";
         exports.change_save_button_state(save_btn_controls, button_state);
     });
 
