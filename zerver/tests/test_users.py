@@ -21,7 +21,7 @@ from zerver.models import UserProfile, Recipient, Realm, \
     ScheduledEmail, check_valid_user_ids, \
     get_user_by_id_in_realm_including_cross_realm, CustomProfileField
 
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.send_email import send_future_email, clear_scheduled_emails, \
     deliver_email
@@ -192,7 +192,7 @@ class PermissionTest(ZulipTestCase):
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
         self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
-        self.assertEqual(hamlet['avatar_url'], "https://secure.gravatar.com/avatar/5106fb7f928d89e2f2ddb3c4c42d6949?d=identicon&version=1")
+        self.assertEqual(hamlet['avatar_url'], get_gravatar_url(hamlet['email'], 1))
         self.assertNotIn('delivery_email', hamlet)
 
         # Also verify the /events code path.  This is a bit hacky, but
@@ -217,7 +217,7 @@ class PermissionTest(ZulipTestCase):
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
         self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
-        self.assertEqual(hamlet['avatar_url'], "https://secure.gravatar.com/avatar/5106fb7f928d89e2f2ddb3c4c42d6949?d=identicon&version=1")
+        self.assertEqual(hamlet['avatar_url'], get_gravatar_url(hamlet['email'], 1))
         self.assertEqual(hamlet['delivery_email'], self.example_email("hamlet"))
 
     def test_user_cannot_promote_to_admin(self) -> None:
