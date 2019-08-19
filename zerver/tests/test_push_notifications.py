@@ -972,8 +972,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_personal_message(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_personal_message(
-            self.example_email('hamlet'),
-            self.example_email('othello'),
+            self.sender.email,
+            user_profile.email,
             'Content of personal message',
         )
         message = Message.objects.get(id=message_id)
@@ -991,11 +991,11 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'zulip': {
                     'message_ids': [message.id],
                     'recipient_type': 'private',
-                    'sender_email': 'hamlet@zulip.com',
-                    'sender_id': 4,
+                    'sender_email': self.sender.email,
+                    'sender_id': self.sender.id,
                     'server': settings.EXTERNAL_HOST,
-                    'realm_id': message.sender.realm.id,
-                    'realm_uri': message.sender.realm.uri,
+                    'realm_id': self.sender.realm.id,
+                    'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
                 }
             }
@@ -1027,11 +1027,11 @@ class TestGetAPNsPayload(PushNotificationTest):
                         str(s.user_profile_id)
                         for s in Subscription.objects.filter(
                             recipient=message.recipient)),
-                    'sender_email': 'hamlet@zulip.com',
-                    'sender_id': 4,
+                    'sender_email': self.sender.email,
+                    'sender_id': self.sender.id,
                     'server': settings.EXTERNAL_HOST,
-                    'realm_id': message.sender.realm.id,
-                    'realm_uri': message.sender.realm.uri,
+                    'realm_id': self.sender.realm.id,
+                    'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
                 }
             }
@@ -1059,13 +1059,13 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'zulip': {
                     'message_ids': [message.id],
                     'recipient_type': 'stream',
-                    'sender_email': 'hamlet@zulip.com',
-                    'sender_id': 4,
+                    'sender_email': self.sender.email,
+                    'sender_id': self.sender.id,
                     "stream": get_display_recipient(message.recipient),
                     "topic": message.topic_name(),
                     'server': settings.EXTERNAL_HOST,
-                    'realm_id': message.sender.realm.id,
-                    'realm_uri': message.sender.realm.uri,
+                    'realm_id': self.sender.realm.id,
+                    'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
                 }
             }
@@ -1092,13 +1092,13 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'zulip': {
                     'message_ids': [message.id],
                     'recipient_type': 'stream',
-                    'sender_email': 'hamlet@zulip.com',
-                    'sender_id': 4,
+                    'sender_email': self.sender.email,
+                    'sender_id': self.sender.id,
                     "stream": get_display_recipient(message.recipient),
                     "topic": message.topic_name(),
                     'server': settings.EXTERNAL_HOST,
-                    'realm_id': message.sender.realm.id,
-                    'realm_uri': message.sender.realm.uri,
+                    'realm_id': self.sender.realm.id,
+                    'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
                 }
             }
@@ -1130,11 +1130,11 @@ class TestGetAPNsPayload(PushNotificationTest):
                         str(s.user_profile_id)
                         for s in Subscription.objects.filter(
                             recipient=message.recipient)),
-                    'sender_email': self.example_email("hamlet"),
-                    'sender_id': 4,
+                    'sender_email': self.sender.email,
+                    'sender_id': self.sender.id,
                     'server': settings.EXTERNAL_HOST,
-                    'realm_id': message.sender.realm.id,
-                    'realm_uri': message.sender.realm.uri,
+                    'realm_id': self.sender.realm.id,
+                    'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
                 }
             }
