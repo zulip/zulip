@@ -343,8 +343,13 @@ class StripeTest(StripeTestCase):
         self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
         self.assertEqual(stripe_customer.discount, None)
         self.assertEqual(stripe_customer.email, user.email)
-        self.assertEqual(dict(stripe_customer.metadata),
-                         {'realm_id': str(user.realm.id), 'realm_str': 'zulip'})
+        metadata_dict = dict(stripe_customer.metadata)
+        self.assertEqual(metadata_dict['realm_str'], 'zulip')
+        try:
+            int(metadata_dict['realm_id'])
+        except ValueError:  # nocoverage
+            raise AssertionError("realm_id is not a number")
+
         # Check Charges in Stripe
         stripe_charges = [charge for charge in stripe.Charge.list(customer=stripe_customer.id)]
         self.assertEqual(len(stripe_charges), 1)
