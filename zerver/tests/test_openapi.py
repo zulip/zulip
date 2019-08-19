@@ -237,8 +237,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # pattern starts with /api/v1 and thus fails reverse mapping test.
         '/dev_fetch_api_key',
         '/server_settings',
-        # Because of the unnamed capturing group, this fails the reverse mapping test.
-        '/users/{email}/presence',
     ])
 
     def convert_regex_to_url_pattern(self, regex_pattern: str) -> str:
@@ -249,6 +247,19 @@ class OpenAPIArgumentsTest(ZulipTestCase):
                 1. /messages/{message_id} <-> r'^messages/(?P<message_id>[0-9]+)$'
                 2. /events <-> r'^events$'
         """
+
+        # TODO: Probably we should be able to address the below
+        # through alternative solutions (e.g. reordering urls.py
+        # entries or similar url organization, but for now these let
+        # us test more endpoints and so are worth doing).
+        me_pattern = '/(?!me/)'
+        if me_pattern in regex_pattern:
+            # Remove the exclude-me pattern if present.
+            regex_pattern = regex_pattern.replace(me_pattern, "/")
+        if '[^/]*' in regex_pattern:
+            # Handle the presence-email code which has a non-slashes syntax.
+            regex_pattern = regex_pattern.replace('[^/]*', '.*')
+
         self.assertTrue(regex_pattern.startswith("^"))
         self.assertTrue(regex_pattern.endswith("$"))
         url_pattern = '/' + regex_pattern[1:][:-1]
