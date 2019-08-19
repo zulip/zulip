@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional, Iterable, Callable, Set
+from typing import Dict, Any, Optional, Iterable, Callable, Set, List
 
 import json
 import os
@@ -7,6 +7,8 @@ from functools import wraps
 
 from zerver.lib import mdiff
 from zerver.lib.openapi import validate_against_openapi_schema
+
+from zerver.models import get_realm, get_user
 
 from zulip import Client
 
@@ -35,6 +37,14 @@ def openapi_test_function(endpoint: str) -> Callable[[Callable[..., Any]], Calla
 
         return _record_calls_wrapper
     return wrapper
+
+def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
+    # Ensure that the list of user ids (ids_list)
+    # matches the users we want to refer to (user_names).
+    realm = get_realm("zulip")
+    user_ids = [get_user(name + '@zulip.com', realm).id for name in user_names]
+
+    assert ids_list == user_ids
 
 def load_api_fixtures():
     # type: () -> Dict[str, Any]
@@ -949,6 +959,8 @@ def remove_alert_words(client):
 @openapi_test_function("/user_groups/create:post")
 def create_user_group(client):
     # type: (Client) -> None
+    ensure_users([1, 2, 3, 4], ['aaron', 'zoe', 'cordelia', 'hamlet'])
+
     # {code_example|start}
     request = {
         'name': 'marketing',
@@ -989,6 +1001,8 @@ def remove_user_group(client, group_id):
 @openapi_test_function("/user_groups/{group_id}/members:post")
 def update_user_group_members(client, group_id):
     # type: (Client, int) -> None
+    ensure_users([3, 4, 5], ['cordelia', 'hamlet', 'iago'])
+
     request = {
         'group_id': group_id,
         'delete': [3, 4],
