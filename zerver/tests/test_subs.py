@@ -2402,7 +2402,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([user1.email, user2.email])),
                 )
-        self.assert_length(queries, 46)
+        self.assert_length(queries, 45)
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -3142,7 +3142,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 [new_streams[0]],
                 dict(principals=ujson.dumps([user1.email, user2.email])),
             )
-        self.assert_length(queries, 46)
+        self.assert_length(queries, 45)
 
         # Test creating private stream.
         with queries_captured() as queries:
@@ -3152,7 +3152,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 dict(principals=ujson.dumps([user1.email, user2.email])),
                 invite_only=True,
             )
-        self.assert_length(queries, 41)
+        self.assert_length(queries, 40)
 
         # Test creating a public stream with announce when realm has a notification stream.
         notifications_stream = get_stream(self.streams[0], self.test_realm)
@@ -3167,7 +3167,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     principals=ujson.dumps([user1.email, user2.email])
                 )
             )
-        self.assert_length(queries, 55)
+        self.assert_length(queries, 53)
 
 class GetBotOwnerStreamsTest(ZulipTestCase):
     def test_streams_api_for_bot_owners(self) -> None:
