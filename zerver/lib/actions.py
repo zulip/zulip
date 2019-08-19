@@ -48,7 +48,7 @@ from zerver.lib.message import (
     update_first_visible_message_id,
 )
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.realm_logo import realm_logo_url
+from zerver.lib.realm_logo import get_realm_logo_data
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins, \
     clear_scheduled_emails, clear_scheduled_invitation_emails
@@ -3346,24 +3346,11 @@ def do_change_logo_source(realm: Realm, logo_source: str, night: bool) -> None:
     RealmAuditLog.objects.create(event_type=RealmAuditLog.REALM_LOGO_CHANGED,
                                  realm=realm, event_time=timezone_now())
 
-    if not night:
-        send_event(realm,
-                   dict(type='realm',
-                        op='update_dict',
-                        property="logo",
-                        data=dict(logo_source=realm.logo_source,
-                                  logo_url=realm_logo_url(realm, night))),
-                   active_user_ids(realm.id))
-
-    else:
-        send_event(realm,
-                   dict(type='realm',
-                        op='update_dict',
-                        property="night_logo",
-                        data=dict(night_logo_source=realm.night_logo_source,
-                                  night_logo_url=realm_logo_url(realm, night))),
-                   active_user_ids(realm.id))
-
+    event = dict(type='realm',
+                 op='update_dict',
+                 property="night_logo" if night else "logo",
+                 data=get_realm_logo_data(realm, night))
+    send_event(realm, event, active_user_ids(realm.id))
 
 def do_change_plan_type(realm: Realm, plan_type: int) -> None:
     old_value = realm.plan_type

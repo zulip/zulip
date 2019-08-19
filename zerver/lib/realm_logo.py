@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from django.conf import settings
 
 from zerver.lib.upload import upload_backend
@@ -17,3 +19,10 @@ def get_realm_logo_url(realm: Realm, night: bool) -> str:
             return upload_backend.get_realm_logo_url(realm.id, realm.night_logo_version, night)
         else:
             return settings.DEFAULT_LOGO_URI+'?version=0'
+
+def get_realm_logo_data(realm: Realm, night: bool) -> Dict[str, Any]:
+    if night:
+        return dict(night_logo_url=realm_logo_url(realm, night),
+                    night_logo_source=realm.night_logo_source)
+    return dict(logo_url=realm_logo_url(realm, night),
+                logo_source=realm.logo_source)
