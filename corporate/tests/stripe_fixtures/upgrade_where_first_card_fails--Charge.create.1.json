@@ -14,7 +14,7 @@
     "access-control-expose-headers": "Request-Id, Stripe-Manage-Version, X-Stripe-External-Auth-Required, X-Stripe-Privileged-Session-Required",
     "access-control-max-age": "300",
     "cache-control": "no-cache, no-store",
-    "idempotency-key": "edb40202-cf54-4ca8-9999-9c4819b01e43",
+    "idempotency-key": "00000000-0000-0000-0000-000000000000",
     "original-request": "req_NORMALIZED0001",
     "request-id": "req_NORMALIZED0001",
     "stripe-version": "2019-03-14"
