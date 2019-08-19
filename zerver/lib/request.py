@@ -72,7 +72,7 @@ class _REQ(Generic[ResultT]):
         intentionally_undocumented: bool=False,
         documentation_pending: bool=False,
         aliases: Optional[List[str]] = None,
-        path_only: bool=False,
+        path_only: bool=False
     ) -> None:
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
