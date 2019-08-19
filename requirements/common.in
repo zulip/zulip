@@ -156,7 +156,7 @@ phonenumberslite==8.10.15
 twilio==6.29.2
 
 # Needed for processing payments (in corporate)
-stripe==2.21.0
+stripe==2.35.0
 
 # Needed for serving uploaded files from nginx but perform auth checks in django.
 django-sendfile2==0.4.2

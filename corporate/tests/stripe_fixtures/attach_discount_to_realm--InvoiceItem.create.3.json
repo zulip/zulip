@@ -18,5 +18,6 @@
   "proration": false,
   "quantity": 1,
   "subscription": null,
+  "tax_rates": [],
   "unit_amount": -36000
 }

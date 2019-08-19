@@ -47,6 +47,7 @@
       },
       "paid": false,
       "payment_intent": null,
+      "payment_method": "card_NORMALIZED00000000000002",
       "payment_method_details": {
         "card": {
           "brand": "visa",
@@ -100,6 +101,7 @@
       },
       "source_transfer": null,
       "statement_descriptor": "Zulip Standard",
+      "statement_descriptor_suffix": "Zulip Standard",
       "status": "failed",
       "transfer_data": null,
       "transfer_group": null
