@@ -10,7 +10,7 @@ from zerver.lib.avatar import (
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bugdown import url_filename
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.realm_logo import realm_logo_url
+from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
     avatar_disk_path,
@@ -1296,7 +1296,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
-        self.assertEqual(redirect_url, realm_logo_url(realm, self.night) +
+        self.assertEqual(redirect_url, get_realm_logo_url(realm, self.night) +
                          '&night=%s' % (str(self.night).lower(),))
 
     def test_get_realm_logo(self) -> None:
@@ -1305,7 +1305,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(realm_logo_url(realm, self.night) +
+        self.assertTrue(redirect_url.endswith(get_realm_logo_url(realm, self.night) +
                                               '&night=%s' % (str(self.night).lower(),)))
 
     def test_valid_logos(self) -> None:
@@ -1321,7 +1321,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
                 result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(self.night)})
             realm = get_realm('zulip')
             self.assert_json_success(result)
-            logo_url = realm_logo_url(realm, self.night)
+            logo_url = get_realm_logo_url(realm, self.night)
 
             if rfname is not None:
                 response = self.client_get(logo_url)
