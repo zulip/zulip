@@ -46,6 +46,8 @@ def make_realm(realm_id: int, team: Dict[str, Any]) -> ZerverFieldsT:
 def process_user(user_dict: Dict[str, Any], realm_id: int, team_name: str,
                  user_id_mapper: IdMapper) -> ZerverFieldsT:
     def is_team_admin(user_dict: Dict[str, Any]) -> bool:
+        if user_dict["teams"] is None:
+            return False
         for team in user_dict["teams"]:
             if team["name"] == team_name and "team_admin" in team["roles"]:
                 return True
@@ -132,6 +134,9 @@ def convert_channel_data(channel_data: List[ZerverFieldsT],
         for username in user_data_map:
             user_dict = user_data_map[username]
             teams = user_dict["teams"]
+            if user_dict["teams"] is None:
+                continue
+
             for team in teams:
                 if team["name"] != team_name:
                     continue
@@ -550,6 +555,9 @@ def create_username_to_user_mapping(user_data_list: List[Dict[str, Any]]) -> Dic
     return username_to_user
 
 def check_user_in_team(user: Dict[str, Any], team_name: str) -> bool:
+    if user["teams"] is None:
+        # This is null for users not on any team
+        return False
     for team in user["teams"]:
         if team["name"] == team_name:
             return True
