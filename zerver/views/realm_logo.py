@@ -7,7 +7,7 @@ from zerver.lib.validator import check_bool
 from zerver.lib.request import REQ, has_request_variables
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_change_logo_source
-from zerver.lib.realm_logo import realm_logo_url
+from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_logo_image
 from zerver.models import Realm, UserProfile
@@ -43,7 +43,7 @@ def delete_logo_backend(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def get_logo_backend(request: HttpRequest, user_profile: UserProfile,
                      night: bool=REQ(validator=check_bool)) -> HttpResponse:
-    url = realm_logo_url(user_profile.realm, night)
+    url = get_realm_logo_url(user_profile.realm, night)
 
     # We can rely on the url already having query parameters. Because
     # our templates depend on being able to use the ampersand to
