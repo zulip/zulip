@@ -41,6 +41,10 @@
             text-align: center;
             outline: none;
 
+            .help-table {
+                table-layout: fixed;
+            }
+
             th {
                 font-weight: 400;
             }
@@ -50,10 +54,6 @@
     td.operator {
         font-size: 0.9em;
     }
-}
-
-.help-table {
-    table-layout: fixed;
 }
 
 .hotkeys_table {
