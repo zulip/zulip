@@ -3278,7 +3278,6 @@ class ClientDescriptorsTest(ZulipTestCase):
                 sender_avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 sender_avatar_version=1,
                 sender_is_mirror_dummy=None,
-                raw_display_recipient=None,
                 recipient_type=None,
                 recipient_type_id=None,
             ),

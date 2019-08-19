@@ -212,7 +212,6 @@ class MessageDict:
         del obj['sender_avatar_source']
         del obj['sender_avatar_version']
 
-        del obj['raw_display_recipient']
         del obj['recipient_type']
         del obj['recipient_type_id']
         del obj['sender_is_mirror_dummy']
@@ -331,12 +330,6 @@ class MessageDict:
 
         obj[TOPIC_NAME] = topic_name
         obj['sender_realm_id'] = sender_realm_id
-
-        obj['raw_display_recipient'] = get_display_recipient_by_id(
-            recipient_id,
-            recipient_type,
-            recipient_type_id
-        )
 
         obj[TOPIC_LINKS] = bugdown.topic_links(sender_realm_id, topic_name)
 
