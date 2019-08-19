@@ -143,7 +143,7 @@ def REQ(
     intentionally_undocumented: bool=False,
     documentation_pending: bool=False,
     aliases: Optional[List[str]] = None,
-    path_only: bool = False,
+    path_only: bool = False
 ) -> ResultT:
     return cast(ResultT, _REQ(
         whence,
