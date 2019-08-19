@@ -213,7 +213,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                         response)
         user_profile = get_user_profile_by_id(user_profile.id)
         self.assertEqual(user_profile.delivery_email, new_email)
-        self.assertEqual(user_profile.email, "user4@zulip.testserver")
+        self.assertEqual(user_profile.email, "user{}@zulip.testserver".format(user_profile.id))
         obj.refresh_from_db()
         self.assertEqual(obj.status, 1)
         with self.assertRaises(UserProfile.DoesNotExist):
