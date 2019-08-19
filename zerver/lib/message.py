@@ -55,6 +55,8 @@ from zerver.models import (
 from typing import Any, Dict, List, Optional, Set, Tuple, Sequence
 from typing_extensions import TypedDict
 
+import time
+
 RealmAlertWords = Dict[int, List[str]]
 
 RawUnreadMessagesResult = TypedDict('RawUnreadMessagesResult', {
@@ -191,7 +193,10 @@ class MessageDict:
     @staticmethod
     def post_process_dicts(objs: List[Dict[str, Any]], apply_markdown: bool, client_gravatar: bool) -> None:
         MessageDict.bulk_hydrate_sender_info(objs)
+        start_time = time.time()
+        print("Starting hydrating recipient")
         MessageDict.bulk_hydrate_recipient_info(objs)
+        print("Done hydrating in total time {}".format(time.time() - start_time))
 
         for obj in objs:
             MessageDict.finalize_payload(obj, apply_markdown, client_gravatar)
