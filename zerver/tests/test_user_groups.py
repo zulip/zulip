@@ -313,7 +313,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         # Test adding a member already there.
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
-        self.assert_json_error(result, "User 6 is already a member of this group")
+        self.assert_json_error(result, "User {} is already a member of this group".format(othello.id))
         self.assertEqual(UserGroupMembership.objects.count(), 4)
         members = get_memberships_of_users(user_group, [hamlet, othello])
         self.assertEqual(len(members), 2)
@@ -359,7 +359,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         params = {'delete': ujson.dumps([othello.id])}
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
-        self.assert_json_error(result, "There is no member '6' in this user group")
+        self.assert_json_error(result, "There is no member '{}' in this user group".format(othello.id))
         self.assertEqual(UserGroupMembership.objects.count(), 4)
         members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
         self.assertEqual(len(members), 2)
