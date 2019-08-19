@@ -178,6 +178,11 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/me/alert_words',
         '/users/me/status',
         '/messages/matches_narrow',
+        '/dev_fetch_api_key',
+        '/dev_list_users',
+        '/fetch_api_key',
+        '/fetch_google_client_id',
+        '/get_auth_backends',
         '/settings',
         '/submessage',
         '/attachments',
@@ -196,12 +201,15 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/invites',
         '/invites/multiuse',
         '/bots',
+        # Used for desktop app to test connectivity.
+        '/generate_204',
         # Mobile-app only endpoints
         '/users/me/android_gcm_reg_id',
         '/users/me/apns_device_token',
         # Regex based urls
         '/realm/domains/{domain}',
         '/realm/profile_fields/{field_id}',
+        '/realm/subdomain/{subdomain}',
         '/users/{user_id}/reactivate',
         '/users/{user_id}',
         '/bots/{bot_id}/api_key/regenerate',
@@ -234,9 +242,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/settings/notifications',
         # Docs need update for subject -> topic migration
         '/messages/{message_id}',
-        # pattern starts with /api/v1 and thus fails reverse mapping test.
-        '/dev_fetch_api_key',
-        '/server_settings',
     ])
 
     def convert_regex_to_url_pattern(self, regex_pattern: str) -> str:
@@ -464,13 +469,18 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         # We loop through all the API patterns, looking in particular
         # for those using the rest_dispatch decorator; we then parse
         # its mapping of (HTTP_METHOD -> FUNCTION).
-        for p in urlconf.v1_api_and_json_patterns:
+        for p in urlconf.v1_api_and_json_patterns + urlconf.v1_api_mobile_patterns:
             if p.lookup_str != 'zerver.lib.rest.rest_dispatch':
-                continue
+                # Endpoints not using rest_dispatch don't have extra data.
+                methods_endpoints = dict(
+                    GET=p.lookup_str,
+                )
+            else:
+                methods_endpoints = p.default_args
 
             # since the module was already imported and is now residing in
             # memory, we won't actually face any performance penalties here.
-            for method, value in p.default_args.items():
+            for method, value in methods_endpoints.items():
                 if isinstance(value, str):
                     function_name = value
                     tags = set()  # type: Set[str]

@@ -73,10 +73,10 @@ v1_api_and_json_patterns = [
         {'PATCH': 'zerver.views.realm.update_realm'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
-    url(r'generate_204$', zerver.views.registration.generate_204,
+    url(r'^generate_204$', zerver.views.registration.generate_204,
         name='zerver.views.registration.generate_204'),
 
-    url(r'realm/subdomain/(?P<subdomain>\S+)$', zerver.views.realm.check_subdomain_available,
+    url(r'^realm/subdomain/(?P<subdomain>\S+)$', zerver.views.realm.check_subdomain_available,
         name='zerver.views.realm.check_subdomain_available'),
 
     # realm/domains -> zerver.views.realm_domains
@@ -642,36 +642,41 @@ urls += [
 
 # Mobile-specific authentication URLs
 urls += [
-    # This json format view used by the mobile apps lists which
-    # authentication backends the server allows as well as details
-    # like the requested subdomains'd realm icon (if known) and
-    # server-specific compatibility.
-    url(r'^api/v1/server_settings', zerver.views.auth.api_get_server_settings),
-    # This is a deprecated old version of api/v1/server_settings that only returns auth backends.
-    url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends,
-        name='zerver.views.auth.api_get_auth_backends'),
-
     # Used as a global check by all mobile clients, which currently send
     # requests to https://zulipchat.com/compatibility almost immediately after
     # starting up.
     url(r'^compatibility$', zerver.views.compatibility.check_global_compatibility),
+]
+
+v1_api_mobile_patterns = [
+    # This json format view used by the mobile apps lists which
+    # authentication backends the server allows as well as details
+    # like the requested subdomains'd realm icon (if known) and
+    # server-specific compatibility.
+    url(r'^server_settings$', zerver.views.auth.api_get_server_settings),
+    # This is a deprecated old version of api/v1/server_settings that only returns auth backends.
+    url(r'^get_auth_backends$', zerver.views.auth.api_get_auth_backends,
+        name='zerver.views.auth.api_get_auth_backends'),
 
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
-    url(r'^api/v1/fetch_api_key$', zerver.views.auth.api_fetch_api_key,
+    url(r'^fetch_api_key$', zerver.views.auth.api_fetch_api_key,
         name='zerver.views.auth.api_fetch_api_key'),
 
     # This is for the signing in through the devAuthBackEnd on mobile apps.
-    url(r'^api/v1/dev_fetch_api_key$', zerver.views.auth.api_dev_fetch_api_key,
+    url(r'^dev_fetch_api_key$', zerver.views.auth.api_dev_fetch_api_key,
         name='zerver.views.auth.api_dev_fetch_api_key'),
     # This is for fetching the emails of the admins and the users.
-    url(r'^api/v1/dev_list_users$', zerver.views.auth.api_dev_list_users,
+    url(r'^dev_list_users$', zerver.views.auth.api_dev_list_users,
         name='zerver.views.auth.api_dev_list_users'),
 
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
-    url(r'^api/v1/fetch_google_client_id$',
+    url(r'^fetch_google_client_id$',
         zerver.views.auth.api_fetch_google_client_id,
         name='zerver.views.auth.api_fetch_google_client_id'),
+]
+urls += [
+    url(r'^api/v1/', include(v1_api_mobile_patterns)),
 ]
 
 # View for uploading messages from email mirror
