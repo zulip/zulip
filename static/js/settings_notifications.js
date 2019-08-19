@@ -73,6 +73,10 @@ exports.desktop_icon_count_display_values = {
         code: 2,
         description: i18n.t("Private messages and mentions"),
     },
+    none: {
+        code: 3,
+        description: i18n.t("None"),
+    },
 };
 
 function change_notification_setting(setting, setting_data, status_element) {
