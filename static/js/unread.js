@@ -552,9 +552,14 @@ exports.calculate_notifiable_count = function (res) {
 
     var only_show_notifiable = page_params.desktop_icon_count_display ===
         settings_notifications.desktop_icon_count_display_values.notifiable.code;
+    var no_notifications = page_params.desktop_icon_count_display ===
+        settings_notifications.desktop_icon_count_display_values.none.code;
     if (only_show_notifiable) {
         // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE
         new_message_count = res.mentioned_message_count + res.private_message_count;
+    } else if (no_notifications) {
+        // DESKTOP_ICON_COUNT_DISPLAY_NONE
+        new_message_count = 0;
     } else {
         // DESKTOP_ICON_COUNT_DISPLAY_MESSAGES
         new_message_count = res.home_unread_messages;

@@ -836,6 +836,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
     DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
+    DESKTOP_ICON_COUNT_DISPLAY_NONE = 3
     desktop_icon_count_display = models.PositiveSmallIntegerField(
         default=DESKTOP_ICON_COUNT_DISPLAY_MESSAGES)  # type: int
 
