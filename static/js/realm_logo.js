@@ -44,6 +44,17 @@ var realm_logo = (function () {
         );
     };
 
+    function change_logo_delete_button(logo_source, logo_delete_button, file_input) {
+        if (logo_source === 'U') {
+            logo_delete_button.show();
+        } else {
+            logo_delete_button.hide();
+            // Need to clear input because of a small edge case
+            // where you try to upload the same image you just deleted.
+            file_input.val('');
+        }
+    }
+
     exports.rerender = function () {
         var file_input = $("#day-logo-section .realm-logo-file-input");
         var night_file_input = $("#night-logo-section .realm-logo-file-input");
@@ -66,23 +77,13 @@ var realm_logo = (function () {
         } else {
             $("#realm-logo").attr("src", page_params.realm_logo_url);
         }
-        if (page_params.realm_logo_source === 'U') {
-            $("#realm_logo_delete_button").show();
-        } else {
-            $("#realm_logo_delete_button").hide();
-            // Need to clear input because of a small edge case
-            // where you try to upload the same image you just deleted.
-            file_input.val('');
-        }
-        if (page_params.realm_night_logo_source === 'U') {
-            $("#realm_night_logo_delete_button").show();
-        } else {
-            $("#realm_night_logo_delete_button").hide();
-            // Need to clear input because of a small edge case
-            // where you try to upload the same image you just deleted.
-            night_file_input.val('');
-        }
 
+        change_logo_delete_button(page_params.realm_logo_source,
+                                  $("#realm_logo_delete_button"),
+                                  file_input);
+        change_logo_delete_button(page_params.realm_night_logo_source,
+                                  $("#realm_night_logo_delete_button"),
+                                  night_file_input);
     };
 
     return exports;
