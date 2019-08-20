@@ -5,6 +5,14 @@ from zerver.lib.cache import cache_with_key, display_recipient_cache_key, generi
     display_recipient_bulk_get_users_by_id_cache_key
 from zerver.models import Recipient, Stream, UserProfile, bulk_get_huddle_user_ids
 
+display_recipient_fields = [
+    "id",
+    "email",
+    "full_name",
+    "short_name",
+    "is_mirror_dummy",
+]
+
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)
 def get_display_recipient_remote_cache(recipient_id: int, recipient_type: int,
@@ -22,10 +30,9 @@ def get_display_recipient_remote_cache(recipient_id: int, recipient_type: int,
     # The main priority for ordering here is being deterministic.
     # Right now, we order by ID, which matches the ordering of user
     # names in the left sidebar.
-    user_profile_list = (UserProfile.objects.filter(subscription__recipient_id=recipient_id)
-                                            .order_by('id')
-                                            .values('id', 'email', 'full_name', 'short_name',
-                                                    'is_mirror_dummy'))
+    user_profile_list = UserProfile.objects.filter(
+        subscription__recipient_id=recipient_id
+    ).order_by('id').values(*display_recipient_fields)
     return list(user_profile_list)
 
 def user_dict_id_fetcher(user_dict: UserDisplayRecipient) -> int:
@@ -37,9 +44,8 @@ def bulk_get_user_profile_by_id(uids: List[int]) -> Dict[int, UserDisplayRecipie
         # the get_user_profile_by_id cache.
         # (Since we fetch only several fields here)
         cache_key_function=display_recipient_bulk_get_users_by_id_cache_key,
-        query_function=lambda ids: list(UserProfile.objects.filter(id__in=ids)
-                                        .values('id', 'email', 'full_name', 'short_name',
-                                                'is_mirror_dummy')),
+        query_function=lambda ids: list(
+            UserProfile.objects.filter(id__in=ids).values(*display_recipient_fields)),
         object_ids=uids,
         id_fetcher=user_dict_id_fetcher
     )
