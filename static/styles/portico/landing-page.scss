@@ -1897,6 +1897,11 @@ nav ul li.active::after {
     width: 80px;
 
     font-size: 3.5em;
+    opacity: 0.8;
+}
+
+.portico-landing.hello .apps .left-side .platform-icons .group i:hover {
+    opacity: 1;
 }
 
 .portico-landing.hello .apps .arrow::after {
