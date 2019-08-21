@@ -66,7 +66,6 @@ exports.contains_backend_only_syntax = function (content) {
 exports.apply_markdown = function (message) {
     message_store.init_booleans(message);
 
-    // Our python-markdown processor appends two \n\n to input
     var options = {
         userMentionHandler: function (name, silently) {
             var person = people.get_by_name(name);
@@ -131,6 +130,7 @@ exports.apply_markdown = function (message) {
             return quote;
         },
     };
+    // Our python-markdown processor appends two \n\n to input
     message.content = marked(message.raw_content + '\n\n', options).trim();
     message.is_me_message = exports.is_status_message(message.raw_content, message.content);
 };
