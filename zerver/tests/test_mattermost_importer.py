@@ -80,6 +80,11 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["short_name"], "harry")
         self.assertEqual(user["timezone"], "UTC")
 
+        # A user with a `null` team value shouldn't be an admin.
+        harry_dict["teams"] = None
+        user = process_user(harry_dict, realm_id, team_name, user_id_mapper)
+        self.assertEqual(user["is_realm_admin"], False)
+
         team_name = "slytherin"
         snape_dict = self.username_to_user["snape"]
         snape_dict["is_mirror_dummy"] = True
@@ -183,6 +188,21 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("gryffindor-common-room")), {1, 2})
         self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("gryffindor-quidditch-team")), {1, 2})
         self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("dumbledores-army")), {1, 2})
+
+        # Converting channel data when a user's `teams` value is `null`.
+        self.username_to_user["ron"].update({"teams": None})
+        zerver_stream = convert_channel_data(
+            channel_data=self.mattermost_data["channel"],
+            user_data_map=self.username_to_user,
+            subscriber_handler=subscriber_handler,
+            stream_id_mapper=stream_id_mapper,
+            user_id_mapper=user_id_mapper,
+            realm_id=3,
+            team_name=team_name,
+        )
+        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("gryffindor-common-room")), {2})
+        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("gryffindor-quidditch-team")), {2})
+        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("dumbledores-army")), {2})
 
         team_name = "slytherin"
         zerver_stream = convert_channel_data(
@@ -312,6 +332,9 @@ class MatterMostImporter(ZulipTestCase):
         snape = self.username_to_user["snape"]
         self.assertFalse(check_user_in_team(snape, "gryffindor"))
         self.assertTrue(check_user_in_team(snape, "slytherin"))
+
+        snape.update({"teams": None})
+        self.assertFalse(check_user_in_team(snape, "slytherin"))
 
     def test_label_mirror_dummy_users(self) -> None:
         label_mirror_dummy_users(
