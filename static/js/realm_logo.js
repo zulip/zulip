@@ -4,12 +4,14 @@ var realm_logo = (function () {
 
     exports.build_realm_logo_widget = function (upload_function, is_night) {
         var selector_prefix = '#realm_';
+        var logo_section_id = '#day-logo-section';
         if (is_night) {
             selector_prefix = '#realm_night_';
+            logo_section_id = '#night-logo-section';
         }
 
         var delete_button_elem = $(selector_prefix + "logo_delete_button");
-        var file_input_elem = $(selector_prefix + "logo_file_input");
+        var file_input_elem = $(logo_section_id + " .realm-logo-file-input");
         var file_input_error_elem = $(selector_prefix + "logo_file_input_error");
         var upload_button_elem = $(selector_prefix + "logo_upload_button");
 
@@ -43,8 +45,8 @@ var realm_logo = (function () {
     };
 
     exports.rerender = function () {
-        var file_input = $("#realm_logo_file_input");
-        var night_file_input = $("#realm_night_logo_file_input");
+        var file_input = $("#day-logo-section .realm-logo-file-input");
+        var night_file_input = $("#night-logo-section .realm-logo-file-input");
         $("#day-logo-section .realm-logo-img").attr("src", page_params.realm_logo_url);
 
         if (page_params.realm_night_logo_source === 'D' &&
