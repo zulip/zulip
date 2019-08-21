@@ -1144,11 +1144,11 @@ exports.build_page = function () {
             form_data.append('file-' + i, file);
         });
         if (night) {
-            error_field = $("#realm_night_logo_file_input_error");
+            error_field = $("#night-logo-section .realm-logo-file-input-error");
             spinner = $("#upload_night_logo_spinner");
             button_text = $("#upload_night_logo_button_text");
         } else {
-            error_field = $("#realm_logo_file_input_error");
+            error_field = $("#day-logo-section .realm-logo-file-input-error");
             spinner = $("#upload_logo_spinner");
             button_text = $("#upload_logo_button_text");
         }
