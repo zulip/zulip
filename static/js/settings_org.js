@@ -661,6 +661,12 @@ exports.build_page = function () {
         e.preventDefault();
         e.stopPropagation();
 
+        // This event handler detects whether after these input
+        // changes, any fields have different values from the current
+        // official values stored in the database and page_params.  If
+        // they do, we transition to the "unsaved" state showing the
+        // save/discard widget; otherwise, we hide that widget (the
+        // "discarded" state).
         var subsection = $(e.target).closest('.org-subsection-parent');
         subsection.find('.subsection-failed-status p').hide();
         subsection.find('.save-button').show();
