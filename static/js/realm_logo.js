@@ -45,7 +45,7 @@ var realm_logo = (function () {
     exports.rerender = function () {
         var file_input = $("#realm_logo_file_input");
         var night_file_input = $("#realm_night_logo_file_input");
-        $("#realm-settings-logo").attr("src", page_params.realm_logo_url);
+        $("#day-logo-section .realm-logo-img").attr("src", page_params.realm_logo_url);
 
         if (page_params.realm_night_logo_source === 'D' &&
             page_params.realm_logo_source !== 'D') {
@@ -54,9 +54,9 @@ var realm_logo = (function () {
             // of transparent background logos that look good on both
             // night and day themes.  See also similar code in admin.js.
 
-            $("#realm-settings-night-logo").attr("src", page_params.realm_logo_url);
+            $("#night-logo-section .realm-logo-img").attr("src", page_params.realm_logo_url);
         } else {
-            $("#realm-settings-night-logo").attr("src", page_params.realm_night_logo_url);
+            $("#night-logo-section .realm-logo-img").attr("src", page_params.realm_night_logo_url);
         }
 
         if (page_params.night_mode && page_params.realm_night_logo_source !== 'D') {
