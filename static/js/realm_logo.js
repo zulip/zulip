@@ -12,7 +12,7 @@ var realm_logo = (function () {
 
         var delete_button_elem = $(selector_prefix + "logo_delete_button");
         var file_input_elem = $(logo_section_id + " .realm-logo-file-input");
-        var file_input_error_elem = $(selector_prefix + "logo_file_input_error");
+        var file_input_error_elem = $(logo_section_id + " .realm-logo-file-input-error");
         var upload_button_elem = $(selector_prefix + "logo_upload_button");
 
         var get_file_input = function () {
