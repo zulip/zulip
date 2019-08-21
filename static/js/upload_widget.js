@@ -118,9 +118,9 @@ var upload_widget = (function () {
         max_file_upload_size = max_file_upload_size || default_max_file_size;
         function accept() {
             input_error.hide();
-            if (upload_button[0].id === "realm_night_logo_upload_button") {
+            if (upload_button.hasClass("night-settings")) {
                 upload_function(get_file_input(), true);
-            } else if (upload_button[0].id === "realm_logo_upload_button") {
+            } else if (upload_button.hasClass("day-settings")) {
                 upload_function(get_file_input(), false);
             } else {
                 upload_function(get_file_input());
