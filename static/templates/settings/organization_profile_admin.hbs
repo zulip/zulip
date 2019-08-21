@@ -66,46 +66,13 @@
         </div>
 
         <p>{{t "A wide image for the upper left corner of the app." }}</p>
-        <div id="day-logo-section" class="realm-logo-section">
-            <div class="inline-block realm-logo-block">
-                <img class="realm-logo-img" src="{{ realm_logo_url }}"/>
-                <input type="file" name="realm-logo-file-input"
-                  class="realm-logo-file-input notvisible" value="{{t 'Upload logo' }}"/>
-            </div>
-            <div class="inline-block avatar-controls">
-                <div class="realm-logo-file-input-error alert text-error"></div>
-                {{#if plan_includes_wide_organization_logo}}
-                <button class="realm-logo-upload-button button rounded sea-green w-200 block input-size day-settings">
-                    <span class="upload-logo-button-text">{{t 'Upload new logo' }}</span>
-                    <span class="upload-logo-spinner"></span>
-                </button>
-                <button class="realm-logo-delete-button button rounded btn-danger w-200 m-t-10 block input-size">
-                    {{t 'Delete logo' }}
-                </button>
-                {{/if}}
-            </div>
-        </div>
+        {{> realm-logo-widget
+          theme_mode="day"
+          logo_url=realm_logo_url}}
 
-        <p>{{t "A wide logo for night mode. Logo will be shown against a dark background." }}</p>
-        <div id="night-logo-section" class="realm-logo-section">
-            <div class="inline-block realm-logo-block">
-                <img class="realm-logo-img" src="{{ realm_night_logo_url }}">
-                <input type="file" name="realm-logo-file-input"
-                  class="realm-logo-file-input notvisible" value="{{t 'Upload logo' }}"/>
-            </div>
-            <div class="inline-block avatar-controls">
-                <div class="realm-logo-file-input-error alert text-error"></div>
-                {{#if plan_includes_wide_organization_logo}}
-                <button class="realm-logo-upload-button button rounded sea-green w-200 block input-size night-settings">
-                    <span class="upload-logo-button-text">{{t 'Upload new logo' }}</span>
-                    <span class="upload-logo-spinner"></span>
-                </button>
-                <button class="realm-logo-delete-button button rounded btn-danger w-200 m-t-10 block input-size">
-                    {{t 'Delete logo' }}
-                </button>
-                {{/if}}
-            </div>
-        </div>
+        {{> realm-logo-widget
+          theme_mode="night"
+          logo_url=realm_night_logo_url}}
 
         <h3 class="light">{{t "Deactivate organization" }}</h3>
         <div class="deactivate-realm-section">
