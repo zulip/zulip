@@ -1145,12 +1145,12 @@ exports.build_page = function () {
         });
         if (night) {
             error_field = $("#night-logo-section .realm-logo-file-input-error");
-            spinner = $("#upload_night_logo_spinner");
-            button_text = $("#upload_night_logo_button_text");
+            spinner = $("#night-logo-section .upload-logo-spinner");
+            button_text = $("#night-logo-section .upload-logo-button-text");
         } else {
             error_field = $("#day-logo-section .realm-logo-file-input-error");
-            spinner = $("#upload_logo_spinner");
-            button_text = $("#upload_logo_button_text");
+            spinner = $("#day-logo-section .upload-logo-spinner");
+            button_text = $("#day-logo-section .upload-logo-button-text");
         }
         spinner.expectOne();
         error_field.hide();

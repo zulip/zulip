@@ -1008,9 +1008,8 @@ input[type=checkbox].inline-block {
 }
 
 #upload_avatar_spinner,
-#upload_logo_spinner,
 #upload_icon_spinner,
-#upload_night_logo_spinner {
+.upload-logo-spinner {
     font-size: 14px;
     margin: auto;
 }
