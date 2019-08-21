@@ -50,7 +50,7 @@ can do the following after unpacking a Zulip production release
 tarball:
 
 ```
-env PUPPET_CLASSES=zulip::redis ./scripts/setup/install
+env PUPPET_CLASSES=zulip::redis,zulip::base ./scripts/setup/install
 ```
 
 You can see most likely manifests you might want to choose in the list
