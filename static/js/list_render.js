@@ -347,14 +347,12 @@ var list_render = (function () {
 
         you MUST specify the `data-list-render` in the `.progressive-table-wrapper`
 
-        <table>
-            <tr>
-                <td data-sort="alphabetic" data-sort-prop="name">
-                <td data-sort="numeric" data-sort-prop="age">
-            </tr>
-        </table>
         <div class="progressive-table-wrapper" data-list-render="some-list">
             <table>
+                <thead>
+                    <th data-sort="alphabetic" data-sort-prop="name"></th>
+                    <th data-sort="numeric" data-sort-prop="age"></th>
+                </thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -362,7 +360,7 @@ var list_render = (function () {
         var $this = $(this);
         var sort_type = $this.data("sort");
         var prop_name = $this.data("sort-prop");
-        var list_name = $this.parents("table").next(".progressive-table-wrapper").data("list-render");
+        var list_name = $this.closest(".progressive-table-wrapper").data("list-render");
 
         var list = list_render.get(list_name);
 
