@@ -228,7 +228,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         context.update({
             'activate_url': link,
             'referrer_name': referrer.full_name,
-            'referrer_email': referrer.email,
+            'referrer_email': referrer.delivery_email,
             'referrer_realm_name': referrer.realm.name,
         })
         send_future_email(
