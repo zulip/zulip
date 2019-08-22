@@ -179,6 +179,12 @@ var list_render = (function () {
                 return this;
             },
 
+            reverse: function () {
+                meta.filtered_list.reverse();
+                prototype.init();
+                return this;
+            },
+
             // the sorting function is either the function or string that calls the
             // function to sort the list by. The prop is used for generic functions
             // that can be called to sort with a particular prop.
@@ -188,7 +194,7 @@ var list_render = (function () {
 
             // `do_not_display` will signal to not update the DOM, likely because in
             // the next function it will be updated in the DOM.
-            sort: function (sorting_function, prop, map, do_not_display, reverse) {
+            sort: function (sorting_function, prop, do_not_display) {
                 meta.prop = prop;
 
                 if (typeof sorting_function === "function") {
@@ -206,11 +212,6 @@ var list_render = (function () {
                 // by calling with no sorting_function
                 if (meta.sorting_function) {
                     meta.filtered_list = meta.filtered_list.sort(meta.sorting_function);
-                }
-
-                if (reverse) {
-                    // simple mutable array reversal.
-                    meta.filtered_list.reverse();
                 }
 
                 if (!do_not_display) {
@@ -274,7 +275,7 @@ var list_render = (function () {
                         // it will then also not run an update in the DOM (because we
                         // pass `true`), because it will update regardless below at
                         // `prototype.init()`.
-                        prototype.sort(undefined, meta.prop, undefined, true);
+                        prototype.sort(undefined, meta.prop, true);
                         meta.filter_list(value, opts.filter.callback);
 
                         // clear and re-initialize the list with the newly filtered subset
@@ -376,7 +377,7 @@ var list_render = (function () {
                 $this.removeClass("descend");
             }
 
-            list.sort(undefined, undefined, undefined, undefined, true);
+            list.reverse();
             // Table has already been sorted by this property; do not re-sort.
             return;
         }
