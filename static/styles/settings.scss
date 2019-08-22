@@ -148,7 +148,6 @@ label {
 }
 
 .wrapped-table {
-    table-layout: fixed;
     word-break: break-word;
     word-wrap: break-word;
     white-space: -moz-pre-wrap !important;
@@ -157,10 +156,6 @@ label {
     white-space: -o-pre-wrap;
     white-space: pre-wrap;
     white-space: normal;
-}
-
-.wrapped-cell {
-    width: 20%;
 }
 
 .table tbody {
@@ -173,13 +168,6 @@ label {
 
 #settings_content table + .progressive-table-wrapper table tr.user_row td:first-of-type {
     width: 20%;
-}
-
-#uploaded_files_table > tr > td:nth-of-type(4),
-#uploaded_files_table > tr > td:nth-of-type(5),
-.upload-size,
-.upload-actions {
-    width: 15%;
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
@@ -275,6 +263,8 @@ td .button {
     }
 
     .table-striped {
+        table-layout: auto;
+
         tbody {
             border-bottom: none;
         }
@@ -313,6 +303,12 @@ td .button {
                     opacity: 0.3;
                 }
             }
+        }
+
+        // Force the actions column to use the minimum space necessary
+        .actions {
+            width: 1%;
+            white-space: nowrap;
         }
     }
 
@@ -732,10 +728,6 @@ input[type=checkbox].inline-block {
     margin-bottom: 20px;
 }
 
-.admin_emoji_table {
-    margin: 20px auto;
-}
-
 .emoji_image {
     width: 20px;
     display: block;
@@ -822,6 +814,7 @@ input[type=checkbox].inline-block {
     position: relative;
     max-height: calc(95vh - 220px);
     overflow: auto;
+    width: 100%;
 }
 
 #admin-default-streams-list .progressive-table-wrapper {
@@ -1820,10 +1813,6 @@ input[type=text]#settings_search {
 
 #admin-user-list .last_active {
     width: 100px;
-}
-
-thead .actions {
-    min-width: 230px;
 }
 
 #settings_page .display-settings-form select {
