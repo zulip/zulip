@@ -8,6 +8,7 @@ from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
 from zerver.lib.storage import static_path
 from zerver.lib.types import Validator
+from zerver.lib.validator import check_string, check_url
 
 
 """This module declares all of the (documented) integrations available
@@ -316,6 +317,15 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('opsgenie', ['meta-integration', 'monitoring']),
     WebhookIntegration('pagerduty', ['monitoring'], display_name='PagerDuty'),
     WebhookIntegration('papertrail', ['monitoring']),
+    WebhookIntegration(
+        'phabricator',
+        ['version-control'],
+        display_name='Phabricator',
+        config_options=[
+            ('Phabricator API Key', 'phabricator_api_key', check_string),
+            ('Phabricator URL Root', 'phabricator_root_url', check_url)
+        ]
+    ),
     WebhookIntegration('pingdom', ['monitoring']),
     WebhookIntegration('pivotal', ['project-management'], display_name='Pivotal Tracker'),
     WebhookIntegration('raygun', ['monitoring'], display_name="Raygun"),

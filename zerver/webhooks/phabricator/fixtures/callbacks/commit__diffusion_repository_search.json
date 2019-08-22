@@ -1,0 +1,52 @@
+{
+    "data":[
+        {
+            "id":1,
+            "type":"REPO",
+            "phid":"PHID-REPO-uvn57rye4g35lrdfzcwo",
+            "fields":{
+                "name":"Zulip x Phabricator",
+                "vcs":"git",
+                "callsign":null,
+                "shortName":null,
+                "status":"active",
+                "isImporting":false,
+                "almanacServicePHID":null,
+                "refRules":{
+                    "fetchRules":[
+
+                    ],
+                    "trackRules":[
+
+                    ],
+                    "permanentRefRules":[
+
+                    ]
+                },
+                "spacePHID":null,
+                "dateCreated":1559275181,
+                "dateModified":1559279287,
+                "policy":{
+                    "view":"users",
+                    "edit":"users",
+                    "diffusion.push":"users"
+                }
+            },
+            "attachments":{
+
+            }
+        }
+    ],
+    "maps":{
+
+    },
+    "query":{
+        "queryKey":null
+    },
+    "cursor":{
+        "limit":100,
+        "after":null,
+        "before":null,
+        "order":null
+    }
+}
