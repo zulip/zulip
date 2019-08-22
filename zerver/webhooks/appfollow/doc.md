@@ -5,10 +5,13 @@ using the Zulip AppFollow integration!
 
 1. {!create-bot-construct-url-indented.md!}
 
-1. Click on the app for which you'd like to receive reviews. Click on
-   **Integrations** and go to the **Others** tab.
+1. In AppFollow, click on **Integrations** on the left sidebar, and click **Add new integration**.
+Click on your app under **Tracked apps**.
 
-1. Set **Webhook URL** to the URL constructed above. Click **Save changes**.
+1. Search for **WebHook URL**, and click **Add integration**.
+
+1. Set **Webhook URL** to the URL constructed above, and fill out the rest
+of the form. Click **Add integration**.
 
 {!congrats.md!}
 
