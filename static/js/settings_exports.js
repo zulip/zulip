@@ -24,7 +24,7 @@ exports.populate_exports_table = function (exports) {
             exports_table.append(render_admin_export_list({
                 realm_export: {
                     id: data.id,
-                    acting_user: people.my_full_name(data.acting_user_id),
+                    acting_user: people.get_full_name(data.acting_user_id),
                     // Convert seconds -> milliseconds
                     event_time: timerender.last_seen_status_from_date(
                         new XDate(data.export_time * 1000)
