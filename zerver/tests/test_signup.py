@@ -1723,7 +1723,7 @@ class RealmCreationTest(ZulipTestCase):
     def test_create_realm_as_system_bot(self) -> None:
         result = self.client_post('/new/', {'email': 'notification-bot@zulip.com'})
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response('notification-bot@zulip.com is an email address reserved', result)
+        self.assert_in_response('notification-bot@zulip.com is reserved for system bots', result)
 
     def test_create_realm_no_creation_key(self) -> None:
         """
