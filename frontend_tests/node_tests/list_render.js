@@ -182,10 +182,8 @@ function sort_button(opts) {
 
     const $button = {
         data: data,
-        parents: lookup('table', {
-            next: lookup('.progressive-table-wrapper', {
-                data: lookup('list-render', opts.list_name),
-            }),
+        closest: lookup('.progressive-table-wrapper', {
+            data: lookup('list-render', opts.list_name),
         }),
         hasClass: lookup('active', opts.active),
         siblings: lookup('.active', {

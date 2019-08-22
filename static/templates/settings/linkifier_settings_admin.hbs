@@ -65,17 +65,15 @@
         {{/if}}
 
         <input type="text" class="search" placeholder="{{t 'Filter linkifiers' }}" aria-label="{{t 'Filter linkifiers' }}"/>
-        <table class="table table-condensed table-striped wrapped-table admin_filters_table">
-            <thead>
-                <th class="active" data-sort="pattern">{{t "Pattern" }}</th>
-                <th data-sort="url">{{t "URL format string" }}</th>
-                {{#if is_admin}}
-                <th class="actions">{{t "Actions" }}</th>
-                {{/if}}
-            </thead>
-        </table>
         <div class="progressive-table-wrapper" data-simplebar data-list-render="linkifiers_list">
             <table class="table table-condensed table-striped wrapped-table admin_filters_table">
+                <thead>
+                    <th class="active" data-sort="pattern">{{t "Pattern" }}</th>
+                    <th data-sort="url">{{t "URL format string" }}</th>
+                    {{#if is_admin}}
+                    <th class="actions">{{t "Actions" }}</th>
+                    {{/if}}
+                </thead>
                 <tbody id="admin_filters_table" {{#unless is_admin}}class="required-text" data-empty="{{t 'No linkifiers set.' }}"{{/unless}}></tbody>
             </table>
         </div>
