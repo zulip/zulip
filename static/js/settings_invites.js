@@ -59,7 +59,7 @@ function populate_invites(invites_data) {
         admin_invites_list.set_container(invites_table);
         admin_invites_list.render();
     } else {
-        list_render.create(invites_table, invites_data.invites, {
+        var invites_list = list_render.create(invites_table, invites_data.invites, {
             name: "admin_invites_list",
             modifier: function (item) {
                 item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
@@ -76,7 +76,10 @@ function populate_invites(invites_data) {
                     return referrer_email_matched || invitee_email_matched;
                 },
             },
+            parent_container: $("#admin-invites-list").expectOne(),
         }).init();
+
+        invites_list.sort("alphabetic", "email");
     }
 
     loading.destroy_indicator($('#admin_page_invites_loading_indicator'));

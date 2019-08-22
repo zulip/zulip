@@ -7,14 +7,14 @@
     </div>
     <div class="clear-float"></div>
 
-    <div class="progressive-table-wrapper">
+    <div class="progressive-table-wrapper" data-simplebar data-list-render="admin_invites_list">
         <table class="table table-condensed table-striped">
             <thead>
-                <th>{{t "Email" }}</th>
-                <th>{{t "Invited by" }}</th>
-                <th>{{t "Invited at" }}</th>
-                <th>{{t "Invited as" }}</th>
-                <th>{{t "Actions" }}</th>
+                <th class="active" data-sort="alphabetic" data-sort-prop="email">{{t "Email" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="ref">{{t "Invited by" }}</th>
+                <th data-sort="numeric" data-sort-prop="invited">{{t "Invited at" }}</th>
+                <th data-sort="numeric" data-sort-prop="invited_as">{{t "Invited as" }}</th>
+                <th class="actions">{{t "Actions" }}</th>
             </thead>
             <tbody id="admin_invites_table" class="required-text thick admin_invites_table" data-empty="{{t 'No invites match your current filter.' }}"></tbody>
         </table>
