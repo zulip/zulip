@@ -62,14 +62,12 @@ Note that Zulip ignores common words like `a`, `the`, and about 100
 others. A quirk in Zulip's current implementation means that if all of your
 keywords are ignored, we'll return 0 search results.
 
-## Other notes
+## Messages sent before you joined
 
-* By default, search only displays messages that you actually
-  received. However, if your search is restricted to a stream where you have
-  [access to stream history](/help/stream-permissions), you can search for
-  messages from before you subscribed to the stream (or even joined your
-  Zulip organization).
+In most cases, Zulip only searches messages that you received. In particular,
+this means Zulip will not search messages sent before you joined.
 
-* To see the list of search operators in-app, click the **gear** (<i
-  class="fa fa-cog"></i>) icon in the upper right, and select
-  **Search operators**.
+However, if a) the search includes a `stream:` operator and b) that stream
+is either public or [private with shared history](/help/stream-permissions),
+Zulip will search the entire history of the stream, including messages
+that were sent before you joined.
