@@ -18,8 +18,8 @@ exports.populate_exports_table = function (exports) {
     }
 
     var exports_table = $('#admin_exports_table').expectOne();
-    var exports_list = list_render.create(exports_table, exports, {
-        name: "admin-exports-list",
+    var exports_list = list_render.create(exports_table, Object.values(exports), {
+        name: "admin_exports_list",
         modifier: function (data) {
             if (data.export_data.deleted_timestamp === undefined) {
                 return render_admin_export_list({
@@ -46,7 +46,7 @@ exports.populate_exports_table = function (exports) {
             },
         },
         parent_container: $("#data-exports").expectOne(),
-    });
+    }).init();
 
     exports_list.add_sort_function("user", function (a, b) {
         var a_name = people.get_full_name(a.acting_user_id).toLowerCase();

@@ -28,7 +28,9 @@
         </div>
     </form>
     {{/if}}
-    <div class="admin-table-wrapper">
+    <input type="hidden" class="search" placeholder="{{t 'Filter exports' }}"
+      aria-label="{{t 'Filter exports' }}"/>
+    <div class="progressive-table-wrapper" data-simplebar data-list-render="admin_exports_list">
         <table class="table table-condensed table-striped wrapped-table admin_exports_table">
             <thead>
                 <th class="active" data-sort="user">{{t "Requesting user" }}</th>
