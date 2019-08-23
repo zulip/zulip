@@ -32,10 +32,10 @@ in production.
 
 ### Installing the Zulip Botserver
 
-Install the `zulip_botserver` PyPI package using `pip`:
+Install the `zulip_botserver` package:
 
 ```
-pip install zulip_botserver
+pip3 install zulip_botserver
 ```
 
 ### Running a bot using the Zulip Botserver

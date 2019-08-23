@@ -25,7 +25,7 @@ You'll need:
 
 1. Download the bot's `zuliprc` configuration file to your computer.
 
-1. Download the `zulip_bots` Python package to your computer using `pip install zulip_bots`.
+1. Download the `zulip_bots` Python package to your computer using `pip3 install zulip_bots`.
 
      *Note: Click
      [here](
