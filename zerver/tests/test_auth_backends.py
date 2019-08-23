@@ -2678,6 +2678,20 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         hamlet = self.example_user('hamlet')
         self.assertFalse(hamlet.is_active)
 
+    @mock.patch("zproject.backends.ZulipLDAPAuthBackendBase.sync_full_name_from_ldap")
+    def test_dont_sync_disabled_ldap_user(self, fake_sync: mock.MagicMock) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'userAccountControl': ['2', ],
+            }
+        }
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'userAccountControl': 'userAccountControl'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+            fake_sync.assert_not_called()
+
     def test_reactivate_user(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
