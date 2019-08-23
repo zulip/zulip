@@ -425,20 +425,23 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
            In authentication contexts, this is overriden in ZulipLDAPAuthBackend.
         """
         (user, built) = super().get_or_build_user(username, ldap_user)
-        self.sync_avatar_from_ldap(user, ldap_user)
-        self.sync_full_name_from_ldap(user, ldap_user)
-        self.sync_custom_profile_fields_from_ldap(user, ldap_user)
         if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:
             user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
-            if user_disabled_in_ldap and user.is_active:
-                logging.info("Deactivating user %s because they are disabled in LDAP." %
-                             (user.email,))
-                do_deactivate_user(user)
+            if user_disabled_in_ldap:
+                if user.is_active:
+                    logging.info("Deactivating user %s because they are disabled in LDAP." %
+                                 (user.email,))
+                    do_deactivate_user(user)
+                # Do an early return to avoid trying to sync additional data.
                 return (user, built)
-            if not user_disabled_in_ldap and not user.is_active:
+            elif not user.is_active:
                 logging.info("Reactivating user %s because they are not disabled in LDAP." %
                              (user.email,))
                 do_reactivate_user(user)
+
+        self.sync_avatar_from_ldap(user, ldap_user)
+        self.sync_full_name_from_ldap(user, ldap_user)
+        self.sync_custom_profile_fields_from_ldap(user, ldap_user)
         return (user, built)
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
