@@ -315,8 +315,14 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
                                  flags=UserMessage.flags.read)
                      for message_id in message_ids_to_use
                      if message_id not in already_ids]
-
     UserMessage.objects.bulk_create(ums_to_create)
+
+    # set last n messages of new user to unread
+    last_n_msgs = 80
+    messages_to_flag_unread = message_ids_to_use[-last_n_msgs:]
+    UserMessage.objects.filter(user_profile=user_profile,
+                               message_id__in=messages_to_flag_unread).update(
+                                   flags=F('flags').bitand(~UserMessage.flags.read))
 
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
