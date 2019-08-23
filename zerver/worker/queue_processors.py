@@ -222,23 +222,24 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         logger.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
         do_send_confirmation_email(invitee, referrer)
 
-        # queue invitation reminder for two days from now.
-        link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
-        context = common_context(referrer)
-        context.update({
-            'activate_url': link,
-            'referrer_name': referrer.full_name,
-            'referrer_email': referrer.delivery_email,
-            'referrer_realm_name': referrer.realm.name,
-        })
-        send_future_email(
-            "zerver/emails/invitation_reminder",
-            referrer.realm,
-            to_emails=[invitee.email],
-            from_address=FromAddress.tokenized_no_reply_address(),
-            language=referrer.realm.default_language,
-            context=context,
-            delay=datetime.timedelta(days=2))
+        # queue invitation reminder
+        if settings.INVITATION_LINK_VALIDITY_DAYS >= 4:
+            link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
+            context = common_context(referrer)
+            context.update({
+                'activate_url': link,
+                'referrer_name': referrer.full_name,
+                'referrer_email': referrer.delivery_email,
+                'referrer_realm_name': referrer.realm.name,
+            })
+            send_future_email(
+                "zerver/emails/invitation_reminder",
+                referrer.realm,
+                to_emails=[invitee.email],
+                from_address=FromAddress.tokenized_no_reply_address(),
+                language=referrer.realm.default_language,
+                context=context,
+                delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2))
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):

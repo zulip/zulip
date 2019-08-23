@@ -1229,6 +1229,17 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER)
         self.assertEqual(len(email_jobs_to_deliver), 0)
 
+    def test_no_invitation_reminder_when_link_expires_quickly(self) -> None:
+        self.login(self.example_email('hamlet'))
+        # Check invitation reminder email is scheduled with 4 day link expiry
+        with self.settings(INVITATION_LINK_VALIDITY_DAYS=4):
+            self.invite('alice@zulip.com', ['Denmark'])
+        self.assertEqual(ScheduledEmail.objects.filter(type=ScheduledEmail.INVITATION_REMINDER).count(), 1)
+        # Check invitation reminder email is not scheduled with 3 day link expiry
+        with self.settings(INVITATION_LINK_VALIDITY_DAYS=3):
+            self.invite('bob@zulip.com', ['Denmark'])
+        self.assertEqual(ScheduledEmail.objects.filter(type=ScheduledEmail.INVITATION_REMINDER).count(), 1)
+
     # make sure users can't take a valid confirmation key from another
     # pathway and use it with the invitation url route
     def test_confirmation_key_of_wrong_type(self) -> None:
