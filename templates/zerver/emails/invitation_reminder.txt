@@ -7,4 +7,4 @@
 
 {{ _("This is the last reminder you'll receive for this invitation.") }}
 
-{% trans %}Contact us any time at {{ support_email }} if you run into trouble, have any feedback, or just want to chat!{% endtrans %}
+{% trans %}This invitation expires in two days. If the invitation expires, you'll need to ask {{ referrer_name }} for another one.{% endtrans %}
