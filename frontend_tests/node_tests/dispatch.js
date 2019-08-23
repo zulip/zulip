@@ -60,6 +60,7 @@ set_global('settings_exports', {
     populate_exports_table: function (exports) {
         return exports;
     },
+    clear_success_banner: noop,
 });
 
 // page_params is highly coupled to dispatching now

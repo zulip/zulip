@@ -12,6 +12,18 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+exports.clear_success_banner = function () {
+    var export_status = $('#export_status');
+    if (export_status.hasClass('alert-success')) {
+        // Politely remove our success banner if the export
+        // finishes before the view is closed.
+        export_status.fadeTo(200, 0);
+        setTimeout(function () {
+            export_status.hide();
+        }, 205);
+    }
+};
+
 exports.populate_exports_table = function (exports) {
     if (!meta.loaded) {
         return;
