@@ -1780,7 +1780,7 @@ class ArchivedReaction(AbstractReaction):
 # UserMessage is the largest table in a Zulip installation, even
 # though each row is only 4 integers.
 class AbstractUserMessage(models.Model):
-    bigint_id = models.BigIntegerField(null=True)  # type: Optional[int]
+    id = models.BigAutoField(primary_key=True)  # type: int
 
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     # The order here is important!  It's the order of fields in the bitfield.
