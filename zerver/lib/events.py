@@ -297,7 +297,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         for integration in WEBHOOK_INTEGRATIONS:
             realm_incoming_webhook_bots.append({
                 'name': integration.name,
-                'config': {c[1]: c[2] for c in integration.config_options}
+                'config': {c[1]: c[0] for c in integration.config_options}
             })
         state['realm_incoming_webhook_bots'] = realm_incoming_webhook_bots
 
