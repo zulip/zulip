@@ -1,3 +1,5 @@
+import httpretty
+import functools
 from contextlib import contextmanager
 from email.utils import parseaddr
 from fakeldap import MockLDAP
@@ -851,6 +853,29 @@ class WebhookTestCase(ZulipTestCase):
         self.do_test_message(msg, expected_message)
 
         return msg
+
+    def register_callbacks(self, url_root: str, callbacks: List[Tuple[str, str, str]]) -> None:
+        # callbacks is to be of the form [(endpoint, method, filename), ...]
+        # also, note that the test method using this needs to be wrapped with
+        # "httpretty.activate" or use the "with httpretty.enabled()" syntax.
+        callbacks_filepath_template = os.path.join(
+            os.path.dirname(__file__), "../webhooks/%s/fixtures/callbacks/{}.json" % (self.FIXTURE_DIR_NAME,)
+        )
+
+        def callback_handler(request: HttpRequest, uri: str, headers: Dict[str, str], path: str) -> List[object]:
+            with open(callbacks_filepath_template.format(path), "r") as f:
+                data = ujson.dumps(ujson.loads(f.read()))
+                return [200, headers, data]
+
+        for callback in callbacks:
+            url_endpoint = callback[0]
+            method = callback[1].upper()
+            if callback[0].startswith('/') and url_root:
+                url_endpoint = url_root + url_endpoint
+            # We may, in the future, need to determine the headers dynamically too.
+            httpretty.register_uri(method, url_endpoint, body=functools.partial(callback_handler, path=callback[2]))
+            # fun fact: if we tried using a simple lambda function instead of resorting to using this more
+            # roundabout functools.partial method, then we would have run into some nasty mutation issues.
 
     def send_and_test_private_message(self, fixture_name: str, expected_topic: str=None,
                                       expected_message: str=None, content_type: str="application/json",
