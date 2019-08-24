@@ -9,10 +9,16 @@
             padding: 3px 10px;
         }
 
-        .compose_mobile_button span {
-            font-size: 1.2em !important;
-            font-weight: 400;
-            line-height: 1em;
+        .compose_mobile_button {
+            span {
+                font-size: 1.2em !important;
+                font-weight: 400;
+                line-height: 1em;
+            }
+
+            @media (min-width: 551px) {
+                display: none;
+            }
         }
 
         .drafts-link {
@@ -25,6 +31,13 @@
             padding: 3px 12px;
             font-weight: 400;
             display: none;
+        }
+
+        @media (max-width: 550px) {
+            .compose_stream_button,
+            .compose_private_button {
+                display: none;
+            }
         }
     }
 }
@@ -511,17 +524,4 @@ a#undo_markdown_preview {
 .compose_mobile_stream_button i,
 .compose_mobile_private_button i {
     margin-right: 4px;
-}
-
-@media (max-width: 550px) {
-    #compose_buttons .compose_stream_button,
-    #compose_buttons .compose_private_button {
-        display: none;
-    }
-}
-
-@media (min-width: 551px) {
-    #compose_buttons .compose_mobile_button {
-        display: none;
-    }
 }
