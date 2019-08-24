@@ -86,7 +86,7 @@ def do_yarn_install(target_path, yarn_args, success_stamp, stdout=None, stderr=N
     if os.environ.get('CUSTOM_CA_CERTIFICATES'):
         run([YARN_BIN, "config", "set", "cafile", os.environ['CUSTOM_CA_CERTIFICATES']],
             stdout=stdout, stderr=stderr)
-    run([YARN_BIN, "install", "--non-interactive", "--frozen-lockfile"] + yarn_args,
+    run([YARN_BIN, "install", "--non-interactive", "--frozen-lockfile", "--ignore-scripts"] + yarn_args,
         cwd=target_path, stdout=stdout, stderr=stderr)
     with open(success_stamp, 'w'):
         pass
