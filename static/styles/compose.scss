@@ -2,14 +2,6 @@
     float: left;
 }
 
-.alert-draft {
-    font-size: 14px;
-    color: hsl(170, 48%, 54%);
-    padding: 3px 12px;
-    font-weight: 400;
-    display: none;
-}
-
 #compose_buttons {
     text-align: right;
 
@@ -25,6 +17,14 @@
             font-size: 1.2em !important;
             font-weight: 400;
             line-height: 1em;
+        }
+
+        .alert-draft {
+            font-size: 14px;
+            color: hsl(170, 48%, 54%);
+            padding: 3px 12px;
+            font-weight: 400;
+            display: none;
         }
     }
 }
