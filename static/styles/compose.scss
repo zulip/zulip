@@ -2,10 +2,6 @@
     float: left;
 }
 
-.new_message_button {
-    padding-top: 1.1em;
-}
-
 .alert-draft {
     font-size: 14px;
     color: hsl(170, 48%, 54%);
@@ -16,6 +12,10 @@
 
 #compose_buttons {
     text-align: right;
+
+    .new_message_button {
+        padding-top: 1.1em;
+    }
 
     .new_message_button .compose_mobile_button span {
         font-size: 1.2em !important;
