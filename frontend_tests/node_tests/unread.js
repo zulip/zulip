@@ -50,6 +50,11 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
     });
     notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, expected_notifiable_count);
+    set_global('page_params', {
+        desktop_icon_count_display: 3,
+    });
+    notifiable_counts = unread.get_notifiable_count();
+    assert.deepEqual(notifiable_counts, 0);
 }
 
 run_test('empty_counts_while_narrowed', () => {
