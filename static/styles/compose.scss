@@ -329,13 +329,12 @@ textarea.new_message_textarea,
     box-shadow: none;
     -webkit-box-shadow: none;
     transition: border 0.2s ease;
-}
 
-textarea.new_message_textarea:focus,
-.compose_table .recipient_box:focus {
-    border: 1px solid hsl(0, 0%, 67%);
-    box-shadow: none;
-    -webkit-box-shadow: none;
+    &:focus {
+        border: 1px solid hsl(0, 0%, 67%);
+        box-shadow: none;
+        -webkit-box-shadow: none;
+    }
 }
 
 #stream_message_recipient_stream.recipient_box:focus {
