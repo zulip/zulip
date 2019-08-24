@@ -348,14 +348,14 @@ input.recipient_box {
     border-radius: 0px 3px 3px 0px;
     border-left: 0px;
     min-width: 120px;
-}
 
-#stream_message_recipient_stream.recipient_box:focus {
-    border-left: none;
-}
+    &:focus {
+        border-left: none;
+    }
 
-#stream_message_recipient_stream.recipient_box.lock-padding {
-    padding-left: 18px;
+    &.lock-padding {
+        padding-left: 18px;
+    }
 }
 
 #stream_message_recipient_topic.recipient_box {
