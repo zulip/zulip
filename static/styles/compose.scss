@@ -423,10 +423,10 @@ a.message-control-button {
     padding-top: 5px;
     text-align: center;
     float: left;
-}
 
-a.message-control-button:hover {
-    opacity: 1;
+    &:hover {
+        opacity: 1;
+    }
 }
 
 .drag {
