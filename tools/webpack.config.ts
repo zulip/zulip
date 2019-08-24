@@ -1,4 +1,5 @@
 import { resolve } from 'path';
+import * as Sass from 'sass';
 import * as BundleTracker from 'webpack-bundle-tracker';
 import * as webpack from 'webpack';
 // The devServer member of webpack.Configuration is managed by the
@@ -88,6 +89,7 @@ export default (env?: string): webpack.Configuration[] => {
                         {
                             loader: 'sass-loader',
                             options: {
+                                implementation: Sass,
                                 sourceMap: true,
                             },
                         },
