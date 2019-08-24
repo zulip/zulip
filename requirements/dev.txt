@@ -63,6 +63,7 @@ docker==4.0.2             # via moto
 docutils==0.14            # via botocore, recommonmark, sphinx
 ecdsa==0.13.2             # via python-jose, sshpubkeys
 fakeldap==0.6.1
+# future==0.17.1            # via commonmark, python-jose, python-twitter
 gitlint==0.12.0
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2

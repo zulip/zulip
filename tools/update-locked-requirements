@@ -21,9 +21,12 @@ compile_requirements () {
     sed -i 's/-e //' "$output"
 
     if [ "$python_version" != "py2" ]; then
-        # pip-tools bug; future, futures are obsolete in python3
-        sed -i '/futures==/d' "$output"
-        sed -i '/future==/d' "$output"
+        # Remove an unnecessary future requirement declared by commonmark,
+        # python-jose, and python-twitter.
+        # https://github.com/readthedocs/commonmark.py/pull/188
+        # https://github.com/mpdavis/python-jose/pull/134
+        # https://github.com/bear/python-twitter/pull/614
+        sed -i 's/^future==/# &/' "$output"
     fi
 
     (
