@@ -1,31 +1,9 @@
-.compose-content {
-    border-top: 1px solid hsla(0, 0%, 0%, 0.07);
-    transition: background-color 200ms linear;
-}
-
-.ztable_comp_col1 {
-    width: 10px;
-}
-
 #compose_controls .drafts-link {
     float: left;
 }
 
 .new_message_button {
     padding-top: 1.1em;
-}
-
-.message_comp {
-    display: none;
-    padding: 10px 10px 8px 5px;
-}
-
-.autocomplete_secondary {
-    opacity: 0.8;
-}
-
-.active .autocomplete_secondary {
-    opacity: 1;
 }
 
 .alert-draft {
@@ -49,6 +27,28 @@
 #compose_buttons .button.small {
     font-size: 1em;
     padding: 3px 10px;
+}
+
+.compose-content {
+    border-top: 1px solid hsla(0, 0%, 0%, 0.07);
+    transition: background-color 200ms linear;
+}
+
+.ztable_comp_col1 {
+    width: 10px;
+}
+
+.message_comp {
+    display: none;
+    padding: 10px 10px 8px 5px;
+}
+
+.autocomplete_secondary {
+    opacity: 0.8;
+}
+
+.active .autocomplete_secondary {
+    opacity: 1;
 }
 
 .message_header_colorblock {
