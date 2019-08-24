@@ -15,18 +15,18 @@
 
     .new_message_button {
         padding-top: 1.1em;
+
+        .compose_mobile_button span {
+            font-size: 1.2em !important;
+            font-weight: 400;
+            line-height: 1em;
+        }
     }
 
-    .new_message_button .compose_mobile_button span {
-        font-size: 1.2em !important;
-        font-weight: 400;
-        line-height: 1em;
+    .button.small {
+        font-size: 1em;
+        padding: 3px 10px;
     }
-}
-
-#compose_buttons .button.small {
-    font-size: 1em;
-    padding: 3px 10px;
 }
 
 .compose-content {
