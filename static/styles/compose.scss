@@ -367,21 +367,21 @@ input.recipient_box {
     position: relative;
     font-size: 0.8em;
     height: 2.2em;
-}
 
-#send_controls .compose_checkbox_label {
-    color: hsl(0, 0%, 67%);
-    margin-right: 2px;
-}
+    .compose_checkbox_label {
+        color: hsl(0, 0%, 67%);
+        margin-right: 2px;
+    }
 
-#send_controls #compose-send-button {
-    border-radius: 4px;
-    padding-top: 3px;
-    padding-bottom: 3px;
-    font-weight: 600;
-    border: 1px solid hsl(170, 68%, 41%);
-    background-color: hsl(170, 48%, 54%);
-    color: hsl(0, 0%, 100%);
+    #compose-send-button {
+        border-radius: 4px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        font-weight: 600;
+        border: 1px solid hsl(170, 68%, 41%);
+        background-color: hsl(170, 48%, 54%);
+        color: hsl(0, 0%, 100%);
+    }
 }
 
 #compose-send-button:focus {
