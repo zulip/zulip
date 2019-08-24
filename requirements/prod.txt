@@ -119,3 +119,7 @@ uwsgi==2.0.17.1
 virtualenv-clone==0.5.3
 wcwidth==0.1.7            # via prompt-toolkit
 yamole==2.1.6
+
+# The following packages are considered to be unsafe in a requirements file:
+# pip==19.2.2
+# setuptools==41.2.0        # via ipython, markdown
