@@ -14,12 +14,6 @@ compile_requirements () {
 
     pip-compile --quiet --output-file "$output" "$source"
 
-    # Remove the editable flag.  It's there because pip-compile can't
-    # yet do without it (see
-    # https://github.com/jazzband/pip-tools/issues/272 upstream), but
-    # in the output of pip-compile it's no longer needed.
-    sed -i 's/-e //' "$output"
-
     if [ "$python_version" != "py2" ]; then
         # Remove an unnecessary future requirement declared by commonmark,
         # python-jose, and python-twitter.
