@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, parse_lsb_release, \
+    get_dev_uuid_var_path, FAIL, parse_os_release, \
     overwrite_symlink
 from scripts.lib.setup_venv import (
     VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
@@ -30,15 +30,15 @@ if TYPE_CHECKING:
     from typing_extensions import NoReturn
 
 SUPPORTED_PLATFORMS = {
-    "Ubuntu": [
-        "xenial",
-        "bionic",
-        "cosmic",
-        "disco",
+    "ubuntu": [
+        "16.04",  # xenial
+        "18.04",  # bionic
+        "18.10",  # cosmic
+        "19.04",  # disco
     ],
-    "Debian": [
-        "stretch",
-        "buster",
+    "debian": [
+        "9",   # stretch
+        "10",  # buster
     ],
     "CentOS": [
         "centos7",
@@ -104,18 +104,18 @@ else:
     sys.exit(1)
 
 # Ideally we wouldn't need to install a dependency here, before we
-# know the codename.
+# know the OS version.
 is_rhel_based = os.path.exists("/etc/redhat-release")
 if (not is_rhel_based) and (not os.path.exists("/usr/bin/lsb_release")):
     run_as_root(["apt-get", "install", "-y", "lsb-release"])
 
-distro_info = parse_lsb_release()
-vendor = distro_info['DISTRIB_ID']
-codename = distro_info['DISTRIB_CODENAME']
+distro_info = parse_os_release()
+vendor = distro_info['ID']
+os_version = distro_info['VERSION_ID']
 family = distro_info['DISTRIB_FAMILY']
-if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
-    logging.critical("Unsupported platform: {} {}".format(vendor, codename))
-    if codename == 'trusty':
+if not (vendor in SUPPORTED_PLATFORMS and os_version in SUPPORTED_PLATFORMS[vendor]):
+    logging.critical("Unsupported platform: {} {}".format(vendor, os_version))
+    if vendor == 'ubuntu' and os_version == '14.04':
         print()
         print("Ubuntu Trusty reached end-of-life upstream and is no longer a supported platform for Zulip")
         if os.path.exists('/home/vagrant'):
@@ -124,17 +124,17 @@ if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor
     sys.exit(1)
 
 POSTGRES_VERSION_MAP = {
-    "stretch": "9.6",
-    "buster": "11",
-    "xenial": "9.5",
-    "bionic": "10",
-    "cosmic": "10",
-    "disco": "11",
-    "centos7": "10",
-    "fedora29": "10",
-    "rhel7": "10",
+    ("debian", "9"): "9.6",
+    ("debian", "10"): "11",
+    ("ubuntu", "16.04"): "9.5",
+    ("ubuntu", "18.04"): "10",
+    ("ubuntu", "18.10"): "10",
+    ("ubuntu", "19.04"): "11",
+    ("CentOS", "centos7"): "10",
+    ("Fedora", "fedora29"): "10",
+    ("RedHat", "rhel7"): "10",
 }
-POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
+POSTGRES_VERSION = POSTGRES_VERSION_MAP[(vendor, os_version)]
 
 COMMON_DEPENDENCIES = [
     "memcached",
@@ -173,43 +173,42 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
 
 BUILD_TSEARCH_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor in ["Ubuntu", "Debian"]:
-    if codename in ("cosmic", "disco"):
-        # For platforms without a tsearch-extras package distributed
-        # from our PPA, we need to build from source.
-        BUILD_TSEARCH_FROM_SOURCE = True
-        SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
-            pkg.format(POSTGRES_VERSION) for pkg in [
-                "postgresql-{0}",
-                "postgresql-{0}-pgroonga",
-                # Dependency for building tsearch_extras from source
-                "postgresql-server-dev-{0}",
-            ]
+if vendor == "ubuntu" and os_version in ("18.10", "19.04"):
+    # For platforms without a tsearch-extras package distributed
+    # from our PPA, we need to build from source.
+    BUILD_TSEARCH_FROM_SOURCE = True
+    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
+        pkg.format(POSTGRES_VERSION) for pkg in [
+            "postgresql-{0}",
+            "postgresql-{0}-pgroonga",
+            # Dependency for building tsearch_extras from source
+            "postgresql-server-dev-{0}",
         ]
-    elif codename == "buster":
-        # For platforms without a tsearch-extras package distributed
-        # from our PPA or a pgroonga release, we need to build both
-        # from source.
-        BUILD_PGROONGA_FROM_SOURCE = True
-        BUILD_TSEARCH_FROM_SOURCE = True
-        SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
-            pkg.format(POSTGRES_VERSION) for pkg in [
-                "postgresql-{0}",
-                # Dependency for building tsearch_extras from source
-                "postgresql-server-dev-{0}",
-                # Dependency for building pgroonga from source
-                "libgroonga-dev",
-                "libmsgpack-dev",
-            ]
+    ]
+elif vendor == 'debian' and os_version == "10":
+    # For platforms without a tsearch-extras package distributed
+    # from our PPA or a pgroonga release, we need to build both
+    # from source.
+    BUILD_PGROONGA_FROM_SOURCE = True
+    BUILD_TSEARCH_FROM_SOURCE = True
+    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
+        pkg.format(POSTGRES_VERSION) for pkg in [
+            "postgresql-{0}",
+            # Dependency for building tsearch_extras from source
+            "postgresql-server-dev-{0}",
+            # Dependency for building pgroonga from source
+            "libgroonga-dev",
+            "libmsgpack-dev",
         ]
-    else:
-        SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
-            pkg.format(POSTGRES_VERSION) for pkg in [
-                "postgresql-{0}",
-                "postgresql-{0}-pgroonga",
-                "postgresql-{0}-tsearch-extras",
-            ]
+    ]
+elif vendor in ["ubuntu", "debian"]:
+    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
+        pkg.format(POSTGRES_VERSION) for pkg in [
+            "postgresql-{0}",
+            "postgresql-{0}-pgroonga",
+            "postgresql-{0}-tsearch-extras",
         ]
+    ]
 elif vendor in ["CentOS", "RedHat"]:
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
@@ -255,7 +254,7 @@ def install_system_deps():
 
     if family == 'redhat':
         install_yum_deps(deps_to_install)
-    elif vendor in ["Debian", "Ubuntu"]:
+    elif vendor in ["debian", "ubuntu"]:
         install_apt_deps(deps_to_install)
     else:
         raise AssertionError("Invalid vendor")
@@ -352,7 +351,7 @@ def main(options):
 
     for apt_depedency in SYSTEM_DEPENDENCIES:
         sha_sum.update(apt_depedency.encode('utf8'))
-    if vendor in ["Ubuntu", "Debian"]:
+    if vendor in ["ubuntu", "debian"]:
         sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
     else:
         # hash the content of setup-yum-repo and build-*

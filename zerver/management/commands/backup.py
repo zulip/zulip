@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 
-from scripts.lib.zulip_tools import parse_lsb_release, run, TIMESTAMP_FORMAT
+from scripts.lib.zulip_tools import parse_os_release, run, TIMESTAMP_FORMAT
 from version import ZULIP_VERSION
 from zerver.lib.management import ZulipBaseCommand
 from zerver.logging_handlers import try_git_describe
@@ -46,7 +46,7 @@ class Command(ZulipBaseCommand):
 
             with open(os.path.join(tmp, "zulip-backup", "os-version"), "w") as f:
                 print(
-                    "{DISTRIB_ID} {DISTRIB_CODENAME}".format(**parse_lsb_release()),
+                    "{ID} {VERSION_ID}".format(**parse_os_release()),
                     file=f,
                 )
             members.append("zulip-backup/os-version")

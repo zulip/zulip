@@ -8,7 +8,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
-from scripts.lib.zulip_tools import overwrite_symlink, run, parse_lsb_release
+from scripts.lib.zulip_tools import overwrite_symlink, run, parse_os_release
 from scripts.lib.setup_venv import (
     setup_virtualenv, VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
     FEDORA_VENV_DEPENDENCIES
@@ -19,8 +19,8 @@ parser.add_argument("deploy_path")
 args = parser.parse_args()
 
 # install dependencies for setting up the virtualenv
-distro_info = parse_lsb_release()
-vendor = distro_info['DISTRIB_ID']
+distro_info = parse_os_release()
+vendor = distro_info['ID']
 family = distro_info['DISTRIB_FAMILY']
 if family == 'debian':
     run(["apt-get", "-y", "install"] + VENV_DEPENDENCIES)
@@ -31,7 +31,7 @@ elif family == 'redhat':
         _VENV_DEPS = FEDORA_VENV_DEPENDENCIES
     run(["yum", "-y", "install"] + _VENV_DEPS)
 else:
-    print("Unsupported platform: {}".format(vendor))
+    print("Unsupported platform: {}".format(family))
     sys.exit(1)
 
 python_version = sys.version_info[0]

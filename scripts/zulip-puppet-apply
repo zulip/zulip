@@ -5,7 +5,7 @@ import sys
 import subprocess
 import configparser
 import re
-from lib.zulip_tools import parse_lsb_release, assert_running_as_root
+from lib.zulip_tools import parse_os_release, assert_running_as_root
 
 assert_running_as_root()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,8 +21,8 @@ config = configparser.RawConfigParser()
 config.read("/etc/zulip/zulip.conf")
 
 if not os.path.exists("/etc/puppet/hiera.yaml"):
-    codename = parse_lsb_release()['DISTRIB_CODENAME']
-    if codename in ["stretch", "xenial"]:
+    distro_info = parse_os_release()
+    if (distro_info['ID'], distro_info['VERSION_ID']) in [('debian', '9'), ('ubuntu', '16.04')]:
         # Suppress warnings in old puppet about hiera.yaml not existing.
         open("/etc/puppet/hiera.yaml", "a").close()
 
