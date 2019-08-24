@@ -12,7 +12,7 @@ compile_requirements () {
     output="$2"
     python_version="$3"
 
-    pip-compile --output-file "$output" "$source"
+    pip-compile --quiet --output-file "$output" "$source"
 
     # Remove the editable flag.  It's there because pip-compile can't
     # yet do without it (see

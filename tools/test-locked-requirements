@@ -31,8 +31,7 @@ def print_diff(path_file1, path_file2):
                 fromfile=path_file1,
                 tofile=path_file2,
             )
-    for line in diff:
-        print(line)
+    sys.stdout.writelines(diff)
 
 def test_locked_requirements(tmp_dir):
     # type: (str) -> bool
@@ -44,8 +43,7 @@ def test_locked_requirements(tmp_dir):
         locked_file = os.path.join(REQS_DIR, fn)
         test_locked_file = os.path.join(tmp_dir, fn)
         shutil.copyfile(locked_file, test_locked_file)
-    subprocess.check_call([os.path.join(TOOLS_DIR, 'update-locked-requirements'), '--output-dir', tmp_dir],
-                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_call([os.path.join(TOOLS_DIR, 'update-locked-requirements'), '--output-dir', tmp_dir])
 
     same = True
     for fn in LOCKED_REQS_FILE_NAMES:
@@ -114,7 +112,7 @@ def main():
         for fn in LOCKED_REQS_FILE_NAMES:
             locked_file = os.path.join(REQS_DIR, fn)
             test_locked_file = os.path.join(tmp_dir, fn)
-            print_diff(test_locked_file, locked_file)
+            print_diff(locked_file, test_locked_file)
         # Flush the output to ensure we print the error at the end.
         sys.stdout.flush()
         raise Exception("It looks like you have updated some python dependencies but haven't "
