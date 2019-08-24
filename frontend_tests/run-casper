@@ -65,6 +65,8 @@ assert_provisioning_status_ok(options.force)
 
 os.chdir(ZULIP_PATH)
 
+subprocess.check_call(['node', 'node_modules/phantomjs-prebuilt/install.js'])
+
 os.makedirs('var/casper', exist_ok=True)
 
 for f in glob.glob('var/casper/casper-failure*.png'):
