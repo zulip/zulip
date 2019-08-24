@@ -64,13 +64,6 @@
     opacity: 1;
 }
 
-.message_header_colorblock {
-    border-radius: 3px 0px 0px 0px;
-    /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
-    box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 20%), inset 2px 0px 1px -2px hsl(0, 0%, 20%) !important;
-    width: 10px;
-}
-
 .compose_table {
     .message_header_colorblock,
     .message_header {
@@ -79,6 +72,11 @@
     }
 
     .message_header_colorblock {
+        border-radius: 3px 0px 0px 0px;
+        /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
+        box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 20%), inset 2px 0px 1px -2px hsl(0, 0%, 20%) !important;
+        width: 10px;
+
         &,
         &.message_header_private_message {
             border-radius: 3px 0px 0px 3px;
