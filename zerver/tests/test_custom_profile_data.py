@@ -9,6 +9,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.models import CustomProfileField, \
     custom_profile_fields_for_realm, CustomProfileFieldValue, get_realm
+from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 import ujson
 
 class CustomProfileFieldTestCase(ZulipTestCase):
@@ -118,6 +119,53 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             'java': {'text': 'Java', 'order': '2'},
         })
         result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+    def test_create_default_external_account_field(self) -> None:
+        self.login(self.example_email("iago"))
+        realm = get_realm("zulip")
+        field_type = CustomProfileField.EXTERNAL_ACCOUNT  # type: int
+        field_data = ujson.dumps({
+            'subtype': 'twitter'
+        })  # type: str
+        invalid_field_name = "Not required field name"  # type: str
+        invalid_field_hint = "Not required field hint"  # type: str
+
+        result = self.client_post("/json/realm/profile_fields",
+                                  info=dict(
+                                      field_type=field_type,
+                                      field_data=field_data,
+                                      hint=invalid_field_hint,
+                                      name=invalid_field_name,
+                                  ))
+        self.assert_json_success(result)
+        # Sliently overwrite name and hint with values set in default fields dict
+        # for default custom external account fields.
+        with self.assertRaises(CustomProfileField.DoesNotExist):
+            field = CustomProfileField.objects.get(name=invalid_field_name, realm=realm)
+        # The field is created with 'Twitter' name as per values in default fields dict
+        field = CustomProfileField.objects.get(name='Twitter')
+        self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS['twitter']['name'])
+        self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS['twitter']['hint'])
+
+        result = self.client_delete("/json/realm/profile_fields/{}".format(field.id))
+        self.assert_json_success(result)
+
+        # Should also work without name or hint and only external field type and subtype data
+        result = self.client_post("/json/realm/profile_fields",
+                                  info=dict(field_type=field_type, field_data=field_data))
+        self.assert_json_success(result)
+
+        # Default external account field data cannot be updated
+        field = CustomProfileField.objects.get(name="Twitter", realm=realm)
+        result = self.client_patch(
+            "/json/realm/profile_fields/{}".format(field.id),
+            info={'name': 'Twitter username',
+                  'field_type': CustomProfileField.EXTERNAL_ACCOUNT}
+        )
+        self.assert_json_error(result, 'Default custom field cannot be updated.')
+
+        result = self.client_delete("/json/realm/profile_fields/{}".format(field.id))
         self.assert_json_success(result)
 
     def test_create_external_account_field(self) -> None:
@@ -297,7 +345,6 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-
         result = self.client_patch(
             "/json/realm/profile_fields/100",
             info={'name': 'Phone Number',

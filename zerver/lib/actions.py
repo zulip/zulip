@@ -40,6 +40,7 @@ from zerver.lib.emoji import emoji_name_to_emoji_code, get_emoji_file_name
 from zerver.lib.exceptions import StreamDoesNotExistError, \
     StreamWithIDDoesNotExistError
 from zerver.lib.export import get_realm_exports_serialized
+from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.message import (
     access_message,
@@ -5375,6 +5376,19 @@ def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
                  op=operation,
                  fields=[f.as_dict() for f in fields])
     send_event(realm, event, active_user_ids(realm.id))
+
+def try_add_realm_default_custom_profile_field(realm: Realm,
+                                               field_subtype: str) -> CustomProfileField:
+    field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
+    field = CustomProfileField(realm=realm, name=field_data['name'],
+                               field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+                               hint=field_data['hint'],
+                               field_data=ujson.dumps(dict(subtype=field_subtype)))
+    field.save()
+    field.order = field.id
+    field.save(update_fields=['order'])
+    notify_realm_custom_profile_fields(realm, 'add')
+    return field
 
 def try_add_realm_custom_profile_field(realm: Realm, name: str, field_type: int,
                                        hint: str='',
