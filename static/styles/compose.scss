@@ -129,6 +129,13 @@
     .messagebox {
         box-shadow: none !important;
     }
+
+    .drafts-link {
+        position: relative;
+        margin-right: 1em;
+        margin-left: 5px;
+        top: 2px;
+    }
 }
 
 #send_message_form {
@@ -395,13 +402,6 @@ input.recipient_box {
 
 #private-message {
     align-items: center;
-}
-
-.compose_table .drafts-link {
-    position: relative;
-    margin-right: 1em;
-    margin-left: 5px;
-    top: 2px;
 }
 
 #sending-indicator {
