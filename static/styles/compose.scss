@@ -139,19 +139,19 @@ table.compose_table {
 
 #send_message_form {
     margin: 0px;
-}
 
-#send_message_form .messagebox {
-    /* normally 5px 14px; pull in the right and bottom a bit */
-    cursor: default;
-    padding: 0px;
-    background: none;
-    box-shadow: none;
-    border: none;
-}
+    .messagebox {
+        /* normally 5px 14px; pull in the right and bottom a bit */
+        cursor: default;
+        padding: 0px;
+        background: none;
+        box-shadow: none;
+        border: none;
+    }
 
-#send_message_form .message_content {
-    margin-right: 0px;
+    .message_content {
+        margin-right: 0px;
+    }
 }
 
 #below-compose-content {
