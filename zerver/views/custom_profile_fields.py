@@ -12,6 +12,7 @@ from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,
                                 do_update_user_custom_profile_data,
                                 try_reorder_realm_custom_profile_fields,
+                                try_add_realm_default_custom_profile_field,
                                 check_remove_custom_profile_field_value)
 from zerver.lib.response import json_success, json_error
 from zerver.lib.types import ProfileFieldData
@@ -57,13 +58,24 @@ def validate_custom_field_data(field_type: int,
     if error:
         raise JsonableError(error)
 
+def is_default_external_field(field_type: int, field_data: ProfileFieldData) -> bool:
+    if field_type != CustomProfileField.EXTERNAL_ACCOUNT:
+        return False
+    if field_data['subtype'] == 'custom':
+        return False
+    return True
+
 def validate_custom_profile_field(name: str, hint: str, field_type: int,
                                   field_data: ProfileFieldData) -> None:
     # Validate field data
     validate_custom_field_data(field_type, field_data)
 
-    # Validate field name, hint and type
-    validate_field_name_and_hint(name, hint)
+    if not is_default_external_field(field_type, field_data):
+        # If field is default external field then we will fetch all data
+        # from our default field dictionary, so no need to validate name or hint
+        # Validate field name, hint if not default external account field
+        validate_field_name_and_hint(name, hint)
+
     field_types = [i[0] for i in CustomProfileField.FIELD_TYPE_CHOICES]
     if field_type not in field_types:
         raise JsonableError(_("Invalid field type."))
@@ -72,22 +84,30 @@ def validate_custom_profile_field(name: str, hint: str, field_type: int,
 @has_request_variables
 def create_realm_custom_profile_field(request: HttpRequest,
                                       user_profile: UserProfile,
-                                      name: str=REQ(),
+                                      name: str=REQ(default=''),
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=ujson.loads),
                                       field_type: int=REQ(validator=check_int)) -> HttpResponse:
-
     validate_custom_profile_field(name, hint, field_type, field_data)
     try:
-        field = try_add_realm_custom_profile_field(
-            realm=user_profile.realm,
-            name=name,
-            field_data=field_data,
-            field_type=field_type,
-            hint=hint,
-        )
-        return json_success({'id': field.id})
+        if is_default_external_field(field_type, field_data):
+            field_subtype = ''  # type: str
+            field_subtype = field_data['subtype']  # type: ignore # key for "Union[Dict[str, str], str]" can be str
+            field = try_add_realm_default_custom_profile_field(
+                realm=user_profile.realm,
+                field_subtype=field_subtype,
+            )
+            return json_success({'id': field.id})
+        else:
+            field = try_add_realm_custom_profile_field(
+                realm=user_profile.realm,
+                name=name,
+                field_data=field_data,
+                field_type=field_type,
+                hint=hint,
+            )
+            return json_success({'id': field.id})
     except IntegrityError:
         return json_error(_("A field with that label already exists."))
 
@@ -107,7 +127,7 @@ def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
 @has_request_variables
 def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
                                       field_id: int,
-                                      name: str=REQ(),
+                                      name: str=REQ(default=''),
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=ujson.loads),
@@ -117,6 +137,10 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
         field = CustomProfileField.objects.get(realm=realm, id=field_id)
     except CustomProfileField.DoesNotExist:
         return json_error(_('Field id {id} not found.').format(id=field_id))
+
+    if field.field_type == CustomProfileField.EXTERNAL_ACCOUNT:
+        if is_default_external_field(field.field_type, ujson.loads(field.field_data)):
+            return json_error(_("Default custom field cannot be updated."))
 
     validate_custom_profile_field(name, hint, field.field_type, field_data)
     try:

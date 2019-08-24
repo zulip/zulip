@@ -8,14 +8,26 @@ from zerver.lib.validator import check_required_string, \
     check_external_account_url_pattern, check_dict_only
 from zerver.lib.types import ProfileFieldData
 
+# Default external account fields are by default avaliable
+# to realm admins, where realm admin only need to select
+# the default field and other values(i.e. name, url) will be
+# fetch from this dictionary.
+# text: Field text for admins - custom profile field in org settngs view
+# name: Field label or name - user profile in user settings view
+# hint: Field hint for realm users
+# url_patter: Field url linkifier
 DEFAULT_EXTERNAL_ACCOUNTS = {
     "twitter": {
         "text": "Twitter",
-        "url_pattern": "https://twitter.com/%(username)s"
+        "url_pattern": "https://twitter.com/%(username)s",
+        "name": "Twitter",
+        "hint": "Enter your Twitter username",
     },
     "github": {
         "text": 'GitHub',
-        "url_pattern": "https://github.com/%(username)s"
+        "url_pattern": "https://github.com/%(username)s",
+        "name": "GitHub",
+        "hint": "Enter your GitHub username",
     },
 }
 
