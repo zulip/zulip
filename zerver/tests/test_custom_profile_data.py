@@ -11,7 +11,7 @@ from zerver.models import CustomProfileField, \
     custom_profile_fields_for_realm, CustomProfileFieldValue, get_realm
 import ujson
 
-class CustomProfileFieldTest(ZulipTestCase):
+class CustomProfileFieldTestCase(ZulipTestCase):
     def setUp(self) -> None:
         self.realm = get_realm("zulip")
         self.original_count = len(custom_profile_fields_for_realm(self.realm.id))
@@ -21,28 +21,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         field_ids = [field.id for field in fields]
         return (field_id in field_ids)
 
-    def test_list(self) -> None:
-        self.login(self.example_email("iago"))
-        result = self.client_get("/json/realm/profile_fields")
-        self.assert_json_success(result)
-        self.assertEqual(200, result.status_code)
-        content = result.json()
-        self.assertEqual(len(content["custom_fields"]), self.original_count)
-
-    def test_list_order(self) -> None:
-        self.login(self.example_email("iago"))
-        realm = get_realm('zulip')
-        order = (
-            CustomProfileField.objects.filter(realm=realm)
-            .order_by('-order')
-            .values_list('order', flat=True)
-        )
-        try_reorder_realm_custom_profile_fields(realm, order)
-        result = self.client_get("/json/realm/profile_fields")
-        content = result.json()
-        self.assertListEqual(content["custom_fields"],
-                             sorted(content["custom_fields"], key=lambda x: -x["id"]))
-
+class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_create(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
@@ -238,6 +217,14 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "A field with that label already exists.")
 
+    def test_create_field_of_type_user(self) -> None:
+        self.login(self.example_email("iago"))
+        data = {"name": "Your mentor",
+                "field_type": CustomProfileField.USER,
+                }
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
     def test_not_realm_admin(self) -> None:
         self.login(self.example_email("hamlet"))
         result = self.client_post("/json/realm/profile_fields")
@@ -245,6 +232,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_delete("/json/realm/profile_fields/1")
         self.assert_json_error(result, 'Must be an organization administrator')
 
+class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_delete(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
@@ -258,6 +246,54 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertFalse(self.custom_field_exists_in_realm(field.id))
 
+    def test_delete_field_value(self) -> None:
+        iago = self.example_user("iago")
+        self.login(iago.email)
+        realm = get_realm("zulip")
+
+        invalid_field_id = 1234
+        result = self.client_delete("/json/users/me/profile_data", {
+            'data': ujson.dumps([invalid_field_id])
+        })
+        self.assert_json_error(result,
+                               u'Field id %d not found.' % (invalid_field_id,))
+
+        field = CustomProfileField.objects.get(name="Mentor", realm=realm)
+        data = [{'id': field.id,
+                 'value': [self.example_user("aaron").id]}]  # type: List[Dict[str, Union[int, str, List[int]]]]
+        do_update_user_custom_profile_data(iago, data)
+
+        iago_value = CustomProfileFieldValue.objects.get(user_profile=iago, field=field)
+        converter = field.FIELD_CONVERTERS[field.field_type]
+        self.assertEqual([self.example_user("aaron").id], converter(iago_value.value))
+
+        result = self.client_delete("/json/users/me/profile_data", {
+            'data': ujson.dumps([field.id])
+        })
+        self.assert_json_success(result)
+
+        # Don't throw an exception here
+        result = self.client_delete("/json/users/me/profile_data", {
+            'data': ujson.dumps([field.id])
+        })
+        self.assert_json_success(result)
+
+    def test_delete_internals(self) -> None:
+        user_profile = self.example_user('iago')
+        realm = user_profile.realm
+        field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+        data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, str, List[int]]]]
+        do_update_user_custom_profile_data(user_profile, data)
+
+        self.assertTrue(self.custom_field_exists_in_realm(field.id))
+        self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count)
+
+        do_remove_realm_custom_profile_field(realm, field)
+
+        self.assertFalse(self.custom_field_exists_in_realm(field.id))
+        self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count - 1)
+
+class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
@@ -372,63 +408,6 @@ class CustomProfileFieldTest(ZulipTestCase):
                                    {'data': ujson.dumps([{"id": field.id, "value": new_value}])})
         self.assert_json_error(result, error_msg)
 
-    def test_reorder(self) -> None:
-        self.login(self.example_email("iago"))
-        realm = get_realm('zulip')
-        order = (
-            CustomProfileField.objects.filter(realm=realm)
-            .order_by('-order')
-            .values_list('order', flat=True)
-        )
-        result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
-        self.assert_json_success(result)
-        fields = CustomProfileField.objects.filter(realm=realm).order_by('order')
-        for field in fields:
-            self.assertEqual(field.id, order[field.order])
-
-    def test_reorder_duplicates(self) -> None:
-        self.login(self.example_email("iago"))
-        realm = get_realm('zulip')
-        order = (
-            CustomProfileField.objects.filter(realm=realm)
-            .order_by('-order')
-            .values_list('order', flat=True)
-        )
-        order = list(order)
-        order.append(4)
-        result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
-        self.assert_json_success(result)
-        fields = CustomProfileField.objects.filter(realm=realm).order_by('order')
-        for field in fields:
-            self.assertEqual(field.id, order[field.order])
-
-    def test_reorder_unauthorized(self) -> None:
-        self.login(self.example_email("hamlet"))
-        realm = get_realm('zulip')
-        order = (
-            CustomProfileField.objects.filter(realm=realm)
-            .order_by('-order')
-            .values_list('order', flat=True)
-        )
-        result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
-        self.assert_json_error(result, "Must be an organization administrator")
-
-    def test_reorder_invalid(self) -> None:
-        self.login(self.example_email("iago"))
-        order = [100, 200, 300]
-        result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
-        self.assert_json_error(
-            result, u'Invalid order mapping.')
-        order = [1, 2]
-        result = self.client_patch("/json/realm/profile_fields",
-                                   info={'order': ujson.dumps(order)})
-        self.assert_json_error(
-            result, u'Invalid order mapping.')
-
     def test_update_invalid_field(self) -> None:
         self.login(self.example_email("iago"))
         data = [{'id': 1234, 'value': '12'}]
@@ -437,38 +416,6 @@ class CustomProfileFieldTest(ZulipTestCase):
         })
         self.assert_json_error(result,
                                u"Field id 1234 not found.")
-
-    def test_delete_field_value(self) -> None:
-        iago = self.example_user("iago")
-        self.login(iago.email)
-        realm = get_realm("zulip")
-
-        invalid_field_id = 1234
-        result = self.client_delete("/json/users/me/profile_data", {
-            'data': ujson.dumps([invalid_field_id])
-        })
-        self.assert_json_error(result,
-                               u'Field id %d not found.' % (invalid_field_id,))
-
-        field = CustomProfileField.objects.get(name="Mentor", realm=realm)
-        data = [{'id': field.id,
-                 'value': [self.example_user("aaron").id]}]  # type: List[Dict[str, Union[int, str, List[int]]]]
-        do_update_user_custom_profile_data(iago, data)
-
-        iago_value = CustomProfileFieldValue.objects.get(user_profile=iago, field=field)
-        converter = field.FIELD_CONVERTERS[field.field_type]
-        self.assertEqual([self.example_user("aaron").id], converter(iago_value.value))
-
-        result = self.client_delete("/json/users/me/profile_data", {
-            'data': ujson.dumps([field.id])
-        })
-        self.assert_json_success(result)
-
-        # Don't throw an exception here
-        result = self.client_delete("/json/users/me/profile_data", {
-            'data': ujson.dumps([field.id])
-        })
-        self.assert_json_success(result)
 
     def test_update_invalid_short_text(self) -> None:
         field_name = "Phone number"
@@ -493,14 +440,6 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_error_update_invalid_value(field_name, [invalid_user_id],
                                                u"Invalid user ID: %d"
                                                % (invalid_user_id,))
-
-    def test_create_field_of_type_user(self) -> None:
-        self.login(self.example_email("iago"))
-        data = {"name": "Your mentor",
-                "field_type": CustomProfileField.USER,
-                }
-        result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_success(result)
 
     def test_update_profile_data_successfully(self) -> None:
         self.login(self.example_email("iago"))
@@ -578,21 +517,6 @@ class CustomProfileFieldTest(ZulipTestCase):
                                    {'data': ujson.dumps(data)})
         self.assert_json_success(result)
 
-    def test_delete_internals(self) -> None:
-        user_profile = self.example_user('iago')
-        realm = user_profile.realm
-        field = CustomProfileField.objects.get(name="Phone number", realm=realm)
-        data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, str, List[int]]]]
-        do_update_user_custom_profile_data(user_profile, data)
-
-        self.assertTrue(self.custom_field_exists_in_realm(field.id))
-        self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count)
-
-        do_remove_realm_custom_profile_field(realm, field)
-
-        self.assertFalse(self.custom_field_exists_in_realm(field.id))
-        self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count - 1)
-
     def test_null_value_and_rendered_value(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm("zulip")
@@ -623,3 +547,84 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assertIsNotNone(value)
         self.assertIsNotNone(rendered_value)
         self.assertEqual("<p><strong><em>beware</em></strong> of jealousy...</p>", rendered_value)
+
+class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
+    def test_list(self) -> None:
+        self.login(self.example_email("iago"))
+        result = self.client_get("/json/realm/profile_fields")
+        self.assert_json_success(result)
+        self.assertEqual(200, result.status_code)
+        content = result.json()
+        self.assertEqual(len(content["custom_fields"]), self.original_count)
+
+    def test_list_order(self) -> None:
+        self.login(self.example_email("iago"))
+        realm = get_realm('zulip')
+        order = (
+            CustomProfileField.objects.filter(realm=realm)
+            .order_by('-order')
+            .values_list('order', flat=True)
+        )
+        try_reorder_realm_custom_profile_fields(realm, order)
+        result = self.client_get("/json/realm/profile_fields")
+        content = result.json()
+        self.assertListEqual(content["custom_fields"],
+                             sorted(content["custom_fields"], key=lambda x: -x["id"]))
+
+class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
+    def test_reorder(self) -> None:
+        self.login(self.example_email("iago"))
+        realm = get_realm('zulip')
+        order = (
+            CustomProfileField.objects.filter(realm=realm)
+            .order_by('-order')
+            .values_list('order', flat=True)
+        )
+        result = self.client_patch("/json/realm/profile_fields",
+                                   info={'order': ujson.dumps(order)})
+        self.assert_json_success(result)
+        fields = CustomProfileField.objects.filter(realm=realm).order_by('order')
+        for field in fields:
+            self.assertEqual(field.id, order[field.order])
+
+    def test_reorder_duplicates(self) -> None:
+        self.login(self.example_email("iago"))
+        realm = get_realm('zulip')
+        order = (
+            CustomProfileField.objects.filter(realm=realm)
+            .order_by('-order')
+            .values_list('order', flat=True)
+        )
+        order = list(order)
+        order.append(4)
+        result = self.client_patch("/json/realm/profile_fields",
+                                   info={'order': ujson.dumps(order)})
+        self.assert_json_success(result)
+        fields = CustomProfileField.objects.filter(realm=realm).order_by('order')
+        for field in fields:
+            self.assertEqual(field.id, order[field.order])
+
+    def test_reorder_unauthorized(self) -> None:
+        self.login(self.example_email("hamlet"))
+        realm = get_realm('zulip')
+        order = (
+            CustomProfileField.objects.filter(realm=realm)
+            .order_by('-order')
+            .values_list('order', flat=True)
+        )
+        result = self.client_patch("/json/realm/profile_fields",
+                                   info={'order': ujson.dumps(order)})
+        self.assert_json_error(result, "Must be an organization administrator")
+
+    def test_reorder_invalid(self) -> None:
+        self.login(self.example_email("iago"))
+        order = [100, 200, 300]
+        result = self.client_patch("/json/realm/profile_fields",
+                                   info={'order': ujson.dumps(order)})
+        self.assert_json_error(
+            result, u'Invalid order mapping.')
+        order = [1, 2]
+        result = self.client_patch("/json/realm/profile_fields",
+                                   info={'order': ujson.dumps(order)})
+        self.assert_json_error(
+            result, u'Invalid order mapping.')
