@@ -71,69 +71,73 @@
     width: 10px;
 }
 
-.compose_table .message_header_colorblock,
-.compose_table .message_header {
-    box-shadow: none;
-    background: none;
-}
+.compose_table {
+    .message_header_colorblock,
+    .message_header {
+        box-shadow: none;
+        background: none;
+    }
 
-.compose_table .message_header_colorblock,
-.compose_table .message_header_colorblock.message_header_private_message {
-    border-radius: 3px 0px 0px 3px;
-    border-bottom: 0px;
-}
+    .message_header_colorblock {
+        &,
+        &.message_header_private_message {
+            border-radius: 3px 0px 0px 3px;
+            border-bottom: 0px;
+        }
 
-.compose_table .message_header_colorblock.message_header_private_message {
-    background-color: hsl(0, 0%, 27%);
-}
+        &.message_header_private_message {
+            background-color: hsl(0, 0%, 27%);
+        }
+    }
 
-.compose_table .right_part {
-    padding: 0px;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
+    .right_part {
+        padding: 0px;
+        display: flex;
+        align-items: center;
+        width: 100%;
 
-.compose_table .right_part .fa-angle-right {
-    font-size: 0.9em;
-    -webkit-text-stroke: 0.05em;
-    position: relative;
-    margin: 0px 5px;
-}
+        .fa-angle-right {
+            font-size: 0.9em;
+            -webkit-text-stroke: 0.05em;
+            position: relative;
+            margin: 0px 5px;
+        }
+    }
 
-.compose_table .compose_checkbox_label {
-    display: inline-block;
-}
+    .compose_checkbox_label {
+        display: inline-block;
+    }
 
-.compose_table .pm_recipient {
-    margin-left: 5px;
-    margin-right: 20px;
-    display: flex;
-    width: 100%;
-}
+    .pm_recipient {
+        margin-left: 5px;
+        margin-right: 20px;
+        display: flex;
+        width: 100%;
+    }
 
-.compose_table #private-message .to_text {
-    vertical-align: middle;
+    #private-message .to_text {
+        vertical-align: middle;
 
-    font-weight: 600;
-}
+        font-weight: 600;
+    }
 
-.compose_table #compose-lock-icon {
-    position: relative;
-    left: 5px;
-    width: 0px;
-}
+    #compose-lock-icon {
+        position: relative;
+        left: 5px;
+        width: 0px;
+    }
 
-.compose_table .message_header {
-    background: none;
-    background-color: hsl(0, 0%, 92%);
-    border: none;
-    border-radius: 0px;
-    box-shadow: none !important;
-}
+    .message_header {
+        background: none;
+        background-color: hsl(0, 0%, 92%);
+        border: none;
+        border-radius: 0px;
+        box-shadow: none !important;
+    }
 
-.compose_table .messagebox {
-    box-shadow: none !important;
+    .messagebox {
+        box-shadow: none !important;
+    }
 }
 
 table.compose_table {
