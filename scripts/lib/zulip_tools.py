@@ -337,8 +337,22 @@ def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbo
         if verbose:
             print("Keeping used %s: %s" % (dir_type, directory))
 
-def parse_lsb_release():
+def parse_os_release():
     # type: () -> Dict[str, str]
+    """
+    Example of the useful subset of the data:
+    {
+     'DISTRIB_FAMILY': 'debian'
+     'ID': 'ubuntu',
+     'VERSION_ID': '18.04',
+     'NAME': 'Ubuntu',
+     'VERSION': '18.04.3 LTS (Bionic Beaver)',
+     'PRETTY_NAME': 'Ubuntu 18.04.3 LTS',
+    }
+
+    VERSION_CODENAME (e.g. 'bionic') is nice and human-readable, but
+    we avoid using it, as it is not available on RHEL-based platforms.
+    """
     distro_info = {}  # type: Dict[str, str]
     if os.path.exists("/etc/redhat-release"):
         with open('/etc/redhat-release', 'r') as fp:
@@ -346,44 +360,30 @@ def parse_lsb_release():
         vendor = info[0]
         if vendor == 'CentOS':
             # E.g. "CentOS Linux release 7.5.1804 (Core)"
-            codename = vendor.lower() + info[3][0]
+            os_version = vendor.lower() + info[3][0]
         elif vendor == 'Fedora':
             # E.g. "Fedora release 29 (Twenty Nine)"
-            codename = vendor.lower() + info[2]
+            os_version = vendor.lower() + info[2]
         elif vendor == 'Red':
             # E.g. "Red Hat Enterprise Linux Server release 7.6 (Maipo)"
             vendor = 'RedHat'
-            codename = 'rhel' + info[6][0]  # 7
+            os_version = 'rhel' + info[6][0]  # 7
         distro_info = dict(
-            DISTRIB_CODENAME=codename,
-            DISTRIB_ID=vendor,
+            VERSION_ID=os_version,
+            ID=vendor,
             DISTRIB_FAMILY='redhat',
         )
         return distro_info
-    try:
-        # For performance reasons, we read /etc/lsb-release directly,
-        # rather than using the lsb_release command; this saves ~50ms
-        # in several places in provisioning and the installer
-        with open('/etc/lsb-release', 'r') as fp:
-            data = [line.strip().split('=') for line in fp]
-        for k, v in data:
-            if k not in ['DISTRIB_CODENAME', 'DISTRIB_ID']:
-                # We only return to the caller the values that we get
-                # from lsb_release in the exception code path.
+    with open('/etc/os-release', 'r') as fp:
+        for line in fp:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                # The line may be blank or a comment, see:
+                # https://www.freedesktop.org/software/systemd/man/os-release.html
                 continue
-            distro_info[k] = v
-        distro_info['DISTRIB_FAMILY'] = 'debian'
-    except FileNotFoundError:
-        # Unfortunately, Debian stretch doesn't yet have an
-        # /etc/lsb-release, so we instead fetch the pieces of data
-        # that we use from the `lsb_release` command directly.
-        vendor = subprocess_text_output(["lsb_release", "-is"])
-        codename = subprocess_text_output(["lsb_release", "-cs"])
-        distro_info = dict(
-            DISTRIB_CODENAME=codename,
-            DISTRIB_ID=vendor,
-            DISTRIB_FAMILY='debian',
-        )
+            k, v = line.split('=', 1)
+            [distro_info[k]] = shlex.split(v)
+    distro_info['DISTRIB_FAMILY'] = 'debian'
     return distro_info
 
 def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]):
