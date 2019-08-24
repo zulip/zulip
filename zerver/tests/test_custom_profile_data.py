@@ -261,12 +261,6 @@ class CustomProfileFieldTest(ZulipTestCase):
     def test_update(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-        result = self.client_patch(
-            "/json/realm/profile_fields/100",
-            info={'name': '',
-                  'field_type': CustomProfileField.SHORT_TEXT}
-        )
-        self.assert_json_error(result, u'Label cannot be blank.')
 
         result = self.client_patch(
             "/json/realm/profile_fields/100",
@@ -276,6 +270,12 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_json_error(result, u'Field id 100 not found.')
 
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+        result = self.client_patch(
+            "/json/realm/profile_fields/{}".format(field.id),
+            info={'name': '',
+                  'field_type': CustomProfileField.SHORT_TEXT}
+        )
+        self.assert_json_error(result, u'Label cannot be blank.')
 
         self.assertEqual(CustomProfileField.objects.count(), self.original_count)
         result = self.client_patch(

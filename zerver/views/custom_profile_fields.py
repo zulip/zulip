@@ -57,6 +57,17 @@ def validate_custom_field_data(field_type: int,
     if error:
         raise JsonableError(error)
 
+def validate_custom_profile_field(name: str, hint: str, field_type: int,
+                                  field_data: ProfileFieldData) -> None:
+    # Validate field data
+    validate_custom_field_data(field_type, field_data)
+
+    # Validate field name, hint and type
+    validate_field_name_and_hint(name, hint)
+    field_types = [i[0] for i in CustomProfileField.FIELD_TYPE_CHOICES]
+    if field_type not in field_types:
+        raise JsonableError(_("Invalid field type."))
+
 @require_realm_admin
 @has_request_variables
 def create_realm_custom_profile_field(request: HttpRequest,
@@ -66,12 +77,8 @@ def create_realm_custom_profile_field(request: HttpRequest,
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=ujson.loads),
                                       field_type: int=REQ(validator=check_int)) -> HttpResponse:
-    validate_field_name_and_hint(name, hint)
-    field_types = [i[0] for i in CustomProfileField.FIELD_TYPE_CHOICES]
-    if field_type not in field_types:
-        return json_error(_("Invalid field type."))
 
-    validate_custom_field_data(field_type, field_data)
+    validate_custom_profile_field(name, hint, field_type, field_data)
     try:
         field = try_add_realm_custom_profile_field(
             realm=user_profile.realm,
@@ -105,15 +112,13 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=ujson.loads),
                                       ) -> HttpResponse:
-    validate_field_name_and_hint(name, hint)
-
     realm = user_profile.realm
     try:
         field = CustomProfileField.objects.get(realm=realm, id=field_id)
     except CustomProfileField.DoesNotExist:
         return json_error(_('Field id {id} not found.').format(id=field_id))
 
-    validate_custom_field_data(field.field_type, field_data)
+    validate_custom_profile_field(name, hint, field.field_type, field_data)
     try:
         try_update_realm_custom_profile_field(realm, field, name, hint=hint,
                                               field_data=field_data)
