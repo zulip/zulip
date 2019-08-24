@@ -41,6 +41,9 @@ EOF
         # This perl invocation strips the existing block of header comments.
         perl -0pe 's/\A(^#.*\n)*//m' "$output"
     ) | sponge "$output"
+
+    # Work around https://github.com/jazzband/pip-tools/issues/268
+    chmod a+r "$output"
 }
 
 OUTPUT_BASE_DIR='requirements'

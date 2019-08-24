@@ -63,7 +63,6 @@ docker==4.0.2             # via moto
 docutils==0.14            # via botocore, recommonmark, sphinx
 ecdsa==0.13.2             # via python-jose, sshpubkeys
 fakeldap==0.6.1
-first==2.0.2              # via pip-tools
 gitlint==0.12.0
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
@@ -107,7 +106,7 @@ phonenumberslite==8.10.15
 pickleshare==0.7.5        # via ipython
 pika==0.13.0
 pillow==6.1.0
-pip-tools==2.0.2
+pip-tools==3.8.0
 polib==1.1.0
 premailer==3.5.0
 prompt-toolkit==1.0.16    # via ipython
@@ -189,3 +188,7 @@ wrapt==1.11.2             # via aws-xray-sdk
 xmltodict==0.12.0         # via moto
 yamole==2.1.6
 zope.interface==4.6.0     # via datetime, twisted
+
+# The following packages are considered to be unsafe in a requirements file:
+# pip==19.2.2
+# setuptools==41.2.0        # via cfn-lint, ipython, jsonschema, markdown, pyhamcrest, sphinx, zope.interface
