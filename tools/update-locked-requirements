@@ -12,7 +12,7 @@ compile_requirements () {
     output="$2"
     python_version="$3"
 
-    pip-compile --quiet --output-file "$output" "$source"
+    pip-compile --quiet --no-header --output-file "$output" "$source"
 
     if [ "$python_version" != "py2" ]; then
         # Remove an unnecessary future requirement declared by commonmark,
@@ -23,8 +23,7 @@ compile_requirements () {
         sed -i 's/^future==/# &/' "$output"
     fi
 
-    (
-        cat <<EOF
+    cat - "$output" <<EOF | sponge "$output"
 #
 # This file is GENERATED.  Don't edit directly.
 #
@@ -35,9 +34,6 @@ compile_requirements () {
 # For details, see requirements/README.md .
 #
 EOF
-        # This perl invocation strips the existing block of header comments.
-        perl -0pe 's/\A(^#.*\n)*//m' "$output"
-    ) | sponge "$output"
 
     # Work around https://github.com/jazzband/pip-tools/issues/268
     chmod a+r "$output"
