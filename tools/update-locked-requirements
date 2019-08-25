@@ -12,7 +12,7 @@ compile_requirements () {
     output="$2"
     python_version="$3"
 
-    pip-compile --quiet --no-header --output-file "$output" "$source"
+    pip-compile --quiet --allow-unsafe --no-header --output-file "$output" "$source"
 
     if [ "$python_version" != "py2" ]; then
         # Remove an unnecessary future requirement declared by commonmark,
