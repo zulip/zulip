@@ -32,4 +32,4 @@ sphinxcontrib-websupport==1.1.2  # via sphinx
 urllib3==1.25.3           # via requests
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.2.0        # via sphinx
+setuptools==41.0.1        # via sphinx
