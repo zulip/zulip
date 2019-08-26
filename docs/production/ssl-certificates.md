@@ -157,7 +157,7 @@ which the Zulip app relies on, makes it finicky about the server's TLS
 configuration.
 
 [android7.0-tls-issue]: https://issuetracker.google.com/issues/37122132#comment13
-[android7.0-tls-issue-so]: https://stackoverflow.com/questions/39133437/sslhandshakeexception-handshake-failed-on-android-n-7-0/42047877#42047877
+[android7.0-tls-issue-so]: https://stackoverflow.com/a/42047877
 
 The issue is that Android 7.0 supports only the curve `secp256r1` when
 doing elliptic-curve cryptography for TLS, and not other curves like
