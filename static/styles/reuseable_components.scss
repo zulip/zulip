@@ -1,7 +1,0 @@
-@mixin prefixed-user-select($value) {
-    -webkit-touch-callout: $value;
-    -webkit-user-select: $value;
-    -moz-user-select: $value;
-    -ms-user-select: $value;
-    user-select: $value;
-}
