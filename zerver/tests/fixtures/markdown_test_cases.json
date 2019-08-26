@@ -95,6 +95,12 @@
       "expected_output": "<blockquote>\n<p>text</p>\n</blockquote>"
     },
     {
+      "name": "blockquote_with_fenced_code",
+      "input": "> ```\n> multilne\n> codeblock\n> ```",
+      "expected_output": "<blockquote>\n<div class=\"codehilite\"><pre><span></span>multilne\ncodeblock\n</pre></div>\n\n\n</blockquote>",
+      "marked_expected_output": "<blockquote>\n<div class=\"codehilite\"><pre>multilne\ncodeblock\n</pre></div>\n\n\n</blockquote>"
+    },
+    {
       "name": "fenced_quote_with_hashtag",
       "input": "```quote\n# line 1\n#line 2\n```",
       "expected_output": "<blockquote>\n<h1>line 1</h1>\n<p>#line 2</p>\n</blockquote>",

@@ -293,7 +293,6 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         handler = OuterHandler(processor, output, self.run_content_validators)
         self.push(handler)
-
         for line in lines:
             self.handlers[-1].handle_line(line)
 

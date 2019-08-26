@@ -1814,6 +1814,51 @@ def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.uti
 DEFAULT_BUGDOWN_KEY = -1
 ZEPHYR_MIRROR_BUGDOWN_KEY = -2
 
+class NormalizeWhitespace(markdown.preprocessors.NormalizeWhitespace):
+    """ Upstream NormalizeWhitespace strays away from its stated goal
+    by also stripping the characters that the HtmlStash uses to mark the
+    start/end of the stashed text. This means that we cannot run the upstream
+    preprocessor after we have already stashed some Html blocks.
+
+    Our NormalizeWhitespace is exactly the same as upstream except for one line
+    marked below. """
+
+    def run(self, lines: List[str]) -> List[str]:
+        source = '\n'.join(lines)
+        # source = source.replace(util.STX, "").replace(util.ETX, "") # Zulip change: we comment this line.
+        source = source.replace("\r\n", "\n").replace("\r", "\n") + "\n\n"
+        source = source.expandtabs(self.md.tab_length)
+        source = re.sub(r'(?<=\n) +\n', '\n', source)
+        return source.split('\n')
+
+class BlockParser(markdown.blockprocessors.BlockParser):
+    """ Upstream doesn't support running preprocessors when parsing blocks, which
+    is needed for issues like https://github.com/zulip/zulip/issues/12800. This
+    subclass retains the default upstream behavior for all blocks except blockquotes.
+    """
+    def __init__(self, md: markdown.Markdown) -> None:
+        super().__init__(md)
+        self.custom_normalize_whitespace = NormalizeWhitespace(self.md)
+
+    def run_preprocessors(self, block: str) -> str:
+        # Due to the restriction described in NormalizeWhitespace, we need to
+        # run our subclassed NormalizeWhitespace preprocessor instead of the
+        # upstream version when we run the preprocessors inside a block.
+        lines = block.split("\n")
+        whitespace = self.md.preprocessors.__getitem__('normalize_whitespace')
+        for prep in self.md.preprocessors:
+            if prep == whitespace:
+                lines = self.custom_normalize_whitespace.run(lines)
+            else:
+                lines = prep.run(lines)
+        return '\n'.join(lines)
+
+    def parseChunk(self, parent: Element, text: str) -> None:
+        if parent.tag == 'blockquote':
+            # Rerun preprocessors, mainly to detect fenced_code inside quotes.
+            text = self.run_preprocessors(text)
+        super().parseChunk(parent, text)
+
 class Bugdown(markdown.Markdown):
     def __init__(self, *args: Any, **kwargs: Union[bool, int, List[Any]]) -> None:
         # define default configs
@@ -1864,7 +1909,7 @@ class Bugdown(markdown.Markdown):
         # olist - replaced by ours
         # ulist - replaced by ours
         # quote - replaced by ours
-        parser = markdown.blockprocessors.BlockParser(self)
+        parser = BlockParser(self)
         parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 95)
         parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 90)
         if not self.getConfig('code_block_processor_disabled'):
