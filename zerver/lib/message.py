@@ -845,9 +845,19 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
                 user_ids_string=user_ids_string,
             )
 
+        # TODO: Add support for alert words here as well.
         is_mentioned = (row['flags'] & UserMessage.flags.mentioned) != 0
+        is_wildcard_mentioned = (row['flags'] & UserMessage.flags.wildcard_mentioned) != 0
         if is_mentioned:
             mentions.add(message_id)
+        if is_wildcard_mentioned:
+            if msg_type == Recipient.STREAM:
+                stream_id = row['message__recipient__type_id']
+                topic = row[MESSAGE__TOPIC]
+                if not is_row_muted(stream_id, recipient_id, topic):
+                    mentions.add(message_id)
+            else:  # nocoverage # TODO: Test wildcard mentions in PMs.
+                mentions.add(message_id)
 
     return dict(
         pm_dict=pm_dict,
@@ -957,6 +967,9 @@ def apply_unread_message_event(user_profile: UserProfile,
 
     if 'mentioned' in flags:
         state['mentions'].add(message_id)
+    if 'wildcard_mentioned' in flags:
+        if message_id in state['unmuted_stream_msgs']:
+            state['mentions'].add(message_id)
 
 def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult,
                                       message_id: int) -> None:

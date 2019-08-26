@@ -622,6 +622,16 @@ class EventsRegisterTest(ZulipTestCase):
 
             )
 
+    def test_wildcard_mentioned_send_message_events(self) -> None:
+        for i in range(3):
+            content = 'mentioning... @**all** hello ' + str(i)
+            self.do_test(
+                lambda: self.send_stream_message(self.example_email('cordelia'),
+                                                 "Verona",
+                                                 content)
+
+            )
+
     def test_pm_send_message_events(self) -> None:
         self.do_test(
             lambda: self.send_personal_message(self.example_email('cordelia'),
@@ -3082,9 +3092,74 @@ class GetUnreadMsgsTest(ZulipTestCase):
         )
         um.flags |= UserMessage.flags.mentioned
         um.save()
-
         result = get_unread_data()
         self.assertEqual(result['mentions'], [stream_message_id])
+
+        um.flags = UserMessage.flags.has_alert_word
+        um.save()
+        result = get_unread_data()
+        # TODO: This should change when we make alert words work better.
+        self.assertEqual(result['mentions'], [])
+
+        um.flags = UserMessage.flags.wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [stream_message_id])
+
+        um.flags = 0
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [])
+
+        # Test with a muted stream
+        um = UserMessage.objects.get(
+            user_profile_id=user_profile.id,
+            message_id=muted_stream_message_id
+        )
+        um.flags = UserMessage.flags.mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [muted_stream_message_id])
+
+        um.flags = UserMessage.flags.has_alert_word
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [])
+
+        um.flags = UserMessage.flags.wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [])
+
+        um.flags = 0
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [])
+
+        # Test with a muted topic
+        um = UserMessage.objects.get(
+            user_profile_id=user_profile.id,
+            message_id=muted_topic_message_id
+        )
+        um.flags = UserMessage.flags.mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [muted_topic_message_id])
+
+        um.flags = UserMessage.flags.has_alert_word
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [])
+
+        um.flags = UserMessage.flags.wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [])
+
+        um.flags = 0
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result['mentions'], [])
 
 class ClientDescriptorsTest(ZulipTestCase):
     def test_get_client_info_for_all_public_streams(self) -> None:
