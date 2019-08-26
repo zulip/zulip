@@ -170,6 +170,8 @@ from operator import itemgetter
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.
 SizedTextIterable = Union[Sequence[str], AbstractSet[str]]
+ONBOARDING_TOTAL_MESSAGES = 1000
+ONBOARDING_UNREAD_MESSAGES = 20
 
 STREAM_ASSIGNMENT_COLORS = [
     "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
@@ -297,16 +299,19 @@ def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
     send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
-    """Give you the last 1000 messages on your public streams, so you have
-    something to look at in your home view once you finish the
-    tutorial."""
+    """Give you the last ONBOARDING_TOTAL_MESSAGES messages on your public
+    streams, so you have something to look at in your home view once
+    you finish the tutorial.  The most recent ONBOARDING_UNREAD_MESSAGES
+    are marked unread.
+    """
     one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
 
     stream_ids = [stream.id for stream in streams if not stream.invite_only]
     recipients = get_stream_recipients(stream_ids)
     recent_messages = Message.objects.filter(recipient_id__in=recipients,
                                              pub_date__gt=one_week_ago).order_by("-id")
-    message_ids_to_use = list(reversed(recent_messages.values_list('id', flat=True)[0:1000]))
+    message_ids_to_use = list(reversed(recent_messages.values_list(
+        'id', flat=True)[0:ONBOARDING_TOTAL_MESSAGES]))
     if len(message_ids_to_use) == 0:
         return
 
@@ -315,12 +320,23 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     already_ids = set(UserMessage.objects.filter(message_id__in=message_ids_to_use,
                                                  user_profile=user_profile).values_list("message_id",
                                                                                         flat=True))
-    ums_to_create = [UserMessage(user_profile=user_profile, message_id=message_id,
-                                 flags=UserMessage.flags.read)
-                     for message_id in message_ids_to_use
-                     if message_id not in already_ids]
 
-    UserMessage.objects.bulk_create(ums_to_create)
+    # Mark the newest ONBOARDING_UNREAD_MESSAGES as unread.
+    marked_unread = 0
+    ums_to_create = []
+    for message_id in reversed(message_ids_to_use):
+        if message_id in already_ids:
+            continue
+
+        um = UserMessage(user_profile=user_profile, message_id=message_id)
+        if marked_unread < ONBOARDING_UNREAD_MESSAGES:
+            marked_unread += 1
+        else:
+            um.flags = UserMessage.flags.read
+        print(message_id, um.flags)
+        ums_to_create.append(um)
+
+    UserMessage.objects.bulk_create(reversed(ums_to_create))
 
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
