@@ -50,7 +50,7 @@ transifex-client==0.12.5
 python-digitalocean==1.14.0
 
 # Needed for updating the locked pip dependencies
-pip-tools==3.8.0
+pip-tools==4.1.0
 
 # zulip's linting framework - zulint
 git+https://github.com/zulip/zulint@aaed679f1ad38b230090eadd3870b7682500f60c#egg=zulint==0.0.1
