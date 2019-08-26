@@ -258,6 +258,39 @@ class TestMissedMessages(ZulipTestCase):
                          trigger='mentioned')
 
     @patch('zerver.lib.email_mirror.generate_random_token')
+    def _extra_context_in_missed_stream_messages_wildcard_mention(self, send_as_user: bool,
+                                                                  mock_random_token: MagicMock,
+                                                                  show_message_content: bool=True) -> None:
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        for i in range(1, 6):
+            self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
+        self.send_stream_message(
+            self.example_email('othello'), "Denmark",
+            '11', topic_name='test2')
+        msg_id = self.send_stream_message(
+            self.example_email('othello'), "denmark",
+            '@**all**')
+
+        if show_message_content:
+            body = ("Othello, the Moor of Venice: 1 2 3 4 5 @**all** -- "
+                    "You are receiving this because you were mentioned")
+            email_subject = '#Denmark > test'
+            verify_body_does_not_include = []  # type: List[str]
+        else:
+            # Test in case if message content in missed email message are disabled.
+            body = 'Manage email preferences: http://zulip.testserver/#settings/notifications'
+            email_subject = 'New missed messages'
+            verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
+                                            '1 2 3 4 5 @**all**', 'private', 'group',
+                                            'Reply to this email directly, or view it in Zulip']
+        self._test_cases(tokens, msg_id, body, email_subject, send_as_user,
+                         show_message_content=show_message_content,
+                         verify_body_does_not_include=verify_body_does_not_include,
+                         trigger='wildcard_mentioned')
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_missed_stream_messages_email_notify(self, send_as_user: bool,
                                                               mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
@@ -499,6 +532,8 @@ class TestMissedMessages(ZulipTestCase):
                                         "message_content_in_email_notifications", False)
         self._extra_context_in_missed_stream_messages_mention(False, show_message_content=False)
         mail.outbox = []
+        self._extra_context_in_missed_stream_messages_wildcard_mention(False, show_message_content=False)
+        mail.outbox = []
         self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
         mail.outbox = []
         self._extra_context_in_huddle_missed_stream_messages_two_others(False, show_message_content=False)
@@ -509,6 +544,13 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_extra_context_in_missed_stream_messages(self) -> None:
         self._extra_context_in_missed_stream_messages_mention(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_missed_stream_messages_as_user_wildcard(self) -> None:
+        self._extra_context_in_missed_stream_messages_wildcard_mention(True)
+
+    def test_extra_context_in_missed_stream_messages_wildcard(self) -> None:
+        self._extra_context_in_missed_stream_messages_wildcard_mention(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_as_user_two_senders(self) -> None:

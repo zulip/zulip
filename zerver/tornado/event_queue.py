@@ -676,6 +676,7 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         flags = event.get('flags')
 
         mentioned = 'mentioned' in flags and 'read' not in flags
+        wildcard_mentioned = 'wildcard_mentioned' in flags and 'read' not in flags
         private_message = event['message']['type'] == 'private'
         # stream_push_notify is set in process_message_event.
         stream_push_notify = event.get('stream_push_notify', False)
@@ -697,6 +698,7 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
             email_notified = event.get("email_notified", False),
         )
         maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
+                                    wildcard_mentioned,
                                     stream_push_notify, stream_email_notify, stream_name,
                                     always_push_notify, idle, already_notified)
 
@@ -709,7 +711,8 @@ def receiver_is_off_zulip(user_profile_id: int) -> bool:
     return off_zulip
 
 def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_message: bool,
-                                mentioned: bool, stream_push_notify: bool,
+                                mentioned: bool, wildcard_mentioned: bool,
+                                stream_push_notify: bool,
                                 stream_email_notify: bool, stream_name: Optional[str],
                                 always_push_notify: bool, idle: bool,
                                 already_notified: Dict[str, bool]) -> Dict[str, bool]:
@@ -718,12 +721,15 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
     more features here."""
     notified = dict()  # type: Dict[str, bool]
 
-    if (idle or always_push_notify) and (private_message or mentioned or stream_push_notify):
+    if (idle or always_push_notify) and (private_message or mentioned or
+                                         wildcard_mentioned or stream_push_notify):
         notice = build_offline_notification(user_profile_id, message_id)
         if private_message:
             notice['trigger'] = 'private_message'
         elif mentioned:
             notice['trigger'] = 'mentioned'
+        elif wildcard_mentioned:
+            notice['trigger'] = 'wildcard_mentioned'
         elif stream_push_notify:
             notice['trigger'] = 'stream_push_notify'
         else:
@@ -737,12 +743,14 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
     # mention.  Eventually, we'll add settings to allow email
     # notifications to match the model of push notifications
     # above.
-    if idle and (private_message or mentioned or stream_email_notify):
+    if idle and (private_message or mentioned or wildcard_mentioned or stream_email_notify):
         notice = build_offline_notification(user_profile_id, message_id)
         if private_message:
             notice['trigger'] = 'private_message'
         elif mentioned:
             notice['trigger'] = 'mentioned'
+        elif wildcard_mentioned:
+            notice['trigger'] = 'wildcard_mentioned'
         elif stream_email_notify:
             notice['trigger'] = 'stream_email_notify'
         else:
@@ -834,17 +842,20 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         # or they were @-notified potentially notify more immediately
         private_message = message_type == "private" and user_profile_id != sender_id
         mentioned = 'mentioned' in flags and 'read' not in flags
+        wildcard_mentioned = 'wildcard_mentioned' in flags and 'read' not in flags
         stream_push_notify = user_data.get('stream_push_notify', False)
         stream_email_notify = user_data.get('stream_email_notify', False)
 
         # We first check if a message is potentially mentionable,
         # since receiver_is_off_zulip is somewhat expensive.
-        if private_message or mentioned or stream_push_notify or stream_email_notify:
+        if (private_message or mentioned or wildcard_mentioned
+                or stream_push_notify or stream_email_notify):
             idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in presence_idle_user_ids)
             always_push_notify = user_data.get('always_push_notify', False)
             stream_name = event_template.get('stream_name')
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
-                                                 mentioned, stream_push_notify, stream_email_notify,
+                                                 mentioned, wildcard_mentioned,
+                                                 stream_push_notify, stream_email_notify,
                                                  stream_name, always_push_notify, idle, {})
             result['stream_push_notify'] = stream_push_notify
             result['stream_email_notify'] = stream_email_notify
@@ -928,6 +939,7 @@ def process_message_update_event(event_template: Mapping[str, Any],
         for key in user_data.keys():
             if key != "id":
                 user_event[key] = user_data[key]
+        wildcard_mentioned = 'wildcard_mentioned' in user_event['flags']
 
         maybe_enqueue_notifications_for_message_update(
             user_profile_id=user_profile_id,
@@ -935,6 +947,7 @@ def process_message_update_event(event_template: Mapping[str, Any],
             stream_name=stream_name,
             prior_mention_user_ids=prior_mention_user_ids,
             mention_user_ids=mention_user_ids,
+            wildcard_mentioned = wildcard_mentioned,
             presence_idle_user_ids=presence_idle_user_ids,
             stream_push_user_ids=stream_push_user_ids,
             stream_email_user_ids=stream_email_user_ids,
@@ -952,6 +965,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
                                                    stream_name: str,
                                                    prior_mention_user_ids: Set[int],
                                                    mention_user_ids: Set[int],
+                                                   wildcard_mentioned: bool,
                                                    presence_idle_user_ids: Set[int],
                                                    stream_push_user_ids: Set[int],
                                                    stream_email_user_ids: Set[int],
@@ -967,6 +981,9 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
         # Don't spam people with duplicate mentions.  This is
         # especially important considering that most message
         # edits are simple typo corrections.
+        #
+        # Note that prior_mention_user_ids contains users who received
+        # a wildcard mention as well as normal mentions.
         return
 
     stream_push_notify = (user_profile_id in stream_push_user_ids)
@@ -993,6 +1010,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
         message_id=message_id,
         private_message=private_message,
         mentioned=mentioned,
+        wildcard_mentioned=wildcard_mentioned,
         stream_push_notify=stream_push_notify,
         stream_email_notify=stream_email_notify,
         stream_name=stream_name,

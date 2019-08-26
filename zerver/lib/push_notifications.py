@@ -458,7 +458,8 @@ def get_gcm_alert(message: Message) -> str:
         return "New private group message from %s" % (sender_str,)
     elif message.recipient.type == Recipient.PERSONAL and message.trigger == 'private_message':
         return "New private message from %s" % (sender_str,)
-    elif message.is_stream_message() and message.trigger == 'mentioned':
+    elif message.is_stream_message() and (message.trigger == 'mentioned' or
+                                          message.trigger == 'wildcard_mentioned'):
         return "New mention from %s" % (sender_str,)
     else:  # message.is_stream_message() and message.trigger == 'stream_push_notify'
         return "New stream message from %s in %s" % (sender_str, get_display_recipient(message.recipient),)
@@ -566,6 +567,8 @@ def get_apns_alert_subtitle(message: Message) -> str:
     """
     if message.trigger == "mentioned":
         return message.sender.full_name + " mentioned you:"
+    elif message.trigger == "wildcard_mentioned":
+        return message.sender.full_name + " mentioned everyone:"
     elif message.recipient.type == Recipient.PERSONAL:
         return ""
     # For group PMs, or regular messages to a stream, just use a colon to indicate this is the sender.
