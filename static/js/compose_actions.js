@@ -434,13 +434,21 @@ exports.quote_and_reply = function (opts) {
 
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
 
-    function replace_content(raw_content) {
-        compose_ui.replace_syntax('[Quoting…]', '```quote\n' + raw_content + '\n```', textarea);
+    function replace_content(message) {
+        // Final message looks like:
+        //     @_**Iago|5** [said](link to message):
+        //     ```quote
+        //     message content
+        //     ```
+        let content = `@_**${message.sender_full_name}|${message.sender_id}** `;
+        content += `[said](${hash_util.by_conversation_and_time_uri(message)}):\n`;
+        content += '```quote\n' + message.raw_content + '\n```';
+        compose_ui.replace_syntax('[Quoting…]', content, textarea);
         autosize.update($('#compose-textarea'));
     }
 
     if (message && message.raw_content) {
-        replace_content(message.raw_content);
+        replace_content(message);
         return;
     }
 
@@ -449,7 +457,7 @@ exports.quote_and_reply = function (opts) {
         idempotent: true,
         success: function (data) {
             message.raw_content = data.raw_content;
-            replace_content(message.raw_content);
+            replace_content(message);
         },
     });
 };
