@@ -185,4 +185,16 @@ exports.process_fenced_code = function (content) {
     return output.join('\n');
 };
 
+const fence_length_re = /^ {0,3}(`{3,})/gm;
+exports.get_unused_fence = (content) => {
+    // we only return ``` fences, not ~~~.
+    let length = 3;
+    let match;
+    fence_length_re.lastIndex = 0;
+    while ((match = fence_length_re.exec(content)) !== null) {
+        length = Math.max(length, match[1].length + 1);
+    }
+    return '`'.repeat(length);
+};
+
 window.fenced_code = exports;
