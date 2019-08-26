@@ -15,6 +15,9 @@ set_global('compose_pm_pill', {
 
 set_global('i18n', global.stub_i18n);
 
+set_global('hash_util', {
+});
+
 zrequire('people');
 zrequire('compose_ui');
 zrequire('compose');
@@ -312,8 +315,11 @@ run_test('quote_and_reply', () => {
         sender_full_name: 'Bob Roberts',
         sender_id: 40,
     };
+    hash_util.by_conversation_and_time_uri = () => 'link_to_message';
     stub_selected_message(msg);
-    stub_channel_get({ raw_content: 'Testing.' });
+    stub_channel_get({
+        raw_content: 'Testing.',
+    });
 
     current_msg_list.selected_id = function () {
         return 100;
@@ -325,7 +331,7 @@ run_test('quote_and_reply', () => {
 
     compose_ui.replace_syntax = function (syntax, replacement) {
         assert.equal(syntax, '[Quoting…]');
-        assert.equal(replacement, '```quote\nTesting.\n```');
+        assert.equal(replacement, '@_**Bob Roberts|40** [said](link_to_message):\n```quote\nTesting.\n```');
     };
 
     const opts = {
@@ -344,7 +350,7 @@ run_test('quote_and_reply', () => {
             stream: 'devel',
             topic: 'test',
             reply_to: 'bob',
-            sender_full_name: 'Bob',
+            sender_full_name: 'Bob Roberts',
             sender_id: 40,
             raw_content: 'Testing.',
         };
