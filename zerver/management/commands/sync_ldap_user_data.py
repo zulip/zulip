@@ -22,12 +22,7 @@ def sync_ldap_user_data(user_profiles: List[UserProfile]) -> None:
         # This will save the user if relevant, and will do nothing if the user
         # does not exist.
         try:
-            if sync_user_from_ldap(u):
-                logger.info("Updated %s." % (u.email,))
-            else:
-                logger.warning("Did not find %s in LDAP." % (u.email,))
-                if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
-                    logger.info("Deactivated non-matching user: %s" % (u.email,))
+            sync_user_from_ldap(u, logger)
         except ZulipLDAPException as e:
             logger.error("Error attempting to update user %s:" % (u.email,))
             logger.error(e)
