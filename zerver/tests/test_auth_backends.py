@@ -2599,7 +2599,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            result = sync_user_from_ldap(user_profile)
+            result = sync_user_from_ldap(user_profile, mock.Mock())
             self.assertTrue(result)
 
     @mock.patch("zproject.backends.do_deactivate_user")
@@ -2615,7 +2615,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='wrongpass'):
             with self.assertRaises(PopulateUserLDAPError):
-                sync_user_from_ldap(self.example_user('hamlet'))
+                sync_user_from_ldap(self.example_user('hamlet'), mock.Mock())
             mock_deactivate.assert_not_called()
 
     def test_update_full_name(self) -> None:
@@ -2707,6 +2707,24 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         hamlet = self.example_user('hamlet')
         self.assertTrue(hamlet.is_active)
 
+    def test_user_not_found_in_ldap(self) -> None:
+        with self.settings(
+                LDAP_DEACTIVATE_NON_MATCHING_USERS=False,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            hamlet = self.example_user("hamlet")
+            mock_logger = mock.MagicMock()
+            result = sync_user_from_ldap(hamlet, mock_logger)
+            mock_logger.warning.assert_called_once_with("Did not find %s in LDAP." % (hamlet.email,))
+            self.assertFalse(result)
+
+            do_deactivate_user(hamlet)
+            mock_logger = mock.MagicMock()
+            result = sync_user_from_ldap(hamlet, mock_logger)
+            self.assertEqual(mock_logger.method_calls, [])  # In this case the logger shouldn't be used.
+            self.assertFalse(result)
+
     def test_update_user_avatar(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
@@ -2796,9 +2814,9 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                            AUTH_LDAP_BIND_PASSWORD='',
                            AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
                            LDAP_DEACTIVATE_NON_MATCHING_USERS=True):
-            result = sync_user_from_ldap(self.example_user('hamlet'))
+            result = sync_user_from_ldap(self.example_user('hamlet'), mock.Mock())
 
-            self.assertFalse(result)
+            self.assertTrue(result)
             hamlet = self.example_user('hamlet')
             self.assertFalse(hamlet.is_active)
 
