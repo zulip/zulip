@@ -566,9 +566,9 @@ def get_apns_alert_subtitle(message: Message) -> str:
     On an iOS notification, this is the second bolded line.
     """
     if message.trigger == "mentioned":
-        return message.sender.full_name + " mentioned you:"
+        return _("%(full_name)s mentioned you:") % dict(full_name=message.sender.full_name)
     elif message.trigger == "wildcard_mentioned":
-        return message.sender.full_name + " mentioned everyone:"
+        return _("%(full_name)s mentioned everyone:") % dict(full_name=message.sender.full_name)
     elif message.recipient.type == Recipient.PERSONAL:
         return ""
     # For group PMs, or regular messages to a stream, just use a colon to indicate this is the sender.
