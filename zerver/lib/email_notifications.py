@@ -330,9 +330,9 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     triggers = list(message['trigger'] for message in missed_messages)
     unique_triggers = set(triggers)
     context.update({
-        'mention': 'mentioned' in unique_triggers,
+        'mention': 'mentioned' in unique_triggers or 'wildcard_mentioned' in unique_triggers,
         'stream_email_notify': 'stream_email_notify' in unique_triggers,
-        'mention_count': triggers.count('mentioned'),
+        'mention_count': triggers.count('mentioned') + triggers.count("wildcard_mentioned"),
     })
 
     # If this setting (email mirroring integration) is enabled, only then
@@ -384,10 +384,8 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         # Keep only the senders who actually mentioned the user
         if context['mention']:
             senders = list(set(m['message'].sender for m in missed_messages
-                           if m['trigger'] == 'mentioned'))
-            # TODO: When we add wildcard mentions that send emails, we
-            # should make sure the right logic applies here.
-
+                               if m['trigger'] == 'mentioned' or
+                               m['trigger'] == 'wildcard_mentioned'))
         message = missed_messages[0]['message']
         stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
         stream_header = "%s > %s" % (stream.name, message.topic_name())

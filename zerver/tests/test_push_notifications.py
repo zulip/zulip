@@ -1105,6 +1105,39 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    def test_get_message_payload_apns_stream_wildcard_mention(self):
+        # type: () -> None
+        user_profile = self.example_user("othello")
+        stream = Stream.objects.filter(name='Verona').get()
+        message = self.get_message(Recipient.STREAM, stream.id)
+        message.trigger = 'wildcard_mentioned'
+        message.stream_name = 'Verona'
+        payload = get_message_payload_apns(user_profile, message)
+        expected = {
+            'alert': {
+                'title': '#Verona > Test Topic',
+                'subtitle': 'King Hamlet mentioned everyone:',
+                'body': message.content,
+            },
+            'sound': 'default',
+            'badge': 0,
+            'custom': {
+                'zulip': {
+                    'message_ids': [message.id],
+                    'recipient_type': 'stream',
+                    'sender_email': self.sender.email,
+                    'sender_id': self.sender.id,
+                    "stream": get_display_recipient(message.recipient),
+                    "topic": message.topic_name(),
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': self.sender.realm.id,
+                    'realm_uri': self.sender.realm.uri,
+                    "user_id": user_profile.id,
+                }
+            }
+        }
+        self.assertDictEqual(payload, expected)
+
     @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT = True)
     def test_get_message_payload_apns_redacted_content(self) -> None:
         user_profile = self.example_user("othello")
