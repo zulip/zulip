@@ -1,5 +1,3 @@
-@import './reuseable_components.scss';
-
 body,
 html {
     width: 100%;
@@ -42,15 +40,15 @@ a {
 }
 
 .no-select {
-    @include prefixed-user-select(none);
+    user-select: none;
 }
 
 .auto-select {
-    @include prefixed-user-select(auto);
+    user-select: auto;
 }
 
 .text-select {
-    @include prefixed-user-select(text);
+    user-select: text;
 }
 
 p.n-margin {
@@ -567,7 +565,7 @@ td.pointer {
     position: absolute;
     left: 0px;
     top: 16px;
-    @include prefixed-user-select(none);
+    user-select: none;
 }
 
 .include-sender .message_time {

@@ -1,5 +1,4 @@
 import { resolve } from 'path';
-import * as Sass from 'sass';
 import * as BundleTracker from 'webpack-bundle-tracker';
 import * as webpack from 'webpack';
 // The devServer member of webpack.Configuration is managed by the
@@ -69,9 +68,10 @@ export default (env?: string): webpack.Configuration[] => {
                         },
                     ],
                 },
-                // sass / scss loader
+                // scss loader
                 {
-                    test: /\.(sass|scss)$/,
+                    test: /\.scss$/,
+                    include: resolve(__dirname, '../static/styles'),
                     use: [
                         {
                             loader: MiniCssExtractPlugin.loader,
@@ -83,14 +83,17 @@ export default (env?: string): webpack.Configuration[] => {
                         {
                             loader: 'css-loader',
                             options: {
+                                importLoaders: 1,
                                 sourceMap: true,
                             },
                         },
                         {
-                            loader: 'sass-loader',
+                            loader: 'postcss-loader',
                             options: {
-                                implementation: Sass,
                                 sourceMap: true,
+                                config: {
+                                    ctx: { env },
+                                },
                             },
                         },
                     ],
