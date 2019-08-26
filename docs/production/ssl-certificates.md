@@ -139,3 +139,50 @@ service nginx reload
 ```
 
 [desktop-certs]: https://zulipchat.com/help/custom-certificates
+
+
+## Troubleshooting
+
+### The Android app can't connect to the server
+
+This is most often caused by an incomplete certificate chain.  See
+discussion in the [Manual install](#manual-install) section above.
+
+
+### The Android app connects to the server on some devices but not others
+
+An issue on Android 7.0 ([report][android7.0-tls-issue],
+[description][android7.0-tls-issue-so]) in the system TLS/SSL stack,
+which the Zulip app relies on, makes it finicky about the server's TLS
+configuration.
+
+[android7.0-tls-issue]: https://issuetracker.google.com/issues/37122132#comment13
+[android7.0-tls-issue-so]: https://stackoverflow.com/questions/39133437/sslhandshakeexception-handshake-failed-on-android-n-7-0/42047877#42047877
+
+The issue is that Android 7.0 supports only the curve `secp256r1` when
+doing elliptic-curve cryptography for TLS, and not other curves like
+`secp384r1` or `secp512r1`.  If your server's TLS/SSL configuration
+offers only other curves, then Android 7.0 clients will be unable to
+connect.
+
+By default `nginx` (and therefore a Zulip server) offers the
+`secp256r1` curve among others, and so everything works.  You can
+control the offered curves with `ssl_ecdh_curve` in the `nginx`
+configuration on your server.  See [nginx docs][nginx-doc-curve] for
+details.
+
+[nginx-doc-curve]: http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_ecdh_curve
+
+Two signs for diagnosing this issue in contrast to some other root
+cause:
+
+* This issue affects only Android 7.0; it's fixed in Android 7.1.1 and
+  later.
+
+* If your server is reachable from the public Internet, use the [SSL
+  Labs tester][ssllabs-tester].  Under "Cipher Suites" you may see
+  lines beginning with `TLS_ECDHE`, for cipher suites which use
+  elliptic-curve cryptography.  These lines will have further text
+  like `ECDH secp256r1` or `ECDH secp384r1`, which identifies specific
+  elliptic curves your server offers to use.  This issue applies if
+  your server does not offer `secp256r1`.
