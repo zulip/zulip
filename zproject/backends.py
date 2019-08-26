@@ -588,14 +588,20 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
         # so it seems better not to log that, and only use the original exception's name here.
         raise PopulateUserLDAPError(kwargs['exception'].__class__.__name__)
 
-def sync_user_from_ldap(user_profile: UserProfile) -> bool:
+def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
     backend = ZulipLDAPUserPopulator()
     updated_user = backend.populate_user(backend.django_to_ldap_username(user_profile.email))
-    if not updated_user:
-        if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
-            do_deactivate_user(user_profile)
-        return False
-    return True
+    if updated_user:
+        logger.info("Updated %s." % (user_profile.email,))
+        return True
+
+    if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
+        do_deactivate_user(user_profile)
+        logger.info("Deactivated non-matching user: %s" % (user_profile.email,))
+        return True
+    elif user_profile.is_active:
+        logger.warning("Did not find %s in LDAP." % (user_profile.email,))
+    return False
 
 # Quick tool to test whether you're correctly authenticating to LDAP
 def query_ldap(email: str) -> List[str]:
