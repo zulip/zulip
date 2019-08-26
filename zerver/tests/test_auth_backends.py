@@ -2558,7 +2558,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            result = sync_user_from_ldap(user_profile)
+            result = sync_user_from_ldap(user_profile, mock.Mock())
             self.assertTrue(result)
 
     def test_update_full_name(self) -> None:
@@ -2725,9 +2725,9 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                            AUTH_LDAP_BIND_PASSWORD='',
                            AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
                            LDAP_DEACTIVATE_NON_MATCHING_USERS=True):
-            result = sync_user_from_ldap(self.example_user('hamlet'))
+            result = sync_user_from_ldap(self.example_user('hamlet'), mock.Mock())
 
-            self.assertFalse(result)
+            self.assertTrue(result)
             hamlet = self.example_user('hamlet')
             self.assertFalse(hamlet.is_active)
 
