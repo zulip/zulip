@@ -102,7 +102,7 @@ phonenumberslite==8.10.15
 pickleshare==0.7.5        # via ipython
 pika==0.13.0
 pillow==6.1.0
-pip-tools==3.8.0
+pip-tools==4.1.0
 polib==1.1.0
 premailer==3.5.0
 prompt-toolkit==1.0.16    # via ipython
@@ -191,5 +191,5 @@ git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca
 git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
 
 # The following packages are considered to be unsafe in a requirements file:
-pip==19.1.1
+pip==19.2.3
 setuptools==41.0.1        # via cfn-lint, ipython, jsonschema, markdown, pyhamcrest, sphinx, zope.interface

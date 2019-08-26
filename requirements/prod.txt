@@ -122,5 +122,5 @@ git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca
 git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
 
 # The following packages are considered to be unsafe in a requirements file:
-pip==19.1.1
+pip==19.2.3
 setuptools==41.0.1        # via ipython, markdown

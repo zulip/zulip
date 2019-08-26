@@ -1,4 +1,4 @@
 # Dependencies for setting up pip to install our requirements.txt file.
-pip==19.1.1
+pip==19.2.3
 setuptools==41.0.1
 wheel==0.33.4
