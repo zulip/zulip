@@ -4760,7 +4760,7 @@ def get_active_presence_idle_user_ids(realm: Realm,
     of those users who fit these criteria:
 
         * They are likely to need notifications (either due
-          to mentions or being PM'ed).
+          to mentions, alert words, or being PM'ed).
         * They are no longer "present" according to the
           UserPresence table.
     '''
@@ -4773,9 +4773,10 @@ def get_active_presence_idle_user_ids(realm: Realm,
     user_ids = set()
     for user_id in active_user_ids:
         flags = user_flags.get(user_id, [])  # type: Iterable[str]
-        mentioned = 'mentioned' in flags
+        mentioned = 'mentioned' in flags or 'wildcard_mentioned' in flags
         private_message = is_pm and user_id != sender_id
-        if mentioned or private_message:
+        alerted = 'has_alert_word' in flags
+        if mentioned or private_message or alerted:
             user_ids.add(user_id)
 
     return filter_presence_idle_user_ids(user_ids)
