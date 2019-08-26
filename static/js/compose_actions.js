@@ -442,7 +442,8 @@ exports.quote_and_reply = function (opts) {
         //     ```
         let content = `@_**${message.sender_full_name}|${message.sender_id}** `;
         content += `[said](${hash_util.by_conversation_and_time_uri(message)}):\n`;
-        content += '```quote\n' + message.raw_content + '\n```';
+        const fence = fenced_code.get_unused_fence(message.raw_content);
+        content += `${fence}quote\n${message.raw_content}\n${fence}`;
         compose_ui.replace_syntax('[Quoting…]', content, textarea);
         autosize.update($('#compose-textarea'));
     }
