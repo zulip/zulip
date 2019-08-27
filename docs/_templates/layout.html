@@ -1,0 +1,26 @@
+{% extends "!layout.html" %}
+{% block document %}
+    <!---
+    # This allows us to insert a warning that appears only on the development
+    # version e.g. to say that something is likely to have changed.
+    # For more info see: https://www.sphinx-doc.org/en/master/templating.html
+    -->
+    {% if pagename == "production/email-gateway" and release.endswith('+git') %}
+    <!--
+    # email-gateway.html page doesn't exist in the stable documentation yet.
+    # This temporary workaround prevents CircleCI failure and should be removed after the next release.
+    -->
+    <div class="admonition warning">
+        <p class="first admonition-title">Warning</p>
+        <p class="last">You are reading a <strong>development version</strong> of the Zulip documentation. These instructions may not correspond to the latest Zulip Server release.
+        See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/production">documentation for the latest stable release</a>.</p>
+    </div>
+    {% elif pagename.split("/")[0] == "production" and release.endswith('+git') %}
+    <div class="admonition warning">
+        <p class="first admonition-title">Warning</p>
+        <p class="last">You are reading a <strong>development version</strong> of the Zulip documentation. These instructions may not correspond to the latest Zulip Server release.
+        See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/{{ pagename }}.html">documentation for the latest stable release</a>.</p>
+    </div>
+    {% endif %}
+    {{ super() }}
+{% endblock %}
