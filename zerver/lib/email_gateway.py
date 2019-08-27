@@ -413,7 +413,7 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
                        "Please use the address specified in your Streams page."
             }
     queue_json_publish(
-        "email_mirror",
+        "email_gateway",
         {
             "message": data['msg_text'],
             "rcpt_to": rcpt_to

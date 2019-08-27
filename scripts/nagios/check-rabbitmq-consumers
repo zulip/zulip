@@ -49,7 +49,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__f
 queues = {
     'deferred_work'
     'digest_emails',
-    'email_mirror',
+    'email_gateway',
     'embed_links',
     'embedded_bots',
     'error_reports',

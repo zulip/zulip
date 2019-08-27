@@ -481,7 +481,7 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
         logging.info("Received digest event: %s" % (event,))
         handle_digest_email(event["user_profile_id"], event["cutoff"])
 
-@assign_queue('email_mirror')
+@assign_queue('email_gateway')
 class MirrorWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         rcpt_to = event['rcpt_to']

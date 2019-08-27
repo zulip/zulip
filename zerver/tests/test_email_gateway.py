@@ -850,7 +850,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         def check_queue_json_publish(queue_name: str,
                                      event: Union[Mapping[str, Any], str],
                                      processor: Optional[Callable[[Any], None]]=None) -> None:
-            self.assertEqual(queue_name, "email_mirror")
+            self.assertEqual(queue_name, "email_gateway")
             self.assertEqual(event, {"rcpt_to": to_address, "message": mail})
 
         mock_queue_json_publish.side_effect = check_queue_json_publish

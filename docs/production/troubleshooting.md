@@ -55,7 +55,7 @@ zulip-tornado                                                   RUNNING   pid 21
 zulip-workers:zulip-deliver-enqueued-emails                     STARTING
 zulip-workers:zulip-events-confirmation-emails                  RUNNING   pid 2199, uptime 1:13:11
 zulip-workers:zulip-events-digest_emails                        RUNNING   pid 2205, uptime 1:13:11
-zulip-workers:zulip-events-email_mirror                         RUNNING   pid 2203, uptime 1:13:11
+zulip-workers:zulip-events-email_gateway                        RUNNING   pid 2203, uptime 1:13:11
 zulip-workers:zulip-events-error_reports                        RUNNING   pid 2200, uptime 1:13:11
 zulip-workers:zulip-events-feedback_messages                    RUNNING   pid 2207, uptime 1:13:11
 zulip-workers:zulip-events-missedmessage_mobile_notifications   RUNNING   pid 2204, uptime 1:13:11
