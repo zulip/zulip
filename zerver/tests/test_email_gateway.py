@@ -781,7 +781,7 @@ class TestScriptMTA(ZulipTestCase):
 
     def test_success(self) -> None:
         script = os.path.join(os.path.dirname(__file__),
-                              '../../scripts/lib/email-mirror-postfix')
+                              '../../scripts/lib/email-gateway-postfix')
 
         sender = self.example_email('hamlet')
         stream = get_stream("Denmark", get_realm("zulip"))
@@ -798,7 +798,7 @@ class TestScriptMTA(ZulipTestCase):
 
     def test_error_no_recipient(self) -> None:
         script = os.path.join(os.path.dirname(__file__),
-                              '../../scripts/lib/email-mirror-postfix')
+                              '../../scripts/lib/email-gateway-postfix')
 
         sender = self.example_email('hamlet')
         stream = get_stream("Denmark", get_realm("zulip"))
