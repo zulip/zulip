@@ -22,16 +22,29 @@ ZerverFieldsT = Dict[str, Any]
 class SubscriberHandler:
     def __init__(self) -> None:
         self.stream_info = dict()  # type: Dict[int, Set[int]]
+        self.huddle_info = dict()  # type: Dict[int, Set[int]]
 
     def set_info(self,
-                 stream_id: int,
-                 users: Set[int]) -> None:
-        self.stream_info[stream_id] = users
+                 users: Set[int],
+                 stream_id: Optional[int]=None,
+                 huddle_id: Optional[int]=None,
+                 ) -> None:
+        if stream_id is not None:
+            self.stream_info[stream_id] = users
+        elif huddle_id is not None:
+            self.huddle_info[huddle_id] = users
+        else:
+            raise AssertionError("stream_id or huddle_id is required")
 
     def get_users(self,
-                  stream_id: int) -> Set[int]:
-        users = self.stream_info[stream_id]
-        return users
+                  stream_id: Optional[int]=None,
+                  huddle_id: Optional[int]=None) -> Set[int]:
+        if stream_id is not None:
+            return self.stream_info[stream_id]
+        elif huddle_id is not None:
+            return self.huddle_info[huddle_id]
+        else:
+            raise AssertionError("stream_id or huddle_id is required")
 
 def build_zerver_realm(realm_id: int, realm_subdomain: str, time: float,
                        other_product: str) -> List[ZerverFieldsT]:

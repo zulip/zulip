@@ -188,9 +188,9 @@ class MatterMostImporter(ZulipTestCase):
         ron_id = user_id_mapper.get("ron")
         harry_id = user_id_mapper.get("harry")
         self.assertEqual({ron_id, harry_id}, {1, 2})
-        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("gryffindor-common-room")), {ron_id, harry_id})
-        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("gryffindor-quidditch-team")), {ron_id, harry_id})
-        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("dumbledores-army")), {ron_id, harry_id})
+        self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("gryffindor-common-room")), {ron_id, harry_id})
+        self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("gryffindor-quidditch-team")), {ron_id, harry_id})
+        self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("dumbledores-army")), {ron_id, harry_id})
 
         # Converting channel data when a user's `teams` value is `null`.
         self.username_to_user["ron"].update({"teams": None})
@@ -205,9 +205,9 @@ class MatterMostImporter(ZulipTestCase):
         )
         harry_id = user_id_mapper.get("harry")
         self.assertIn(harry_id, {1, 2})
-        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("gryffindor-common-room")), {harry_id})
-        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("gryffindor-quidditch-team")), {harry_id})
-        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("dumbledores-army")), {harry_id})
+        self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("gryffindor-common-room")), {harry_id})
+        self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("gryffindor-quidditch-team")), {harry_id})
+        self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("dumbledores-army")), {harry_id})
 
         team_name = "slytherin"
         zerver_stream = convert_channel_data(
@@ -224,8 +224,8 @@ class MatterMostImporter(ZulipTestCase):
         pansy_id = user_id_mapper.get("pansy")
         snape_id = user_id_mapper.get("snape")
         self.assertEqual({malfoy_id, pansy_id, snape_id}, {3, 4, 5})
-        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("slytherin-common-room")), {malfoy_id, pansy_id, snape_id})
-        self.assertEqual(subscriber_handler.get_users(stream_id_mapper.get("slytherin-quidditch-team")), {malfoy_id, pansy_id})
+        self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("slytherin-common-room")), {malfoy_id, pansy_id, snape_id})
+        self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("slytherin-quidditch-team")), {malfoy_id, pansy_id})
 
     def test_write_emoticon_data(self) -> None:
         output_dir = self.make_import_output_dir("mattermost")
