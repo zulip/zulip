@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from typing import Dict
 
 from zerver.decorator import internal_notify_view
-from zerver.lib.email_mirror import mirror_email_message
+from zerver.lib.email_gateway import mirror_email_message
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_dict, check_string

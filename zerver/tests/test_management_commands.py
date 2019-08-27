@@ -334,7 +334,7 @@ class TestRealmReactivationEmail(ZulipTestCase):
             call_command(self.COMMAND_NAME, "--realm=zulip")
 
 class TestSendToEmailMirror(ZulipTestCase):
-    COMMAND_NAME = "send_to_email_mirror"
+    COMMAND_NAME = "send_to_email_gateway"
 
     def test_sending_a_fixture(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.txt"

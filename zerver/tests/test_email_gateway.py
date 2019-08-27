@@ -23,7 +23,7 @@ from zerver.models import (
 
 from zerver.lib.actions import ensure_stream
 
-from zerver.lib.email_mirror import (
+from zerver.lib.email_gateway import (
     process_message, process_missed_message,
     create_missed_message_address,
     get_missed_message_token_from_address,
@@ -36,7 +36,7 @@ from zerver.lib.email_mirror import (
     ZulipEmailForwardError,
 )
 
-from zerver.lib.email_mirror_helpers import (
+from zerver.lib.email_gateway_helpers import (
     decode_email_address,
     encode_email_address,
     get_email_gateway_message_string_from_address,
@@ -388,7 +388,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        with mock.patch('zerver.lib.email_mirror.upload_message_file',
+        with mock.patch('zerver.lib.email_gateway.upload_message_file',
                         return_value='https://test_url') as upload_message_file:
             process_message(incoming_valid_message)
             upload_message_file.assert_called_with('image.png', len(image_bytes),
@@ -419,7 +419,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        with mock.patch('zerver.lib.email_mirror.logger.warning') as mock_warn:
+        with mock.patch('zerver.lib.email_gateway.logger.warning') as mock_warn:
             process_message(incoming_valid_message)
             mock_warn.assert_called_with("Payload is not bytes (invalid attachment %s in message from %s)." %
                                          ('some_attachment', self.example_email('hamlet')))
@@ -442,7 +442,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        with mock.patch('zerver.lib.email_mirror.logging.warning') as mock_warn:
+        with mock.patch('zerver.lib.email_gateway.logging.warning') as mock_warn:
             process_message(incoming_valid_message)
             mock_warn.assert_called_with("Email has no nonempty body sections; ignoring.")
 
@@ -462,7 +462,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        with mock.patch('zerver.lib.email_mirror.logging.warning') as mock_warn:
+        with mock.patch('zerver.lib.email_gateway.logging.warning') as mock_warn:
             process_message(incoming_valid_message)
             mock_warn.assert_called_with("Unable to find plaintext or HTML message body")
 
@@ -514,7 +514,7 @@ class TestMissedMessageEmailMessageTokenMissingData(ZulipTestCase):
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
         # We need to force redis_client.hmget to return some None values:
-        with mock.patch('zerver.lib.email_mirror.redis_client.hmget',
+        with mock.patch('zerver.lib.email_gateway.redis_client.hmget',
                         return_value=[None, None, None]):
             exception_message = ''
             try:
@@ -841,7 +841,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         user_message = most_recent_usermessage(user_profile)
         return create_missed_message_address(user_profile, user_message.message)
 
-    @mock.patch('zerver.lib.email_mirror.queue_json_publish')
+    @mock.patch('zerver.lib.email_gateway.queue_json_publish')
     def send_offline_message(self, to_address: str, sender: str,
                              mock_queue_json_publish: mock.Mock) -> HttpResponse:
         mail_template = self.fixture_data('simple.txt', type='email')
@@ -973,7 +973,7 @@ class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
         incoming_valid_message['To'] = "address@wrongdomain, address@notzulip"
         incoming_valid_message['Reply-to'] = self.example_email('othello')
 
-        with mock.patch("zerver.lib.email_mirror.log_and_report") as mock_log_and_report:
+        with mock.patch("zerver.lib.email_gateway.log_and_report") as mock_log_and_report:
             process_message(incoming_valid_message)
             mock_log_and_report.assert_called_with(incoming_valid_message,
                                                    "Missing recipient in mirror email", None)
@@ -1013,7 +1013,7 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         expected_content = expected_content.format(self.example_email('hamlet'))
         self.assertEqual(msg_content, expected_content)
 
-    @mock.patch('zerver.lib.email_mirror.logger.error')
+    @mock.patch('zerver.lib.email_gateway.logger.error')
     def test_log_and_report_no_errorbot(self, mock_error: mock.MagicMock) -> None:
         with self.settings(ERROR_BOT=None):
             incoming_valid_message = MIMEText('Test Body')
