@@ -149,6 +149,32 @@ This is most often caused by an incomplete certificate chain.  See
 discussion in the [Manual install](#manual-install) section above.
 
 
+### The iOS app can't connect to the server
+
+This can be caused by a server set up to support only TLS 1.1 or
+older (including TLS 1.0, SSL 3, or SSL 2.)
+
+TLS 1.2 has been a standard for over 10 years, and all modern web
+server software supports it.  Starting in early 2020, all major
+browsers [will *require* TLS 1.2 or later][tls12-required-news], and
+will refuse to connect over TLS 1.1 or older.  And on iOS, Apple [has
+since iOS 9][apple-ats] required TLS 1.2 for all connections made by
+apps, unless the app specifically opts into lower security.
+
+[tls12-required-news]: https://www.thesslstore.com/blog/apple-microsoft-google-disable-tls-1-0-tls-1-1/
+[apple-ats]: https://developer.apple.com/library/archive/releasenotes/General/WhatsNewIniOS/Articles/iOS9.html
+
+If your server is reachable from the public Internet, a convenient way
+to check what TLS versions it supports is the [SSL Labs
+tester][ssllabs-tester].
+
+To resolve this issue, update your server to support TLS 1.2,
+and preferably also TLS 1.3.  For nginx, see [the `ssl_protocols`
+directive][nginx-doc-protocols] in your configuration.
+
+[nginx-doc-protocols]: http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_protocols
+
+
 ### The Android app connects to the server on some devices but not others
 
 An issue on Android 7.0 ([report][android7.0-tls-issue],
