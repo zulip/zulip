@@ -77,6 +77,7 @@ def do_yarn_install(target_path, yarn_args, success_stamp, stdout=None, stderr=N
     os.makedirs(target_path, exist_ok=True)
     shutil.copy('package.json', target_path)
     shutil.copy("yarn.lock", target_path)
+    shutil.copy(".yarnrc", target_path)
     cached_node_modules = os.path.join(target_path, 'node_modules')
     print("Cached version not found! Installing node modules.")
 
@@ -86,7 +87,7 @@ def do_yarn_install(target_path, yarn_args, success_stamp, stdout=None, stderr=N
     if os.environ.get('CUSTOM_CA_CERTIFICATES'):
         run([YARN_BIN, "config", "set", "cafile", os.environ['CUSTOM_CA_CERTIFICATES']],
             stdout=stdout, stderr=stderr)
-    run([YARN_BIN, "install", "--non-interactive", "--frozen-lockfile", "--ignore-scripts"] + yarn_args,
+    run([YARN_BIN, "install", "--non-interactive", "--frozen-lockfile"] + yarn_args,
         cwd=target_path, stdout=stdout, stderr=stderr)
     with open(success_stamp, 'w'):
         pass
