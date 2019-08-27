@@ -441,14 +441,14 @@ i18n_urls = [
     # used for URL resolution.  The second here is to allow
     # reverse("django.contrib.auth.views.login") in templates to
     # return `/accounts/login/`.
-    url(r'^accounts/login/', zerver.views.auth.login_page,
+    url(r'^accounts/login/$', zerver.views.auth.login_page,
         {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
-    url(r'^accounts/login/', login, {'template_name': 'zerver/login.html'},
+    url(r'^accounts/login/$', login, {'template_name': 'zerver/login.html'},
         name='django.contrib.auth.views.login'),
-    url(r'^accounts/logout/', zerver.views.auth.logout_then_login,
+    url(r'^accounts/logout/$', zerver.views.auth.logout_then_login,
         name='zerver.views.auth.logout_then_login'),
 
-    url(r'^accounts/webathena_kerberos_login/',
+    url(r'^accounts/webathena_kerberos_login/$',
         zerver.views.zephyr.webathena_kerberos_login,
         name='zerver.views.zephyr.webathena_kerberos_login'),
 
@@ -464,7 +464,7 @@ i18n_urls = [
         name='django.contrib.auth.views.password_reset_confirm'),
     url(r'^accounts/password/done/$', password_reset_complete,
         {'template_name': 'zerver/reset_done.html'}),
-    url(r'^accounts/deactivated/',
+    url(r'^accounts/deactivated/$',
         zerver.views.auth.show_deactivation_notice,
         name='zerver.views.auth.show_deactivation_notice'),
 
@@ -472,27 +472,27 @@ i18n_urls = [
     url(r'^digest/$', zerver.views.digest.digest_page),
 
     # Registration views, require a confirmation ID.
-    url(r'^accounts/home/', zerver.views.registration.accounts_home,
+    url(r'^accounts/home/$', zerver.views.registration.accounts_home,
         name='zerver.views.registration.accounts_home'),
-    url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
+    url(r'^accounts/send_confirm/(?P<email>[\S]+)?$',
         TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'),
         name='signup_send_confirm'),
-    url(r'^accounts/new/send_confirm/(?P<email>[\S]+)?',
+    url(r'^accounts/new/send_confirm/(?P<email>[\S]+)?$',
         TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'),
         {'realm_creation': True}, name='new_realm_send_confirm'),
-    url(r'^accounts/register/', zerver.views.registration.accounts_register,
+    url(r'^accounts/register/$', zerver.views.registration.accounts_register,
         name='zerver.views.registration.accounts_register'),
-    url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)',
+    url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)$',
         zerver.views.registration.check_prereg_key_and_redirect,
         name='check_prereg_key_and_redirect'),
 
-    url(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)',
+    url(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)$',
         zerver.views.user_settings.confirm_email_change,
         name='zerver.views.user_settings.confirm_email_change'),
 
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.
-    url(r'^accounts/unsubscribe/(?P<email_type>[\w]+)/(?P<confirmation_key>[\w]+)',
+    url(r'^accounts/unsubscribe/(?P<email_type>[\w]+)/(?P<confirmation_key>[\w]+)$',
         zerver.views.unsubscribe.email_unsubscribe,
         name='zerver.views.unsubscribe.email_unsubscribe'),
 
@@ -515,7 +515,7 @@ i18n_urls = [
         zerver.views.registration.create_realm, name='zerver.views.create_realm'),
 
     # Realm Reactivation
-    url(r'^reactivate/(?P<confirmation_key>[\w]+)', zerver.views.realm.realm_reactivation,
+    url(r'^reactivate/(?P<confirmation_key>[\w]+)$', zerver.views.realm.realm_reactivation,
         name='zerver.views.realm.realm_reactivation'),
 
     # Global public streams (Zulip's way of doing archives)
@@ -539,10 +539,10 @@ i18n_urls = [
     url(r'^integrations/doc-html/(?P<integration_name>[^/]*)$',
         zerver.views.documentation.integration_doc,
         name="zerver.views.documentation.integration_doc"),
-    url(r'^integrations/(.*)', IntegrationView.as_view()),
+    url(r'^integrations/(.*)$', IntegrationView.as_view()),
     url(r'^team/$', zerver.views.users.team_view),
     url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
-    url(r'^apps/(.*)', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
+    url(r'^apps/(.*)$', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
     url(r'^plans/$', zerver.views.home.plans_view, name='plans'),
 
     # Landing page, features pages, signup form, etc.
@@ -601,7 +601,7 @@ urls += [
 # having to rewrite URLs, and is implemented using the
 # 'override_api_url_scheme' flag passed to rest_dispatch
 urls += [
-    url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)',
+    url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)$',
         rest_dispatch,
         {'GET': ('zerver.views.upload.serve_file_backend',
                  {'override_api_url_scheme'})}),
@@ -611,11 +611,11 @@ urls += [
         {'GET': ('zerver.views.thumbnail.backend_serve_thumbnail',
                  {'override_api_url_scheme'})}),
     # Avatars have the same constraint due to `!avatar` syntax.
-    url(r'^avatar/(?P<email_or_id>[\S]+)/(?P<medium>[\S]+)?',
+    url(r'^avatar/(?P<email_or_id>[\S]+)/(?P<medium>[\S]+)?$',
         rest_dispatch,
         {'GET': ('zerver.views.users.avatar',
                  {'override_api_url_scheme'})}),
-    url(r'^avatar/(?P<email_or_id>[\S]+)',
+    url(r'^avatar/(?P<email_or_id>[\S]+)$',
         rest_dispatch,
         {'GET': ('zerver.views.users.avatar',
                  {'override_api_url_scheme'})}),
@@ -630,7 +630,7 @@ urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violation
 # rendered at the time Zulip used camo for doing http -> https conversion for
 # such links with images previews. Now thumbor can be used for serving such
 # images.
-urls += url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)',
+urls += url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)$',
             zerver.views.camo.handle_camo_url,
             name='zerver.views.camo.handle_camo_url'),
 

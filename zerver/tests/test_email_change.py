@@ -26,7 +26,7 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_confirm_email_change_with_invalid_key(self) -> None:
         self.login(self.example_email("hamlet"))
-        key = 'invalid key'
+        key = 'invalid_key'
         url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. The confirmation link is malformed."], response)
