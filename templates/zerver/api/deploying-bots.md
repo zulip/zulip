@@ -15,7 +15,7 @@ options for doing so:
 * Using the Zulip Botserver, which is a simple Flask server for
   running a bot in production, and connecting that to Zulip's outgoing
   webhooks feature.  This can be deployed in environments like
-  Heroko's free tier without running a persistent process.
+  Heroku's free tier without running a persistent process.
 
 ## Zulip Botserver
 
