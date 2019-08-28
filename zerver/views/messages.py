@@ -56,6 +56,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     get_user_by_id_in_realm_including_cross_realm, get_stream_recipient
 
 from sqlalchemy import func
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
     or_, not_, union_all, alias, Selectable, ColumnElement, table
 
@@ -85,6 +86,27 @@ Query = Any
 ConditionTransform = Any
 
 OptionalNarrowListT = Optional[List[Dict[str, Any]]]
+
+# These delimiters will not appear in rendered messages or HTML-escaped topics.
+TS_START = "<ts-match>"
+TS_STOP = "</ts-match>"
+
+def ts_locs_array(
+    config: ColumnElement, text: ColumnElement, tsquery: ColumnElement
+) -> ColumnElement:
+    options = "HighlightAll = TRUE, StartSel = %s, StopSel = %s" % (TS_START, TS_STOP)
+    delimited = func.ts_headline(config, text, tsquery, options)
+    parts = func.unnest(func.string_to_array(delimited, TS_START)).alias()
+    part = column(parts.name)
+    part_len = func.length(part) - len(TS_STOP)
+    match_pos = func.sum(part_len).over(rows=(None, -1)) + len(TS_STOP)
+    match_len = func.strpos(part, TS_STOP) - 1
+    return func.array(
+        select([postgresql.array([match_pos, match_len])])
+        .select_from(parts)
+        .offset(1)
+        .as_scalar()
+    )
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder:
@@ -430,7 +452,6 @@ class NarrowBuilder:
     def _by_search_tsearch(self, query: Query, operand: str,
                            maybe_negate: ConditionTransform) -> Query:
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
-        ts_locs_array = func.ts_match_locs_array
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
                                            column("rendered_content"),
                                            tsquery).label("content_matches"))
@@ -454,9 +475,6 @@ class NarrowBuilder:
         cond = column("search_tsvector").op("@@")(tsquery)
         return query.where(maybe_negate(cond))
 
-# The offsets we get from PGroonga are counted in characters
-# whereas the offsets from tsearch_extras are in bytes, so we
-# have to account for both cases in the logic below.
 def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
     highlight_start = '<span class="highlight">'
     highlight_stop = '</span>'
@@ -464,24 +482,16 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
     result = ''
     in_tag = False
 
-    text_utf8 = text.encode('utf8')
-
     for loc in locs:
         (offset, length) = loc
 
-        # These indexes are in byte space for tsearch,
-        # and they are in string space for pgroonga.
         prefix_start = pos
         prefix_end = offset
         match_start = offset
         match_end = offset + length
 
-        if settings.USING_PGROONGA:
-            prefix = text[prefix_start:prefix_end]
-            match = text[match_start:match_end]
-        else:
-            prefix = text_utf8[prefix_start:prefix_end].decode()
-            match = text_utf8[match_start:match_end].decode()
+        prefix = text[prefix_start:prefix_end]
+        match = text[match_start:match_end]
 
         for character in (prefix + match):
             if character == '<':
@@ -498,12 +508,7 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
             result += highlight_stop
         pos = match_end
 
-    if settings.USING_PGROONGA:
-        final_frag = text[pos:]
-    else:
-        final_frag = text_utf8[pos:].decode()
-
-    result += final_frag
+    result += text[pos:]
     return result
 
 def get_search_fields(rendered_content: str, topic_name: str, content_matches: Iterable[Tuple[int, int]],
