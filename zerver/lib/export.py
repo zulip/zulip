@@ -241,7 +241,7 @@ ANALYTICS_TABLES = {
 # inspecting the corresponding Django models
 DATE_FIELDS = {
     'zerver_attachment': ['create_time'],
-    'zerver_message': ['last_edit_time', 'pub_date'],
+    'zerver_message': ['last_edit_time', 'date_sent'],
     'zerver_realm': ['date_created'],
     'zerver_stream': ['date_created'],
     'zerver_useractivity': ['last_visit'],

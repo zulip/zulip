@@ -29,7 +29,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.subscribe(othello, 'Verona')
 
         one_day_ago = timezone_now() - datetime.timedelta(days=1)
-        Message.objects.all().update(pub_date=one_day_ago)
+        Message.objects.all().update(date_sent=one_day_ago)
         one_hour_ago = timezone_now() - datetime.timedelta(seconds=3600)
 
         cutoff = time.mktime(one_hour_ago.timetuple())
@@ -73,7 +73,7 @@ class TestDigestEmailMessages(ZulipTestCase):
                                                            mock_enough_traffic: mock.MagicMock) -> None:
 
         one_day_ago = timezone_now() - datetime.timedelta(days=1)
-        Message.objects.all().update(pub_date=one_day_ago)
+        Message.objects.all().update(date_sent=one_day_ago)
 
         othello = self.example_user('othello')
         for stream in ['Verona', 'Scotland', 'Denmark']:

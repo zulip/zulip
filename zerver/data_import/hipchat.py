@@ -609,7 +609,7 @@ def process_message_file(realm_id: int,
                 receiver_id=d.get('receiver', {}).get('id'),
                 content=content,
                 mention_user_ids=d.get('mentions', []),
-                pub_date=str_date_to_float(d['timestamp']),
+                date_sent=str_date_to_float(d['timestamp']),
                 attachment=d.get('attachment'),
                 files_dir=files_dir,
             )
@@ -695,7 +695,7 @@ def process_raw_message_batch(realm_id: int,
             logging.info('skipping too-long message of length %s' % (len(content),))
             continue
 
-        pub_date = raw_message['pub_date']
+        date_sent = raw_message['date_sent']
 
         try:
             recipient_id = get_recipient_id(raw_message)
@@ -729,7 +729,7 @@ def process_raw_message_batch(realm_id: int,
         message = build_message(
             content=content,
             message_id=message_id,
-            pub_date=pub_date,
+            date_sent=date_sent,
             recipient_id=recipient_id,
             rendered_content=rendered_content,
             topic_name=topic_name,

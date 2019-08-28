@@ -79,7 +79,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
         # Set publication date of all existing messages to "now", so that we have full
         # control over what's expired and what isn't.
-        Message.objects.all().update(pub_date=timezone_now())
+        Message.objects.all().update(date_sent=timezone_now())
 
     def _set_realm_message_retention_value(self, realm: Realm, retention_period: Optional[int]) -> None:
         realm.message_retention_days = retention_period
@@ -89,10 +89,10 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         stream.message_retention_days = retention_period
         stream.save()
 
-    def _change_messages_pub_date(self, msgs_ids: List[int], pub_date: datetime) -> None:
-        Message.objects.filter(id__in=msgs_ids).update(pub_date=pub_date)
+    def _change_messages_date_sent(self, msgs_ids: List[int], date_sent: datetime) -> None:
+        Message.objects.filter(id__in=msgs_ids).update(date_sent=date_sent)
 
-    def _make_mit_messages(self, message_quantity: int, pub_date: datetime) -> Any:
+    def _make_mit_messages(self, message_quantity: int, date_sent: datetime) -> Any:
         # send messages from mit.edu realm and change messages pub date
         sender = self.mit_user('espuser')
         recipient = self.mit_user('starnine')
@@ -100,7 +100,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
                                               sender_realm='zephyr')
                    for i in range(message_quantity)]
 
-        self._change_messages_pub_date(msg_ids, pub_date)
+        self._change_messages_date_sent(msg_ids, date_sent)
         return msg_ids
 
     def _send_cross_realm_personal_message(self) -> int:
@@ -120,7 +120,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
     def _make_expired_zulip_messages(self, message_quantity: int) -> List[int]:
         msg_ids = list(Message.objects.order_by('id').filter(
                        sender__realm=self.zulip_realm).values_list('id', flat=True)[3:3 + message_quantity])
-        self._change_messages_pub_date(
+        self._change_messages_date_sent(
             msg_ids,
             timezone_now() - timedelta(ZULIP_REALM_DAYS+1)
         )
@@ -149,7 +149,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         expired_message_id = self.send_stream_message(sender_email, "Denmark", body)
         actual_message_id = self.send_stream_message(sender_email, "Denmark", body)
         other_message_id = self.send_stream_message("othello@zulip.com", "Denmark", body)
-        self._change_messages_pub_date([expired_message_id], timezone_now() - timedelta(days=MIT_REALM_DAYS + 1))
+        self._change_messages_date_sent([expired_message_id], timezone_now() - timedelta(days=MIT_REALM_DAYS + 1))
         return {'expired_message_id': expired_message_id, 'actual_message_id': actual_message_id,
                 'other_user_message_id': other_message_id}
 
@@ -174,7 +174,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # Change some Zulip messages to be expired:
         expired_zulip_msg_ids = list(Message.objects.order_by('id').filter(
             sender__realm=self.zulip_realm).values_list('id', flat=True)[3:10])
-        self._change_messages_pub_date(
+        self._change_messages_date_sent(
             expired_zulip_msg_ids,
             timezone_now() - timedelta(ZULIP_REALM_DAYS+1)
         )
@@ -200,11 +200,11 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # Make some non-expired messages in MIT:
         self._make_mit_messages(4, timezone_now() - timedelta(days=MIT_REALM_DAYS-1))
 
-        # Change some Zulip messages pub_date, but the realm has no retention policy,
+        # Change some Zulip messages date_sent, but the realm has no retention policy,
         # so they shouldn't get archived
         zulip_msg_ids = list(Message.objects.order_by('id').filter(
             sender__realm=self.zulip_realm).values_list('id', flat=True)[3:10])
-        self._change_messages_pub_date(
+        self._change_messages_date_sent(
             zulip_msg_ids,
             timezone_now() - timedelta(ZULIP_REALM_DAYS+1)
         )
@@ -227,7 +227,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
         msg_id = self.send_stream_message(hamlet, "Verona", "test")
         usermsg_ids = self._get_usermessage_ids([msg_id])
-        self._change_messages_pub_date([msg_id], timezone_now() - timedelta(days=2))
+        self._change_messages_date_sent([msg_id], timezone_now() - timedelta(days=2))
 
         # Don't archive if stream's retention policy set to -1:
         self._set_realm_message_retention_value(self.zulip_realm, 1)
@@ -252,7 +252,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         msg_ids = [self._send_cross_realm_personal_message() for i in range(1, 7)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
         # Make the message expired on the recipient's realm:
-        self._change_messages_pub_date(msg_ids, timezone_now() - timedelta(ZULIP_REALM_DAYS+1))
+        self._change_messages_date_sent(msg_ids, timezone_now() - timedelta(ZULIP_REALM_DAYS+1))
 
         archive_messages()
         self._verify_archive_data(msg_ids, usermsg_ids)
@@ -296,7 +296,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
         expired_crossrealm_msg_id = self._send_cross_realm_personal_message()
         # Make the message expired in the recipient's realm:
-        self._change_messages_pub_date(
+        self._change_messages_date_sent(
             [expired_crossrealm_msg_id],
             timezone_now() - timedelta(ZULIP_REALM_DAYS+1)
         )
@@ -331,16 +331,16 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
         # Now make `actual_message_id` expired too.  We still don't
         # delete the Attachment objects.
-        self._change_messages_pub_date([msgs_ids['actual_message_id']],
-                                       timezone_now() - timedelta(days=MIT_REALM_DAYS + 1))
+        self._change_messages_date_sent([msgs_ids['actual_message_id']],
+                                        timezone_now() - timedelta(days=MIT_REALM_DAYS + 1))
         archive_messages()
         self.assertEqual(Attachment.objects.count(), 3)
 
         # Finally, make the last message mentioning those attachments
         # expired.  We should now delete the Attachment objects and
         # each ArchivedAttachment object should list all 3 messages.
-        self._change_messages_pub_date([msgs_ids['other_user_message_id']],
-                                       timezone_now() - timedelta(days=MIT_REALM_DAYS + 1))
+        self._change_messages_date_sent([msgs_ids['other_user_message_id']],
+                                        timezone_now() - timedelta(days=MIT_REALM_DAYS + 1))
 
         archive_messages()
         self.assertEqual(Attachment.objects.count(), 0)

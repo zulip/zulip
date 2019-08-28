@@ -395,13 +395,13 @@ def build_huddle(huddle_id: int) -> ZerverFieldsT:
     )
     return model_to_dict(huddle)
 
-def build_message(topic_name: str, pub_date: float, message_id: int, content: str,
+def build_message(topic_name: str, date_sent: float, message_id: int, content: str,
                   rendered_content: Optional[str], user_id: int, recipient_id: int,
                   has_image: bool=False, has_link: bool=False,
                   has_attachment: bool=True) -> ZerverFieldsT:
     zulip_message = Message(
         rendered_content_version=1,  # this is Zulip specific
-        pub_date=pub_date,
+        date_sent=date_sent,
         id=message_id,
         content=content,
         rendered_content=rendered_content,

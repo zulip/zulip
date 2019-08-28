@@ -45,7 +45,7 @@ def archive(request: HttpRequest,
         messages_for_topic(
             stream_id=stream_id,
             topic_name=topic_name,
-        ).select_related('sender').order_by('pub_date')
+        ).select_related('sender').order_by('date_sent')
     )
 
     if not all_messages:
@@ -68,7 +68,7 @@ def archive(request: HttpRequest,
             'sender_full_name': msg.sender.full_name,
             'timestampstr': datetime_to_timestamp(msg.last_edit_time
                                                   if msg.last_edit_time
-                                                  else msg.pub_date),
+                                                  else msg.date_sent),
             'message_content': msg.rendered_content,
             'avatar_url': get_gravatar_url(msg.sender.email, 1),
             'include_sender': include_sender,
