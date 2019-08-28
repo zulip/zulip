@@ -53,7 +53,7 @@
                 </div>
                 <div class="control-group" id="custom_external_account_url_pattern">
                     <label for="custom_field_url_pattern" class="control-label">{{t "URL pattern" }}</label>
-                    <input type="url" id="custom_field_url_pattern" name="url_pattern" autocomplete="off" maxlength="80" />
+                    <input type="url" id="custom_field_url_pattern" name="url_pattern" autocomplete="off" maxlength="1024" placeholder="https://example.com/path/%(username)s"/>
                 </div>
                 <button type="submit" class="button rounded sea-green" id="add-custom-profile-field-btn">
                     {{t 'Add profile field' }}
