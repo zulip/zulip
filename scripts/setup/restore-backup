@@ -28,7 +28,7 @@ def restore_backup(tarball_file):
 
     # First, we unpack the /etc/zulip configuration, so we know how
     # this server is supposed to be configured (and can import
-    # /etc/zulip/settings.py via `from zproject import settings`,
+    # /etc/zulip/settings.py via `from django.conf import settings`,
     # next).  Ignore errors if zulip-backup/settings is not present
     # (E.g. because this is a development backup).
     tarball_file.seek(0, 0)
@@ -44,7 +44,8 @@ def restore_backup(tarball_file):
         stdin=tarball_file,
     )
 
-    from zproject import settings
+    os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+    from django.conf import settings
 
     paths = [
         ("settings", "/etc/zulip"),
