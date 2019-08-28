@@ -6,7 +6,7 @@ from django.test import TestCase, override_settings
 from sqlalchemy.sql import (
     and_, select, column, table,
 )
-from sqlalchemy.sql import compiler
+from sqlalchemy.sql.elements import ClauseElement
 
 from zerver.models import (
     Realm, Subscription, Recipient, Stream,
@@ -54,16 +54,17 @@ from zerver.views.messages import (
 from typing import Dict, Mapping, List, Sequence, Tuple, Union, Any, Optional
 import mock
 import os
-import re
 import ujson
 
-def get_sqlalchemy_query_params(query: str) -> Dict[str, str]:
+def get_sqlalchemy_sql(query: ClauseElement) -> str:
     dialect = get_sqlalchemy_connection().dialect
-    comp = compiler.SQLCompiler(dialect, query)
-    return comp.params
+    comp = query.compile(dialect=dialect)
+    return str(comp)
 
-def fix_ws(s: str) -> str:
-    return re.sub(r'\s+', ' ', str(s)).strip()
+def get_sqlalchemy_query_params(query: ClauseElement) -> Dict[str, object]:
+    dialect = get_sqlalchemy_connection().dialect
+    comp = query.compile(dialect=dialect)
+    return comp.params
 
 def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> str:
     stream = get_stream(stream_name, realm)
@@ -95,11 +96,11 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_stream_operator(self) -> None:
         term = dict(operator='stream', operand='Scotland')
-        self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
+        self._do_add_term_test(term, 'WHERE recipient_id = %(recipient_id_1)s')
 
     def test_add_term_using_stream_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator='stream', operand='Scotland', negated=True)
-        self._do_add_term_test(term, 'WHERE recipient_id != :recipient_id_1')
+        self._do_add_term_test(term, 'WHERE recipient_id != %(recipient_id_1)s')
 
     def test_add_term_using_stream_operator_and_non_existing_operand_should_raise_error(
             self) -> None:  # NEGATED
@@ -108,7 +109,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
         term = dict(operator='is', operand='private')
-        self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
+        self._do_add_term_test(term, 'WHERE (flags & %(flags_1)s) != %(param_1)s')
 
     def test_add_term_using_streams_operator_and_invalid_operand_should_raise_error(
             self) -> None:  # NEGATED
@@ -117,7 +118,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_streams_operator_and_public_stream_operand(self) -> None:
         term = dict(operator='streams', operand='public')
-        self._do_add_term_test(term, 'WHERE recipient_id IN (:recipient_id_1, :recipient_id_2, :recipient_id_3, :recipient_id_4, :recipient_id_5)')
+        self._do_add_term_test(term, 'WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s)')
 
         # Add new streams
         stream_dicts = [
@@ -143,11 +144,11 @@ class NarrowBuilderTest(ZulipTestCase):
         self.assertEqual(len(existing), 0)
 
         # Number of recipient ids will increase by 1 and not 3
-        self._do_add_term_test(term, 'WHERE recipient_id IN (:recipient_id_1, :recipient_id_2, :recipient_id_3, :recipient_id_4, :recipient_id_5, :recipient_id_6)')
+        self._do_add_term_test(term, 'WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s, %(recipient_id_6)s)')
 
     def test_add_term_using_streams_operator_and_public_stream_operand_negated(self) -> None:
         term = dict(operator='streams', operand='public', negated=True)
-        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1, :recipient_id_2, :recipient_id_3, :recipient_id_4, :recipient_id_5)')
+        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s)')
 
         # Add new streams
         stream_dicts = [
@@ -173,31 +174,31 @@ class NarrowBuilderTest(ZulipTestCase):
         self.assertEqual(len(existing), 0)
 
         # Number of recipient ids will increase by 1 and not 3
-        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1, :recipient_id_2, :recipient_id_3, :recipient_id_4, :recipient_id_5, :recipient_id_6)')
+        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s, %(recipient_id_6)s)')
 
     def test_add_term_using_is_operator_private_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='is', operand='private', negated=True)
-        self._do_add_term_test(term, 'WHERE (flags & :flags_1) = :param_1')
+        self._do_add_term_test(term, 'WHERE (flags & %(flags_1)s) = %(param_1)s')
 
     def test_add_term_using_is_operator_and_non_private_operand(self) -> None:
         for operand in ['starred', 'mentioned', 'alerted']:
             term = dict(operator='is', operand=operand)
-            self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
+            self._do_add_term_test(term, 'WHERE (flags & %(flags_1)s) != %(param_1)s')
 
     def test_add_term_using_is_operator_and_unread_operand(self) -> None:
         term = dict(operator='is', operand='unread')
-        self._do_add_term_test(term, 'WHERE (flags & :flags_1) = :param_1')
+        self._do_add_term_test(term, 'WHERE (flags & %(flags_1)s) = %(param_1)s')
 
     def test_add_term_using_is_operator_and_unread_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='is', operand='unread', negated=True)
-        self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
+        self._do_add_term_test(term, 'WHERE (flags & %(flags_1)s) != %(param_1)s')
 
     def test_add_term_using_is_operator_non_private_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='is', operand='starred', negated=True)
-        where_clause = 'WHERE (flags & :flags_1) = :param_1'
+        where_clause = 'WHERE (flags & %(flags_1)s) = %(param_1)s'
         params = dict(
             flags_1=UserMessage.flags.starred.mask,
             param_1=0
@@ -205,7 +206,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, where_clause, params)
 
         term = dict(operator='is', operand='alerted', negated=True)
-        where_clause = 'WHERE (flags & :flags_1) = :param_1'
+        where_clause = 'WHERE (flags & %(flags_1)s) = %(param_1)s'
         params = dict(
             flags_1=UserMessage.flags.has_alert_word.mask,
             param_1=0
@@ -213,7 +214,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, where_clause, params)
 
         term = dict(operator='is', operand='mentioned', negated=True)
-        where_clause = 'WHERE NOT ((flags & :flags_1) != :param_1 OR (flags & :flags_2) != :param_2)'
+        where_clause = 'WHERE NOT ((flags & %(flags_1)s) != %(param_1)s OR (flags & %(flags_2)s) != %(param_2)s)'
         params = dict(
             flags_1=UserMessage.flags.mentioned.mask,
             param_1=0,
@@ -228,29 +229,29 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_topic_operator_and_lunch_operand(self) -> None:
         term = dict(operator='topic', operand='lunch')
-        self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE upper(subject) = upper(%(param_1)s)')
 
     def test_add_term_using_topic_operator_lunch_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='topic', operand='lunch', negated=True)
-        self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE upper(subject) != upper(%(param_1)s)')
 
     def test_add_term_using_topic_operator_and_personal_operand(self) -> None:
         term = dict(operator='topic', operand='personal')
-        self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE upper(subject) = upper(%(param_1)s)')
 
     def test_add_term_using_topic_operator_personal_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='topic', operand='personal', negated=True)
-        self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE upper(subject) != upper(%(param_1)s)')
 
     def test_add_term_using_sender_operator(self) -> None:
         term = dict(operator='sender', operand=self.example_email("othello"))
-        self._do_add_term_test(term, 'WHERE sender_id = :param_1')
+        self._do_add_term_test(term, 'WHERE sender_id = %(param_1)s')
 
     def test_add_term_using_sender_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator='sender', operand=self.example_email("othello"), negated=True)
-        self._do_add_term_test(term, 'WHERE sender_id != :param_1')
+        self._do_add_term_test(term, 'WHERE sender_id != %(param_1)s')
 
     def test_add_term_using_sender_operator_with_non_existing_user_as_operand(
             self) -> None:  # NEGATED
@@ -259,38 +260,38 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_pm_with_operator_and_not_the_same_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand=self.example_email("othello"))
-        self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2')
+        self._do_add_term_test(term, 'WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s')
 
     def test_add_term_using_pm_with_operator_not_the_same_user_as_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='pm-with', operand=self.example_email("othello"), negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2)')
+        self._do_add_term_test(term, 'WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)')
 
     def test_add_term_using_pm_with_operator_the_same_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand=self.example_email("hamlet"))
-        self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1')
+        self._do_add_term_test(term, 'WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s')
 
     def test_add_term_using_pm_with_operator_the_same_user_as_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='pm-with', operand=self.example_email("hamlet"), negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1)')
+        self._do_add_term_test(term, 'WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)')
 
     def test_add_term_using_pm_with_operator_and_self_and_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com')
-        self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2')
+        self._do_add_term_test(term, 'WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s')
 
     def test_add_term_using_pm_with_operator_more_than_one_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand='cordelia@zulip.com, othello@zulip.com')
-        self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
+        self._do_add_term_test(term, 'WHERE recipient_id = %(recipient_id_1)s')
 
     def test_add_term_using_pm_with_operator_self_and_user_as_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com', negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2)')
+        self._do_add_term_test(term, 'WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)')
 
     def test_add_term_using_pm_with_operator_more_than_one_user_as_operand_and_negated(self) -> None:
         term = dict(operator='pm-with', operand='cordelia@zulip.com, othello@zulip.com', negated=True)
-        self._do_add_term_test(term, 'WHERE recipient_id != :recipient_id_1')
+        self._do_add_term_test(term, 'WHERE recipient_id != %(recipient_id_1)s')
 
     def test_add_term_using_pm_with_operator_with_comma_noise(self) -> None:
         term = dict(operator='pm-with', operand=' ,,, ,,, ,')
@@ -302,7 +303,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_id_operator(self) -> None:
         term = dict(operator='id', operand=555)
-        self._do_add_term_test(term, 'WHERE id = :param_1')
+        self._do_add_term_test(term, 'WHERE id = %(param_1)s')
 
     def test_add_term_using_id_operator_invalid(self) -> None:
         term = dict(operator='id', operand='')
@@ -313,7 +314,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator='id', operand=555, negated=True)
-        self._do_add_term_test(term, 'WHERE id != :param_1')
+        self._do_add_term_test(term, 'WHERE id != %(param_1)s')
 
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
         # Test wtihout any such group PM threads existing
@@ -325,7 +326,7 @@ class NarrowBuilderTest(ZulipTestCase):
                                                            self.example_email("cordelia")])
 
         term = dict(operator='group-pm-with', operand=self.example_email("othello"))
-        self._do_add_term_test(term, 'WHERE recipient_id IN (:recipient_id_1)')
+        self._do_add_term_test(term, 'WHERE recipient_id IN (%(recipient_id_1)s)')
 
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
             self) -> None:  # NEGATED
@@ -339,24 +340,24 @@ class NarrowBuilderTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator(self) -> None:
         term = dict(operator='search', operand='"french fries"')
-        self._do_add_term_test(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
+        self._do_add_term_test(term, 'WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND (search_tsvector @@ plainto_tsquery(%(param_2)s, %(param_3)s))')
 
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='search', operand='"french fries"', negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND NOT (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
+        self._do_add_term_test(term, 'WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND NOT (search_tsvector @@ plainto_tsquery(%(param_2)s, %(param_3)s))')
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_pgroonga(self) -> None:
         term = dict(operator='search', operand='"french fries"')
-        self._do_add_term_test(term, 'WHERE search_pgroonga &@~ escape_html(:escape_html_1)')
+        self._do_add_term_test(term, 'WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)')
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_and_negated_pgroonga(
             self) -> None:  # NEGATED
         term = dict(operator='search', operand='"french fries"', negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (search_pgroonga &@~ escape_html(:escape_html_1))')
+        self._do_add_term_test(term, 'WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))')
 
     def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
         term = dict(operator='has', operand='attachment')
@@ -392,26 +393,26 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_in_operator(self) -> None:
         mute_stream(self.realm, self.user_profile, 'Verona')
         term = dict(operator='in', operand='home')
-        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1)')
+        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (%(recipient_id_1)s)')
 
     def test_add_term_using_in_operator_and_negated(self) -> None:
         # negated = True should not change anything
         mute_stream(self.realm, self.user_profile, 'Verona')
         term = dict(operator='in', operand='home', negated=True)
-        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1)')
+        self._do_add_term_test(term, 'WHERE recipient_id NOT IN (%(recipient_id_1)s)')
 
     def test_add_term_using_in_operator_and_all_operand(self) -> None:
         mute_stream(self.realm, self.user_profile, 'Verona')
         term = dict(operator='in', operand='all')
         query = self._build_query(term)
-        self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
+        self.assertEqual(get_sqlalchemy_sql(query), 'SELECT id \nFROM zerver_message')
 
     def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
         # negated = True should not change anything
         mute_stream(self.realm, self.user_profile, 'Verona')
         term = dict(operator='in', operand='all', negated=True)
         query = self._build_query(term)
-        self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
+        self.assertEqual(get_sqlalchemy_sql(query), 'SELECT id \nFROM zerver_message')
 
     def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
         term = dict(operator='in', operand='not_defined')
@@ -420,15 +421,15 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_near_operator(self) -> None:
         term = dict(operator='near', operand='operand')
         query = self._build_query(term)
-        self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
+        self.assertEqual(get_sqlalchemy_sql(query), 'SELECT id \nFROM zerver_message')
 
     def _do_add_term_test(self, term: Dict[str, Any], where_clause: str,
                           params: Optional[Dict[str, Any]]=None) -> None:
         query = self._build_query(term)
         if params is not None:
-            actual_params = query.compile().params
+            actual_params = get_sqlalchemy_query_params(query)
             self.assertEqual(actual_params, params)
-        self.assertIn(where_clause, str(query))
+        self.assertIn(where_clause, get_sqlalchemy_sql(query))
 
     def _build_query(self, term: Dict[str, Any]) -> Query:
         return self.builder.add_term(self.raw_query, term)
@@ -2601,12 +2602,13 @@ class GetOldMessagesTest(ZulipTestCase):
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
         query = select([column("id").label("message_id")], None, table("zerver_message"))
         query = query.where(*muting_conditions)
-        expected_query = '''
-            SELECT id AS message_id
-            FROM zerver_message
-            WHERE NOT (recipient_id = :recipient_id_1 AND upper(subject) = upper(:param_1))
-            '''
-        self.assertEqual(fix_ws(query), fix_ws(expected_query))
+        expected_query = '''\
+SELECT id AS message_id \n\
+FROM zerver_message \n\
+WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s))\
+'''
+
+        self.assertEqual(get_sqlalchemy_sql(query), expected_query)
         params = get_sqlalchemy_query_params(query)
 
         self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Scotland'))
@@ -2624,14 +2626,15 @@ class GetOldMessagesTest(ZulipTestCase):
         query = select([column("id")], None, table("zerver_message"))
         query = query.where(and_(*muting_conditions))
 
-        expected_query = '''
-            SELECT id
-            FROM zerver_message
-            WHERE recipient_id NOT IN (:recipient_id_1)
-            AND NOT
-               (recipient_id = :recipient_id_2 AND upper(subject) = upper(:param_1) OR
-                recipient_id = :recipient_id_3 AND upper(subject) = upper(:param_2))'''
-        self.assertEqual(fix_ws(query), fix_ws(expected_query))
+        expected_query = '''\
+SELECT id \n\
+FROM zerver_message \n\
+WHERE recipient_id NOT IN (%(recipient_id_1)s) \
+AND NOT \
+(recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_1)s) OR \
+recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
+'''
+        self.assertEqual(get_sqlalchemy_sql(query), expected_query)
         params = get_sqlalchemy_query_params(query)
         self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Verona'))
         self.assertEqual(params['recipient_id_2'], get_recipient_id_for_stream_name(realm, 'Scotland'))
