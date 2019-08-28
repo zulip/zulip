@@ -30,6 +30,41 @@ the Outgoing Webhooks API, but the Botserver is designed to make it
 easy for a novice Python programmer to write a new bot and deploy it
 in production.
 
+### How Botserver works
+
+Zulip Botserver starts a web server that listens to incoming messages
+from your main Zulip server. The sequence of events in a successful
+Botserver interaction are:
+
+1. Your bot user is mentioned or receives a private message:
+
+    ```
+    @**My Bot User** hello world
+    ```
+
+1. The Zulip server sends a POST request to the Botserver on `https://bot-server.example.com/`:
+
+    ```
+    {
+      "message":{
+        "content":"@**My Bot User** hello world",
+      },
+      "bot_email":"myuserbot-bot@example.com",
+      "trigger":"mention",
+      "token":"XXXX"
+    }
+    ```
+
+    This url is configured in the Zulip web-app in your Bot User's settings.
+
+1. The Botserver searches for a bot to handle the message.
+
+1. The Botserver executes your bot's `handle_message` code.
+
+Your bot's code should work just like it does with `zulip-run-bot`;
+for example, you reply using
+[bot_handler.send_reply](writing-bots#bot_handlersend_reply)).
+
 ### Installing the Zulip Botserver
 
 Install the `zulip_botserver` package:
