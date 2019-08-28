@@ -1433,11 +1433,19 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
         self.compiled_re = compiled_re
         self.md = md
 
-class AutoLink(CompiledPattern):
-    def handleMatch(self, match: Match[str]) -> ElementStringNone:
+class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern, md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
+class AutoLink(CompiledInlineProcessor):
+    def handleMatch(self, match: Match[str], data: str) -> Tuple[ElementStringNone, int, int]:
         url = match.group('url')
         db_data = self.markdown.zulip_db_data
-        return url_to_a(db_data, url)
+        return url_to_a(db_data, url), match.start('url'), match.end('url')
 
 class OListProcessor(sane_lists.SaneOListProcessor):
     def __init__(self, parser: Any) -> None:
