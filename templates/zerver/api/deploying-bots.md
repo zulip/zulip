@@ -216,3 +216,31 @@ running it manually.
 
     The standard output of the Botserver will be logged to the path in
     your *supervisord* configuration.
+
+If you are hosting the Botserver yourself (as opposed to using a
+hosting service that provides SSL), we recommend securing your
+Botserver with SSL using an `nginx` or `Apache` reverse proxy and
+[Certbot](https://certbot.eff.org/).
+
+### Troubleshooting
+
+1. Make sure the API key you're using is for an [Outgoing webhook
+   bot](https://zulipchat.com/api/outgoing-webhooks) and you've
+   correctly configured the URL for your Botserver.
+
+1.  Your Botserver needs to be accessible from your Zulip server over
+    HTTP(S).  Make sure any firewall allows the connection.  We
+    recommend using [zulip-run-bot](running-bots) instead for
+    development/testing on a laptop or other non-server system.
+
+    If your Zulip server is self-hosted, you can test by running `curl
+    http://zulipbotserver.example.com:5002` from your Zulip server;
+    the output should be:
+
+    ```
+    $ curl http://zulipbotserver.example.com:5002/
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+    <title>405 Method Not Allowed</title>
+    <h1>Method Not Allowed</h1>
+    <p>The method is not allowed for the requested URL.</p>
+    ```
