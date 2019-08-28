@@ -119,6 +119,8 @@ js_rules = RuleList(
          'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN']},
         {'pattern': r'[^_]function\(',
          'description': 'The keyword "function" should be followed by a space'},
+        {'pattern': 'msgid|MSGID',
+         'description': 'Avoid using "msgid" as a variable name; use "message_id" instead.'},
         {'pattern': r'.*blueslip.warning\(.*',
          'description': 'The module blueslip has no function warning, try using blueslip.warn'},
         {'pattern': '[)]{$',

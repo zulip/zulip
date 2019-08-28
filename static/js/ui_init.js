@@ -42,7 +42,7 @@ function message_hover(message_row) {
         !message.status_message) {
         message_row.find(".edit_content").html('<i class="fa fa-pencil edit_content_button" aria-hidden="true" title="Edit (e)"></i>');
     } else {
-        message_row.find(".edit_content").html('<i class="fa fa-file-text-o edit_content_button" aria-hidden="true" title="View source (e)" data-msgid="' + id + '"></i>');
+        message_row.find(".edit_content").html('<i class="fa fa-file-text-o edit_content_button" aria-hidden="true" title="View source (e)" data-message-id="' + id + '"></i>');
     }
 }
 

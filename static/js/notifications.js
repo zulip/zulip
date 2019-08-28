@@ -704,24 +704,24 @@ exports.reify_message_id = function (opts) {
     // update that link as well
     _.each($('#out-of-view-notification a'), function (e) {
         var elem = $(e);
-        var msgid = elem.data('msgid');
+        var message_id = elem.data('message-id');
 
-        if (msgid === old_id) {
-            elem.data('msgid', new_id);
+        if (message_id === old_id) {
+            elem.data('message-id', new_id);
         }
     });
 };
 
 exports.register_click_handlers = function () {
     $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_topic', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
-        narrow.by_topic(msgid, {trigger: 'compose_notification'});
+        var message_id = $(e.currentTarget).data('message-id');
+        narrow.by_topic(message_id, {trigger: 'compose_notification'});
         e.stopPropagation();
         e.preventDefault();
     });
     $('#out-of-view-notification').on('click', '.compose_notification_scroll_to_message', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
-        current_msg_list.select_id(msgid);
+        var message_id = $(e.currentTarget).data('message-id');
+        current_msg_list.select_id(message_id);
         navigate.scroll_to_selected();
         e.stopPropagation();
         e.preventDefault();
