@@ -61,7 +61,7 @@ function update_unread_count(unread_count_elem, count) {
     }
 
     if (count === 0) {
-        unread_count_elem.hide();
+        unread_count_elem.addClass("zero_count");
         value_span.text('');
     } else {
         unread_count_elem.removeClass("zero_count");
@@ -74,10 +74,10 @@ exports.set_count = function (stream_id, topic, count) {
     const widget = active_widgets.get(stream_id);
 
     if (widget === undefined) {
-        return;
+        return false;
     }
 
-    widget.set_count(topic, count);
+    return widget.set_count(topic, count);
 };
 
 exports.widget = function (parent_elem, my_stream_id) {
@@ -85,19 +85,36 @@ exports.widget = function (parent_elem, my_stream_id) {
 
     self.build_list = function () {
         self.topic_items = new Dict({fold_case: true});
+        let topics_selected = 0;
+        let more_topics_unreads = 0;
 
         const max_topics = 5;
+        const max_topics_with_unread = 8;
         const topic_names = topic_data.get_recent_names(my_stream_id);
 
         const ul = $('<ul class="topic-list">');
 
         _.each(topic_names, function (topic_name, idx) {
             const num_unread = unread.num_unread_for_topic(my_stream_id, topic_name);
+            const is_active_topic = self.active_topic === topic_name.toLowerCase();
 
             if (!zoomed) {
+                // We limit the number of topics we show to at most
+                // max_topics_with_unread when not zoomed.
+                //
+                // Ideally, this logic would first check whether the active topic
+                // is in the set of those with unreads to avoid ending up with
+                // max_topics_with_unread + 1 total topics if the active topic comes
+                // after the first several topics with unread messages.
+                if (topics_selected >= max_topics_with_unread && !is_active_topic) {
+                    if (num_unread > 0) {
+                        more_topics_unreads += num_unread;
+                    }
+                    return;
+                }
+
                 // Show the most recent topics, as well as any with unread messages
-                const show_topic = idx < max_topics || num_unread > 0 ||
-                                 self.active_topic === topic_name.toLowerCase();
+                const show_topic = idx < max_topics || num_unread > 0 || is_active_topic;
 
                 if (!show_topic) {
                     return;
@@ -114,13 +131,14 @@ exports.widget = function (parent_elem, my_stream_id) {
             const li = $(render_topic_list_item(topic_info));
             self.topic_items.set(topic_name, li);
             ul.append(li);
+            topics_selected += 1;
         });
 
         // Now, we decide whether we need to show the "more topics"
         // widget.  We need it if there are at least 5 topics in the
         // frontend's cache, or if we (possibly) don't have all
         // historical topics in the browser's cache.
-        const show_more = self.build_more_topics_section();
+        const show_more = self.build_more_topics_section(more_topics_unreads);
         const sub = stream_data.get_sub_by_id(my_stream_id);
 
         if (topic_names.length > max_topics || !stream_data.all_topics_in_cache(sub)) {
@@ -129,8 +147,10 @@ exports.widget = function (parent_elem, my_stream_id) {
         return ul;
     };
 
-    self.build_more_topics_section = function () {
-        const show_more_html = render_more_topics();
+    self.build_more_topics_section = function (more_topics_unreads) {
+        const show_more_html = render_more_topics({
+            more_topics_unreads: more_topics_unreads,
+        });
         return $(show_more_html);
     };
 
@@ -155,15 +175,65 @@ exports.widget = function (parent_elem, my_stream_id) {
     };
 
     self.set_count = function (topic, count) {
-        if (!self.topic_items.has(topic)) {
-            // This can happen for truncated topic lists.  No need
-            // to warn about it.
-            return;
-        }
-        const topic_li = self.topic_items.get(topic);
-        const unread_count_elem = topic_li.find('.topic-unread-count').expectOne();
+        let unread_count_elem;
+        if (topic === null) {
+            // null is used for updating the "more topics" count.
+            if (zoomed) {
+                return false;
+            }
+            const unread_count_parent = $(".show-more-topics");
+            if (unread_count_parent.length === 0) {
+                // If no show-more-topics element is present in the
+                // DOM, there are two possibilities.  The most likely
+                // is that there are simply no unreads on that topic
+                // and there should continue to not be a "more topics"
+                // button; we can check this by looking at count.
+                if (count === 0) {
+                    return false;
+                }
 
+                // The alternative is that there is these new messages
+                // create the need for a "more topics" widget with a
+                // nonzero unread count, and we need to create one and
+                // add it to the DOM.
+                //
+                // With our current implementation, this code path
+                // will always have its results overwritten shortly
+                // after, because (1) the can only happen when we just
+                // added unread counts, (not removing them), and (2)
+                // when learning about new (unread) messages,
+                // stream_list.update_dom_with_unread_count is always
+                // immediately followed by
+                // stream_list.update_streams_sidebar, which will
+                // rebuilds the topic list from scratch anyway.
+                //
+                // So this code mostly exists to document this corner
+                // case if in the future we adjust the model for
+                // managing unread counts.  The code for updating this
+                // element would look something like the following:
+                //
+                // var show_more = self.build_more_topics_section(count);
+                // var topic_list_ul = exports.get_stream_li().find(".topic-list").expectOne();
+                // topic_list_ul.append(show_more);
+                return false;
+            }
+            unread_count_elem = unread_count_parent.find(".topic-unread-count");
+            update_unread_count(unread_count_elem, count);
+            return false;
+        }
+
+        if (!self.topic_items.has(topic)) {
+            // `topic_li` may not exist if the topic is behind "more
+            // topics"; We need to update the "more topics" count
+            // instead in that case; we do this by returning true to
+            // notify the caller to accumulate these.
+            return true;
+        }
+
+        const topic_li = self.topic_items.get(topic);
+        unread_count_elem = topic_li.find('.topic-unread-count');
         update_unread_count(unread_count_elem, count);
+        return false;
     };
 
     self.activate_topic = function () {
@@ -313,6 +383,9 @@ exports.zoom_in = function () {
 exports.initialize = function () {
     $('#stream_filters').on('click', '.topic-box', function (e) {
         if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+        if ($(e.target).closest('.show-more-topics').length > 0) {
             return;
         }
 

@@ -317,9 +317,22 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     // counts.topic_count maps streams to hashes of topics to counts
     counts.topic_count.each(function (topic_hash, stream_id) {
+        // Because the topic_list data structure doesn't keep track of
+        // which topics the "more topics" unread count came from, we
+        // need to compute the correct value from scratch here.
+        let more_topics_total = 0;
         topic_hash.each(function (count, topic) {
-            topic_list.set_count(stream_id, topic, count);
+            const in_more_topics = topic_list.set_count(stream_id, topic, count);
+            if (in_more_topics === true) {
+                more_topics_total += count;
+            }
         });
+        if (topic_list.active_stream_id() === stream_id) {
+            // Update the "more topics" unread count; we communicate
+            // this to the `topic_list` library by passing `null` as
+            // the topic.
+            topic_list.set_count(stream_id, null, more_topics_total);
+        }
     });
 };
 
