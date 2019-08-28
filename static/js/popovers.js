@@ -901,8 +901,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.reminder_button', function (e) {
-        var msgid = $(e.currentTarget).data('message-id');
-        popovers.render_actions_remind_popover($(".selected_message .actions_hover")[0], msgid);
+        var message_id = $(e.currentTarget).data('message-id');
+        popovers.render_actions_remind_popover($(".selected_message .actions_hover")[0], message_id);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -967,8 +967,8 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
-        var msgid = $(e.currentTarget).data('message-id');
-        var row = current_msg_list.get_row(msgid);
+        var message_id = $(e.currentTarget).data('message-id');
+        var row = current_msg_list.get_row(message_id);
         var message = current_msg_list.get(rows.id(row));
 
         popovers.hide_actions_popover();
@@ -985,16 +985,16 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.popover_edit_message', function (e) {
-        var msgid = $(e.currentTarget).data('message-id');
-        var row = current_msg_list.get_row(msgid);
+        var message_id = $(e.currentTarget).data('message-id');
+        var row = current_msg_list.get_row(message_id);
         popovers.hide_actions_popover();
         message_edit.start(row);
         e.stopPropagation();
         e.preventDefault();
     });
     $('body').on('click', '.view_edit_history', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
-        var row = current_msg_list.get_row(msgid);
+        var message_id = $(e.currentTarget).data('message-id');
+        var row = current_msg_list.get_row(message_id);
         var message = current_msg_list.get(rows.id(row));
         var message_history_cancel_btn = $('#message-history-cancel');
 
@@ -1026,9 +1026,9 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.delete_message', function (e) {
-        var msgid = $(e.currentTarget).data('message-id');
+        var message_id = $(e.currentTarget).data('message-id');
         popovers.hide_actions_popover();
-        message_edit.delete_message(msgid);
+        message_edit.delete_message(message_id);
         e.stopPropagation();
         e.preventDefault();
     });
