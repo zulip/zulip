@@ -1,5 +1,10 @@
-<li class="show-more-topics bottom_left_row">
-    <a href="#">{{t "more topics" }}</a>
+<li class="topic-list-item show-more-topics bottom_left_row {{#unless more_topics_unreads}}zero-topic-unreads{{/unless}}">
+    <span class='topic-box'>
+        <a class="topic-name" href="#">{{t "more topics" }}</a>
+        <div class="topic-unread-count {{#unless more_topics_unreads}}zero_count{{/unless}}">
+            <div class="value">{{more_topics_unreads}}</div>
+        </div>
+    </span>
 </li>
 <li class="searching-for-more-topics">
     <img src="/static/images/loading-ellipsis.svg" alt="" />

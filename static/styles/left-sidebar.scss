@@ -39,8 +39,10 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
     font-size: 14px;
 }
 
-li.show-more-topics a {
-    font-size: 12px;
+li.show-more-topics {
+    a {
+        font-size: 12px;
+    }
 }
 
 #left-sidebar #user-list,
@@ -425,7 +427,6 @@ ul.expanded_private_messages {
     margin-top: 3px;
 }
 
-li.show-more-topics,
 li.topic-list-item {
     position: relative;
     padding-right: 5px;
@@ -469,6 +470,7 @@ li.expanded_private_message a {
 }
 
 .zero-pm-unreads .pm-box,
+.zero-topic-unreads .more-topics-box,
 .zero-topic-unreads .topic-box {
     margin-right: 15px;
 }
@@ -514,10 +516,6 @@ li.expanded_private_message a {
 
 .zero_count {
     visibility: hidden;
-}
-
-li.show-more-topics a {
-    margin-left: 5px;
 }
 
 .searching-for-more-topics {
