@@ -101,12 +101,6 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
     memcached libmemcached py-Pillow py-cryptography py-cffi
 
-# Get tsearch_extras and build it (using a modified version which
-# aliases int4 on OpenBSD):
-git clone https://github.com/blablacio/tsearch_extras
-cd tsearch_extras
-gmake && sudo gmake install
-
 # Point environment to custom include locations and use newer GCC
 # (needed for Node modules):
 export CFLAGS="-I/usr/local/include -I/usr/local/include/sasl"
