@@ -152,6 +152,17 @@ Botserver process.  You can do this with the following procedure.
     site=http://hostname
     ```
 
+    To run an external bot, enter the path to the bot's python file in the square
+    brackets `[]`. For example, if we want to run `~/Documents/my_new_bot.py`, our
+    new section could look like this:
+
+    ```
+    [~/Documents/my_new_bot.py]
+    email=foo-bot@hostname
+    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
+    site=http://hostname
+    ```
+
 1.  Run the Zulip Botserver by passing the `botserverrc` to it. The
     command format is:
 
