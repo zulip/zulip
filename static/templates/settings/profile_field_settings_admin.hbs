@@ -20,6 +20,14 @@
                 <div class="settings-section-title new-profile-field-section-title inline-block">{{t "Add a new profile field" }}</div>
                 <div class="alert-notification" id="admin-add-profile-field-status"></div>
                 <div class="control-group">
+                    <label for="profile_field_type" class="control-label">{{t "Type" }}</label>
+                    <select id="profile_field_type" name="field_type">
+                        {{#each custom_profile_field_types}}
+                        <option value='{{this.id}}'>{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="control-group">
                     <label for="profile_field_name" class="control-label">{{t "Label" }}</label>
                     <input type="text" id="profile_field_name" name="name" autocomplete="off" maxlength="40" />
                 </div>
@@ -27,14 +35,6 @@
                     <label for="profile_field_hint" class="control-label">{{t "Hint (up to 80 characters)" }}</label>
                     <input type="text" id="profile_field_hint" name="hint" autocomplete="off" maxlength="80" />
                     <div class="alert" id="admin-profile-field-hint-status"></div>
-                </div>
-                <div class="control-group">
-                    <label for="profile_field_type" class="control-label">{{t "Type" }}</label>
-                    <select id="profile_field_type" name="field_type">
-                        {{#each custom_profile_field_types}}
-                        <option value='{{this.id}}'>{{this.name}}</option>
-                        {{/each}}
-                    </select>
                 </div>
                 <div class="control-group" id="profile_field_choices_row">
                     <label for="profile_field_choices" class="control-label">{{t "Field choices" }}</label>
