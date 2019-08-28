@@ -36,18 +36,7 @@ apt-get -y install "${pre_setup_deps[@]}"
 SCRIPTS_PATH="$(dirname "$(dirname "$0")")"
 
 release=$(lsb_release -sc)
-if [ "$release" = "xenial" ] || [ "$release" = "bionic" ]; then
-    apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
-    apt-key add "$SCRIPTS_PATH"/setup/zulip-ppa.asc
-    cat >$SOURCES_FILE <<EOF
-deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
-deb http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
-deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
-deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
-EOF
-elif [ "$release" = "cosmic" ] || [ "$release" = "disco" ]; then
-    # This case will eventually merge with the above, if/when we add
-    # tsearch_extras packages to the Zulip PPA.
+if [ "$release" = "xenial" ] || [ "$release" = "bionic" ] || [ "$release" = "cosmic" ] || [ "$release" = "disco" ]; then
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
     cat >$SOURCES_FILE <<EOF
 deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
@@ -55,10 +44,8 @@ deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 EOF
 elif [ "$release" = "stretch" ] || [ "$release" = "buster" ]; then
     apt-get install -y debian-archive-keyring
-    apt-key add "$SCRIPTS_PATH"/setup/packagecloud.asc
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
     cat >$SOURCES_FILE <<EOF
-deb https://packagecloud.io/zulip/server/debian/ $release main
 deb https://packages.groonga.org/debian/ $release main
 deb-src https://packages.groonga.org/debian/ $release main
 EOF

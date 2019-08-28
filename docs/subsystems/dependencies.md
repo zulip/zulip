@@ -113,12 +113,6 @@ few places:
   install other dependencies, and (2) because that list is shared
   between development and production.
 
-We maintain a [PPA (personal package archive)][ppa] with some packages
-unique to Zulip (e.g the `tsearch_extras` postgres extension) and
-backported versions of other dependencies (e.g. `camo`, to fix a buggy
-`init` script).  Our goal is to shrink or eliminate this PPA where
-possible by getting issues addressed in the upstream distributions.
-
 We also rely on the `pgroonga` PPA for the `pgroonga` postgres
 extension, used by our [full-text search](full-text-search.html).
 
@@ -358,6 +352,5 @@ usually one needs to think about making changes in 3 places:
 [virtualenv-clone]: https://github.com/edwardgeorge/virtualenv-clone/
 [yarn]: https://yarnpkg.com/
 [npm]: https://npmjs.com/
-[ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip
 [iamcal]: https://github.com/iamcal/emoji-data
 [pygments]: http://pygments.org/

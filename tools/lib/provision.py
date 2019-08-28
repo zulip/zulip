@@ -99,8 +99,7 @@ else:
     logging.critical("Only x86 is supported;"
                      " ask on chat.zulip.org if you want another architecture.")
     # Note: It's probably actually not hard to add additional
-    # architectures; the main problem is that we may not have
-    # tsearch_extras binaries compiled (and some testing is required).
+    # architectures.
     sys.exit(1)
 
 # Ideally we wouldn't need to install a dependency here, before we
