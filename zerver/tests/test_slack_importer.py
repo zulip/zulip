@@ -588,7 +588,7 @@ class SlackImporter(ZulipTestCase):
 
         self.assertIsNone(zerver_message[3]['rendered_content'])
         self.assertEqual(zerver_message[0]['has_image'], False)
-        self.assertEqual(zerver_message[0]['pub_date'], float(all_messages[1]['ts']))
+        self.assertEqual(zerver_message[0]['date_sent'], float(all_messages[1]['ts']))
         self.assertEqual(zerver_message[2]['rendered_content_version'], 1)
 
         self.assertEqual(zerver_message[0]['sender'], 43)

@@ -190,7 +190,7 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
     messages = Message.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
-        pub_date__gt=cutoff_date).select_related('recipient', 'sender', 'sending_client')
+        date_sent__gt=cutoff_date).select_related('recipient', 'sender', 'sending_client')
 
     # Gather hot conversations.
     context["hot_conversations"] = gather_hot_conversations(

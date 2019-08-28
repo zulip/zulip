@@ -295,8 +295,8 @@ count_message_by_user_query = """
         zerver_userprofile.id = zerver_message.sender_id
     WHERE
         zerver_userprofile.date_joined < %%(time_end)s AND
-        zerver_message.pub_date >= %%(time_start)s AND
-        zerver_message.pub_date < %%(time_end)s
+        zerver_message.date_sent >= %%(time_start)s AND
+        zerver_message.date_sent < %%(time_end)s
     GROUP BY zerver_userprofile.id %(group_by_clause)s
 """
 
@@ -322,8 +322,8 @@ count_message_type_by_user_query = """
         JOIN zerver_message
         ON
             zerver_userprofile.id = zerver_message.sender_id AND
-            zerver_message.pub_date >= %%(time_start)s AND
-            zerver_message.pub_date < %%(time_end)s
+            zerver_message.date_sent >= %%(time_start)s AND
+            zerver_message.date_sent < %%(time_end)s
         JOIN zerver_recipient
         ON
             zerver_message.recipient_id = zerver_recipient.id
@@ -359,8 +359,8 @@ count_message_by_stream_query = """
     WHERE
         zerver_stream.date_created < %%(time_end)s AND
         zerver_recipient.type = 2 AND
-        zerver_message.pub_date >= %%(time_start)s AND
-        zerver_message.pub_date < %%(time_end)s
+        zerver_message.date_sent >= %%(time_start)s AND
+        zerver_message.date_sent < %%(time_end)s
     GROUP BY zerver_stream.id %(group_by_clause)s
 """
 

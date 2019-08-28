@@ -643,7 +643,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
             message.subject = stream.name + str(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
-        message.pub_date = choose_pub_date(num_messages, tot_messages, options['threads'])
+        message.date_sent = choose_date_sent(num_messages, tot_messages, options['threads'])
         messages.append(message)
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
@@ -671,7 +671,7 @@ def send_messages(messages: List[Message]) -> None:
     do_send_messages([{'message': message} for message in messages])
     settings.USING_RABBITMQ = True
 
-def choose_pub_date(num_messages: int, tot_messages: int, threads: int) -> datetime:
+def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> datetime:
     # Spoofing time not supported with threading
     if threads != 1:
         return timezone_now()

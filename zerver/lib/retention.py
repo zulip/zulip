@@ -125,7 +125,7 @@ def move_expired_messages_to_archive_by_recipient(recipient: Recipient,
         SELECT {src_fields}, {archive_transaction_id}
         FROM zerver_message
         WHERE zerver_message.recipient_id = {recipient_id}
-            AND zerver_message.pub_date < '{check_date}'
+            AND zerver_message.date_sent < '{check_date}'
         LIMIT {chunk_size}
     ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
     RETURNING id
@@ -157,7 +157,7 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
         WHERE zerver_userprofile.id NOT IN {cross_realm_bot_ids}
             AND zerver_userprofile.realm_id = {realm_id}
             AND zerver_recipient.type in {recipient_types}
-            AND zerver_message.pub_date < '{check_date}'
+            AND zerver_message.date_sent < '{check_date}'
         LIMIT {chunk_size}
     ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
     RETURNING id
@@ -184,7 +184,7 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
         WHERE sender_profile.id IN {cross_realm_bot_ids}
             AND recipient_profile.realm_id = {realm_id}
             AND zerver_recipient.type = {recipient_personal}
-            AND zerver_message.pub_date < '{check_date}'
+            AND zerver_message.date_sent < '{check_date}'
         LIMIT {chunk_size}
     ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
     RETURNING id

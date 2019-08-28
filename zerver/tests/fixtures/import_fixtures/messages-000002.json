@@ -1,7 +1,7 @@
 {
     "zerver_message":[
         {
-            "pub_date":1409000102,
+            "date_sent":1409000102,
             "id":999
         }
     ],

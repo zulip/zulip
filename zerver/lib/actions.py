@@ -310,7 +310,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     stream_ids = [stream.id for stream in streams if not stream.invite_only]
     recipients = get_stream_recipients(stream_ids)
     recent_messages = Message.objects.filter(recipient_id__in=recipients,
-                                             pub_date__gt=one_week_ago).order_by("-id")
+                                             date_sent__gt=one_week_ago).order_by("-id")
     message_ids_to_use = list(reversed(recent_messages.values_list(
         'id', flat=True)[0:ONBOARDING_TOTAL_MESSAGES]))
     if len(message_ids_to_use) == 0:
@@ -1946,8 +1946,8 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         recipient=message.recipient,
         content=message.content,
         sending_client=message.sending_client,
-        pub_date__gte=message.pub_date - time_window,
-        pub_date__lte=message.pub_date + time_window)
+        date_sent__gte=message.date_sent - time_window,
+        date_sent__lte=message.date_sent + time_window)
 
     messages = filter_by_exact_message_topic(
         query=query,
@@ -2315,9 +2315,9 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         message.set_topic_name(topic_name)
     if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
-        message.pub_date = timestamp_to_datetime(forged_timestamp)
+        message.date_sent = timestamp_to_datetime(forged_timestamp)
     else:
-        message.pub_date = timezone_now()
+        message.date_sent = timezone_now()
     message.sending_client = client
 
     # We render messages later in the process.

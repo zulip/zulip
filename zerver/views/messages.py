@@ -1417,7 +1417,7 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
         topic = prev_topic,
         content = prev_content,
         rendered_content = prev_rendered_content,
-        timestamp = datetime_to_timestamp(message.pub_date),
+        timestamp = datetime_to_timestamp(message.date_sent),
         user_id = message.sender_id,
     ))
 
@@ -1475,7 +1475,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     edit_limit_buffer = 20
     if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
-        if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
+        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
     # If there is a change to the topic, check that the user is allowed to
@@ -1485,7 +1485,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     if content is None and message.sender != user_profile and not user_profile.is_realm_admin and \
             not is_no_topic_msg:
         deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
-        if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
+        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
     if topic_name is None and content is None:
@@ -1554,7 +1554,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
     if deadline_seconds == 0:
         # 0 for no time limit to delete message
         return
-    if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
+    if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
         # User can not delete message after deadline time of realm
         raise JsonableError(_("The time limit for deleting this message has passed"))
     return

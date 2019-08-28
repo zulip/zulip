@@ -1763,7 +1763,7 @@ class RealmCreationTest(ZulipTestCase):
                 (Realm.INITIAL_PRIVATE_STREAM_NAME, 'private stream', 1)]:
             stream = get_stream(stream_name, realm)
             recipient = get_stream_recipient(stream.id)
-            messages = Message.objects.filter(recipient=recipient).order_by('pub_date')
+            messages = Message.objects.filter(recipient=recipient).order_by('date_sent')
             self.assertEqual(len(messages), message_count)
             self.assertIn(text, messages[0].content)
 

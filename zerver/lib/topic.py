@@ -125,7 +125,7 @@ def update_messages_for_topic_edit(message: Message,
         before_bound = timezone_now() - datetime.timedelta(days=2)
 
         propagate_query = (propagate_query & ~Q(id = message.id) &
-                           Q(pub_date__range=(before_bound, timezone_now())))
+                           Q(date_sent__range=(before_bound, timezone_now())))
     if propagate_mode == 'change_later':
         propagate_query = propagate_query & Q(id__gt = message.id)
 
