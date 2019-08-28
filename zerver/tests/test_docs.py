@@ -4,11 +4,11 @@ import os
 import subprocess
 import ujson
 
+from django.conf import settings
 from django.test import TestCase, override_settings
 from django.http import HttpResponse
 from typing import Any, Dict, List
 
-from zproject.settings import DEPLOY_ROOT
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.storage import static_path
 from zerver.lib.test_classes import ZulipTestCase
@@ -272,7 +272,7 @@ class HelpTest(ZulipTestCase):
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
         for integration in INTEGRATIONS.values():
-            self.assertTrue(os.path.isfile(DEPLOY_ROOT + integration.logo_url), integration.name)
+            self.assertTrue(os.path.isfile(settings.DEPLOY_ROOT + integration.logo_url), integration.name)
 
     def test_api_url_view_subdomains_base(self) -> None:
         context = dict()  # type: Dict[str, Any]
