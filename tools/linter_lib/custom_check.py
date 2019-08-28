@@ -585,7 +585,7 @@ prose_style_rules = [
      'description': "!!! warning is invalid; it's spelled '!!! warn'"},
     {'pattern': 'Terms of service',
      'description': "The S in Terms of Service is capitalized"},
-    {'pattern': '[^-_]botserver(?!rc)|bot server',
+    {'pattern': '[^-_p]botserver(?!rc)|bot server',
      'description': "Use Botserver instead of botserver or bot server."},
     *comma_whitespace_rule,
 ]  # type: List[Rule]
