@@ -102,19 +102,7 @@ something valuable to helping keep Zulip bug-free.
 
 ### Possible testing issues
 
-- When running the test suite, if you get an error like this:
-
-  ```
-      sqlalchemy.exc.ProgrammingError: (ProgrammingError) function ts_match_locs_array(unknown, text, tsquery) does not   exist
-      LINE 2: ...ECT message_id, flags, subject, rendered_content, ts_match_l...
-                                                                   ^
-  ```
-
-  … then you need to install tsearch-extras, described
-  above. Afterwards, re-run the `init*-db` and the
-  `do-destroy-rebuild*-database` scripts.
-
-- Or, when running the test suite, if you get an error involving Git that looks like this:
+- When running the test suite, if you get an error involving Git that looks like this:
 
   ```
       gitlint| An error occurred while executing '/usr/bin/git rev-list --max-count=-1 upstream/master..HEAD': b"fatal: ambiguous argument 'upstream/master..HEAD': unknown revision or path not in the working tree.\nUse '--' to separate paths from revisions, like this:\n'git <command> [<revision>...] -- [<file>...]'"

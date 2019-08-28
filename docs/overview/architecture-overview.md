@@ -27,8 +27,7 @@ adapter](https://github.com/zulip/hubot-zulip); integrations with
 [Jenkins](https://github.com/zulip/zulip-jenkins-plugin),
 [Puppet](https://github.com/matthewbarr/puppet-zulip),
 [Redmine](https://github.com/zulip/zulip-redmine-plugin), and
-[Trello](https://github.com/zulip/trello-to-zulip); our [full-text
-search PostgreSQL extension](https://github.com/zulip/tsearch_extras);
+[Trello](https://github.com/zulip/trello-to-zulip);
 and [many more](https://github.com/zulip/).
 
 We use [Transifex](https://www.transifex.com/zulip/zulip/) to do

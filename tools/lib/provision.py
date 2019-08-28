@@ -171,32 +171,23 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "libstdc++"
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
-BUILD_TSEARCH_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
 if vendor == "ubuntu" and os_version in ("18.10", "19.04"):
-    # For platforms without a tsearch-extras package distributed
-    # from our PPA, we need to build from source.
-    BUILD_TSEARCH_FROM_SOURCE = True
     SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql-{0}",
             "postgresql-{0}-pgroonga",
-            # Dependency for building tsearch_extras from source
-            "postgresql-server-dev-{0}",
         ]
     ]
 elif vendor == 'debian' and os_version == "10":
-    # For platforms without a tsearch-extras package distributed
-    # from our PPA or a pgroonga release, we need to build both
+    # For platforms without a pgroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
-    BUILD_TSEARCH_FROM_SOURCE = True
     SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql-{0}",
-            # Dependency for building tsearch_extras from source
-            "postgresql-server-dev-{0}",
             # Dependency for building pgroonga from source
+            "postgresql-server-dev-{0}",
             "libgroonga-dev",
             "libmsgpack-dev",
         ]
@@ -206,7 +197,6 @@ elif vendor in ["ubuntu", "debian"]:
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql-{0}",
             "postgresql-{0}-pgroonga",
-            "postgresql-{0}-tsearch-extras",
         ]
     ]
 elif vendor in ["CentOS", "RedHat"]:
@@ -214,11 +204,9 @@ elif vendor in ["CentOS", "RedHat"]:
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql{0}-server",
             "postgresql{0}",
-            "postgresql{0}-devel",
             "postgresql{0}-pgroonga",
         ]
     ] + REDHAT_VENV_DEPENDENCIES
-    BUILD_TSEARCH_FROM_SOURCE = True
 elif vendor == "Fedora":
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
@@ -230,7 +218,6 @@ elif vendor == "Fedora":
             "msgpack-devel",
         ]
     ] + FEDORA_VENV_DEPENDENCIES
-    BUILD_TSEARCH_FROM_SOURCE = True
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if family == 'redhat':
@@ -259,12 +246,10 @@ def install_system_deps():
     else:
         raise AssertionError("Invalid vendor")
 
-    # For some platforms, there aren't published pgroonga or
-    # tsearch-extra packages available, so we build them from source.
+    # For some platforms, there aren't published pgroonga
+    # packages available, so we build them from source.
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
-    if BUILD_TSEARCH_FROM_SOURCE:
-        run_as_root(["./scripts/lib/build-tsearch-extras"])
 
 def install_apt_deps(deps_to_install):
     # type: (List[str]) -> None

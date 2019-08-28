@@ -17,13 +17,6 @@ feature](http://www.postgresql.org/docs/current/static/textsearch.html),
 with a custom set of English stop words to improve the quality of the
 search results.
 
-We use a small extension,
-[tsearch_extras](https://github.com/zulip/tsearch_extras), for
-highlighting of the matching words.  There is [some discussion of
-removing this extension, at least as an
-option](https://github.com/zulip/zulip/issues/467), so that Zulip can
-be used with database-as-a-service platforms.
-
 In order to optimize the performance of delivering messages, the
 full-text search index is updated for newly sent messages in the
 background, after the message has been delivered.  This background
