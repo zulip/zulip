@@ -1528,6 +1528,8 @@ class AbstractMessage(models.Model):
     rendered_content_version = models.IntegerField(null=True)  # type: Optional[int]
 
     pub_date = models.DateTimeField('date published', db_index=True)  # type: datetime.datetime
+    date_sent = models.DateTimeField('date sent', null=True)  # type: Optional[datetime.datetime]
+
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
 
     last_edit_time = models.DateTimeField(null=True)  # type: Optional[datetime.datetime]
