@@ -1,6 +1,7 @@
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream
+from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream, \
+    get_fake_email_domain
 from zerver.lib.upload import copy_avatar
 from zerver.lib.hotspots import copy_hotpots
 from zerver.lib.utils import generate_api_key
@@ -32,8 +33,7 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
 
 def get_display_email_address(user_profile: UserProfile, realm: Realm) -> str:
     if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-        # TODO: realm.host isn't always a valid option here.
-        return "user%s@%s" % (user_profile.id, realm.host.split(':')[0])
+        return "user%s@%s" % (user_profile.id, get_fake_email_domain())
     return user_profile.delivery_email
 
 # create_user_profile is based on Django's User.objects.create_user,

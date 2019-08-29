@@ -127,7 +127,7 @@ casper.then(function create_bot() {
     casper.click('#create_bot_button');
 });
 
-var bot_email = '1-bot@zulip.zulipdev.com';
+var bot_email = '1-bot@zulip.testserver';
 var button_sel = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
 
 casper.then(function () {
@@ -158,7 +158,7 @@ casper.then(function create_bot() {
     casper.click('#create_bot_button');
 });
 
-var second_bot_email = '2-bot@zulip.zulipdev.com';
+var second_bot_email = '2-bot@zulip.testserver';
 var second_button_sel = '.download_bot_zuliprc[data-email="' + second_bot_email + '"]';
 
 casper.then(function () {

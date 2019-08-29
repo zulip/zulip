@@ -35,7 +35,8 @@ from zerver.lib.utils import generate_api_key, generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_by_delivery_email, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
-    EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm, Realm
+    EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm, Realm, \
+    InvalidFakeEmailDomain
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
@@ -276,7 +277,11 @@ def add_bot_backend(
         service_name = service_name or short_name
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
-    email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
+    try:
+        email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
+    except InvalidFakeEmailDomain:
+        return json_error(_("Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+                            "Please contact your server administrator."))
     form = CreateUserForm({'full_name': full_name, 'email': email})
 
     if bot_type == UserProfile.EMBEDDED_BOT:

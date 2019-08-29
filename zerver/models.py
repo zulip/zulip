@@ -11,7 +11,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
 import django.contrib.auth
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, MinLengthValidator, \
-    RegexValidator
+    RegexValidator, validate_email
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_api_key_cache_key, active_non_guest_user_ids_cache_key, \
@@ -414,8 +414,7 @@ class Realm(models.Model):
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
     def get_bot_domain(self) -> str:
-        # Remove the port. Mainly needed for development environment.
-        return self.host.split(':')[0]
+        return get_fake_email_domain()
 
     def get_notifications_stream(self) -> Optional['Stream']:
         if self.notifications_stream is not None and not self.notifications_stream.deactivated:
@@ -2800,3 +2799,15 @@ class BotConfigData(models.Model):
 
     class Meta(object):
         unique_together = ("bot_profile", "key")
+
+class InvalidFakeEmailDomain(Exception):
+    pass
+
+def get_fake_email_domain() -> str:
+    try:
+        # Check that the fake email domain can be used to form valid email addresses.
+        validate_email("bot@" + settings.FAKE_EMAIL_DOMAIN)
+    except ValidationError:
+        raise InvalidFakeEmailDomain(settings.FAKE_EMAIL_DOMAIN + ' is not a valid domain.')
+
+    return settings.FAKE_EMAIL_DOMAIN
