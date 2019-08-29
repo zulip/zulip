@@ -163,13 +163,13 @@ def get_web_link_regex() -> str:
         nested_paren_chunk = nested_paren_chunk % (paren_group,)
     nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
 
-    file_links = r"| (?:file://(/[^/ ]*)+/?)"
+    file_links = r"| (?:file://(/[^/ >]*)+/?)"
     REGEX = r"""
         (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
             (?:(?:           # Domain part
-                https?://[\w.:@-]+?   # If it has a protocol, anything goes.
+                [a-zA-Z][a-zA-Z0-9+.\-]*://[\w.:@-]+?   # If it has a protocol, anything goes.
                |(?:                   # Or, if not, be more strict to avoid false-positives
                     (?:[\w-]+\.)+     # One or more domain components, separated by dots
                     (?:%s)            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
@@ -1352,7 +1352,7 @@ class Tex(markdown.inlinepatterns.Pattern):
             return span
 
 
-def sanitize_url(url: str) -> Optional[str]:
+def sanitize_url(url: str, bracketed_link: bool=False) -> Optional[str]:
     """
     Sanitize a url against xss attacks.
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
@@ -1390,7 +1390,11 @@ def sanitize_url(url: str) -> Optional[str]:
     # appears to have a netloc.  Additionally there are plenty of other
     # schemes that do weird things like launch external programs.  To be
     # on the safe side, we whitelist the scheme.
-    if scheme not in ('http', 'https', 'ftp', 'mailto', 'file', 'bitcoin'):
+    if not bracketed_link and scheme not in ('http', 'https', 'ftp', 'mailto', 'file', 'bitcoin'):
+        return None
+
+    # Even when being more liberal, ignore potentially insecure schemes.
+    if bracketed_link and (scheme in ('javascript', 'vbscript') or scheme.startswith('data')):
         return None
 
     # Upstream code scans path, parameters, and query for colon characters
@@ -1406,10 +1410,11 @@ def sanitize_url(url: str) -> Optional[str]:
     # Url passes all tests. Return url as-is.
     return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
 
-def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> Union[Element, str]:
+def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None,
+             bracketed_link: bool=False) -> Union[Element, str]:
     a = markdown.util.etree.Element('a')
 
-    href = sanitize_url(url)
+    href = sanitize_url(url, bracketed_link=bracketed_link)
     if href is None:
         # Rejected by sanitize_url; render it as plain text.
         return url
@@ -1441,8 +1446,15 @@ class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
 class AutoLink(CompiledInlineProcessor):
     def handleMatch(self, match: Match[str], data: str) -> Tuple[ElementStringNone, int, int]:
         url = match.group('url')
+        url_start = match.start('url')
+        url_end = match.end('url')
+        bracketed_link = (url_start > 0 and data[url_start - 1] == '<' and
+                          url_end < len(data) and data[url_end] == '>')
         db_data = self.markdown.zulip_db_data
-        return url_to_a(db_data, url), match.start('url'), match.end('url')
+        el = url_to_a(db_data, url, bracketed_link=bracketed_link)
+        if el == url:
+            el = None  # No-op
+        return el, url_start, url_end
 
 class OListProcessor(sane_lists.SaneOListProcessor):
     def __init__(self, parser: Any) -> None:
