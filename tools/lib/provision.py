@@ -171,14 +171,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == "ubuntu" and os_version in ("18.10", "19.04"):
-    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql-{0}",
-            "postgresql-{0}-pgroonga",
-        ]
-    ]
-elif vendor == 'debian' and os_version == "10":
+if vendor == 'debian' and os_version == "10":
     # For platforms without a pgroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
