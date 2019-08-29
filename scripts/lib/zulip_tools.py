@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import datetime
+import functools
 import hashlib
 import logging
 import os
@@ -337,12 +338,12 @@ def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbo
         if verbose:
             print("Keeping used %s: %s" % (dir_type, directory))
 
+@functools.lru_cache(None)
 def parse_os_release():
     # type: () -> Dict[str, str]
     """
     Example of the useful subset of the data:
     {
-     'DISTRIB_FAMILY': 'debian'
      'ID': 'ubuntu',
      'VERSION_ID': '18.04',
      'NAME': 'Ubuntu',
@@ -354,26 +355,6 @@ def parse_os_release():
     we avoid using it, as it is not available on RHEL-based platforms.
     """
     distro_info = {}  # type: Dict[str, str]
-    if os.path.exists("/etc/redhat-release"):
-        with open('/etc/redhat-release', 'r') as fp:
-            info = fp.read().strip().split(' ')
-        vendor = info[0]
-        if vendor == 'CentOS':
-            # E.g. "CentOS Linux release 7.5.1804 (Core)"
-            os_version = vendor.lower() + info[3][0]
-        elif vendor == 'Fedora':
-            # E.g. "Fedora release 29 (Twenty Nine)"
-            os_version = vendor.lower() + info[2]
-        elif vendor == 'Red':
-            # E.g. "Red Hat Enterprise Linux Server release 7.6 (Maipo)"
-            vendor = 'RedHat'
-            os_version = 'rhel' + info[6][0]  # 7
-        distro_info = dict(
-            VERSION_ID=os_version,
-            ID=vendor,
-            DISTRIB_FAMILY='redhat',
-        )
-        return distro_info
     with open('/etc/os-release', 'r') as fp:
         for line in fp:
             line = line.strip()
@@ -383,8 +364,20 @@ def parse_os_release():
                 continue
             k, v = line.split('=', 1)
             [distro_info[k]] = shlex.split(v)
-    distro_info['DISTRIB_FAMILY'] = 'debian'
     return distro_info
+
+@functools.lru_cache(None)
+def os_families() -> Set[str]:
+    """
+    Known families:
+    debian (includes: debian, ubuntu)
+    ubuntu (includes: ubuntu)
+    fedora (includes: fedora, rhel, centos)
+    rhel (includes: rhel, centos)
+    centos (includes: centos)
+    """
+    distro_info = parse_os_release()
+    return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
 def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]):
     # type: (List[str], str, bool, List[str]) -> bool

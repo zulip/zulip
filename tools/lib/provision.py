@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, parse_os_release, \
+    get_dev_uuid_var_path, FAIL, os_families, parse_os_release, \
     overwrite_symlink
 from scripts.lib.setup_venv import (
     VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
@@ -28,28 +28,6 @@ from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
     # typing_extensions might not be installed yet
     from typing_extensions import NoReturn
-
-SUPPORTED_PLATFORMS = {
-    "ubuntu": [
-        "16.04",  # xenial
-        "18.04",  # bionic
-        "18.10",  # cosmic
-        "19.04",  # disco
-    ],
-    "debian": [
-        "9",   # stretch
-        "10",  # buster
-    ],
-    "CentOS": [
-        "centos7",
-    ],
-    "Fedora": [
-        "fedora29",
-    ],
-    "RedHat": [
-        "rhel7",
-    ]
-}
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 
@@ -102,17 +80,26 @@ else:
     # architectures.
     sys.exit(1)
 
-# Ideally we wouldn't need to install a dependency here, before we
-# know the OS version.
-is_rhel_based = os.path.exists("/etc/redhat-release")
-if (not is_rhel_based) and (not os.path.exists("/usr/bin/lsb_release")):
-    run_as_root(["apt-get", "install", "-y", "lsb-release"])
-
 distro_info = parse_os_release()
 vendor = distro_info['ID']
 os_version = distro_info['VERSION_ID']
-family = distro_info['DISTRIB_FAMILY']
-if not (vendor in SUPPORTED_PLATFORMS and os_version in SUPPORTED_PLATFORMS[vendor]):
+if vendor == "debian" and os_version == "9":  # stretch
+    POSTGRES_VERSION = "9.6"
+elif vendor == "debian" and os_version == "10":  # buster
+    POSTGRES_VERSION = "11"
+elif vendor == "ubuntu" and os_version == "16.04":  # xenial
+    POSTGRES_VERSION = "9.5"
+elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
+    POSTGRES_VERSION = "10"
+elif vendor == "ubuntu" and os_version == "19.04":  # disco
+    POSTGRES_VERSION = "11"
+elif vendor == "fedora" and os_version == "29":
+    POSTGRES_VERSION = "10"
+elif vendor == "rhel" and os_version.startswith("7."):
+    POSTGRES_VERSION = "10"
+elif vendor == "centos" and os_version == "7":
+    POSTGRES_VERSION = "10"
+else:
     logging.critical("Unsupported platform: {} {}".format(vendor, os_version))
     if vendor == 'ubuntu' and os_version == '14.04':
         print()
@@ -121,19 +108,6 @@ if not (vendor in SUPPORTED_PLATFORMS and os_version in SUPPORTED_PLATFORMS[vend
             print("To upgrade, run `vagrant destroy`, and then recreate the Vagrant guest.\n")
             print("See: https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html")
     sys.exit(1)
-
-POSTGRES_VERSION_MAP = {
-    ("debian", "9"): "9.6",
-    ("debian", "10"): "11",
-    ("ubuntu", "16.04"): "9.5",
-    ("ubuntu", "18.04"): "10",
-    ("ubuntu", "18.10"): "10",
-    ("ubuntu", "19.04"): "11",
-    ("CentOS", "centos7"): "10",
-    ("Fedora", "fedora29"): "10",
-    ("RedHat", "rhel7"): "10",
-}
-POSTGRES_VERSION = POSTGRES_VERSION_MAP[(vendor, os_version)]
 
 COMMON_DEPENDENCIES = [
     "memcached",
@@ -184,14 +158,14 @@ if vendor == 'debian' and os_version in []:
             "libmsgpack-dev",
         ]
     ]
-elif vendor in ["ubuntu", "debian"]:
+elif "debian" in os_families():
     SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql-{0}",
             "postgresql-{0}-pgroonga",
         ]
     ]
-elif vendor in ["CentOS", "RedHat"]:
+elif "rhel" in os_families():
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql{0}-server",
@@ -199,7 +173,7 @@ elif vendor in ["CentOS", "RedHat"]:
             "postgresql{0}-pgroonga",
         ]
     ] + REDHAT_VENV_DEPENDENCIES
-elif vendor == "Fedora":
+elif "fedora" in os_families():
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql{0}-server",
@@ -212,7 +186,7 @@ elif vendor == "Fedora":
     ] + FEDORA_VENV_DEPENDENCIES
     BUILD_PGROONGA_FROM_SOURCE = True
 
-if family == 'redhat':
+if "fedora" in os_families():
     TSEARCH_STOPWORDS_PATH = "/usr/pgsql-%s/share/tsearch_data/" % (POSTGRES_VERSION,)
 else:
     TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
@@ -231,9 +205,9 @@ def install_system_deps():
     # By doing list -> set -> list conversion, we remove duplicates.
     deps_to_install = sorted(set(SYSTEM_DEPENDENCIES))
 
-    if family == 'redhat':
+    if "fedora" in os_families():
         install_yum_deps(deps_to_install)
-    elif vendor in ["debian", "ubuntu"]:
+    elif "debian" in os_families():
         install_apt_deps(deps_to_install)
     else:
         raise AssertionError("Invalid vendor")
@@ -267,7 +241,7 @@ def install_yum_deps(deps_to_install):
     # Error: Package: moreutils-0.49-2.el7.x86_64 (epel)
     #        Requires: perl(IPC::Run)
     yum_extra_flags = []  # type: List[str]
-    if vendor == 'RedHat':
+    if vendor == "rhel":
         exitcode, subs_status = subprocess.getstatusoutput("sudo subscription-manager status")
         if exitcode == 1:
             # TODO this might overkill since `subscription-manager` is already
@@ -279,7 +253,7 @@ def install_yum_deps(deps_to_install):
                 print("Unrecognized output. `subscription-manager` might not be available")
 
     run_as_root(["yum", "install", "-y"] + yum_extra_flags + deps_to_install)
-    if vendor in ["CentOS", "RedHat"]:
+    if "rhel" in os_families():
         # This is how a pip3 is installed to /usr/bin in CentOS/RHEL
         # for python35 and later.
         run_as_root(["python36", "-m", "ensurepip"])
@@ -328,7 +302,7 @@ def main(options):
 
     for apt_depedency in SYSTEM_DEPENDENCIES:
         sha_sum.update(apt_depedency.encode('utf8'))
-    if vendor in ["ubuntu", "debian"]:
+    if "debian" in os_families():
         sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
     else:
         # hash the content of setup-yum-repo and build-*
@@ -395,7 +369,9 @@ def main(options):
         run_as_root(["service", "redis-server", "restart"])
         run_as_root(["service", "memcached", "restart"])
         run_as_root(["service", "postgresql", "restart"])
-    elif family == 'redhat':
+    elif "fedora" in os_families():
+        # These platforms don't enable and start services on
+        # installing their package, so we do that here.
         for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "memcached", "redis"]:
             run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
             run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
