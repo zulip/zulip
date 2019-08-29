@@ -51,6 +51,11 @@ EXTERNAL_HOST = 'zulip.example.com'
 # Note that these should just be hostnames, without port numbers.
 #ALLOWED_HOSTS = ['zulip-alias.example.com', '192.0.2.1']
 
+# If EXTERNAL_HOST is not a valid domain name (e.g. an IP address),
+# set FAKE_EMAIL_DOMAIN below to a domain that Zulip can use when
+# generating (fake) email addresses for bots, dummy users, etc.
+#FAKE_EMAIL_DOMAIN = 'fake-domain.example.com'
+
 
 ################
 # Outgoing email (SMTP) settings.

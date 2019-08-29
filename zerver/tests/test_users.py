@@ -19,7 +19,8 @@ from zerver.models import UserProfile, Recipient, Realm, \
     get_user, get_realm, get_stream, get_stream_recipient, \
     get_source_profile, get_system_bot, \
     ScheduledEmail, check_valid_user_ids, \
-    get_user_by_id_in_realm_including_cross_realm, CustomProfileField
+    get_user_by_id_in_realm_including_cross_realm, CustomProfileField, \
+    InvalidFakeEmailDomain, get_fake_email_domain
 
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.exceptions import JsonableError
@@ -42,6 +43,7 @@ from zerver.lib.users import user_ids_to_users, access_user_by_id, \
     get_accounts_for_email
 
 from django.conf import settings
+from django.test import override_settings
 
 import datetime
 import mock
@@ -1272,3 +1274,14 @@ class GetProfileTest(ZulipTestCase):
                     user['avatar_url'],
                     avatar_url(user_profile),
                 )
+
+class FakeEmailDomainTest(ZulipTestCase):
+    @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain")
+    def test_invalid_fake_email_domain(self) -> None:
+        with self.assertRaises(InvalidFakeEmailDomain):
+            get_fake_email_domain()
+
+    @override_settings(FAKE_EMAIL_DOMAIN="127.0.0.1")
+    def test_invalid_fake_email_domain_ip(self) -> None:
+        with self.assertRaises(InvalidFakeEmailDomain):
+            get_fake_email_domain()

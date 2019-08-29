@@ -3,6 +3,7 @@ import os
 import ujson
 
 from django.core import mail
+from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Mapping, Optional
 
@@ -91,6 +92,22 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Bad name or username')
+        self.assert_num_bots_equal(0)
+
+    @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain")
+    def test_add_bot_with_invalid_fake_email_domain(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.assert_num_bots_equal(0)
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+            'bot_type': '1',
+        }
+        result = self.client_post("/json/bots", bot_info)
+
+        error_message = ("Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n" +
+                         "Please contact your server administrator.")
+        self.assert_json_error(result, error_message)
         self.assert_num_bots_equal(0)
 
     def test_add_bot_with_no_name(self) -> None:
