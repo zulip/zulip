@@ -93,16 +93,16 @@ li.show-more-topics a {
     margin-bottom: 4px;
 }
 
-.narrows_panel li {
-    margin: 1px 0px;
+.narrows_panel li a {
+    margin-top: 1px;
 }
 
 .narrows_panel li a:hover {
     text-decoration: none;
 }
 
-#stream_filters li {
-    padding: 0px 0px;
+#stream_filters li a {
+    padding: 1px 0px;
 }
 
 #stream_filters li ul {
