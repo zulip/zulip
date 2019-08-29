@@ -38,6 +38,12 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # EXTERNAL_HOST to e.g. zulip.example.com:1234 here.
 EXTERNAL_HOST = 'zulip.example.com'
 
+# If EXTERNAL_HOST is not a valid domain (e.g. if it's just an IP address),
+# you should set FAKE_EMAIL_DOMAIN below to something that is
+# a (potentially fake) domain. It will be used for email addresses
+# of bots and, if email visibility is disabled, for dummy emails of users.
+# FAKE_EMAIL_DOMAIN = 'fake-domain.example.com'
+
 # Alternative hostnames.  A comma-separated list of strings
 # representing the host/domain names that your users can enter in
 # their browsers to access Zulip.  This is a security measure; for
