@@ -1,4 +1,4 @@
-module.exports = ({ file, options }) => ({
+module.exports = ({ file }) => ({
     parser: file.extname === ".scss" ? "postcss-scss" : false,
     plugins: {
         // Warning: despite appearances, order is significant
@@ -7,6 +7,5 @@ module.exports = ({ file, options }) => ({
         "postcss-simple-vars": {},
         "postcss-calc": {},
         autoprefixer: {},
-        cssnano: options.env === "production" ? {} : false,
     },
 });
