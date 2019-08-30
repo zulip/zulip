@@ -5,6 +5,7 @@ module.exports = ({ file, options }) => ({
         "postcss-nested": {},
         "postcss-extend-rule": {},
         "postcss-simple-vars": {},
+        "postcss-calc": {},
         autoprefixer: {},
         cssnano: options.env === "production" ? {} : false,
     },

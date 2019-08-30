@@ -43,6 +43,7 @@
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.25",
     "plotly.js": "^1.48.1",
+    "postcss-calc": "^7.0.1",
     "postcss-extend-rule": "^3.0.0",
     "postcss-loader": "^3.0.0",
     "postcss-nested": "^4.1.2",
