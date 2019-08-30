@@ -3,7 +3,6 @@
     font-size: 1rem;
     line-height: 1.5;
     overflow: auto;
-    -webkit-font-smoothing: antialiased;
 
 
 
@@ -72,9 +71,6 @@
             &::after {
                 display: inline-block;
                 font: normal normal normal 16px/1 FontAwesome;
-                text-rendering: auto;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
 
                 cursor: pointer;
                 content: "\f0c1";

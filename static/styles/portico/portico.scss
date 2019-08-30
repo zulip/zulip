@@ -81,8 +81,6 @@ body {
     height: 100%;
     font-weight: 300;
     font-size: 17px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
 /* The API tabbed content tends to have a lot of code blocks,
@@ -192,7 +190,6 @@ body {
     display: block;
     font: normal normal normal 14px/1 FontAwesome;
     font-size: inherit;
-    text-rendering: auto;
 
     content: "\f107";
     margin-right: 5px;
@@ -210,7 +207,6 @@ body {
     display: inline-block;
     font: normal normal normal 14px/1 FontAwesome;
     font-size: inherit;
-    text-rendering: auto;
 
     content: "\f0d9";
     margin-right: 10px;
