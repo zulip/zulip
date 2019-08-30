@@ -14,6 +14,7 @@ zrequire('stream_data');
 zrequire('narrow');
 zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
+zrequire('actual_pygments_data', 'generated/pygments_data');
 zrequire('settings_org');
 var th = zrequire('typeahead_helper');
 
@@ -104,6 +105,24 @@ run_test('sort_languages', () => {
     test_langs = th.sort_languages(test_langs, "p");
 
     assert.deepEqual(test_langs, ["php", "python", "pascal", "perl", "javascript"]);
+
+    // Some final tests on the actual pygments data to check ordering.
+    //
+    // We may eventually want to use human-readable names like
+    // "JavaScript" with several machine-readable aliases for what the
+    // user typed, which might help provide a better user experience.
+    global.pygments_data = global.actual_pygments_data;
+    test_langs = ["j", "java", "javascript", "js"];
+
+    // Sort acccording to priority only.
+    test_langs = th.sort_languages(test_langs, "jav");
+    assert.deepEqual(test_langs, ["javascript", "java", "js", "j"]);
+
+    // Push exact matches to top, regardless of priority
+    test_langs = th.sort_languages(test_langs, "java");
+    assert.deepEqual(test_langs, ["java", "javascript", "js", "j"]);
+    test_langs = th.sort_languages(test_langs, "j");
+    assert.deepEqual(test_langs, ["j", "javascript", "java", "js"]);
 });
 
 var matches = [
