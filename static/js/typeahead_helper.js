@@ -302,6 +302,14 @@ exports.sort_languages = function (matches, query) {
 
     // Languages that start with the query
     results.matches = results.matches.sort(exports.compare_by_popularity);
+
+    // Push exact matches to top.
+    const match_index = results.matches.indexOf(query);
+    if (match_index > -1) {
+        results.matches.splice(match_index, 1);
+        results.matches.unshift(query);
+    }
+
     // Languages that have the query somewhere in their name
     results.rest = results.rest.sort(exports.compare_by_popularity);
     return results.matches.concat(results.rest);
