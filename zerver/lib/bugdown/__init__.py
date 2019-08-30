@@ -1594,11 +1594,16 @@ class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
 
         return lines
 
+# Name for the outer capture group we use to separate whitespace and
+# other delimiters from the actual content.  This value won't be an
+# option in user-entered capture groups.
+OUTER_CAPTURE_GROUP = "linkifier_actual_match"
 def prepare_realm_pattern(source: str) -> str:
-    """ Augment a realm filter so it only matches after start-of-string,
+    """Augment a realm filter so it only matches after start-of-string,
     whitespace, or opening delimiters, won't match if there are word
-    characters directly after, and saves what was matched as "name". """
-    return r"""(?<![^\s'"\(,:<])(?P<name>""" + source + r')(?!\w)'
+    characters directly after, and saves what was matched as
+    OUTER_CAPTURE_GROUP."""
+    return r"""(?<![^\s'"\(,:<])(?P<%s>%s)(?!\w)""" % (OUTER_CAPTURE_GROUP, source)
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
@@ -1616,7 +1621,7 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         db_data = self.markdown.zulip_db_data
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
-                        m.group("name"))
+                        m.group(OUTER_CAPTURE_GROUP))
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
