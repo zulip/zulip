@@ -118,9 +118,6 @@ $category-text: hsl(219, 23%, 33%);
 
 
         .searchbar {
-            width: -moz-calc(100% - 40px);
-            width: -webkit-calc(100% - 40px);
-            width: -o-calc(100% - 40px);
             width: calc(100% - 40px);
             display: flex;
             justify-content: center;
@@ -130,8 +127,6 @@ $category-text: hsl(219, 23%, 33%);
                 position: relative;
 
                 input {
-                    -webkit-box-shadow: 0px 0px 7px 2px hsla(0, 0%, 0%, 0.03);
-                    -moz-box-shadow: 0px 0px 7px 2px hsla(0, 0%, 0%, 0.03);
                     box-shadow: 0px 0px 7px 2px hsla(0, 0%, 0%, 0.03);
 
                     font-size: 1em;
@@ -154,9 +149,6 @@ $category-text: hsl(219, 23%, 33%);
                     }
 
                     @media (max-width: 550px) {
-                        width: -moz-calc(100% - 80px);
-                        width: -webkit-calc(100% - 80px);
-                        width: -o-calc(100% - 80px);
                         width: calc(100% - 80px);
                     }
                 }

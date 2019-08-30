@@ -20,19 +20,12 @@
 
             background-color: hsl(0, 0%, 100%);
             background-image:
-                -moz-linear-gradient(45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
-                -moz-linear-gradient(-45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
-                -moz-linear-gradient(45deg, transparent 75%, hsl(0, 0%, 0%) 75%),
-                -moz-linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 0%) 75%);
-            background-image:
-                -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
-                -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
-                -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%))),
-                -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%)));
+                linear-gradient(45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+                linear-gradient(135deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, hsl(0, 0%, 80%) 75%),
+                linear-gradient(135deg, transparent 75%, hsl(0, 0%, 80%) 75%);
 
-            -moz-background-size: 20px 20px;
             background-size: 20px 20px;
-            -webkit-background-size: 20px 20px;
 
             background-position: 0 0, 50px 0, 50px -50px, 0px 50px;
         }

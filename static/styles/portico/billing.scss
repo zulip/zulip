@@ -128,7 +128,6 @@
         span {
             background: 0;
             box-shadow: none;
-            -webkit-box-shadow: none;
             font-family: 'Source Sans Pro', Helvetica, Arial;
             font-size: 1.4em;
             line-height: 20px;
@@ -146,7 +145,6 @@
         span {
             background: 0;
             box-shadow: none;
-            -webkit-box-shadow: none;
         }
     }
 
@@ -243,8 +241,6 @@
         left: -50%;
         top: -41px;
         z-index: 1;
-        -webkit-border-radius: 6px;
-        -moz-border-radius: 6px;
         border-radius: 6px;
     }
 

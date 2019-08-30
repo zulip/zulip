@@ -172,7 +172,6 @@
 
         &[disabled="disabled"] {
             cursor: not-allowed;
-            -moz-filter: saturate(0);
             filter: saturate(0);
             background-color: hsl(0, 0%, 93%);
             color: hsl(0, 3%, 52%);
@@ -333,8 +332,6 @@
         text-shadow: none;
         outline: none !important;
         box-shadow: none;
-        -webkit-box-shadow: none;
-        -moz-box-shadow: none;
         z-index: 5;
 
         .user_status_overlay & {
@@ -375,8 +372,6 @@
         right: -30%;
         width: 50%;
         height: 50%;
-        -webkit-transform: rotate(45deg);
-        -moz-transform: rotate(45deg);
         transform: rotate(45deg);
     }
 }
