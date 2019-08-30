@@ -6,7 +6,7 @@ $far_left_gutter_size: 10px;
 $left_col_size: 19px;
 /* The full topic indentation includes 4px of indent in addition to
    the above (and another 5px of padding not measured here) */
-$topic_indent: $far_left_gutter_size + $left_col_size + 4px;
+$topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 #left-sidebar #group-pm-list {
     display: none;
