@@ -40,8 +40,6 @@ body {
 
 .navbar-inner {
     border-radius: 0px;
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
 }
 
 .header {
@@ -637,7 +635,7 @@ input.text-error {
 
     line-height: 0;
 
-    -webkit-transform: scale(1.8, 1);
+    transform: scale(1.8, 1);
 }
 
 .portico-header .dropdown ul li {
@@ -1417,7 +1415,7 @@ input.new-organization-button {
     }
 
     .app.help .sidebar.show ~ .markdown {
-        -webkit-filter: brightness(0.7);
+        filter: brightness(0.7);
     }
 
     .app-main,
@@ -1466,10 +1464,6 @@ input.new-organization-button {
 
     .postal-envelope {
         transform: none;
-        -webkit-transform: none;
-        -moz-transform: none;
-        -o-transform: none;
-        -ms-transform: none;
     }
 
     .letter-form {
@@ -1658,14 +1652,10 @@ input.new-organization-button {
 
 /* -- button states -- */
 .button-new:hover {
-    -webkit-filter: brightness(1.1);
-    -moz-filter: brightness(1.1);
     filter: brightness(1.1);
 }
 
 .button-new:active {
-    -webkit-filter: brightness(0.9);
-    -moz-filter: brightness(0.9);
     filter: brightness(0.9);
 }
 

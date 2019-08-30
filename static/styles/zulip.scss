@@ -448,8 +448,6 @@ strong {
 .sp-input {
     width: calc(100% - 14px);
     box-sizing: initial !important;
-    -webkit-box-sizing: initial !important;
-    -moz-box-sizing: initial !important;
 }
 
 .logout {
@@ -659,10 +657,6 @@ td.pointer {
         .rotating {
             display: inline-block;
 
-            -webkit-animation: rotate 1s infinite linear;
-            -moz-animation: rotate 1s infinite linear;
-            -ms-animation: rotate 1s infinite linear;
-            -o-animation: rotate 1s infinite linear;
             animation: rotate 1s infinite linear;
         }
     }
@@ -769,7 +763,7 @@ td.pointer {
     border-width: 11px 0 11px 5px;
     border-color: inherit;
     z-index: 2;
-    -moz-transform: scale(.9999);
+    transform: scale(.9999);
 }
 
 .stream_label::before {
@@ -785,7 +779,7 @@ td.pointer {
     border-width: 14px 0 14px 6px;
     border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) transparent;
     z-index: 1;
-    -moz-transform: scale(.9999);
+    transform: scale(.9999);
 }
 
 .stream_topic {
@@ -870,46 +864,6 @@ td.pointer {
     display: none;
 }
 
-@-webkit-keyframes rotate {
-    from {
-        -webkit-transform: rotate(0deg);
-    }
-
-    to {
-        -webkit-transform: rotate(359deg);
-    }
-}
-
-@-moz-keyframes rotate {
-    from {
-        -moz-transform: rotate(0deg);
-    }
-
-    to {
-        -moz-transform: rotate(359deg);
-    }
-}
-
-@-ms-keyframes rotate {
-    from {
-        -ms-transform: rotate(0deg);
-    }
-
-    to {
-        -ms-transform: rotate(359deg);
-    }
-}
-
-@-moz-keyframes rotate {
-    from {
-        -o-transform: rotate(0deg);
-    }
-
-    to {
-        -o-transform: rotate(359deg);
-    }
-}
-
 @keyframes rotate {
     from {
         transform: rotate(0deg);
@@ -920,26 +874,6 @@ td.pointer {
     }
 }
 
-@-webkit-keyframes fadeInMessage {
-    0% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 1;
-    }
-}
-
-@-moz-keyframes fadeInMessage {
-    0% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 1;
-    }
-}
-
 @keyframes fadeInMessage {
     0% {
         opacity: 0;
@@ -947,26 +881,6 @@ td.pointer {
 
     100% {
         opacity: 1;
-    }
-}
-
-@-webkit-keyframes fadeInEditNotice {
-    0% {
-        transform: translateX(-10px);
-    }
-
-    100% {
-        transform: translateX(0px);
-    }
-}
-
-@-moz-keyframes fadeInEditNotice {
-    0% {
-        transform: translateX(-10px);
-    }
-
-    100% {
-        transform: translateX(0px);
     }
 }
 
@@ -1526,7 +1440,7 @@ div.focused_table {
                 position: absolute;
                 pointer-events: none;
                 z-index: 1;
-                -moz-transform: scale(.9999);
+                transform: scale(.9999);
             }
         }
 
@@ -1603,8 +1517,6 @@ div.focused_table {
     right: 0px;
     top: 30px;
     min-width: 180px;
-    -webkit-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
-    -moz-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
     box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
 }
 
@@ -1670,8 +1582,6 @@ div.focused_table {
         padding-left: 0px !important;
         background-color: inherit;
         box-shadow: inherit;
-        -webkit-box-shadow: inherit;
-        -moz-box-shadow: inherit;
         display: block;
         position: absolute;
         right: 0px;
@@ -1775,8 +1685,6 @@ nav a .no-style {
         color: hsl(0, 0%, 80%);
         font-size: 18px;
         box-shadow: none;
-        -webkit-box-shadow: none;
-        -moz-box-shadow: none;
         text-shadow: none;
         z-index: 5;
         float: right;
@@ -1893,8 +1801,6 @@ nav a .no-style {
         color: hsl(0, 0%, 80%);
         font-size: 18px;
         box-shadow: none;
-        -webkit-box-shadow: none;
-        -moz-box-shadow: none;
         text-shadow: none;
         z-index: 5;
     }
@@ -2057,8 +1963,6 @@ div.floating_recipient {
     left: -50%;
     top: -43px;
     z-index: 1;
-    -webkit-border-radius: 6px;
-    -moz-border-radius: 6px;
     border-radius: 6px;
 }
 
@@ -2076,8 +1980,6 @@ div.floating_recipient {
     left: -50%;
     top: -43px;
     z-index: 1;
-    -webkit-border-radius: 6px;
-    -moz-border-radius: 6px;
     border-radius: 6px;
 }
 
@@ -2427,8 +2329,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 #message_edit_form textarea {
     width: 100%;
     min-width: 206px;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
 
@@ -2483,10 +2383,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .no-drag {
     user-drag: none;
     user-select: none;
-    -moz-user-select: none;
-    -webkit-user-drag: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
 }
 
 .user_popover_email {

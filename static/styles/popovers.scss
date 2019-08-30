@@ -69,9 +69,7 @@
             }
 
             input {
-                -webkit-box-sizing: initial;
-                -moz-box-sizing: inherit;
-                -ms-box-sizing: inherit;
+                box-sizing: inherit;  /* IE */
                 box-sizing: initial;
 
                 width: calc(100% - 13px);

@@ -31,8 +31,6 @@
     }
 
     .bounce {
-        -moz-animation: bounce 0.75s infinite;
-        -webkit-animation: bounce 0.75s infinite;
         animation: bounce 0.75s infinite;
 
         .bounce-icon {
@@ -49,12 +47,12 @@
 
 @keyframes pulsate {
     0% {
-        -webkit-transform: scale(1.0, 1.0);
+        transform: scale(1.0, 1.0);
         opacity: 0.8;
     }
 
     100% {
-        -webkit-transform: scale(2.2, 2.2);
+        transform: scale(2.2, 2.2);
         opacity: 0.0;
     }
 }
@@ -62,11 +60,11 @@
 @keyframes bounce {
     0%,
     100% {
-        -webkit-transform: translateY(0px);
+        transform: translateY(0px);
     }
 
     50% {
-        -webkit-transform: translateY(4px);
+        transform: translateY(4px);
     }
 }
 

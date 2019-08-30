@@ -22,14 +22,7 @@
 .user_circle_orange {
     border-color: hsl(29, 84%, 51%);
     background-color: hsl(29, 84%, 51%);
-
-    background: -moz-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(50%, hsla(0, 0%, 100%, 0.0)), color-stop(50%, hsla(29, 84%, 51%, 1.0))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* IE10+ */
-    background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18', GradientType=0 ); /* IE6-9; filters only work with hex colors */
+    background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%);
 }
 
 .user_circle_empty {
