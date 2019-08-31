@@ -348,7 +348,8 @@ def process_raw_message_batch(realm_id: int,
     message_file = "/messages-%06d.json" % (dump_file_id,)
     create_converted_data_files(message_json, output_dir, message_file)
 
-def process_posts(team_name: str,
+def process_posts(num_teams: int,
+                  team_name: str,
                   realm_id: int,
                   post_data: List[Dict[str, Any]],
                   get_recipient_id: Callable[[ZerverFieldsT], int],
@@ -362,11 +363,18 @@ def process_posts(team_name: str,
                   zerver_realmemoji: List[Dict[str, Any]],
                   total_reactions: List[Dict[str, Any]]) -> None:
 
-    post_data_list = [
-        d
-        for d in post_data
-        if d["team"] == team_name
-    ]
+    post_data_list = []
+    for post in post_data:
+        if "team" not in post:
+            # Mattermost doesn't specify a team for private messages
+            # in its export format.  This line of code requires that
+            # we only be importing data from a single team (checked
+            # elsewhere) -- we just assume it's the target team.
+            post_team = team_name
+        else:
+            post_team = post["team"]
+        if post_team == team_name:
+            post_data_list.append(post)
 
     def message_to_dict(post_dict: Dict[str, Any]) -> Dict[str, Any]:
         sender_id = user_id_mapper.get(post_dict["user"])
@@ -422,7 +430,8 @@ def process_posts(team_name: str,
         process_batch=process_batch,
     )
 
-def write_message_data(team_name: str,
+def write_message_data(num_teams: int,
+                       team_name: str,
                        realm_id: int,
                        post_data: List[Dict[str, Any]],
                        zerver_recipient: List[ZerverFieldsT],
@@ -449,6 +458,7 @@ def write_message_data(team_name: str,
         return recipient_id
 
     process_posts(
+        num_teams=num_teams,
         team_name=team_name,
         realm_id=realm_id,
         post_data=post_data,
@@ -563,13 +573,24 @@ def check_user_in_team(user: Dict[str, Any], team_name: str) -> bool:
             return True
     return False
 
-def label_mirror_dummy_users(team_name: str, mattermost_data: Dict[str, List[Dict[str, Any]]],
+def label_mirror_dummy_users(num_teams: int, team_name: str,
+                             mattermost_data: Dict[str, List[Dict[str, Any]]],
                              username_to_user: Dict[str, Dict[str, Any]]) -> None:
     # This function might looks like a great place to label admin users. But
     # that won't be fully correct since we are iterating only though posts and
     # it covers only users that has sent atleast one message.
     for post in mattermost_data["post"]:
-        if post["team"] == team_name:
+        if "team" not in post:
+            if num_teams > 1:
+                raise AssertionError("Cannot import private messages in export with multiple teams.")
+            elif num_teams == 0:
+                raise AssertionError("Export with 0 teams")
+            else:
+                post_team = team_name
+        else:
+            post_team = post["team"]
+
+        if post_team == team_name:
             user = username_to_user[post["user"]]
             if not check_user_in_team(user, team_name):
                 user["is_mirror_dummy"] = True
@@ -621,7 +642,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         realm_output_dir = os.path.join(output_dir, team_name)
 
         reset_mirror_dummy_users(username_to_user)
-        label_mirror_dummy_users(team_name, mattermost_data, username_to_user)
+        label_mirror_dummy_users(len(mattermost_data["team"]), team_name, mattermost_data, username_to_user)
 
         convert_user_data(
             user_handler=user_handler,
@@ -680,6 +701,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
 
         total_reactions = []  # type: List[Dict[str, Any]]
         write_message_data(
+            num_teams=len(mattermost_data["team"]),
             team_name=team_name,
             realm_id=realm_id,
             post_data=mattermost_data["post"],

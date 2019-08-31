@@ -124,7 +124,7 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "gryffindor"
         # Snape is a mirror dummy user in Harry's team.
-        label_mirror_dummy_users(team_name, self.mattermost_data, self.username_to_user)
+        label_mirror_dummy_users(2, team_name, self.mattermost_data, self.username_to_user)
         user_handler = UserHandler()
         convert_user_data(user_handler, user_id_mapper, self.username_to_user, realm_id, team_name)
         self.assertEqual(len(user_handler.get_all_users()), 3)
@@ -347,6 +347,7 @@ class MatterMostImporter(ZulipTestCase):
 
     def test_label_mirror_dummy_users(self) -> None:
         label_mirror_dummy_users(
+            num_teams=2,
             team_name="gryffindor",
             mattermost_data=self.mattermost_data,
             username_to_user=self.username_to_user,
