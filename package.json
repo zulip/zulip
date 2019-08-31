@@ -83,7 +83,8 @@
     "svgo": "1.2.2",
     "swagger-parser": "6.0.5",
     "vnu-jar": "^19.6.7",
-    "webpack-dev-server": "3.5.1"
+    "webpack-dev-server": "3.5.1",
+    "yarn-deduplicate": "^1.1.1"
   },
   "scripts": {
     "postinstall": "rm -rf ./var/webpack-cache",
