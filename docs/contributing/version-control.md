@@ -91,7 +91,8 @@ of commits with good commit messages.
 
 The first line of the commit message is the **summary**. The summary:
 * is written in the imperative (e.g., "Fix ...", "Add ...")
-* is kept short, while concisely explaining what the commit does
+* is kept short (max 76 characters, ideally less), while concisely
+  explaining what the commit does
 * is clear about what part of the code is affected -- often by prefixing
   with the name of the subsystem and a colon, like "zjsunit: ..." or "docs: ..."
 * is a complete sentence, ending with a period.
@@ -133,5 +134,10 @@ commit message.
     Zulip's preferred style for this is to have the final paragraph of
     the commit message read e.g. "Fixes: \#123."
 -   Any paragraph content in the commit message should be line-wrapped
-    to less than 76 characters per line, so that your commit message
-    will be reasonably readable in `git log` in a normal terminal.
+    to about 68 characters per line, but no more than 70, so that your
+    commit message will be reasonably readable in `git log` in a normal
+    terminal. You may find it helpful to:
+    - configure Git to use your preferred editor, with the EDITOR
+    environment variable or `git config --global core.editor`, and
+    - configure the editor to automatically wrap text to 70 or fewer
+    columns per line (all text editors support this).
