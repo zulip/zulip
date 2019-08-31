@@ -19,7 +19,7 @@ from zerver.data_import.mattermost import mattermost_data_file_to_dict, process_
     build_reactions, get_name_to_codepoint_dict, do_convert_data
 from zerver.data_import.sequencer import IdMapper
 from zerver.data_import.import_util import SubscriberHandler
-from zerver.models import Reaction, UserProfile, Message, get_realm
+from zerver.models import Reaction, UserProfile, Message, get_realm, get_user
 
 class MatterMostImporter(ZulipTestCase):
     logger = logging.getLogger()
@@ -471,7 +471,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertIn(messages['zerver_message'][0]['content'], 'harry joined the channel.\n\n')
 
         exported_usermessage_userprofiles = self.get_set(messages['zerver_usermessage'], 'user_profile')
-        self.assertEqual(len(exported_usermessage_userprofiles), 2)
+        self.assertEqual(len(exported_usermessage_userprofiles), 3)
         exported_usermessage_messages = self.get_set(messages['zerver_usermessage'], 'message')
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
 
@@ -481,8 +481,11 @@ class MatterMostImporter(ZulipTestCase):
         )
         realm = get_realm('gryffindor')
 
-        realm_users = UserProfile.objects.filter(realm=realm)
-        messages = Message.objects.filter(sender__in=realm_users)
+        self.assertFalse(get_user("harry@zulip.com", realm).is_mirror_dummy)
+        self.assertFalse(get_user("ron@zulip.com", realm).is_mirror_dummy)
+        self.assertTrue(get_user("snape@zulip.com", realm).is_mirror_dummy)
+
+        messages = Message.objects.filter(sender__realm=realm)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
 

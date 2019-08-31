@@ -30,6 +30,6 @@
 {"type":"post","post":{"team":"slytherin","channel":"slytherin-quidditch-team","user":"malfoy","message":":rofl: 4","create_at":1553166916448,"reactions":[{"user":"harry","create_at":1553167016056,"emoji_name":"peerdium"}],"replies":null}}
 {"type":"post","post":{"team":"slytherin","channel":"slytherin-quidditch-team","user":"malfoy","message":"Hello folks","create_at":1553166858280,"reactions":[{"user":"harry","create_at":1553166903980,"emoji_name":"joy"}],"replies":null}}
 {"type":"post","post":{"team":"gryffindor","channel":"gryffindor-common-room","user":"harry","message":"harry joined the channel.","create_at":1553165141689,"reactions":null,"replies":null}}
-{"type":"post","post":{"team":"gryffindor","channel":"slytherin-quidditch-team","user":"snape","message":"Hey folks! I was always in your team. Time to go now.","create_at":1553166740759,"reactions":null,"replies":null}}
+{"type":"post","post":{"team":"gryffindor","channel":"gryffindor-quidditch-team","user":"snape","message":"Hey folks! I was always in your team. Time to go now.","create_at":1553166740759,"reactions":null,"replies":null}}
 {"type":"emoji","emoji":{"name":"peerdium","image":"exported_emoji/h15ni7kf1bnj7jeua4qhmctsdo/image.png"}}
 {"type":"emoji","emoji":{"name":"tick","image":"exported_emoji/7u7x8ytgp78q8jir81o9ejwwnr/image.png"}}
