@@ -133,5 +133,5 @@ commit message.
     Zulip's preferred style for this is to have the final paragraph of
     the commit message read e.g. "Fixes: \#123."
 -   Any paragraph content in the commit message should be line-wrapped
-    to less than 76 characters per line, so that your commit message
-    will be reasonably readable in `git log` in a normal terminal.
+    to about 68 characters per line (no more than 70), so that your commit
+    message will be reasonably readable in `git log` in a normal terminal.
