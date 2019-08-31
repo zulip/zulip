@@ -48,7 +48,7 @@ def run():
 
     by_lang = linter_config.list_files(groups={
         'backend': ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst'],
-        'frontend': ['js', 'ts', 'css', 'scss', 'hbs', 'html'],
+        'frontend': ['js', 'ts', 'css', 'scss', 'hbs', 'html', 'lock'],
     }, exclude=EXCLUDED_FILES)
 
     linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'],
@@ -86,6 +86,9 @@ def run():
                                   description="Static type checker for Python (config: mypy.ini)")
     linter_config.external_linter('tsc', ['tools/run-tsc'], ['ts'], pass_targets=False,
                                   description="TypeScript compiler (config: static/js/tsconfig.json)")
+    linter_config.external_linter('yarn-deduplicate', ['tools/run-yarn-deduplicate'], ['lock'],
+                                  pass_targets=False,
+                                  description="Shares duplicate packages in yarn.lock")
     linter_config.external_linter('gitlint', ['tools/commit-message-lint'],
                                   description="Checks commit messages for common formatting errors."
                                   "(config: .gitlint)")
