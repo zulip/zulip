@@ -392,6 +392,12 @@ INTEGRATIONS = {
         stream_name='jira',
         legacy=True
     ),
+    'log2zulip': Integration(
+        'log2zulip', 'log2zulip', ['monitoring'],
+        logo='images/integrations/logos/log2zulip.svg',
+        display_name='Log Files',
+        doc='zerver/integrations/log2zulip.md'
+    ),
     'matrix': Integration('matrix', 'matrix', ['communication'],
                           doc='zerver/integrations/matrix.md'),
     'mercurial': Integration(
