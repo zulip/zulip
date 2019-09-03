@@ -6,6 +6,7 @@ from django.utils.timezone import utc as timezone_utc
 import hashlib
 import logging
 import re
+import threading
 import traceback
 from typing import Optional
 from datetime import datetime, timedelta
@@ -17,36 +18,65 @@ from logging import Logger
 
 class _RateLimitFilter:
     last_error = datetime.min.replace(tzinfo=timezone_utc)
+    # thread-local value below.  If upon checking this, the filter function find .value == True,
+    # it means that it's being called *during* the execution of an original filter() call,
+    # due to cache.get/cache.set failures triggering another logging.error.
+    handling_exception = threading.local()
 
     def filter(self, record: logging.LogRecord) -> bool:
-        # Track duplicate errors
-        duplicate = False
-        rate = getattr(settings, '%s_LIMIT' % (self.__class__.__name__.upper(),),
-                       600)  # seconds
-        if rate > 0:
-            # Test if the cache works
-            try:
-                cache.set('RLF_TEST_KEY', 1, 1)
-                use_cache = cache.get('RLF_TEST_KEY') == 1
-            except Exception:
-                use_cache = False
-
-            if use_cache:
-                if record.exc_info is not None:
-                    tb = '\n'.join(traceback.format_exception(*record.exc_info))
+        try:
+            # When the original filter() call finishes executing, it's going to change
+            # handling_exception.value to False. The local variable below tracks whether
+            # the *current* filter() call is allowed to touch that value
+            # (only the original will find this to be True at the end of its execution)
+            allowed_to_alter_handling_exception_value = False
+            # Track duplicate errors
+            duplicate = False
+            rate = getattr(settings, '%s_LIMIT' % (self.__class__.__name__.upper(),),
+                           600)  # seconds
+            if rate > 0:
+                if hasattr(self.handling_exception, 'value') and self.handling_exception.value is True:
+                    # This execution is happening within the original filter() call, so cache.set/cache.get
+                    # are likely to raise Exceptions and cause Django to run logging.error, which would lead
+                    # to multiple recursive calls and crash the server. Fall back to caching in memory.
+                    use_cache = False
                 else:
-                    tb = str(record)
-                key = self.__class__.__name__.upper() + hashlib.sha1(tb.encode()).hexdigest()
-                duplicate = cache.get(key) == 1
-                if not duplicate:
-                    cache.set(key, 1, rate)
-            else:
-                min_date = timezone_now() - timedelta(seconds=rate)
-                duplicate = (self.last_error >= min_date)
-                if not duplicate:
-                    self.last_error = timezone_now()
+                    # Test if the cache works
+                    try:
+                        # This is the original filter() call, and thus is allowed
+                        # to control handling_exception.value.
+                        allowed_to_alter_handling_exception_value = True
+                        # Set handling_exception.value to True, so that if
+                        # the cache.set/cache.get calls below trigger logging.error
+                        # and another execution of filter(), that execution will be aware of it,
+                        # as explained above.
+                        self.handling_exception.value = True
+                        cache.set('RLF_TEST_KEY', 1, 1)
+                        use_cache = cache.get('RLF_TEST_KEY') == 1
+                    except Exception:
+                        use_cache = False
 
-        return not duplicate
+                if use_cache:
+                    if record.exc_info is not None:
+                        tb = '\n'.join(traceback.format_exception(*record.exc_info))
+                    else:
+                        tb = str(record)
+                    key = self.__class__.__name__.upper() + hashlib.sha1(tb.encode()).hexdigest()
+                    duplicate = cache.get(key) == 1
+                    if not duplicate:
+                        cache.set(key, 1, rate)
+                else:
+                    min_date = timezone_now() - timedelta(seconds=rate)
+                    duplicate = (self.last_error >= min_date)
+                    if not duplicate:
+                        self.last_error = timezone_now()
+
+            return not duplicate
+        finally:
+            if allowed_to_alter_handling_exception_value:
+                # This is the original filter() execution. Upon exiting,
+                # set handling_exception.value to False in this thread.
+                self.handling_exception.value = False
 
 class ZulipLimiter(_RateLimitFilter):
     pass
