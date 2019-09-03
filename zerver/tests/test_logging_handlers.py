@@ -208,3 +208,14 @@ class ErrorFiltersTest(TestCase):
                          "api_key=******&stream=******")
         self.assertEqual(clean_data_from_query_parameters("api_key=abcdz&stream=foo&topic=bar"),
                          "api_key=******&stream=******&topic=******")
+
+class RateLimitFilterTest(ZulipTestCase):
+    def test_recursive_filter_handling(self) -> None:
+        def mocked_cache_get(key: str) -> int:
+            logging.error("Log an error to trigger recursive filter() calls in _RateLimitFilter.")
+            raise Exception
+
+        with patch("zerver.lib.logging_util.cache.get", side_effect=mocked_cache_get) as m:
+            logging.error("Log an error to trigger initial _RateLimitFilter.filter() call.")
+            # cache.get should have only been called once, by the original filter() call:
+            m.assert_called_once()

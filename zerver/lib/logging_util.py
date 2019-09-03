@@ -10,6 +10,7 @@ import traceback
 from typing import Optional
 from datetime import datetime, timedelta
 from django.conf import settings
+from django.core.cache import cache
 from logging import Logger
 
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
@@ -18,9 +19,6 @@ class _RateLimitFilter:
     last_error = datetime.min.replace(tzinfo=timezone_utc)
 
     def filter(self, record: logging.LogRecord) -> bool:
-        from django.conf import settings
-        from django.core.cache import cache
-
         # Track duplicate errors
         duplicate = False
         rate = getattr(settings, '%s_LIMIT' % (self.__class__.__name__.upper(),),
