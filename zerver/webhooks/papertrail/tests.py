@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from zerver.lib.test_classes import WebhookTestCase
 
 class PapertrailHookTests(WebhookTestCase):
@@ -50,5 +52,16 @@ message body 4
         self.send_and_test_stream_message('long_post', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
+    def test_incorrect_message(self) -> None:
+        with self.assertRaises(AssertionError) as e:
+            self.send_and_test_stream_message('incorrect_post', '', '',
+                                              content_type="application/x-www-form-urlencoded")
+
+        self.assertIn("Missing expected keys", e.exception.args[0])
+
     def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("papertrail", fixture_name, file_type="json")
+        # Papertrail webhook sends a POST request with payload parameter
+        # containing the JSON body. Documented here:
+        # https://help.papertrailapp.com/kb/how-it-works/web-hooks#encoding
+        body = self.webhook_fixture_data("papertrail", fixture_name, file_type="json")
+        return urlencode({'payload': body})

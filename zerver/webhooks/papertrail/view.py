@@ -1,6 +1,7 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
@@ -16,10 +17,17 @@ SEARCH_TEMPLATE = """
 ```
 """.strip()
 
+def ensure_keys(name: str, data: Any) -> Optional[str]:
+    if 'events' in data and 'saved_search' in data:
+        saved_search = data['saved_search']
+        if 'name' in saved_search and 'html_search_url' in saved_search:
+            return None
+    return _("Missing expected keys")
+
 @api_key_only_webhook_view('Papertrail')
 @has_request_variables
 def api_papertrail_webhook(request: HttpRequest, user_profile: UserProfile,
-                           payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+                           payload: Dict[str, Any]=REQ(validator=ensure_keys)) -> HttpResponse:
 
     matches = MATCHES_TEMPLATE.format(
         name=payload["saved_search"]["name"],
