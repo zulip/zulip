@@ -135,4 +135,7 @@ def send_analytics_to_remote_server() -> None:
     }
 
     # Gather only entries with an ID greater than last_realm_count_id
-    send_to_push_bouncer("POST", "server/analytics", request)
+    try:
+        send_to_push_bouncer("POST", "server/analytics", request)
+    except JsonableError as e:
+        logging.warning(e.msg)

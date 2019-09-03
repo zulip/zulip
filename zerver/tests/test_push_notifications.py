@@ -402,8 +402,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(RealmCount.objects.count(), 1)
 
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
-        with self.assertRaises(JsonableError):
+        with mock.patch('zerver.lib.remote_server.logging.warning') as log_warning:
             send_analytics_to_remote_server()
+            log_warning.assert_called_once()
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
 
 class PushNotificationTest(BouncerTestCase):
