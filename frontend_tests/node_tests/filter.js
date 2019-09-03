@@ -293,7 +293,7 @@ run_test('can_mark_messages_read', () => {
         { operator: 'is', operand: 'private' },
     ];
     filter = new Filter(is_private);
-    assert(filter.can_mark_messages_read());
+    assert(!filter.can_mark_messages_read());
     assert_not_mark_read_with_is_operands(is_private);
     assert_not_mark_read_with_has_operands(is_private);
     assert_not_mark_read_when_searching(is_private);
