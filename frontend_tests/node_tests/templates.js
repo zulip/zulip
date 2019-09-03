@@ -1096,6 +1096,7 @@ run_test('settings_tab', () => {
         realm_digest_emails_enabled: true,
         realm_name_in_notifications: true,
         realm_push_notifications_enabled: true,
+        wildcard_mentions_notify: true,
     };
     const page_params = $.extend(page_param_checkbox_options, {
         full_name: "Alyssa P. Hacker", password_auth_enabled: true,
@@ -1112,6 +1113,7 @@ run_test('settings_tab', () => {
         "enable_online_push_notifications",
         "enable_digest_emails",
         "realm_name_in_notifications",
+        "wildcard_mentions_notify",
     ];
 
     // Render with all booleans set to true.
