@@ -218,6 +218,7 @@ class HomeTest(ZulipTestCase):
             "user_id",
             "user_status",
             "warn_no_email",
+            "wildcard_mentions_notify",
             "zulip_version",
         ]
 

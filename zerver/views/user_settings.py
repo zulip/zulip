@@ -162,6 +162,7 @@ def json_change_notify_settings(
         enable_stream_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_stream_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_stream_audible_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        wildcard_mentions_notify: Optional[bool]=REQ(validator=check_bool, default=None),
         notification_sound: Optional[str]=REQ(validator=check_string, default=None),
         enable_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
