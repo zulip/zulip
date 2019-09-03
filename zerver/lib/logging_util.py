@@ -6,49 +6,96 @@ from django.utils.timezone import utc as timezone_utc
 import hashlib
 import logging
 import re
+import threading
 import traceback
-from typing import Optional
+from typing import Optional, Tuple
 from datetime import datetime, timedelta
 from django.conf import settings
+from django.core.cache import cache
 from logging import Logger
 
-# Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
-
 class _RateLimitFilter:
+    """This class is designed to rate-limit Django error reporting
+    notifications so that it won't send thousands of emails if the
+    database or cache is completely down.  It uses a remote shared
+    cache (shared by all Django processes) for its default behavior
+    (so that the deduplication is global, not per-process), and a
+    local in-process cache for when it can't access the remote cache.
+
+    This is critical code because it is called every time
+    `logging.error` or `logging.exception` (or an exception) happens
+    in the codebase.
+
+    Adapted from https://djangosnippets.org/snippets/2242/.
+
+    """
     last_error = datetime.min.replace(tzinfo=timezone_utc)
+    # This thread-local variable is used to detect recursive
+    # exceptions during exception handling (primarily intended for
+    # when accessing the shared cache throws an exception).
+    handling_exception = threading.local()
+    should_reset_handling_exception = False
+
+    def can_use_remote_cache(self) -> Tuple[bool, bool]:
+        if getattr(self.handling_exception, 'value', False):
+            # If we're processing an exception that occurred
+            # while handling an exception, this almost
+            # certainly was because interacting with the
+            # remote cache is failing (e.g. because the cache
+            # is down).  Fall back to tracking duplicate
+            # exceptions in memory without the remote shared cache.
+            return False, False
+
+        # Now we test if the remote cache is accessible.
+        #
+        # This code path can only be reached if we are not potentially
+        # handling a recursive exception, so here we set
+        # self.handling_exception (in case the cache access we're
+        # about to do triggers a `logging.error` or exception that
+        # might recurse into this filter class), and actually record
+        # that this is the main exception handler thread.
+        try:
+            self.handling_exception.value = True
+            cache.set('RLF_TEST_KEY', 1, 1)
+            return cache.get('RLF_TEST_KEY') == 1, True
+        except Exception:
+            return False, True
 
     def filter(self, record: logging.LogRecord) -> bool:
-        from django.conf import settings
-        from django.core.cache import cache
+        # When the original filter() call finishes executing, it's
+        # going to change handling_exception.value to False. The
+        # local variable below tracks whether the *current*,
+        # potentially recursive, filter() call is allowed to touch
+        # that value (only the original will find this to be True
+        # at the end of its execution)
+        should_reset_handling_exception = False
+        try:
+            # Track duplicate errors
+            duplicate = False
+            rate = getattr(settings, '%s_LIMIT' % (self.__class__.__name__.upper(),),
+                           600)  # seconds
 
-        # Track duplicate errors
-        duplicate = False
-        rate = getattr(settings, '%s_LIMIT' % (self.__class__.__name__.upper(),),
-                       600)  # seconds
-        if rate > 0:
-            # Test if the cache works
-            try:
-                cache.set('RLF_TEST_KEY', 1, 1)
-                use_cache = cache.get('RLF_TEST_KEY') == 1
-            except Exception:
-                use_cache = False
-
-            if use_cache:
-                if record.exc_info is not None:
-                    tb = '\n'.join(traceback.format_exception(*record.exc_info))
+            if rate > 0:
+                (use_cache, should_reset_handling_exception) = self.can_use_remote_cache()
+                if use_cache:
+                    if record.exc_info is not None:
+                        tb = '\n'.join(traceback.format_exception(*record.exc_info))
+                    else:
+                        tb = str(record)
+                    key = self.__class__.__name__.upper() + hashlib.sha1(tb.encode()).hexdigest()
+                    duplicate = cache.get(key) == 1
+                    if not duplicate:
+                        cache.set(key, 1, rate)
                 else:
-                    tb = str(record)
-                key = self.__class__.__name__.upper() + hashlib.sha1(tb.encode()).hexdigest()
-                duplicate = cache.get(key) == 1
-                if not duplicate:
-                    cache.set(key, 1, rate)
-            else:
-                min_date = timezone_now() - timedelta(seconds=rate)
-                duplicate = (self.last_error >= min_date)
-                if not duplicate:
-                    self.last_error = timezone_now()
+                    min_date = timezone_now() - timedelta(seconds=rate)
+                    duplicate = (self.last_error >= min_date)
+                    if not duplicate:
+                        self.last_error = timezone_now()
 
-        return not duplicate
+            return not duplicate
+        finally:
+            if should_reset_handling_exception:
+                self.handling_exception.value = False
 
 class ZulipLimiter(_RateLimitFilter):
     pass
