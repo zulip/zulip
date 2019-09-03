@@ -3,6 +3,7 @@ const stream_notification_settings = [
     "enable_stream_audible_notifications",
     "enable_stream_push_notifications",
     "enable_stream_email_notifications",
+    "wildcard_mentions_notify"
 ];
 
 const pm_mention_notification_settings = [

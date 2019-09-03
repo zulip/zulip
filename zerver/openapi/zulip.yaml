@@ -2355,6 +2355,12 @@ paths:
         schema:
           type: boolean
         example: true
+      - name: wildcard_mentions_notify
+        in: query
+        description: Whether wildcard mentions (E.g. @**all**) should send notifications like a personal mention.
+        schema:
+          type: boolean
+        example: true
       - name: desktop_icon_count_display
         in: query
         description: >

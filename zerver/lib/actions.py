@@ -1002,8 +1002,9 @@ def get_typing_user_profiles(recipient: Recipient, sender_id: int) -> List[UserP
 RecipientInfoResult = TypedDict('RecipientInfoResult', {
     'active_user_ids': Set[int],
     'push_notify_user_ids': Set[int],
-    'stream_push_user_ids': Set[int],
     'stream_email_user_ids': Set[int],
+    'stream_push_user_ids': Set[int],
+    'wildcard_mention_user_ids': Set[int],
     'um_eligible_user_ids': Set[int],
     'long_term_idle_user_ids': Set[int],
     'default_bot_user_ids': Set[int],
@@ -1013,9 +1014,11 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
 def get_recipient_info(recipient: Recipient,
                        sender_id: int,
                        stream_topic: Optional[StreamTopicTarget],
-                       possibly_mentioned_user_ids: Optional[Set[int]]=None) -> RecipientInfoResult:
+                       possibly_mentioned_user_ids: Optional[Set[int]]=None,
+                       possible_wildcard_mention: bool=True) -> RecipientInfoResult:
     stream_push_user_ids = set()  # type: Set[int]
     stream_email_user_ids = set()  # type: Set[int]
+    wildcard_mention_user_ids = set()  # type: Set[int]
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -1033,12 +1036,16 @@ def get_recipient_info(recipient: Recipient,
         subscription_rows = stream_topic.get_active_subscriptions().annotate(
             user_profile_email_notifications=F('user_profile__enable_stream_email_notifications'),
             user_profile_push_notifications=F('user_profile__enable_stream_push_notifications'),
+            user_profile_wildcard_mentions_notify=F(
+                'user_profile__wildcard_mentions_notify'),
         ).values(
             'user_profile_id',
             'push_notifications',
             'email_notifications',
+            'wildcard_mentions_notify',
             'user_profile_email_notifications',
             'user_profile_push_notifications',
+            'user_profile_wildcard_mentions_notify',
             'is_muted',
         ).order_by('user_profile_id')
 
@@ -1072,6 +1079,23 @@ def get_recipient_info(recipient: Recipient,
             # Note: muting a stream overrides stream_email_notify
             if should_send('email_notifications', row)
         }
+
+        if possible_wildcard_mention:
+            # If there's a possible wildcard mention, we need to
+            # determine which users would receive a wildcard mention
+            # notification for this message should the message indeed
+            # contain a wildcard mention.
+            #
+            # We don't have separate values for push/email
+            # notifications here; at this stage, we're just
+            # determining whether this wildcard mention should be
+            # treated as a mention (and follow the user's mention
+            # notification preferences) or a normal message.
+            wildcard_mention_user_ids = {
+                row['user_profile_id']
+                for row in subscription_rows
+                if should_send("wildcard_mentions_notify", row)
+            }
 
     elif recipient.type == Recipient.HUDDLE:
         message_to_user_ids = get_huddle_user_ids(recipient)
@@ -1171,6 +1195,7 @@ def get_recipient_info(recipient: Recipient,
         push_notify_user_ids=push_notify_user_ids,
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
+        wildcard_mention_user_ids=wildcard_mention_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
         default_bot_user_ids=default_bot_user_ids,
@@ -1313,6 +1338,13 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             sender_id=message['message'].sender_id,
             stream_topic=stream_topic,
             possibly_mentioned_user_ids=mention_data.get_user_ids(),
+            # TODO: We should improve the `mention_data` logic to
+            # populate the possible_wildcard_mention field based on
+            # whether wildcard mention syntax actually appears in the
+            # message, to avoid wasting resources computing
+            # wildcard_mention_user_ids for messages that could
+            # not possibly contain a wildcard mention.
+            possible_wildcard_mention=True,
         )
 
         message['active_user_ids'] = info['active_user_ids']
@@ -1343,6 +1375,15 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         for group_id in message['message'].mentions_user_group_ids:
             members = message['mention_data'].get_group_members(group_id)
             message['message'].mentions_user_ids.update(members)
+
+        # Only send data to Tornado about wildcard mentions if message
+        # rendering determined the message had an actual wildcard
+        # mention in it (and not e.g. wildcard mention syntax inside a
+        # code block).
+        if message['message'].mentions_wildcard:
+            message['wildcard_mention_user_ids'] = info['wildcard_mention_user_ids']
+        else:
+            message['wildcard_mention_user_ids'] = []
 
         '''
         Once we have the actual list of mentioned ids from message
@@ -1445,6 +1486,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 always_push_notify=(user_id in message['push_notify_user_ids']),
                 stream_push_notify=(user_id in message['stream_push_user_ids']),
                 stream_email_notify=(user_id in message['stream_email_user_ids']),
+                wildcard_mention_notify=(user_id in message['wildcard_mention_user_ids']),
             )
             for user_id in user_ids
         ]
@@ -4473,11 +4515,11 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         else:
             stream_topic = None
 
-        # TODO: We may want a slightly leaner of this function for updates.
         info = get_recipient_info(
             recipient=message.recipient,
             sender_id=message.sender_id,
             stream_topic=stream_topic,
+            possible_wildcard_mention=True,
         )
 
         event['push_notify_user_ids'] = list(info['push_notify_user_ids'])
@@ -4486,6 +4528,10 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         event['prior_mention_user_ids'] = list(prior_mention_user_ids)
         event['mention_user_ids'] = list(mention_user_ids)
         event['presence_idle_user_ids'] = filter_presence_idle_user_ids(info['active_user_ids'])
+        if message.mentions_wildcard:
+            event['wildcard_mention_user_ids'] = list(info['wildcard_mention_user_ids'])
+        else:
+            event['wildcard_mention_user_ids'] = []
 
     if topic_name is not None:
         orig_topic_name = message.topic_name()

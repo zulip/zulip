@@ -67,6 +67,7 @@ function setup_settings_label() {
         enable_stream_audible_notifications: i18n.t("Audible desktop notifications"),
         enable_stream_push_notifications: i18n.t("Mobile notifications"),
         enable_stream_email_notifications: i18n.t("Email notifications"),
+        wildcard_mentions_notify: i18n.t("Notifications for @all/@everyone mentions"),
 
         // pm_mention_notification_settings
         enable_desktop_notifications: i18n.t("Visual desktop notifications"),

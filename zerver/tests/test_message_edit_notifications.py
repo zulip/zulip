@@ -161,7 +161,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             message_id=message_id,
             private_message=False,
             mentioned=True,
-            wildcard_mentioned=False,
+            wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name='Scotland',
@@ -314,7 +314,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             message_id=message_id,
             private_message=False,
             mentioned=True,
-            wildcard_mentioned=False,
+            wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name='Scotland',
@@ -353,7 +353,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             message_id=message_id,
             private_message=False,
             mentioned=False,
-            wildcard_mentioned=False,
+            wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name='Scotland',
@@ -392,7 +392,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             message_id=message_id,
             private_message=False,
             mentioned=True,
-            wildcard_mentioned=False,
+            wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name='Scotland',
@@ -405,6 +405,76 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # She will get messages enqueued.  (Other tests drill down on the
         # actual content of these messages.)
         self.assertEqual(len(info['queue_messages']), 2)
+
+    def test_updates_with_wildcard_mention(self) -> None:
+        cordelia = self.example_user('cordelia')
+
+        message_id = self._login_and_send_original_stream_message(
+            content='no mention'
+        )
+
+        # We will simulate that the user still has a an active client,
+        # but they don't have UserPresence rows, so we will still
+        # send offline notifications.
+        with self._cordelia_connected_to_zulip():
+            info = self._get_queued_data_for_message_update(
+                message_id=message_id,
+                content='now we mention @**all**',
+            )
+
+        expected_enqueue_kwargs = dict(
+            user_profile_id=cordelia.id,
+            message_id=message_id,
+            private_message=False,
+            mentioned=False,
+            wildcard_mention_notify=True,
+            stream_push_notify=False,
+            stream_email_notify=False,
+            stream_name='Scotland',
+            always_push_notify=False,
+            idle=True,
+            already_notified={},
+        )
+        self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
+
+        # She will get messages enqueued.
+        self.assertEqual(len(info['queue_messages']), 2)
+
+    def test_updates_with_upgrade_wildcard_mention(self) -> None:
+        message_id = self._login_and_send_original_stream_message(
+            content='Mention @**all**'
+        )
+
+        # If there was a previous wildcard mention delivered to the
+        # user (because wildcard_mention_notify=True), we don't notify
+        with self._cordelia_connected_to_zulip():
+            self._get_queued_data_for_message_update(
+                message_id=message_id,
+                content='now we mention @**Cordelia Lear**',
+                expect_short_circuit=True,
+            )
+
+    def test_updates_with_upgrade_wildcard_mention_disabled(self) -> None:
+        # If the user has disabled notifications for wildcard
+        # mentions, they won't have been notified at first, which
+        # means they should be notified when the message is edited to
+        # contain a wildcard mention.
+        #
+        # This is a bug that we're not equipped to fix right now.
+        cordelia = self.example_user('cordelia')
+        cordelia.wildcard_mentions_notify = False
+        cordelia.save()
+
+        message_id = self._login_and_send_original_stream_message(
+            content='Mention @**all**'
+        )
+
+        with self._cordelia_connected_to_zulip():
+            self._get_queued_data_for_message_update(
+                message_id=message_id,
+                content='now we mention @**Cordelia Lear**',
+                expect_short_circuit=True,
+            )
 
     def test_updates_with_stream_mention_of_fully_present_user(self) -> None:
         cordelia = self.example_user('cordelia')
@@ -428,7 +498,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             message_id=message_id,
             private_message=False,
             mentioned=True,
-            wildcard_mentioned=False,
+            wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name='Scotland',
