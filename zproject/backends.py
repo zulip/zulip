@@ -17,12 +17,13 @@ import logging
 import magic
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from django_auth_ldap.backend import LDAPBackend, _LDAPUser
+from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from django.contrib.auth import get_backends
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.dispatch import receiver, Signal
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -565,6 +566,24 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     def authenticate(self, *, username: str, password: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         return None
+
+class PopulateUserLDAPError(ZulipLDAPException):
+    pass
+
+@receiver(ldap_error, sender=ZulipLDAPUserPopulator)
+def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
+    """
+    Inside django_auth_ldap populate_user(), if LDAPError is raised,
+    e.g. due to invalid connection credentials, the function catches it
+    and emits a signal (ldap_error) to communicate this error to others.
+    We normally don't use signals, but here there's no choice, so in this function
+    we essentially convert the signal to a normal exception that will properly
+    propagate out of django_auth_ldap internals.
+    """
+    if kwargs['context'] == 'populate_user':
+        # The exception message can contain the password (if it was invalid),
+        # so it seems better not to log that, and only use the original exception's name here.
+        raise PopulateUserLDAPError(kwargs['exception'].__class__.__name__)
 
 def sync_user_from_ldap(user_profile: UserProfile) -> bool:
     backend = ZulipLDAPUserPopulator()

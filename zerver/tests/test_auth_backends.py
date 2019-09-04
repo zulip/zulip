@@ -55,7 +55,8 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, google_auth_enabled, \
     require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain, \
-    ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin
+    ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
+    PopulateUserLDAPError
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
@@ -2600,6 +2601,22 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
             result = sync_user_from_ldap(user_profile)
             self.assertTrue(result)
+
+    @mock.patch("zproject.backends.do_deactivate_user")
+    def test_ldap_auth_error_doesnt_deactivate_user(self, mock_deactivate: mock.MagicMock) -> None:
+        """
+        This is a test for a bug where failure to connect to LDAP in sync_user_from_ldap
+        (e.g. due to invalid credentials) would cause the user to be deactivated if
+        LDAP_DEACTIVATE_NON_MATCHING_USERS was True.
+        Details: https://github.com/zulip/zulip/issues/13130
+        """
+        with self.settings(
+                LDAP_DEACTIVATE_NON_MATCHING_USERS=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='wrongpass'):
+            with self.assertRaises(PopulateUserLDAPError):
+                sync_user_from_ldap(self.example_user('hamlet'))
+            mock_deactivate.assert_not_called()
 
     def test_update_full_name(self) -> None:
         self.mock_ldap.directory = {
