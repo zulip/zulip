@@ -14,3 +14,4 @@ Code Testing
    typescript
    continuous-integration
    manual-testing
+   philosophy
