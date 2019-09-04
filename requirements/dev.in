@@ -25,6 +25,10 @@ httpretty==0.9.6
 # For sorting imports
 isort==4.3.21
 
+# For doing highly usable Python profiling (temporary fork of
+# line_profiler: https://github.com/rkern/line_profiler/issues/127)
+lp37==2.1.1
+
 # for pep8 linter
 pycodestyle==2.5.0
 

@@ -54,9 +54,6 @@ git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#
 # Needed for hipchat import
 hypchat==0.21
 
-# For doing highly usable Python profiling
-git+https://github.com/zulip/line_profiler.git#egg=line_profiler==2.1.2.zulip1
-
 # Needed for inlining the CSS in emails
 premailer==3.5.0
 
