@@ -150,6 +150,14 @@ class TestEncodeDecode(ZulipTestCase):
         token = decode_email_address(stream_to_address)[0]
         self.assertEqual(token, stream.email_token)
 
+    def test_encode_with_show_sender(self) -> None:
+        stream = get_stream("Denmark", get_realm("zulip"))
+        stream_to_address = encode_email_address(stream, show_sender=True)
+
+        token, options = decode_email_address(stream_to_address)
+        self._assert_options(options, show_sender=True)
+        self.assertEqual(token, stream.email_token)
+
 class TestGetMissedMessageToken(ZulipTestCase):
     def test_get_missed_message_token(self) -> None:
         with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
