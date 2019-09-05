@@ -1028,25 +1028,6 @@ ul.grey-box {
         margin: 0px 5px 0px 0px;
         width: calc(50% - 45px);
     }
-
-    #subscription_overlay .stream-header {
-        .button-group {
-            float: none;
-            display: block;
-            clear: both;
-            margin-top: 10px;
-
-            > * {
-                float: none !important;
-                vertical-align: top;
-            }
-        }
-
-        .deactivate,
-        .subscribe-button {
-            margin-top: -7px;
-        }
-    }
 }
 
 @media (max-width: 700px) {
