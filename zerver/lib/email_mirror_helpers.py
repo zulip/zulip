@@ -26,10 +26,10 @@ def get_email_gateway_message_string_from_address(address: str) -> str:
 
     return msg_string
 
-def encode_email_address(stream: Stream) -> str:
-    return encode_email_address_helper(stream.name, stream.email_token)
+def encode_email_address(stream: Stream, show_sender: bool=False) -> str:
+    return encode_email_address_helper(stream.name, stream.email_token, show_sender)
 
-def encode_email_address_helper(name: str, email_token: str) -> str:
+def encode_email_address_helper(name: str, email_token: str, show_sender: bool=False) -> str:
     # Some deployments may not use the email gateway
     if settings.EMAIL_GATEWAY_PATTERN == '':
         return ''
@@ -51,6 +51,9 @@ def encode_email_address_helper(name: str, email_token: str) -> str:
         encoded_token = "%s.%s" % (encoded_name, email_token)
     else:
         encoded_token = email_token
+
+    if show_sender:
+        encoded_token += ".show-sender"
 
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
