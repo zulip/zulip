@@ -69,16 +69,30 @@ class TestEncodeDecode(ZulipTestCase):
         stream_name = 'dev. help'
         stream = ensure_stream(realm, stream_name)
         email_address = encode_email_address(stream)
-        self.assertTrue(email_address.startswith('dev-help'))
-        self.assertTrue(email_address.endswith('@testserver'))
+        self.assertEqual(email_address, "dev-help.{}@testserver".format(stream.email_token))
+
+        # The default form of the email address (with an option - "include-footer"):
+        token, options = decode_email_address(
+            "dev-help.{}.include-footer@testserver".format(stream.email_token)
+        )
+        self._assert_options(options, include_footer=True)
+        self.assertEqual(token, stream.email_token)
+
+        # Using + instead of . as the separator is also supported for backwards compatibility,
+        # since that was the original form of addresses that we used:
+        token, options = decode_email_address(
+            "dev-help+{}+include-footer@testserver".format(stream.email_token)
+        )
+        self._assert_options(options, include_footer=True)
+        self.assertEqual(token, stream.email_token)
+
         token, options = decode_email_address(email_address)
         self._assert_options(options)
         self.assertEqual(token, stream.email_token)
 
-        parts = email_address.split('@')
-        # Use a mix of + and . as separators, to test that it works:
-        parts[0] += "+include-footer.show-sender+include-quotes"
-        email_address_all_options = '@'.join(parts)
+        # We also handle mixing + and . but it shouldn't be recommended to users.
+        email_address_all_options = "dev-help.{}+include-footer.show-sender+include-quotes@testserver"
+        email_address_all_options = email_address_all_options.format(stream.email_token)
         token, options = decode_email_address(email_address_all_options)
         self._assert_options(options, show_sender=True, include_footer=True, include_quotes=True)
         self.assertEqual(token, stream.email_token)
