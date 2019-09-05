@@ -1,3 +1,0 @@
-MAILTO=root
-
-* * * * *   zulip cd /home/zulip/deployments/current && ./manage.py email_mirror

@@ -110,7 +110,7 @@ Congratulations!  The integration should be fully operational.
 1. Install a cron job to poll the inbox every minute for new messages:
     ```
     cd /home/zulip/deployments/current/
-    sudo cp puppet/zulip/files/cron.d/email-mirror /etc/cron.d/
+    sudo cp puppet/zulip/files/cron.d/email-gateway /etc/cron.d/
     ```
 
 Congratulations!  The integration should be fully operational.

@@ -8,8 +8,8 @@ from email.mime.text import MIMEText
 from django.conf import settings
 from django.core.management.base import CommandParser
 
-from zerver.lib.email_mirror import mirror_email_message
-from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.email_gateway import mirror_email_message
+from zerver.lib.email_gateway_helpers import encode_email_address
 from zerver.lib.management import ZulipBaseCommand, CommandError
 
 from zerver.models import Realm, get_stream, get_realm
@@ -33,7 +33,7 @@ class Command(ZulipBaseCommand):
     help = """
 Send specified email from a fixture file to the email mirror
 Example:
-./manage.py send_to_email_mirror --fixture=zerver/tests/fixtures/emails/filename
+./manage.py send_to_email_gateway --fixture=zerver/tests/fixtures/emails/filename
 
 """
 
@@ -55,7 +55,7 @@ Example:
 
     def handle(self, **options: Optional[str]) -> None:
         if options['fixture'] is None:
-            self.print_help('./manage.py', 'send_to_email_mirror')
+            self.print_help('./manage.py', 'send_to_email_gateway')
             raise CommandError
 
         if options['stream'] is None:

@@ -81,10 +81,10 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
   Internet).  If you also open port 80, Zulip will redirect users to
   HTTPS rather than not working when users type
   e.g. `http://zulip.example.com` in their browser.  If you are using
-  Zulip's [incoming email integration][email-mirror-code] you may also
+  Zulip's [incoming email integration][email-gateway-code] you may also
   need incoming port 25 open.
 
-[email-mirror-code]: https://github.com/zulip/zulip/blob/master/zerver/management/commands/email_mirror.py
+[email-gateway-code]: https://github.com/zulip/zulip/blob/master/zerver/management/commands/email_gateway.py
 
 * Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
   that Zulip can properly manage inline image previews.  You'll also

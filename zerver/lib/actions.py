@@ -35,7 +35,7 @@ from zerver.lib.cache import (
     user_profile_by_api_key_cache_key,
 )
 from zerver.lib.context_managers import lockfile
-from zerver.lib.email_mirror_helpers import encode_email_address, encode_email_address_helper
+from zerver.lib.email_gateway_helpers import encode_email_address, encode_email_address_helper
 from zerver.lib.emoji import emoji_name_to_emoji_code, get_emoji_file_name
 from zerver.lib.exceptions import StreamDoesNotExistError, \
     StreamWithIDDoesNotExistError

@@ -9,8 +9,8 @@ from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
-from zerver.lib.email_mirror import RateLimitedRealmMirror
-from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.email_gateway import RateLimitedRealmMirror
+from zerver.lib.email_gateway_helpers import encode_email_address
 from zerver.lib.rate_limiter import RateLimiterLockingException, clear_history
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
@@ -231,7 +231,7 @@ class WorkerTest(ZulipTestCase):
             )
         ] * 3
         for element in data:
-            fake_client.queue.append(('email_mirror', element))
+            fake_client.queue.append(('email_gateway', element))
 
         with simulated_queue_client(lambda: fake_client):
             worker = queue_processors.MirrorWorker()
@@ -258,7 +258,7 @@ class WorkerTest(ZulipTestCase):
             )
         ] * 5
         for element in data:
-            fake_client.queue.append(('email_mirror', element))
+            fake_client.queue.append(('email_gateway', element))
 
         with simulated_queue_client(lambda: fake_client):
             start_time = time.time()
@@ -271,7 +271,7 @@ class WorkerTest(ZulipTestCase):
                 self.assertEqual(mock_mirror_email.call_count, 2)
 
                 # If a new message is sent into the stream mirror, it will get rejected:
-                fake_client.queue.append(('email_mirror', data[0]))
+                fake_client.queue.append(('email_gateway', data[0]))
                 worker.start()
                 self.assertEqual(mock_mirror_email.call_count, 2)
 
@@ -283,20 +283,20 @@ class WorkerTest(ZulipTestCase):
                         time=time.time(),
                         rcpt_to=address
                     )
-                    fake_client.queue.append(('email_mirror', event))
+                    fake_client.queue.append(('email_gateway', event))
                     worker.start()
                     self.assertEqual(mock_mirror_email.call_count, 3)
 
             # After some times passes, emails get accepted again:
             with patch('time.time', return_value=(start_time + 11.0)):
-                fake_client.queue.append(('email_mirror', data[0]))
+                fake_client.queue.append(('email_gateway', data[0]))
                 worker.start()
                 self.assertEqual(mock_mirror_email.call_count, 4)
 
                 # If RateLimiterLockingException is thrown, we rate-limit the new message:
                 with patch('zerver.lib.rate_limiter.incr_ratelimit',
                            side_effect=RateLimiterLockingException):
-                    fake_client.queue.append(('email_mirror', data[0]))
+                    fake_client.queue.append(('email_gateway', data[0]))
                     worker.start()
                     self.assertEqual(mock_mirror_email.call_count, 4)
                     expected_warn = "Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip"

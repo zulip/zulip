@@ -137,7 +137,7 @@ class zulip::app_frontend_base {
     group  => 'zulip',
     mode   => '0755',
   }
-  file { '/etc/cron.d/email-mirror':
+  file { '/etc/cron.d/email-gateway':
     ensure => absent,
   }
   file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":

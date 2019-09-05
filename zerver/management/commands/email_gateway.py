@@ -30,7 +30,7 @@ from typing import Any, Generator
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from zerver.lib.email_mirror import logger, process_message
+from zerver.lib.email_gateway import logger, process_message
 
 ## Setup ##
 

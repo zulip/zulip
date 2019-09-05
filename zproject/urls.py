@@ -22,7 +22,7 @@ import zerver.views.archive
 import zerver.views.camo
 import zerver.views.compatibility
 import zerver.views.home
-import zerver.views.email_mirror
+import zerver.views.email_gateway
 import zerver.views.registration
 import zerver.views.zephyr
 import zerver.views.users
@@ -688,8 +688,8 @@ urls += [
 
 # View for uploading messages from email mirror
 urls += [
-    url(r'^email_mirror_message$', zerver.views.email_mirror.email_mirror_message,
-        name='zerver.views.email_mirror.email_mirror_message'),
+    url(r'^email_mirror_message$', zerver.views.email_gateway.email_mirror_message,
+        name='zerver.views.email_gateway.email_mirror_message'),
 ]
 
 # Include URL configuration files for site-specified extra installed

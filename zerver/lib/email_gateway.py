@@ -12,7 +12,7 @@ from django.conf import settings
 from zerver.lib.actions import internal_send_message, internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
     truncate_body, truncate_topic
-from zerver.lib.email_mirror_helpers import decode_email_address, \
+from zerver.lib.email_gateway_helpers import decode_email_address, \
     get_email_gateway_message_string_from_address, ZulipEmailForwardError
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
@@ -413,7 +413,7 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
                        "Please use the address specified in your Streams page."
             }
     queue_json_publish(
-        "email_mirror",
+        "email_gateway",
         {
             "message": data['msg_text'],
             "rcpt_to": rcpt_to

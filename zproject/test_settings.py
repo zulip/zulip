@@ -119,7 +119,7 @@ if not CASPER_TESTS:
     set_loglevel('zulip.send_email', 'ERROR')
     set_loglevel('zerver.lib.push_notifications', 'WARNING')
     set_loglevel('zerver.lib.digest', 'ERROR')
-    set_loglevel('zerver.lib.email_mirror', 'ERROR')
+    set_loglevel('zerver.lib.email_gateway', 'ERROR')
     set_loglevel('zerver.worker.queue_processors', 'WARNING')
     set_loglevel('stripe', 'WARNING')
 

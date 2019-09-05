@@ -34,7 +34,7 @@ from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.send_email import send_future_email, send_email_from_dict, \
     FromAddress, EmailNotDeliveredException, handle_send_email_format_changes
-from zerver.lib.email_mirror import process_message as mirror_email, rate_limit_mirror_by_realm, \
+from zerver.lib.email_gateway import process_message as mirror_email, rate_limit_mirror_by_realm, \
     is_missed_message_address, extract_and_validate
 from zerver.lib.streams import access_stream_by_id
 from zerver.tornado.socket import req_redis_key, respond_send_message
@@ -481,7 +481,7 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
         logging.info("Received digest event: %s" % (event,))
         handle_digest_email(event["user_profile_id"], event["cutoff"])
 
-@assign_queue('email_mirror')
+@assign_queue('email_gateway')
 class MirrorWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         rcpt_to = event['rcpt_to']

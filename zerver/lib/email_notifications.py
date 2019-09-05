@@ -347,7 +347,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             'reply_to_zulip': False,
         })
 
-    from zerver.lib.email_mirror import create_missed_message_address
+    from zerver.lib.email_gateway import create_missed_message_address
     reply_to_address = create_missed_message_address(user_profile, missed_messages[0]['message'])
     if reply_to_address == FromAddress.NOREPLY:
         reply_to_name = None
