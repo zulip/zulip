@@ -1,10 +1,10 @@
 {{#render_subscribers}}
 <div class="subscriber_list_settings_container" {{#unless can_access_subscribers}}style="display: none"{{/unless}}>
     <div class="subscriber_list_settings">
-        <div class="sub_settings_title float-left">
+        <label class="sub_settings_title float-left">
             {{t "Stream membership" }}
             <div class="stream_subscription_info small"></div>
-        </div>
+        </label>
         <div class="subscriber_list_add float-right">
             <form class="form-inline">
                 <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
