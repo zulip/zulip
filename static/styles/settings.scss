@@ -2,6 +2,31 @@ label {
     margin: 0;
 }
 
+label,
+h3 {
+    a {
+        color: inherit;
+    }
+
+    .fa-question-circle-o {
+        top: 1px;
+        opacity: 0.4;
+        position: relative;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+label .fa-question-circle-o {
+    left: 2px;
+}
+
+h3 .fa-question-circle-o {
+    left: 5px;
+}
+
 .new-style {
     .block {
         display: block;
@@ -211,30 +236,6 @@ td .button {
 
     .no-padding {
         padding: 0;
-    }
-
-    label > a,
-    h3 > a {
-        color: inherit;
-    }
-
-    label .fa-question-circle-o {
-        top: 1px;
-        left: 2px;
-    }
-
-    h3 .fa-question-circle-o {
-        top: 1px;
-        left: 5px;
-    }
-
-    .fa-question-circle-o {
-        opacity: 0.4;
-        position: relative;
-
-        &:hover {
-            opacity: 1;
-        }
     }
 
     .settings-section-title {
