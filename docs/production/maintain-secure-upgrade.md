@@ -212,6 +212,10 @@ adding a section like this to `/etc/zulip/zulip.conf`:
 git_repo_url = https://github.com/zulip/zulip.git
 ```
 
+See also our documentation on [modifying
+Zulip](../production/modifying-zulip.html) and [upgrading
+docker-zulip](https://github.com/zulip/docker-zulip#upgrading-from-a-git-repository).
+
 **Systems with limited RAM**: If you are running a minimal Zulip
   server with 2GB of RAM or less, the upgrade can fail due to the
   system running out of RAM running both the Zulip server and Zulip's
