@@ -5,7 +5,7 @@
     # version e.g. to say that something is likely to have changed.
     # For more info see: https://www.sphinx-doc.org/en/master/templating.html
     -->
-    {% if pagename == "production/email-gateway" and release.endswith('+git') %}
+    {% if (pagename == "production/email-gateway" or pagename == "production/modifying-zulip") and release.endswith('+git') %}
     <!--
     # email-gateway.html page doesn't exist in the stable documentation yet.
     # This temporary workaround prevents CircleCI failure and should be removed after the next release.
