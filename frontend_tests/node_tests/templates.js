@@ -641,13 +641,6 @@ run_test('draft_table_body', () => {
     assert.equal(row_2.find(".message_content").text().trim(), "Private draft");
 });
 
-
-run_test('email_address_hint', () => {
-    var html = render('email_address_hint');
-    var li = $(html).find("li").first();
-    assert.equal(li.text(), 'translated: The email will be forwarded to this stream');
-});
-
 run_test('emoji_popover', () => {
     var args = {
         class: "emoji-info-popover",

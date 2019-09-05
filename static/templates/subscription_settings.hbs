@@ -72,7 +72,12 @@
                 </ul>
             </div>
             <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
-                <div class="sub_settings_title">{{t "Email address" }} <i class="fa fa-question-circle stream-email-hint" aria-hidden="true"></i></div>
+                <div class="sub_settings_title">
+                    {{t "Email address" }}
+                    <a href="/help/message-a-stream-by-email" target="_blank">
+                        <i class="fa fa-question-circle" aria-hidden="true"></i>
+                    </a>
+                </div>
                 <div class="stream-email">
                     <span class="email-address">{{sub.email_address}}</span>
                 </div>
