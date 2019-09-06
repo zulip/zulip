@@ -55,8 +55,47 @@ def setup_shell_profile(shell_profile):
     if os.path.exists('/srv/zulip'):
         write_command('cd /srv/zulip')
 
+def setup_bash_profile() -> None:
+    """Select a bash profile file to add setup code to."""
+
+    BASH_PROFILES = [
+        os.path.expanduser(p) for p in
+        ("~/.bash_profile", "~/.bash_login", "~/.profile")
+    ]
+
+    def clear_old_profile() -> None:
+        # An earlier version of this script would output a fresh .bash_profile
+        # even though a .profile existed in the image used. As a convenience to
+        # existing developers (and, perhaps, future developers git-bisecting the
+        # provisioning scripts), check for this situation, and blow away the
+        # created .bash_profile if one is found.
+
+        BASH_PROFILE = BASH_PROFILES[0]
+        DOT_PROFILE = BASH_PROFILES[2]
+        OLD_PROFILE_TEXT = "source /srv/zulip-py3-venv/bin/activate\n" + \
+            "cd /srv/zulip\n"
+
+        if os.path.exists(DOT_PROFILE):
+            try:
+                with open(BASH_PROFILE, "r") as f:
+                    profile_contents = f.read()
+                if profile_contents == OLD_PROFILE_TEXT:
+                    os.unlink(BASH_PROFILE)
+            except FileNotFoundError:
+                pass
+
+    clear_old_profile()
+
+    for candidate_profile in BASH_PROFILES:
+        if os.path.exists(candidate_profile):
+            setup_shell_profile(candidate_profile)
+            break
+    else:
+        # no existing bash profile found; claim .bash_profile
+        setup_shell_profile(BASH_PROFILES[0])
+
 def main(options: argparse.Namespace) -> int:
-    setup_shell_profile('~/.bash_profile')
+    setup_bash_profile()
     setup_shell_profile('~/.zprofile')
 
     # This needs to happen before anything that imports zproject.settings.
