@@ -7,6 +7,14 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.0.5 -- 2019-09-11
+
+- CVE-2019-16215: Fix DoS vulnerability in Markdown LINK_RE.
+- CVE-2019-16216: Fix MIME type validation.
+- Fixed email gateway postfix configuration for Ubuntu Bionic.
+- Fixed support for hidden_by_limit messages in Slack import.
+- Fixed confusing output from the `knight` management command.
+
 ### 2.0.4 -- 2019-06-29
 
 - Fixed several configuration-dependent bugs that caused
