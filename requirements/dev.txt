@@ -172,7 +172,7 @@ tornado==4.5.3
 traitlets==4.3.2          # via ipython
 transifex-client==0.12.5
 twilio==6.29.2
-twisted==19.2.1
+twisted==19.7.0
 typed-ast==1.4.0          # via mypy
 typing-extensions==3.7.4
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
