@@ -334,7 +334,6 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
             marked_unread += 1
         else:
             um.flags = UserMessage.flags.read
-        print(message_id, um.flags)
         ums_to_create.append(um)
 
     UserMessage.objects.bulk_create(reversed(ums_to_create))
