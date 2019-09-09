@@ -39,7 +39,7 @@ email addresses and send notifications.
    configuration is working.
 
 1. Once your configuration is working, restart the Zulip server with
-   `/home/zulip/deployments/current/scripts/restart`.
+   `su zulip -c '/home/zulip/deployments/current/scripts/restart-server'`.
 
 ## Email services
 
