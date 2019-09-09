@@ -142,7 +142,7 @@ su zulip -c '/home/zulip/deployments/current/manage.py send_test_email user@exam
 ```
 
 If it doesn't throw an error, it probably worked; you can confirm by
-checking your email.  You should get two emails: One sent by a the
+checking your email.  You should get two emails: One sent by the
 default From address for your Zulip server, and one sent by the
 "noreply" From address.
 
