@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple, Any
+from typing import Optional, Tuple, Any
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -43,6 +43,17 @@ DEFAULT_EMOJI_SIZE = 64
 # network cost of very large emoji images.
 MAX_EMOJI_GIF_SIZE = 128
 MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024 * 1024  # 128 kb
+
+INLINE_MIME_TYPES = [
+    "application/pdf",
+    "image/gif",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    # To avoid cross-site scripting attacks, DO NOT add types such
+    # as application/xhtml+xml, application/x-shockwave-flash,
+    # image/svg+xml, text/html, or text/xml.
+]
 
 # Performance Note:
 #
@@ -276,10 +287,11 @@ def upload_image_to_s3(
     key.set_metadata("user_profile_id", str(user_profile.id))
     key.set_metadata("realm_id", str(user_profile.realm_id))
 
+    headers = {}
     if content_type is not None:
-        headers = {'Content-Type': content_type}  # type: Optional[Dict[str, str]]
-    else:
-        headers = None
+        headers["Content-Type"] = content_type
+    if content_type not in INLINE_MIME_TYPES:
+        headers["Content-Disposition"] = "attachment"
 
     key.set_contents_from_string(contents, headers=headers)
 
