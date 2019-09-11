@@ -187,7 +187,8 @@ v1_api_and_json_patterns = [
     # messages -> zerver.views.messages
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', rest_dispatch,
-        {'GET': 'zerver.views.messages.get_messages_backend',
+        {'GET': ('zerver.views.messages.get_messages_backend',
+                 {'allow_anonymous_user_web'}),
          'POST': ('zerver.views.messages.send_message_backend',
                   {'allow_incoming_webhooks'})}),
     url(r'^messages/(?P<message_id>[0-9]+)$', rest_dispatch,
