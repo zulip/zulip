@@ -1,6 +1,6 @@
 const fs = require("fs");
 const { JSDOM } = require("jsdom");
-const template = fs.readFileSync("templates/analytics/support.html", "utf-8");
+const template = fs.readFileSync("templates/analytics/realm_details.html", "utf-8");
 const dom = new JSDOM(template, { pretendToBeVisual: true });
 const document = dom.window.document;
 
@@ -14,5 +14,5 @@ run_test('scrub_realm', () => {
     var click_handler = $('body').get_on_handler('click', '.scrub-realm-button');
     assert.equal(typeof click_handler, 'function');
 
-    assert.equal(document.querySelectorAll(".scrub-realm-button").length, 2);
+    assert.equal(document.querySelectorAll(".scrub-realm-button").length, 1);
 });
