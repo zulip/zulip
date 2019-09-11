@@ -62,7 +62,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result,
-                               u'A field with that label already exists.')
+                               u'A field with {} label already exists.'.format(data['name']))
 
     def test_create_choice_field(self) -> None:
         self.login(self.example_email("iago"))
@@ -263,7 +263,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field_data['url_pattern'], 'https://www.reddit.com/user/%(username)s')
 
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "A field with that label already exists.")
+        self.assert_json_error(result, "A field with {} label already exists.".format(custom_field.name))
 
     def test_create_field_of_type_user(self) -> None:
         self.login(self.example_email("iago"))
@@ -443,7 +443,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             "/json/realm/profile_fields/{}".format(field_2.id),
             info={'name': 'Phone', 'field_type': CustomProfileField.SHORT_TEXT})
         self.assert_json_error(
-            result, u'A field with that label already exists.')
+            result, u'A field with {} label already exists.'.format(field_1.name))
 
     def assert_error_update_invalid_value(self, field_name: str, new_value: object, error_msg: str) -> None:
         self.login(self.example_email("iago"))
