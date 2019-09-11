@@ -311,6 +311,14 @@ paths:
           type: boolean
           default: false
         example: true
+      - name: is_web_public_query
+        in: query
+        description: If `true`, this is an unauthenticated request from a web public user.
+          If `false`, this is an authenticated request or the instance is not web public.
+        schema:
+          type: boolean
+          default: false
+        example: true
       - name: num_before
         in: query
         description: The number of messages with IDs less than the anchor to retrieve.

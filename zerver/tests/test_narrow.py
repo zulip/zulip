@@ -1149,6 +1149,47 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.get_and_check_messages(dict(narrow=ujson.dumps([dict(operator='pm-with', operand=self.example_email("othello"))])))
 
+    def test_unauthenticated_get_messages_without_web_public(self) -> None:
+        """
+        A unauthenticated call to GET /json/messages with valid parameters
+        returns a 401.
+        """
+        post_params = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1
+        }  # type: Dict[str, Union[str, int]]
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, 'Not logged in: API authentication or user session required',
+                               status_code=401)
+
+    def test_unauthenticated_get_messages_with_web_public(self) -> None:
+        """
+        A unauthenticated call to GET /json/messages with valid parameters
+        including `is_web_public_query` returns a list of messages.
+        """
+        post_params = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            "is_web_public_query": 'true',
+        }  # type: Dict[str, Union[str, int]]
+        result = self.client_get("/json/messages", dict(post_params))
+        # TODO: Change this to success once the feature is done.
+        self.assert_json_error(result, "Not implemented",
+                               status_code=401)
+
+        post_params = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            "narrow": ujson.dumps([dict(operator='is', operand="private")]),
+            "is_web_public_query": 'true',
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(result, "Not logged in: API authentication or user session required",
+                               status_code=401)
+
     def test_client_avatar(self) -> None:
         """
         The client_gravatar flag determines whether we send avatar_url.

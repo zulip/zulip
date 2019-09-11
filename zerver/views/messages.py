@@ -28,7 +28,8 @@ from zerver.lib.message import (
     render_markdown,
     get_first_visible_message_id,
 )
-from zerver.lib.response import json_success, json_error
+from zerver.lib.narrow import is_web_public_compatible
+from zerver.lib.response import json_success, json_error, json_unauthorized
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, get_public_streams_queryset, \
     can_access_stream_history_by_name, can_access_stream_history_by_id, \
@@ -773,20 +774,41 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          narrow: OptionalNarrowListT=REQ('narrow', converter=narrow_parameter, default=None),
                          use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
-                         apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
+                         apply_markdown: bool=REQ(validator=check_bool, default=True),
+                         is_web_public_query: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:
     if anchor is None and not use_first_unread_anchor:
         return json_error(_("Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."))
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         return json_error(_("Too many messages requested (maximum %s).")
                           % (MAX_MESSAGES_PER_FETCH,))
 
-    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+    if is_web_public_query:
+        # Web public queries are only allowed for limited types of narrows.
+        if narrow is not None and not is_web_public_compatible(narrow):
+            return json_unauthorized()
+
+        # TODO: Ensure that the base query limits us to messages on
+        # streams with is_web_public set as the replacement for the
+        # usual limitation to messages in the target user's's personal
+        # history.
+        return json_unauthorized("Not implemented")
+    else:
+        if not request.user.is_authenticated:
+            return json_unauthorized()
+
+    if is_web_public_query or \
+            user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
 
     include_history = ok_to_include_history(narrow, user_profile)
-    if include_history:
+    if is_web_public_query:  # nocoverage # TODO once this code path is supported
+        # Web public queries don't have an authenticated user, so we
+        # will never join with UserMesage.
+        need_message = True
+        need_user_message = False
+    elif include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,
         # and isn't yet limited to messages the user is entitled to see!
         #
@@ -847,7 +869,10 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if anchored_to_right:
         num_after = 0
 
-    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
+    first_visible_message_id = 0
+    if not is_web_public_query:
+        first_visible_message_id = get_first_visible_message_id(user_profile.realm)
+
     query = limit_query_to_range(
         query=query,
         num_before=num_before,
@@ -897,6 +922,11 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         for message_id in message_ids:
             if message_id not in user_message_flags:
                 user_message_flags[message_id] = ["read", "historical"]
+    elif is_web_public_query:  # nocoverage # TODO once this code path is supported
+        for row in rows:
+            message_id = row[0]
+            message_ids.append(message_id)
+            user_message_flags[message_id] = []
     else:
         for row in rows:
             message_id = row[0]
@@ -919,13 +949,17 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                 # debugged the case that makes it happen.
                 raise Exception(str(err), message_id, narrow)
 
+    allow_edit_history = False
+    if not is_web_public_query:
+        allow_edit_history = user_profile.realm.allow_edit_history
+
     message_list = messages_for_ids(
         message_ids=message_ids,
         user_message_flags=user_message_flags,
         search_fields=search_fields,
         apply_markdown=apply_markdown,
         client_gravatar=client_gravatar,
-        allow_edit_history=user_profile.realm.allow_edit_history,
+        allow_edit_history=allow_edit_history,
     )
 
     statsd.incr('loaded_old_messages', len(message_list))
