@@ -303,7 +303,6 @@ class BugdownTest(ZulipTestCase):
                 converted = bugdown_convert(test['input'])
 
             with self.subTest(markdown_test_case=name):
-                print("Running Bugdown test %s" % (name,))
                 self.assertEqual(converted, test['expected_output'])
 
         def replaced(payload: str, url: str, phrase: str='') -> str:
