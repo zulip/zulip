@@ -168,6 +168,13 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_delete("/json/realm/profile_fields/{}".format(field.id))
         self.assert_json_success(result)
 
+        field = try_add_realm_custom_profile_field(realm, "Twitter",
+                                                   field_type=CustomProfileField.SHORT_TEXT)
+        result = self.client_post("/json/realm/profile_fields",
+                                  info=dict(field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+                                            field_data=field_data))
+        self.assert_json_error(result, "A field with Twitter label already exists.")
+
     def test_create_external_account_field(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
