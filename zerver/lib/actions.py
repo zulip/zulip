@@ -4907,7 +4907,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
             if user.realm.string_id == settings.SYSTEM_BOT_REALM]
 
 def do_send_confirmation_email(invitee: PreregistrationUser,
-                               referrer: UserProfile) -> None:
+                               referrer: UserProfile) -> str:
     """
     Send the confirmation/welcome e-mail to an invited user.
     """
@@ -4918,6 +4918,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
     send_email('zerver/emails/invitation', to_emails=[invitee.email], from_name=from_name,
                from_address=FromAddress.tokenized_no_reply_address(),
                language=referrer.realm.default_language, context=context)
+    return activation_url
 
 def email_not_system_bot(email: str) -> None:
     if is_cross_realm_bot_email(email):

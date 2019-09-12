@@ -484,8 +484,7 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(lambda: fake_client):
             worker = queue_processors.ConfirmationEmailWorker()
             worker.setup()
-            with patch('zerver.worker.queue_processors.do_send_confirmation_email'), \
-                    patch('zerver.worker.queue_processors.create_confirmation_link'), \
+            with patch('zerver.lib.actions.send_email'), \
                     patch('zerver.worker.queue_processors.send_future_email') \
                     as send_mock, \
                     patch('logging.info'):
