@@ -172,13 +172,11 @@ class TestCommandsCanStart(TestCase):
 
     @slow("Aggregate of runs dozens of individual --help tests")
     def test_management_commands_show_help(self) -> None:
-        with stdout_suppressed() as stdout:
+        with stdout_suppressed():
             for command in self.commands:
-                print('Testing management command: {}'.format(command),
-                      file=stdout)
-
-                with self.assertRaises(SystemExit):
-                    call_command(command, '--help')
+                with self.subTest(management_command=command):
+                    with self.assertRaises(SystemExit):
+                        call_command(command, '--help')
         # zerver/management/commands/runtornado.py sets this to True;
         # we need to reset it here.  See #3685 for details.
         settings.RUNNING_INSIDE_TORNADO = False
