@@ -31,7 +31,6 @@ from analytics.models import BaseCount, InstallationCount, \
 from zerver.decorator import require_server_admin, require_server_admin_api, \
     to_non_negative_int, to_utc_datetime, zulip_login_required, require_non_guest_user
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC, timestamp_to_datetime
@@ -67,7 +66,7 @@ def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
     return render(request,
                   'analytics/stats.html',
                   context=dict(target_name=target_name,
-                               page_params=JSONEncoderForHTML().encode(page_params)))
+                               page_params=page_params))
 
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:

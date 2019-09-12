@@ -20,13 +20,6 @@
         {% include 'zerver/meta_tags.html' %}
         {% endif %}
 
-        {% block page_params %}
-        {# blueslip needs page_params.debug_mode.  Set it to false by default. #}
-        <script>
-        var page_params = {debug_mode: false};
-        </script>
-        {% endblock %}
-
         {% macro bundle(name) %}
         {{ render_bundle(name, 'css', attrs='nonce="%s"' % (csp_nonce,) if csp_nonce else '') }}
         {{ render_bundle(name, 'js', attrs='defer nonce="%s"' % (csp_nonce,) if csp_nonce else 'defer') }}
@@ -48,7 +41,9 @@
         {% endblock %}
     </head>
 
-    <body {% if night_mode %}class="night-mode"{% endif %}>
+    <body {% if night_mode %}class="night-mode"{% endif %}
+      data-params='{{ page_params|default({"debug_mode": false})|tojson }}'
+      >
         {% block content %}
         {% endblock %}
     </body>

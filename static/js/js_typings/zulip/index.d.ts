@@ -78,6 +78,7 @@ declare var night_mode: any;
 declare var notifications: any;
 declare var overlays: any;
 declare var padded_widget: any;
+declare var page_params: any;
 declare var panels: any;
 declare var people: any;
 declare var pm_conversations: any;

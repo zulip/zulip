@@ -1,6 +1,7 @@
 import "core-js/features/promise";
 import "jquery/dist/jquery.js";
 import "underscore/underscore.js";
+import "../page_params.js";
 import "../csrf.js";
 import "../blueslip.js";
 import "../../third/bootstrap/js/bootstrap.js";

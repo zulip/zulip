@@ -11,7 +11,6 @@ from django.urls import reverse
 from django.conf import settings
 
 from zerver.decorator import zulip_login_required, require_billing_access
-from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string, check_int
@@ -136,12 +135,12 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'min_invoiced_licenses': max(seat_count, MIN_INVOICED_LICENSES),
         'default_invoice_days_until_due': DEFAULT_INVOICE_DAYS_UNTIL_DUE,
         'plan': "Zulip Standard",
-        'page_params': JSONEncoderForHTML().encode({
+        'page_params': {
             'seat_count': seat_count,
             'annual_price': 8000,
             'monthly_price': 800,
             'percent_off': float(percent_off),
-        }),
+        },
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
