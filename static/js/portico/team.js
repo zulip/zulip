@@ -1,6 +1,4 @@
-// Contributor list is baked into the /team's page template, so we can silent
-// eslint's error.
-/* global contributors_list */
+const contributors_list = page_params.contrib;
 
 // `repos` are repositories to be shown as tabs, whereas `hidden_repos` are
 // repositories that should count towards the total but not have tabs.
