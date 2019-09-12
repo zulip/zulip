@@ -1,6 +1,5 @@
 import os
 import tempfile
-import shutil
 from argparse import ArgumentParser
 from typing import Any
 
@@ -118,9 +117,21 @@ class Command(ZulipBaseCommand):
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
         else:
             output_dir = os.path.realpath(os.path.expanduser(output_dir))
-        if os.path.exists(output_dir):
-            shutil.rmtree(output_dir)
-        os.makedirs(output_dir)
+            if os.path.exists(output_dir):
+                if os.listdir(output_dir):
+                    raise CommandError(
+                        "Refusing to overwrite nonempty directory: %s. Aborting..."
+                        % (output_dir,)
+                    )
+            else:
+                os.makedirs(output_dir)
+
+        tarball_path = output_dir.rstrip("/") + ".tar.gz"
+        try:
+            os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
+        except FileExistsError:
+            raise CommandError("Refusing to overwrite existing tarball: %s. Aborting..." % (tarball_path,))
+
         print("\033[94mExporting realm\033[0m: %s" % (realm.string_id,))
 
         num_threads = int(options['threads'])
