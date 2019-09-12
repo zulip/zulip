@@ -537,5 +537,10 @@ def team_view(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         'zerver/team.html',
-        context=data,
+        context={
+            'page_params': {
+                'contrib': data['contrib'],
+            },
+            'date': data['date'],
+        },
     )
