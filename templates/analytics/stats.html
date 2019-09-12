@@ -1,11 +1,5 @@
 {% extends "zerver/base.html" %}
 
-{% block page_params %}
-<script>
-    var page_params = {{ page_params|safe }};
-</script>
-{% endblock %}
-
 {% block customhead %}
 {{ bundle('portico') }}
 {% endblock %}

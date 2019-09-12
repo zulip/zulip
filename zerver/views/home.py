@@ -22,7 +22,6 @@ from zerver.lib.actions import do_change_tos_version, \
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates, get_language_translation_data
-from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
@@ -283,7 +282,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
                                'emojiset': emojiset,
-                               'page_params': JSONEncoderForHTML().encode(page_params),
+                               'page_params': page_params,
                                'csp_nonce': csp_nonce,
                                'avatar_url': avatar_url(user_profile),
                                'show_debug':

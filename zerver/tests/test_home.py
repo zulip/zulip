@@ -1,5 +1,5 @@
 import datetime
-import re
+import lxml.html
 import ujson
 
 from django.http import HttpResponse
@@ -41,7 +41,7 @@ class HomeTest(ZulipTestCase):
             'Welcome to Zulip',
             # Verify that the app styles get included
             'app-stubentry.js',
-            'var page_params',
+            'data-params',
         ]
 
         # Keep this list sorted!!!
@@ -353,10 +353,8 @@ class HomeTest(ZulipTestCase):
         return result
 
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
-        html = result.content.decode('utf-8')
-        lines = html.split('\n')
-        page_params_line = [l for l in lines if re.match(r'^\s*var page_params', l)][0]
-        page_params_json = page_params_line.split(' = ')[1].rstrip(';')
+        doc = lxml.html.document_fromstring(result.content)
+        page_params_json = doc.find("body").get("data-params")
         page_params = ujson.loads(page_params_json)
         return page_params
 

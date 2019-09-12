@@ -152,10 +152,6 @@ Files: zerver/lib/decorator.py zerver/management/commands/runtornado.py scripts/
 Copyright: Django Software Foundation and individual contributors
 License: BSD-3-Clause
 
-Files: zerver/lib/json_encoder_for_html.py zerver/tests/test_json_encoder_for_html.py
-Copyright: 2006 Bob Ippolito
-License: MIT or Academic Free License v. 2.1
-
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.

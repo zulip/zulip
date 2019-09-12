@@ -1,14 +1,5 @@
 {% extends "zerver/portico.html" %}
 
-{% block page_params %}
-{# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
-<script>
-    {% autoescape off %}
-    var page_params = {{ page_params }};
-    {% endautoescape %}
-</script>
-{% endblock %}
-
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {{ bundle('landing-page') }}
