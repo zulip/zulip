@@ -20,7 +20,7 @@ if [[ $records -gt 200 ]]
 then
     set +x
     echo "WARNING: This will delete your Zulip database which currently contains $records messages."
-    read -p "Do you want to proceed? " -n 1 -r
+    read -p "Do you want to proceed? [y/N] " -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]
     then
