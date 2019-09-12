@@ -107,8 +107,25 @@ project is the largest and fastest-growing open source group chat product,
 both by number of contributors (300+) and by commit velocity (more than
 Docker and Django combined).
 
-### Public archive (coming soon)
+### Public archive
 
 Allow search engines to index your chat, with a read-only view of your
 public streams. Zulip’s topic-based threading keeps conversations coherent
-and organized, enabling a meaningful archive.
+and organized, enabling a meaningful archive indexed by search engines.
+
+Currently implemented as an [out-of-tree
+tool](https://github.com/zulip/zulip_archive), though a native feature
+built into the Zulip server is coming soon.
+
+### Full-text search of all public history
+
+Zulip's [full-text search](/help/search-for-messages) supports
+searching the organization's entire public history via the
+`streams:public` search operator, allowing Zulip to provide all the
+benefits of a searchable project forum.
+
+### Logged-out public access (coming soon)
+
+Allow users to read public streams from your organization's Zulip
+history without having to create an account.
+
