@@ -9,99 +9,130 @@ administrators to follow.
 
 ## Overview
 
-Zulip offers an export tool, `management/export.py`, which works well
-to export the data for a single Zulip realm, and which is your best
-choice if you're migrating a Zulip realm to a new server.
+Zulip includes an export tool, `management/export.py`, which
+exports data for a single Zulip realm. `management/export.py`
+is beneficial when migrating a Zulip realm to a new server.
 
-This document supplements the explanation in `management/export.py`,
-but here we focus more on the logistics of a big conversion of a
-multi-realm Zulip installation. (For some historical perspective, this
-document was originally begun as part of a big Zulip cut-over in
-summer 2016.)
+This document cover the logistics a big conversion of a
+multi-realm Zulip installation, supplementing the explanation in
+`management/export.py`.
 
-There are many major operational aspects to doing a conversion. I will
-list them here, noting that several are not within the scope of this
-document:
+There are many major operational aspects to doing a conversion,
+including:
 
-- Get new servers running.
-- Export data from the old DB.
-- Export files from Amazon S3.
-- Import files into new storage.
-- Import data into new DB.
-- Restart new servers.
-- Decommission old server.
+- Get new servers running
+- Export data from the old DB
+- Export files from Amazon S3
+- Import files into new storage
+- Import data into new DB
+- Restart new servers
+- Decommission old server
 
-This document focuses almost entirely on the **export** piece.  Issues
-with getting Zulip itself running are out of scope here; see [the
-production installation instructions](../index.html#zulip-in-production).
-As for the import side of things, we only touch on it implicitly.  (My
-reasoning was that we *had* to get the export piece right in a timely
-fashion, even if it meant we would have to sort out some straggling
-issues on the import side later.)
+This document focuses on **exporting** data from the old DB and
+Amazon S3.  For informatoin on installing or running Zulip see
+[Zulip installation instructions](../index.html#zulip-in-production).
 
 ## Exporting multiple realms' data when moving to a new server
 
-The main exporting tools in place as of summer 2016 are below:
+As of summer 2016, Zulip can:
+- Export single realms (but not yet limit users within the
+  realm)
+- Export single users (but doesn't get realm-wide data in
+  the process)
+- Run exports simultaneously (but have to navigate a bunch of
+  /tmp directories)
 
-- We can export single realms (but not yet limit users within the
-  realm).
-- We can export single users (but then we get no realm-wide data in
-  the process).
-- We can run exports simultaneously (but have to navigate a bunch of
-  /tmp directories).
+In the future, it may be useful for Zulip to:
+- Export multiple realms simultaneously
+- Export multiple single users simultaneously
+- Limit users within realm exports
+- Introduce more operational robustness/convenience
+  while doing several exports simultaneously
+- Merge multiple export files to remove duplicates
 
-Things that we still may need:
-- We may want to export multiple realms simultaneously.
-- We may want to export multiple single users simultaneously.
-- We may want to limit users within realm exports.
-- We may want more operational robustness/convenience while doing
-  several exports simultaneously.
-- We may want to merge multiple export files to remove duplicates.
+### Data Classes
 
-We have a few major classes of data.  They are listed below in the order
-that we process them in `do_export_realm()`:
+Zulip has a few major classes of data.  They are listed below in
+the order that Zulip processes them in `do_export_realm()`:
 
-#### Public Realm Data
+<table>
+    <tr>
+        <th>Data Class</th>
+        <th>Path</th>
+        <th>Notes</th>
+    </tr>
+    <tr>
+        <td>Public Realm</td>
+        <td><code>Realm/RealmDomain/RealmEmoji/RealmFilter/DefaultStream</code></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Cross Realm</td>
+        <td><code>Client/zerver_userprofile_cross_realm</code></td>
+        <td>Cross realm data includes includes <code>Client</code> and three bots.
+            <br><br> <code>Client</code> is unique in being a fairly core table
+            that is not tied to <code>UserProfile</code> or <code>Realm</code> (unless you
+            tie it back to users in a bottom-up fashion though other tables).</td>
+    </tr>
+    <tr>
+        <td>Disjoint User</td>
+        <td><code>UserProfile/UserActivity/UserActivityInterval/UserPresence</code></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Recipient</td>
+        <td><code>Recipient/Stream/Subscription/Huddle</code></td>
+        <td>Recipient data tables re tied back to users, but
+            introduce complications when you try to deal with multi-user
+            subsets.</td>
+    </tr>
+    <tr>
+        <td>File-related</td>
+        <td><code>Attachment</code></td>
+        <td>File-related data includes <code>Attachment</code>, and it references
+            the <code>avatar_source</code> field of <code>UserProfile</code>.  Most
+            importantly, it requires you to grab files from S3.
+            <code>Attachment</code>'s <code>m2m</code> relationship ties to <code>Message</code>.</td>
+    </tr>
+    <tr>
+        <td>Message</td>
+        <td><code>Message/UserMessage</code></td>
+        <td></td>
+    </tr>
+</table>
 
-`Realm/RealmDomain/RealmEmoji/RealmFilter/DefaultStream`.
+### Data Gathering
 
-#### Cross Realm Data
+There are two approaches to getting data: top-down and bottom-up.
 
-`Client/zerver_userprofile_cross_realm`
+```
+!!! warn ""
+    **Note:** Zulip have not yet integrated the approved-transfer
+    model, which says which users can be moved.
+```
 
-This includes `Client` and three bots.
+#### Top-down
 
-`Client` is unique in being a fairly core table that is not tied to
-`UserProfile` or `Realm` (unless you somewhat painfully tie it back to
-users in a bottom-up fashion though other tables).
+The first step in a top-down approach is to get realm data.
+Next, get all users in realm, then all recipients, then all
+messages, and so on.
 
-#### Disjoint User Data
+The problem with a top-down approach is **filtering**.  Also,
+if errors arise during top-down passes, it may be time consuming to
+re-run processes.
 
-`UserProfile/UserActivity/UserActivityInterval/UserPresence`.
+#### Bottom-up
 
-#### Recipient Data
+The first step in a bottom-up approach is to get the users. Then,
+get their recipient data, an so on.
 
-`Recipient/Stream/Subscription/Huddle`.
+The problem with a bottom-up approach is **merging**.  Also,
+if you run multiple bottom-up passes, there is the danger of
+duplicating some work, particularly on the message side of things.
 
-These tables are tied back to users, but they introduce complications
-when you try to deal with multi-user subsets.
+### Data Class Risks
 
-#### File-related Data
-
-`Attachment`
-
-This includes `Attachment`, and it references the `avatar_source` field
-of `UserProfile`.  Most importantly, of course, it requires us to grab
-files from S3.  Finally, `Attachment`'s `m2m` relationship ties to
-`Message`.
-
-#### Message Data
-
-`Message/UserMessage`
-
-### Summary
-
-Here are the same classes of data, listed in roughly
+Here are the classes of data, listed in roughly
 decreasing order of riskiness:
 
 - Message Data (sheer volume/lack of time/security)
@@ -111,40 +142,8 @@ decreasing order of riskiness:
 - Disjoint User Data
 - Public Realm Data
 
-(Note the above list is essentially in reverse order of how we
-process the data, which isn't surprising for a top-down approach.)
-
-The next section of the document talks about risk factors.
-
-## Risk Mitigation
-
-### Generic considerations
-
-We have two major mechanisms for getting data:
-
-##### Top Down
-
-Get realm data, then all users in realm, then all recipients, then all
-messages, etc.
-
-The problem with the top-down approach will be **filtering**.  Also,
-if errors arise during top-down passes, it may be time consuming to
-re-run the processes.
-
-##### Bottom Up
-
-Start with users, get their recipient data, etc.
-
-The problems with the bottom up approach will be **merging**.  Also,
-if we run multiple bottom-up passes, there is the danger of
-duplicating some work, particularly on the message side of things.
-
-### Approved Transfers
-
-We have not yet integrated the approved-transfer model, which tells us
-which users can be moved.
-
-### Risk factors broken out by data categories
+(Note the above list is essentially in reverse order of how Zulip
+processes the data, which isn't surprising for a top-down approach.)
 
 #### Message Data
 
@@ -157,9 +156,9 @@ Rows in the `UserMessage` model depend on `UserProfile/Message`.
 
 The biggest concern here is the **sheer volume** of data, with
 security being a close second.  (They are interrelated, as without
-security concerns, we could just bulk-export everything one time.)
+security concerns, Zulip could just bulk-export everything one time.)
 
-We currently have these measures in place for top-down processing:
+Zulip currently has these measures in place for top-down processing:
 - chunking
 - multi-processing
 - messages are filtered by both sender and recipient
@@ -172,17 +171,17 @@ We currently have these measures in place for top-down processing:
   `avatars/`, assorted files in `uploads/`, `avatars/records.json`,
   `uploads/records.json`, `zerver_attachment_messages`
 
-When it comes to exporting attachment data, we have some minor volume
+When it comes to exporting attachment data, Zulip has some minor volume
 issues, but the main concern is just that there are **lots of moving
 parts**:
 
-- S3 needs to be up, and we get some metadata from it as well as
+- S3 needs to be up, and Zulip get some metadata from it as well as
   files.
-- We have security concerns about copying over only files that belong
+- There are security concerns about copying over only files that belong
   to users who approved the transfer.
-- This piece is just different in how we store data from all the other
+- This piece is just different in how Zulip stores data from all the other
   DB-centric pieces.
-- At import time we have to populate the `m2m` table (but fortunately,
+- At import time Zulip has to populate the `m2m` table (but fortunately,
   this is pretty low risk in terms of breaking anything.)
 
 #### Recipient Data
@@ -200,17 +199,17 @@ From the top down, here are the dependencies:
   to `Subscription`)
 - `Huddle` depends on `Subscription` and `UserProfile`
 
-The biggest risk factor here is probably just the possibility that we
-could introduce some bug in our code as we try to segment `Recipient`
-into user, stream, and huddle components, especially if we try to
+The biggest risk factor here is probably just the possibility that you
+could introduce some bug in our code as you try to segment `Recipient`
+into user, stream, and huddle components, especially if you try to
 handle multiple users or realms.  I think this can be largely
 mitigated by the new `Config` approach.
 
-And then we also have some complicated `Huddle` logic that will be
+And there is also have some complicated `Huddle` logic that will be
 customized regardless.  The fiddliest part of the `Huddle` logic is
 creating the set of `unsafe_huddle_recipient_ids`.
 
-Last but not least, if we go with some hybrid of bottom-up and
+Last but not least, if you go with some hybrid of bottom-up and
 top-down, these tables are neither close to the bottom nor close to
 the top, so they may have the most fiddly edge cases when it comes to
 filtering and merging.
