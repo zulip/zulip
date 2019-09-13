@@ -154,6 +154,7 @@ of syntax errors.  There are two common causes for this test failing:
 
         """
         user_profile = self.example_user('hamlet')
+        realm = user_profile.realm
         email = user_profile.email
 
         context = dict(
@@ -194,6 +195,10 @@ of syntax errors.  There are two common causes for this test failing:
             invite_as={"MEMBER": 1},
             max_file_upload_size = 25,
             avatar_urls={"john@gmail.com": "www.zulip.com"},
+            realm_admin_emails=lambda _: "admin emails",
+            get_discount_for_realm=lambda _: 0,
+            realm_icon_url=lambda _: "url",
+            realm=realm,
         )
 
         context.update(kwargs)

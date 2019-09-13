@@ -1,11 +1,11 @@
 <span class="label">realm</span>
-<h3><img src="{{ realm.realm_icon_url }}" class="support-realm-icon"> {{ realm.name }}</h3>
+<h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon"> {{ realm.name }}</h3>
 <b>URL</b>: <a target="_blank" href="{{ realm.uri }}">{{ realm.uri }}</a> |
 <a target="_blank" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
 <a target="_blank" href="/realm_activity/{{ realm.string_id }}/">activity</a><br>
 <b>Date created</b>: {{ realm.date_created|timesince }} ago<br>
-<b>Admins</b>: {{ realm.admin_emails }}
-<a title="Copy emails" class="copy-button" data-admin-emails="{{ realm.admin_emails }}">
+<b>Admins</b>: {{ realm_admin_emails(realm) }}
+<a title="Copy emails" class="copy-button" data-admin-emails="{{ realm_admin_emails(realm) }}">
     <i class="fa fa-copy"></i>
 </a>
 <form method="POST">
@@ -34,7 +34,7 @@
     <b>Discount (use 85 for nonprofits)</b>:<br>
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-    <input type="number" name="discount" value="{{ realm.default_discount}}" required>
+    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" required>
     <button type="submit" class="button rounded small support-submit-button">Update</button>
 </form>
 <form method="POST" class="scrub-realm-form">

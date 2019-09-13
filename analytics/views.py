@@ -1071,17 +1071,7 @@ def support(request: HttpRequest) -> HttpResponse:
     if query:
         key_words = get_invitee_emails_set(query)
 
-        users = UserProfile.objects.filter(delivery_email__in=key_words)
-        if users:
-            for user in users:
-                user.realm.realm_icon_url = realm_icon_url(user.realm)
-                user.realm.admin_emails = ", ".join(
-                    user.realm.get_human_admin_users().values_list(
-                        "delivery_email",
-                        flat=True))
-                user.realm.default_discount = get_discount_for_realm(user.realm)
-            context["users"] = users
-
+        context["users"] = UserProfile.objects.filter(delivery_email__in=key_words)
         realms = set(Realm.objects.filter(string_id__in=key_words))
 
         for key_word in key_words:
@@ -1099,13 +1089,14 @@ def support(request: HttpRequest) -> HttpResponse:
             except ValidationError:
                 pass
 
-        if realms:
-            for realm in realms:
-                realm.realm_icon_url = realm_icon_url(realm)
-                realm.admin_emails = ", ".join(realm.get_human_admin_users().values_list(
-                    "delivery_email", flat=True))
-                realm.default_discount = get_discount_for_realm(realm)
-            context["realms"] = realms
+        context["realms"] = realms
+
+    def realm_admin_emails(realm: Realm) -> str:
+        return ", ".join(realm.get_human_admin_users().values_list("delivery_email", flat=True))
+
+    context["realm_admin_emails"] = realm_admin_emails
+    context["get_discount_for_realm"] = get_discount_for_realm
+    context["realm_icon_url"] = realm_icon_url
     return render(request, 'analytics/support.html', context=context)
 
 def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
