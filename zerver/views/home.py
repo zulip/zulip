@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Tuple
 
 from django.conf import settings
 from django.urls import reverse
@@ -10,7 +10,7 @@ from django.utils.cache import patch_cache_control
 from zerver.context_processors import latest_info_context
 from zerver.decorator import zulip_login_required
 from zerver.forms import ToSForm
-from zerver.models import Message, UserProfile, \
+from zerver.models import Message, Stream, UserProfile, \
     Realm, UserMessage, \
     PreregistrationUser, \
     get_usermessage_by_message_id
@@ -64,6 +64,32 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
                  'email': email,
                  'special_message_template': special_message_template},
     )
+
+def detect_narrowed_window(request: HttpRequest,
+                           user_profile: Optional[UserProfile]) -> Tuple[List[List[str]],
+                                                                         Optional[Stream],
+                                                                         Optional[str]]:
+    """This function implements Zulip's support for a mini Zulip window
+    that just handles messages from a single narrow"""
+    if user_profile is None:  # nocoverage
+        return [], None, None
+
+    narrow = []  # type: List[List[str]]
+    narrow_stream = None
+    narrow_topic = request.GET.get("topic")
+
+    if request.GET.get("stream"):
+        try:
+            # TODO: We should support stream IDs and PMs here as well.
+            narrow_stream_name = request.GET.get("stream")
+            (narrow_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+                user_profile, narrow_stream_name)
+            narrow = [["stream", narrow_stream.name]]
+        except Exception:
+            logging.warning("Invalid narrow requested, ignoring", extra=dict(request=request))
+        if narrow_stream is not None and narrow_topic is not None:
+            narrow.append(["topic", narrow_topic])
+    return narrow, narrow_stream, narrow_topic
 
 def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[float]:
     if user_message is None:
@@ -119,20 +145,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if need_accept_tos(user_profile):
         return accounts_accept_terms(request)
 
-    narrow = []  # type: List[List[str]]
-    narrow_stream = None
-    narrow_topic = request.GET.get("topic")
-    if request.GET.get("stream"):
-        try:
-            # TODO: We should support stream IDs and PMs here as well.
-            narrow_stream_name = request.GET.get("stream")
-            (narrow_stream, ignored_rec, ignored_sub) = access_stream_by_name(
-                user_profile, narrow_stream_name)
-            narrow = [["stream", narrow_stream.name]]
-        except Exception:
-            logging.warning("Invalid narrow requested, ignoring", extra=dict(request=request))
-        if narrow_stream is not None and narrow_topic is not None:
-            narrow.append(["topic", narrow_topic])
+    narrow, narrow_stream, narrow_topic = detect_narrowed_window(request, user_profile)
 
     register_ret = do_events_register(user_profile, request.client,
                                       apply_markdown=True, client_gravatar=True,
