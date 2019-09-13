@@ -4,10 +4,6 @@
 {# This is where we pitch the app and solicit signups. #}
 
 {% block portico_content %}
-
-<!-- The following empty tag has unique data-page-id so that this
-page can be easily identified in it's respective JavaScript file -->
-<div data-page-id="create-realm"></div>
 <div class="app register-page">
     <div class="app-main register-page-container new-style flex full-page center">
 
@@ -22,7 +18,7 @@ page can be easily identified in it's respective JavaScript file -->
                     <div class="input-box horizontal">
                         <div class="inline-block relative">
                             <input type="text" class="email required" placeholder="{{ _("Enter your email address") }}"
-                              id="email" name="email" required />
+                              id="email" name="email" autofocus required />
                             <label for="email">{{ _('Email') }}</label>
                         </div>
 

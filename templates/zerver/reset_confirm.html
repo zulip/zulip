@@ -6,9 +6,6 @@
 
 {% block portico_content %}
 
-<!-- The following empty tag has unique data-page-id so that this
-page can be easily identified in it's respective JavaScript file -->
-<div data-page-id="reset-password-confirm"></div>
 <div class="password-container flex full-page new-style">
 
     <!-- wrapper for flex content -->
@@ -35,7 +32,7 @@ page can be easily identified in it's respective JavaScript file -->
                       value="{% if form.new_password1.value() %}{{ form.new_password1.value() }}{% endif %}"
                       maxlength="100"
                       data-min-length="{{password_min_length}}"
-                      data-min-guesses="{{password_min_guesses}}" required />
+                      data-min-guesses="{{password_min_guesses}}" autofocus required />
                     {% if form.new_password1.errors %}
                         {% for error in form.new_password1.errors %}
                         <div class="alert alert-error">{{ error }}</div>
