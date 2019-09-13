@@ -1710,7 +1710,6 @@ class TestPushNotificationsContent(ZulipTestCase):
         for test in tests:
             if "text_content" in test:
                 with self.subTest(markdown_test_case=test["name"]):
-                    print("Running markdown fixture test %s" % (test["name"],))
                     output = get_mobile_push_content(test["expected_output"])
                     self.assertEqual(output, test["text_content"])
 
