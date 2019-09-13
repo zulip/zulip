@@ -45,8 +45,8 @@ class SlackMessageConversion(ZulipTestCase):
             channel_map = {}     # type: Dict[str, Tuple[str, int]]
             converted = convert_to_zulip_markdown(test['input'], users, channel_map, slack_user_map)
             converted_text = converted[0]
-            print("Running Slack Message Conversion test: %s" % (name,))
-            self.assertEqual(converted_text, test['conversion_output'])
+            with self.subTest(slack_message_conversion=name):
+                self.assertEqual(converted_text, test['conversion_output'])
 
     def test_mentioned_data(self) -> None:
         slack_user_map = {'U08RGD1RD': 540,
