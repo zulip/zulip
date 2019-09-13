@@ -2,7 +2,6 @@ from functools import wraps
 from typing import Any, Callable, Dict
 
 from django.utils.module_loading import import_string
-from django.utils.translation import ugettext as _
 from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
@@ -147,7 +146,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                 return HttpResponseRedirect('%s?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
             # Ask for basic auth (email:apiKey)
             elif request.path.startswith("/api"):
-                return json_unauthorized(_("Not logged in: API authentication or user session required"))
+                return json_unauthorized()
             # Logged out user accessing an endpoint with anonymous user access on JSON; proceed.
             elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
                 auth_kwargs = dict(allow_unauthenticated=True)
@@ -155,8 +154,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                     target_function, **auth_kwargs))
             # Session cookie expired, notify the client
             else:
-                return json_unauthorized(_("Not logged in: API authentication or user session required"),
-                                         www_authenticate='session')
+                return json_unauthorized(www_authenticate='session')
 
         if request.method not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because

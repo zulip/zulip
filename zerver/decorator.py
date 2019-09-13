@@ -654,7 +654,7 @@ def authenticate_log_and_execute_json(request: HttpRequest,
 
     if not request.user.is_authenticated:
         if not allow_unauthenticated:
-            return json_error(_("Not logged in"), status=401)
+            return json_unauthorized()
 
         process_client(request, request.user, is_browser_view=True,
                        skip_update_user_activity=True,
