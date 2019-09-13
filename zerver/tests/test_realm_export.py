@@ -8,7 +8,7 @@ from django.conf import settings
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_helpers import use_s3_backend, create_s3_buckets, \
-    create_dummy_file
+    create_dummy_file, stdout_suppressed
 
 from zerver.models import RealmAuditLog
 from zerver.views.realm_export import export_realm
@@ -42,7 +42,7 @@ class RealmExportTest(ZulipTestCase):
         # Test the export logic.
         with patch('zerver.lib.export.do_export_realm',
                    return_value=tarball_path) as mock_export:
-            with self.settings(LOCAL_UPLOADS_DIR=None):
+            with self.settings(LOCAL_UPLOADS_DIR=None), stdout_suppressed():
                 result = self.client_post('/json/export/realm')
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
@@ -99,7 +99,8 @@ class RealmExportTest(ZulipTestCase):
         # Test the export logic.
         with patch('zerver.lib.export.do_export_realm',
                    return_value=tarball_path) as mock_export:
-            result = self.client_post('/json/export/realm')
+            with stdout_suppressed():
+                result = self.client_post('/json/export/realm')
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
