@@ -401,7 +401,7 @@ class Realm(models.Model):
         return UserProfile.objects.filter(realm=self, role=UserProfile.ROLE_REALM_ADMINISTRATOR,
                                           is_active=True)
 
-    def get_human_admin_users(self) -> Sequence['UserProfile']:
+    def get_human_admin_users(self) -> QuerySet:
         """Use this in contexts where we want only human users with
         administrative privileges, like sending an email to all of a
         realm's administrators (bots don't have real email addresses).
