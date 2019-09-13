@@ -118,7 +118,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
     get_test_image_file, stub_event_queue_user_events, queries_captured, \
-    create_dummy_file
+    create_dummy_file, stdout_suppressed
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -2788,9 +2788,10 @@ class EventsRegisterTest(ZulipTestCase):
 
         with mock.patch('zerver.lib.export.do_export_realm',
                         return_value=create_dummy_file('test-export.tar.gz')):
-            events = self.do_test(
-                lambda: self.client_post('/json/export/realm'),
-                state_change_expected=True, num_events=2)
+            with stdout_suppressed():
+                events = self.do_test(
+                    lambda: self.client_post('/json/export/realm'),
+                    state_change_expected=True, num_events=2)
 
         # The first event is a message from notification-bot.
         error = schema_checker('events[1]', events[1])
