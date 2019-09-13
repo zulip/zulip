@@ -1,10 +1,6 @@
 {% extends "zerver/portico_signup.html" %}
 {% block portico_content %}
 
-
-<!-- The following empty tag has unique data-page-id so that this
-page can be easily identified in it's respective JavaScript file -->
-<div data-page-id="reset-password"></div>
 <div class="flex new-style app portico-page">
     <div class="inline-block">
         <div class="lead">
@@ -22,7 +18,7 @@ page can be easily identified in it's respective JavaScript file -->
                         <div class="inline-block relative">
                             <input id="id_email" class="required" type="text" name="email"
                               value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
-                              maxlength="100" required />
+                              maxlength="100" autofocus required />
                             <label for="id_email" class="">{{ _('Email') }}</label>
                             {% if form.email.errors %}
                                 {% for error in form.email.errors %}

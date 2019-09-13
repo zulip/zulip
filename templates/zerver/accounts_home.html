@@ -55,7 +55,7 @@ page can be easily identified in it's respective JavaScript file -->
                                 {{ csrf_input }}
 
                                 <div class="input-box no-validate">
-                                    <input type="email" id="email" class="email" name="email" value="" required />
+                                    <input type="email" id="email" class="email" name="email" value="" autofocus required />
                                     <label for="email">Email</label>
                                     <div class="alert alert-error email-frontend-error"></div>
                                     {% if form.email.errors %}

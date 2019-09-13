@@ -81,29 +81,9 @@ $(function () {
         });
     }
 
-    // Code in this block will be executed when the user visits
-    // /accounts/password/reset i.e. reset.html is rendered.
-    if ($("[data-page-id='reset-password-confirm']").length > 0) {
-        common.autofocus('#id_new_password1');
-    }
-
-    // Code in this block will be executed when the user visits
-    // /accounts/password/reset i.e. reset.html is rendered.
-    if ($("[data-page-id='reset-password']").length > 0) {
-        common.autofocus('#id_email');
-    }
-
-    // Code in this block will be executed when the user visits /new
-    // i.e. create_realm.html is rendered.
-    if ($("[data-page-id='create-realm']").length > 0) {
-        common.autofocus('#email');
-    }
-
     // Code in this block will be executed when the user visits /register
     // i.e. accounts_home.html is rendered.
     if ($("[data-page-id='accounts-home']").length > 0) {
-        common.autofocus('#email');
-
         if (window.location.hash.substring(0, 1) === "#") {
             document.email_form.action += window.location.hash;
         }
