@@ -91,6 +91,19 @@ def detect_narrowed_window(request: HttpRequest,
             narrow.append(["topic", narrow_topic])
     return narrow, narrow_stream, narrow_topic
 
+def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
+    """Reset our don't-spam-users-with-email counter since the
+    user has since logged in
+    """
+    if user_profile is None:  # nocoverage
+        return
+
+    if user_profile.last_reminder is not None:  # nocoverage
+        # TODO: Look into the history of last_reminder; we may have
+        # eliminated that as a useful concept for non-bot users.
+        user_profile.last_reminder = None
+        user_profile.save(update_fields=["last_reminder"])
+
 def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[float]:
     if user_message is None:
         return None
@@ -153,14 +166,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                       notification_settings_null=True,
                                       narrow=narrow)
     user_has_messages = (register_ret['max_message_id'] != -1)
-
-    # Reset our don't-spam-users-with-email counter since the
-    # user has since logged in
-    if user_profile.last_reminder is not None:  # nocoverage
-        # TODO: Look into the history of last_reminder; we may have
-        # eliminated that as a useful concept for non-bot users.
-        user_profile.last_reminder = None
-        user_profile.save(update_fields=["last_reminder"])
+    update_last_reminder(user_profile)
 
     # Brand new users get narrowed to PM with welcome-bot
     needs_tutorial = user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
