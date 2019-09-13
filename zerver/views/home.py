@@ -31,6 +31,18 @@ import calendar
 import logging
 import time
 
+def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
+    if user_profile is None:  # nocoverage
+        return False
+
+    if settings.TERMS_OF_SERVICE is None:  # nocoverage
+        return False
+
+    if settings.TOS_VERSION is None:
+        return False
+
+    return int(settings.TOS_VERSION.split('.')[0]) > user_profile.major_tos_version()
+
 @zulip_login_required
 def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
@@ -97,11 +109,14 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # session alive.
     request.session.modified = True
 
-    user_profile = request.user
+    if request.user.is_authenticated:
+        user_profile = request.user
+    else:  # nocoverage
+        # This code path should not be reachable because of zulip_login_required above.
+        user_profile = None
 
     # If a user hasn't signed the current Terms of Service, send them there
-    if settings.TERMS_OF_SERVICE is not None and settings.TOS_VERSION is not None and \
-       int(settings.TOS_VERSION.split('.')[0]) > user_profile.major_tos_version():
+    if need_accept_tos(user_profile):
         return accounts_accept_terms(request)
 
     narrow = []  # type: List[List[str]]
