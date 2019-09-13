@@ -61,6 +61,9 @@
         "jquery-validation/dist/jquery.validate.min.js",
         "./static/js/portico/signup.js"
     ],
+    "confirm-preregistrationuser": [
+        "./static/js/portico/confirm-preregistrationuser.js"
+    ],
     "support": [
         "./static/js/analytics/support.js",
         "./static/styles/app_components.scss"
