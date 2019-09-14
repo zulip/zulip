@@ -17,7 +17,6 @@ from zerver.models import Message, Stream, UserProfile, \
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_tos_version, \
     realm_user_count
-from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates, get_language_translation_data
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -309,7 +308,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'emojiset': emojiset,
                                'page_params': page_params,
                                'csp_nonce': csp_nonce,
-                               'avatar_url': avatar_url(user_profile),
                                'show_debug':
                                settings.DEBUG and ('show_debug' in request.GET),
                                'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
