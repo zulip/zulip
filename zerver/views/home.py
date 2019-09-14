@@ -313,8 +313,16 @@ def home_real(request: HttpRequest) -> HttpResponse:
             emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
         else:
             emojiset = user_profile.emojiset
+        night_mode = user_profile.night_mode
+        is_guest = user_profile.is_guest
+        is_realm_admin = user_profile.is_realm_admin
+        show_webathena = user_profile.realm.webathena_enabled
     else:  # nocoverage
         emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
+        night_mode = False
+        is_guest = False
+        is_realm_admin = False
+        show_webathena = False
 
     navbar_logo_url = compute_navbar_logo_url(page_params)
 
@@ -330,11 +338,11 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'show_add_streams': show_add_streams,
                                'show_billing': show_billing,
                                'show_plans': show_plans,
-                               'is_admin': user_profile.is_realm_admin,
-                               'is_guest': user_profile.is_guest,
-                               'night_mode': user_profile.night_mode,
+                               'is_admin': is_realm_admin,
+                               'is_guest': is_guest,
+                               'night_mode': night_mode,
                                'navbar_logo_url': navbar_logo_url,
-                               'show_webathena': user_profile.realm.webathena_enabled,
+                               'show_webathena': show_webathena,
                                'embedded': narrow_stream is not None,
                                'invite_as': PreregistrationUser.INVITE_AS,
                                'max_file_upload_size': settings.MAX_FILE_UPLOAD_SIZE,
