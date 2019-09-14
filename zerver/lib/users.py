@@ -265,18 +265,20 @@ def validate_user_custom_profile_data(realm_id: int,
         if result is not None:
             raise JsonableError(result)
 
-def compute_show_invites_and_add_streams(user_profile: UserProfile) -> Tuple[bool, bool]:
-    show_invites = True
-    show_add_streams = True
+def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) -> Tuple[bool, bool]:
+    if user_profile is None:
+        return False, False
 
-    # Some realms only allow admins to invite users
-    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
-        show_invites = False
     if user_profile.is_guest:
-        show_invites = False
-        show_add_streams = False
+        return False, False
 
-    return (show_invites, show_add_streams)
+    if user_profile.is_realm_admin:
+        return True, True
+
+    if user_profile.realm.invite_by_admins_only:
+        return False, True
+
+    return True, True
 
 def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
                     client_gravatar: bool,
