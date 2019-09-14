@@ -110,8 +110,11 @@ def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.date_sent.utctimetuple())
 
-def get_bot_types(user_profile: UserProfile) -> List[Dict[str, object]]:
-    bot_types = []
+def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
+    bot_types = []  # type: List[Dict[str, object]]
+    if user_profile is None:  # nocoverage
+        return bot_types
+
     for type_id, name in UserProfile.BOT_TYPES.items():
         bot_types.append({
             'type_id': type_id,
@@ -167,33 +170,41 @@ def home_real(request: HttpRequest) -> HttpResponse:
     user_has_messages = (register_ret['max_message_id'] != -1)
     update_last_reminder(user_profile)
 
-    # Brand new users get narrowed to PM with welcome-bot
-    needs_tutorial = user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
+    if user_profile is not None:
+        first_in_realm = realm_user_count(user_profile.realm) == 1
+        # If you are the only person in the realm and you didn't invite
+        # anyone, we'll continue to encourage you to do so on the frontend.
+        prompt_for_invites = (
+            first_in_realm and
+            not PreregistrationUser.objects.filter(referred_by=user_profile).count()
+        )
+        needs_tutorial = user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
+    else:  # nocoverage
+        first_in_realm = False
+        prompt_for_invites = False
+        # The current tutorial doesn't super make sense for logged-out users.
+        needs_tutorial = False
 
-    first_in_realm = realm_user_count(user_profile.realm) == 1
-    # If you are the only person in the realm and you didn't invite
-    # anyone, we'll continue to encourage you to do so on the frontend.
-    prompt_for_invites = first_in_realm and \
-        not PreregistrationUser.objects.filter(referred_by=user_profile).count()
+    if user_profile is None:  # nocoverage
+        furthest_read_time = time.time()  # type: Optional[float]
+    elif user_profile.pointer == -1:
+        if user_has_messages:
+            # Put the new user's pointer at the bottom
+            #
+            # This improves performance, because we limit backfilling of messages
+            # before the pointer.  It's also likely that someone joining an
+            # organization is interested in recent messages more than the very
+            # first messages on the system.
 
-    if user_profile.pointer == -1 and user_has_messages:
-        # Put the new user's pointer at the bottom
-        #
-        # This improves performance, because we limit backfilling of messages
-        # before the pointer.  It's also likely that someone joining an
-        # organization is interested in recent messages more than the very
-        # first messages on the system.
-
-        register_ret['pointer'] = register_ret['max_message_id']
-        user_profile.last_pointer_updater = request.session.session_key
-
-    if user_profile.pointer == -1:
-        latest_read = None
+            register_ret['pointer'] = register_ret['max_message_id']
+            user_profile.last_pointer_updater = request.session.session_key
+        furthest_read_time = None
     else:
         latest_read = get_usermessage_by_message_id(user_profile, user_profile.pointer)
         if latest_read is None:
             # Don't completely fail if your saved pointer ID is invalid
             logging.warning("User %s has invalid pointer %s" % (user_profile.id, user_profile.pointer))
+        furthest_read_time = sent_time_in_epoch_seconds(latest_read)
 
     # We pick a language for the user as follows:
     # * First priority is the language in the URL, for debugging.
@@ -206,7 +217,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # something reasonable will happen in logged-in portico pages.
     request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
 
-    two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
+    two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
@@ -241,8 +252,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
         needs_tutorial        = needs_tutorial,
         first_in_realm        = first_in_realm,
         prompt_for_invites    = prompt_for_invites,
-        furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
-        has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
+        furthest_read_time    = furthest_read_time,
+        has_mobile_devices    = user_profile is not None and num_push_devices_for_user(user_profile) > 0,
         bot_types             = get_bot_types(user_profile),
         two_fa_enabled        = two_fa_enabled,
         # Adding two_fa_enabled as condition saves us 3 queries when
