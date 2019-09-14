@@ -967,3 +967,8 @@ class HomeTest(ZulipTestCase):
         show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
         self.assertEqual(show_invites, False)
         self.assertEqual(show_add_streams, False)
+
+    def test_compute_show_invites_and_add_streams_unauthenticated(self) -> None:
+        show_invites, show_add_streams = compute_show_invites_and_add_streams(None)
+        self.assertEqual(show_invites, False)
+        self.assertEqual(show_add_streams, False)
