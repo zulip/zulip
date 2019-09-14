@@ -26,11 +26,16 @@
         var page_params = {debug_mode: false};
         </script>
         {% endblock %}
+
+        {% macro bundle(name) %}
+        {{ render_bundle(name, attrs='nonce="%s"' % (csp_nonce,) if csp_nonce else '') }}
+        {% endmacro %}
+
         <!-- This is a temporary block to enable webpack transition
         This allows pages requiring common files via webpack to override
         this block -->
         {% block commonjs %}
-        {{ render_bundle('common', attrs='nonce="%s"' % (csp_nonce,)) }}
+        {{ bundle('common') }}
         {% endblock %}
         {% block customhead %}
         {% endblock %}

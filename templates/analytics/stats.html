@@ -7,14 +7,14 @@
 {% endblock %}
 
 {% block customhead %}
-{{ render_bundle('portico') }}
+{{ bundle('portico') }}
 {% endblock %}
 
 {% block content %}
 <div class="app portico-page">
 
-    {{ render_bundle('translations') }}
-    {{ render_bundle('stats') }}
+    {{ bundle('translations') }}
+    {{ bundle('stats') }}
 
     <div class="page-content">
         <div id="id_stats_errors" class="alert alert-error"></div>

@@ -8,8 +8,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
 {% block customhead %}
 {{ super() }}
-{{ render_bundle('zxcvbn') }}
-{{ render_bundle('translations') }}
+{{ bundle('zxcvbn') }}
+{{ bundle('translations') }}
 {% endblock %}
 
 {% block portico_content %}
