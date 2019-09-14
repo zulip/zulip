@@ -73,7 +73,7 @@
                     {% if is_guest %}
                         <i class="locked fa fa-lock" title="{{ _('Guest users cannot edit custom emoji.') }}"></i>
                     {% else %}
-                        {% if not is_admin and user_profile.realm.add_emoji_by_admins_only %}
+                        {% if not is_admin and user_profile and user_profile.realm.add_emoji_by_admins_only %}
                         <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                         {% endif %}
                     {% endif %}
