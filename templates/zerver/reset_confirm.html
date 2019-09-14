@@ -1,7 +1,7 @@
 {% extends "zerver/portico_signup.html" %}
 {% block customhead %}
 {{ super() }}
-{{ render_bundle('zxcvbn') }}
+{{ bundle('zxcvbn') }}
 {% endblock %}
 
 {% block portico_content %}

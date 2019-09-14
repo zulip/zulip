@@ -2,8 +2,8 @@
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{{ render_bundle('landing-page') }}
-{{ render_bundle('billing') }}
+{{ bundle('landing-page') }}
+{{ bundle('billing') }}
 <script src="https://checkout.stripe.com/checkout.js"></script>
 {% endblock %}
 
@@ -13,7 +13,7 @@
 
     {% include 'zerver/billing_nav.html' %}
 
-    {{ render_bundle('translations') }}
+    {{ bundle('translations') }}
     <div class="portico-landing billing-upgrade-page">
         <div class="hero small-hero"></div>
 

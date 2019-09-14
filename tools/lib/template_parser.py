@@ -336,6 +336,7 @@ def is_django_block_tag(tag):
         'for',
         'if',
         'ifequal',
+        'macro',
         'verbatim',
         'blocktrans',
         'trans',

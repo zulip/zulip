@@ -70,8 +70,8 @@ needs to be accessible from one of the entry points defined in
   `app` and `common` bundles.
 * If it's just used on a single standalone page (e.g. `/stats`),
   create a new entry point in `tools/webpack.assets.json`. Use the
-  `render_bundle` function in the relevant Jinja2 template to inject
-  the compiled JS and CSS.
+  `bundle` macro (defined in `templates/zerver/base.html`) in the
+  relevant Jinja2 template to inject the compiled JS and CSS.
 
 If you want to test minified files in development, look for the
 `DEBUG =` line in `zproject/settings.py` and set it to `False`.
