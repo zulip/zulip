@@ -277,7 +277,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     show_billing = False
     show_plans = False
-    if settings.CORPORATE_ENABLED:
+    if settings.CORPORATE_ENABLED and user_profile is not None:
         from corporate.models import Customer, CustomerPlan
         if user_profile.is_billing_admin or user_profile.is_realm_admin:
             customer = Customer.objects.filter(realm=user_profile.realm).first()
@@ -293,12 +293,16 @@ def home_real(request: HttpRequest) -> HttpResponse:
         page_params['translation_data'] = get_language_translation_data(request_language)
 
     csp_nonce = generate_random_token(48)
-    emojiset = user_profile.emojiset
-    if emojiset == UserProfile.TEXT_EMOJISET:
-        # If current emojiset is `TEXT_EMOJISET`, then fallback to
-        # GOOGLE_EMOJISET for picking which spritesheet's CSS to
-        # include (and thus how to display emojis in the emoji picker
-        # and composebox typeahead).
+    if user_profile is not None:
+        if user_profile.emojiset == UserProfile.TEXT_EMOJISET:
+            # If current emojiset is `TEXT_EMOJISET`, then fallback to
+            # GOOGLE_EMOJISET for picking which spritesheet's CSS to
+            # include (and thus how to display emojis in the emoji picker
+            # and composebox typeahead).
+            emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
+        else:
+            emojiset = user_profile.emojiset
+    else:  # nocoverage
         emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
 
     navbar_logo_url = compute_navbar_logo_url(page_params)
