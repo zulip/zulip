@@ -28,7 +28,8 @@
         {% endblock %}
 
         {% macro bundle(name) %}
-        {{ render_bundle(name, attrs='nonce="%s"' % (csp_nonce,) if csp_nonce else '') }}
+        {{ render_bundle(name, 'css', attrs='nonce="%s"' % (csp_nonce,) if csp_nonce else '') }}
+        {{ render_bundle(name, 'js', attrs='defer nonce="%s"' % (csp_nonce,) if csp_nonce else 'defer') }}
         {% endmacro %}
 
         <!-- This is a temporary block to enable webpack transition
