@@ -120,13 +120,18 @@ exports.initialize = function () {
         advanceKeyCodes: [8],
     });
 
-    searchbox_form.on('compositionend', function () {
+    searchbox_form.on('compositionend', function (e) {
         // Set `is_using_input_method` to true if enter is pressed to exit
         // the input tool popover and get the text in the search bar. Then
         // we suppress searching triggered by this enter key by checking
         // `is_using_input_method` before searching.
         // More details in the commit message that added this line.
-        exports.is_using_input_method = true;
+        // If the 'e' is truly this means an Unicode character was typed,
+        // in this case we shouldn't set 'is_using_input_method' so the
+        // search can be made
+        if (!e) {
+            exports.is_using_input_method = true;
+        }
     });
 
     searchbox_form.keydown(function (e) {
