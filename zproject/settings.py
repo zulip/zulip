@@ -614,12 +614,42 @@ SILENCED_SYSTEM_CHECKS = [
 # DATABASE CONFIGURATION
 ########################################################################
 
+# Zulip's Django configuration supports 4 different ways to do
+# postgres authentication:
+#
+# * The development environment uses the `local_database_password`
+#   secret from `zulip-secrets.conf` to authenticate with a local
+#   database.  The password is automatically generated and managed by
+#   `generate_secrets.py` during or provision.
+#
+# The remaining 3 options are for production use:
+#
+# * Using postgres' "peer" authentication to authenticate to a
+#   database on the local system using one's user ID (processes
+#   running as user `zulip` on the system are automatically
+#   authenticated as database user `zulip`).  This is the default in
+#   production.  We don't use this in the development environment,
+#   because it requires the developer's user to be called `zulip`.
+#
+# * Using password authentication with a remote postgres server using
+#   the `REMOTE_POSTGRES_HOST` setting and the password from the
+#   `postgres_password` secret.
+#
+# * Using passwordless authentication with a remote postgres server
+#   using the `REMOTE_POSTGRES_HOST` setting and a client certificate
+#   under `/home/zulip/.postgresql/`.
+#
+# We implement these options with a default DATABASES configuration
+# supporting peer authentication, with logic to override it as
+# appropriate if DEVELOPMENT or REMOTE_POSTGRES_HOST is set.
 DATABASES = {"default": {
     'ENGINE': 'django.db.backends.postgresql',
     'NAME': 'zulip',
     'USER': 'zulip',
-    'PASSWORD': '',  # Authentication done via certificates
-    'HOST': '',  # Host = '' => connect through a local socket
+    # Password = '' => peer/certificate authentication (no password)
+    'PASSWORD': '',
+    # Host = '' => connect to localhost by default
+    'HOST': '',
     'SCHEMA': 'zulip',
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
