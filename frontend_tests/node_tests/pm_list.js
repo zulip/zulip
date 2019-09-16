@@ -41,9 +41,17 @@ var me = {
     user_id: 103,
     full_name: 'Me Myself',
 };
+var bot_test = {
+    email: 'outgoingwebhook@zulip.com',
+    user_id: 314,
+    full_name: "Outgoing webhook",
+    is_admin: false,
+    is_bot: true,
+};
 global.people.add_in_realm(alice);
 global.people.add_in_realm(bob);
 global.people.add_in_realm(me);
+global.people.add_in_realm(bot_test);
 global.people.initialize_current_user(me.user_id);
 
 run_test('get_conversation_li', () => {
@@ -110,6 +118,53 @@ run_test('build_private_messages_list', () => {
 
     pm_list.initialize();
     pm_list._build_private_messages_list(active_conversation_2, max_conversations);
+    assert.deepEqual(template_data, expected_data);
+});
+
+run_test('build_private_messages_list_bot', () => {
+    var active_conversation_1 = 'outgoingwebhook@zulip.com';
+    var max_conversations = 5;
+
+    var user_ids_string = '314';
+    var timestamp = 0;
+    pm_conversations.recent.insert(user_ids_string, timestamp);
+
+    global.unread.num_unread_for_person = function () {
+        return 1;
+    };
+
+    var template_data;
+    global.stub_templates(function (template_name, data) {
+        assert.equal(template_name, 'sidebar_private_message_list');
+        template_data = data;
+    });
+
+    pm_list._build_private_messages_list(active_conversation_1, max_conversations);
+    var expected_data = {
+        messages: [
+            {
+                recipients: 'Outgoing webhook',
+                user_ids_string: '314',
+                unread: 1,
+                is_zero: false,
+                url: '#narrow/pm-with/314-outgoingwebhook',
+                user_circle_class: 'user_circle_green',
+                fraction_present: undefined,
+                is_group: false,
+            },
+            {
+                recipients: 'Alice, Bob',
+                user_ids_string: '101,102',
+                unread: 1,
+                is_zero: false,
+                url: '#narrow/pm-with/101,102-group',
+                user_circle_class: 'user_circle_fraction',
+                fraction_present: false,
+                is_group: true,
+            },
+        ],
+    };
+
     assert.deepEqual(template_data, expected_data);
 });
 

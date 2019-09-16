@@ -93,6 +93,12 @@ exports._build_private_messages_list = function (active_conversation) {
         if (is_group) {
             user_circle_class = 'user_circle_fraction';
             fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
+        } else {
+            var recipient_user_obj = people.get_person_from_user_id(user_ids_string);
+
+            if (recipient_user_obj.is_bot) {
+                user_circle_class = 'user_circle_green';
+            }
         }
 
         var display_message = {
