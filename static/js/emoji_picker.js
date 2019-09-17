@@ -598,6 +598,7 @@ exports.render_emoji_popover = function (elt, id) {
         template: template,
         title: "",
         content: generate_emoji_picker_content(id),
+        html: true,
         trigger: "manual",
     });
     elt.popover("show");

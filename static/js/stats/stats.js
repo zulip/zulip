@@ -75,7 +75,6 @@ $(function tooltips() {
     $('span[data-toggle="tooltip"]').tooltip({
         animation: false,
         placement: 'top',
-        html: true,
         trigger: 'manual',
     });
     $('#id_last_update_question_sign').hover(function () {

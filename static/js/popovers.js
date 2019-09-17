@@ -206,6 +206,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
             user_avatar: "avatar/" + user.email,
             user_is_guest: user.is_guest,
         }),
+        html: true,
         trigger: "manual",
         top_offset: 100,
         fix_positions: true,
@@ -266,6 +267,7 @@ function show_mobile_message_buttons_popover(element) {
         content: render_mobile_message_buttons_popover_content({
             is_in_private_narrow: narrow_state.narrowed_to_pms(),
         }),
+        html: true,
         trigger: "manual",
     });
     $element.popover("show");
@@ -383,6 +385,7 @@ function show_user_group_info_popover(element, group, message) {
             placement: calculate_info_popover_placement(popover_size, elt),
             template: render_user_group_info_popover({class: "message-info-popover"}),
             content: render_user_group_info_popover_content(args),
+            html: true,
             trigger: "manual",
         });
         elt.popover("show");
@@ -481,6 +484,7 @@ exports.toggle_actions_popover = function (element, id) {
             placement: message_viewport.height() - ypos < 220 ? 'top' : 'bottom',
             title: "",
             content: render_actions_popover_content(args),
+            html: true,
             trigger: "manual",
         });
         elt.popover("show");
@@ -504,6 +508,7 @@ exports.render_actions_remind_popover = function (element, id) {
             placement: message_viewport.height() - ypos < 220 ? 'top' : 'bottom',
             title: "",
             content: render_remind_me_popover_content(args),
+            html: true,
             trigger: "manual",
         });
         elt.popover("show");

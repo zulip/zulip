@@ -133,6 +133,7 @@ function build_stream_popover(opts) {
 
     $(elt).popover({
         content: content,
+        html: true,
         trigger: "manual",
         fixed: true,
         fix_positions: true,
@@ -184,6 +185,7 @@ function build_topic_popover(opts) {
 
     $(elt).popover({
         content: content,
+        html: true,
         trigger: "manual",
         fixed: true,
     });
@@ -209,6 +211,7 @@ function build_all_messages_popover(e) {
 
     $(elt).popover({
         content: content,
+        html: true,
         trigger: "manual",
         fixed: true,
     });
@@ -237,6 +240,7 @@ function build_starred_messages_popover(e) {
 
     $(elt).popover({
         content: content,
+        html: true,
         trigger: "manual",
         fixed: true,
     });

@@ -439,6 +439,7 @@ exports.set_up_handlers = function () {
             placement: "right",
             content: render_announce_stream_docs({
                 notifications_stream: page_params.notifications_stream}),
+            html: true,
             trigger: "manual"});
         announce_stream_docs.popover('show');
         announce_stream_docs.data('popover').tip().css('z-index', 2000);
