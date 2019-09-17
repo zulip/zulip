@@ -3873,11 +3873,12 @@ def do_update_user_activity(user_profile_id: int,
         user_profile_id = user_profile_id,
         client_id = client_id,
         query = query,
-        defaults={'last_visit': log_time, 'count': 0})
+        defaults={'last_visit': log_time, 'count': count})
 
-    activity.count += count
-    activity.last_visit = log_time
-    activity.save(update_fields=["last_visit", "count"])
+    if not created:
+        activity.count += count
+        activity.last_visit = log_time
+        activity.save(update_fields=["last_visit", "count"])
 
 def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> None:
     presence_dict = presence.to_dict()
