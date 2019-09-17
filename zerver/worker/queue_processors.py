@@ -243,12 +243,23 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
+    client_id_map = {}  # type: Dict[str, int]
+
+    def start(self) -> None:
+        # For our unit tests to make sense, we need to clear this on startup.
+        self.client_id_map = {}
+        super().start()
+
     def consume(self, event: Mapping[str, Any]) -> None:
-        user_profile = get_user_profile_by_id(event["user_profile_id"])
-        client = get_client(event["client"])
+        user_profile_id = event["user_profile_id"]
+
+        if event["client"] not in self.client_id_map:
+            client = get_client(event["client"])
+            self.client_id_map[event["client"]] = client.id
+        client_id = self.client_id_map[event["client"]]
         log_time = timestamp_to_datetime(event["time"])
         query = event["query"]
-        do_update_user_activity(user_profile, client, query, log_time)
+        do_update_user_activity(user_profile_id, client_id, query, log_time)
 
 @assign_queue('user_activity_interval')
 class UserActivityIntervalWorker(QueueProcessingWorker):
