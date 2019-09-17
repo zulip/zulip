@@ -26,9 +26,7 @@ Here is the **full list of search operators**.
 * `stream:design`: Search within the stream `#design`.
 * `stream:design topic:emoji+picker`: Search within the topic `emoji picker`.
 * `is:private`: Search all your private messages.
-* `pm-with:ada@zulip.com`: Search 1-on-1 messages with Ada.
-* `group-pm-with:ada@zulip.com`: Search group private messages that
-  include Ada.
+* `pm-with:ada@zulip.com`: Search 1-on-1 private messages between you and Ada.
 * `sender:ada@zulip.com`: Search messages sent by Ada.
 * `sender:me`: Search sent messages.
 * `near:12345`: Show messages around the message with ID `12345`.
@@ -43,6 +41,10 @@ Here is the **full list of search operators**.
 * `has:link`
 * `has:image`
 * `has:attachment`
+* `pm-with:ada@zulip.com,bob@zulip.com`: Search private message conversation
+  between you, Bob, and Ada.
+* `group-pm-with:ada@zulip.com,bob@zulip.com`: Search all group
+  private messages that include Ada and Bob.
 
 ## Words and phrases
 
