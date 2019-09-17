@@ -1447,6 +1447,48 @@ class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
         self.md = md
 
 class AutoLink(CompiledInlineProcessor):
+    def shorten_links(self, href: str) -> Optional[str]:
+        parts = urllib.parse.urlparse(href)
+        scheme, netloc, path, params, query, fragment = parts
+        text = None
+        if netloc in ['github.com', 'www.github.com']:
+            text = self.shorten_github_links(path, fragment)
+        return text
+
+    def shorten_github_links(self, path: str, fragment: str) -> Optional[str]:
+        # 1. Split the path to extract our 4 variables.
+        #
+        # To do it cleanly without multiple if branches based on which of these
+        # variables are present, we here add a list of [None, None, None...]
+        # to the result of path.split, which at worst can be []. We also remove
+        # the first empty string we'd get from '/foo/bar'.split('/').
+        #
+        # Example path: '/foo/bar' output: ['foo', 'bar', None, None]
+        #         path: ''         output: [None, None, None, None]
+        organisation, repository, artifact, value, remaining_path = (path.split('/', 5)[1:] + [None] * 5)[:5]
+
+        # 2. Decide what type of links to shorten.
+        if not organisation or not repository:
+            return None
+        repo_short_text = '{}/{}'.format(organisation, repository)
+        # Some urls like https://github.com/zulip/zulip/pull/13168/commits can have
+        # some components after the artifact value as well. We should append that
+        # to the result if it is present.
+        remaining_text = ''
+        if remaining_path:
+            remaining_text = remaining_text + '/' + remaining_path
+        if fragment:
+            remaining_text = remaining_text + '#' + fragment
+        if not artifact:
+            return repo_short_text
+        if not artifact or not value:
+            return None
+        if artifact in ['pull', 'issues']:
+            return '{}#{}{}'.format(repo_short_text, value, remaining_text)
+        if artifact == 'commit':
+            return '{}@{}'.format(repo_short_text, value[0:10])
+        return None
+
     def handleMatch(self, match: Match[str], data: str) -> Tuple[ElementStringNone, int, int]:
         url = match.group('url')
         url_start = match.start('url')
@@ -1455,8 +1497,12 @@ class AutoLink(CompiledInlineProcessor):
                           url_end < len(data) and data[url_end] == '>')
         db_data = self.markdown.zulip_db_data
         el = url_to_a(db_data, url, bracketed_link=bracketed_link)
-        if el == url:
+        if isinstance(el, str):
             el = None  # No-op
+        else:
+            shortened_text = self.shorten_links(el.get('href', ''))
+            if shortened_text:
+                el.text = markdown.util.AtomicString(shortened_text)
         return el, url_start, url_end
 
 class OListProcessor(sane_lists.SaneOListProcessor):

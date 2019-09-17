@@ -1985,6 +1985,29 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
 
+    def test_link_shortening(self) -> None:
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user('othello')
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        output_template = '<p><a href="{href}" title="{href}">{text}</a></p>'
+
+        def assert_shortening(msg: str, text: Optional[str]) -> None:
+            expected_output = output_template.format(href=msg, text=text or msg)
+            self.assertEqual(bugdown.convert(msg, message_realm=realm, message=message), expected_output)
+
+        assert_shortening('https://github.com/zulip/zulip', 'zulip/zulip')
+        assert_shortening('https://github.com/zulip/zulip/issues/11895', 'zulip/zulip#11895')
+        assert_shortening('https://github.com/zulip/zulip/pull/11922', 'zulip/zulip#11922')
+        assert_shortening('https://github.com/zulip/zulip/commit/a47edd4fc8a1b115e979bef6fc372ddf360cdcef', 'zulip/zulip@a47edd4fc8')
+        assert_shortening('https://github.com/zulip/zulip/pull/13168/commits/e682fcbc65eb1d61b74a8c5b4aadc517ef56f7a6', 'zulip/zulip#13168/commits/e682fcbc65eb1d61b74a8c5b4aadc517ef56f7a6')
+        assert_shortening('https://github.com/zulip/zulip/issues/13052#issuecomment-526976171', 'zulip/zulip#13052#issuecomment-526976171')
+        assert_shortening('https://github.com/zulip/zulip/pull/11924/files#r268035507', 'zulip/zulip#11924/files#r268035507')
+        assert_shortening('https://github.com/foo/bar', 'foo/bar')
+        assert_shortening('https://github.com/foo/bar/baz', None)
+        assert_shortening('https://github.com/foo/bar/baz/zar', None)
+        assert_shortening('https://github.com/foo', None)
+        assert_shortening('https://github.com', None)
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'
