@@ -128,16 +128,25 @@ class WorkerTest(ZulipTestCase):
         )
         fake_client.queue.append(('user_activity', data))
 
-        with simulated_queue_client(lambda: fake_client):
-            worker = queue_processors.UserActivityWorker()
-            worker.setup()
-            worker.start()
-            activity_records = UserActivity.objects.filter(
-                user_profile = user.id,
-                client = get_client('ios')
-            )
-            self.assertTrue(len(activity_records), 1)
-            self.assertTrue(activity_records[0].count, 1)
+        time_mock = patch(
+            'zerver.worker.queue_processors.time.sleep',
+            side_effect=AbortLoop,
+        )
+
+        with time_mock:
+            with simulated_queue_client(lambda: fake_client):
+                worker = queue_processors.UserActivityWorker()
+                worker.setup()
+                try:
+                    worker.start()
+                except AbortLoop:
+                    pass
+                activity_records = UserActivity.objects.filter(
+                    user_profile = user.id,
+                    client = get_client('ios')
+                )
+                self.assertTrue(len(activity_records), 1)
+                self.assertTrue(activity_records[0].count, 1)
 
     def test_missed_message_worker(self) -> None:
         cordelia = self.example_user('cordelia')
