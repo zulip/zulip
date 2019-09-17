@@ -259,7 +259,7 @@ class UserActivityWorker(QueueProcessingWorker):
         client_id = self.client_id_map[event["client"]]
         log_time = timestamp_to_datetime(event["time"])
         query = event["query"]
-        do_update_user_activity(user_profile_id, client_id, query, log_time)
+        do_update_user_activity(user_profile_id, client_id, query, 1, log_time)
 
 @assign_queue('user_activity_interval')
 class UserActivityIntervalWorker(QueueProcessingWorker):
