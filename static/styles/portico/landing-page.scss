@@ -1349,7 +1349,7 @@ nav ul li.active::after {
     font-weight: 400;
     color: hsl(0, 0%, 100%);
     background-color: hsl(185, 38%, 55%);
-    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
+    background: linear-gradient(145deg, hsla(191, 56%, 55%, 0.9), hsla(169, 65%, 42%, 0.9));
     box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
     border: 0;
     position: absolute;
@@ -1363,6 +1363,7 @@ nav ul li.active::after {
 }
 
 .tour .carousel-inner .start-button:hover {
+    background: linear-gradient(145deg, hsla(191, 56%, 55%, 0.6), hsla(169, 65%, 42%, 0.6));
     background-color: hsl(169, 65%, 42%);
     box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
 }
