@@ -3871,6 +3871,7 @@ def do_update_user_activity_interval(user_profile: UserProfile,
 def do_update_user_activity(user_profile_id: int,
                             client_id: int,
                             query: str,
+                            count: int,
                             log_time: datetime.datetime) -> None:
     (activity, created) = UserActivity.objects.get_or_create(
         user_profile_id = user_profile_id,
@@ -3878,7 +3879,7 @@ def do_update_user_activity(user_profile_id: int,
         query = query,
         defaults={'last_visit': log_time, 'count': 0})
 
-    activity.count += 1
+    activity.count += count
     activity.last_visit = log_time
     activity.save(update_fields=["last_visit", "count"])
 
