@@ -3864,13 +3864,13 @@ def do_update_user_activity_interval(user_profile: UserProfile,
                                         end=effective_end)
 
 @statsd_increment('user_activity')
-def do_update_user_activity(user_profile: UserProfile,
-                            client: Client,
+def do_update_user_activity(user_profile_id: int,
+                            client_id: int,
                             query: str,
                             log_time: datetime.datetime) -> None:
     (activity, created) = UserActivity.objects.get_or_create(
-        user_profile = user_profile,
-        client = client,
+        user_profile_id = user_profile_id,
+        client_id = client_id,
         query = query,
         defaults={'last_visit': log_time, 'count': 0})
 
