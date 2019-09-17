@@ -1892,9 +1892,24 @@ nav ul li.active::after {
 
 .portico-landing.hello .apps .left-side .platform-icons .group i {
     display: inline-block;
-    width: 80px;
+    width: 70px;
+    vertical-align: top;
+
+    padding: 6px 6px;
+    border-radius: 12px;
+
+    color: hsl(0, 0%, 80%);
+
+    text-align: center;
+
+    transition: all 0.2s ease;
 
     font-size: 3.5em;
+}
+
+.portico-landing.hello .apps .left-side .platform-icons .group i:hover {
+  color: hsl(0, 0%, 47%);
+  background: linear-gradient(-45deg, hsl(0, 0%, 83%), hsl(0, 0%, 98%));
 }
 
 .portico-landing.hello .apps .arrow::after {
