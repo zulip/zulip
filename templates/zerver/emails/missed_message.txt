@@ -10,7 +10,7 @@
 
 --
 {% if mention %}
-You are receiving this because you were mentioned.
+You are receiving this because you were mentioned in {{ realm_name }}.
 {% elif stream_email_notify %}
 You are receiving this because you have email notifications enabled for this stream.
 {% endif %}

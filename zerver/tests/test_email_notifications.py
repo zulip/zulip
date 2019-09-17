@@ -242,7 +242,7 @@ class TestMissedMessages(ZulipTestCase):
 
         if show_message_content:
             body = ("Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 @**King Hamlet** -- "
-                    "You are receiving this because you were mentioned")
+                    "You are receiving this because you were mentioned in Zulip Dev.")
             email_subject = '#Denmark > test'
             verify_body_does_not_include = []  # type: List[str]
         else:
@@ -275,7 +275,7 @@ class TestMissedMessages(ZulipTestCase):
 
         if show_message_content:
             body = ("Othello, the Moor of Venice: 1 2 3 4 5 @**all** -- "
-                    "You are receiving this because you were mentioned")
+                    "You are receiving this because you were mentioned in Zulip Dev.")
             email_subject = '#Denmark > test'
             verify_body_does_not_include = []  # type: List[str]
         else:
@@ -321,7 +321,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_email('othello'), "Denmark",
             '@**King Hamlet**')
         body = ("Cordelia Lear: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- "
-                "You are receiving this because you were mentioned")
+                "You are receiving this because you were mentioned in Zulip Dev.")
         email_subject = '#Denmark > test'
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user, trigger='mentioned')
 
