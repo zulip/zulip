@@ -72,6 +72,9 @@ def create_confirmation_link(obj: ContentType, host: str,
     realm = None
     if hasattr(obj, 'realm'):
         realm = obj.realm
+    elif isinstance(obj, Realm):
+        realm = obj
+
     Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key,
                                 realm=realm, type=confirmation_type)
     return confirmation_url(key, host, confirmation_type, url_args)
