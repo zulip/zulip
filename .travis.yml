@@ -38,8 +38,10 @@ cache:
 env:
   global:
     - BOTO_CONFIG=/nonexistent
+    - TEST_SUITE=production
+    # Other suites moved to CircleCI -- see .circleci/.
 language: python
-# Our test suites generally run on Python 3.5, the version in
+# Our test suites generally run on Python 3.5+ in
 # Ubuntu 16.04 xenial, which is the oldest OS release we support.
 matrix:
   include:
@@ -48,8 +50,13 @@ matrix:
     # We only get 4 jobs running at a time, so we try to make the first few
     # the most likely to break.
     - python: "3.5"
-      env: TEST_SUITE=production
-    # Other suites moved to CircleCI -- see .circleci/.
+    - python: "3.6"
+    - python: "3.7"
+    - python: "3.8-dev"
+    - python: "nightly"
+  allow_failures:
+    - python: "3.8-dev"
+    - python: "nightly"
 sudo: required
 addons:
   artifacts:
