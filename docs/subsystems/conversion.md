@@ -13,20 +13,20 @@ Zulip includes an export tool, `management/export.py`, which
 exports data for a single Zulip realm. `management/export.py`
 is beneficial when migrating a Zulip realm to a new server.
 
-This document cover the logistics a big conversion of a
+This document covers the logistics a big conversion of a
 multi-realm Zulip installation, supplementing the explanation in
 `management/export.py`.
 
 There are many major operational aspects to doing a conversion,
 including:
 
-- Get new servers running
-- Export data from the old DB
-- Export files from Amazon S3
-- Import files into new storage
-- Import data into new DB
-- Restart new servers
-- Decommission old server
+- Getting new servers running
+- Exporting data from the old DB
+- Exporting files from Amazon S3
+- Importing files into new storage
+- Importing data into new DB
+- Restarting new servers
+- Decommissioning the old server
 
 This document focuses on **exporting** data from the old DB and
 Amazon S3.  For informatoin on installing or running Zulip see
@@ -175,7 +175,7 @@ When it comes to exporting attachment data, Zulip has some minor volume
 issues, but the main concern is just that there are **lots of moving
 parts**:
 
-- S3 needs to be up, and Zulip get some metadata from it as well as
+- S3 needs to be up, and Zulip gets some metadata from it as well as
   files.
 - There are security concerns about copying over only files that belong
   to users who approved the transfer.
