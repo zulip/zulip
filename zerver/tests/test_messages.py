@@ -3528,6 +3528,24 @@ class AttachmentTest(ZulipTestCase):
             attachment = Attachment.objects.get(path_id=path_id)
             self.assertTrue(attachment.is_claimed())
 
+class LinkDetectionTest(ZulipTestCase):
+    def test_finds_all_links(self) -> None:
+        msg_ids = []
+        msg_contents = ["foo.org", "[bar](baz.gov)", "http://quux.ca"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_email('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertTrue(all([msg.has_link for msg in msgs]))
+
+    def finds_link_after_edit(self) -> None:
+        msg_id = self.send_stream_message(self.example_email('hamlet'),
+                                          'Denmark', content='a')
+        msg = Message.objects.get(id=msg_id)
+        self.assertFalse(msg.has_link)
+        do_update_message(self.example_user('hamlet'), msg, content="a http://foo.com")
+        self.assertTrue(msg.has_link)
+
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:
         UserPresence.objects.all().delete()

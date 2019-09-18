@@ -961,6 +961,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
     def get_url_data(self, e: Element) -> Optional[Tuple[str, str]]:
         if e.tag == "a":
+            if self.markdown.zulip_message is not None:
+                self.markdown.zulip_message.has_link = True
             if e.text is not None:
                 return (e.get("href"), e.text)
             return (e.get("href"), e.get("href"))
