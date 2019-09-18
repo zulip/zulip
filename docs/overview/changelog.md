@@ -16,6 +16,10 @@ in bursts.
   setup documentation](../production/email-gateway.html).  It now
   should be possible to subscribe a Zulip stream to an email list and
   have a good experience.
+- Added production support for Debian buster.
+- Removed our dependency on `tsearch_extras`, making it possible to
+  run a production Zulip server against any postgres database
+  (including those one cannot add extensions to like Amazon RDS).
 - Added an option for hiding access to user email addresses from
   other users.  While counterproductive for most corporate
   communities, for open source projects and other volunteer
@@ -27,15 +31,25 @@ in bursts.
   how it is configured.
 - Added support for importing an organization from Mattermost (similar
   to existing Slack/HipChat/Gitter import tools).  Slack import now
-  supports importing data only included in corporate exports.
+  supports importing data only included in corporate exports,
+  including private messages and shared channels.
 - Changed the user-level stream notification settings model to be
   defaults (for all streams where the user hasn't specifically changed
   their settings) instead of a default for newly subscribed streams.
 - Added markdown support and typeahead for mentioning topics.
 - Added support for setting a message retention policy, automatically
   deleting messages older than a certain date.
+- Redesigned Zulip's missed-message emails to use a clean, more
+  readable style.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production.  We're now interested in beta testers for this feature.
+- Added [new documentation](../production/modifying-zulip.html) on
+  maintaining a fork of Zulip.
+- Added new `streams:public` search operator that searches the public
+  history of all streams in the organization (even before you joined).
+- Added support for sending email and mobile push notifications for
+  wildcard mentions (@all and @everyone).  Previously, they only
+  triggered desktop notifications; now, that's configurable.
 
 **Upgrade notes:**
 
@@ -85,6 +99,8 @@ downtime, and then upgrade to the new release.
 
 
 **Full feature changelog:**
+- Added sortable columns to all tables in settings pages.
+- Added webapp support for self-service public data exports.
 - Added 'e' keyboard shortcut for editing currently selected message.
 - Added support for unstarring all starred messages.
 - Added support for using `|` as an OR operator in sidebar search features.
@@ -104,8 +120,9 @@ downtime, and then upgrade to the new release.
 - Added a new setting to control whether inactive streams are demoted.
 - Added webapp support for upcoming desktop app features: inline reply
   from notifications, and detecting user presence from OS APIs.
-- Redesigned Zulip's missed-message emails to use a clean, more
-  readable style.
+- Added markdown support for headings, implemented using `# heading`.
+- New users now see their most recent 20 messages as unread, to
+  provide a better onboarding experience.
 - Redesigned the in-app "keyboard shortcuts" popover to be more usable.
 - Redesigned the interactions on several settings pages.
 - Significantly improved the visual spacing around bulleted lists,
@@ -120,11 +137,16 @@ downtime, and then upgrade to the new release.
 - Significantly improved performance of the backend markdown processor.
 - Significantly improved Help Center documentation of dozens of features.
 - Simplified and internationalized some notification bot messages.
+- The compose box placeholder now shows users active status.
+- Clicking the "EDITED" text on a message now pops message edit history.
 - Adjusted the default streams in new realms to be easier to
   understand for new users.
 - Improved default nginx TLS settings for stronger security.
 - Improved UI of administrative user management UI.
 - Improved error messages for various classes of invalid searches.
+- Improved styling of markdown numbered lists.
+- Compose typeahead now autofills stream field if only subscribed to
+  one stream.
 - Bot users can now post to announcement-only streams if their owners
   can (this preserves the pre-existing security model).
 - User full names now must use characters valid in an email from line.
@@ -134,23 +156,29 @@ downtime, and then upgrade to the new release.
   in browers appearing to display old content or remark messages unread.
 - Fixed buggy handling of LaTeX in quote-and-reply.
 - Fixed buggy rendering of bulleted lists inside blockquotes.
+- Fixed several bugs with CORS in the nginx configuration.
 - Fixed error message for GitHub login attempts with a deactivated account.
 - Fixed email gateway issues with non-latin characters in stream names.
 - Fixed endless re-synchronization of LDAP user avatars (which
   could cause user-visible performance issues for desktop/web clients).
+- Fixed a number of other bugs with advanced LDAP data synchronization.
 - Fixed numbered list handling of blank lines between blocks.
 - Fixed performance issues that made users soft-deactivated for over a
   year unable to return to the app.
-- Fixed missing -X GET/POST parameters in API docs curl examples.
+- Fixed missing -X GET/POST parameters in API docs curl examples.  The
+  API documentation for curl examples is now automatically generated
+  with automated tests for the examples to prevent future similar bugs.
 - Fixed multi-line /me messages only working for the sender.
 - Fixed password strength meter not updating on paste.
 - Fixed numerous errors and omissions in the API documentation.  Added
   a test suite comparing the API documentation to the implementation.
 - Fixed copy/paste of blocks of messages in Firefox.
+- Fixed problems with exception reporting when memcached is down.
 - Fixed pinned streams being incorrectly displayed as inactive.
 - Fixed password reset page CSS for desktop app.
 - Fixed "more topics" appearing for new streams, where we can be
   confident we already have all the topics cached in the browser.
+- Fixed some subtle bugs with event queues and message editing.
 - Fixed real-time sync for reactions and message edits on a message
   sent to a private stream with shared history before the current user
   joined that stream.
@@ -163,7 +191,7 @@ downtime, and then upgrade to the new release.
 - Fixed email gateway bot being created with incorrectly cached permissions.
 - Fixed guest users seeing UI widgets they can't use.
 - Fixed several issues with click handlers incorrectly closing compose.
-- Fixed several UI issues with the mobile webapp.
+- Fixed several major UI issues with the mobile webapp.
 - Fixed HTML styling when copy-pasting content out of Zulip's night theme.
 - Fixed obscure traceback with Virtualenv 16.0.0 unexpectedly installed.
 - Added a new visual tool for testing webhook integrations.
