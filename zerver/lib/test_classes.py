@@ -57,6 +57,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserProfile,
+    get_realm_stream
 )
 from zilencer.models import get_remote_server_by_uuid
 from zerver.decorator import do_two_factor_login
@@ -614,6 +615,15 @@ class ZulipTestCase(TestCase):
 
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         return stream
+
+    def get_stream_id(self, name: str, realm: Optional[Realm]=None) -> int:
+        if not realm:
+            realm = get_realm('zulip')
+        try:
+            stream = get_realm_stream(name, realm.id)
+        except Stream.DoesNotExist:
+            return self.INVALID_STREAM_ID
+        return stream.id
 
     # Subscribe to a stream directly
     def subscribe(self, user_profile: UserProfile, stream_name: str) -> Stream:
