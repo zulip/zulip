@@ -25,8 +25,8 @@ from zerver.views.invite import get_invitee_emails_set
 from zerver.views.development.registration import confirmation_key
 
 from zerver.models import (
-    get_realm, get_user, get_realm_stream, get_stream_recipient,
-    CustomProfileField, CustomProfileFieldValue, DefaultStream, PreregistrationUser,
+    get_realm, get_user, get_stream_recipient, CustomProfileField,
+    CustomProfileFieldValue, DefaultStream, PreregistrationUser,
     Realm, Recipient, Message, ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches
 )
@@ -646,17 +646,6 @@ class InviteUserBase(ZulipTestCase):
 
         tokenized_no_reply_email = parseaddr(outbox[0].from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
-
-    INVALID_STREAM_ID = 9999
-
-    def get_stream_id(self, name: str, realm: Optional[Realm]=None) -> int:
-        if not realm:
-            realm = get_realm('zulip')
-        try:
-            stream = get_realm_stream(name, realm.id)
-        except Stream.DoesNotExist:
-            return self.INVALID_STREAM_ID
-        return stream.id
 
     def invite(self, invitee_emails: str, stream_names: List[str], body: str='',
                invite_as: int=1) -> HttpResponse:
