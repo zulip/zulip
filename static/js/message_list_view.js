@@ -1084,7 +1084,7 @@ MessageListView.prototype = {
         return true;
     },
 
-    rerender_preserving_scrolltop: function () {
+    rerender_preserving_scrolltop: function (discard_rendering_state) {
         // old_offset is the number of pixels between the top of the
         // viewable window and the selected message
         var old_offset;
@@ -1092,6 +1092,13 @@ MessageListView.prototype = {
         var selected_in_view = selected_row.length > 0;
         if (selected_in_view) {
             old_offset = selected_row.offset().top;
+        }
+        if (discard_rendering_state) {
+            // If we know that the existing render is invalid way
+            // (typically because messages appear out-of-order), then
+            // we discard the message_list rendering state entirely.
+            this.clear_rendering_state(true);
+            this.update_render_window(this.list.selected_idx(), false);
         }
         return this.rerender_with_target_scrolltop(selected_row, old_offset);
     },
@@ -1269,13 +1276,6 @@ MessageListView.prototype = {
 
         // See comment for maybe_rerender call in the append code path
         this.maybe_rerender();
-    },
-
-    rerender_the_whole_thing: function () {
-        // TODO: Figure out if we can unify this with this.list.rerender().
-        this.clear_rendering_state(true);
-        this.update_render_window(this.list.selected_idx(), false);
-        this.render(this.list.all_messages().slice(this._render_win_start, this._render_win_end), 'bottom');
     },
 
     clear_table: function () {

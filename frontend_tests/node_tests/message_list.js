@@ -182,7 +182,7 @@ run_test('message_range', () => {
 
 run_test('updates', () => {
     var list = new MessageList({});
-    list.view.rerender_the_whole_thing = noop;
+    list.view.rerender_preserving_scrolltop = noop;
 
     var messages = [
         {
