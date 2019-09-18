@@ -111,6 +111,34 @@ class WorkerTest(ZulipTestCase):
         self.assertEqual(logging_info, '    127.0.0.1       GET     200 -1000ms '
                                        ' /test/ (test@zulip.com via website) (test@zulip.com)\n')
 
+    def test_UserActivityWorker(self) -> None:
+        fake_client = self.FakeClient()
+
+        user = self.example_user('hamlet')
+        UserActivity.objects.filter(
+            user_profile = user.id,
+            client = get_client('ios')
+        ).delete()
+
+        data = dict(
+            user_profile_id = user.id,
+            client = 'ios',
+            time = time.time(),
+            query = 'send_message'
+        )
+        fake_client.queue.append(('user_activity', data))
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.UserActivityWorker()
+            worker.setup()
+            worker.start()
+            activity_records = UserActivity.objects.filter(
+                user_profile = user.id,
+                client = get_client('ios')
+            )
+            self.assertTrue(len(activity_records), 1)
+            self.assertTrue(activity_records[0].count, 1)
+
     def test_missed_message_worker(self) -> None:
         cordelia = self.example_user('cordelia')
         hamlet = self.example_user('hamlet')
@@ -435,34 +463,6 @@ class WorkerTest(ZulipTestCase):
                     patch('logging.info'):
                 worker.start()
                 self.assertEqual(send_mock.call_count, 2)
-
-    def test_UserActivityWorker(self) -> None:
-        fake_client = self.FakeClient()
-
-        user = self.example_user('hamlet')
-        UserActivity.objects.filter(
-            user_profile = user.id,
-            client = get_client('ios')
-        ).delete()
-
-        data = dict(
-            user_profile_id = user.id,
-            client = 'ios',
-            time = time.time(),
-            query = 'send_message'
-        )
-        fake_client.queue.append(('user_activity', data))
-
-        with simulated_queue_client(lambda: fake_client):
-            worker = queue_processors.UserActivityWorker()
-            worker.setup()
-            worker.start()
-            activity_records = UserActivity.objects.filter(
-                user_profile = user.id,
-                client = get_client('ios')
-            )
-            self.assertTrue(len(activity_records), 1)
-            self.assertTrue(activity_records[0].count, 1)
 
     def test_error_handling(self) -> None:
         processed = []
