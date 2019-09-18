@@ -191,6 +191,10 @@ make sure you understand:
 * We do not support downgrading from master to earlier versions, so if downtime
   for your Zulip server is unacceptable, make sure you have a current
   backup in case the upgrade fails.
+* Our changelog contains [draft release
+  notes](../overview/changelog.html) available listing major changes
+  since the last release.  The **Upgrade notes** section will always
+  be current, even if some new features aren't documented.
 
 ## Contributing patches
 
