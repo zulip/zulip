@@ -20,6 +20,7 @@ from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now, utc as timezone_utc
 from django.utils.translation import ugettext as _
+from django.utils.timesince import timesince
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from jinja2 import Markup as mark_safe
@@ -28,6 +29,7 @@ from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, \
     RealmCount, StreamCount, UserCount, last_successful_fill, installation_epoch
+from confirmation.models import Confirmation, confirmation_url, _properties
 from zerver.decorator import require_server_admin, require_server_admin_api, \
     to_non_negative_int, to_utc_datetime, zulip_login_required, require_non_guest_user
 from zerver.lib.exceptions import JsonableError
@@ -39,12 +41,13 @@ from zerver.views.invite import get_invitee_emails_set
 from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.actions import do_change_plan_type, do_deactivate_realm, \
     do_reactivate_realm, do_scrub_realm
+from confirmation.settings import STATUS_ACTIVE
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
 
-from zerver.models import Client, get_realm, Realm, \
-    UserActivity, UserActivityInterval, UserProfile
+from zerver.models import Client, get_realm, Realm, UserActivity, UserActivityInterval, \
+    UserProfile, PreregistrationUser, MultiuseInvite
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteInstallationCount, RemoteRealmCount, \
@@ -1027,6 +1030,46 @@ def get_activity(request: HttpRequest) -> HttpResponse:
         context=dict(data=data, title=title, is_home=True),
     )
 
+def get_confirmations(types: List[int], object_ids: List[int],
+                      hostname: Optional[str]=None) -> List[Dict[str, Any]]:
+    lowest_datetime = timezone_now() - timedelta(days=30)
+    confirmations = Confirmation.objects.filter(type__in=types, object_id__in=object_ids,
+                                                date_sent__gte=lowest_datetime)
+    confirmation_dicts = []
+    for confirmation in confirmations:
+        realm = confirmation.realm
+        content_object = confirmation.content_object
+
+        if realm is not None:
+            realm_host = realm.host
+        elif isinstance(content_object, Realm):
+            realm_host = content_object.host
+        else:
+            realm_host = hostname
+
+        type = confirmation.type
+        days_to_activate = _properties[type].validity_in_days
+        expiry_date = confirmation.date_sent + timedelta(days=days_to_activate)
+
+        if hasattr(content_object, "status"):
+            if content_object.status == STATUS_ACTIVE:
+                link_status = "Link has been clicked"
+            else:
+                link_status = "Link has never been clicked"
+        else:
+            link_status = ""
+
+        if timezone_now() < expiry_date:
+            expires_in = timesince(confirmation.date_sent, expiry_date)
+        else:
+            expires_in = "Expired"
+
+        url = confirmation_url(confirmation.confirmation_key, realm_host, type)
+        confirmation_dicts.append({"object": confirmation.content_object,
+                                   "url": url, "type": type, "link_status": link_status,
+                                   "expires_in": expires_in})
+    return confirmation_dicts
+
 @require_server_admin
 def support(request: HttpRequest) -> HttpResponse:
     context = {}  # type: Dict[str, Any]
@@ -1091,12 +1134,27 @@ def support(request: HttpRequest) -> HttpResponse:
 
         context["realms"] = realms
 
+        confirmations = []  # type: List[Dict[str, Any]]
+
+        preregistration_users = PreregistrationUser.objects.filter(email__in=key_words)
+        confirmations += get_confirmations([Confirmation.USER_REGISTRATION, Confirmation.INVITATION,
+                                            Confirmation.REALM_CREATION], preregistration_users,
+                                           hostname=request.get_host())
+
+        multiuse_invites = MultiuseInvite.objects.filter(realm__in=realms)
+        confirmations += get_confirmations([Confirmation.MULTIUSE_INVITE], multiuse_invites)
+
+        confirmations += get_confirmations([Confirmation.REALM_REACTIVATION], [realm.id for realm in realms])
+
+        context["confirmations"] = confirmations
+
     def realm_admin_emails(realm: Realm) -> str:
         return ", ".join(realm.get_human_admin_users().values_list("delivery_email", flat=True))
 
     context["realm_admin_emails"] = realm_admin_emails
     context["get_discount_for_realm"] = get_discount_for_realm
     context["realm_icon_url"] = realm_icon_url
+    context["Confirmation"] = Confirmation
     return render(request, 'analytics/support.html', context=context)
 
 def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:

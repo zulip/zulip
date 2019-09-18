@@ -631,7 +631,7 @@ html_rules = whitespace_rules + prose_style_rules + [
          ('templates/zerver/app/markdown_help.html',
              '<td class="rendered_markdown"><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
      ]),
-     'exclude': set(["templates/zerver/emails", "templates/analytics/realm_details.html"]),
+     'exclude': set(["templates/zerver/emails", "templates/analytics/realm_details.html", "templates/analytics/support.html"]),
      'description': "`title` value should be translatable."},
     {'pattern': r'''\Walt=["'][^{"']''',
      'description': "alt argument should be enclosed by _() or it should be an empty string.",

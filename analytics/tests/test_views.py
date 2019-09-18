@@ -4,6 +4,7 @@ from typing import List, Optional
 import mock
 from django.utils.timezone import utc
 from django.http import HttpResponse
+import ujson
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
@@ -14,7 +15,9 @@ from analytics.views import rewrite_client_arrays, \
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, datetime_to_timestamp
-from zerver.models import Client, get_realm
+from zerver.lib.actions import do_create_multiuse_invite_link, \
+    do_send_realm_reactivation_email
+from zerver.models import Client, get_realm, MultiuseInvite
 
 class TestStatsEndpoint(ZulipTestCase):
     def test_stats(self) -> None:
@@ -335,7 +338,7 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>King Hamlet</h3>',
                                              '<b>Email</b>: hamlet@zulip.com', '<b>Is active</b>: True<br>',
                                              '<b>Admins</b>: iago@zulip.com\n',
-                                             'class="copy-button" data-admin-emails="iago@zulip.com"'
+                                             'class="copy-button" data-copytext="iago@zulip.com"'
                                              ], result)
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
@@ -361,6 +364,39 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<option value="deactivated" >Deactivated</option>',
                                              'scrub-realm-button">',
                                              'data-string-id="lear"'], result)
+
+        def check_preregistration_user_query_result(result: HttpResponse, email: str, invite: Optional[bool]=False) -> None:
+            self.assert_in_success_response(['<span class="label">preregistration user</span>\n',
+                                             '<b>Email</b>: {}'.format(email),
+                                             ], result)
+            if invite:
+                self.assert_in_success_response(['<span class="label">invite</span>'], result)
+                self.assert_in_success_response(['<b>Expires in</b>: 1\xa0week, 3',
+                                                 '<b>Status</b>: Link has never been clicked'], result)
+                self.assert_in_success_response([], result)
+            else:
+                self.assert_not_in_success_response(['<span class="label">invite</span>'], result)
+                self.assert_in_success_response(['<b>Expires in</b>: 1\xa0day',
+                                                 '<b>Status</b>: Link has never been clicked'], result)
+
+        def check_realm_creation_query_result(result: HttpResponse, email: str) -> None:
+            self.assert_in_success_response(['<span class="label">preregistration user</span>\n',
+                                             '<span class="label">realm creation</span>\n',
+                                             '<b>Link</b>: http://zulip.testserver/accounts/do_confirm/',
+                                             '<b>Expires in</b>: 1\xa0day<br>\n'
+                                             ], result)
+
+        def check_multiuse_invite_link_query_result(result: HttpResponse) -> None:
+            self.assert_in_success_response(['<span class="label">multiuse invite</span>\n',
+                                             '<b>Link</b>: http://zulip.testserver/join/',
+                                             '<b>Expires in</b>: 1\xa0week, 3'
+                                             ], result)
+
+        def check_realm_reactivation_link_query_result(result: HttpResponse) -> None:
+            self.assert_in_success_response(['<span class="label">realm reactivation</span>\n',
+                                             '<b>Link</b>: http://zulip.testserver/reactivate/',
+                                             '<b>Expires in</b>: 1\xa0day'
+                                             ], result)
 
         cordelia_email = self.example_email("cordelia")
         self.login(cordelia_email)
@@ -398,6 +434,36 @@ class TestSupportEndpoint(ZulipTestCase):
         check_hamlet_user_query_result(result)
         check_zulip_realm_query_result(result)
         check_lear_realm_query_result(result)
+
+        self.client_post('/accounts/home/', {'email': self.nonreg_email("test")})
+        self.login(iago_email)
+        result = self.client_get("/activity/support", {"q": self.nonreg_email("test")})
+        check_preregistration_user_query_result(result, self.nonreg_email("test"))
+        check_zulip_realm_query_result(result)
+
+        stream_ids = [self.get_stream_id("Denmark")]
+        invitee_emails = [self.nonreg_email("test1")]
+        self.client_post("/json/invites", {"invitee_emails": invitee_emails,
+                         "stream_ids": ujson.dumps(stream_ids), "invite_as": 1})
+        result = self.client_get("/activity/support", {"q": self.nonreg_email("test1")})
+        check_preregistration_user_query_result(result, self.nonreg_email("test1"), invite=True)
+        check_zulip_realm_query_result(result)
+
+        email = self.nonreg_email('alice')
+        self.client_post('/new/', {'email': email})
+        result = self.client_get("/activity/support", {"q": email})
+        check_realm_creation_query_result(result, email)
+
+        do_create_multiuse_invite_link(self.example_user("hamlet"), invited_as=1)
+        result = self.client_get("/activity/support", {"q": "zulip"})
+        check_multiuse_invite_link_query_result(result)
+        check_zulip_realm_query_result(result)
+        MultiuseInvite.objects.all().delete()
+
+        do_send_realm_reactivation_email(get_realm("zulip"))
+        result = self.client_get("/activity/support", {"q": "zulip"})
+        check_realm_reactivation_link_query_result(result)
+        check_zulip_realm_query_result(result)
 
     def test_change_plan_type(self) -> None:
         cordelia = self.example_user("cordelia")

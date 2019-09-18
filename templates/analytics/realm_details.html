@@ -5,7 +5,7 @@
 <a target="_blank" href="/realm_activity/{{ realm.string_id }}/">activity</a><br>
 <b>Date created</b>: {{ realm.date_created|timesince }} ago<br>
 <b>Admins</b>: {{ realm_admin_emails(realm) }}
-<a title="Copy emails" class="copy-button" data-admin-emails="{{ realm_admin_emails(realm) }}">
+<a title="Copy emails" class="copy-button" data-copytext="{{ realm_admin_emails(realm) }}">
     <i class="fa fa-copy"></i>
 </a>
 <form method="POST">
@@ -43,4 +43,3 @@
     <input type="hidden" name="scrub_realm" value="scrub_realm" />
     <button data-string-id="{{realm.string_id}}" class="button rounded btn-danger small scrub-realm-button">Scrub realm (danger)</button>
 </form>
-<hr>
