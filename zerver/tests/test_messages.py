@@ -3494,12 +3494,6 @@ class AttachmentTest(ZulipTestCase):
             content = 'yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (zulip_realm.id, ext)
             self.assertTrue(Message.content_has_image(content))
 
-        self.assertFalse(Message.content_has_link('whatever'))
-        self.assertTrue(Message.content_has_link('yo\n http://foo.com'))
-        self.assertTrue(Message.content_has_link('yo\n https://example.com?spam=1&eggs=2'))
-        self.assertTrue(Message.content_has_link('yo /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo' % (
-            zulip_realm.id,)))
-
     def test_claim_attachment(self) -> None:
 
         # Create dummy DB entry
