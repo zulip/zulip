@@ -1808,7 +1808,7 @@ class EventsRegisterTest(ZulipTestCase):
         """Test updating each setting in UserProfile.property_types dict."""
 
         test_changes = dict(
-            emojiset = [u'apple', u'twitter'],
+            emojiset = [u'twitter'],
             default_language = [u'es', u'de', u'en'],
             timezone = [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u''],
             demote_inactive_streams = [2, 3, 1],

@@ -102,14 +102,6 @@ TABLE_CSS = """
         background-image: url('sheet-google-64.png') !important;
     }
 
-    .apple {
-        background-image: url('sheet-apple-64.png') !important;
-    }
-
-    .emojione {
-        background-image: url('sheet-emojione-64.png') !important;
-    }
-
     .twitter {
         background-image: url('sheet-twitter-64.png') !important;
     }

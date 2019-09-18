@@ -788,7 +788,7 @@ class UserProfileTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         cordelia.default_language = "de"
-        cordelia.emojiset = "apple"
+        cordelia.emojiset = "twitter"
         cordelia.timezone = "America/Phoenix"
         cordelia.night_mode = True
         cordelia.enable_offline_email_notifications = False
@@ -813,8 +813,8 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.default_language, "de")
         self.assertEqual(hamlet.default_language, "en")
 
-        self.assertEqual(iago.emojiset, "apple")
-        self.assertEqual(cordelia.emojiset, "apple")
+        self.assertEqual(iago.emojiset, "twitter")
+        self.assertEqual(cordelia.emojiset, "twitter")
         self.assertEqual(hamlet.emojiset, "google-blob")
 
         self.assertEqual(iago.timezone, "America/Phoenix")
