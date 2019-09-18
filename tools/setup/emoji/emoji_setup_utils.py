@@ -6,7 +6,7 @@ from collections import defaultdict
 from typing import Any, Dict, List
 
 # Emojisets that we currently support.
-EMOJISETS = ['apple', 'emojione', 'google', 'twitter']
+EMOJISETS = ['google', 'twitter']
 
 # Some image files in the old emoji farm had a different name than in the new emoji
 # farm. `remapped_emojis` is a map that contains a mapping of their name in the old

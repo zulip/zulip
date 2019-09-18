@@ -676,12 +676,12 @@ class TestMissedMessages(ZulipTestCase):
         mock_random_token.side_effect = tokens
 
         hamlet = self.example_user('hamlet')
-        hamlet.emojiset = 'apple'
+        hamlet.emojiset = 'twitter'
         hamlet.save(update_fields=['emojiset'])
         msg_id = self.send_personal_message(
             self.example_email('othello'), self.example_email('hamlet'),
             'Extremely personal message with a hamburger :hamburger:!')
-        body = '<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-apple-64/1f354.png" title="hamburger" style="height: 20px;">'
+        body = '<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
         email_subject = 'PMs with Othello, the Moor of Venice'
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
 
