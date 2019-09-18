@@ -41,7 +41,7 @@
             <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br>
             <b>Is active</b>: {{ user.is_active }}<br>
             <b>Is admin</b>: {{ user.is_realm_admin }}<br>
-            <br>
+            <hr>
             <div>
                 {% include "analytics/realm_details.html" %}
             </div>
@@ -55,6 +55,61 @@
         </div>
         {% endfor %}
 
+        {% for confirmation in confirmations %}
+        {% set object = confirmation.object %}
+        <div class="support-query-result new-style">
+            {% if confirmation.type == Confirmation.USER_REGISTRATION %}
+            <span class="label">preregistration user</span>
+            {% set email = object.email %}
+            {% set realm = object.realm %}
+            {% set show_realm_details = True %}
+            {% elif confirmation.type == Confirmation.REALM_CREATION %}
+            <span class="label">preregistration user</span>
+            <span class="label">realm creation</span>
+            {% set email = object.email %}
+            {% set show_realm_details = False %}
+            {% elif confirmation.type == Confirmation.INVITATION %}
+            <span class="label">preregistration user</span>
+            <span class="label">invite</span>
+            {% set email = object.email %}
+            {% set realm = object.realm %}
+            {% set show_realm_details = True %}
+            {% elif confirmation.type == Confirmation.MULTIUSE_INVITE %}
+            <span class="label">multiuse invite</span>
+            {% set realm = object.realm %}
+            {% set show_realm_details = False %}
+            {% elif confirmation.type == Confirmation.REALM_REACTIVATION %}
+            <span class="label">realm reactivation</span>
+            {% set realm = object %}
+            {% set show_realm_details = False %}
+            {% endif %}
+            <br>
+            <br>
+            {% if email %}
+            <b>Email</b>: {{ email }}<br>
+            {% endif %}
+            <b>Link</b>: {{ confirmation.url }}
+            <a title="Copy link" class="copy-button" data-copytext="{{ confirmation.url }}">
+                <i class="fa fa-copy"></i>
+            </a><br>
+            <b>Expires in</b>: {{ confirmation.expires_in }}<br>
+            {% if confirmation.link_status %}
+            <b>Status</b>: {{ confirmation.link_status  }}
+            {% endif %}
+            <br>
+            {% if show_realm_details %}
+            <hr>
+            <div>
+                {% include "analytics/realm_details.html" %}
+            </div>
+            {% elif realm %}
+            <b>Realm</b>: {{ realm.string_id }}
+            <br>
+            {% endif %}
+            <br>
+        </div>
+        <br>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
