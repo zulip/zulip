@@ -52,7 +52,7 @@ exports.MessageList.prototype = {
         var render_info;
 
         if (interior_messages.length > 0) {
-            self.view.rerender_the_whole_thing();
+            self.view.rerender_preserving_scrolltop(true);
             return true;
         }
         if (top_messages.length > 0) {
