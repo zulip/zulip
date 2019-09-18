@@ -1,0 +1,21 @@
+{
+  "evalMatches": [
+    {
+      "value": 58.12,
+      "metric": "A-series",
+      "tags": null
+    },
+    {
+      "value": 10000,
+      "metric": "B-series",
+      "tags": null
+    }
+  ],
+  "message": "yes",
+  "ruleId": 1,
+  "ruleName": "Panel Title alert",
+  "ruleUrl": "http://localhost:3000/d/D_Uy4gtZk/new-dashboard-copy?fullscreen&edit&tab=alert&panelId=6&orgId=1",
+  "state": "ok",
+  "title": "[OK] Panel Title alert"
+}
+
