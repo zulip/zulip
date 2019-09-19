@@ -99,7 +99,9 @@ def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
 def any_oauth_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
-    return auth_enabled_helper(OAUTH_BACKEND_NAMES, realm)
+    social_backend_names = [social_auth_subclass.auth_backend_name
+                            for social_auth_subclass in SOCIAL_AUTH_BACKENDS]
+    return auth_enabled_helper(social_backend_names, realm)
 
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
@@ -983,15 +985,12 @@ AUTH_BACKEND_NAME_MAP = {
     'LDAP': ZulipLDAPAuthBackend,
     'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[str, Any]
-OAUTH_BACKEND_NAMES = []  # type: List[str]
 SOCIAL_AUTH_BACKENDS = []  # type: List[BaseOAuth2]
 
 # Authomatically add all of our social auth backends to relevant data structures.
 for social_auth_subclass in SocialAuthMixin.__subclasses__():
     AUTH_BACKEND_NAME_MAP[social_auth_subclass.auth_backend_name] = social_auth_subclass
-    if issubclass(social_auth_subclass, BaseOAuth2):
-        OAUTH_BACKEND_NAMES.append(social_auth_subclass.auth_backend_name)
-        SOCIAL_AUTH_BACKENDS.append(social_auth_subclass)
+    SOCIAL_AUTH_BACKENDS.append(social_auth_subclass)
 
 # Provide this alternative name for backwards compatibility with
 # installations that had the old backend enabled.
