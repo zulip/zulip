@@ -49,6 +49,15 @@
  *   Our custom changes include all mentions of this.header, some CSS changes
  *   in compose.scss and splitting $container out of $menu so we can insert
  *   additional HTML before $menu.
+ *
+ * 4. Matching optimizations:
+ *
+ *   This allows us to cache match results which are a subset of the total
+ *   items list, and if then the user types another character, we run the
+ *   next match attempt only on the cached results, thus eliminating rerunning
+ *   the matcher on all of the items that we know would never match the query.
+ *
+ *   Our custom changes include all mentions of this.cache and related lines.
  * ============================================================ */
 
 !function($){
@@ -76,6 +85,10 @@
     this.automated = this.options.automated || this.automated;
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
     this.header = this.options.header || this.header;
+    this.cache = {
+      token: '',
+      items: [],
+    }
 
     if (this.fixed) {
       this.$container.css('position', 'fixed');
@@ -177,7 +190,21 @@
         }
       }
 
+      this.token = ''; // Zulip: This might or might not be set by our 'source' function; we should clear it to be sure.
       items = $.isFunction(this.source) ? this.source(this.query, $.proxy(this.process, this)) : this.source
+
+      // Zulip: Maybe reuse items from cache.
+      var should_reuse_from_cache = this.token && this.cache.token           // both the tokens exist.
+                                    && ~this.token.indexOf(this.cache.token) // previous token is a subset of current token.
+      if (should_reuse_from_cache) {
+        items = this.cache.items;
+      } else {
+        // Use all items and clear the cache.
+        this.cache = {
+          token: '',
+          items: [],
+        }
+      }
 
       if (!items && this.shown) this.hide();
       return items ? this.process(items) : this
@@ -189,6 +216,10 @@
       items = $.grep(items, function (item) {
         return that.matcher(item)
       })
+
+      // Zulip: Add current token and matches to cache.
+      this.cache.items = items;
+      this.cache.token = this.token;
 
       items = this.sorter(items)
 
