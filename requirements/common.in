@@ -173,3 +173,6 @@ pyahocorasick
 # Needed for function decorators that don't break introspection.
 # Used for rate limiting authentication.
 decorator
+
+# Needed for SAML authentication.
+python3-saml
