@@ -73,6 +73,7 @@ imagesize==1.1.0          # via sphinx
 incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
 ipython==7.8.0
+isodate==0.6.0            # via python3-saml
 isort==4.3.21
 jedi==0.15.1              # via ipython
 jinja2==2.10.1
@@ -103,6 +104,7 @@ pickleshare==0.7.5        # via ipython
 pika==0.13.1
 pillow==6.1.0
 pip-tools==4.1.0
+pkgconfig==1.5.1          # via xmlsec
 polib==1.1.0
 premailer==3.6.1
 prompt-toolkit==2.0.9     # via ipython
@@ -136,6 +138,7 @@ python-magic==0.4.15
 python-slugify==1.2.6     # via transifex-client
 python-twitter==3.5
 python3-openid==3.1.0     # via social-auth-core
+python3-saml==1.8.0
 pytz==2019.2
 pyyaml==5.1.2             # via cfn-lint, moto, yamole
 qrcode==6.1               # via django-two-factor-auth
@@ -189,6 +192,7 @@ wcwidth==0.1.7            # via prompt-toolkit
 websocket-client==0.56.0  # via docker
 werkzeug==0.16.0          # via moto
 wrapt==1.11.2             # via aws-xray-sdk
+xmlsec==1.3.3             # via python3-saml
 xmltodict==0.12.0         # via moto
 yamole==2.1.6
 zope.interface==4.6.0     # via datetime, twisted

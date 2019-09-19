@@ -29,11 +29,14 @@ VENV_DEPENDENCIES = [
     "virtualenv",
     "python3-six",
     "python-six",
-    "libxml2-dev",          # Used for installing talon
+    "libxml2-dev",          # Used for installing talon and python-xmlsec
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
     "libssl-dev",           # Needed to build pycurl and other libraries
     "libmagic1",            # Used for install python-magic
+    # Needed by python-xmlsec:
+    "libxmlsec1-dev",
+    "libxmlsec1-openssl",
 
     # This is technically a node dependency, but we add it here
     # because we don't have another place that we install apt packages
@@ -52,7 +55,14 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "python-devel",
     "python2-pip",
     "python-six",
+    # Needed by python-xmlsec:
+    "gcc"
+    "python3-devel",
     "libxml2-devel",
+    "xmlsec1-devel",
+    "xmlsec1-openssl-devel",
+    "libtool-ltdl-devel",
+
     "libxslt-devel",
     "postgresql-libs",  # libpq-dev on apt
     "openssl-devel",
@@ -66,7 +76,6 @@ REDHAT_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
 ]
 
 FEDORA_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
-    "python3-devel",
     "python3-pip",
     "python3-six",
     "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
