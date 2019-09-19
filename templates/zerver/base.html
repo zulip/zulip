@@ -41,11 +41,11 @@
         {% endblock %}
     </head>
 
-    <body {% if night_mode %}class="night-mode"{% endif %}
-      data-params='{{ page_params|default({"debug_mode": false})|tojson }}'
-      >
+    <body {% if night_mode %}class="night-mode"{% endif %}>
         {% block content %}
         {% endblock %}
+
+        <div hidden id="page-params" data-params='{{ page_params|default({"debug_mode": false})|tojson }}'></div>
     </body>
 
 </html>

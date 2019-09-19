@@ -354,7 +354,8 @@ class HomeTest(ZulipTestCase):
 
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
         doc = lxml.html.document_fromstring(result.content)
-        page_params_json = doc.find("body").get("data-params")
+        [div] = doc.xpath("//div[@id='page-params']")
+        page_params_json = div.get("data-params")
         page_params = ujson.loads(page_params_json)
         return page_params
 
