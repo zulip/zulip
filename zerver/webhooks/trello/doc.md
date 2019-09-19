@@ -38,18 +38,18 @@ Get Zulip notifications from your Trello boards!
 1. Download [zulip-trello.py][2]. `Ctrl+s` or `Cmd+s` on that page should
    work in most browsers.
 
-1. Run the `zulip-trello` script in a terminal, after replacing the
+1. Run the `zulip-trello` script in a terminal, after replacing the all caps
    arguments with the values collected above.
 
     ```
-    python zulip_trello.py --trello-board-name <trello_board_name> \
-                           --trello-board-id   <trello_board_id> \
-                           --trello-api-key  <trello_api_key> \
-                           --trello-token <trello_token> \
-                           --zulip-webhook-url "<zulip_webhook_url>"
+    python zulip_trello.py --trello-board-name  TRELLO_BOARD_NAME \
+                           --trello-board-id  TRELLO_BOARD_ID \
+                           --trello-api-key  TRELLO_API_KEY \
+                           --trello-token  TRELLO_TOKEN \
+                           --zulip-webhook-url  "ZULIP_WEBHOOK_URL"
     ```
 
-    **Note**: Please make sure that you wrap the webhook URL in quotes
+    **Note**: Make sure that you wrap the webhook URL in quotes
     when supplying it on the command-line, as shown above.
 
     The `zulip_trello.py` script only needs to be run once, and can be run
