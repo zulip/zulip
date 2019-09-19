@@ -7,7 +7,7 @@ from django.urls import reverse
 
 from zerver.models import UserProfile, get_realm, Realm
 from zproject.backends import (
-    any_oauth_backend_enabled,
+    any_social_backend_enabled,
     password_auth_enabled,
     require_email_format_usernames,
     auth_enabled_helper,
@@ -158,7 +158,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         'realm_description': realm_description,
         'require_email_format_usernames': require_email_format_usernames(realm),
         'password_auth_enabled': password_auth_enabled(realm),
-        'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
+        'any_social_backend_enabled': any_social_backend_enabled(realm),
         'two_factor_authentication_enabled': settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
     }  # type: Dict[str, Any]
 

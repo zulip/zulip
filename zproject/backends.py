@@ -96,7 +96,7 @@ def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
 
-def any_oauth_backend_enabled(realm: Optional[Realm]=None) -> bool:
+def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
     social_backend_names = [social_auth_subclass.auth_backend_name
