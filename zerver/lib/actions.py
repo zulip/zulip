@@ -2627,7 +2627,8 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
             zerver_subscription.active AND
             zerver_userprofile.is_active
         ORDER BY
-            zerver_subscription.recipient_id
+            zerver_subscription.recipient_id,
+            zerver_subscription.user_profile_id
         ''' % (id_list,)
 
     cursor = connection.cursor()
