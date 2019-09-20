@@ -902,6 +902,8 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         user_event = dict(type='message', message=message_dict, flags=flags)  # type: Dict[str, Any]
         if extra_data is not None:
             user_event.update(extra_data)
+        if 'instrumented_event_id' in event_template:
+            user_event['instrumented_event_id'] = event_template['instrumented_event_id']
 
         if is_sender:
             local_message_id = event_template.get('local_id', None)
@@ -939,6 +941,10 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         server_timestamp=event['server_timestamp'],
         presence=event['presence'],
     )
+
+    if "instrumented_event_id" in event:
+        slim_event["instrumented_event_id"] = event["instrumented_event_id"]
+        legacy_event["instrumented_event_id"] = event["instrumented_event_id"]
 
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1113,11 +1119,34 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
     else:
         process_notification(data)
 
-def send_event(realm: Realm, event: Mapping[str, Any],
-               users: Union[Iterable[int], Iterable[Mapping[str, Any]]]) -> None:
+captured_events = {}  # type: Dict[int, Any]
+instrumented_event_counter = 0
+def send_event(realm: Realm, event: Dict[str, Any],
+               users: Union[Iterable[int], Iterable[Mapping[str, Any]]],
+               description: Optional[str]=None) -> None:
     """`users` is a list of user IDs, or in the case of `message` type
     events, a list of dicts describing the users and metadata about
-    the user/message pair."""
+    the user/message pair.
+
+    `description` is an optional argument, used only for documentation
+    purposes.
+    """
+    if settings.LOG_API_EVENT_TYPES:
+        # When instrumenting send_event, the instrumented_event_id
+        # feature is used to keep track of which send_event call
+        # caused which event to be processed by Tornado.
+        global instrumented_event_counter
+        instrumented_event_id = instrumented_event_counter
+        instrumented_event_counter += 1
+        event['instrumented_event_id'] = instrumented_event_id
+
+        # The `event_description` field is intended only for use in
+        # API docs.  So to avoid polluting the event we're sending to
+        # Tornado with it, we make a copy of the event and just add
+        # the field to the copy.
+        copied_event = copy.deepcopy(event)  # type: Dict[str, Any]
+        copied_event['event_description'] = description
+        captured_events[instrumented_event_id] = copied_event
     port = get_tornado_port(realm)
     queue_json_publish(notify_tornado_queue_name(port),
                        dict(event=event, users=users),

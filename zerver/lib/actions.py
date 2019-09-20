@@ -309,7 +309,8 @@ def notify_invites_changed(user_profile: UserProfile) -> None:
     event = dict(type="invites_changed")
     admin_ids = [user.id for user in
                  user_profile.realm.get_admin_users_and_bots()]
-    send_event(user_profile.realm, event, admin_ids)
+    send_event(user_profile.realm, event, admin_ids,
+               description="For realm administrators when invitations are sent")
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
     """Give you the last ONBOARDING_TOTAL_MESSAGES messages on your public

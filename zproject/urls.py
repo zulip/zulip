@@ -546,6 +546,7 @@ i18n_urls = [
         zerver.views.documentation.integration_doc,
         name="zerver.views.documentation.integration_doc"),
     url(r'^integrations/(.*)$', IntegrationView.as_view()),
+    url(r'^api/events/explore/$', zerver.views.documentation.api_events_docs),
 
     # Landing page, features pages, signup form, etc.
     url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html',

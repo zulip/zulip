@@ -762,7 +762,7 @@ json_rules = RuleList(
          'exclude': {'zerver/webhooks/'},
          'description': 'Fix tab-based whitespace'},
         {'pattern': r'":["\[\{]',
-         'exclude': {'zerver/webhooks/', 'zerver/tests/fixtures/'},
+         'exclude': {'zerver/webhooks/', 'zerver/tests/fixtures/', 'static/generated/events_schema_checkers.json'},
          'description': 'Require space after : in JSON'},
     ]
 )

@@ -342,6 +342,7 @@ INITIAL_PASSWORD_SALT = None  # type: Optional[str]
 # Settings configuring the special instrumention of the send_event
 # code path used in generating API documentation for /events.
 LOG_API_EVENT_TYPES = False
+CAPTURED_API_EVENTS_LOG_PATH = "static/generated/events_schema_checkers.json"
 
 # Used to control whether certain management commands are run on
 # the server.

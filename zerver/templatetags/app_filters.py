@@ -5,6 +5,8 @@ import markdown.extensions.admonition
 import markdown.extensions.codehilite
 import markdown.extensions.extra
 import markdown.extensions.toc
+import json
+import copy
 from django.template import Library, engines
 from django.utils.safestring import mark_safe
 from jinja2.exceptions import TemplateNotFound
@@ -156,3 +158,10 @@ def render_markdown_path(markdown_file_path: str,
     rendered_html = jinja.from_string(html).render(context)
 
     return mark_safe(rendered_html)
+
+def dump_example(data: Dict[str, Any]) -> str:
+    newdata = copy.deepcopy(data)
+    if 'event_description' in data:
+        del newdata['event_description']
+        del newdata['instrumented_event_id']
+    return json.dumps(newdata, sort_keys=True, indent=4)

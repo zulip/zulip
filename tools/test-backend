@@ -8,6 +8,7 @@ from typing import List, Iterator
 import glob
 import argparse
 import contextlib
+import json
 import mock
 import os
 import shlex
@@ -238,6 +239,10 @@ def main() -> None:
                         action="store_true",
                         default=False,
                         help="Show detailed output")
+    parser.add_argument('--capture-api-events', dest='capture_api_events',
+                        action="store_true",
+                        default=False,
+                        help="Capture API test fixtures from /events")
     parser.add_argument('--generate-fixtures', action="store_true", default=False,
                         dest="generate_fixtures",
                         help=("Force a call to generate-fixtures."))
@@ -355,6 +360,12 @@ def main() -> None:
             full_suite = False
         os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
 
+    if options.capture_api_events:
+        suites = ["zerver.tests.test_events.EventsRegisterTest"]
+        full_suite = False
+        parallel = 1
+        os.environ["LOG_API_EVENT_TYPES"] = "1"
+
     assert_provisioning_status_ok(options.force)
 
     if options.coverage:
@@ -462,6 +473,11 @@ def main() -> None:
         # We do this even with failures, since slowness can be
         # an important clue as to why tests fail.
         report_slow_tests()
+
+    if options.capture_api_events:
+        from zerver.tests.test_events import events_schema_checkers
+        with open(settings.CAPTURED_API_EVENTS_LOG_PATH, "w") as f:
+            f.write(json.dumps(events_schema_checkers, indent=2, sort_keys=True) + "\n")
 
     # Ideally, we'd check for any leaked test databases here;
     # but that needs some hackery with database names.

@@ -108,6 +108,10 @@
         "./static/js/reload_state.js",
         "./static/js/channel.js"
     ],
+    "api-explore": [
+        "./static/styles/portico/integrations_dev_panel.css",
+        "./static/js/bundles/portico.js"
+    ],
     "email-log": [
         "./static/js/bundles/common.js",
         "./static/js/portico/email_log.js",

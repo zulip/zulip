@@ -1,0 +1,4975 @@
+{
+  "alert_words": {
+    "0": {
+      "examples": [
+        {
+          "alert_words": [
+            "alert_word"
+          ],
+          "event_description": null,
+          "instrumented_event_id": 10,
+          "type": "alert_words"
+        },
+        {
+          "alert_words": [],
+          "event_description": null,
+          "instrumented_event_id": 11,
+          "type": "alert_words"
+        }
+      ],
+      "fields": {
+        "alert_words": [
+          "str"
+        ],
+        "id": "int",
+        "type": "equals(\"alert_words\")"
+      }
+    }
+  },
+  "attachment": {
+    "0": {
+      "examples": [
+        {
+          "attachment": {
+            "create_time": 1583583204000.0,
+            "id": 1,
+            "messages": [],
+            "name": "zulip.txt",
+            "path_id": "2/fb/bNU6-vN8zZdRKA1Y7ErS4C62/zulip.txt",
+            "size": 6
+          },
+          "event_description": null,
+          "instrumented_event_id": 0,
+          "op": "add",
+          "type": "attachment",
+          "upload_space_used": 6
+        }
+      ],
+      "fields": {
+        "attachment": {
+          "create_time": "float",
+          "id": "int",
+          "messages": [
+            {}
+          ],
+          "name": "str",
+          "path_id": "str",
+          "size": "int"
+        },
+        "id": "int",
+        "op": "equals(\"add\")",
+        "type": "equals(\"attachment\")",
+        "upload_space_used": "equals(\"6\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "attachment": {
+            "create_time": 1583583204000.0,
+            "id": 1,
+            "messages": [
+              {
+                "id": 31,
+                "name": 1583583204000.0
+              }
+            ],
+            "name": "zulip.txt",
+            "path_id": "2/fb/bNU6-vN8zZdRKA1Y7ErS4C62/zulip.txt",
+            "size": 6
+          },
+          "event_description": null,
+          "instrumented_event_id": 1,
+          "op": "update",
+          "type": "attachment",
+          "upload_space_used": 6
+        }
+      ],
+      "fields": {
+        "attachment": {
+          "create_time": "float",
+          "id": "int",
+          "messages": [
+            {
+              "id": "int",
+              "name": "float"
+            }
+          ],
+          "name": "str",
+          "path_id": "str",
+          "size": "int"
+        },
+        "id": "int",
+        "op": "equals(\"update\")",
+        "type": "equals(\"attachment\")",
+        "upload_space_used": "equals(\"6\")"
+      }
+    },
+    "2": {
+      "examples": [
+        {
+          "attachment": {
+            "id": 1
+          },
+          "event_description": null,
+          "instrumented_event_id": 3,
+          "op": "remove",
+          "type": "attachment",
+          "upload_space_used": 0
+        }
+      ],
+      "fields": {
+        "attachment": {
+          "id": "int"
+        },
+        "id": "int",
+        "op": "equals(\"remove\")",
+        "type": "equals(\"attachment\")",
+        "upload_space_used": "equals(\"0\")"
+      }
+    }
+  },
+  "custom_profile_fields": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "fields": [
+            {
+              "field_data": "",
+              "hint": "",
+              "id": 1,
+              "name": "Phone number",
+              "order": 1,
+              "type": 1
+            },
+            {
+              "field_data": "",
+              "hint": "What are you known for?",
+              "id": 2,
+              "name": "Biography",
+              "order": 2,
+              "type": 2
+            },
+            {
+              "field_data": "",
+              "hint": "Or drink, if you'd prefer",
+              "id": 3,
+              "name": "Favorite food",
+              "order": 3,
+              "type": 1
+            },
+            {
+              "field_data": "{\"vim\":{\"text\":\"Vim\",\"order\":\"1\"},\"emacs\":{\"text\":\"Emacs\",\"order\":\"2\"}}",
+              "hint": "",
+              "id": 4,
+              "name": "Favorite editor",
+              "order": 4,
+              "type": 3
+            },
+            {
+              "field_data": "",
+              "hint": "",
+              "id": 5,
+              "name": "Birthday",
+              "order": 5,
+              "type": 4
+            },
+            {
+              "field_data": "",
+              "hint": "Or your personal blog's URL",
+              "id": 6,
+              "name": "Favorite website",
+              "order": 6,
+              "type": 5
+            },
+            {
+              "field_data": "",
+              "hint": "",
+              "id": 7,
+              "name": "Mentor",
+              "order": 7,
+              "type": 6
+            },
+            {
+              "field_data": "{\"subtype\":\"github\"}",
+              "hint": "Enter your GitHub username",
+              "id": 8,
+              "name": "GitHub",
+              "order": 8,
+              "type": 7
+            }
+          ],
+          "instrumented_event_id": 287,
+          "op": "add",
+          "type": "custom_profile_fields"
+        },
+        {
+          "event_description": null,
+          "fields": [
+            {
+              "field_data": "",
+              "hint": "",
+              "id": 1,
+              "name": "Phone number",
+              "order": 1,
+              "type": 1
+            },
+            {
+              "field_data": "",
+              "hint": "Biography of the user",
+              "id": 2,
+              "name": "Biography",
+              "order": 2,
+              "type": 2
+            },
+            {
+              "field_data": "",
+              "hint": "Or drink, if you'd prefer",
+              "id": 3,
+              "name": "Favorite food",
+              "order": 3,
+              "type": 1
+            },
+            {
+              "field_data": "{\"vim\":{\"text\":\"Vim\",\"order\":\"1\"},\"emacs\":{\"text\":\"Emacs\",\"order\":\"2\"}}",
+              "hint": "",
+              "id": 4,
+              "name": "Favorite editor",
+              "order": 4,
+              "type": 3
+            },
+            {
+              "field_data": "",
+              "hint": "",
+              "id": 5,
+              "name": "Birthday",
+              "order": 5,
+              "type": 4
+            },
+            {
+              "field_data": "",
+              "hint": "Or your personal blog's URL",
+              "id": 6,
+              "name": "Favorite website",
+              "order": 6,
+              "type": 5
+            },
+            {
+              "field_data": "",
+              "hint": "",
+              "id": 7,
+              "name": "Mentor",
+              "order": 7,
+              "type": 6
+            },
+            {
+              "field_data": "{\"subtype\":\"github\"}",
+              "hint": "Enter your GitHub username",
+              "id": 8,
+              "name": "GitHub",
+              "order": 8,
+              "type": 7
+            }
+          ],
+          "instrumented_event_id": 289,
+          "op": "add",
+          "type": "custom_profile_fields"
+        }
+      ],
+      "fields": {
+        "fields": [
+          {
+            "field_data": "str",
+            "hint": "str",
+            "id": "int",
+            "name": "str",
+            "order": "int",
+            "type": "int"
+          }
+        ],
+        "id": "int",
+        "op": "equals(\"add\")",
+        "type": "equals(\"custom_profile_fields\")"
+      }
+    }
+  },
+  "default_stream_groups": {
+    "0": {
+      "examples": [
+        {
+          "default_stream_groups": [
+            {
+              "description": "This is group1",
+              "id": 2,
+              "name": "group1",
+              "streams": [
+                {
+                  "description": "A Scandinavian country",
+                  "first_message_id": 4,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Denmark",
+                  "rendered_description": "<p>A Scandinavian country</p>",
+                  "stream_id": 1,
+                  "stream_post_policy": 1
+                },
+                {
+                  "description": "A city in Italy",
+                  "first_message_id": 5,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Verona",
+                  "rendered_description": "<p>A city in Italy</p>",
+                  "stream_id": 5,
+                  "stream_post_policy": 1
+                },
+                {
+                  "description": "Located in the United Kingdom",
+                  "first_message_id": 11,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Scotland",
+                  "rendered_description": "<p>Located in the United Kingdom</p>",
+                  "stream_id": 3,
+                  "stream_post_policy": 1
+                }
+              ]
+            }
+          ],
+          "event_description": null,
+          "instrumented_event_id": 294,
+          "type": "default_stream_groups"
+        },
+        {
+          "default_stream_groups": [
+            {
+              "description": "This is group1",
+              "id": 2,
+              "name": "group1",
+              "streams": [
+                {
+                  "description": "A northeastern Italian city",
+                  "first_message_id": 2,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Venice",
+                  "rendered_description": "<p>A northeastern Italian city</p>",
+                  "stream_id": 4,
+                  "stream_post_policy": 1
+                },
+                {
+                  "description": "A Scandinavian country",
+                  "first_message_id": 4,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Denmark",
+                  "rendered_description": "<p>A Scandinavian country</p>",
+                  "stream_id": 1,
+                  "stream_post_policy": 1
+                },
+                {
+                  "description": "A city in Italy",
+                  "first_message_id": 5,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Verona",
+                  "rendered_description": "<p>A city in Italy</p>",
+                  "stream_id": 5,
+                  "stream_post_policy": 1
+                },
+                {
+                  "description": "Located in the United Kingdom",
+                  "first_message_id": 11,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Scotland",
+                  "rendered_description": "<p>Located in the United Kingdom</p>",
+                  "stream_id": 3,
+                  "stream_post_policy": 1
+                }
+              ]
+            }
+          ],
+          "event_description": null,
+          "instrumented_event_id": 295,
+          "type": "default_stream_groups"
+        },
+        {
+          "default_stream_groups": [
+            {
+              "description": "New description",
+              "id": 2,
+              "name": "group1",
+              "streams": [
+                {
+                  "description": "A Scandinavian country",
+                  "first_message_id": 4,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Denmark",
+                  "rendered_description": "<p>A Scandinavian country</p>",
+                  "stream_id": 1,
+                  "stream_post_policy": 1
+                },
+                {
+                  "description": "A city in Italy",
+                  "first_message_id": 5,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Verona",
+                  "rendered_description": "<p>A city in Italy</p>",
+                  "stream_id": 5,
+                  "stream_post_policy": 1
+                },
+                {
+                  "description": "Located in the United Kingdom",
+                  "first_message_id": 11,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Scotland",
+                  "rendered_description": "<p>Located in the United Kingdom</p>",
+                  "stream_id": 3,
+                  "stream_post_policy": 1
+                }
+              ]
+            }
+          ],
+          "event_description": null,
+          "instrumented_event_id": 297,
+          "type": "default_stream_groups"
+        },
+        {
+          "default_stream_groups": [
+            {
+              "description": "New description",
+              "id": 2,
+              "name": "New Group Name",
+              "streams": [
+                {
+                  "description": "A Scandinavian country",
+                  "first_message_id": 4,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Denmark",
+                  "rendered_description": "<p>A Scandinavian country</p>",
+                  "stream_id": 1,
+                  "stream_post_policy": 1
+                },
+                {
+                  "description": "A city in Italy",
+                  "first_message_id": 5,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Verona",
+                  "rendered_description": "<p>A city in Italy</p>",
+                  "stream_id": 5,
+                  "stream_post_policy": 1
+                },
+                {
+                  "description": "Located in the United Kingdom",
+                  "first_message_id": 11,
+                  "history_public_to_subscribers": true,
+                  "invite_only": false,
+                  "is_announcement_only": false,
+                  "is_web_public": false,
+                  "name": "Scotland",
+                  "rendered_description": "<p>Located in the United Kingdom</p>",
+                  "stream_id": 3,
+                  "stream_post_policy": 1
+                }
+              ]
+            }
+          ],
+          "event_description": null,
+          "instrumented_event_id": 298,
+          "type": "default_stream_groups"
+        },
+        {
+          "default_stream_groups": [],
+          "event_description": null,
+          "instrumented_event_id": 299,
+          "type": "default_stream_groups"
+        }
+      ],
+      "fields": {
+        "default_stream_groups": [
+          {
+            "description": "str",
+            "id": "int",
+            "name": "str",
+            "streams": [
+              {
+                "description": "str",
+                "first_message_id": "none_or_int",
+                "history_public_to_subscribers": "bool",
+                "invite_only": "bool",
+                "is_announcement_only": "bool",
+                "is_web_public": "bool",
+                "name": "str",
+                "rendered_description": "str",
+                "stream_id": "int",
+                "stream_post_policy": "int"
+              }
+            ]
+          }
+        ],
+        "id": "int",
+        "type": "equals(\"default_stream_groups\")"
+      }
+    }
+  },
+  "default_streams": {
+    "0": {
+      "examples": [
+        {
+          "default_streams": [
+            {
+              "description": "Located in the United Kingdom",
+              "first_message_id": 11,
+              "history_public_to_subscribers": true,
+              "invite_only": false,
+              "is_announcement_only": false,
+              "is_web_public": false,
+              "name": "Scotland",
+              "rendered_description": "<p>Located in the United Kingdom</p>",
+              "stream_id": 3,
+              "stream_post_policy": 1
+            }
+          ],
+          "event_description": null,
+          "instrumented_event_id": 300,
+          "type": "default_streams"
+        },
+        {
+          "default_streams": [],
+          "event_description": null,
+          "instrumented_event_id": 301,
+          "type": "default_streams"
+        }
+      ],
+      "fields": {
+        "default_streams": [
+          {
+            "description": "str",
+            "invite_only": "bool",
+            "name": "str",
+            "stream_id": "int"
+          }
+        ],
+        "id": "int",
+        "type": "equals(\"default_streams\")"
+      }
+    }
+  },
+  "delete_message": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 313,
+          "message_id": 36,
+          "message_type": "private",
+          "recipient_id": 9,
+          "sender": "cordelia@zulip.com",
+          "sender_id": 8,
+          "type": "delete_message"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 315,
+          "message_id": 37,
+          "message_type": "stream",
+          "sender": "hamlet@zulip.com",
+          "sender_id": 9,
+          "stream_id": 5,
+          "topic": "test",
+          "type": "delete_message"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "message_id": "int",
+        "message_type": "equals(\"private\")",
+        "recipient_id": "int",
+        "sender": "str",
+        "sender_id": "int",
+        "type": "equals(\"delete_message\")"
+      }
+    }
+  },
+  "hotspots": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "hotspots": [
+            {
+              "delay": 0.5,
+              "description": "Messages sent to a stream are seen by everyone subscribed to that stream. Try clicking on one of the stream links below.",
+              "name": "intro_streams",
+              "title": "Catch up on a stream"
+            }
+          ],
+          "instrumented_event_id": 316,
+          "type": "hotspots"
+        }
+      ],
+      "fields": {
+        "hotspots": [
+          {
+            "delay": "float",
+            "description": "str",
+            "name": "str",
+            "title": "str"
+          }
+        ],
+        "id": "int",
+        "type": "equals(\"hotspots\")"
+      }
+    }
+  },
+  "invites_changed": {
+    "0": {
+      "examples": [
+        {
+          "event_description": "For realm administrators when invitations are sent",
+          "instrumented_event_id": 284,
+          "type": "invites_changed"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "type": "equals(\"invites_changed\")"
+      }
+    }
+  },
+  "message": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 436,
+          "message": 53,
+          "message_dict": {
+            "client": "test suite",
+            "content": "hello",
+            "display_recipient": "Verona",
+            "id": 53,
+            "is_me_message": false,
+            "reactions": [],
+            "recipient_id": 18,
+            "recipient_type": 2,
+            "recipient_type_id": 5,
+            "rendered_content": "<p>hello</p>",
+            "sender_avatar_source": "G",
+            "sender_avatar_version": 1,
+            "sender_delivery_email": "hamlet@zulip.com",
+            "sender_email": "hamlet@zulip.com",
+            "sender_full_name": "King Hamlet",
+            "sender_id": 9,
+            "sender_is_mirror_dummy": false,
+            "sender_realm_id": 2,
+            "sender_realm_str": "zulip",
+            "sender_short_name": "hamlet",
+            "stream_id": 5,
+            "subject": "test",
+            "submessages": [],
+            "timestamp": 1583583231,
+            "topic_links": [],
+            "type": "stream"
+          },
+          "presence_idle_user_ids": [],
+          "realm_id": 2,
+          "stream_name": "Verona",
+          "type": "message"
+        }
+      ],
+      "fields": {
+        "flags": "list",
+        "id": "int",
+        "message": {
+          "avatar_url": "str",
+          "client": "str",
+          "content": "str",
+          "content_type": "equals(\"text/html\")",
+          "display_recipient": "str",
+          "id": "int",
+          "is_me_message": "bool",
+          "reactions": "list",
+          "recipient_id": "int",
+          "sender_email": "str",
+          "sender_full_name": "str",
+          "sender_id": "int",
+          "sender_realm_str": "str",
+          "sender_short_name": "str",
+          "stream_id": "int",
+          "subject": "str",
+          "submessages": "list",
+          "timestamp": "int",
+          "topic_links": "list",
+          "type": "str"
+        },
+        "type": "equals(\"message\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 437,
+          "message": 54,
+          "message_dict": {
+            "client": "test suite",
+            "content": "hello",
+            "display_recipient": "Verona",
+            "id": 54,
+            "is_me_message": false,
+            "reactions": [],
+            "recipient_id": 18,
+            "recipient_type": 2,
+            "recipient_type_id": 5,
+            "rendered_content": "<p>hello</p>",
+            "sender_avatar_source": "G",
+            "sender_avatar_version": 1,
+            "sender_delivery_email": "hamlet@zulip.com",
+            "sender_email": "hamlet@zulip.com",
+            "sender_full_name": "King Hamlet",
+            "sender_id": 9,
+            "sender_is_mirror_dummy": false,
+            "sender_realm_id": 2,
+            "sender_realm_str": "zulip",
+            "sender_short_name": "hamlet",
+            "stream_id": 5,
+            "subject": "test",
+            "submessages": [],
+            "timestamp": 1583583231,
+            "topic_links": [],
+            "type": "stream"
+          },
+          "presence_idle_user_ids": [],
+          "realm_id": 2,
+          "stream_name": "Verona",
+          "type": "message"
+        }
+      ],
+      "fields": {
+        "flags": "list",
+        "id": "int",
+        "message": {
+          "avatar_url": "equals(\"None\")",
+          "client": "str",
+          "content": "str",
+          "content_type": "equals(\"text/html\")",
+          "display_recipient": "str",
+          "id": "int",
+          "is_me_message": "bool",
+          "reactions": "list",
+          "recipient_id": "int",
+          "sender_email": "str",
+          "sender_full_name": "str",
+          "sender_id": "int",
+          "sender_realm_str": "str",
+          "sender_short_name": "str",
+          "stream_id": "int",
+          "subject": "str",
+          "submessages": "list",
+          "timestamp": "int",
+          "topic_links": "list",
+          "type": "str"
+        },
+        "type": "equals(\"message\")"
+      }
+    }
+  },
+  "muted_topics": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 341,
+          "muted_topics": [
+            [
+              "Denmark",
+              "topic"
+            ]
+          ],
+          "type": "muted_topics"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 342,
+          "muted_topics": [],
+          "type": "muted_topics"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "muted_topics": [
+          [
+            "str"
+          ]
+        ],
+        "type": "equals(\"muted_topics\")"
+      }
+    }
+  },
+  "pointer": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 348,
+          "pointer": 1500,
+          "type": "pointer"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "pointer": "int",
+        "type": "equals(\"pointer\")"
+      }
+    }
+  },
+  "presence": {
+    "0": {
+      "examples": [
+        {
+          "email": "hamlet@zulip.com",
+          "event_description": null,
+          "instrumented_event_id": 349,
+          "presence": {
+            "website": {
+              "client": "website",
+              "pushable": false,
+              "status": "active",
+              "timestamp": 1583583225
+            }
+          },
+          "server_timestamp": 1583583225.4598107,
+          "type": "presence",
+          "user_id": 9
+        },
+        {
+          "email": "hamlet@zulip.com",
+          "event_description": null,
+          "instrumented_event_id": 353,
+          "presence": {
+            "ZulipAndroid/1.0": {
+              "client": "ZulipAndroid/1.0",
+              "pushable": false,
+              "status": "idle",
+              "timestamp": 1583583225
+            }
+          },
+          "server_timestamp": 1583583225.7699943,
+          "type": "presence",
+          "user_id": 9
+        }
+      ],
+      "fields": {
+        "email": "str",
+        "id": "int",
+        "presence": {
+          "website": {
+            "client": "str",
+            "pushable": "bool",
+            "status": "equals(\"active\")",
+            "timestamp": "int"
+          }
+        },
+        "server_timestamp": "float",
+        "type": "equals(\"presence\")",
+        "user_id": "int"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "email": "cordelia@zulip.com",
+          "event_description": null,
+          "instrumented_event_id": 350,
+          "presence": {
+            "website": {
+              "client": "website",
+              "pushable": false,
+              "status": "active",
+              "timestamp": 1583583225
+            }
+          },
+          "server_timestamp": 1583583225.5571833,
+          "type": "presence",
+          "user_id": 8
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "presence": {
+          "website": {
+            "client": "str",
+            "pushable": "bool",
+            "status": "equals(\"active\")",
+            "timestamp": "int"
+          }
+        },
+        "server_timestamp": "float",
+        "type": "equals(\"presence\")",
+        "user_id": "int"
+      }
+    }
+  },
+  "reaction": {
+    "0": {
+      "examples": [
+        {
+          "emoji_code": "1f389",
+          "emoji_name": "tada",
+          "event_description": null,
+          "instrumented_event_id": 5,
+          "message_id": 32,
+          "op": "add",
+          "reaction_type": "unicode_emoji",
+          "type": "reaction",
+          "user": {
+            "email": "hamlet@zulip.com",
+            "full_name": "King Hamlet",
+            "user_id": 9
+          }
+        },
+        {
+          "emoji_code": "1f389",
+          "emoji_name": "tada",
+          "event_description": null,
+          "instrumented_event_id": 7,
+          "message_id": 33,
+          "op": "add",
+          "reaction_type": "unicode_emoji",
+          "type": "reaction",
+          "user": {
+            "email": "hamlet@zulip.com",
+            "full_name": "King Hamlet",
+            "user_id": 9
+          }
+        },
+        {
+          "emoji_code": "1f389",
+          "emoji_name": "tada",
+          "event_description": null,
+          "instrumented_event_id": 381,
+          "message_id": 48,
+          "op": "remove",
+          "reaction_type": "unicode_emoji",
+          "type": "reaction",
+          "user": {
+            "email": "hamlet@zulip.com",
+            "full_name": "King Hamlet",
+            "user_id": 9
+          }
+        },
+        {
+          "emoji_code": "1f389",
+          "emoji_name": "tada",
+          "event_description": null,
+          "instrumented_event_id": 384,
+          "message_id": 49,
+          "op": "remove",
+          "reaction_type": "unicode_emoji",
+          "type": "reaction",
+          "user": {
+            "email": "hamlet@zulip.com",
+            "full_name": "King Hamlet",
+            "user_id": 9
+          }
+        }
+      ],
+      "fields": {
+        "emoji_code": "str",
+        "emoji_name": "str",
+        "id": "int",
+        "message_id": "int",
+        "op": "equals(\"add\")",
+        "reaction_type": "str",
+        "type": "equals(\"reaction\")",
+        "user": {
+          "email": "str",
+          "full_name": "str",
+          "user_id": "int"
+        }
+      }
+    }
+  },
+  "realm": {
+    "0": {
+      "examples": [
+        {
+          "data": {
+            "authentication_methods": {
+              "Dev": false,
+              "Email": true,
+              "GitHub": true,
+              "Google": true,
+              "LDAP": false
+            }
+          },
+          "event_description": null,
+          "instrumented_event_id": 145,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "authentication_methods": {
+              "Dev": false,
+              "Email": true,
+              "GitHub": false,
+              "Google": true,
+              "LDAP": false
+            }
+          },
+          "event_description": null,
+          "instrumented_event_id": 146,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "authentication_methods": {
+              "Dev": false,
+              "Email": false,
+              "GitHub": false,
+              "Google": true,
+              "LDAP": false
+            }
+          },
+          "event_description": null,
+          "instrumented_event_id": 147,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "authentication_methods": {
+              "Dev": false,
+              "Email": false,
+              "GitHub": true,
+              "Google": true,
+              "LDAP": false
+            }
+          },
+          "event_description": null,
+          "instrumented_event_id": 148,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "authentication_methods": {
+              "Dev": true,
+              "Email": false,
+              "GitHub": false,
+              "Google": false,
+              "LDAP": false
+            }
+          },
+          "event_description": null,
+          "instrumented_event_id": 149,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "authentication_methods": {
+              "Dev": true,
+              "Email": false,
+              "GitHub": true,
+              "Google": false,
+              "LDAP": false
+            }
+          },
+          "event_description": null,
+          "instrumented_event_id": 150,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "authentication_methods": {
+              "Dev": false,
+              "Email": true,
+              "GitHub": true,
+              "Google": false,
+              "LDAP": true
+            }
+          },
+          "event_description": null,
+          "instrumented_event_id": 151,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "logo_source": "U",
+            "logo_url": "/user_avatars/2/realm/logo.png?version=2"
+          },
+          "event_description": null,
+          "instrumented_event_id": 152,
+          "op": "update_dict",
+          "property": "logo",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "icon_source": "U",
+            "icon_url": "/user_avatars/2/realm/icon.png?version=2"
+          },
+          "event_description": null,
+          "instrumented_event_id": 153,
+          "op": "update_dict",
+          "property": "icon",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "allow_community_topic_editing": false,
+            "allow_message_editing": true,
+            "message_content_edit_limit_seconds": 0
+          },
+          "event_description": null,
+          "instrumented_event_id": 154,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "allow_community_topic_editing": false,
+            "allow_message_editing": false,
+            "message_content_edit_limit_seconds": 0
+          },
+          "event_description": null,
+          "instrumented_event_id": 155,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "allow_community_topic_editing": false,
+            "allow_message_editing": false,
+            "message_content_edit_limit_seconds": 1234
+          },
+          "event_description": null,
+          "instrumented_event_id": 156,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "allow_community_topic_editing": false,
+            "allow_message_editing": true,
+            "message_content_edit_limit_seconds": 600
+          },
+          "event_description": null,
+          "instrumented_event_id": 157,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "allow_community_topic_editing": false,
+            "allow_message_editing": true,
+            "message_content_edit_limit_seconds": 1234
+          },
+          "event_description": null,
+          "instrumented_event_id": 159,
+          "op": "update_dict",
+          "property": "default",
+          "type": "realm"
+        },
+        {
+          "data": {
+            "night_logo_source": "U",
+            "night_logo_url": "/user_avatars/2/realm/night_logo.png?version=2"
+          },
+          "event_description": null,
+          "instrumented_event_id": 160,
+          "op": "update_dict",
+          "property": "night_logo",
+          "type": "realm"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 161,
+          "op": "update",
+          "property": "notifications_stream_id",
+          "type": "realm",
+          "value": 2
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 162,
+          "op": "update",
+          "property": "notifications_stream_id",
+          "type": "realm",
+          "value": -1
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 164,
+          "op": "update",
+          "property": "add_emoji_by_admins_only",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 165,
+          "op": "update",
+          "property": "add_emoji_by_admins_only",
+          "type": "realm",
+          "value": true
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 258,
+          "op": "update",
+          "property": "signup_notifications_stream_id",
+          "type": "realm",
+          "value": 2
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 259,
+          "op": "update",
+          "property": "signup_notifications_stream_id",
+          "type": "realm",
+          "value": -1
+        },
+        {
+          "event_description": null,
+          "extra_data": {
+            "upload_quota": 5368709120
+          },
+          "instrumented_event_id": 361,
+          "op": "update",
+          "property": "plan_type",
+          "type": "realm",
+          "value": 2
+        }
+      ],
+      "fields": {
+        "data": {
+          "authentication_methods": {}
+        },
+        "id": "int",
+        "op": "equals(\"update_dict\")",
+        "property": "equals(\"default\")",
+        "type": "equals(\"realm\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 167,
+          "op": "update",
+          "property": "allow_edit_history",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 168,
+          "op": "update",
+          "property": "allow_edit_history",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"allow_edit_history\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "2": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 170,
+          "op": "update",
+          "property": "allow_message_deleting",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 171,
+          "op": "update",
+          "property": "allow_message_deleting",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"allow_message_deleting\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "4": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 174,
+          "op": "update",
+          "property": "create_stream_policy",
+          "type": "realm",
+          "value": 2
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 175,
+          "op": "update",
+          "property": "create_stream_policy",
+          "type": "realm",
+          "value": 1
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"create_stream_policy\")",
+        "type": "equals(\"realm\")",
+        "value": "int"
+      }
+    },
+    "5": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 177,
+          "op": "update",
+          "property": "invite_to_stream_policy",
+          "type": "realm",
+          "value": 2
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 178,
+          "op": "update",
+          "property": "invite_to_stream_policy",
+          "type": "realm",
+          "value": 1
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"invite_to_stream_policy\")",
+        "type": "equals(\"realm\")",
+        "value": "int"
+      }
+    },
+    "6": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 180,
+          "op": "update",
+          "property": "default_language",
+          "type": "realm",
+          "value": "de"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 181,
+          "op": "update",
+          "property": "default_language",
+          "type": "realm",
+          "value": "en"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"default_language\")",
+        "type": "equals(\"realm\")",
+        "value": "str"
+      }
+    },
+    "7": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 183,
+          "op": "update",
+          "property": "default_twenty_four_hour_time",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 184,
+          "op": "update",
+          "property": "default_twenty_four_hour_time",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"default_twenty_four_hour_time\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "8": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 186,
+          "op": "update",
+          "property": "description",
+          "type": "realm",
+          "value": "New description"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"description\")",
+        "type": "equals(\"realm\")",
+        "value": "str"
+      }
+    },
+    "9": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 188,
+          "op": "update",
+          "property": "digest_emails_enabled",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 189,
+          "op": "update",
+          "property": "digest_emails_enabled",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"digest_emails_enabled\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "10": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 191,
+          "op": "update",
+          "property": "disallow_disposable_email_addresses",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 192,
+          "op": "update",
+          "property": "disallow_disposable_email_addresses",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"disallow_disposable_email_addresses\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "12": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 203,
+          "op": "update",
+          "property": "email_changes_disabled",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 204,
+          "op": "update",
+          "property": "email_changes_disabled",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"email_changes_disabled\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "13": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 206,
+          "op": "update",
+          "property": "google_hangouts_domain",
+          "type": "realm",
+          "value": "zulip.org"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"google_hangouts_domain\")",
+        "type": "equals(\"realm\")",
+        "value": "str"
+      }
+    },
+    "14": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 208,
+          "op": "update",
+          "property": "zoom_user_id",
+          "type": "realm",
+          "value": "example@example.org"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"zoom_user_id\")",
+        "type": "equals(\"realm\")",
+        "value": "str"
+      }
+    },
+    "15": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 210,
+          "op": "update",
+          "property": "zoom_api_key",
+          "type": "realm",
+          "value": "xyz"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"zoom_api_key\")",
+        "type": "equals(\"realm\")",
+        "value": "str"
+      }
+    },
+    "16": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 212,
+          "op": "update",
+          "property": "zoom_api_secret",
+          "type": "realm",
+          "value": ""
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"zoom_api_secret\")",
+        "type": "equals(\"realm\")",
+        "value": "str"
+      }
+    },
+    "17": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 214,
+          "op": "update",
+          "property": "invite_required",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 215,
+          "op": "update",
+          "property": "invite_required",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"invite_required\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "18": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 217,
+          "op": "update",
+          "property": "invite_by_admins_only",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 218,
+          "op": "update",
+          "property": "invite_by_admins_only",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"invite_by_admins_only\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "19": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 220,
+          "op": "update",
+          "property": "inline_image_preview",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 221,
+          "op": "update",
+          "property": "inline_image_preview",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"inline_image_preview\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "20": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 223,
+          "op": "update",
+          "property": "inline_url_embed_preview",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 224,
+          "op": "update",
+          "property": "inline_url_embed_preview",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"inline_url_embed_preview\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "21": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 226,
+          "op": "update",
+          "property": "mandatory_topics",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 227,
+          "op": "update",
+          "property": "mandatory_topics",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"mandatory_topics\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "22": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 229,
+          "op": "update",
+          "property": "message_retention_days",
+          "type": "realm",
+          "value": 20
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"message_retention_days\")",
+        "type": "equals(\"realm\")",
+        "value": "int"
+      }
+    },
+    "23": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 231,
+          "op": "update",
+          "property": "name",
+          "type": "realm",
+          "value": "New Name"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"name\")",
+        "type": "equals(\"realm\")",
+        "value": "str"
+      }
+    },
+    "24": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 233,
+          "op": "update",
+          "property": "name_changes_disabled",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 234,
+          "op": "update",
+          "property": "name_changes_disabled",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"name_changes_disabled\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "25": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 236,
+          "op": "update",
+          "property": "avatar_changes_disabled",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 237,
+          "op": "update",
+          "property": "avatar_changes_disabled",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"avatar_changes_disabled\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "26": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 239,
+          "op": "update",
+          "property": "emails_restricted_to_domains",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 240,
+          "op": "update",
+          "property": "emails_restricted_to_domains",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"emails_restricted_to_domains\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "27": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 242,
+          "op": "update",
+          "property": "send_welcome_emails",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 243,
+          "op": "update",
+          "property": "send_welcome_emails",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"send_welcome_emails\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "28": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 245,
+          "op": "update",
+          "property": "message_content_allowed_in_email_notifications",
+          "type": "realm",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 246,
+          "op": "update",
+          "property": "message_content_allowed_in_email_notifications",
+          "type": "realm",
+          "value": true
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"message_content_allowed_in_email_notifications\")",
+        "type": "equals(\"realm\")",
+        "value": "bool"
+      }
+    },
+    "29": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 248,
+          "op": "update",
+          "property": "video_chat_provider",
+          "type": "realm",
+          "value": 2
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"video_chat_provider\")",
+        "type": "equals(\"realm\")",
+        "value": "int"
+      }
+    },
+    "30": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 250,
+          "op": "update",
+          "property": "waiting_period_threshold",
+          "type": "realm",
+          "value": 20
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"waiting_period_threshold\")",
+        "type": "equals(\"realm\")",
+        "value": "int"
+      }
+    },
+    "31": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 252,
+          "op": "update",
+          "property": "digest_weekday",
+          "type": "realm",
+          "value": 1
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 253,
+          "op": "update",
+          "property": "digest_weekday",
+          "type": "realm",
+          "value": 2
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"digest_weekday\")",
+        "type": "equals(\"realm\")",
+        "value": "int"
+      }
+    },
+    "32": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 255,
+          "op": "update",
+          "property": "private_message_policy",
+          "type": "realm",
+          "value": 1
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"private_message_policy\")",
+        "type": "equals(\"realm\")",
+        "value": "int"
+      }
+    },
+    "33": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 257,
+          "op": "update",
+          "property": "user_group_edit_policy",
+          "type": "realm",
+          "value": 2
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "property": "equals(\"user_group_edit_policy\")",
+        "type": "equals(\"realm\")",
+        "value": "int"
+      }
+    }
+  },
+  "realm_bot": {
+    "0": {
+      "examples": [
+        {
+          "bot": {
+            "avatar_url": "/user_avatars/2/cf5b3a61c472af886cc8d3ddc93632d536f8c0fd.png?x=x&version=2",
+            "email": "test-bot@zulip.testserver",
+            "user_id": 23
+          },
+          "event_description": null,
+          "instrumented_event_id": 19,
+          "op": "update",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "default_all_public_streams": true,
+            "email": "test-bot@zulip.testserver",
+            "user_id": 24
+          },
+          "event_description": null,
+          "instrumented_event_id": 24,
+          "op": "update",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "default_events_register_stream": "Rome",
+            "email": "test-bot@zulip.testserver",
+            "user_id": 25
+          },
+          "event_description": null,
+          "instrumented_event_id": 28,
+          "op": "update",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "default_sending_stream": "Rome",
+            "email": "test-bot@zulip.testserver",
+            "user_id": 26
+          },
+          "event_description": null,
+          "instrumented_event_id": 33,
+          "op": "update",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "email": "test-bot@zulip.testserver",
+            "full_name": "New Bot Name",
+            "user_id": 27
+          },
+          "event_description": null,
+          "instrumented_event_id": 39,
+          "op": "update",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "api_key": "VvHmMdzsCpKk9zZ56PS3P8WqTqiuqRKD",
+            "avatar_url": "https://secure.gravatar.com/avatar/af8abc2537d283b212a6bd4d1289956d?d=identicon&version=1",
+            "bot_type": 1,
+            "default_all_public_streams": false,
+            "default_events_register_stream": null,
+            "default_sending_stream": null,
+            "email": "test-bot@zulip.testserver",
+            "full_name": "Foo Bot",
+            "is_active": true,
+            "owner": "hamlet@zulip.com",
+            "services": [],
+            "user_id": 31
+          },
+          "event_description": null,
+          "instrumented_event_id": 276,
+          "op": "add",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "email": "test-bot@zulip.testserver",
+            "full_name": "Foo Bot",
+            "user_id": 34
+          },
+          "event_description": null,
+          "instrumented_event_id": 309,
+          "op": "remove",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "api_key": "ZO9JVo2Y4OE4OGEZSxvCiwClYjGTTlOd",
+            "avatar_url": "https://secure.gravatar.com/avatar/af8abc2537d283b212a6bd4d1289956d?d=identicon&version=1",
+            "bot_type": 1,
+            "default_all_public_streams": false,
+            "default_events_register_stream": null,
+            "default_sending_stream": null,
+            "email": "test-bot@zulip.testserver",
+            "full_name": "Foo Bot",
+            "is_active": true,
+            "owner": "hamlet@zulip.com",
+            "services": [],
+            "user_id": 35
+          },
+          "event_description": null,
+          "instrumented_event_id": 323,
+          "op": "add",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "email": "test-bot@zulip.testserver",
+            "services": [
+              {
+                "base_url": "http://hostname.domain2.com",
+                "interface": 2,
+                "token": "UlwjsNhj4YxqAdiN73fxSuwVcyd3rzj6"
+              }
+            ],
+            "user_id": 36
+          },
+          "event_description": null,
+          "instrumented_event_id": 327,
+          "op": "update",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "api_key": "YN0ovokHDTd1PAJ3LUiujQdXVCb3tRWA",
+            "email": "test-bot@zulip.testserver",
+            "user_id": 38
+          },
+          "event_description": null,
+          "instrumented_event_id": 365,
+          "op": "update",
+          "type": "realm_bot"
+        }
+      ],
+      "fields": {
+        "bot": {
+          "avatar_url": "str",
+          "email": "str",
+          "user_id": "int"
+        },
+        "id": "int",
+        "op": "equals(\"update\")",
+        "type": "equals(\"realm_bot\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "bot": {
+            "default_events_register_stream": null,
+            "email": "test-bot@zulip.testserver",
+            "user_id": 25
+          },
+          "event_description": null,
+          "instrumented_event_id": 29,
+          "op": "update",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "default_sending_stream": null,
+            "email": "test-bot@zulip.testserver",
+            "user_id": 26
+          },
+          "event_description": null,
+          "instrumented_event_id": 34,
+          "op": "update",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "email": "test-bot@zulip.testserver",
+            "owner_id": 9,
+            "user_id": 28
+          },
+          "event_description": null,
+          "instrumented_event_id": 44,
+          "op": "update",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "api_key": "PCArNxYSTd3ooklCqWCWPvyLZpgg7Cnx",
+            "avatar_url": "https://secure.gravatar.com/avatar/407924d775c746d77e0e80cb31693a0e?d=identicon&version=1",
+            "bot_type": 3,
+            "default_all_public_streams": false,
+            "default_events_register_stream": null,
+            "default_sending_stream": null,
+            "email": "test_outgoing_webhook-bot@zulip.testserver",
+            "full_name": "Outgoing Webhook Bot",
+            "is_active": true,
+            "owner": "hamlet@zulip.com",
+            "services": [
+              {
+                "base_url": "https://foo.bar.com",
+                "interface": 1,
+                "token": "0R9Q2EI1robNfF0fxNQ9Q5r5MGpKnVJN"
+              }
+            ],
+            "user_id": 32
+          },
+          "event_description": null,
+          "instrumented_event_id": 280,
+          "op": "add",
+          "type": "realm_bot"
+        }
+      ],
+      "fields": {
+        "bot": {
+          "default_events_register_stream": "equals(\"None\")",
+          "email": "str",
+          "user_id": "int"
+        },
+        "id": "int",
+        "op": "equals(\"update\")",
+        "type": "equals(\"realm_bot\")"
+      }
+    },
+    "2": {
+      "examples": [
+        {
+          "bot": {
+            "email": "test1-bot@zulip.testserver",
+            "user_id": 29
+          },
+          "event_description": null,
+          "instrumented_event_id": 49,
+          "op": "delete",
+          "type": "realm_bot"
+        },
+        {
+          "bot": {
+            "api_key": "s29MAwWuIH98YceScZKtgEdLIAcacvL8",
+            "avatar_url": "https://secure.gravatar.com/avatar/a44df54969e310d9ba7f54bb3976188a?d=identicon&version=1",
+            "bot_type": 4,
+            "default_all_public_streams": false,
+            "default_events_register_stream": null,
+            "default_sending_stream": null,
+            "email": "test_embedded-bot@zulip.testserver",
+            "full_name": "Embedded Bot",
+            "is_active": true,
+            "owner": "hamlet@zulip.com",
+            "services": [
+              {
+                "config_data": {
+                  "foo": "bar"
+                },
+                "service_name": "helloworld"
+              }
+            ],
+            "user_id": 33
+          },
+          "event_description": null,
+          "instrumented_event_id": 283,
+          "op": "add",
+          "type": "realm_bot"
+        }
+      ],
+      "fields": {
+        "bot": {
+          "email": "str",
+          "user_id": "int"
+        },
+        "id": "int",
+        "op": "equals(\"delete\")",
+        "type": "equals(\"realm_bot\")"
+      }
+    },
+    "3": {
+      "examples": [
+        {
+          "bot": {
+            "api_key": "pfu1L7crUhWAXDOODxQ10ka1B71RY6nY",
+            "avatar_url": "https://secure.gravatar.com/avatar/54b8c6b1a79658984935eb7497cbf0c7?d=identicon&version=1",
+            "bot_type": 1,
+            "default_all_public_streams": false,
+            "default_events_register_stream": null,
+            "default_sending_stream": null,
+            "email": "test2-bot@zulip.testserver",
+            "full_name": "Test2 Testerson",
+            "is_active": true,
+            "owner": "hamlet@zulip.com",
+            "services": [],
+            "user_id": 30
+          },
+          "event_description": null,
+          "instrumented_event_id": 57,
+          "op": "add",
+          "type": "realm_bot"
+        }
+      ],
+      "fields": {
+        "bot": {
+          "api_key": "str",
+          "avatar_url": "str",
+          "bot_type": "int",
+          "default_all_public_streams": "bool",
+          "default_events_register_stream": "none_or_str",
+          "default_sending_stream": "none_or_str",
+          "email": "str",
+          "full_name": "str",
+          "is_active": "bool",
+          "owner": "str",
+          "services": "list",
+          "user_id": "int"
+        },
+        "id": "int",
+        "op": "equals(\"add\")",
+        "type": "equals(\"realm_bot\")"
+      }
+    }
+  },
+  "realm_domains": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 354,
+          "op": "add",
+          "realm_domain": {
+            "allow_subdomains": false,
+            "domain": "zulip.org"
+          },
+          "type": "realm_domains"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"add\")",
+        "realm_domain": {
+          "allow_subdomains": "bool",
+          "domain": "str"
+        },
+        "type": "equals(\"realm_domains\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 355,
+          "op": "change",
+          "realm_domain": {
+            "allow_subdomains": true,
+            "domain": "zulip.org"
+          },
+          "type": "realm_domains"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"change\")",
+        "realm_domain": {
+          "allow_subdomains": "equals(\"True\")",
+          "domain": "equals(\"zulip.org\")"
+        },
+        "type": "equals(\"realm_domains\")"
+      }
+    },
+    "2": {
+      "examples": [
+        {
+          "domain": "zulip.org",
+          "event_description": null,
+          "instrumented_event_id": 356,
+          "op": "remove",
+          "type": "realm_domains"
+        }
+      ],
+      "fields": {
+        "domain": "equals(\"zulip.org\")",
+        "id": "int",
+        "op": "equals(\"remove\")",
+        "type": "equals(\"realm_domains\")"
+      }
+    }
+  },
+  "realm_emoji": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 357,
+          "op": "update",
+          "realm_emoji": {
+            "1": {
+              "author": {
+                "email": "iago@zulip.com",
+                "full_name": "Iago",
+                "id": 10
+              },
+              "deactivated": false,
+              "id": "1",
+              "name": "green_tick",
+              "source_url": "/user_avatars/2/emoji/images/1.png"
+            },
+            "2": {
+              "author": {
+                "email": "iago@zulip.com",
+                "full_name": "Iago",
+                "id": 10
+              },
+              "deactivated": false,
+              "id": "2",
+              "name": "my_emoji",
+              "source_url": "/user_avatars/2/emoji/images/2.png"
+            }
+          },
+          "type": "realm_emoji"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 358,
+          "op": "update",
+          "realm_emoji": {
+            "1": {
+              "author": {
+                "email": "iago@zulip.com",
+                "full_name": "Iago",
+                "id": 10
+              },
+              "deactivated": false,
+              "id": "1",
+              "name": "green_tick",
+              "source_url": "/user_avatars/2/emoji/images/1.png"
+            },
+            "2": {
+              "author": {
+                "email": "iago@zulip.com",
+                "full_name": "Iago",
+                "id": 10
+              },
+              "deactivated": true,
+              "id": "2",
+              "name": "my_emoji",
+              "source_url": "/user_avatars/2/emoji/images/2.png"
+            }
+          },
+          "type": "realm_emoji"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "realm_emoji": {},
+        "type": "equals(\"realm_emoji\")"
+      }
+    }
+  },
+  "realm_export": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "exports": [
+            {
+              "acting_user_id": 9,
+              "deleted_timestamp": null,
+              "export_time": 1583583224.888951,
+              "export_url": "http://zulip.testserver/user_avatars/exports/2/_uA_CW7CNREByGgur5I1YUeO/test-export.tar.gz",
+              "id": 81
+            }
+          ],
+          "instrumented_event_id": 345,
+          "type": "realm_export"
+        }
+      ],
+      "fields": {
+        "exports": [
+          {
+            "acting_user_id": "int",
+            "deleted_timestamp": "equals(\"None\")",
+            "export_time": "float",
+            "export_url": "str",
+            "id": "int"
+          }
+        ],
+        "id": "int",
+        "type": "equals(\"realm_export\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "event_description": null,
+          "exports": [
+            {
+              "acting_user_id": 9,
+              "deleted_timestamp": 1583583225.031697,
+              "export_time": 1583583224.888951,
+              "export_url": "http://zulip.testserver/user_avatars/exports/2/_uA_CW7CNREByGgur5I1YUeO/test-export.tar.gz",
+              "id": 81
+            }
+          ],
+          "instrumented_event_id": 346,
+          "type": "realm_export"
+        }
+      ],
+      "fields": {
+        "exports": [
+          {
+            "acting_user_id": "int",
+            "deleted_timestamp": "float",
+            "export_time": "float",
+            "export_url": "str",
+            "id": "int"
+          }
+        ],
+        "id": "int",
+        "type": "equals(\"realm_export\")"
+      }
+    }
+  },
+  "realm_filters": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 359,
+          "realm_filters": [
+            [
+              "#(?P<id>[123])",
+              "https://realm.com/my_realm_filter/%(id)s",
+              1
+            ]
+          ],
+          "type": "realm_filters"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 360,
+          "realm_filters": [],
+          "type": "realm_filters"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "realm_filters": "list",
+        "type": "equals(\"realm_filters\")"
+      }
+    }
+  },
+  "realm_user": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 14,
+          "op": "update",
+          "person": {
+            "avatar_source": "U",
+            "avatar_url": "/user_avatars/2/2c8bcf2c348851d9a3b24673864bb178deac2c1c.png?x=x&version=2",
+            "avatar_url_medium": "/user_avatars/2/2c8bcf2c348851d9a3b24673864bb178deac2c1c-medium.png?x=x&version=2",
+            "email": "hamlet@zulip.com",
+            "user_id": 9
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 45,
+          "op": "update",
+          "person": {
+            "bot_owner_id": 9,
+            "user_id": 28
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 52,
+          "op": "update",
+          "person": {
+            "bot_owner_id": 9,
+            "user_id": 29
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 59,
+          "op": "update",
+          "person": {
+            "bot_owner_id": 9,
+            "user_id": 30
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 62,
+          "op": "update",
+          "person": {
+            "email": "hamlet@zulip.com",
+            "full_name": "Sir Hamlet",
+            "user_id": 9
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 64,
+          "op": "update",
+          "person": {
+            "email": "hamlet@zulip.com",
+            "is_admin": true,
+            "user_id": 9
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 65,
+          "op": "update",
+          "person": {
+            "email": "hamlet@zulip.com",
+            "is_admin": false,
+            "user_id": 9
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 273,
+          "op": "update",
+          "person": {
+            "delivery_email": "newhamlet@zulip.com",
+            "user_id": 9
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 286,
+          "op": "update",
+          "person": {
+            "custom_profile_field": {
+              "id": 7,
+              "value": "[7]"
+            },
+            "user_id": 9
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 366,
+          "op": "add",
+          "person": {
+            "avatar_url": "https://secure.gravatar.com/avatar/c2103583fda85613fe47b3e957bb931e?d=identicon&version=1",
+            "date_joined": "2020-03-07T12:13:46.990264+00:00",
+            "email": "test1@zulip.com",
+            "full_name": "test1_zulip.com",
+            "is_active": true,
+            "is_admin": false,
+            "is_bot": false,
+            "is_guest": false,
+            "profile_data": {},
+            "timezone": "",
+            "user_id": 39
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 377,
+          "op": "add",
+          "person": {
+            "avatar_url": "https://secure.gravatar.com/avatar/c2103583fda85613fe47b3e957bb931e?d=identicon&version=1",
+            "date_joined": "2020-03-07T12:13:47.256077+00:00",
+            "email": "user40@zulip.testserver",
+            "full_name": "test1_zulip.com",
+            "is_active": true,
+            "is_admin": false,
+            "is_bot": false,
+            "is_guest": false,
+            "profile_data": {},
+            "timezone": "",
+            "user_id": 40
+          },
+          "type": "realm_user"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "person": {
+          "avatar_source": "str",
+          "avatar_url": "str",
+          "avatar_url_medium": "str",
+          "email": "str",
+          "user_id": "int"
+        },
+        "type": "equals(\"realm_user\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 15,
+          "op": "update",
+          "person": {
+            "avatar_source": "G",
+            "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=3",
+            "avatar_url_medium": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&s=500&version=3",
+            "email": "hamlet@zulip.com",
+            "user_id": 9
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 274,
+          "op": "update",
+          "person": {
+            "avatar_source": "G",
+            "avatar_url": "https://secure.gravatar.com/avatar/1fdb8aa071bf4ed50a372b32fa758596?d=identicon&version=1",
+            "avatar_url_medium": "https://secure.gravatar.com/avatar/1fdb8aa071bf4ed50a372b32fa758596?d=identicon&s=500&version=1",
+            "email": "user9@zulip.testserver",
+            "user_id": 9
+          },
+          "type": "realm_user"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 285,
+          "op": "update",
+          "person": {
+            "custom_profile_field": {
+              "id": 2,
+              "rendered_value": "<p>New value</p>",
+              "value": "New value"
+            },
+            "user_id": 9
+          },
+          "type": "realm_user"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "person": {
+          "avatar_source": "str",
+          "avatar_url": "none_or_str",
+          "avatar_url_medium": "none_or_str",
+          "email": "str",
+          "user_id": "int"
+        },
+        "type": "equals(\"realm_user\")"
+      }
+    },
+    "77": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 423,
+          "op": "update",
+          "person": {
+            "email": "hamlet@zulip.com",
+            "timezone": "US/Mountain",
+            "user_id": 9
+          },
+          "type": "realm_user"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "person": {
+          "email": "str",
+          "timezone": "str",
+          "user_id": "int"
+        },
+        "type": "equals(\"realm_user\")"
+      }
+    },
+    "80": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 425,
+          "op": "update",
+          "person": {
+            "email": "hamlet@zulip.com",
+            "timezone": "US/Samoa",
+            "user_id": 9
+          },
+          "type": "realm_user"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "person": {
+          "email": "str",
+          "timezone": "str",
+          "user_id": "int"
+        },
+        "type": "equals(\"realm_user\")"
+      }
+    },
+    "83": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 427,
+          "op": "update",
+          "person": {
+            "email": "hamlet@zulip.com",
+            "timezone": "Pacific/Galapogos",
+            "user_id": 9
+          },
+          "type": "realm_user"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "person": {
+          "email": "str",
+          "timezone": "str",
+          "user_id": "int"
+        },
+        "type": "equals(\"realm_user\")"
+      }
+    },
+    "86": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 429,
+          "op": "update",
+          "person": {
+            "email": "hamlet@zulip.com",
+            "timezone": "",
+            "user_id": 9
+          },
+          "type": "realm_user"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"update\")",
+        "person": {
+          "email": "str",
+          "timezone": "str",
+          "user_id": "int"
+        },
+        "type": "equals(\"realm_user\")"
+      }
+    }
+  },
+  "stream": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 290,
+          "op": "delete",
+          "streams": [
+            {
+              "description": "",
+              "first_message_id": null,
+              "history_public_to_subscribers": true,
+              "invite_only": false,
+              "is_announcement_only": false,
+              "is_web_public": false,
+              "name": "old_name",
+              "rendered_description": "",
+              "stream_id": 6,
+              "stream_post_policy": 1
+            }
+          ],
+          "type": "stream"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 388,
+          "name": "old_name",
+          "op": "update",
+          "property": "email_address",
+          "stream_id": 7,
+          "type": "stream",
+          "value": "stream-with-a-brand-new-name.1d479ede6db09ff0ea536af0c3972b42.show-sender@testserver"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 459,
+          "op": "create",
+          "streams": [
+            {
+              "description": "",
+              "first_message_id": null,
+              "history_public_to_subscribers": false,
+              "invite_only": true,
+              "is_announcement_only": false,
+              "is_web_public": false,
+              "name": "private",
+              "rendered_description": "",
+              "stream_id": 9,
+              "stream_post_policy": 1
+            }
+          ],
+          "type": "stream"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 481,
+          "op": "create",
+          "streams": [
+            {
+              "description": "",
+              "first_message_id": null,
+              "history_public_to_subscribers": false,
+              "invite_only": true,
+              "is_announcement_only": false,
+              "is_web_public": false,
+              "name": "private",
+              "rendered_description": "",
+              "stream_id": 11,
+              "stream_post_policy": 1
+            }
+          ],
+          "type": "stream"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"delete\")",
+        "streams": [
+          {}
+        ],
+        "type": "equals(\"stream\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 389,
+          "name": "old_name",
+          "op": "update",
+          "property": "name",
+          "stream_id": 7,
+          "type": "stream",
+          "value": "stream with a brand new name"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "name": "equals(\"old_name\")",
+        "op": "equals(\"update\")",
+        "property": "equals(\"name\")",
+        "stream_id": "int",
+        "type": "equals(\"stream\")",
+        "value": "equals(\"stream with a brand new name\")"
+      }
+    },
+    "5": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 455,
+          "name": "test_stream",
+          "op": "update",
+          "property": "description",
+          "rendered_description": "<p>new description</p>",
+          "stream_id": 8,
+          "type": "stream",
+          "value": "new description"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 477,
+          "name": "test_stream",
+          "op": "update",
+          "property": "description",
+          "rendered_description": "<p>new description</p>",
+          "stream_id": 10,
+          "type": "stream",
+          "value": "new description"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "name": "str",
+        "op": "equals(\"update\")",
+        "property": "equals(\"description\")",
+        "rendered_description": "str",
+        "stream_id": "int",
+        "type": "equals(\"stream\")",
+        "value": "str"
+      }
+    },
+    "6": {
+      "examples": [
+        {
+          "event_description": null,
+          "history_public_to_subscribers": true,
+          "instrumented_event_id": 456,
+          "name": "test_stream",
+          "op": "update",
+          "property": "invite_only",
+          "stream_id": 8,
+          "type": "stream",
+          "value": true
+        },
+        {
+          "event_description": null,
+          "history_public_to_subscribers": true,
+          "instrumented_event_id": 478,
+          "name": "test_stream",
+          "op": "update",
+          "property": "invite_only",
+          "stream_id": 10,
+          "type": "stream",
+          "value": true
+        }
+      ],
+      "fields": {
+        "history_public_to_subscribers": "bool",
+        "id": "int",
+        "name": "str",
+        "op": "equals(\"update\")",
+        "property": "equals(\"invite_only\")",
+        "stream_id": "int",
+        "type": "equals(\"stream\")",
+        "value": "bool"
+      }
+    },
+    "7": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 457,
+          "name": "test_stream",
+          "op": "update",
+          "property": "stream_post_policy",
+          "stream_id": 8,
+          "type": "stream",
+          "value": 2
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 479,
+          "name": "test_stream",
+          "op": "update",
+          "property": "stream_post_policy",
+          "stream_id": 10,
+          "type": "stream",
+          "value": 2
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "name": "str",
+        "op": "equals(\"update\")",
+        "property": "equals(\"stream_post_policy\")",
+        "stream_id": "int",
+        "type": "equals(\"stream\")",
+        "value": "int"
+      }
+    }
+  },
+  "submessage": {
+    "0": {
+      "examples": [
+        {
+          "content": "\"stuff\"",
+          "event_description": null,
+          "instrumented_event_id": 9,
+          "message_id": 34,
+          "msg_type": "whatever",
+          "sender_id": 8,
+          "submessage_id": 1,
+          "type": "submessage"
+        }
+      ],
+      "fields": {
+        "content": "str",
+        "id": "int",
+        "message_id": "int",
+        "msg_type": "str",
+        "sender_id": "int",
+        "submessage_id": "int",
+        "type": "equals(\"submessage\")"
+      }
+    }
+  },
+  "subscription": {
+    "0": {
+      "examples": [
+        {
+          "email": "hamlet@zulip.com",
+          "event_description": null,
+          "instrumented_event_id": 143,
+          "name": "Denmark",
+          "op": "update",
+          "property": "pin_to_top",
+          "stream_id": 1,
+          "type": "subscription",
+          "value": true
+        },
+        {
+          "email": "hamlet@zulip.com",
+          "event_description": null,
+          "instrumented_event_id": 144,
+          "name": "Denmark",
+          "op": "update",
+          "property": "pin_to_top",
+          "stream_id": 1,
+          "type": "subscription",
+          "value": false
+        },
+        {
+          "email": "hamlet@zulip.com",
+          "event_description": null,
+          "instrumented_event_id": 260,
+          "name": "Denmark",
+          "op": "update",
+          "property": "email_notifications",
+          "stream_id": 1,
+          "type": "subscription",
+          "value": true
+        },
+        {
+          "email": "hamlet@zulip.com",
+          "event_description": null,
+          "instrumented_event_id": 261,
+          "name": "Denmark",
+          "op": "update",
+          "property": "email_notifications",
+          "stream_id": 1,
+          "type": "subscription",
+          "value": false
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 486,
+          "op": "peer_add",
+          "subscriptions": [
+            "test_stream"
+          ],
+          "type": "subscription",
+          "user_id": 11
+        }
+      ],
+      "fields": {
+        "email": "str",
+        "id": "int",
+        "name": "str",
+        "op": "equals(\"update\")",
+        "property": "equals(\"pin_to_top\")",
+        "stream_id": "int",
+        "type": "equals(\"subscription\")",
+        "value": "bool"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 441,
+          "op": "add",
+          "subscriptions": [
+            {
+              "audible_notifications": null,
+              "color": "#76ce90",
+              "description": "",
+              "desktop_notifications": null,
+              "email_address": "test_stream.77c71c982960868c7bc74e0f8568ad64.show-sender@testserver",
+              "email_notifications": null,
+              "first_message_id": null,
+              "history_public_to_subscribers": true,
+              "in_home_view": true,
+              "invite_only": false,
+              "is_announcement_only": false,
+              "is_muted": false,
+              "is_old_stream": false,
+              "is_web_public": false,
+              "name": "test_stream",
+              "pin_to_top": false,
+              "push_notifications": null,
+              "rendered_description": "",
+              "stream_id": 8,
+              "stream_post_policy": 1,
+              "stream_weekly_traffic": null,
+              "subscribers": [
+                9
+              ],
+              "wildcard_mentions_notify": null
+            }
+          ],
+          "type": "subscription"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 460,
+          "op": "add",
+          "subscriptions": [
+            {
+              "audible_notifications": null,
+              "color": "#fae589",
+              "description": "",
+              "desktop_notifications": null,
+              "email_address": "private.87b77da85f610f189aa22b1b40e5843b.show-sender@testserver",
+              "email_notifications": null,
+              "first_message_id": null,
+              "history_public_to_subscribers": false,
+              "in_home_view": true,
+              "invite_only": true,
+              "is_announcement_only": false,
+              "is_muted": false,
+              "is_old_stream": false,
+              "is_web_public": false,
+              "name": "private",
+              "pin_to_top": false,
+              "push_notifications": null,
+              "rendered_description": "",
+              "stream_id": 9,
+              "stream_post_policy": 1,
+              "stream_weekly_traffic": null,
+              "subscribers": [
+                9
+              ],
+              "wildcard_mentions_notify": null
+            }
+          ],
+          "type": "subscription"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 463,
+          "op": "add",
+          "subscriptions": [
+            {
+              "audible_notifications": null,
+              "color": "#76ce90",
+              "description": "",
+              "desktop_notifications": null,
+              "email_address": "test_stream.6ae20ab3a361dbe00ad73c25a79a188e.show-sender@testserver",
+              "email_notifications": null,
+              "first_message_id": null,
+              "history_public_to_subscribers": true,
+              "in_home_view": true,
+              "invite_only": false,
+              "is_announcement_only": false,
+              "is_muted": false,
+              "is_old_stream": false,
+              "is_web_public": false,
+              "name": "test_stream",
+              "pin_to_top": false,
+              "push_notifications": null,
+              "rendered_description": "",
+              "stream_id": 10,
+              "stream_post_policy": 1,
+              "stream_weekly_traffic": null,
+              "subscribers": [
+                9
+              ],
+              "wildcard_mentions_notify": null
+            }
+          ],
+          "type": "subscription"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 482,
+          "op": "add",
+          "subscriptions": [
+            {
+              "audible_notifications": null,
+              "color": "#fae589",
+              "description": "",
+              "desktop_notifications": null,
+              "email_address": "private.0b34cc852818d3c6aff6a4f0906dbc6c.show-sender@testserver",
+              "email_notifications": null,
+              "first_message_id": null,
+              "history_public_to_subscribers": false,
+              "in_home_view": true,
+              "invite_only": true,
+              "is_announcement_only": false,
+              "is_muted": false,
+              "is_old_stream": false,
+              "is_web_public": false,
+              "name": "private",
+              "pin_to_top": false,
+              "push_notifications": null,
+              "rendered_description": "",
+              "stream_id": 11,
+              "stream_post_policy": 1,
+              "stream_weekly_traffic": null,
+              "subscribers": [
+                9
+              ],
+              "wildcard_mentions_notify": null
+            }
+          ],
+          "type": "subscription"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"add\")",
+        "subscriptions": [
+          {
+            "audible_notifications": "none_or_bool",
+            "color": "str",
+            "description": "str",
+            "desktop_notifications": "none_or_bool",
+            "email_address": "str",
+            "email_notifications": "none_or_bool",
+            "first_message_id": "none_or_int",
+            "history_public_to_subscribers": "bool",
+            "in_home_view": "bool",
+            "invite_only": "bool",
+            "is_announcement_only": "bool",
+            "is_muted": "bool",
+            "is_old_stream": "bool",
+            "is_web_public": "bool",
+            "name": "str",
+            "pin_to_top": "bool",
+            "push_notifications": "none_or_bool",
+            "rendered_description": "str",
+            "stream_id": "int",
+            "stream_post_policy": "int",
+            "stream_weekly_traffic": "none_or_int",
+            "subscribers": [
+              "int"
+            ],
+            "wildcard_mentions_notify": "none_or_bool"
+          }
+        ],
+        "type": "equals(\"subscription\")"
+      }
+    },
+    "2": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 448,
+          "op": "remove",
+          "subscriptions": [
+            {
+              "name": "test_stream",
+              "stream_id": 8
+            }
+          ],
+          "type": "subscription"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 470,
+          "op": "remove",
+          "subscriptions": [
+            {
+              "name": "test_stream",
+              "stream_id": 10
+            }
+          ],
+          "type": "subscription"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"remove\")",
+        "subscriptions": [
+          {
+            "name": "equals(\"test_stream\")",
+            "stream_id": "int"
+          }
+        ],
+        "type": "equals(\"subscription\")"
+      }
+    },
+    "3": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 444,
+          "op": "peer_add",
+          "subscriptions": [
+            "test_stream"
+          ],
+          "type": "subscription",
+          "user_id": 11
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"peer_add\")",
+        "subscriptions": [
+          "str"
+        ],
+        "type": "equals(\"subscription\")",
+        "user_id": "int"
+      }
+    },
+    "4": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 447,
+          "op": "peer_remove",
+          "subscriptions": [
+            "test_stream"
+          ],
+          "type": "subscription",
+          "user_id": 11
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"peer_remove\")",
+        "subscriptions": [
+          "str"
+        ],
+        "type": "equals(\"subscription\")",
+        "user_id": "int"
+      }
+    }
+  },
+  "typing": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 487,
+          "op": "start",
+          "recipients": [
+            {
+              "email": "cordelia@zulip.com",
+              "user_id": 8
+            },
+            {
+              "email": "hamlet@zulip.com",
+              "user_id": 9
+            }
+          ],
+          "sender": {
+            "email": "hamlet@zulip.com",
+            "user_id": 9
+          },
+          "type": "typing"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "op": "equals(\"start\")",
+        "recipients": [
+          {
+            "email": "str",
+            "user_id": "int"
+          }
+        ],
+        "sender": {
+          "email": "str",
+          "user_id": "int"
+        },
+        "type": "equals(\"typing\")"
+      }
+    }
+  },
+  "update_display_settings": {
+    "1": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 397,
+          "language_name": "espa\u00f1ol",
+          "setting": "es",
+          "setting_name": "default_language",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "language_name": "str",
+        "setting": "str",
+        "setting_name": "equals(\"default_language\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "4": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 398,
+          "language_name": "Deutsch",
+          "setting": "de",
+          "setting_name": "default_language",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "language_name": "str",
+        "setting": "str",
+        "setting_name": "equals(\"default_language\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "7": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 399,
+          "language_name": "English",
+          "setting": "en",
+          "setting_name": "default_language",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "language_name": "str",
+        "setting": "str",
+        "setting_name": "equals(\"default_language\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "9": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 400,
+          "setting": 2,
+          "setting_name": "demote_inactive_streams",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "int",
+        "setting_name": "equals(\"demote_inactive_streams\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "12": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 401,
+          "setting": 3,
+          "setting_name": "demote_inactive_streams",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "int",
+        "setting_name": "equals(\"demote_inactive_streams\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "15": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 402,
+          "setting": 1,
+          "setting_name": "demote_inactive_streams",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "int",
+        "setting_name": "equals(\"demote_inactive_streams\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "18": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 403,
+          "setting": false,
+          "setting_name": "dense_mode",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"dense_mode\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "21": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 404,
+          "setting": true,
+          "setting_name": "dense_mode",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"dense_mode\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "24": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 405,
+          "setting": false,
+          "setting_name": "dense_mode",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"dense_mode\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "27": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 406,
+          "setting": "twitter",
+          "setting_name": "emojiset",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "str",
+        "setting_name": "equals(\"emojiset\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "30": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 407,
+          "setting": true,
+          "setting_name": "fluid_layout_width",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"fluid_layout_width\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "33": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 408,
+          "setting": false,
+          "setting_name": "fluid_layout_width",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"fluid_layout_width\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "36": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 409,
+          "setting": true,
+          "setting_name": "fluid_layout_width",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"fluid_layout_width\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "39": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 410,
+          "setting": true,
+          "setting_name": "high_contrast_mode",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"high_contrast_mode\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "42": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 411,
+          "setting": false,
+          "setting_name": "high_contrast_mode",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"high_contrast_mode\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "45": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 412,
+          "setting": true,
+          "setting_name": "high_contrast_mode",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"high_contrast_mode\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "48": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 413,
+          "setting": true,
+          "setting_name": "left_side_userlist",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"left_side_userlist\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "51": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 414,
+          "setting": false,
+          "setting_name": "left_side_userlist",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"left_side_userlist\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "54": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 415,
+          "setting": true,
+          "setting_name": "left_side_userlist",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"left_side_userlist\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "57": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 416,
+          "setting": true,
+          "setting_name": "night_mode",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"night_mode\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "60": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 417,
+          "setting": false,
+          "setting_name": "night_mode",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"night_mode\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "63": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 418,
+          "setting": true,
+          "setting_name": "night_mode",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"night_mode\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "66": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 419,
+          "setting": true,
+          "setting_name": "starred_message_counts",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"starred_message_counts\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "69": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 420,
+          "setting": false,
+          "setting_name": "starred_message_counts",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"starred_message_counts\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "72": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 421,
+          "setting": true,
+          "setting_name": "starred_message_counts",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"starred_message_counts\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "75": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 422,
+          "setting": "US/Mountain",
+          "setting_name": "timezone",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "str",
+        "setting_name": "equals(\"timezone\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "78": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 424,
+          "setting": "US/Samoa",
+          "setting_name": "timezone",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "str",
+        "setting_name": "equals(\"timezone\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "81": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 426,
+          "setting": "Pacific/Galapogos",
+          "setting_name": "timezone",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "str",
+        "setting_name": "equals(\"timezone\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "84": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 428,
+          "setting": "",
+          "setting_name": "timezone",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "str",
+        "setting_name": "equals(\"timezone\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "87": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 430,
+          "setting": true,
+          "setting_name": "translate_emoticons",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"translate_emoticons\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "90": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 431,
+          "setting": false,
+          "setting_name": "translate_emoticons",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"translate_emoticons\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "93": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 432,
+          "setting": true,
+          "setting_name": "translate_emoticons",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"translate_emoticons\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "96": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 433,
+          "setting": true,
+          "setting_name": "twenty_four_hour_time",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"twenty_four_hour_time\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "99": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 434,
+          "setting": false,
+          "setting_name": "twenty_four_hour_time",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"twenty_four_hour_time\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    },
+    "102": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 435,
+          "setting": true,
+          "setting_name": "twenty_four_hour_time",
+          "type": "update_display_settings",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "setting": "bool",
+        "setting_name": "equals(\"twenty_four_hour_time\")",
+        "type": "equals(\"update_display_settings\")",
+        "user": "str"
+      }
+    }
+  },
+  "update_global_notifications": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 60,
+          "notification_name": "desktop_icon_count_display",
+          "setting": 2,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 67,
+          "notification_name": "enable_desktop_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 69,
+          "notification_name": "enable_desktop_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 141,
+          "notification_name": "notification_sound",
+          "setting": "ding",
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"desktop_icon_count_display\")",
+        "setting": "equals(\"2\")",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 61,
+          "notification_name": "desktop_icon_count_display",
+          "setting": 1,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 72,
+          "notification_name": "enable_digest_emails",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 74,
+          "notification_name": "enable_digest_emails",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"desktop_icon_count_display\")",
+        "setting": "equals(\"1\")",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "2": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 77,
+          "notification_name": "enable_login_emails",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 79,
+          "notification_name": "enable_login_emails",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"enable_login_emails\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "3": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 82,
+          "notification_name": "enable_offline_email_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 84,
+          "notification_name": "enable_offline_email_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"enable_offline_email_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "4": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 87,
+          "notification_name": "enable_offline_push_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 89,
+          "notification_name": "enable_offline_push_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"enable_offline_push_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "5": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 92,
+          "notification_name": "enable_online_push_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 94,
+          "notification_name": "enable_online_push_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"enable_online_push_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "6": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 97,
+          "notification_name": "enable_sounds",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 99,
+          "notification_name": "enable_sounds",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"enable_sounds\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "7": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 102,
+          "notification_name": "enable_stream_desktop_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 104,
+          "notification_name": "enable_stream_desktop_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"enable_stream_desktop_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "8": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 107,
+          "notification_name": "enable_stream_email_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 109,
+          "notification_name": "enable_stream_email_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"enable_stream_email_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "9": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 112,
+          "notification_name": "enable_stream_push_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 114,
+          "notification_name": "enable_stream_push_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"enable_stream_push_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "10": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 117,
+          "notification_name": "enable_stream_audible_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 119,
+          "notification_name": "enable_stream_audible_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"enable_stream_audible_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "11": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 122,
+          "notification_name": "wildcard_mentions_notify",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 124,
+          "notification_name": "wildcard_mentions_notify",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"wildcard_mentions_notify\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "12": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 127,
+          "notification_name": "message_content_in_email_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 129,
+          "notification_name": "message_content_in_email_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"message_content_in_email_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "13": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 132,
+          "notification_name": "pm_content_in_desktop_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 134,
+          "notification_name": "pm_content_in_desktop_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"pm_content_in_desktop_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    },
+    "14": {
+      "examples": [
+        {
+          "event_description": null,
+          "instrumented_event_id": 137,
+          "notification_name": "realm_name_in_notifications",
+          "setting": true,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        },
+        {
+          "event_description": null,
+          "instrumented_event_id": 139,
+          "notification_name": "realm_name_in_notifications",
+          "setting": false,
+          "type": "update_global_notifications",
+          "user": "hamlet@zulip.com"
+        }
+      ],
+      "fields": {
+        "id": "int",
+        "notification_name": "equals(\"realm_name_in_notifications\")",
+        "setting": "bool",
+        "type": "equals(\"update_global_notifications\")",
+        "user": "str"
+      }
+    }
+  },
+  "update_message": {
+    "2": {
+      "examples": [
+        {
+          "content": "new content",
+          "edit_timestamp": 1583583231,
+          "event_description": null,
+          "instrumented_event_id": 438,
+          "is_me_message": false,
+          "mention_user_ids": [],
+          "message_id": 54,
+          "message_ids": [
+            54,
+            53
+          ],
+          "orig_content": "hello",
+          "orig_rendered_content": "<p>hello</p>",
+          "orig_subject": "test",
+          "presence_idle_user_ids": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "prev_rendered_content_version": 1,
+          "prior_mention_user_ids": [],
+          "propagate_mode": "change_all",
+          "push_notify_user_ids": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "rendered_content": "<p>new content</p>",
+          "stream_email_user_ids": [],
+          "stream_id": 5,
+          "stream_name": "Verona",
+          "stream_push_user_ids": [],
+          "subject": "new_topic",
+          "topic_links": [],
+          "type": "update_message",
+          "user_id": 9,
+          "wildcard_mention_user_ids": []
+        }
+      ],
+      "fields": {
+        "content": "str",
+        "edit_timestamp": "int",
+        "flags": "list",
+        "id": "int",
+        "is_me_message": "bool",
+        "mention_user_ids": [
+          "int"
+        ],
+        "message_id": "int",
+        "message_ids": [
+          "int"
+        ],
+        "orig_content": "str",
+        "orig_rendered_content": "str",
+        "orig_subject": "str",
+        "presence_idle_user_ids": [
+          "int"
+        ],
+        "prev_rendered_content_version": "int",
+        "prior_mention_user_ids": [
+          "int"
+        ],
+        "propagate_mode": "str",
+        "push_notify_user_ids": [
+          "int"
+        ],
+        "rendered_content": "str",
+        "stream_email_user_ids": [
+          "int"
+        ],
+        "stream_id": "int",
+        "stream_name": "str",
+        "stream_push_user_ids": [
+          "int"
+        ],
+        "subject": "str",
+        "topic_links": "list",
+        "type": "equals(\"update_message\")",
+        "user_id": "int",
+        "wildcard_mention_user_ids": [
+          "int"
+        ]
+      }
+    },
+    "3": {
+      "examples": [
+        {
+          "content": "embed_content",
+          "event_description": null,
+          "instrumented_event_id": 439,
+          "message_id": 54,
+          "message_ids": [
+            54
+          ],
+          "rendered_content": "<p>embed_content</p>",
+          "sender": "hamlet@zulip.com",
+          "type": "update_message"
+        }
+      ],
+      "fields": {
+        "content": "str",
+        "flags": "list",
+        "id": "int",
+        "message_id": "int",
+        "message_ids": [
+          "int"
+        ],
+        "rendered_content": "str",
+        "sender": "str",
+        "type": "equals(\"update_message\")"
+      }
+    }
+  },
+  "update_message_flags": {
+    "0": {
+      "examples": [
+        {
+          "all": false,
+          "event_description": null,
+          "flag": "starred",
+          "instrumented_event_id": 489,
+          "messages": [
+            55
+          ],
+          "operation": "add",
+          "type": "update_message_flags"
+        }
+      ],
+      "fields": {
+        "all": "bool",
+        "flag": "str",
+        "id": "int",
+        "messages": [
+          "int"
+        ],
+        "operation": "equals(\"add\")",
+        "type": "equals(\"update_message_flags\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "all": false,
+          "event_description": null,
+          "flag": "starred",
+          "instrumented_event_id": 490,
+          "messages": [
+            55
+          ],
+          "operation": "remove",
+          "type": "update_message_flags"
+        }
+      ],
+      "fields": {
+        "all": "bool",
+        "flag": "str",
+        "id": "int",
+        "messages": [
+          "int"
+        ],
+        "operation": "equals(\"remove\")",
+        "type": "equals(\"update_message_flags\")"
+      }
+    }
+  },
+  "user_group": {
+    "0": {
+      "examples": [
+        {
+          "event_description": null,
+          "group": {
+            "description": "Backend team",
+            "id": 2,
+            "members": [
+              11
+            ],
+            "name": "backend"
+          },
+          "instrumented_event_id": 495,
+          "op": "add",
+          "type": "user_group"
+        }
+      ],
+      "fields": {
+        "group": {
+          "description": "str",
+          "id": "int",
+          "members": [
+            "int"
+          ],
+          "name": "str"
+        },
+        "id": "int",
+        "op": "equals(\"add\")",
+        "type": "equals(\"user_group\")"
+      }
+    },
+    "1": {
+      "examples": [
+        {
+          "data": {
+            "name": "backendteam"
+          },
+          "event_description": null,
+          "group_id": 2,
+          "instrumented_event_id": 496,
+          "op": "update",
+          "type": "user_group"
+        }
+      ],
+      "fields": {
+        "data": {
+          "name": "str"
+        },
+        "group_id": "int",
+        "id": "int",
+        "op": "equals(\"update\")",
+        "type": "equals(\"user_group\")"
+      }
+    },
+    "2": {
+      "examples": [
+        {
+          "data": {
+            "description": "Backend team to deal with backend code."
+          },
+          "event_description": null,
+          "group_id": 2,
+          "instrumented_event_id": 497,
+          "op": "update",
+          "type": "user_group"
+        }
+      ],
+      "fields": {
+        "data": {
+          "description": "str"
+        },
+        "group_id": "int",
+        "id": "int",
+        "op": "equals(\"update\")",
+        "type": "equals(\"user_group\")"
+      }
+    },
+    "3": {
+      "examples": [
+        {
+          "event_description": null,
+          "group_id": 2,
+          "instrumented_event_id": 498,
+          "op": "add_members",
+          "type": "user_group",
+          "user_ids": [
+            9
+          ]
+        }
+      ],
+      "fields": {
+        "group_id": "int",
+        "id": "int",
+        "op": "equals(\"add_members\")",
+        "type": "equals(\"user_group\")",
+        "user_ids": [
+          "int"
+        ]
+      }
+    },
+    "4": {
+      "examples": [
+        {
+          "event_description": null,
+          "group_id": 2,
+          "instrumented_event_id": 499,
+          "op": "remove_members",
+          "type": "user_group",
+          "user_ids": [
+            9
+          ]
+        }
+      ],
+      "fields": {
+        "group_id": "int",
+        "id": "int",
+        "op": "equals(\"remove_members\")",
+        "type": "equals(\"user_group\")",
+        "user_ids": [
+          "int"
+        ]
+      }
+    },
+    "5": {
+      "examples": [
+        {
+          "event_description": null,
+          "group_id": 2,
+          "instrumented_event_id": 500,
+          "op": "remove",
+          "type": "user_group"
+        }
+      ],
+      "fields": {
+        "group_id": "int",
+        "id": "int",
+        "op": "equals(\"remove\")",
+        "type": "equals(\"user_group\")"
+      }
+    }
+  },
+  "user_status": {
+    "0": {
+      "examples": [
+        {
+          "away": true,
+          "event_description": null,
+          "instrumented_event_id": 12,
+          "status_text": "out to lunch",
+          "type": "user_status",
+          "user_id": 9
+        },
+        {
+          "away": false,
+          "event_description": null,
+          "instrumented_event_id": 13,
+          "status_text": "",
+          "type": "user_status",
+          "user_id": 9
+        }
+      ],
+      "fields": {
+        "away": "bool",
+        "id": "int",
+        "status_text": "str",
+        "type": "equals(\"user_status\")",
+        "user_id": "int"
+      }
+    }
+  }
+}

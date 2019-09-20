@@ -112,3 +112,14 @@ button {
     margin-left: 2%;
     margin-right: 2%;
 }
+
+.events-explore-header {
+    /* Hack to make links to anchors work with fixed header */
+    padding-top: 65px;
+    margin-top: -65px;
+}
+
+.events-explore-header a {
+    text-decoration: underline;
+    color: inherit;
+}
