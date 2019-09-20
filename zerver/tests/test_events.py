@@ -653,10 +653,6 @@ class EventsRegisterTest(ZulipTestCase):
         )
 
     def test_stream_send_message_events(self) -> None:
-        def check_none(var_name: str, val: object) -> Optional[str]:
-            assert(val is None)
-            return None
-
         def get_checker(check_gravatar: Validator) -> Validator:
             schema_checker = self.check_events_dict([
                 ('type', equals('message')),
@@ -697,7 +693,7 @@ class EventsRegisterTest(ZulipTestCase):
             lambda: self.send_stream_message(self.example_email("hamlet"), "Verona", "hello"),
             client_gravatar=True,
         )
-        schema_checker = get_checker(check_gravatar=check_none)
+        schema_checker = get_checker(check_gravatar=equals(None))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
