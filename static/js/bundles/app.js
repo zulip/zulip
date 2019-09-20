@@ -231,3 +231,6 @@ import "../../styles/hotspots.scss";
 import "../../styles/night_mode.scss";
 import "../../styles/user_status.scss";
 import "../../styles/widgets.scss";
+
+// This should be last.
+import "../ready.js";

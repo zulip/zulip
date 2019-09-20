@@ -8,7 +8,7 @@ html {
     touch-action: manipulation;
 }
 
-#css-loading {
+#app-loading.loaded {
     display: none !important; /* We are now loaded, by definition. */
 }
 
