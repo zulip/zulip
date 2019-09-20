@@ -546,7 +546,7 @@ class TestMissedMessageEmailMessageTokenMissingData(ZulipTestCase):
 
             self.assertEqual(exception_message, 'Missing missed message address data')
 
-class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
+class TestMissedMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self) -> None:
 
         # build dummy messages for missed messages email reply
@@ -586,7 +586,6 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.recipient.id, user_profile.id)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
-class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_huddle_message_email_messages(self) -> None:
 
         # build dummy messages for missed messages email reply
@@ -633,7 +632,6 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.sender, self.example_user('cordelia'))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
-class TestMissedStreamMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for missed messages email reply
         # have Hamlet send a message to stream Denmark, that Othello
