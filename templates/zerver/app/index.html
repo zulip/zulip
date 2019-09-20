@@ -16,7 +16,7 @@
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
 <link id="emoji-spritesheet" href="/static/generated/emoji/{{ emojiset }}-sprite.css" rel="stylesheet" type="text/css">
 <style>
-    #css-loading {
+    #app-loading {
     background-color: hsl(0, 0%, 100%);
     position: fixed;
     height: 100%;
@@ -24,6 +24,7 @@
     padding: 10px;
     top: 0px;
     left: 0px;
+    z-index: 9001;
     }
 
 </style>
@@ -33,7 +34,7 @@
 <div id="feedback_container" class="new-style">
 </div>
 
-<div id="css-loading">
+<div id="app-loading">
     <h3>{{ _('Loading...') }}</h3>
     <p>{% trans %}If this message does not go away, please wait a couple seconds and <a id="reload-lnk">reload</a> the page.{% endtrans %}</p>
     <script nonce="{{ csp_nonce }}">
