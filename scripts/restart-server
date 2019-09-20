@@ -7,9 +7,10 @@ import pwd
 import subprocess
 import logging
 import time
+import shlex
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from scripts.lib.zulip_tools import ENDC, OKGREEN, DEPLOYMENTS_DIR, overwrite_symlink
+from scripts.lib.zulip_tools import ENDC, OKGREEN, WARNING, DEPLOYMENTS_DIR, overwrite_symlink
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
@@ -40,7 +41,8 @@ if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
 
 current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
 last_symlink = os.path.join(DEPLOYMENTS_DIR, "last")
-if os.readlink(current_symlink) != deploy_path:
+change_symlink = os.readlink(current_symlink) != deploy_path
+if change_symlink:
     overwrite_symlink(os.readlink(current_symlink), last_symlink)
     overwrite_symlink(deploy_path, current_symlink)
 
@@ -83,3 +85,18 @@ if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
 
 logging.info("Done!")
 print(OKGREEN + "Application restarted successfully!" + ENDC)
+
+if change_symlink and "PWD" in os.environ:
+    for symlink in [last_symlink, current_symlink]:
+        if os.path.commonprefix([os.environ["PWD"], symlink]) == symlink:
+            print(
+                """
+%sYour shell entered its current directory through a symlink:
+  %s
+which has now changed. Your shell will not see this change until you run:
+  cd %s
+to traverse the symlink again.%s
+"""
+                % (WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC),
+                file=sys.stderr,
+            )
