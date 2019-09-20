@@ -109,6 +109,21 @@ def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
             return False
     return True
 
+def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, Any]]=None) -> bool:
+    if not user_profile.is_active:
+        if return_data is not None:
+            if user_profile.is_mirror_dummy:
+                # Record whether it's a mirror dummy account
+                return_data['is_mirror_dummy'] = True
+            return_data['inactive_user'] = True
+        return False
+    if user_profile.realm.deactivated:
+        if return_data is not None:
+            return_data['inactive_realm'] = True
+        return False
+
+    return True
+
 def common_get_active_user(email: str, realm: Realm,
                            return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
     """This is the core common function used by essentially all
@@ -128,17 +143,9 @@ def common_get_active_user(email: str, realm: Realm,
         if return_data is not None:
             return_data['invalid_subdomain'] = True
         return None
-    if not user_profile.is_active:
-        if return_data is not None:
-            if user_profile.is_mirror_dummy:
-                # Record whether it's a mirror dummy account
-                return_data['is_mirror_dummy'] = True
-            return_data['inactive_user'] = True
+    if not is_user_active(user_profile, return_data):
         return None
-    if user_profile.realm.deactivated:
-        if return_data is not None:
-            return_data['inactive_realm'] = True
-        return None
+
     return user_profile
 
 class ZulipAuthMixin:
