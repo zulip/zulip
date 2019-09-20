@@ -27,7 +27,7 @@ touch "$SOURCES_FILE"
 # Hash it to check if the sources file is changed by the script later.
 zulip_source_hash=$(sha1sum "$SOURCES_FILE")
 
-pre_setup_deps=(lsb-release apt-transport-https gnupg)
+pre_setup_deps=(lsb-release apt-transport-https ca-certificates gnupg)
 if ! apt-get -dy install "${pre_setup_deps[@]}"; then
     apt-get update
 fi
