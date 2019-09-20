@@ -346,6 +346,12 @@ CUSTOM_LOGO_URL = None  # type: Optional[str]
 # development.
 INITIAL_PASSWORD_SALT = None  # type: Optional[str]
 
+# These two settings are used to determine whether we're running
+# the `test_events.py` test suite for the purpose of some special
+# logging.
+LOG_EVENT_TYPES = False
+INSTRUMENT_SEND_EVENT = False
+
 # Used to control whether certain management commands are run on
 # the server.
 # TODO: Replace this with a smarter "run on only one server" system.

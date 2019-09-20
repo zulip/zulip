@@ -246,6 +246,10 @@ def main() -> None:
                         action="store_true",
                         default=False,
                         help="Show detailed output")
+    parser.add_argument('--capture-events', dest='capture_events',
+                        action="store_true",
+                        default=False,
+                        help="Capture API test fixtures from /events")
     parser.add_argument('--generate-fixtures', action="store_true", default=False,
                         dest="generate_fixtures",
                         help=("Force a call to generate-fixtures."))
@@ -455,6 +459,16 @@ def main() -> None:
         # We do this even with failures, since slowness can be
         # an important clue as to why tests fail.
         report_slow_tests()
+
+    # TODO: This logic should really be conditional on running in a
+    # special mode that sets settings.LOG_EVENT_TYPES, tests just
+    # `test_events.py`, and is otherwise more controlled; it's
+    # unmergable until we fix that.
+    if options.capture_events:
+        from zerver.tests.test_events import events_schema_checkers
+        import json
+        with open("static/generated/events_schema_checkers.json", "w") as f:
+            f.write(json.dumps(events_schema_checkers, indent=2, sort_keys=True))
 
     # Ideally, we'd check for any leaked test databases here;
     # but that needs some hackery with database names.

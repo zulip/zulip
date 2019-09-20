@@ -156,3 +156,12 @@ def render_markdown_path(markdown_file_path: str,
     rendered_html = jinja.from_string(html).render(context)
 
     return mark_safe(rendered_html)
+
+import json
+import copy
+def dump_example(data: Dict[str, Any]) -> str:
+    newdata = copy.deepcopy(data)
+    if 'event_description' in data:
+        del newdata['event_description']
+        del newdata['instrumented_event_id']
+    return json.dumps(newdata, sort_keys=True, indent=4)

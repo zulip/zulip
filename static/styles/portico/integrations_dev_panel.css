@@ -44,7 +44,7 @@ button {
     background-color: hsl(0, 0%, 100%);
 }
 
-#top-navbar {
+.top-navbar {
     display: grid;
     grid-template-columns: 1fr 5fr 1fr;
 }
@@ -111,4 +111,15 @@ button {
     grid-template-columns: 1fr 1fr;
     margin-left: 2%;
     margin-right: 2%;
+}
+
+.events-explore-header {
+    /* Hack to make links to anchors work with fixed header */
+    padding-top: 65px;
+    margin-top: -65px;
+}
+
+.events-explore-header a {
+    text-decoration: underline;
+    color: inherit;
 }

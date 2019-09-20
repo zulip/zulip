@@ -146,6 +146,8 @@ class DocPageTest(ZulipTestCase):
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
         self._test('/emails/', 'manually generate most of the emails by clicking')
+        # The integrations docs page
+        self._test('/api/events/explore/', 'API Events Explorer')
 
         result = self.client_get('/integrations/doc-html/nonexistent_integration', follow=True,
                                  HTTP_X_REQUESTED_WITH='XMLHttpRequest')

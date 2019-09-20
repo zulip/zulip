@@ -132,6 +132,10 @@ if not CASPER_TESTS:
     set_loglevel('zerver.worker.queue_processors', 'WARNING')
     set_loglevel('stripe', 'WARNING')
 
+    # An internal piece of logic to control whether the test_events.py
+    # test suite is responsible for collecting example events.
+    LOG_EVENT_TYPES = True
+
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
 

@@ -28,18 +28,28 @@ for any particular type of object.
 import re
 import ujson
 from django.utils.translation import ugettext as _
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from typing import Iterable, Optional, Tuple, cast, List
+from typing import Any, Dict, Iterable, Optional, Tuple, cast, List
 
 from datetime import datetime
 from zerver.lib.request import JsonableError
 from zerver.lib.types import Validator, ProfileFieldData
 
+# TODO: Clean up the `type_structure` logging code, which is designed
+# to make it possible to introspect the types defined in our schema
+# checkers in test_events.py.  For simple validators (not the compound
+# ones like check_list or check_dict), it can likely be done
+# successfully using either a decorator or maybe even just through how
+# we import and use validators in test_events.py.
+
 def check_string(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
         return _('%s is not a string') % (var_name,)
     return None
+if settings.LOG_EVENT_TYPES:
+    check_string.type_structure = 'str'  # type: ignore # monkey-patching
 
 def check_required_string(var_name: str, val: object) -> Optional[str]:
     error = check_string(var_name, val)
@@ -51,9 +61,13 @@ def check_required_string(var_name: str, val: object) -> Optional[str]:
         return _("{item} cannot be blank.").format(item=var_name)
 
     return None
+if settings.LOG_EVENT_TYPES:
+    check_required_string.type_structure = 'str'  # type: ignore # monkey-patching
 
 def check_short_string(var_name: str, val: object) -> Optional[str]:
     return check_capped_string(50)(var_name, val)
+if settings.LOG_EVENT_TYPES:
+    check_short_string.type_structure = 'str'  # type: ignore # monkey-patching
 
 def check_capped_string(max_length: int) -> Validator:
     def validator(var_name: str, val: object) -> Optional[str]:
@@ -63,6 +77,10 @@ def check_capped_string(max_length: int) -> Validator:
             return _("{var_name} is too long (limit: {max_length} characters)").format(
                 var_name=var_name, max_length=max_length)
         return None
+
+    if settings.LOG_EVENT_TYPES:
+        validator.type_structure = 'str'  # type: ignore # monkey-patching
+
     return validator
 
 def check_string_fixed_length(length: int) -> Validator:
@@ -74,9 +92,13 @@ def check_string_fixed_length(length: int) -> Validator:
                 var_name=var_name, target_length=length, length=len(val))
         return None
     return validator
+if settings.LOG_EVENT_TYPES:
+    check_string_fixed_length.type_structure = 'str'  # type: ignore # monkey-patching
 
 def check_long_string(var_name: str, val: object) -> Optional[str]:
     return check_capped_string(500)(var_name, val)
+if settings.LOG_EVENT_TYPES:
+    check_long_string.type_structure = 'str'  # type: ignore # monkey-patching
 
 def check_date(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
@@ -86,11 +108,15 @@ def check_date(var_name: str, val: object) -> Optional[str]:
     except ValueError:
         return _('%s is not a date') % (var_name,)
     return None
+if settings.LOG_EVENT_TYPES:
+    check_date.type_structure = 'date'  # type: ignore # monkey-patching
 
 def check_int(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, int):
         return _('%s is not an integer') % (var_name,)
     return None
+if settings.LOG_EVENT_TYPES:
+    check_int.type_structure = 'int'  # type: ignore # monkey-patching
 
 def check_int_in(possible_values: List[int]) -> Validator:
     def validator(var_name: str, val: object) -> Optional[str]:
@@ -102,16 +128,22 @@ def check_int_in(possible_values: List[int]) -> Validator:
         return None
 
     return validator
+if settings.LOG_EVENT_TYPES:
+    check_int_in.type_structure = 'int'  # type: ignore # monkey-patching
 
 def check_float(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, float):
         return _('%s is not a float') % (var_name,)
     return None
+if settings.LOG_EVENT_TYPES:
+    check_float.type_structure = 'float'  # type: ignore # monkey-patching
 
 def check_bool(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, bool):
         return _('%s is not a boolean') % (var_name,)
     return None
+if settings.LOG_EVENT_TYPES:
+    check_bool.type_structure = 'bool'  # type: ignore # monkey-patching
 
 def check_color(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
@@ -121,6 +153,8 @@ def check_color(var_name: str, val: object) -> Optional[str]:
     if not matched_results:
         return _('%s is not a valid hex color code') % (var_name,)
     return None
+if settings.LOG_EVENT_TYPES:
+    check_color.type_structure = 'str'  # type: ignore # monkey-patching
 
 def check_none_or(sub_validator: Validator) -> Validator:
     def f(var_name: str, val: object) -> Optional[str]:
@@ -128,6 +162,8 @@ def check_none_or(sub_validator: Validator) -> Validator:
             return None
         else:
             return sub_validator(var_name, val)
+    if settings.LOG_EVENT_TYPES:
+        f.type_structure = 'none_or_' + sub_validator.type_structure  # type: ignore # monkey-patching
     return f
 
 def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -> Validator:
@@ -147,12 +183,20 @@ def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -
                     return error
 
         return None
+
+    if settings.LOG_EVENT_TYPES:
+        if sub_validator:
+            f.type_structure = [sub_validator.type_structure]  # type: ignore # monkey-patching
+        else:
+            f.type_structure = 'list'  # type: ignore # monkey-patching
     return f
 
 def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                optional_keys: Iterable[Tuple[str, Validator]]=[],
                value_validator: Optional[Validator]=None,
                _allow_only_listed_keys: bool=False) -> Validator:
+    type_structure = {}  # type: Dict[str, Any]
+
     def f(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, dict):
             return _('%s is not a dict') % (var_name,)
@@ -165,6 +209,8 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
             error = sub_validator(vname, val[k])
             if error:
                 return error
+            if settings.LOG_EVENT_TYPES:
+                type_structure[k] = sub_validator.type_structure  # type: ignore # monkey-patching
 
         for k, sub_validator in optional_keys:
             if k in val:
@@ -172,6 +218,8 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 error = sub_validator(vname, val[k])
                 if error:
                     return error
+            if settings.LOG_EVENT_TYPES:
+                type_structure[k] = sub_validator.type_structure  # type: ignore # monkey-patching
 
         if value_validator:
             for key in val:
@@ -179,6 +227,8 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 error = value_validator(vname, val[key])
                 if error:
                     return error
+            if settings.LOG_EVENT_TYPES:
+                type_structure['any'] = value_validator.type_structure  # type: ignore # monkey-patching
 
         if _allow_only_listed_keys:
             required_keys_set = set(x[0] for x in required_keys)
@@ -188,6 +238,8 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 return _("Unexpected arguments: %s") % (", ".join(list(delta_keys)),)
 
         return None
+    if settings.LOG_EVENT_TYPES:
+        f.type_structure = type_structure  # type: ignore # monkey-patching
 
     return f
 
@@ -208,6 +260,9 @@ def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
             if not func(var_name, val):
                 return None
         return _('%s is not an allowed_type') % (var_name,)
+    if settings.LOG_EVENT_TYPES:
+        enumerated_type_check.type_structure = 'Any("%s")' % (  # type: ignore # monkey-patching
+            [x.type_structure for x in allowed_type_funcs],)  # type: ignore # monkey-patching
     return enumerated_type_check
 
 def equals(expected_val: object) -> Validator:
@@ -218,6 +273,8 @@ def equals(expected_val: object) -> Validator:
                      'expected_value': expected_val,
                      'value': val})
         return None
+    if settings.LOG_EVENT_TYPES:
+        f.type_structure = 'equals("%s")' % (str(expected_val),)  # type: ignore # monkey-patching
     return f
 
 def validate_login_email(email: str) -> None:
@@ -225,6 +282,8 @@ def validate_login_email(email: str) -> None:
         validate_email(email)
     except ValidationError as err:
         raise JsonableError(str(err.message))
+if settings.LOG_EVENT_TYPES:
+    validate_login_email.type_structure = 'str'  # type: ignore # monkey-patching
 
 def check_url(var_name: str, val: object) -> Optional[str]:
     # First, ensure val is a string
@@ -238,6 +297,8 @@ def check_url(var_name: str, val: object) -> Optional[str]:
         return None
     except ValidationError:
         return _('%s is not a URL') % (var_name,)
+if settings.LOG_EVENT_TYPES:
+    check_url.type_structure = 'str'  # type: ignore # monkey-patching
 
 def check_external_account_url_pattern(var_name: str, val: object) -> Optional[str]:
     error = check_string(var_name, val)
@@ -253,6 +314,8 @@ def check_external_account_url_pattern(var_name: str, val: object) -> Optional[s
     if error:
         return error
     return None
+if settings.LOG_EVENT_TYPES:
+    check_external_account_url_pattern.type_structure = 'str'  # type: ignore # monkey-patching
 
 def validate_choice_field_data(field_data: ProfileFieldData) -> Optional[str]:
     """
@@ -339,6 +402,8 @@ def to_non_negative_int(s: str, max_int_size: int=2**32-1) -> int:
     if x > max_int_size:
         raise ValueError('%s is too large (max %s)' % (x, max_int_size))
     return x
+if settings.LOG_EVENT_TYPES:
+    to_non_negative_int.type_structure = 'int'  # type: ignore # monkey-patching
 
 def check_string_or_int_list(var_name: str, val: object) -> Optional[str]:
     if isinstance(val, str):
@@ -348,9 +413,13 @@ def check_string_or_int_list(var_name: str, val: object) -> Optional[str]:
         return _('%s is not a string or an integer list') % (var_name,)
 
     return check_list(check_int)(var_name, val)
+if settings.LOG_EVENT_TYPES:
+    check_string_or_int_list.type_structure = 'List[any(int, str)]'  # type: ignore # monkey-patching
 
 def check_string_or_int(var_name: str, val: object) -> Optional[str]:
     if isinstance(val, str) or isinstance(val, int):
         return None
 
     return _('%s is not a string or integer') % (var_name,)
+if settings.LOG_EVENT_TYPES:
+    check_string_or_int.type_structure = 'any(int, str)'  # type: ignore # monkey-patching

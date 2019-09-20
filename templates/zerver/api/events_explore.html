@@ -1,0 +1,86 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ bundle('api-explore') }}
+{{ bundle('portico') }}
+
+{% endblock %}
+
+{% block content %}
+    <div class="header portico-header">
+        <div class="header-main top-navbar">
+            <div>
+                <a class="brand logo">
+                    <svg class="brand-logo" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+                        <g transform="translate(-297.14285,-466.64792)">
+                            <circle cx="317.14285" cy="486.64792" r="19.030317"></circle>
+                            <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z"></path>
+                        </g>
+                    </svg>
+                    <span>Zulip</span>
+                </a>
+            </div>
+
+            <div class="centerpiece">API Events Explorer</div>
+
+            <div class="top-links">
+                <a href="/">Go to Zulip</a>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="pad-small"></div>
+
+    <h2>Event types</h2>
+    <ul>
+        {% for event_type in events_explore_data %}
+        <li><a href="#{{ event_type }}">{{ event_type }} events</a></li>
+        {% endfor %}
+    </ul>
+
+    <br />
+    <br />
+
+    {% for event_type, schema_checker_dicts in events_explore_data.items() %}
+        <h2 class="events-explore-header" id="{{ event_type }}">
+            <a href="#{{ event_type }}">
+                {{ event_type }} events
+            </a>
+        </h2>
+        {% for schema_checker_id, event_root in schema_checker_dicts.items() %}
+
+            <h3 class="events-explore-header" id="{{ event_type }}_schema_{{ schema_checker_id }}">
+                <a href="#{{ event_type }}_schema_{{ schema_checker_id }}">
+                    Schema {{ schema_checker_id }}
+                </a>
+            </h3>
+<pre>
+{{ dump_example(event_root['fields']) }}
+</pre>
+
+            <h4 class="events-explore-header" id="{{ event_type }}_examples_{{ schema_checker_id }}">
+                <a href="#{{ event_type }}_examples_{{ schema_checker_id }}">Examples</a>
+            </h4>
+
+            {% for example in event_root['examples'] %}
+            <h5 class="events-explore-header"
+              id="{{ event_type }}_example_{{ example['instrumented_event_id'] }}">
+                <a href="#{{ event_type }}_example_{{ example['instrumented_event_id'] }}">
+                    Example {{ example['instrumented_event_id'] }}
+                </a>
+            </h5>
+<pre>
+{{ dump_example(example) }}
+</pre>
+            {% endfor %}
+
+        {% endfor %}
+    {% endfor %}
+
+
+    <div class="pad-small"></div>
+
+{% endblock %}

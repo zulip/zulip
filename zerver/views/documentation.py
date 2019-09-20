@@ -1,17 +1,21 @@
 from typing import Any, Dict, Tuple
 from collections import OrderedDict
+
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.shortcuts import render
 from django.template import loader
 
 import os
 import random
 import re
+import ujson
 
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, \
     WebhookIntegration
 from zerver.lib.request import has_request_variables, REQ
+from zerver.lib.response import json_error
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
@@ -197,3 +201,22 @@ def integration_doc(request: HttpRequest, integration_name: str=REQ()) -> HttpRe
     doc_html_str = render_markdown_path(integration.doc, context)
 
     return HttpResponse(doc_html_str)
+
+
+def api_events_docs(request: HttpRequest) -> HttpResponse:
+    data_path = "static/generated/events_schema_checkers.json"
+    if not os.path.exists(data_path):  # nocoverage # temporary
+        return json_error(
+            # Line-wrapped to dodge linter, as this is temporary.s
+            "%s has not been generated" % (data_path,))
+
+    with open(data_path, "r") as f:
+        data = ujson.loads(f.read())
+
+    return render(
+        request,
+        'zerver/api/events_explore.html',
+        context={
+            'events_explore_data': data,
+        },
+    )

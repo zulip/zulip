@@ -2,13 +2,16 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from collections import defaultdict
 import copy
+import json
 import os
 import shutil
 import sys
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from io import StringIO
 
@@ -278,6 +281,7 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post_request('/notify_tornado', req)
         self.assert_json_success(result)
 
+saved_schema = {}  # type: Dict[str, Any]
 class GetEventsTest(ZulipTestCase):
     def tornado_call(self, view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
                      user_profile: UserProfile,
@@ -461,7 +465,11 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertEqual(message["avatar_url"], None)
 
+events_schema_checkers = defaultdict(dict)  # type: Dict[str, Dict[str, Any]]
+@override_settings(INSTRUMENT_SEND_EVENT=True)
 class EventsRegisterTest(ZulipTestCase):
+    instrumented_schema_count = 0
+
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user('hamlet')
@@ -607,7 +615,51 @@ class EventsRegisterTest(ZulipTestCase):
         # Raise AssertionError if `required_keys` contains duplicate items.
         keys = [key[0] for key in required_keys]
         self.assertEqual(len(keys), len(set(keys)), 'Duplicate items found in required_keys.')
-        return check_dict_only(required_keys)
+        checker = check_dict_only(required_keys)
+        checker.instrumented_schema_id = self.instrumented_schema_count  # type: ignore # monkey-patching
+        self.instrumented_schema_count += 1
+
+        def wrapper(var_name: str, val: object) -> Optional[str]:
+            assert isinstance(val, dict)
+
+            val = copy.deepcopy(val)
+            instrumented_event_id = val['instrumented_event_id']
+            del val['instrumented_event_id']
+            schema_id = checker.instrumented_schema_id  # type: ignore # monkey-patching
+
+            # Annoyingly, we only know the type_structure once it's
+            # been called at least once, so we have this code inside
+            # the wrapper, not above.
+            result = checker(var_name, val)
+            if schema_id not in events_schema_checkers[val['type']]:
+                events_schema_checkers[val['type']][schema_id] = {}
+                events_schema_checkers[val['type']][schema_id]['fields'] = checker.type_structure  # type: ignore # monkey-patching
+                events_schema_checkers[val['type']][schema_id]['examples'] = []
+
+            # Now we connect this to the event we captured in
+            # send_event; we need to connect these because only
+            # send_event has the event description.
+            from zerver.tornado.event_queue import captured_events
+            captured_event = captured_events[instrumented_event_id]
+            examples = events_schema_checkers[val['type']][schema_id]['examples']
+
+            for example in examples:
+                example_no_id = copy.deepcopy(example)
+                del example_no_id['instrumented_event_id']
+
+                captured_event_no_id = copy.deepcopy(captured_event)
+                del captured_event_no_id['instrumented_event_id']
+
+                if (json.dumps(example_no_id, sort_keys=True) ==
+                        json.dumps(captured_event_no_id, sort_keys=True)):
+                    # Return without adding a duplicate to the list
+                    return result
+
+            examples.append(captured_event)
+            return result
+        if settings.LOG_EVENT_TYPES:
+            wrapper.type_structure = checker.type_structure  # type: ignore # monkey-patching
+        return wrapper
 
     def test_mentioned_send_message_events(self) -> None:
         user = self.example_user('hamlet')
@@ -656,12 +708,13 @@ class EventsRegisterTest(ZulipTestCase):
             schema_checker = self.check_events_dict([
                 ('type', equals('message')),
                 ('flags', check_list(None)),
-                ('message', self.check_events_dict([
+                ('message', check_dict_only([
                     ('avatar_url', check_gravatar),
                     ('client', check_string),
                     ('content', check_string),
                     ('content_type', equals('text/html')),
                     ('display_recipient', check_string),
+                    ('id', check_int),
                     ('is_me_message', check_bool),
                     ('reactions', check_list(None)),
                     ('recipient_id', check_int),

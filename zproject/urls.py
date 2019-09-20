@@ -542,6 +542,7 @@ i18n_urls = [
         name="zerver.views.documentation.integration_doc"),
     url(r'^integrations/(.*)$', IntegrationView.as_view()),
     url(r'^team/$', zerver.views.users.team_view),
+    url(r'^api/events/explore/$', zerver.views.documentation.api_events_docs),
     url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
     url(r'^apps/(.*)$', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
     url(r'^plans/$', zerver.views.home.plans_view, name='plans'),

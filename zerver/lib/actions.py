@@ -307,7 +307,8 @@ def notify_invites_changed(user_profile: UserProfile) -> None:
     event = dict(type="invites_changed")
     admin_ids = [user.id for user in
                  user_profile.realm.get_admin_users_and_bots()]
-    send_event(user_profile.realm, event, admin_ids)
+    send_event(user_profile.realm, event, admin_ids,
+               description="For realm administrators when invitations are sent")
 
 def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
     send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)

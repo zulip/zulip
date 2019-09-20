@@ -188,6 +188,7 @@ of syntax errors.  There are two common causes for this test failing:
                          "login_time": "9:33am NewYork, NewYork",
                          },
             api_uri_context={},
+            events_explore_data={},
             realm_plan_type=Realm.LIMITED,
             cloud_annual_price=80,
             seat_count=8,
