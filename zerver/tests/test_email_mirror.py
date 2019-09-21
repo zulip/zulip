@@ -21,7 +21,7 @@ from zerver.models import (
     Recipient,
 )
 
-from zerver.lib.actions import ensure_stream
+from zerver.lib.actions import ensure_stream, do_deactivate_realm, do_deactivate_user
 
 from zerver.lib.email_mirror import (
     process_message, process_missed_message,
@@ -671,6 +671,70 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.sender, self.example_user('othello'))
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertEqual(message.recipient.id, usermessage.message.recipient.id)
+
+    def test_missed_message_email_response_from_deactivated_user(self) -> None:
+        self.subscribe(self.example_user("hamlet"), "Denmark")
+        self.subscribe(self.example_user("othello"), "Denmark")
+        email = self.example_email('hamlet')
+        self.login(email)
+        result = self.client_post("/json/messages", {"type": "stream",
+                                                     "topic": "test topic",
+                                                     "content": "test_receive_missed_stream_message_email_messages",
+                                                     "client": "test suite",
+                                                     "to": "Denmark"})
+        self.assert_json_success(result)
+
+        user_profile = self.example_user('othello')
+        message = most_recent_message(user_profile)
+
+        mm_address = create_missed_message_address(user_profile, message)
+
+        do_deactivate_user(user_profile)
+
+        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+
+        incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('othello')
+        incoming_valid_message['To'] = mm_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        initial_last_message = self.get_last_message()
+        process_message(incoming_valid_message)
+
+        # Since othello is deactivated, his message shouldn't be posted:
+        self.assertEqual(initial_last_message, self.get_last_message())
+
+    def test_missed_message_email_response_from_deactivated_realm(self) -> None:
+        self.subscribe(self.example_user("hamlet"), "Denmark")
+        self.subscribe(self.example_user("othello"), "Denmark")
+        email = self.example_email('hamlet')
+        self.login(email)
+        result = self.client_post("/json/messages", {"type": "stream",
+                                                     "topic": "test topic",
+                                                     "content": "test_receive_missed_stream_message_email_messages",
+                                                     "client": "test suite",
+                                                     "to": "Denmark"})
+        self.assert_json_success(result)
+
+        user_profile = self.example_user('othello')
+        message = most_recent_message(user_profile)
+
+        mm_address = create_missed_message_address(user_profile, message)
+
+        do_deactivate_realm(user_profile.realm)
+
+        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+
+        incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('othello')
+        incoming_valid_message['To'] = mm_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        initial_last_message = self.get_last_message()
+        process_message(incoming_valid_message)
+
+        # Since othello's realm is deactivated, his message shouldn't be posted:
+        self.assertEqual(initial_last_message, self.get_last_message())
 
 class TestEmptyGatewaySetting(ZulipTestCase):
     def test_missed_message(self) -> None:
