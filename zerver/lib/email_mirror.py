@@ -26,6 +26,8 @@ from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
     Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
 
+from zproject.backends import is_user_active
+
 logger = logging.getLogger(__name__)
 
 def redact_email_address(error_message: str) -> str:
@@ -180,6 +182,9 @@ def send_to_missed_message_address(address: str, message: message.Message) -> No
     user_profile_id, recipient_id, subject_b = result  # type: (bytes, bytes, bytes)
 
     user_profile = get_user_profile_by_id(user_profile_id)
+    if not is_user_active(user_profile):
+        logger.warning("Sending user is not active. Ignoring this missed message email.")
+        return
     recipient = Recipient.objects.get(id=recipient_id)
 
     body = construct_zulip_body(message, user_profile.realm)
