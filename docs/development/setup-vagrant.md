@@ -984,8 +984,9 @@ machines than the VM host, you can manually set the host IP address in the
 HOST_IP_ADDR 0.0.0.0
 ```
 
-(and restart the Vagrant guest), your host IP would be 0.0.0.0, a special value
-for the IP address that means any IP address can connect to your development server.
+(and restart the Vagrant guest with `vagrant reload`), your host IP would be
+0.0.0.0, a special value for the IP address that means any IP address can
+connect to your development server.
 
 ### Customizing CPU and RAM allocation
 
