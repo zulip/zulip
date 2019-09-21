@@ -123,9 +123,11 @@ christie adm cdrom sudo dip plugdev lpadmin sambashare docker
 
 ##### 3. Make sure the Docker daemon is running:
 
-On some versions of Ubuntu, newly installed services like Docker are
-not automatically enabled and started after installation.  You can
-check using the following:
+If you had previously installed and removed an older version of
+Docker, an [Ubuntu
+bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
+may prevent Docker from being automatically enabled and started after
+installation.  You can check using the following:
 
 ```
 $ systemctl status docker
@@ -139,6 +141,7 @@ the second line, and will need to enable and start the Docker service
 using the following:
 
 ```
+sudo systemctl unmask docker
 sudo systemctl enable docker
 sudo systemctl start docker
 ```
