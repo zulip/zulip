@@ -59,6 +59,10 @@ var keydown_cmd_or_ctrl_mappings = {
     190: {name: 'narrow_to_compose_target', message_view_only: true}, // '.'
 };
 
+var keydown_ctrl_and_shift_mappings = {
+    83: {name: 'create_stream', message_view_only: false}, // 's'
+};
+
 var keydown_either_mappings = {
     // these can be triggered by key or shift + key
     // Note that codes for letters are still case sensitive!
@@ -128,7 +132,15 @@ exports.get_keydown_hotkey = function (e) {
         }
     }
 
+    if (e.ctrlKey && e.shiftKey) {
+        hotkey = keydown_ctrl_and_shift_mappings[e.which];
+        if (hotkey) {
+            return hotkey;
+        }
+    }
+
     var isCmdOrCtrl = common.has_mac_keyboard() ? e.metaKey : e.ctrlKey;
+
     if (isCmdOrCtrl && !e.shiftKey) {
         hotkey = keydown_cmd_or_ctrl_mappings[e.which];
         if (hotkey) {
@@ -620,6 +632,18 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
+    // Create a new stream
+    if (event_name === 'create_stream' && page_params.can_create_streams) {
+        if (overlays.is_active() && overlays.streams_open()) {
+            subs.open_create_stream();
+            return true;
+        }
+        subs.launch();
+        subs.open_create_stream();
+        return true;
+
+    }
+
     // Prevent navigation in the background when the overlays are active.
     if (overlays.is_active()) {
         if (event_name === 'view_selected_stream' && overlays.streams_open()) {
@@ -627,7 +651,7 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         }
         if (event_name === 'n_key' && overlays.streams_open() && page_params.can_create_streams) {
-            subs.open_create_stream();
+            ui.maybe_show_deprecation_notice('n');
             return true;
         }
         return false;
