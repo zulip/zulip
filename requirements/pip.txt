@@ -7,8 +7,8 @@
 #
 # For details, see requirements/README.md .
 #
-wheel==0.33.4
+wheel==0.33.6
 
 # The following packages are considered to be unsafe in a requirements file:
 pip==19.2.3
-setuptools==41.0.1
+setuptools==41.2.0
