@@ -1,0 +1,2 @@
+-r thumbor.in
+pip-tools==4.1.0
