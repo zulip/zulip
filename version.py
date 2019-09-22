@@ -26,4 +26,4 @@ LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2019/03/01/zulip-2-0-relea
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = '55.2'
+PROVISION_VERSION = '56.0'

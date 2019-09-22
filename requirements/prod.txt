@@ -18,102 +18,101 @@ beautifulsoup4==4.8.0
 boto==2.49.0
 cachetools==3.1.1         # via premailer
 cchardet==2.1.4
-certifi==2019.6.16        # via requests
+certifi==2019.9.11        # via requests
 cffi==1.12.3              # via argon2-cffi, cryptography
 chardet==3.0.4            # via requests
-cryptography==2.6.1       # via apns2, pyopenssl, requests
-cssselect==1.0.3          # via premailer
+cryptography==2.7         # via apns2, pyopenssl, requests
+cssselect==1.1.0          # via premailer
 cssutils==1.0.2           # via premailer
 decorator==4.4.0
 defusedxml==0.6.0
-disposable-email-domains==0.0.52
+disposable-email-domains==0.0.53
 django-auth-ldap==2.0.0
 django-bitfield==1.9.6
 django-formtools==2.1     # via django-two-factor-auth
-django-otp==0.6.0         # via django-two-factor-auth
+django-otp==0.7.2         # via django-two-factor-auth
 django-phonenumber-field==1.3.0  # via django-two-factor-auth
 django-pylibmc==0.6.1
 django-sendfile2==0.4.2
 django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.9.1
 django-webpack-loader==0.6.0
-django==1.11.23
+django==1.11.24
 # future==0.17.1            # via python-twitter
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
-html2text==2018.1.9
-httplib2==0.13.0
+html2text==2019.8.11
+httplib2==0.13.1
 hypchat==0.21
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 hyperlink==19.0.0
 idna==2.8                 # via hyperlink, requests
-ijson==2.4
+ijson==2.5
 ipython-genutils==0.2.0   # via traitlets
-ipython==6.5.0
-jedi==0.14.0              # via ipython
+ipython==7.8.0
+jedi==0.15.1              # via ipython
 jinja2==2.10.1
 git+https://github.com/zulip/libthumbor.git@60ed2431c07686a12f2770b2d852c5650f3ccfc6#egg=libthumbor==1.3.2zulip
-lxml==4.3.4
+lxml==4.4.1
 markdown-include==0.5.1
 markdown==3.1.1
 markupsafe==1.1.1         # via jinja2
 matrix-client==0.3.2
 mock==3.0.5
-oauthlib==3.0.1           # via requests-oauthlib, social-auth-core
-parso==0.5.0              # via jedi
+oauthlib==3.1.0           # via requests-oauthlib, social-auth-core
+parso==0.5.1              # via jedi
 pexpect==4.7.0            # via ipython
-phonenumberslite==8.10.15
+phonenumberslite==8.10.19
 pickleshare==0.7.5        # via ipython
-pika==0.13.0
+pika==0.13.1
 pillow==6.1.0
 polib==1.1.0
-premailer==3.5.0
-prompt-toolkit==1.0.16    # via ipython
+premailer==3.6.1
+prompt-toolkit==2.0.9     # via ipython
 psycopg2==2.8.3
 ptyprocess==0.6.0         # via pexpect
-py3dns==3.2.0
+py3dns==3.2.1
 pyahocorasick==1.4.0
-pyasn1-modules==0.2.5     # via python-ldap
-pyasn1==0.4.5             # via pyasn1-modules, python-ldap
+pyasn1-modules==0.2.6     # via python-ldap
+pyasn1==0.4.7             # via pyasn1-modules, python-ldap
 pycparser==2.19           # via cffi
 pygments==2.4.2
 pyjwt==1.7.1
-pylibmc==1.6.0
+pylibmc==1.6.1
 pyoembed==0.1.2
 pyopenssl==19.0.0         # via requests
-pysocks==1.7.0            # via twilio
+pysocks==1.7.1            # via twilio
 python-dateutil==2.8.0
 python-gcm==0.4
 python-ldap==3.2.0        # via django-auth-ldap
 python-magic==0.4.15
 python-twitter==3.5
 python3-openid==3.1.0     # via social-auth-core
-pytz==2019.1
-pyyaml==5.1.1             # via yamole
+pytz==2019.2
+pyyaml==5.1.2             # via yamole
 qrcode==6.1               # via django-two-factor-auth
-redis==3.2.1
-regex==2019.6.8
-requests-oauthlib==1.0.0  # via python-twitter, social-auth-core
+redis==3.3.8
+regex==2019.8.19
+requests-oauthlib==1.2.0  # via python-twitter, social-auth-core
 requests[security]==2.22.0  # via hypchat, matrix-client, premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
-simplegeneric==0.8.1      # via ipython
 six==1.12.0
 social-auth-app-django==3.1.0
 social-auth-core==3.2.0   # via social-auth-app-django
 sockjs-tornado==1.0.6
-soupsieve==1.9.2          # via beautifulsoup4
+soupsieve==1.9.3          # via beautifulsoup4
 sourcemap==0.2.1
-sqlalchemy==1.3.6
+sqlalchemy==1.3.8
 statsd==3.3.0             # via django-statsd-mozilla
-stripe==2.35.0
+stripe==2.36.2
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
-twilio==6.29.2
+twilio==6.31.0
 typing-extensions==3.7.4
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
-urllib3==1.25.3           # via requests
-uwsgi==2.0.17.1
+urllib3==1.25.5           # via requests
+uwsgi==2.0.18
 virtualenv-clone==0.5.3
 wcwidth==0.1.7            # via prompt-toolkit
 yamole==2.1.6
@@ -122,4 +121,4 @@ git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca
 
 # The following packages are considered to be unsafe in a requirements file:
 pip==19.2.3
-setuptools==41.0.1        # via ipython, markdown
+setuptools==41.2.0        # via ipython, markdown
