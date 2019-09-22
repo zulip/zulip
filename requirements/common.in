@@ -3,127 +3,126 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==1.11.23
+Django==1.11.*  # https://github.com/zulip/zulip/issues/10835
 
 # needed for Deque (in Python < 3.5.4) and TypedDict
-typing_extensions==3.7.4
+typing-extensions
 
 # Needed for rendering backend templates
-Jinja2==2.10.1
+Jinja2
 
 # Needed for markdown processing
-Markdown==3.1.1
-Pygments==2.4.2
-hyperlink==19.0.0
+Markdown
+Pygments
+hyperlink
 
 # Needed for manage.py
-ipython==6.5.0
+ipython
 
 # Needed for Image Processing
-Pillow==6.1.0
+Pillow
 
 # Needed for building complex DB queries
-SQLAlchemy==1.3.6
+SQLAlchemy
 
 # Needed for password hashing
-argon2-cffi==19.1.0
+argon2-cffi
 
 # Needed for S3 file uploads
-boto==2.49.0
+boto
 
 # Needed for integrations
-defusedxml==0.6.0
+defusedxml
 
 # Needed for LDAP support
-django-auth-ldap==2.0.0
+django-auth-ldap
 
 # Django extension providing bitfield support
-django-bitfield==1.9.6
+django-bitfield
 
 # Django extension for sending data to statsd
-django-statsd-mozilla==0.4.0
+django-statsd-mozilla
 
 # Needed for Android push notifications
-python-gcm==0.4
+python-gcm
 
 # Needed for the email mirror
-html2text==2018.1.9
-httplib2==0.13.0
+html2text
+httplib2
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 
 # Needed for hipchat import
-hypchat==0.21
+hypchat
 
 # Needed for inlining the CSS in emails
-premailer==3.5.0
+premailer
 
 # Needed for JWT-based auth
-PyJWT==1.7.1
+PyJWT
 
 # Needed for including other markdown files for user docs
-markdown-include==0.5.1
+markdown-include
 
 # Needed for mock objects in decorators
-mock==3.0.5
+mock
 
 # Needed to access rabbitmq
-# See #8466 for why we're not using the latest version.
-pika==0.13.0
+pika==0.13.*  # https://github.com/pika/pika/blob/1.0.0/CHANGELOG.rst#100-2019-03-26
 
 # Needed to access our database
-psycopg2==2.8.3 --no-binary psycopg2
+psycopg2 --no-binary psycopg2
 
 # Needed for memcached usage
-pylibmc==1.6.0
+pylibmc
 
 # Needed for compression support in memcached via pylibmc
-django-pylibmc==0.6.1
+django-pylibmc
 
 # Needed for zerver/tests/test_timestamp.py
-python-dateutil==2.8.0
+python-dateutil
 
 # Needed for timezone work
-pytz==2019.1
+pytz
 
 # Needed for redis
-redis==3.2.1
+redis
 
 # Needed for Python 2+3 compatibility
-six==1.12.0
+six
 
 # Needed for Tornado websockets support
-sockjs-tornado==1.0.6
+sockjs-tornado
 
 # Needed to parse source maps for error reporting
-sourcemap==0.2.1
+sourcemap
 
 # Tornado used for server->client push system
-tornado==4.5.3
+tornado==4.*  # https://github.com/zulip/zulip/issues/8913
 
 # Fast JSON parser
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 
 # Django extension for serving webpack modules
-django-webpack-loader==0.6.0
+django-webpack-loader
 
 # Needed for iOS push notifications
-apns2==0.5.0
+apns2==0.5.*  # https://github.com/Pr0Ger/PyAPNs2/issues/88
 
-python-twitter==3.5
+python-twitter
 
 # To parse po files
-polib==1.1.0
+polib
 
 # Needed for cloning virtual environments
-virtualenv-clone==0.5.3
+virtualenv-clone
 
 # Needed for reading json as stream
-ijson==2.4
+ijson
 
 # Needed for link preview
-beautifulsoup4==4.8.0
-pyoembed==0.1.2
-python-magic==0.4.15
+beautifulsoup4
+pyoembed
+python-magic
 
 # The Zulip API bindings, from its own repository.  We integrate with
 # these tightly, including fetching content not included in the normal
@@ -133,44 +132,44 @@ git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca
 git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
-py3dns==3.2.0
+py3dns
 
 # Install Python Social Auth
-social-auth-app-django==3.1.0
+social-auth-app-django
 
 # Needed for messages' rendered content parsing in push notifications.
-lxml==4.3.4
+lxml
 
 # Needed for 2-factor authentication
-django-two-factor-auth==1.9.1
+django-two-factor-auth
 
 # Required by django-phonenumber-field which is a dependency of django-two-factor-auth.
 # Developers can install either phonenumberslite or phonenumbers. Developers of
 # django-two-factor-auth has not specified which package to install so we are going
 # with phonenumberslite since it has less memory footprint.
-phonenumberslite==8.10.15
+phonenumberslite
 
-twilio==6.29.2
+twilio
 
 # Needed for processing payments (in corporate)
-stripe==2.35.0
+stripe
 
 # Needed for serving uploaded files from nginx but perform auth checks in django.
-django-sendfile2==0.4.2
+django-sendfile2
 
 # For checking whether email of the user is from a disposable email provider.
-disposable-email-domains==0.0.52
+disposable-email-domains
 
 # Needed for parsing YAML with JSON references from the REST API spec files
-yamole==2.1.6
+yamole
 
 # Needed for signing thumbnail requests so that they can be authenticated on the
 # other end.  Using a fork to eliminate a really slow pkgresources import.
 git+https://github.com/zulip/libthumbor.git@60ed2431c07686a12f2770b2d852c5650f3ccfc6#egg=libthumbor==1.3.2zulip
 
 # Needed for string matching in AlertWordProcessor
-pyahocorasick==1.4.0
+pyahocorasick
 
 # Needed for function decorators that don't break introspection.
 # Used for rate limiting authentication.
-decorator==4.4.0
+decorator

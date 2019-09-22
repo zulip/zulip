@@ -8,13 +8,8 @@
 # See requirements/README.md for more detail.
 
 # Needed to build RTD docs
-sphinx==1.8.4
-sphinx-rtd-theme==0.4.3
+sphinx
+sphinx-rtd-theme
 
 # Needed to build markdown docs
-recommonmark==0.5.0
-
-# Upgrading to the latest version of CommonMark breaks the
-# compatibility with recommonmark.  See
-# https://github.com/rtfd/recommonmark/issues/24
-CommonMark==0.9.0
+recommonmark==0.5.*  # https://github.com/zulip/zulip/issues/11395

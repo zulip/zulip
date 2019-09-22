@@ -11,7 +11,7 @@ alabaster==0.7.12         # via sphinx
 babel==2.5.3              # via sphinx
 certifi==2019.6.16        # via requests
 chardet==3.0.4            # via requests
-commonmark==0.9.0
+commonmark==0.9.0         # via recommonmark
 docutils==0.14            # via recommonmark, sphinx
 # future==0.17.1            # via commonmark
 idna==2.8                 # via requests
