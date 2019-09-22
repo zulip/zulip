@@ -13,7 +13,7 @@ botocore==1.12.183        # via tornado-botocore
 click==7.0                # via pip-tools
 derpconf==0.8.3           # via thumbor
 django-auth-ldap==1.7.0
-django==1.11.14
+django==1.11.23
 docutils==0.14            # via botocore
 futures==3.1.1            # via thumbor, tornado
 jmespath==0.9.4           # via botocore
