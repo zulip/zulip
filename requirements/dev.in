@@ -5,56 +5,56 @@
 -r docs.in
 
 # moto s3 mock
-moto==1.3.13
+moto
 
 # Needed for running tools/run-dev.py
-Twisted==19.7.0
+Twisted
 
 # Needed for documentation links test
-Scrapy==1.7.2
+Scrapy
 
 # Needed to compute test coverage
-coverage==4.5.3
+coverage
 
 # fake for LDAP testing
-fakeldap==0.6.1
+fakeldap
 
 # For testing mock http requests
-httpretty==0.9.6
+httpretty
 
 # For sorting imports
-isort==4.3.21
+isort
 
 # For doing highly usable Python profiling (temporary fork of
 # line_profiler: https://github.com/rkern/line_profiler/issues/127)
-lp37==2.1.1
+lp37
 
 # for pep8 linter
-pycodestyle==2.5.0
+pycodestyle
 
 # Needed to run pyflakes linter
-pyflakes==2.1.1
+pyflakes
 
 # Needed for watching file changes
-pyinotify==0.9.6
+pyinotify
 
 # Needed to run tests in parallel
-tblib==1.4.0
+tblib
 
 # Needed to lint Git commit messages
-gitlint==0.12.0
+gitlint
 
 # Needed for visualising cprofile reports
-snakeviz==2.0.1
+snakeviz
 
 # Needed to sync translations from transifex
-transifex-client==0.12.5
+transifex-client
 
 # Needed for creating digital ocean droplets
-python-digitalocean==1.14.0
+python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools==4.1.0
+pip-tools
 
 # zulip's linting framework - zulint
 git+https://github.com/zulip/zulint@aaed679f1ad38b230090eadd3870b7682500f60c#egg=zulint==0.0.1

@@ -110,7 +110,7 @@ git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
 twilio==6.29.2
-typing_extensions==3.7.4
+typing-extensions==3.7.4
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 urllib3==1.25.3           # via requests
 uwsgi==2.0.17.1

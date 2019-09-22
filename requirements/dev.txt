@@ -31,7 +31,7 @@ cffi==1.12.3              # via argon2-cffi, cryptography
 cfn-lint==0.22.3          # via moto
 chardet==3.0.4            # via requests
 click==7.0                # via gitlint, pip-tools
-commonmark==0.9.0
+commonmark==0.9.0         # via recommonmark
 constantly==15.1.0        # via twisted
 coverage==4.5.3
 cryptography==2.6.1       # via apns2, moto, pyopenssl, requests, service-identity, sshpubkeys
