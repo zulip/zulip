@@ -2,19 +2,20 @@
 set -e
 
 # Make sure the Zulip dev virtualenv exists, and operate within it.
-if [ ! -d /srv/zulip-py3-venv ]; then
+if [ ! -d /srv/zulip-py3-venv ] || [ ! -d /srv/zulip-thumbor-venv ]; then
     ./tools/setup/setup_venvs.py
 fi
-source /srv/zulip-py3-venv/bin/activate
 
 compile_requirements () {
     source="$1"
     output="$2"
     python_version="$3"
 
-    pip-compile --quiet --allow-unsafe --no-header --output-file "$output" "$source"
+    if [ "$python_version" == "py2" ]; then
+        /srv/zulip-thumbor-venv/bin/pip-compile --quiet --allow-unsafe --no-header --output-file "$output" "$source"
+    else
+        /srv/zulip-py3-venv/bin/pip-compile --quiet --allow-unsafe --no-header --output-file "$output" "$source"
 
-    if [ "$python_version" != "py2" ]; then
         # Remove an unnecessary future requirement declared by commonmark,
         # python-jose, and python-twitter.
         # https://github.com/readthedocs/commonmark.py/pull/188
@@ -64,3 +65,4 @@ compile_requirements requirements/dev.in "$OUTPUT_BASE_DIR/dev.txt"
 compile_requirements requirements/mypy.in "$OUTPUT_BASE_DIR/mypy.txt"
 compile_requirements requirements/docs.in "$OUTPUT_BASE_DIR/docs.txt"
 compile_requirements requirements/thumbor.in "$OUTPUT_BASE_DIR/thumbor.txt" py2
+compile_requirements requirements/thumbor-dev.in "$OUTPUT_BASE_DIR/thumbor-dev.txt" py2

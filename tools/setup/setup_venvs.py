@@ -13,7 +13,7 @@ from scripts.lib.zulip_tools import overwrite_symlink
 VENV_PATH = "/srv/zulip-py3-venv"
 
 DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "dev.txt")
-THUMBOR_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "thumbor.txt")
+THUMBOR_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "thumbor-dev.txt")
 
 def main() -> None:
     setup_virtualenv("/srv/zulip-thumbor-venv", THUMBOR_REQS_FILE,
