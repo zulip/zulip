@@ -65,4 +65,8 @@ else
     apt-get update && rm -f "$STAMP_FILE"
 fi
 
+if [ "$release" = "stretch" ]; then
+    apt-get install -y groonga-keyring
+fi
+
 echo "$DEPENDENCIES_HASH" > "$DEPENDENCIES_HASH_FILE"
