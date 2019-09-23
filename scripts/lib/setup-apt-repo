@@ -43,7 +43,6 @@ deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 EOF
 elif [ "$release" = "stretch" ] || [ "$release" = "buster" ]; then
-    apt-get install -y debian-archive-keyring
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
     cat >$SOURCES_FILE <<EOF
 deb https://packages.groonga.org/debian/ $release main
