@@ -205,6 +205,13 @@ downtime, and then upgrade to the new release.
   scrollbar-related bugs in the process.
 - Started migrating our frontend codebase to TypeScript.
 
+### 2.0.6 -- 2019-09-23
+
+- Updated signing keys for the PGroonga repository for Debian Stretch.
+- Fixed creation of linkifiers with URLs containing &.
+- Fixed a subtle bug that could cause the message list to suddenly
+  scroll up in certain rare race conditions.
+
 ### 2.0.5 -- 2019-09-11
 
 - CVE-2019-16215: Fix DoS vulnerability in Markdown LINK_RE.
