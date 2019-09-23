@@ -4,24 +4,23 @@ sent by Zapier directly in Zulip.
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-a-bot-indented.md!}
 
-1. Create a account on [Zapier](https://zapier.com), and click **Make a Zap!** in the upper right.
+1. Create an account on [Zapier](https://zapier.com).
 
-1. Trigger (Step 1): **Choose a Trigger App**, select a **Trigger**, and click **Save + Continue**.
-   Follow the flow to connect your app account to Zapier.
+1. [Click here](https://zapier.com/developer/public-invite/8304/bb0e9784d171eb44762c1bef4fcba2df/)
+   and then click **Accept Invite & Build a Zap**.
 
-1. Action (Step 2): Under **Choose an Action App**, select **Webhooks by Zapier**. Select
-   **POST** as the **Action**, and click **Save + Continue**.
+1. Click **Make a Zap!** in the upper right.
 
-1. Set **URL** to the URL constructed above. Set **Payload Type** to `Json`.
-   Add the following two fields to **Data**:
+1. Follow the instructions to select a Trigger App and Event (**When this happens ...** (Step 1)).
+   This could be an app like Trello, Gmail, Calendar, or anything else.
 
-    * `topic` corresponds to the topic of a message
-    * `content` corresponds to the content of a message
+1. **Do this ...** (Step 2): Search for Zulip, and click on the Zulip icon. Follow the instructions.
 
-    Customize the `topic` and `content` fields as necessary. Click **Continue**.
+1. At some point, Zapier will ask you to sign in with your Zulip
+   credentials. Use the email address and API key of the bot you created above.
 
-1. Click **Send Test To Webhooks by Zapier** to send a test message.
+1. Fill out the topic/recipient/message content fields as desired.
 
 **Congratulations! You're done!**
