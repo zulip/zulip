@@ -60,6 +60,7 @@ if [ $# -gt 0 ]; then
     done
 fi
 
+compile_requirements requirements/pip.in "$OUTPUT_BASE_DIR/pip.txt"
 compile_requirements requirements/prod.in "$OUTPUT_BASE_DIR/prod.txt"
 compile_requirements requirements/dev.in "$OUTPUT_BASE_DIR/dev.txt"
 compile_requirements requirements/mypy.in "$OUTPUT_BASE_DIR/mypy.txt"
