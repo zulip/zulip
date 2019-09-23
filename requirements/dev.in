@@ -48,7 +48,7 @@ gitlint
 snakeviz
 
 # Needed to sync translations from transifex
-transifex-client
+transifex-client<0.13.5  # Before https://github.com/transifex/transifex-client/commit/14a1a55c55fe66b1dee1fdfc4f2b1134c3c1af5d
 
 # Needed for creating digital ocean droplets
 python-digitalocean

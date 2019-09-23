@@ -151,7 +151,7 @@ s3transfer==0.2.1         # via boto3
 scrapy==1.7.3
 service-identity==18.1.0  # via scrapy
 sh==1.12.14               # via gitlint
-six==1.11.0
+six==1.12.0
 snakeviz==2.0.1
 snowballstemmer==1.9.1    # via sphinx
 social-auth-app-django==3.1.0
@@ -175,14 +175,14 @@ git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#
 tblib==1.4.0
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
-transifex-client==0.13.6
+transifex-client==0.13.4
 twilio==6.31.0
 twisted==19.7.0
 typed-ast==1.4.0          # via mypy
 typing-extensions==3.7.4
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 unidecode==1.1.1          # via python-slugify
-urllib3==1.23             # via botocore, requests, transifex-client
+urllib3==1.25.5           # via botocore, requests, transifex-client
 virtualenv-clone==0.5.3
 w3lib==1.21.0             # via parsel, scrapy
 wcwidth==0.1.7            # via prompt-toolkit
