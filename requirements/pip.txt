@@ -1,4 +1,14 @@
-# Dependencies for setting up pip to install our requirements.txt file.
+#
+# This file is GENERATED.  Don't edit directly.
+#
+# To update, edit the non-"lock" files in requirements/*.txt, then:
+#
+#    tools/update-locked-requirements
+#
+# For details, see requirements/README.md .
+#
+wheel==0.33.4
+
+# The following packages are considered to be unsafe in a requirements file:
 pip==19.2.3
 setuptools==41.0.1
-wheel==0.33.4
