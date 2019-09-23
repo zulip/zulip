@@ -1039,6 +1039,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         rows = UserProfile.objects.filter(id__in=user_ids).values('id', 'email')
         return {row['id']: row['email'] for row in rows}
 
+    def email_address_is_realm_public(self) -> bool:
+        if self.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+            return True
+        return False
+
     def can_create_streams(self) -> bool:
         if self.is_realm_admin:
             return True

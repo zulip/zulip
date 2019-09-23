@@ -837,7 +837,7 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     delete_user_profile_caches([user_profile])
 
     user_profile.delivery_email = new_email
-    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+    if user_profile.email_address_is_realm_public():
         user_profile.email = new_email
         user_profile.save(update_fields=["email", "delivery_email"])
     else:
@@ -850,7 +850,7 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     event = dict(type='realm_user', op='update', person=payload)
     send_event(user_profile.realm, event, [user_profile.id])
 
-    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+    if user_profile.email_address_is_realm_public():
         # Additionally, if we're also changing the publicly visible
         # email, we send a new_email event as well.
         send_user_email_update_event(user_profile)
