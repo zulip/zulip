@@ -271,7 +271,7 @@ class NarrowBuilder:
             public_streams_queryset = get_public_streams_queryset(self.user_profile.realm)
             recipient_ids = Recipient.objects.filter(
                 type=Recipient.STREAM,
-                type_id__in=public_streams_queryset).values_list('id', flat=True)
+                type_id__in=public_streams_queryset).values_list('id', flat=True).order_by('id')
             cond = column("recipient_id").in_(recipient_ids)
             return query.where(maybe_negate(cond))
         raise BadNarrowOperator('unknown streams operand ' + operand)

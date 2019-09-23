@@ -1078,9 +1078,10 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids['othello_id'] = othello_user.id
         query_ids['hamlet_recipient'] = get_personal_recipient(hamlet_user.id).id
         query_ids['othello_recipient'] = get_personal_recipient(othello_user.id).id
-        recipients = Recipient.objects.filter(type=Recipient.STREAM,
-                                              type_id__in=Stream.objects.filter(
-                                                  realm=hamlet_user.realm, invite_only=False)).values('id')
+        recipients = Recipient.objects.filter(
+            type=Recipient.STREAM,
+            type_id__in=Stream.objects.filter(realm=hamlet_user.realm, invite_only=False),
+        ).values('id').order_by('id')
         query_ids['public_streams_recipents'] = ", ".join(str(r['id']) for r in recipients)
         return query_ids
 
