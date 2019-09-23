@@ -727,7 +727,7 @@ You can see all the organizations on your Zulip server using
 zulip@zulip:~$ /home/zulip/deployments/current/manage.py list_realms
 id    string_id                                name
 --    ---------                                ----
-1     zulip                                    None
+1     zulipinternal                            None
 2                                              Zulip Community
 ```
 
