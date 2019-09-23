@@ -7,7 +7,8 @@ from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Mapping, Optional
 
-from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user
+from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user, \
+    do_set_realm_property
 from zerver.lib.bot_config import get_bot_config, ConfigError
 from zerver.models import get_realm, get_stream, \
     Realm, UserProfile, get_user, get_bot_services, Service, \
@@ -268,6 +269,56 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(email, realm)
         assert(profile.default_sending_stream is not None)
         self.assertEqual(profile.default_sending_stream.name, 'Rome')
+
+    def test_add_bot_email_address_visibility(self) -> None:
+        # Test that we don't mangle the email field with
+        # email_address_visiblity limited to admins
+        user = self.example_user("hamlet")
+        do_set_realm_property(user.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        user.refresh_from_db()
+
+        self.login(user.delivery_email)
+        self.assert_num_bots_equal(0)
+        events = []  # type: List[Mapping[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        email = 'hambot-bot@zulip.testserver'
+        bot = self.get_bot_user(email)
+
+        event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
+        self.assertEqual(
+            dict(
+                type='realm_bot',
+                op='add',
+                bot=dict(email='hambot-bot@zulip.testserver',
+                         user_id=bot.id,
+                         bot_type=bot.bot_type,
+                         full_name='The Bot of Hamlet',
+                         is_active=True,
+                         api_key=result['api_key'],
+                         avatar_url=result['avatar_url'],
+                         default_sending_stream=None,
+                         default_events_register_stream=None,
+                         default_all_public_streams=False,
+                         services=[],
+                         # Important: This is the product-facing
+                         # email, not the delivery email, for this
+                         # user.  TODO: Migrate this to an integer ID.
+                         owner=user.email)
+            ),
+            event['event']
+        )
+
+        users_result = self.client_get('/json/users')
+        members = ujson.loads(users_result.content)['members']
+        bots = [m for m in members if m['email'] == 'hambot-bot@zulip.testserver']
+        self.assertEqual(len(bots), 1)
+        bot = bots[0]
+        self.assertEqual(bot['bot_owner'], user.email)
+        self.assertEqual(bot['user_id'], self.get_bot_user(email).id)
 
     def test_bot_add_subscription(self) -> None:
         """
