@@ -1,6 +1,6 @@
 import django_otp
 from two_factor.utils import default_device
-from django_otp import user_has_device, _user_is_authenticated
+from django_otp import user_has_device
 
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AnonymousUser
@@ -847,7 +847,7 @@ def zulip_otp_required(view: Any=None,
         if not if_configured:
             return True
 
-        return user.is_verified() or (_user_is_authenticated(user)
+        return user.is_verified() or (user.is_authenticated
                                       and not user_has_device(user))
 
     decorator = django_user_passes_test(test,
