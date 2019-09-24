@@ -127,7 +127,7 @@ function load_fixture_options(integration_name) {
     the fixture options for the fixture_names dropdown and also set
     the fixture body to the first fixture by default. */
     var fixtures_options_dropdown = $("#fixture_name")[0];
-    var fixtures_names = Object.keys(loaded_fixtures[integration_name]);
+    var fixtures_names = Object.keys(loaded_fixtures[integration_name]).sort();
 
     fixtures_names.forEach(function (fixture_name) {
         var new_dropdown_option = document.createElement("option");
