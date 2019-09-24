@@ -80,7 +80,7 @@ and return to the import instructions.
 
 [hipchat-import]: https://zulipchat.com/help/import-from-hipchat
 [slack-import]: https://zulipchat.com/help/import-from-slack
-[zulip-backups]: ../production/maintain-secure-upgrade.html#backups
+[zulip-backups]: ../production/export-and-import.html#backups
 
 Otherwise, open the link in a browser.  Follow the prompts to set up
 your organization, and your own user account as an administrator.
