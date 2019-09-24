@@ -187,7 +187,13 @@ def transform_url(protocol, path, query, target_port, target_host):
 def fetch_request(url, callback, **kwargs):
     # type: (str, Any, **Any) -> Generator[Callable[..., Any], Any, None]
     # use large timeouts to handle polling requests
-    req = httpclient.HTTPRequest(url, connect_timeout=240.0, request_timeout=240.0, **kwargs)
+    req = httpclient.HTTPRequest(
+        url,
+        connect_timeout=240.0,
+        request_timeout=240.0,
+        decompress_response=False,
+        **kwargs
+    )
     client = httpclient.AsyncHTTPClient()
     # wait for response
     response = yield gen.Task(client.fetch, req)
