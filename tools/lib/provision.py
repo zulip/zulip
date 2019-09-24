@@ -358,7 +358,7 @@ def main(options):
             sys.exit(1)
 
     # Install shellcheck.
-    run_as_root(["scripts/lib/install-shellcheck"])
+    run_as_root(["tools/setup/install-shellcheck"])
 
     setup_venvs.main()
 
