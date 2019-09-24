@@ -330,9 +330,6 @@ class Realm(models.Model):
         }
     video_chat_provider = models.PositiveSmallIntegerField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
     google_hangouts_domain = models.TextField(default="")
-    zoom_user_id = models.TextField(default="")
-    zoom_api_key = models.TextField(default="")
-    zoom_api_secret = models.TextField(default="")
 
     default_code_block_language: Optional[str] = models.TextField(null=True, default=None)
 
