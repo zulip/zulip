@@ -843,6 +843,133 @@ paths:
                         "rendered": "<p><strong>foo</strong></p>",
                         "result": "success"
                     }
+  /messages/{message_id}/reactions:
+    post:
+      description: Add an emoji reaction to a message.
+      parameters:
+      - name: message_id
+        in: path
+        description: The ID of the message that you want to add an emoji reaction to.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      - name: emoji_name
+        in: query
+        description: |
+                     Name of the emoji you want to add as as a reaction.
+
+
+                     To find the an emoji's name, hover over a message to
+                     reveal three icons on the right, then click the smiley face icon.
+                     Images of available reaction emojis appear. Hover over the emoji
+                     you want, and note that emoji's text name.
+        schema:
+          type: string
+        example: '**:slight smile:**'
+        required: true
+      - name: emoji_code
+        in: query
+        description: |
+                     An encoded version of the unicode codepoint. Used only
+                     in rare corner cases to consolidate identical reactions
+                     to the same emoji name.
+        schema:
+          type: string
+        example: '**foo**'
+        required: false
+      - name: reaction_type
+        in: query
+        description: |
+                     If you are using a custom emoji,
+                     set `reaction_type` to `realm_emoji`.
+        schema:
+          type: string
+        example: '**realm_emoji**'
+        required: false
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    rendered:
+                      type: string
+                      description: The rendered HTML.
+                - example:
+                    {
+                        "msg": "",
+                        "rendered": "<p><strong>foo</strong></p>",
+                        "result": "success"
+                    }
+    delete:
+      description: Delete an emoji reaction from a message.
+      parameters:
+      - name: message_id
+        in: path
+        description: The ID of the message from which you want to delete the emoji reaction.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      - name: emoji_name
+        in: query
+        description: |
+                     Name of the emoji you want to delete from a reaction.
+
+
+                     To find the an emoji's name, hover over a message to
+                     reveal three icons on the right, then click the smiley face icon.
+                     Images of available reaction emojis appear. Hover over the emoji
+                     you want, and note that emoji's text name.
+        schema:
+          type: string
+        example: '**:slight smile:**'
+        required: true
+      - name: emoji_code
+        in: query
+        description: |
+                     An encoded version of the unicode codepoint. Used only
+                     in rare corner cases to consolidate identical reactions
+                     to the same emoji name.
+        schema:
+          type: string
+        example: '**foo**'
+        required: false
+      - name: reaction_type
+        in: query
+        description: |
+                     If you are using a custom emoji,
+                     set `reaction_type` to `realm_emoji`.
+        schema:
+          type: string
+        example: '**realm_emoji**'
+        required: false
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    rendered:
+                      type: string
+                      description: The rendered HTML.
+                - example:
+                    {
+                        "msg": "",
+                        "rendered": "<p><strong>foo</strong></p>",
+                        "result": "success"
+                    }
   /user_uploads:
     post:
       description: Upload a single file and get the corresponding URI.
