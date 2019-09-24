@@ -244,6 +244,7 @@ class MessageDict:
             recipient_type_id = message.recipient.type_id,
             reactions = Reaction.get_raw_db_rows([message.id]),
             submessages = SubMessage.get_raw_db_rows([message.id]),
+            has_link = message.has_link
         )
 
     @staticmethod
@@ -265,6 +266,7 @@ class MessageDict:
             'sender_id',
             'sending_client__name',
             'sender__realm_id',
+            'has_link'
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
 
@@ -298,6 +300,7 @@ class MessageDict:
             recipient_type_id = row['recipient__type_id'],
             reactions=row['reactions'],
             submessages=row['submessages'],
+            has_link=row['has_link']
         )
 
     @staticmethod
@@ -318,7 +321,8 @@ class MessageDict:
             recipient_type: int,
             recipient_type_id: int,
             reactions: List[Dict[str, Any]],
-            submessages: List[Dict[str, Any]]
+            submessages: List[Dict[str, Any]],
+            has_link: bool
     ) -> Dict[str, Any]:
 
         obj = dict(

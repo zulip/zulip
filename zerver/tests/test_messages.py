@@ -51,6 +51,7 @@ from zerver.lib.message import (
     get_recent_private_conversations,
     maybe_update_first_visible_message_id,
     messages_for_ids,
+    render_markdown,
     sew_messages_and_reactions,
     update_first_visible_message_id,
 )
@@ -3548,12 +3549,6 @@ class AttachmentTest(ZulipTestCase):
             content = 'yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (zulip_realm.id, ext)
             self.assertTrue(Message.content_has_image(content))
 
-        self.assertFalse(Message.content_has_link('whatever'))
-        self.assertTrue(Message.content_has_link('yo\n http://foo.com'))
-        self.assertTrue(Message.content_has_link('yo\n https://example.com?spam=1&eggs=2'))
-        self.assertTrue(Message.content_has_link('yo /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo' % (
-            zulip_realm.id,)))
-
     def test_claim_attachment(self) -> None:
 
         # Create dummy DB entry
@@ -3581,6 +3576,43 @@ class AttachmentTest(ZulipTestCase):
         for file_name, path_id, size in dummy_files:
             attachment = Attachment.objects.get(path_id=path_id)
             self.assertTrue(attachment.is_claimed())
+
+class LinkDetectionTest(ZulipTestCase):
+    def test_finds_all_links(self) -> None:
+        msg_ids = []
+        msg_contents = ["foo.org", "[bar](baz.gov)", "http://quux.ca"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_email('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertTrue(all([msg.has_link for msg in msgs]))
+
+    def test_finds_only_links(self) -> None:
+        msg_ids = []
+        msg_contents = ["`example.org`", '``example.org```', '$$https://example.org$$', "foo"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_email('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertFalse(all([msg.has_link for msg in msgs]))
+
+    def test_finds_link_after_edit(self) -> None:
+        msg_id = self.send_stream_message(self.example_email('hamlet'),
+                                          'Denmark', content='a')
+        msg = Message.objects.get(id=msg_id)
+        self.assertFalse(msg.has_link)
+        content = "a http://foo.com"
+        rendered_content = render_markdown(msg, content)
+        do_update_message(self.example_user('hamlet'), msg,
+                          None, "change_one", content, rendered_content,
+                          set(), set())
+        self.assertTrue(msg.has_link)
+        content = "a"
+        rendered_content = render_markdown(msg, content)
+        do_update_message(self.example_user('hamlet'), msg,
+                          None, "change_one", content, rendered_content,
+                          set(), set())
+        self.assertFalse(msg.has_link)
 
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:

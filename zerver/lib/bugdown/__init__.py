@@ -1043,6 +1043,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
+
+        # Set has_link attribute whenever a message is processed by bugdown
+        if self.markdown.zulip_message:
+            self.markdown.zulip_message.has_link = len(found_urls) > 0
+
         # Collect unique URLs which are not quoted
         unique_urls = {found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote}
         if len(found_urls) == 0 or len(unique_urls) > self.INLINE_PREVIEW_LIMIT_PER_MESSAGE:
