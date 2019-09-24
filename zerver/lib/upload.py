@@ -259,6 +259,10 @@ class ZulipUploadBackend:
     def delete_export_tarball(self, path_id: str) -> Optional[str]:
         raise NotImplementedError()
 
+    def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
+        raise NotImplementedError()
+
+
 ### S3
 
 def get_bucket(conn: S3Connection, bucket_name: str) -> Bucket:
@@ -452,6 +456,11 @@ class S3UploadBackend(ZulipUploadBackend):
         medium_suffix = "-medium.png" if medium else ""
         # ?x=x allows templates to append additional parameters with &s
         return "https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, hash_key, medium_suffix)
+
+    def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
+        bucket = settings.S3_AVATAR_BUCKET
+        # export_path has a leading /
+        return "https://%s.s3.amazonaws.com%s" % (bucket, export_path)
 
     def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
         content_type = guess_type(icon_file.name)[0]
@@ -814,6 +823,10 @@ class LocalUploadBackend(ZulipUploadBackend):
         if delete_local_file('avatars', file_path):
             return path_id
         return None
+
+    def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
+        # export_path has a leading `/`
+        return realm.uri + export_path
 
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:

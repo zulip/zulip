@@ -33,7 +33,7 @@ exports.populate_exports_table = function (exports) {
     var exports_list = list_render.create(exports_table, Object.values(exports), {
         name: "admin_exports_list",
         modifier: function (data) {
-            if (data.export_data.deleted_timestamp === undefined) {
+            if (data.deleted_timestamp === null) {
                 return render_admin_export_list({
                     realm_export: {
                         id: data.id,
@@ -42,7 +42,7 @@ exports.populate_exports_table = function (exports) {
                         event_time: timerender.last_seen_status_from_date(
                             new XDate(data.export_time * 1000)
                         ),
-                        path: data.export_data.export_path,
+                        url: data.export_url,
                     },
                 });
             }

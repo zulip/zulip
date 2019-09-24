@@ -7,8 +7,8 @@
         <span class="export_time">{{event_time}}</span>
     </td>
     <td>
-        {{#if path}}
-        <span class="export_url"><a href="{{path}}" download>{{t 'Download' }}</a></span>
+        {{#if url}}
+        <span class="export_url"><a href="{{url}}" download>{{t 'Download' }}</a></span>
         {{else}}
         <span class="export_url">{{t 'The export URL is not yet available... Check back soon.' }}</span>
         {{/if}}
