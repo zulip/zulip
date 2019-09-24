@@ -77,7 +77,7 @@
                         <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{@key}}" />
                         <span>{{t this }}</span>
                         <span class="right">
-                            {{#if @last}}
+                            {{#if (eq @key "text") }}
                             <div class="emoji_alt_code">&nbsp;:relaxed:</div>
                             {{else}}
                             <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f642.png" />
