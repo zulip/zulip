@@ -1736,14 +1736,6 @@ class Message(AbstractMessage):
                               content, re.IGNORECASE))
 
     @staticmethod
-    def content_has_link(content: str) -> bool:
-        return ('http://' in content or
-                'https://' in content or
-                '/user_uploads' in content or
-                (settings.ENABLE_FILE_LINKS and 'file:///' in content) or
-                'bitcoin:' in content)
-
-    @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
         """
         "status messages" start with /me and have special rendering:
@@ -1758,7 +1750,6 @@ class Message(AbstractMessage):
         content = self.content
         self.has_attachment = bool(Message.content_has_attachment(content))
         self.has_image = bool(Message.content_has_image(content))
-        self.has_link = bool(Message.content_has_link(content))
 
 @receiver(pre_save, sender=Message)
 def pre_save_message(sender: Any, **kwargs: Any) -> None:
