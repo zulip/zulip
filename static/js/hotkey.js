@@ -98,7 +98,7 @@ var keypress_mappings = {
     77: {name: 'toggle_mute', message_view_only: true}, // 'M'
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
-    83: {name: 'narrow_by_topic', message_view_only: true}, //'S'
+    84: {name: 'narrow_by_topic', message_view_only: true}, //'T'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: true}, // 'd'

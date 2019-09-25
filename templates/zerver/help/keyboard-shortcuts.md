@@ -178,4 +178,4 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **View stream messages**: `V`
 
-* **Toggle subscription**: `S`
+* **Toggle subscription**: `T`
