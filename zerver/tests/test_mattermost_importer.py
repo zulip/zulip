@@ -26,41 +26,42 @@ class MatterMostImporter(ZulipTestCase):
     # set logger to a higher level to suppress 'logger.INFO' outputs
     logger.setLevel(logging.WARNING)
 
-    def setUp(self) -> None:
-        fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
-        self.mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
-        self.username_to_user = create_username_to_user_mapping(self.mattermost_data["user"])
-        reset_mirror_dummy_users(self.username_to_user)
-
     def test_mattermost_data_file_to_dict(self) -> None:
-        self.assertEqual(len(self.mattermost_data), 6)
+        fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
 
-        self.assertEqual(self.mattermost_data["version"], [1])
+        self.assertEqual(len(mattermost_data), 6)
 
-        self.assertEqual(len(self.mattermost_data["team"]), 2)
-        self.assertEqual(self.mattermost_data["team"][0]["name"], "gryffindor")
+        self.assertEqual(mattermost_data["version"], [1])
 
-        self.assertEqual(len(self.mattermost_data["channel"]), 5)
-        self.assertEqual(self.mattermost_data["channel"][0]["name"], "gryffindor-common-room")
-        self.assertEqual(self.mattermost_data["channel"][0]["team"], "gryffindor")
+        self.assertEqual(len(mattermost_data["team"]), 2)
+        self.assertEqual(mattermost_data["team"][0]["name"], "gryffindor")
 
-        self.assertEqual(len(self.mattermost_data["user"]), 5)
-        self.assertEqual(self.mattermost_data["user"][1]["username"], "harry")
-        self.assertEqual(len(self.mattermost_data["user"][1]["teams"]), 1)
+        self.assertEqual(len(mattermost_data["channel"]), 5)
+        self.assertEqual(mattermost_data["channel"][0]["name"], "gryffindor-common-room")
+        self.assertEqual(mattermost_data["channel"][0]["team"], "gryffindor")
 
-        self.assertEqual(len(self.mattermost_data["post"]), 20)
-        self.assertEqual(self.mattermost_data["post"][0]["team"], "gryffindor")
-        self.assertEqual(self.mattermost_data["post"][0]["channel"], "dumbledores-army")
-        self.assertEqual(self.mattermost_data["post"][0]["user"], "harry")
-        self.assertEqual(len(self.mattermost_data["post"][0]["replies"]), 1)
+        self.assertEqual(len(mattermost_data["user"]), 5)
+        self.assertEqual(mattermost_data["user"][1]["username"], "harry")
+        self.assertEqual(len(mattermost_data["user"][1]["teams"]), 1)
 
-        self.assertEqual(len(self.mattermost_data["emoji"]), 2)
-        self.assertEqual(self.mattermost_data["emoji"][0]["name"], "peerdium")
+        self.assertEqual(len(mattermost_data["post"]), 20)
+        self.assertEqual(mattermost_data["post"][0]["team"], "gryffindor")
+        self.assertEqual(mattermost_data["post"][0]["channel"], "dumbledores-army")
+        self.assertEqual(mattermost_data["post"][0]["user"], "harry")
+        self.assertEqual(len(mattermost_data["post"][0]["replies"]), 1)
+
+        self.assertEqual(len(mattermost_data["emoji"]), 2)
+        self.assertEqual(mattermost_data["emoji"][0]["name"], "peerdium")
 
     def test_process_user(self) -> None:
         user_id_mapper = IdMapper()
+        fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        username_to_user = create_username_to_user_mapping(mattermost_data["user"])
+        reset_mirror_dummy_users(username_to_user)
 
-        harry_dict = self.username_to_user["harry"]
+        harry_dict = username_to_user["harry"]
         harry_dict["is_mirror_dummy"] = False
 
         realm_id = 3
@@ -86,7 +87,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["is_realm_admin"], False)
 
         team_name = "slytherin"
-        snape_dict = self.username_to_user["snape"]
+        snape_dict = username_to_user["snape"]
         snape_dict["is_mirror_dummy"] = True
         user = process_user(snape_dict, realm_id, team_name, user_id_mapper)
         self.assertEqual(user["avatar_source"], 'G')
@@ -105,10 +106,14 @@ class MatterMostImporter(ZulipTestCase):
     def test_convert_user_data(self) -> None:
         user_id_mapper = IdMapper()
         realm_id = 3
+        fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        username_to_user = create_username_to_user_mapping(mattermost_data["user"])
+        reset_mirror_dummy_users(username_to_user)
 
         team_name = "gryffindor"
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, self.username_to_user, realm_id, team_name)
+        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
         self.assertTrue(user_id_mapper.has("harry"))
         self.assertTrue(user_id_mapper.has("ron"))
         self.assertEqual(user_handler.get_user(user_id_mapper.get("harry"))["full_name"], "Harry Potter")
@@ -116,7 +121,7 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "slytherin"
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, self.username_to_user, realm_id, team_name)
+        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
         self.assertEqual(len(user_handler.get_all_users()), 3)
         self.assertTrue(user_id_mapper.has("malfoy"))
         self.assertTrue(user_id_mapper.has("pansy"))
@@ -124,18 +129,23 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "gryffindor"
         # Snape is a mirror dummy user in Harry's team.
-        label_mirror_dummy_users(2, team_name, self.mattermost_data, self.username_to_user)
+        label_mirror_dummy_users(2, team_name, mattermost_data, username_to_user)
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, self.username_to_user, realm_id, team_name)
+        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
         self.assertEqual(len(user_handler.get_all_users()), 3)
         self.assertTrue(user_id_mapper.has("snape"))
 
         team_name = "slytherin"
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, self.username_to_user, realm_id, team_name)
+        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
         self.assertEqual(len(user_handler.get_all_users()), 3)
 
     def test_convert_channel_data(self) -> None:
+        fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        username_to_user = create_username_to_user_mapping(mattermost_data["user"])
+        reset_mirror_dummy_users(username_to_user)
+
         user_handler = UserHandler()
         subscriber_handler = SubscriberHandler()
         stream_id_mapper = IdMapper()
@@ -145,14 +155,14 @@ class MatterMostImporter(ZulipTestCase):
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
-            user_data_map=self.username_to_user,
+            user_data_map=username_to_user,
             realm_id=3,
             team_name=team_name,
         )
 
         zerver_stream = convert_channel_data(
-            channel_data=self.mattermost_data["channel"],
-            user_data_map=self.username_to_user,
+            channel_data=mattermost_data["channel"],
+            user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,
             stream_id_mapper=stream_id_mapper,
             user_id_mapper=user_id_mapper,
@@ -193,10 +203,10 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("dumbledores-army")), {ron_id, harry_id})
 
         # Converting channel data when a user's `teams` value is `null`.
-        self.username_to_user["ron"].update({"teams": None})
+        username_to_user["ron"].update({"teams": None})
         zerver_stream = convert_channel_data(
-            channel_data=self.mattermost_data["channel"],
-            user_data_map=self.username_to_user,
+            channel_data=mattermost_data["channel"],
+            user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,
             stream_id_mapper=stream_id_mapper,
             user_id_mapper=user_id_mapper,
@@ -211,8 +221,8 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "slytherin"
         zerver_stream = convert_channel_data(
-            channel_data=self.mattermost_data["channel"],
-            user_data_map=self.username_to_user,
+            channel_data=mattermost_data["channel"],
+            user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,
             stream_id_mapper=stream_id_mapper,
             user_id_mapper=user_id_mapper,
@@ -228,10 +238,12 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(subscriber_handler.get_users(stream_id=stream_id_mapper.get("slytherin-quidditch-team")), {malfoy_id, pansy_id})
 
     def test_write_emoticon_data(self) -> None:
+        fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
         output_dir = self.make_import_output_dir("mattermost")
         zerver_realm_emoji = write_emoticon_data(
             realm_id=3,
-            custom_emoji_data=self.mattermost_data["emoji"],
+            custom_emoji_data=mattermost_data["emoji"],
             data_dir=self.fixture_file_name("", "mattermost_fixtures"),
             output_dir = output_dir
         )
@@ -250,12 +262,12 @@ class MatterMostImporter(ZulipTestCase):
 
         self.assertEqual(records_json[0]["file_name"], "peerdium")
         self.assertEqual(records_json[0]["realm_id"], 3)
-        exported_emoji_path = self.fixture_file_name(self.mattermost_data["emoji"][0]["image"], "mattermost_fixtures")
+        exported_emoji_path = self.fixture_file_name(mattermost_data["emoji"][0]["image"], "mattermost_fixtures")
         self.assertTrue(filecmp.cmp(records_json[0]["path"], exported_emoji_path))
 
         self.assertEqual(records_json[1]["file_name"], "tick")
         self.assertEqual(records_json[1]["realm_id"], 3)
-        exported_emoji_path = self.fixture_file_name(self.mattermost_data["emoji"][1]["image"], "mattermost_fixtures")
+        exported_emoji_path = self.fixture_file_name(mattermost_data["emoji"][1]["image"], "mattermost_fixtures")
         self.assertTrue(filecmp.cmp(records_json[1]["path"], exported_emoji_path))
 
     def test_get_mentioned_user_ids(self) -> None:
@@ -334,11 +346,16 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(list(ids), [])
 
     def test_check_user_in_team(self) -> None:
-        harry = self.username_to_user["harry"]
+        fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        username_to_user = create_username_to_user_mapping(mattermost_data["user"])
+        reset_mirror_dummy_users(username_to_user)
+
+        harry = username_to_user["harry"]
         self.assertTrue(check_user_in_team(harry, "gryffindor"))
         self.assertFalse(check_user_in_team(harry, "slytherin"))
 
-        snape = self.username_to_user["snape"]
+        snape = username_to_user["snape"]
         self.assertFalse(check_user_in_team(snape, "gryffindor"))
         self.assertTrue(check_user_in_team(snape, "slytherin"))
 
@@ -346,21 +363,29 @@ class MatterMostImporter(ZulipTestCase):
         self.assertFalse(check_user_in_team(snape, "slytherin"))
 
     def test_label_mirror_dummy_users(self) -> None:
+        fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        username_to_user = create_username_to_user_mapping(mattermost_data["user"])
+        reset_mirror_dummy_users(username_to_user)
+
         label_mirror_dummy_users(
             num_teams=2,
             team_name="gryffindor",
-            mattermost_data=self.mattermost_data,
-            username_to_user=self.username_to_user,
+            mattermost_data=mattermost_data,
+            username_to_user=username_to_user,
         )
-        self.assertFalse(self.username_to_user["harry"]["is_mirror_dummy"])
-        self.assertFalse(self.username_to_user["ron"]["is_mirror_dummy"])
-        self.assertFalse(self.username_to_user["malfoy"]["is_mirror_dummy"])
+        self.assertFalse(username_to_user["harry"]["is_mirror_dummy"])
+        self.assertFalse(username_to_user["ron"]["is_mirror_dummy"])
+        self.assertFalse(username_to_user["malfoy"]["is_mirror_dummy"])
 
         # snape is mirror dummy since the user sent a message in gryffindor and
         # left the team
-        self.assertTrue(self.username_to_user["snape"]["is_mirror_dummy"])
+        self.assertTrue(username_to_user["snape"]["is_mirror_dummy"])
 
     def test_build_reactions(self) -> None:
+        fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+
         total_reactions = []  # type: List[Dict[str, Any]]
 
         reactions = [
@@ -372,7 +397,7 @@ class MatterMostImporter(ZulipTestCase):
 
         zerver_realmemoji = write_emoticon_data(
             realm_id=3,
-            custom_emoji_data=self.mattermost_data["emoji"],
+            custom_emoji_data=mattermost_data["emoji"],
             data_dir=self.fixture_file_name("", "mattermost_fixtures"),
             output_dir=self.make_import_output_dir("mattermost")
         )
