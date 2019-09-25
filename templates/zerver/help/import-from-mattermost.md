@@ -177,7 +177,8 @@ root domain. Replace the last line above with the following, after replacing
 Mattermost's export tool is incomplete and does not support exporting
 the following data:
 
-* private messages and group private messages between users
+* private messages and group private messages between users can be imported
+  if there is only one mattermost team in the export.
 * user avatars
 * uploaded files and message attachments.
 

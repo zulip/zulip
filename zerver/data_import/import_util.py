@@ -224,6 +224,34 @@ def build_stream_subscriptions(
 
     return subscriptions
 
+def build_huddle_subscriptions(
+        get_users: Callable[..., Set[int]],
+        zerver_recipient: List[ZerverFieldsT],
+        zerver_huddle: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+
+    subscriptions = []  # type: List[ZerverFieldsT]
+
+    huddle_ids = {huddle['id'] for huddle in zerver_huddle}
+
+    recipient_map = {
+        recipient['id']: recipient['type_id']  # recipient_id -> stream_id
+        for recipient in zerver_recipient
+        if recipient['type'] == Recipient.HUDDLE
+        and recipient['type_id'] in huddle_ids
+    }
+
+    for recipient_id, huddle_id in recipient_map.items():
+        user_ids = get_users(huddle_id=huddle_id)
+        for user_id in user_ids:
+            subscription = build_subscription(
+                recipient_id=recipient_id,
+                user_id=user_id,
+                subscription_id=NEXT_ID('subscription'),
+            )
+            subscriptions.append(subscription)
+
+    return subscriptions
+
 def build_personal_subscriptions(zerver_recipient: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
 
     subscriptions = []  # type: List[ZerverFieldsT]
@@ -255,7 +283,8 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
     return recipient_dict
 
 def build_recipients(zerver_userprofile: List[ZerverFieldsT],
-                     zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+                     zerver_stream: List[ZerverFieldsT],
+                     zerver_huddle: List[ZerverFieldsT]=[]) -> List[ZerverFieldsT]:
     '''
     As of this writing, we only use this in the HipChat
     conversion.  The Slack and Gitter conversions do it more
@@ -286,6 +315,16 @@ def build_recipients(zerver_userprofile: List[ZerverFieldsT],
         recipient_dict = model_to_dict(recipient)
         recipients.append(recipient_dict)
 
+    for huddle in zerver_huddle:
+        type_id = huddle['id']
+        type = Recipient.HUDDLE
+        recipient = Recipient(
+            type_id=type_id,
+            id=NEXT_ID('recipient'),
+            type=type,
+        )
+        recipient_dict = model_to_dict(recipient)
+        recipients.append(recipient_dict)
     return recipients
 
 def build_realm(zerver_realm: List[ZerverFieldsT], realm_id: int,

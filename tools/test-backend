@@ -123,7 +123,6 @@ not_yet_fully_covered = {path for target in [
     'zerver/tornado/websocket_client.py',
     # Data import files; relatively low priority
     'zerver/data_import/hipchat*.py',
-    'zerver/data_import/mattermost.py',
     'zerver/data_import/sequencer.py',
     'zerver/data_import/slack.py',
     'zerver/data_import/gitter.py',
