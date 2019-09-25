@@ -307,6 +307,7 @@ def process_raw_message_batch(realm_id: int,
             continue
 
         pub_date = raw_message['pub_date']
+        sender_user_id = raw_message['sender_id']
         try:
             recipient_id = get_recipient_id_from_receiver_name(raw_message["receiver_id"], Recipient.STREAM)
         except KeyError:
@@ -315,7 +316,6 @@ def process_raw_message_batch(realm_id: int,
         rendered_content = None
 
         topic_name = 'imported from mattermost'
-        user_id = raw_message['sender_id']
 
         message = build_message(
             content=content,
@@ -324,7 +324,7 @@ def process_raw_message_batch(realm_id: int,
             recipient_id=recipient_id,
             rendered_content=rendered_content,
             topic_name=topic_name,
-            user_id=user_id,
+            user_id=sender_user_id,
             has_attachment=False,
         )
         zerver_message.append(message)
