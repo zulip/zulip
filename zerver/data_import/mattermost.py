@@ -262,7 +262,7 @@ def process_raw_message_batch(realm_id: int,
                               subscriber_map: Dict[int, Set[int]],
                               user_id_mapper: IdMapper,
                               user_handler: UserHandler,
-                              get_recipient_id: Callable[[ZerverFieldsT], int],
+                              get_recipient_id_from_receiver_name: Callable[[str, int], int],
                               is_pm_data: bool,
                               output_dir: str,
                               zerver_realmemoji: List[Dict[str, Any]],
@@ -308,11 +308,10 @@ def process_raw_message_batch(realm_id: int,
 
         pub_date = raw_message['pub_date']
         try:
-            recipient_id = get_recipient_id(raw_message)
+            recipient_id = get_recipient_id_from_receiver_name(raw_message["receiver_id"], Recipient.STREAM)
         except KeyError:
             logging.debug("Could not find recipient_id for a message, skipping.")
             continue
-
         rendered_content = None
 
         topic_name = 'imported from mattermost'
@@ -352,7 +351,7 @@ def process_posts(num_teams: int,
                   team_name: str,
                   realm_id: int,
                   post_data: List[Dict[str, Any]],
-                  get_recipient_id: Callable[[ZerverFieldsT], int],
+                  get_recipient_id_from_receiver_name: Callable[[str, int], int],
                   subscriber_map: Dict[int, Set[int]],
                   output_dir: str,
                   is_pm_data: bool,
@@ -415,7 +414,7 @@ def process_posts(num_teams: int,
             subscriber_map=subscriber_map,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
-            get_recipient_id=get_recipient_id,
+            get_recipient_id_from_receiver_name=get_recipient_id_from_receiver_name,
             is_pm_data=is_pm_data,
             output_dir=output_dir,
             zerver_realmemoji=zerver_realmemoji,
@@ -444,17 +443,16 @@ def write_message_data(num_teams: int,
                        username_to_user: Dict[str, Dict[str, Any]],
                        zerver_realmemoji: List[Dict[str, Any]],
                        total_reactions: List[Dict[str, Any]]) -> None:
+    stream_id_to_recipient_id = {}
 
-    stream_id_to_recipient_id = {
-        d['type_id']: d['id']
-        for d in zerver_recipient
-        if d['type'] == Recipient.STREAM
-    }
+    for d in zerver_recipient:
+        if d['type'] == Recipient.STREAM:
+            stream_id_to_recipient_id[d['type_id']] = d['id']
 
-    def get_stream_recipient_id(raw_message: ZerverFieldsT) -> int:
-        receiver_id = raw_message['receiver_id']
-        stream_id = stream_id_mapper.get(receiver_id)
-        recipient_id = stream_id_to_recipient_id[stream_id]
+    def get_recipient_id_from_receiver_name(receiver_name: str, recipient_type: int) -> int:
+        if recipient_type == Recipient.STREAM:
+            receiver_id = stream_id_mapper.get(receiver_name)
+            recipient_id = stream_id_to_recipient_id[receiver_id]
         return recipient_id
 
     process_posts(
@@ -462,7 +460,7 @@ def write_message_data(num_teams: int,
         team_name=team_name,
         realm_id=realm_id,
         post_data=post_data,
-        get_recipient_id=get_stream_recipient_id,
+        get_recipient_id_from_receiver_name=get_recipient_id_from_receiver_name,
         subscriber_map=subscriber_map,
         output_dir=output_dir,
         is_pm_data=False,
