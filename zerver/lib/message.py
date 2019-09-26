@@ -331,7 +331,13 @@ class MessageDict:
         obj[TOPIC_NAME] = topic_name
         obj['sender_realm_id'] = sender_realm_id
 
-        obj[TOPIC_LINKS] = bugdown.topic_links(sender_realm_id, topic_name)
+        # Render topic_links with the stream's realm instead of the user's realm.
+        rendering_realm_id = sender_realm_id
+        if message and recipient_type == Recipient.STREAM:
+            stream = Stream.objects.select_related("realm").get(id=recipient_type_id)
+            rendering_realm_id = stream.realm.id
+
+        obj[TOPIC_LINKS] = bugdown.topic_links(rendering_realm_id, topic_name)
 
         if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)

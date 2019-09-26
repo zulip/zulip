@@ -72,6 +72,7 @@ from zerver.lib.test_classes import (
 from zerver.lib.topic import (
     LEGACY_PREV_TOPIC,
     DB_TOPIC_NAME,
+    TOPIC_LINKS,
 )
 
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
@@ -89,7 +90,7 @@ from zerver.models import (
     get_stream, get_stream_recipient, get_system_bot, get_user, Reaction,
     flush_per_request_caches, ScheduledMessage, get_huddle_recipient,
     bulk_get_huddle_user_ids, get_huddle_user_ids,
-    get_personal_recipient, get_display_recipient
+    get_personal_recipient, get_display_recipient, RealmFilter,
 )
 
 
@@ -955,7 +956,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 14)
+        self.assert_length(queries, 15)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user('iago')
@@ -1277,6 +1278,59 @@ class MessageDictTest(ZulipTestCase):
         dct = MessageDict.build_dict_from_raw_db_row(row)
         error_content = '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
         self.assertEqual(dct['rendered_content'], error_content)
+
+    def test_topic_links_use_stream_realm(self) -> None:
+        # Set up a realm filter on 'zulip' and assert that messages sent to a
+        # stream on 'zulip' have the topic linkified from senders in both the
+        # 'zulip' and 'lear' realms.
+        zulip_realm = get_realm('zulip')
+        lear_realm = get_realm('lear')
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        url = 'https://trac.zulip.net/ticket/123'
+        othello = self.example_user('othello')
+        cordelia = self.lear_user('cordelia')
+        stream = get_stream('Denmark', zulip_realm)
+        topic_name = 'test #123'
+        recipient = get_stream_recipient(stream.id)
+        sending_client = make_client(name="test suite")
+
+        realm_filter = RealmFilter(realm=zulip_realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+
+        message_from_zulip = Message(
+            sender=othello,
+            recipient=recipient,
+            content='hello world',
+            date_sent=timezone_now(),
+            sending_client=sending_client,
+            last_edit_time=timezone_now(),
+            edit_history='[]'
+        )
+        message_from_zulip.set_topic_name(topic_name)
+        message_from_zulip.save()
+        message_from_lear = Message(
+            sender=cordelia,
+            recipient=recipient,
+            content='hello world',
+            date_sent=timezone_now(),
+            sending_client=sending_client,
+            last_edit_time=timezone_now(),
+            edit_history='[]'
+        )
+        message_from_lear.set_topic_name(topic_name)
+        message_from_lear.save()
+
+        dct = MessageDict.to_dict_uncached_helper(message_from_zulip)
+        self.assertEqual(dct[TOPIC_LINKS], [url])
+        dct = MessageDict.to_dict_uncached_helper(message_from_lear)
+        self.assertEqual(dct[TOPIC_LINKS], [url])
+        self.assertNotEqual(lear_realm, zulip_realm)
 
     def test_reaction(self) -> None:
         sender = self.example_user('othello')
