@@ -331,7 +331,20 @@ class MessageDict:
         obj[TOPIC_NAME] = topic_name
         obj['sender_realm_id'] = sender_realm_id
 
-        obj[TOPIC_LINKS] = bugdown.topic_links(sender_realm_id, topic_name)
+        # Render topic_links with the stream's realm instead of the
+        # user's realm; this is important for messages sent by
+        # cross-realm bots like NOTIFICATION_BOT.
+        #
+        # TODO: We could potentially avoid this database query in
+        # common cases by optionally passing through the
+        # stream_realm_id through the code path from do_send_messages
+        # (where we've already fetched the data).  It would involve
+        # somewhat messy plumbing, but would probably be worth it.
+        rendering_realm_id = sender_realm_id
+        if message and recipient_type == Recipient.STREAM:
+            rendering_realm_id = Stream.objects.get(id=recipient_type_id).realm_id
+
+        obj[TOPIC_LINKS] = bugdown.topic_links(rendering_realm_id, topic_name)
 
         if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
