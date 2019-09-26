@@ -15,7 +15,7 @@ from analytics.models import BaseCount, \
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, floor_to_hour, verify_UTC
-from zerver.models import Message, Realm, \
+from zerver.models import Message, Realm, RealmAuditLog, \
     Stream, UserActivityInterval, UserProfile, models
 
 ## Logging setup ##
@@ -385,7 +385,7 @@ count_user_by_realm_query = """
 
 # Currently hardcodes the query needed for active_users_audit:is_bot:day.
 # Assumes that a user cannot have two RealmAuditLog entries with the same event_time and
-# event_type in ['user_created', 'user_deactivated', etc].
+# event_type in [RealmAuditLog.USER_CREATED, USER_DEACTIVATED, etc].
 # In particular, it's important to ensure that migrations don't cause that to happen.
 check_realmauditlog_by_user_query = """
     INSERT INTO analytics_usercount
@@ -397,7 +397,7 @@ check_realmauditlog_by_user_query = """
         SELECT modified_user_id, max(event_time) AS max_event_time
         FROM zerver_realmauditlog
         WHERE
-            event_type in ('user_created', 'user_deactivated', 'user_activated', 'user_reactivated') AND
+            event_type in ({user_created}, {user_activated}, {user_deactivated}, {user_reactivated}) AND
             event_time < %%(time_end)s
         GROUP BY modified_user_id
     ) ral2
@@ -408,8 +408,11 @@ check_realmauditlog_by_user_query = """
     ON
         ral1.modified_user_id = zerver_userprofile.id
     WHERE
-        ral1.event_type in ('user_created', 'user_activated', 'user_reactivated')
-"""
+        ral1.event_type in ({user_created}, {user_activated}, {user_reactivated})
+""".format(user_created=RealmAuditLog.USER_CREATED,
+           user_activated=RealmAuditLog.USER_ACTIVATED,
+           user_deactivated=RealmAuditLog.USER_DEACTIVATED,
+           user_reactivated=RealmAuditLog.USER_REACTIVATED)
 
 check_useractivityinterval_by_user_query = """
     INSERT INTO analytics_usercount

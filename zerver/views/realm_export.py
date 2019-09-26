@@ -71,7 +71,7 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
     try:
         audit_log_entry = RealmAuditLog.objects.get(id=export_id,
                                                     realm=user.realm,
-                                                    event_type="realm_exported")
+                                                    event_type=RealmAuditLog.REALM_EXPORTED)
     except RealmAuditLog.DoesNotExist:
         return json_error(_("Invalid data export ID"))
 

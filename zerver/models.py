@@ -2555,40 +2555,47 @@ class RealmAuditLog(models.Model):
     backfilled = models.BooleanField(default=False)  # type: bool
     extra_data = models.TextField(null=True)  # type: Optional[str]
 
-    STRIPE_CUSTOMER_CREATED = 'stripe_customer_created'
-    STRIPE_CARD_CHANGED = 'stripe_card_changed'
-    STRIPE_PLAN_CHANGED = 'stripe_plan_changed'
-    STRIPE_PLAN_QUANTITY_RESET = 'stripe_plan_quantity_reset'
+    # USER_* event_types between 100 and 119 are synced from on-prem installations
+    # to zulipchat.com when billing for mobile push notifications is enabled.
+    # Every billing event_type must have ROLE_COUNT populated in extra_data.
+    MIN_BILLING_EVENT_TYPE = 100
+    MAX_BILLING_EVENT_TYPE = 119
 
-    CUSTOMER_CREATED = 'customer_created'
-    CUSTOMER_PLAN_CREATED = 'customer_plan_created'
+    USER_CREATED = 101
+    USER_ACTIVATED = 102
+    USER_DEACTIVATED = 103
+    USER_REACTIVATED = 104
 
-    USER_CREATED = 'user_created'
-    USER_ACTIVATED = 'user_activated'
-    USER_DEACTIVATED = 'user_deactivated'
-    USER_REACTIVATED = 'user_reactivated'
-    USER_SOFT_ACTIVATED = 'user_soft_activated'
-    USER_SOFT_DEACTIVATED = 'user_soft_deactivated'
-    USER_PASSWORD_CHANGED = 'user_password_changed'
-    USER_AVATAR_SOURCE_CHANGED = 'user_avatar_source_changed'
-    USER_FULL_NAME_CHANGED = 'user_full_name_changed'
-    USER_EMAIL_CHANGED = 'user_email_changed'
-    USER_TOS_VERSION_CHANGED = 'user_tos_version_changed'
-    USER_API_KEY_CHANGED = 'user_api_key_changed'
-    USER_BOT_OWNER_CHANGED = 'user_bot_owner_changed'
+    USER_SOFT_ACTIVATED = 120
+    USER_SOFT_DEACTIVATED = 121
+    USER_PASSWORD_CHANGED = 122
+    USER_AVATAR_SOURCE_CHANGED = 123
+    USER_FULL_NAME_CHANGED = 124
+    USER_EMAIL_CHANGED = 125
+    USER_TOS_VERSION_CHANGED = 126
+    USER_API_KEY_CHANGED = 127
+    USER_BOT_OWNER_CHANGED = 128
 
-    REALM_DEACTIVATED = 'realm_deactivated'
-    REALM_REACTIVATED = 'realm_reactivated'
-    REALM_SCRUBBED = 'realm_scrubbed'
-    REALM_PLAN_TYPE_CHANGED = 'realm_plan_type_changed'
-    REALM_LOGO_CHANGED = 'realm_logo_changed'
-    REALM_EXPORTED = 'realm_exported'
+    REALM_DEACTIVATED = 201
+    REALM_REACTIVATED = 202
+    REALM_SCRUBBED = 203
+    REALM_PLAN_TYPE_CHANGED = 204
+    REALM_LOGO_CHANGED = 205
+    REALM_EXPORTED = 206
 
-    SUBSCRIPTION_CREATED = 'subscription_created'
-    SUBSCRIPTION_ACTIVATED = 'subscription_activated'
-    SUBSCRIPTION_DEACTIVATED = 'subscription_deactivated'
+    SUBSCRIPTION_CREATED = 301
+    SUBSCRIPTION_ACTIVATED = 302
+    SUBSCRIPTION_DEACTIVATED = 303
 
-    event_type = models.CharField(max_length=40)  # type: str
+    STRIPE_CUSTOMER_CREATED = 401
+    STRIPE_CARD_CHANGED = 402
+    STRIPE_PLAN_CHANGED = 403
+    STRIPE_PLAN_QUANTITY_RESET = 404
+
+    CUSTOMER_CREATED = 501
+    CUSTOMER_PLAN_CREATED = 502
+
+    event_type = models.PositiveSmallIntegerField()  # type: int
 
     def __str__(self) -> str:
         if self.modified_user is not None:

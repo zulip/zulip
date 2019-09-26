@@ -2805,7 +2805,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         audit_log_entry = RealmAuditLog.objects.filter(
-            event_type='realm_exported').first()
+            event_type=RealmAuditLog.REALM_EXPORTED).first()
         events = self.do_test(
             lambda: self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id)),
             state_change_expected=False, num_events=1)

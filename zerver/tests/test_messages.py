@@ -3804,7 +3804,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         stream_name = 'Denmark'
         topic_name = 'foo'
 
-        def last_realm_audit_log_entry(event_type: str) -> RealmAuditLog:
+        def last_realm_audit_log_entry(event_type: int) -> RealmAuditLog:
             return RealmAuditLog.objects.filter(
                 event_type=event_type
             ).order_by('-event_time')[0]

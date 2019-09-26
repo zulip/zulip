@@ -691,8 +691,8 @@ class SlackImporter(ZulipTestCase):
         # test RealmAuditLog
         realmauditlog = RealmAuditLog.objects.filter(realm=realm)
         realmauditlog_event_type = {log.event_type for log in realmauditlog}
-        self.assertEqual(realmauditlog_event_type, {'subscription_created',
-                                                    'realm_plan_type_changed'})
+        self.assertEqual(realmauditlog_event_type, {RealmAuditLog.SUBSCRIPTION_CREATED,
+                                                    RealmAuditLog.REALM_PLAN_TYPE_CHANGED})
 
         Realm.objects.filter(name=test_realm_subdomain).delete()
 
