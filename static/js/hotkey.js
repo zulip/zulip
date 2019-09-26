@@ -215,7 +215,8 @@ exports.process_escape_key = function (e) {
         // Using this definition of "row" instead of "current_msg_list.selected_row()"
         // because it returns a more complete object.
         // Necessary for refocusing on message list in Firefox.
-        row = $(".message_edit_content").filter(":focus").closest(".message_row");
+        var message_edit_inputs = $(".message_edit_content, .message_edit_topic");
+        row = message_edit_inputs.filter(":focus").closest(".message_row");
         row.find('.message_edit_content').blur();
         message_edit.end(row);
         return true;
