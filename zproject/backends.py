@@ -725,8 +725,12 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
             return None
 
         validated_email = chosen_email
-    else:  # nocoverage
-        # This code path isn't used by GitHubAuthBackend
+    else:
+        try:
+            validate_email(kwargs["details"].get("email"))
+        except ValidationError:
+            return_data['invalid_email'] = True
+            return None
         validated_email = kwargs["details"].get("email")
 
     if not validated_email:  # nocoverage
