@@ -54,6 +54,7 @@ run_test('get_unread_ids', () => {
         topic: 'my topic',
         unread: true,
         mentioned: true,
+        mentioned_me_directly: true,
     };
 
     const private_msg = {
