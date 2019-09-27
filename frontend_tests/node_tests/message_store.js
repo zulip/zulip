@@ -114,6 +114,45 @@ run_test('add_message_metadata', () => {
     assert.equal(message.alerted, false);
 });
 
+run_test('message_booleans_parity', () => {
+    // We have two code paths that update/set message booleans.
+    // This test asserts that both have identical behavior for the
+    // flags common between them.
+    const assert_bool_match = (flags, expected_message) => {
+        const set_message = {topic: 'set_message_booleans', flags: flags};
+        const update_message = {topic: 'update_booleans'};
+        message_store.set_message_booleans(set_message);
+        message_store.update_booleans(update_message, flags);
+        Object.keys(expected_message).forEach((key) => {
+            assert.equal(set_message[key], expected_message[key], `'${key}' != ${expected_message[key]}`);
+            assert.equal(update_message[key], expected_message[key]);
+        });
+        assert.equal(set_message.topic, 'set_message_booleans');
+        assert.equal(update_message.topic, 'update_booleans');
+    };
+
+    assert_bool_match(['wildcard_mentioned'],
+                      {
+                          mentioned: true,
+                          mentioned_me_directly: false,
+                          alerted: false,
+                      });
+
+    assert_bool_match(['mentioned'],
+                      {
+                          mentioned: true,
+                          mentioned_me_directly: true,
+                          alerted: false,
+                      });
+
+    assert_bool_match(['has_alert_word'],
+                      {
+                          mentioned: false,
+                          mentioned_me_directly: false,
+                          alerted: true,
+                      });
+});
+
 run_test('errors', () => {
     // Test a user that doesn't exist
     var message = {
