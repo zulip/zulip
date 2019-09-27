@@ -739,12 +739,25 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     return_data['validated_email'] = validated_email
     user_profile = common_get_active_user(validated_email, realm, return_data)
 
-    if 'fullname' in kwargs["details"]:
-        return_data["full_name"] = kwargs["details"]["fullname"]
+    full_name = kwargs['details'].get('fullname')
+    first_name = kwargs['details'].get('first_name', '')
+    last_name = kwargs['details'].get('last_name', '')
+    if full_name is None:
+        if not first_name and not last_name:
+            # If we add support for any of the social auth backends that
+            # don't provide this feature, we'll need to add code here.
+            raise AssertionError("Social auth backend doesn't provide name")
+
+    if full_name:
+        return_data["full_name"] = full_name
     else:
-        # If we add support for any of the social auth backends that
-        # don't provide this feature, we'll need to add code here.
-        raise AssertionError("Social auth backend doesn't provide fullname")
+        # In SAML authentication, the IdP may support only sending
+        # the first and last name as separate attributes - in that case
+        # we construct the full name from them.
+        return_data["full_name"] = "{} {}".format(
+            first_name,
+            last_name
+        ).strip()  # strip removes the unnecessary ' '
 
     return user_profile
 
