@@ -518,6 +518,7 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
                   client_id      = generate_client_id(),
                   max_message_id = -1,
                   user_id        = user_profile.id,
+                  avatar_url     = avatar_url(user_profile),
                   full_name      = user_profile.full_name,
                   email          = user_profile.email,
                   is_bot         = user_profile.is_bot,

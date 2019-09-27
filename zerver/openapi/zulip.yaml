@@ -1188,6 +1188,10 @@ paths:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
                 - properties:
+                    avatar_url:
+                      type: string
+                      description: "URL for the user's avatar"
+                      example: "x"
                     client_id:
                       type: string
                       description: NA
@@ -1226,6 +1230,7 @@ paths:
                       example: 1
                 - example:
                     {
+                        "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
                         "client_id": "74c768b081076fdb3c4326256c17467e",
                         "email": "iago@zulip.com",
                         "full_name": "Iago",
