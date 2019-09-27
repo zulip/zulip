@@ -41,7 +41,7 @@ from zerver.lib.types import Validator, ExtendedValidator, \
 
 from bitfield import BitField
 from bitfield.types import BitHandler
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from datetime import timedelta
 import pylibmc
 import re
@@ -1037,8 +1037,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return allowed_bot_types
 
     @staticmethod
-    def emojiset_choices() -> Dict[str, str]:
-        return OrderedDict((emojiset[0], emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES)
+    def emojiset_choices() -> List[Dict[str, str]]:
+        return [dict(key=emojiset[0], text=emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES]
 
     @staticmethod
     def emails_from_ids(user_ids: Sequence[int]) -> Dict[int, str]:

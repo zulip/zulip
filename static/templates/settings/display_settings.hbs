@@ -72,18 +72,18 @@
 
             <div class="input-group">
                 <div class="emojiset_choices grey-box">
-                    {{#each page_params.emojiset_choices }}
+                    {{#each page_params.emojiset_choices}}
                     <label>
-                        <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{@key}}" />
-                        <span>{{t this }}</span>
+                        <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{this.key}}" />
+                        <span>{{this.text}}</span>
                         <span class="right">
-                            {{#if (eq @key "text") }}
+                            {{#if (eq this.key "text") }}
                             <div class="emoji_alt_code">&nbsp;:relaxed:</div>
                             {{else}}
-                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f642.png" />
-                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f44d.png" />
-                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f680.png" />
-                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f389.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f642.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f44d.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f680.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f389.png" />
                             {{/if}}
                         </span>
                     </label>

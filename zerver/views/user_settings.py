@@ -138,7 +138,7 @@ def update_display_settings_backend(
         raise JsonableError(_("Invalid timezone '%s'") % (timezone,))
 
     if (emojiset is not None and
-            emojiset not in UserProfile.emojiset_choices()):
+            emojiset not in [emojiset_choice['key'] for emojiset_choice in UserProfile.emojiset_choices()]):
         raise JsonableError(_("Invalid emojiset '%s'") % (emojiset,))
 
     if (demote_inactive_streams is not None and
