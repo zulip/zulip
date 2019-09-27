@@ -68,6 +68,7 @@ class HomeTest(ZulipTestCase):
             "email",
             "emojiset",
             "emojiset_choices",
+            "emojiset_choices_sort",
             "enable_desktop_notifications",
             "enable_digest_emails",
             "enable_login_emails",

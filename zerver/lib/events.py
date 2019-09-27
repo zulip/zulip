@@ -357,6 +357,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         for prop in UserProfile.property_types:
             state[prop] = getattr(user_profile, prop)
         state['emojiset_choices'] = user_profile.emojiset_choices()
+        state['emojiset_choices_sort'] = user_profile.emojiset_choices_sort()
 
     if want('update_global_notifications'):
         for notification in UserProfile.notification_setting_types:

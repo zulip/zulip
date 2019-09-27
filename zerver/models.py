@@ -1041,6 +1041,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return OrderedDict((emojiset[0], emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES)
 
     @staticmethod
+    def emojiset_choices_sort() -> List[str]:
+        return [emojiset[0] for emojiset in UserProfile.EMOJISET_CHOICES]
+
+    @staticmethod
     def emails_from_ids(user_ids: Sequence[int]) -> Dict[int, str]:
         rows = UserProfile.objects.filter(id__in=user_ids).values('id', 'email')
         return {row['id']: row['email'] for row in rows}
