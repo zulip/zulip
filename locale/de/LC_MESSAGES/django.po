@@ -5,7 +5,7 @@
 # Translators:
 # Akira Tenchi <jimjan2002@gmail.com>, 2019
 # Ansgar Hofmann <ansgar@trollgames.de>, 2016
-# Ansgar Hofmann <ansgar@trollgames.de>, 2017
+# Ansgar Hofmann <ansgar@trollgames.de>, 2017,2019
 # n3w2oo <kontakt@n3w2oo.net>, 2016
 # Daniel W. <daniel.wos.86@googlemail.com>, 2015
 # Dante Cassius <exaltedunmelody@gmail.com>, 2016
@@ -16,7 +16,9 @@
 # Greg Price <gnprice@gmail.com>, 2017
 # Harlan Lieberman-Berg <hlieberman@setec.io>, 2016,2018
 # Hauke Schmiegel <inactive+hauke82@transifex.com>, 2016
+# Johannes Hoch <hojo11@gmx.de>, 2019
 # Keyhan, 2019
+# drpetersen <lpetersen@gmx.net>, 2019
 # BornToBeRoot, 2015
 # n3w2oo <kontakt@n3w2oo.net>, 2016
 # Niklas P <niklaspotthoff@gmail.com>, 2016
@@ -30,8 +32,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-24 19:55+0000\n"
-"PO-Revision-Date: 2019-09-24 19:55+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2019-09-25 12:28+0000\n"
+"Last-Translator: drpetersen <lpetersen@gmx.net>\n"
 "Language-Team: German (http://www.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1205,7 +1207,7 @@ msgstr "Begrenze auf Nachricht mit der ID"
 
 #: templates/zerver/app/search_operators.html:45
 msgid "Search all public streams in the organization."
-msgstr ""
+msgstr "Durchsuche alle öffentlichen Streams der Organisation."
 
 #: templates/zerver/app/search_operators.html:49
 msgid "Narrow to messages with alert words."
@@ -1375,7 +1377,7 @@ msgstr "Einladungen"
 
 #: templates/zerver/app/settings_overlay.html:150
 msgid "Data exports"
-msgstr ""
+msgstr "Datenexporte"
 
 #: templates/zerver/app/settings_overlay.html:156
 msgid "Show more"
@@ -1774,7 +1776,7 @@ msgid ""
 "style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) "
 "wants you to join them on Zulip — the team communication tool designed for "
 "productivity."
-msgstr ""
+msgstr "%(referrer_full_name)s (<a href=\"mailto:%(referrer_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) hat dich zu Zulip eingeladen — dem Team-Kommunikationstool, das für Produktivität entworfen wurde."
 
 #: templates/zerver/emails/compiled/invitation.html:15
 #: templates/zerver/emails/compiled/invitation_reminder.html:14
@@ -1816,7 +1818,7 @@ msgstr "Das ist die letzte Erinnerung, die du für die Einladung erhältst."
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr ""
+msgstr "Diese Einladung verfällt in zwei Tagen. Wenn die Einladung verfallen ist, musst Du von %(referrer_name)s eine neue anfordern."
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:9
 #: templates/zerver/emails/notify_change_in_email.source.html:8
@@ -2188,7 +2190,7 @@ msgid ""
 "href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>) wants you to join"
 " them on Zulip &mdash; the team communication tool designed for "
 "productivity."
-msgstr ""
+msgstr "%(referrer_full_name)s (<a href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>) hat Dich zu Zulip eingeladen &mdash; dem Team-Kommunikationstool, das für Produktivität entworfen wurde."
 
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
@@ -2420,7 +2422,7 @@ msgstr "Der beste Chat für die Arbeit"
 
 #: templates/zerver/for-open-source.html:23
 msgid "Zulip for open source"
-msgstr ""
+msgstr "Zulip für Open-Source-Entwicklung"
 
 #: templates/zerver/for-working-groups-and-communities.html:19
 msgid "The best chat for working groups and communities"
@@ -2817,7 +2819,7 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr ""
+msgstr "\n<h1 class=\"get-started\">Account auswählen</h1>\n "
 
 #: templates/zerver/team.html:131
 msgid "Avatar"
@@ -3197,7 +3199,7 @@ msgstr "Ungültige Nachricht"
 #: zerver/lib/actions.py:4877
 #, python-format
 msgid "%s already has an account"
-msgstr ""
+msgstr "%s hat schon ein Konto"
 
 #: zerver/lib/actions.py:4878
 msgid "Already has an account."
@@ -3371,7 +3373,7 @@ msgstr "Ungültiger type-Parameter"
 
 #: zerver/lib/events.py:851
 msgid "Could not allocate event queue"
-msgstr "Kann Ereignisskette nicht alloziieren"
+msgstr "Kann Ereigniskette nicht zuteilen"
 
 #: zerver/lib/exceptions.py:144
 #, python-brace-format
@@ -3545,12 +3547,12 @@ msgstr "Token existiert nicht"
 #: zerver/lib/push_notifications.py:585
 #, python-format
 msgid "%(full_name)s mentioned you:"
-msgstr ""
+msgstr "%(full_name)s hat dich erwähnt:"
 
 #: zerver/lib/push_notifications.py:587
 #, python-format
 msgid "%(full_name)s mentioned everyone:"
-msgstr ""
+msgstr "%(full_name)s hat alle erwähnt:"
 
 #: zerver/lib/remote_server.py:70
 #, python-format
@@ -3665,16 +3667,16 @@ msgstr "schlechter Name oder Benutzername"
 #: zerver/lib/users.py:61
 #, python-format
 msgid "Invalid integration '%s'."
-msgstr ""
+msgstr "Ungültige Integration '%s'."
 
 #: zerver/lib/users.py:65
 #, python-format
 msgid "Missing configuration parameters: %s"
-msgstr ""
+msgstr "Fehlende Konfigurationsparameter: %s"
 
 #: zerver/lib/users.py:72
 msgid "Invalid {} value {} ({})"
-msgstr ""
+msgstr "Ungültiger {}-Wert {} ({})"
 
 #: zerver/lib/users.py:87
 msgid "Invalid configuration data!"
@@ -3798,7 +3800,7 @@ msgstr "%s ist keine URL"
 
 #: zerver/lib/validator.py:238
 msgid "Malformed URL pattern."
-msgstr ""
+msgstr "Fehlerhaftes URL-Muster."
 
 #: zerver/lib/validator.py:258
 #, python-brace-format
@@ -3942,12 +3944,12 @@ msgstr "Du bist nicht dazu authorisiert, Events von dieser Queue abzufragen"
 #: zerver/tornado/event_queue.py:545
 #, python-format
 msgid "An event newer than %s has already been pruned!"
-msgstr ""
+msgstr "Ein neueres Ereignis als %s ist bereits entfernt worden!"
 
 #: zerver/tornado/event_queue.py:551
 #, python-format
 msgid "Event %s was not in this queue"
-msgstr ""
+msgstr "Ereignis %s war nicht in dieser Warteschlange enthalten"
 
 #: zerver/tornado/exceptions.py:14
 #, python-brace-format
@@ -4053,7 +4055,7 @@ msgstr "User-Agent Header fehlt im Request."
 
 #: zerver/views/custom_profile_fields.py:37
 msgid "Label cannot be blank."
-msgstr ""
+msgstr "Beschriftung darf nicht leer sein."
 
 #: zerver/views/custom_profile_fields.py:53
 msgid "Field must have at least one choice."
@@ -4066,11 +4068,11 @@ msgstr "Ungültiger Feldtyp."
 #: zerver/views/custom_profile_fields.py:112
 #: zerver/views/custom_profile_fields.py:150
 msgid "A field with that label already exists."
-msgstr ""
+msgstr "Es gibt schon ein Feld mit dieser Beschriftung."
 
 #: zerver/views/custom_profile_fields.py:143
 msgid "Default custom field cannot be updated."
-msgstr ""
+msgstr "Nutzerdefiniertes Standard-Feld kann nicht aktualisiert werden."
 
 #: zerver/views/hotspots.py:17
 #, python-format
@@ -4329,15 +4331,15 @@ msgstr "Überschreitung des Grenzwertes."
 #: zerver/views/realm_export.py:47
 #, python-format
 msgid "Please request a manual export from %s."
-msgstr ""
+msgstr "Bitte fordern Sie von %s einen manuellen Export an."
 
 #: zerver/views/realm_export.py:76
 msgid "Invalid data export ID"
-msgstr ""
+msgstr "Ungültige Daten-Export-ID"
 
 #: zerver/views/realm_export.py:80
 msgid "Export already deleted"
-msgstr ""
+msgstr "Export ist bereits gelöscht"
 
 #: zerver/views/realm_filters.py:39
 msgid "Filter not found"
@@ -4561,7 +4563,7 @@ msgstr "Änderungen des Besitzers fehlgeschlagen: Bots können keine anderen Bot
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr ""
+msgstr "Um Bots anlegen zu können, muss FAKE_EMAIL_DOMAIN richtig konfiguriert sein.\nBitte kontaktiere Deinen Server-Administrator."
 
 #: zerver/views/users.py:289
 msgid "Embedded bots are not enabled."
@@ -4624,7 +4626,7 @@ msgstr "Komprottierte JSON-Eingabe"
 
 #: zerver/webhooks/papertrail/view.py:25
 msgid "Missing expected keys"
-msgstr ""
+msgstr "Erwartete Schlüssel fehlen"
 
 #: zerver/webhooks/pivotal/view.py:178
 msgid "Unable to handle Pivotal payload"

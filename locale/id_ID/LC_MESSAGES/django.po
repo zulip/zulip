@@ -5,7 +5,7 @@
 # Translators:
 # Mamat Rahmat <coderbodoh@gmail.com>, 2017
 # Rafid Aslam <rafidteam@gmail.com>, 2017
-# Steven Hans <cqpphp@gmail.com>, 2018
+# steve <cqpphp@gmail.com>, 2018
 # Tim Abbott <tabbott@kandralabs.com>, 2018
 msgid ""
 msgstr ""

@@ -1,0 +1,695 @@
+{
+  "\"__file_name__\" was too large; the maximum file size is __file_size__MB.": "حجم\"__file_name__\" بیش از حدمجاز است. بیشترین اندازه __file_size__ مگابایت است.",
+  "(This user has been deactivated)": "(این کاربر غیرفعال شده است)",
+  "(no topic)": "(موضوعی وجود ندارد)",
+  "(unavailable)": "(خارج از دسترس)",
+  "(you)": "(شما)",
+  "/me is excited (Display action text)": "/me هیجان زده ام (نمایش متن واکنش)",
+  "/poll Where should we go to lunch today? (Create a poll)": "/poll را امروز کجا باید راه اندازی کنیم؟ (ایجاد نظرسنجی)",
+  "1 day": "1 روز",
+  "1 hour": "1 ساعت",
+  "1 week": "1 هفته",
+  "10 minutes": "10 دقیقه",
+  "2 minutes": "2 دقیقه",
+  "24-hour time (17:00 instead of 5:00 PM)": "زمان 24 ساعته (17:00 به جای 5:00 بعداز ظهر)",
+  "3 days": "3 روز",
+  "<a href=\"/help/export-your-organization\" target=\"_blank\">Click here</a> to learn about exporting private streams and messages.": "برای یادگیری نحوه خروجی گرفتن از پیام های جریان خصوص <a href=\"/help/export-your-organization\" target=\"_blank\">اینجا کلیک کنید</a>. ",
+  "<a href=\"/upgrade\" target=\"_blank\">Upgrade</a> for more space.": "برای فضای بیشتر <a href=\"/upgrade\" target=\"_blank\">ارتقاء دهید</a>",
+  "<b>Private, protected history:</b> must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users": "<b>تاریخچه محافظت شده، خصوصی: </b> باید توسط یکی از اعضا دعوت شوید. عضوهای جدید تنها می توانند پیام هایی را ببینند که پس از عضو شدن ارسال شده باشد. از دید کاربران غیر ادمین پنهان است.",
+  "<b>Private, shared history:</b> must be invited by a member; new members can view complete message history; hidden from non-administrator users": "<b>تاریخچه اشتراکی، خصوصی: </b> باید توسط یکی از اعضا دعوت شوید. عضوهای جدید می توانند تاریخچه کامل کامل پیام ها را ببینند. از دید کاربران غیر ادمین پنهان است.",
+  "<b>Public:</b> anyone can join; anyone can view complete message history without joining": "<b>Public:</b> همه می توانند بپیوندند. همه می توانند بدون پیوستن تاریخچه کامل پیام را مشاهده کنند.",
+  "<p>Stream will be announced in <b>#__notifications_stream__</b>.</p>": "<p> جریان در <b>#__notifications_stream__</b>منتشر می شود.</p>",
+  "<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>": "<p>جریان <b>2__stream_name__2</b>وجود ندارد</p><p>اعضای جریان خود را <a href='#streams/all'> در صفحه جریان ها </a> مدیریت کنید.</p>",
+  "<strong>__name__</strong> is not subscribed to this stream. They will not be notified if you mention them.": "<strong>__name__1</strong> عضو این جریان نیست. اگر به آنها اشاره کنید متوجه نمی شوند.",
+  "<strong>__name__</strong> is not subscribed to this stream. They will not be notified unless you subscribe them.": "<strong>__name__1</strong> عضو این جریان نیست. تا زمانیکه عضو نشده اند اطلاع رسانی نمی شوند.",
+  "A stream needs to have a name": "یک جریان باید اسم داشته باشد",
+  "A stream with this name already exists": "هم اکنون یک جریان با این نام وجود دارد",
+  "A wide image for the upper left corner of the app.": "یک تصویر عریض برای گوشه سمت چپ بالای برنامه.",
+  "API key": "کلید API",
+  "Action": "اقدام",
+  "Actions": "عملیات",
+  "Active bots": "بات های فعال",
+  "Active now": "هم اکنون فعال",
+  "Add": "افزودن",
+  "Add a new alert word": "افزودن یک کلمه هشداردهنده جدید",
+  "Add a new bot": "افزودن یک ربات جدید",
+  "Add a new emoji": "افزودن یک ایموجی جدید",
+  "Add a new linkifier": "افزودن یک پیونددهنده جدید",
+  "Add a new profile field": "افزودن یک زمینه پروفایل جدید",
+  "Add a new user group": "افزودن گروه کاربر جدید",
+  "Add alert word": "افزودن کلمه هشداردهنده",
+  "Add choice": "افزودن انتخاب",
+  "Add emoji": "افزودن ایموجی",
+  "Add emoji reaction": "افزودن واکنش ایموجی",
+  "Add emoji reaction (:)": "افزودن واکنش ایموجی (:)",
+  "Add extra emoji for members of the __realm_name__ organization.": "افزودن ایموجی های بیشتر به اعضای سازمان __realm_name__.",
+  "Add linkifier": "افزودن پیونددهنده",
+  "Add member...": "افزودن عضو",
+  "Add new default stream": "افزودن جریان پیش فرض جدید",
+  "Add profile field": "افزودن فیلد مشخصات",
+  "Add question": "افزودن پرسش",
+  "Add stream": "افزودن جریان",
+  "Add task": "افزودن وظیفه",
+  "Add video call": "افزودن تماس تصویری",
+  "Added successfully!": "با موفقیت اضافه شد!",
+  "Administrator": "مدیر",
+  "Administrators can always delete any message.": "مدیران همواره می توانند هر پیامی را حذف کنند.",
+  "Admins": "مدیران",
+  "Admins and full members": "مدیران و اعضای کامل",
+  "Admins and members": "مدیران و اعضا",
+  "Admins and members, but only admins can add generic bots": "مدیران و اعضا، اما فقط مدیران می توانند ربات های عمومی اضافه کنند.",
+  "Admins only": "فقط مدیران",
+  "Admins, members, and guests": "مدیران، اعضا و مهمانان",
+  "Alert word": "کلمه هشداردهنده",
+  "Alert word added successfully!": "کلمه هشداردهنده با موفقیت اضافه شد!",
+  "Alert word already exists!": "کلمه هشداردهنده موجود است!",
+  "Alert word can't be empty!": "کلمه هشداردهنده نمی تواند خالی باشد!",
+  "Alert word removed successfully!": "کلمه هشداردهنده با موفقیت حذف شد!",
+  "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "کلمات کلیدی این امکان را می هند که اگر در متنی آن کلمات یا عبارات در Zulip با @ همراه شوند، اطلاع رسانی شوید. کلمات کلیدی به حروف کوچک و بزرگ حساس نیستند.",
+  "All stream members can post.": "تمامی اعضای جریان می توانند پست بگذارند.",
+  "All streams": "تمام جریان ها",
+  "All unreads": "تمام نخوانده ها",
+  "Allow message content in missed message emails": "اجاره به محتوای پیام ها در ایمیل های از دست رفته",
+  "Allow message deleting": "اجازه حذف پیام",
+  "Allow message editing": "اجازه ویرایش پیام",
+  "Allow subdomains": "اجازه به زیردامنه ها",
+  "Allowed domains": "دامنه های مجاز",
+  "Allowed domains: __domains__": "دامنه های مجاز: __domains__",
+  "Already subscribed to __stream__": " هم اکنون در __stream__ عضو هستید",
+  "Always": "همیشه",
+  "An API key can be used to programmatically access a Zulip account. Anyone with access to your API key has the ability to read your messages, send messages on your behalf, and otherwise impersonate you on Zulip, so you should guard your API key as carefully as you guard your password. <br /> We recommend creating bots and using the bots' accounts and API keys to access the Zulip API, unless the task requires access to your account.": "از کلید API می تواند برای دسترسی به حساب کاربری از طریق برنامه نویسی استفاده شود. فردی که به کلید API شما دسترسی دارد می تواند پیام های شما را بخواند، از طرف شما پیام بفرستد و بطور کلی همانند شما در Zulip رفتار کند؛ بنابراین باید از این کلید همانند کلمه عبور محافظت کنید. <br />پیشنهاد می کنیم ربات بسازید و از حساب کاربری ربات و کلیدهای API برای دسترسی به API های Zulip استفاده کنید، مگر اینکه بخواهید مستقیما به حساب کاربری خود دسترسی داشته باشید.",
+  "An hour ago": "یک ساعت قبل",
+  "An unknown error occurred.": "خطای نامشخصی رخ داده است.",
+  "Announce stream": "اعلان جریان",
+  "Any member of this organization can add custom emoji.": "هر عضو این سازمان می تواند ایموجی سفارشی اضافه کند.",
+  "Any organization administrator can conduct an export.": "هر ادمین سازمان می تواند یک خروجی تهیه کند. ",
+  "Any time": "هر زمان",
+  "Anyone in this organization can add bots": "هر فرد در این سازمان می تواند ربات اضافه کند.",
+  "Are invitations required for joining the organization?": "آیا برای پیوستن به این سازمان نیاز به دعوت‌نامه هست؟",
+  "Are you sure you want to create stream '__stream_name__' and subscribe __count__ users to it?": "آیا از ساخت جریان \"__stream_name__\" و افزودن __count__ کاربر بعنوان مشترک به آن اطمینان دارید؟",
+  "Are you sure you want to delete <b>__group_name__</b>?": "آیا مطمئن هستید می خواهید <b>__group_name__</b> را حذف کنید؟",
+  "Are you sure you want to delete all messages in <b>__topic_name__</b>?": "آیا مطمئن هستید می خواهید تمام پیام های <b>__topic_name__</b> را جذف کنید؟",
+  "Are you sure you want to do this?": "آیا از انجام این کار اطمینان دارید؟",
+  "Are you sure you want to mention all <strong>__count__</strong> people in this stream?": "آیا مطمئن هستید می خواهید تمام <strong>__count__</strong> نفر در این جریان را اشاره کنید؟",
+  "Are you sure you want to resend the invitation to <strong><span class=\"email\"></span></strong>?": "آیا مطمئن هستید می خواهید دوباره به <strong><span class=\"email\"></span></strong> دعوتنامه ارسال کنید؟",
+  "Are you sure you want to revoke the invitation to <strong>__email__</strong>?": "آیا مطمئن هستید می خواهید دعوتنامه به <strong>__email__</strong> را پس بگیرید؟",
+  "Are you sure you want to revoke this invitation link created by <strong>__referred_by__</strong>?": "آیا مطمئن هستید می خواهید این لینک دعوتنامه که توسط <strong>__referred_by__</strong>ایجاد شده است را پس بگیرید؟ ",
+  "Attach files": "ضمیمه کردن فایل",
+  "Attachment deleted": "ضمیمه پاک شد",
+  "Audible desktop notifications": "پیام های دسکتاپ با صدا",
+  "Authentication methods": "روش های احراز هویت",
+  "Author": "سازنده",
+  "Automatic": "خودکار",
+  "Avatar from Gravatar": "آواتار از روی گراواتار",
+  "Bot": "بات",
+  "Bot email": "ایمیل ربات",
+  "Bot email (a-z, 0-9, and dashes only)": "ایمیل ربات (تنها شامل حروف کوچک، اعداد 0-9 و خط تیره) ",
+  "Bot type": "نوع ربات",
+  "Bots": "ربات ها",
+  "By deactivating <strong><span class=\"user_name\"></span></strong> &lt;<span class=\"email\"></span>&gt;, they will be logged out immediately.": "با غیرفعال کردن <strong><span class=\"user_name\"></span></strong> &lt; <span class=\"email\"></span>&gt; به صورت خودکار از سامانه خارج می شوند.",
+  "By deactivating your account, you will be logged out immediately.": "با غیرفعال کردن حساب کاربری خود، بلادرنگ از سامانه خارج می شوید.",
+  "Cancel": "لغو کردن",
+  "Change": "تغییر دادن",
+  "Change bot info and owner": "تغییر اطلاعات ومالکیت ربات",
+  "Change email": "تغییر ایمیل",
+  "Change full name": "تغییر نام کامل",
+  "Change later messages to this topic": "تغییر پیام های بعدی در این موضوع",
+  "Change notification settings for individual streams on your <a href=\"/#streams\">Streams page</a>.": "تغییر تنظیمات پیامرسانی برای جریان های شخصی در <a href=\"/#streams\">صفحه جریان ها</a>.",
+  "Change only this message topic": "تغییر موضوع فقط برای این پیام",
+  "Change password": "تغییر کلمه عبور",
+  "Change previous and following messages to this topic": "تغییر پیام های قبلی و بعدی به این موضوع",
+  "Change stream permissions for #": "تغییر دسترسی های جریان برای #",
+  "Change user info and roles": "تغییر اطلاعات و نقش کاربر",
+  "Check all": "بررسی همه",
+  "Check your email (%s) to confirm the new address.": "ایمیل خود (%s) را بررسی کرده تا آدرس جدید را تایید کنید. ",
+  "Choose avatar": "انتخاب آواتار",
+  "Choose custom color": "انتخاب رنگ سفارشی",
+  "Clear emoji image": "پاک کردن تصویر ایموجی",
+  "Clear profile picture": "پاک کردن تصویر پروفایل",
+  "Click anywhere on a message to reply.": "بر روی هرقسمت پیام برای پاسخ دادن کلیک کنید.",
+  "Click outside the input box to save. We\\'ll automatically notify anyone that was added or removed.": "خارج از بخش ورود متن کلیک کنید تا ذخیره شود. ما به صورت خودکار هرکسی که اضافه یا حذف شده است را اطلاع رسانی می کنیم.",
+  "Close": "بستن",
+  "Collapse": "جمع کردن",
+  "Compose your message here": "پیام خود را اینجا بنویسید",
+  "Condense message (-)": "جمع کردن پیام (-)",
+  "Configure regular expression patterns that will be automatically linkified when used in Zulip message bodies or topics.  For example to automatically linkify commit IDs and issue numbers (e.g. #123) to the corresponding items in a GitHub project, you could use the following:": "تنظبم الگوی عبارات منظم موجب می شود وقتی در بدنه یا موضوعات پیام های Zulip استفاده می کنید به صورت خودکار پیوند داده شوند. برای مثال جهت پیوند دادن خودکار شناسه های کامیت و شماره مشکل (مثلا 123) به موارد مربوط در پروژه گیت می توانید موارد زیر را دنبال کنید:",
+  "Configure the authentication methods for your organization.": "روش های احرازهویت برای سازمان خود را تنظیم کنید.",
+  "Configure the default streams new users are subscribed to when joining your organization.": "جریان های پیش فرض برای عضویت کاربران جدیدی که به سازمان شما می پیوندند را تنظیم کنید.",
+  "Convert emoticons before sending (<code>:)</code> becomes \ud83d\ude03)": "تغییر شکلک ها قبل از ارسال (<code>:)</code> تبدیل می شود به 😃)",
+  "Cookie Bot": "ربات کوکی",
+  "Copied!": "کپی شد!",
+  "Copy and close": "کپی کردن و بستن",
+  "Copy from stream": "کپی کردن از جریان",
+  "Copy link to conversation": "کپی کردن لینک در گفتگو",
+  "Copy zuliprc": "کپی کردن zuliprc",
+  "Create": "ایجاد",
+  "Create bot": "ایجاد ربات",
+  "Create new stream": "ایجاد جریان جدید",
+  "Create stream": "ایجاد جریان",
+  "Creating bot": "ایجاد ربات",
+  "Creating stream...": "در حال ایجاد جریان ...",
+  "Current password": "کلمه عبور فعلی",
+  "Custom": "سفارشی",
+  "Custom emoji added!": "ایموجی سفارشی اضافه شد!",
+  "Custom filter added!": "فیلتر سفارشی اضافه شد!",
+  "Custom profile fields": "فیلدهای پروفایل سفارشی",
+  "Customize profile picture": "سفارشی کردن تصویر پروفایل",
+  "Data exports": "خروجی های اطلاعات",
+  "Date uploaded": "تاریخ بارگذاری شد",
+  "Day": "روز",
+  "Day mode": "حالت روز",
+  "Day of the week to send digests": "روزی از هفته که خلاصه ها ارسال شوند",
+  "Deactivate": "غیرفعال کردن",
+  "Deactivate account": "غیرفعال کردن حساب کاربری",
+  "Deactivate now": "هم اکنون غیرفعال کردن",
+  "Deactivate organization": "غیرفعال کردن سازمان",
+  "Deactivate your account": "غیرفعال کردن حساب کاربری شما",
+  "Deactivated": "غیرفعال شد",
+  "Deactivated users": "کاربران غیرفعال",
+  "Deactivation encountered an error. Please reload and try again.": "غیرفعالسازی با خطا مواجه شد. لطفا بارگیری مجدد کنید و دوباره تلاش کنید",
+  "Default language": "زبان پیش فرض",
+  "Default settings for new users joining this organization.": "تنظیمات پیش فرض برای کاربران جدیدی که به این سازمان می پیوندند.",
+  "Default user settings": "تنظیمات پیش فرض کاربر",
+  "Delete": "حذف",
+  "Delete alert word": "حذف کلمه هشداردهنده",
+  "Delete all messages in <b>__topic_name__</b>": "حذف تمام پیام ها در <b>__topic_name__</b>",
+  "Delete bot": "حذف ربات",
+  "Delete draft": "حذف ذخیره موقت",
+  "Delete file": "حذف فایل",
+  "Delete logo": "حذف لوگو",
+  "Delete message": "حذف پیام",
+  "Delete messages": "حذف پیام ها",
+  "Delete profile picture": "حذف تصویر پروفایل",
+  "Delete stream": "حذف جریان",
+  "Delete topic": "حذف موضوع",
+  "Delete user group": "حذف گروه کاربر",
+  "Deleted successfully!": "با موفقیت حذف شد!",
+  "Deleting this stream will immediately unsubscribe everyone, and the stream's content will not be recoverable.": "با حذف این جریان، بلدرنگ عضویت همه در آن لغو می شود و محتویات جریان قابل بازیابی نیست.",
+  "Demote inactive streams": "پایین آوردن جریان های غیرفعال",
+  "Dense mode": "حالت متراکم",
+  "Depending on the size of your organization, an export can take anywhere from seconds to an hour.": "بسته به اندازه سازمان شما، خروجی گرفتن می تواند از چند ثانیه تا یک ساعت طول بکشد. ",
+  "Description": "توضیحات",
+  "Desktop": "دسکتاپ",
+  "Desktop notifications are triggered for messages that are offscreen when they arrive. Mobile and email notifications are triggered once you have been away from Zulip for a few minutes.": "پیامرسانی دسکتاپ برای زمانی است که شما خارج از صفحه مربوطه هستید. پیامرسانی ایمیل و موبایل برای زمانی است که برای دقایقی دور از Zulip هستید.",
+  "Disabled": "از کار انداختن",
+  "Discard": "نادیده گرفتن",
+  "Discard changes": "نادیده گرفتن تغییرات",
+  "Display settings": "نمایش تنظیمات",
+  "Do you want to skip to your latest messages?": "آیا می خواهید آخرین پیام هایتان را ببینید؟",
+  "Domain": "دامنه",
+  "Domain for your <a href=\"https://gsuite.google.com\" target=\"_blank\">G Suite team</a> (required)": "دامنه برای <a href=\"https://gsuite.google.com\" target=\"_blank\">تیم G Suite</a> شما (الزامی) ",
+  "Don\u2019t allow disposable email addresses": "آدرس های ایمیل قابل نمایش نباشند",
+  "Download": "دانلود",
+  "Download .zuliprc": "دانلود .zuliprc",
+  "Download botserverrc": "دانلود botserverrc",
+  "Download config of all active outgoing webhook bots in Zulip Botserver format.": "دانلود تنظیمات همه ربات های فعال با وب هوک خروجی در قالب Zulip Botserver",
+  "Download file": "دانلود فایل",
+  "Download zuliprc": "دانلود zuliprc",
+  "Drafts": "پیش نویس ها",
+  "Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed.": "پیش نویس های قدیم تر از <strong>__draft_lifetime__</strong> روز خودکار پاک می شوند.",
+  "EDITED": "ویرایش شده",
+  "Edit": "ویرایش",
+  "Edit bot": "ویرایش ربات",
+  "Edit status message": "ویرایش پیام وضعیت",
+  "Edit user": "ویرایش کاربر",
+  "Edit your profile": "ویرایش پروفایل شما",
+  "Edited (__last_edit_timestr__)": "ویرایش شده (__last_edit_timestr__)",
+  "Email": "ایمیل",
+  "Email address": "آدرس ایمیل",
+  "Email address changes are disabled in this organization.": "تغییر آدرس ایمیل در این سازمان غیرفعال است.",
+  "Email copied": "ایمیل کپی شد",
+  "Email notifications": "پیامرسانی های ایمیل",
+  "Emoji name": "نام ایموجی",
+  "Emojiset changed successfully!": "مجموعه ایموجی باموفقیت تغییر کرد!",
+  "Enable message edit history": "فعالسازی تاریخچه ویرایش پیام",
+  "Enabled": "فعال",
+  "Endpoint URL": "URL پایانه",
+  "Error": "خطا",
+  "Error adding alert word!": "خطا در اضافه کردن کلمه هشداردهنده!",
+  "Error adding subscription": "خطا در افزودن عضویت",
+  "Error checking subscription": "خطا در بررسی عضویت",
+  "Error creating stream": "خطا در ایجاد جریان",
+  "Error deleting message": "خطا در حذف پیام",
+  "Error fetching message edit history": "خطا در دریافت تاریخچه ویرایش پیام",
+  "Error listing invites": "خطا در دریافت لیست دعوت ها",
+  "Error listing users or bots": "خطا در دریافت لیست کاربران و ربات ها",
+  "Error removing alert word!": "خطا در حذف کلمه هشداردهنده!",
+  "Error removing subscription": "خطا در حذف عضویت",
+  "Error removing user from this stream.": "خطا در حذف کاربر از این جریان.",
+  "Error saving edit": "خطا در ذخیره کردن ویرایش",
+  "Error: Cannot deactivate the only organization administrator.": "خطا: امکان غیرفعال کردن تنها ادمین سازمان وجود ندارد.",
+  "Estimated messages per week": "تخمین پیام های یک هفته",
+  "Expand message (-)": "باز کردن پیام (-)",
+  "Export failed": "خروجی گرفتن انجام نشد",
+  "Export started. Check back in a few minutes.": "خروجی گرفتن شروع شد. چند دقیقه دیگر برگردید. ",
+  "Exports all users, settings, and all data visible in public streams.": "از همه کاربران، تنظیمات و داده های قابل مشاهده در جریان های عمومی خروجی بگیر. ",
+  "External account type": "نوع حساب کاربری خارجی",
+  "External link": "لینک خارجی",
+  "Failed": "با شکست روبرو شد",
+  "Failed to change notifications stream!": "تغییر جریان پیامرسانی ها باخطا روبرو شد!",
+  "Failed to change signup notifications stream!": "تغییر جریان پیامرسانی های ثبت نام باخطا روبرو شد!",
+  "Failed to generate preview": "تولید پیش نمایش باخطا روبرو شد",
+  "Failed!": "ناموفق!",
+  "Field choices": "انتخاب های میدانی",
+  "File": "فایل",
+  "File and image uploads have been disabled for this organization.": "آپلود فایل و عکس برای این سازمان غیرفعال شده است.",
+  "File type is not supported.": "نوع فایل پشتیبانی نمی شود.",
+  "File upload is not yet available for your browser.": "آپلود فایل بر روی مرورگر شما امکان پذیر نیست.",
+  "Filter": "فیلتر",
+  "Filter bots": "فیلتر ربات ها",
+  "Filter deactivated users": "فیلتر کاربران غیرفعال",
+  "Filter emojis": "فیلتر ایموجی ها ",
+  "Filter exports": "فیلتر خروجی ها",
+  "Filter invites": "فیلتر دعوت ها",
+  "Filter linkifiers": "فیلتر پیوند دهنده ها",
+  "Filter streams": "فیلتر جریان ها",
+  "Filter users": "فیلتر کاربران",
+  "First time? Read our <a href=\"/help/getting-your-organization-started-with-zulip#create-streams\" target=\"_blank\">guidelines</a> for creating and naming streams.": "اولین استفاده؟ برای ساختن و نامگذاری جریان ها <a href=\"/help/getting-your-organization-started-with-zulip#create-streams\" target=\"_blank\">راهنما</a>ی ما را بخوانید.",
+  "Forgotten it?": "فراموش کرده اید؟",
+  "Formatting": "قالب بندی",
+  "Friday": "جمعه",
+  "Full name": "نام کامل",
+  "Generate invite link": "ایجاد لینک دعوت",
+  "Generate new API key": "ایجاد کلید API جدید",
+  "Generating link...": "در حال ایجاد لینک ...",
+  "Generic": "عمومی",
+  "Get API key": "دریافت کلید API",
+  "Go back": "بازگشت",
+  "Got it!": "دریافتم!",
+  "Guest": "مهمان",
+  "Guests cannot edit custom emoji.": "مهمان ها نمی توانند ایموجی سفارشی را ویرایش کنند.",
+  "Hide starred message count": "مخفی کردن تعداد پیام های ستاره دار",
+  "High contrast mode": "حالت تفاوت رنگ بالا",
+  "Hint": "اشاره",
+  "Hint (up to 80 characters)": "اشاره (تا 80 حرف)",
+  "Image": "تصویر",
+  "Inactive bots": "ربات های غیرفعال",
+  "Include content of private messages in desktop notifications": "محتوای پیام های خصوصی را در پیامرسانی دسکتاپ نشان بده",
+  "Include message content in missed message emails": "محتوای پیام را در ایمیل پیام های از دست رفته نشان بده",
+  "Include organization name in subject of missed message emails": "نام سازمان را در عنوان ایمیل پیام های از دست رفته نشان بده",
+  "Incoming webhooks can only send messages.": "وب هوک های ورودی تنها پیام می فرستند.",
+  "Interface": "رابط",
+  "Invalid slash command. Check if you are missing a space after the command.": "فرمان نامعتبر. بررسی کنید پس از فرمان فاصله وجود داشته باشد.",
+  "Invalid stream id": "شناسه جریان نامعتبر",
+  "Invitation link: <a href=\"__link__\">__link__</a>": "لینک نامعتبر: <a href=\"__link__\">__link__</a>",
+  "Invite": "دعوت کردن",
+  "Invite link": "لینک دعوت",
+  "Invite more users": "دعوت کاربران بیشتر",
+  "Invited as": "دعوت شده بعنوان",
+  "Invited at": "دعوت شده به",
+  "Invited by": "دعوت شده توسط",
+  "Invites": "دعوت می کند",
+  "Inviting...": "در حال دعوت کردن ...",
+  "It's been a while! Since you were last here, you received <b>__unread_count__</b> new messages.": "از آخرین زمانیکه اینجا بوده اید مدتی می گذرد، شما <b>__unread_count__</b> پیام جدید دارید.",
+  "Joined": "عضویت انجام شد",
+  "Joining the organization": "پیوستن به سازمان",
+  "Just now": "هم اکنون",
+  "Keyboard shortcuts": "میانبر های صفحه کلید",
+  "Label": "برچسب",
+  "Language settings": "تنظیمات زبان",
+  "Large number of subscribers": "تعداد اعضا بسیار زیاد است",
+  "Last active": "آخرین فعالیت",
+  "Last modified": "آخرین تغییر",
+  "Local time": "زمان محلی",
+  "Looking for our <a href=\"/integrations\" target=\"_blank\">Integrations</a> or <a href=\"/api\" target=\"_blank\">API</a> documentation?": "به دنبال مستند برای <a href=\"/integrations\" target=\"_blank\">یکپارچگی ها</a> یا <a href=\"/api\" target=\"_blank\">API</a> هستید؟",
+  "Manage organization": "مدیریت سازمان",
+  "Manage user groups": "مدیریت گروه های کاربری",
+  "Mark all messages as read": "نشان گذاری تمام پیام ها بعنوان خوانده شده",
+  "Mark all messages in <b>__stream.name__</b> as read": "نشان گذاری همه پیام های جریان <b>__stream.name__</b> بعنوان خوانده شده",
+  "Mark all messages in <b>__topic_name__</b> as read": "نشان گذاری همه پیام های موضوع <b>__topic_name__</b> بعنوان خوانده شده",
+  "Marketing team": "تیم بازاریابی",
+  "Marking all messages as read\u2026": "در حال نشان گذاری همه پیام ها بعنوان خوانده شده ...",
+  "Member": "عضو",
+  "Mentioned in": "نامبرده شده در",
+  "Message #__- stream_name__": "پیام  #__- stream_name__",
+  "Message __- recipient_names__": "پیام __- recipient_names__",
+  "Message actions": "اقدامات برروی پیام",
+  "Message editing": "ویرایش پیام",
+  "Message formatting": "قالب بندی پیام",
+  "Message sent when you were not subscribed": "پیام ارسال شده زمانیکه شما عضو نبوده اید",
+  "Messages retention period in days (blank means messages are retained forever)": "دوره نگهداری پیام برحسب روز (خالی یودن به معنی نگهداری برای همیشه است)",
+  "Method": "روش",
+  "Mobile": "موبایل",
+  "Mobile notifications": "اطلاع رسانی های موبایل",
+  "Mobile push notifications are not configured on this server.": "اطلاع رسانی موبایل برروی این سرور تنظیم نشده است.",
+  "Monday": "دوشنبه",
+  "More details are available <a href=\"/help/add-a-custom-linkification-filter\" target=\"_blank\">in the Help Center article</a>.": "جزییات بیشتر در <a href=\"/help/add-a-custom-linkification-filter\" target=\"_blank\">مقالات مرکز کمک رسانی</a> دردسترس است.",
+  "More than 2 weeks ago": "بیش از 2 هفته قبل",
+  "Mute stream": "بی صدا کردن جریان",
+  "Mute the stream <b>__stream.name__</b>": "بی صدا کردن جریان <b>__stream.name__</b>",
+  "Mute the topic <b>__topic__</b>": "بی صدا کردن موضوع <b>__topic__</b>",
+  "Mute the topic <b>__topic_name__</b>": "بی صدا کردن موضوع <b>__topic_name__</b>",
+  "Mute topic": "بی صدا کردن موضوع",
+  "Muted streams don't show up in \\\"All messages\\\" or generate notifications unless you are mentioned.": "جریان های بی صدا در 'همه پیام ها' نمی آیند و اطلاع رسانی نیز نمی شوند مگراینکه در پیام اشاره شوید.",
+  "N": "ن",
+  "Name": "نام",
+  "Name changes are disabled in this organization. Contact an administrator to change your name.": "تغییر نام در این سازمان غیرفعال است. از ادمین بخواهید نام شما را تغییر دهد.",
+  "Name or email": "نام یا ایمیل",
+  "Narrow to __- message_recipient__": "محدود کردن به __- message_recipient__",
+  "Narrow to stream &quot;__display_recipient__&quot;": "محدود کردن به جریان &quot;__display_recipient__&quot;",
+  "Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__topic__&quot;": "محدود کردن به جریان &quot;__display_recipient__&quot;, topic &quot;__topic__&quot;",
+  "Narrow to topic <b>__topic_name__</b>": "محدود کردن به موضوع <b>__topic_name__</b>",
+  "Narrow to your private messages with __display_reply_to__": "محدود کردن پیام های خصوصی با __display_reply_to__",
+  "Never": "هرگز",
+  "Never had one? Forgotten it?": "تاکنون نداشته اید؟ فراموش کرده اید؟",
+  "New": "جدید",
+  "New alert word": "کلمه هشداردهنده جدید",
+  "New choice": "انتخاب جدید",
+  "New email": "ایمیل جدید",
+  "New full name": "نام کامل جدید",
+  "New members can only see messages sent after they join.": "اعضا جدید تنها پیام هایی را می بینند که پس از عضویتشان ارسال شده است.",
+  "New members can view complete message history.": "اعضا جدید تاریخچه کامل پیام را می بینند.",
+  "New password": "کلمه عبور جدید",
+  "New password is too weak": "کلمه عبور جدید بسیار ضعیف است",
+  "New private message": "پیام خصوصی جدید",
+  "New stream message": "پیام جریانی جدید",
+  "New stream notifications:": "اطلاع رسانی جریانی جدید:",
+  "New task": "وظیفه جدید",
+  "New topic": "موضوع جدید",
+  "New user notifications:": "اطلاع رسانی های جدید کاربر:",
+  "Next week": "هفته بعد",
+  "Night": "شب",
+  "Night mode": "حالت شبانه",
+  "No": "نه",
+  "No bots match your current filter.": "هیچ رباتی با فیلتر شما یافت نشد.",
+  "No custom emoji.": "هیچ ایموجی سفارشی",
+  "No default streams match you current filter.": "هیچ جریان پیش فرضی با فیلتر شما یافت نشد.",
+  "No description.": "بدون توضیح",
+  "No drafts.": "بدون پیش نویس",
+  "No exports.": "بدون خروجی گرفتن ",
+  "No invites match your current filter.": "هیچ دعوتی با فیلتر شما یافت نشد.",
+  "No linkifiers set.": "پیونددهنده ای تنظیم نشده است.",
+  "No more topics.": "موضوعات بیشتری نیست.",
+  "No restrictions": "بدون محدودیت",
+  "No users match your current filter.": "هیچ کاربری با فیلتر شما یافت نشد.",
+  "None": "هیچکدام",
+  "Note that any bots that you maintain will be disabled.": "توجه کنید هر رباتی که نگهداری می کنید غیرفعال خواهد شد.",
+  "Note that organizations are limited to five exports per week.": "توجه داشته باشید که در هر سازمان حداکثر پنج خروجی در هفته می توانید بگیرید ",
+  "Nothing to preview": "موردی برای پیش نمایش نیست",
+  "Notification sound": "صدای اطلاع رسانی",
+  "Notifications": "اطلاع رسانی ها",
+  "Notifications stream changed!": "جریان اطلاع رسانی ها تغییر کرد!",
+  "Notifications stream disabled!": "جریان اطلاع رسانی ها غیرفعال شد!",
+  "Old password": "کلمه عبور قبلی",
+  "Only organization administrators can add bots to this organization": "تنها ادمین های سازمان می توانند به این سازمان ربات اضافه کنند",
+  "Only organization administrators can add custom emoji in this organization.": "تنها ادمین های سازمان می توانند به این سازمان ایموجی سفارشی اضافه کنند",
+  "Only organization administrators can add generic bots": "تنها ادمین های سازمان می توانند به این سازمان ربات عمومی اضافه کنند",
+  "Only organization administrators can edit these settings.": "تنها ادمین های سازمان می توانند این تنظیمات را ویرایش کنند.",
+  "Only organization administrators can post.": "تنها ادمین های سازمان می توانند پست اضافه کنند.",
+  "Only organization admins are allowed to post to this stream.": "تنها ادمین های سازمان اجازه پست گذاشتن در این جریان را دارند.",
+  "Only stream members can add users to a private stream": "تنها اعضای جریان می توانند کابران را به جریان خصوصی اضافه کنند.",
+  "Optional": "اختیاری",
+  "Or, to automatically linkify GitHub's <code>org/repo#1234</code> syntax:": "یا برای پیوند دادن خودکار <code>org/repo#1234</code> در حساب گیت از این الگو استفاده کنید:",
+  "Organization": "سازمان",
+  "Organization administrator": "ادمین سازمان",
+  "Organization administrators can change this in the organization settings.": "ادمین های سازمان می توانند این مورد را در تنظیمات سازمان تغییر دهند.",
+  "Organization description": "توضیحات سازمان",
+  "Organization logo": "لوگو سازمان",
+  "Organization name": "نام سازمان",
+  "Organization profile": "پروفایل سازمان",
+  "Organization profile picture": "تصویر پروفایل سازمان",
+  "Organization settings": "تنظیمات سازمان",
+  "Organization using __percent_used__% of __upload_quota__.": "سازمان درحال استفاده از __percent_used__% از __upload_quota__ می باشد.",
+  "Other notification settings": "سایر تنظیمات اطلاع رسانی",
+  "Other permissions": "سایر مجوزها",
+  "Other settings": "سایر تنظیمات",
+  "Outgoing webhook message format": "قالب پیام وب هوک خروجی",
+  "Owner": "مالک",
+  "Password": "کلمه عبور",
+  "Password is too weak": "کلمه عبور خیلی ضعیف است",
+  "Password should be at least __length__ characters long": "حداقل طول کلمه عبور باید __length__ باشد",
+  "Pattern": "الگو",
+  "People to add": "افرادی که باید اضافه شوند",
+  "Pin stream <b>__stream.name__</b> to top": "جریان <b>__stream.name__</b> را به بالا بچسبان",
+  "Pin stream to top of left sidebar": "جریان را در بالا گوشه سمت چپ بچسبان",
+  "Play sound": "پخش کردن صدا",
+  "Please just upload one file.": "لطفا فقط یک فایل بارگذاری کنید.",
+  "Please re-enter your password to confirm your identity.": "لطفا کلمه عبور خود را دوباره وارد نمایید تا هویت شما تایید شود.",
+  "Please specify a date or time": "لطفا یک تاریخ یا زمان مشخص کنید",
+  "Please specify a stream": "لطفا یک جریان مشخص کنید",
+  "Please specify a topic": "لطفا یک موضوع مشص کنید",
+  "Please specify at least one valid recipient": "لطفا حداقل یک دریافت کننده معتبر مشخص کنید",
+  "Press > for list of topics": "برای لیست موضوعات < را فشار دهید ",
+  "Prevent users from changing their avatar": "عدم اجازه تغییر آواتار به کاربران",
+  "Prevent users from changing their email address": "عدم اجازه تغییر آدرس ایمیل به کاربران",
+  "Prevent users from changing their name": "عدم اجازه تغییر نام به کاربران",
+  "Preview": "پیش نمایش",
+  "Preview organization profile": "پیش نمایش پروفایل سازمان",
+  "Preview profile": "پیش نمایش پروفایل",
+  "Private messages and mentions": "پیام های خصوصی و اشاره ها",
+  "Private messages, @-mentions, and alert words": "پیام های خصوصی، اشاره ها با @ و کلمات هشداردهنده",
+  "Pro tip: You can use 'd' to open your drafts.": "نکته حرفه ای: می توانید از کلید 'd' برای بازکردن پیش نویس های خود استفاده کنید.",
+  "Profile": "پروفایل",
+  "Profile picture": "تصویر پروفایل",
+  "Quote and reply": "نقل قول و پاسخ",
+  "Reactivate": "فعالسازی مجدد",
+  "Reactivate bot": "فعالسازی مجدد ربات",
+  "Remind me about this": "این مورد را یادآوری کن",
+  "Reminder not set!": "یادآوری تنظیم نشده است!",
+  "Reminder set!": "یادآوری تنظیم شد!",
+  "Remove": "حذف",
+  "Remove from default": "از پیش فرض حذف کن",
+  "Reply (r)": "پاسخ دادن (r)",
+  "Reply mentioning user": "پاسخ به کاربر اشاره کننده",
+  "Requesting user": "کاربر درخواست کننده ",
+  "Require topics in stream messages": "به دست آوردن موضوع در پیام های جریانی",
+  "Resend": "ارسال مجدد",
+  "Resend invitation to <span class=\"email\"></span>": "ارسال مجدد دعوت برای <span class=\"email\"></span>",
+  "Resend now": "هم اکنون ارسال مجدد کن",
+  "Resending encountered an error. Please reload and try again.": "ارسال مجدد با خطا مواجه شد. لطفا مجدد بارگذاری کرده و تلاش کنید.",
+  "Restore draft": "بازیابی پیش نویس",
+  "Restrict email domains of new users?": "دامنه ایمیل کاربران جدید محدود شود؟",
+  "Restrict posting to organization administrators": "محدود کردن پست گذاری برای ادمین های سازمان",
+  "Restrict to a list of domains": "محدود کردن به لیستی از دامنه ها",
+  "Retry": "تلاش مجدد",
+  "Revoke": "پس گرفتن مجوز",
+  "Revoke invitation link": "پس گرفتن لینک دعوت",
+  "Revoke invitation to __email__": "پس گرفتن دعوت از __email__",
+  "Revoke now": "پس گرفتن مجوز هم اکنون",
+  "Role": "نقش",
+  "Saturday": "شنبه",
+  "Save": "ذخیره",
+  "Save changes": "ذخیره کردن تغییرات",
+  "Save failed": "ذخیره سازی شکست خورد",
+  "Saved": "ذخیره شد",
+  "Saved. Please <a class='reload_link'>reload</a> for the change to take effect.": "ذخیره شد. لطفا برای اعمال شدن تغییرات <a class='reload_link'>بارگذاری مجدد</a> کنید",
+  "Saving": "در حال ذخیره سازی",
+  "Search": "جستجو",
+  "Search operators": "عملیات جستجو ",
+  "Search results": "نتايج جستجو",
+  "Search subscribers": "جستجو اعضا",
+  "Search uploads...": "جستجو بارگذاری ها... ",
+  "Select date and time": "انتخاب تاریخ و زمان",
+  "Select default language": "انتخاب زبان پيش فرض",
+  "Send digest emails when I'm away": "ارسال ایمیل های خلاصه وقتی که من از برنامه دور هستم",
+  "Send email notifications for new logins to my account": "ارسال اطلاع رسانی ایمیل برای ورودهای جدید به حساب کاربری من",
+  "Send emails introducing Zulip to new users": "ارسال ایمیل برای معرفی Zulip به کاربران جدید",
+  "Send mobile notifications even if I'm online (useful for testing)": "اطلاع رسانی موبایل حتی برای زمانیکه من آنلاین هستم (جهت تست مفید است)",
+  "Send private message": "ارسال پیام خصوصی",
+  "Send weekly digest emails to inactive users": "ارسال ایمیل های خلاصه برای کاربران غیرفعال به صورت هفتگی",
+  "Sent!": "ارسال شد! ",
+  "Sent! Scroll down to view your message.": "ارسال شد! برای مشاهده پیام خود به پایین حرکت کنيد. ",
+  "Sent! Your message is outside your current narrow.": "ارسال شد! پیام شما خارج از نمای فعلی است.",
+  "Sent! Your message was sent to a stream you have muted.": "ارسال شد! پیام شما به جریانی ارسال شد که قبلا بی صدا کرده اید.",
+  "Sent! Your message was sent to a topic you have muted.": "ارسال شد! پیام شما به موضوعی ارسال شد که قبلا بی صدا کرده اید. ",
+  "Sent! Your recent message is outside the current search.": "ارسال‌شد! پیام اخیر شما در فیلتر جستجوی فعلی شما قرار نمی گیرد.",
+  "Set a status message": "یک پیام وضعیت تنظیم کنید",
+  "Set yourself as active": "وضعیت خود را فعال کنید",
+  "Set yourself as unavailable": "وضعیت خود را به خارج از دسترس تغییر دهید",
+  "Settings": "تنظیمات",
+  "Setup": "پیکره بندی",
+  "Setup two factor authentication": "تنظیم احراز هویت دو مرحله ای",
+  "Show API key": "نمایش کلید API ",
+  "Show counts for starred messages": "نمایش تعداد برای پیام های ستاره دار",
+  "Show fewer": "نمایش کمتر",
+  "Show more": "نمایش بیشتر",
+  "Show previews of linked websites": "نشان دادن پیش نمایش برای سایت های پیوند داده شده",
+  "Show previews of uploaded and linked images": "نشان دادن پیش نمایش برای تصاویر بارگذاری یا پیوند شده",
+  "Show starred message count": "نمایش تعداد پیام های ستاره دار",
+  "Show/change your API key": "نمایش/تغییر کلید API شما",
+  "Signup notifications stream changed!": "جریان اطلاع رسانی ورودها تغییر کرد! ",
+  "Signup notifications stream disabled!": "جریان اطلاع رسانی ورودها غیرفعال شد! ",
+  "Size": "اندازه",
+  "Slack compatible": "سازگار با اسلک",
+  "Slack's outgoing webhooks": "وب هوک های خروجی اسلک",
+  "Sorry, the file was too large.": "متاسفانه اندازه فایل بیش از حد مجاز است.",
+  "Star": "ستاره دار",
+  "Start public export": "شروع خروجی گرفتن عمومی ",
+  "Stream": "جریان",
+  "Stream color": "رنگ جریان",
+  "Stream created recently": "جریان اخیرا ایجاد شده است",
+  "Stream creation": "ایجاد جریان",
+  "Stream description": "توضیحات جریان",
+  "Stream description (optional)": "توضیحات جریان (اختیاری)",
+  "Stream membership": "عضویت در جریان",
+  "Stream messages": "پيام هاي جریان",
+  "Stream name": "نام جریان",
+  "Stream permissions": "مجوزهای جریان",
+  "Stream settings": "تنظیمات جریان",
+  "Stream successfully created!": "جریان با موفقیت ایجاد شد‌!",
+  "Streams": "جریان ها",
+  "Subscribe": "عضویت",
+  "Subscribed": "عضویت انجام شد",
+  "Subscribed successfully!": "عضویت با موفقیت انجام شد!",
+  "Subscriber count": "تعداد اعضا",
+  "Subscribers": "اعضا",
+  "Sunday": "یکشنبه",
+  "System bot": "ربات سامانه",
+  "Task already exists": "وظیفه هم اکنون وجود دارد",
+  "Text": "متن",
+  "The export URL is not yet available... Check back soon.": "URL خروجی گرفتن هنوز در دسترس نیست... به زودی دوباره بررسی کنید. ",
+  "The recipient __recipient__ is not valid": "دریافت کننده __recipient__ معتبر نیست",
+  "The recipients __recipients__ are not valid": "دریافت کنندگان __recipients__ معتبر نیستند",
+  "The stream description cannot contain newline characters.": "توضیحات جریان نمی تواند حاوی کاراکتر خط جدید باشد. ",
+  "The stream description has been updated!": "توضیحات جریان به روز رسانی شده است! ",
+  "The stream has been renamed!": "نام جریان تغییر کرده است!",
+  "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "کلمه های عبورشان از سامانه های ما پاک می شود و هر رباتی که نگهداری می کنند غیرفعال خواهد شد.",
+  "There are no messages to reply to.": "پیامی برای پاسخ دادن وجود ندارد.",
+  "These settings are explained in detail in the <a target=\"_blank\" href=\"/help/stream-permissions\">help center</a>.": "جزییات این تنظیمات <a target=\"_blank\" href=\"/help/stream-permissions\">مرکز کمک رسانی</a> توضیح داده شده است.",
+  "This action is permanent and cannot be undone. All users will permanently lose access to their Zulip accounts.": "این عملیات دائمی بوده و قابل برگشت نیست. همه کاربران دسترسی خود به حساب های Zulip خود را برای همیشه از دست می‌دهند.",
+  "This is a <i class=\"fa fa-globe\" aria-hidden=\"true\"></i> <b>web public stream</b>. Any member of the organization can join without an invitation and anyone on the internet can read the content published.": "این یک <i class=\"fa fa-globe\" aria-hidden=\"true\"></i><b>جریان عمومی وب</b> است‌. هر عضوی از سازمان می تواند بدون دعوت عضو شود و هر کسی در اینترنت می تواند محتوای منتشر شده را بخواند.",
+  "This is a <i class=\"hash\" aria-hidden=\"true\"></i> <b>public stream</b>. Any member of the organization can join without an invitation.": "این یک <i class=\"hash\" aria-hidden=\"true\"></i><b>جریان عمومی</b> است. هر عضوی در سازمان می تواند بدون دعوت عضو شود.",
+  "This is a <span class=\"fa fa-lock\" aria-hidden=\"true\"></span> <b>private stream</b>. Only people who have been invited can access its content, but any member of the stream can invite others.": "این یک<span class=\"fa fa-lock\" aria-hidden=\"true\"></span><b>جریان خصوصی</b> است. افراد با دعوت می توانند به محتوا دسترسی داشته باشند، اما اعضای جریان می توانند بقیه را دعوت کنند.",
+  "This is a private stream": "این یک جریان خصوصی است",
+  "This organization is configured to restrict editing of message content to __minutes_to_edit__ minutes after it is sent.": "تنظیمات سازمان به گونه ای است که پس از گذشت __minutes_to_edit__ دقیقه پس از ارسال امکان ویرایش پیام وجود ندارد.",
+  "This stream is reserved for <strong>announcements</strong>. <br /> Are you sure you want to message all <strong>__count__</strong> people in this stream?": "این جریان برای <strong>اطلاعیه ها</strong> رزرو شده است.<br />آیا اطمینان دارید می خواهید به همه <strong>__count__</strong> نفر در این جریان پیام دهید؟",
+  "Thursday": "پنجشنبه",
+  "Time": "زمان ",
+  "Time settings": "تنظیمات زمان",
+  "Time zone": "منطقه زمانی",
+  "Time's up!": "زمان به پایان رسیده است!",
+  "Tip: You can also send \"/poll Some question\"": "نکته: شما می توانید از \"/poll سوال موردنظر\" برای پرسش سوال استفاده کنید",
+  "Today": "امروز",
+  "Toggle subscription": "ایجاد/حذف عضویت",
+  "Tomorrow": "فردا",
+  "Topic": "موضوع",
+  "Topic editing only": "فقط ویرایش موضوع",
+  "Topic muted": "موضوع بی صدا شد",
+  "Try again": "مجدد تلاش کنید",
+  "Tuesday": "سه شنبه",
+  "Two factor authentication": "احراز هویت دو مرحله ای",
+  "Type": "نوع",
+  "URL format string": "رشته در قالب URL",
+  "URL pattern": "الگوی URL",
+  "Un-collapse": "باز کردن",
+  "Unable to upload that many files at once.": "امکان بارگذاری این تعداد فایل در یک مرحله وجود ندارد.",
+  "Uncheck all": "خارج کردن همه موارد از انتخاب",
+  "Unknown": "ناشناخته",
+  "Unless I say otherwise for a particular stream, I want:": "مگر در مواردی که برای جریان خاصی بگویم، می خواهم:",
+  "Unmute": "خارج کردن از حالت بی صدا",
+  "Unmute the stream <b>__stream.name__</b>": "خارج کردن جریان <b>__stream.name__</b> از حالت بی صدا",
+  "Unmute the topic <b>__topic__</b>": "خارج کردن موضوع <b>__topic__</b> از حالت بی صدا",
+  "Unmute the topic <b>__topic_name__</b>": "خارج کردن موضوع <b>__topic_name__</b> از حالت بی صدا",
+  "Unpin stream <b>__stream.name__</b> from top": "خارج کردن جریان <b>__stream.name__</b> از حالت چسبان در بالا",
+  "Unread count summary (appears in desktop sidebar and browser tab)": "خلاصه تعداد نخوانده ها (در حاشیه کامپیوتر و تب مرورگر نشان می دهد) ",
+  "Unstar": "بدون ستاره",
+  "Unstar all messages": "بدون ستاره کردن همه پیام ها",
+  "Unsubscribe": "لغو عضویت",
+  "Unsubscribed successfully!": "لغو عضویت با موفقیت انجام شد!",
+  "Up to N minutes after posting": "تا N دقیقه پس از گذاشتن پست",
+  "Up to __time_limit__ after posting": "تا __time_limit__ پس از گذاشتن پست",
+  "Update successful: Subdomains allowed for __domain__": "به روزرسانی موفقیت آمیز: زیردامنه ها برای __domain__ مجاز است",
+  "Update successful: Subdomains no longer allowed for __domain__": "به روزرسانی موفقیت آمیز: زیردامنه ها برای __domain__ مجاز نیستند",
+  "Upload image or GIF": "بارگذاری تصویر یا گیف",
+  "Upload logo": "بارگذاری لوگو",
+  "Upload new logo": "بارگذاری لوگوی جدید",
+  "Upload new profile picture": "بارگذاری عکس پروفایل جدید",
+  "Upload profile picture": "بارگذاری تصویر پروفایل",
+  "Uploading logo.": "درحال بارگذاری لوگو",
+  "Uploading profile picture.": "درحال بارگذاری تصویر پروفایل",
+  "Uploading\u2026": "در حال بارگذاری ...",
+  "Use full width on wide screens": "استفاده از حالت تمام عرض در صفحه نمایش های عریض",
+  "User already subscribed.": "کاربر هم اکنون عضو است",
+  "User group added!": "گروه کاربری اضافه شد!",
+  "User groups allow you to <a href=\"/help/mention-a-user-or-group\" target=\"_blank\">mention</a> multiple users at once. When you mention a user group, everyone in the group is notified as if they were individually mentioned.": "گروه کاربری به شما امکان می دهد یکجا به چند کاربر <a href=\"/help/mention-a-user-or-group\" target=\"_blank\">اشاره</a> کنید. وقتی یه یک گرووه کاربری اشاره می کنید، هر فرد در گروه کاربری اشاره می شود، همانند وقتی که تک تک افراد گروه را اشاره کرده اید.",
+  "User identity": "هویت کاربر",
+  "User is already not subscribed.": "کاربر هم اکنون عضو نیست.",
+  "User is deactivated": "کاربر غیرفعال شده است ",
+  "User list on left sidebar in narrow windows": "لیست کاربران در پنجره باریک سمت چپ",
+  "User role": "نقش کاربر",
+  "User settings": "تنظیمات کاربر",
+  "User(s) invited successfully.": "کاربر(ان) با موفقیت دعوت شدند.",
+  "Users": "کاربران",
+  "Users can edit the topic of any message": "کاربران می توانند موضوع هر پیامی را ویرایش کنند",
+  "Video chat provider": "ارائه دهنده گپ ویدیویی",
+  "View edit history": "نمایش تاریخچه ویرایش",
+  "View file": "نمایش فایل",
+  "View full profile": "نمایش پروفایل کامل",
+  "View messages sent": "مشاهده پیام های ارسال شده ",
+  "View private messages": "مشاهده پیام های شخصی",
+  "View private messages to myself": "نمایش پیام های خصوصی به خودم",
+  "View source": "نمایش منبع",
+  "View source / Edit topic": "نمایش منبع / ویرایش موضوع",
+  "View stream": "نمایش جریان",
+  "View your profile": "نمایش پروفایل شما",
+  "Visual desktop notifications": "اطلاع رسانی دیداری برای دسکتاپ",
+  "Waiting period (days)": "دوره انتظار (برحسب روز)",
+  "Waiting period before new members turn into full members": "دوره انتظار برای تبدیل شدن کاربران جدید به کاربر کامل",
+  "Warning: <strong>__stream_name__</strong> is a private stream.": "هشدار: <strong>__stream_name__</strong> یک جریان خصوصی است.",
+  "We are about to have a poll.  Please wait for the question.": "می خواهیم یک نظرسنجی داشته باشیم. لطفا برای سوال منتظر بمانید.",
+  "We recommend against deleting topics unless needed for security reasons or managing abuse. Deleted messages can be confusing for users who may later visit the topic via notifications.": "پیشنهاد می کنیم به جز موارد امنیتی یا مشکلات مدیریتی موضوعات را حذف نکنید. پیام های پاک شده برای کاربرانی که بعدا از طریق اطلاع رسانی موضوع را می بینند می تواند گیج کننده باشد.",
+  "Wednesday": "چهارشنبه ",
+  "Who can access user email addresses (beta)": "چه کسی می تواند به آدرس ایمیل ها دسترسی داشته باشد (آزمایشی)",
+  "Who can add bots": "چه کسی می تواند ربات اضافه کند",
+  "Who can add custom emoji": "چه کسی می تواند ایموجی سفارشی اضافه کند",
+  "Who can add users to streams": "چه کسی می تواند کاربران را به جریان ها اضافه کند",
+  "Who can create streams": "چه کسی می تواند جریان ایجاد کند؟",
+  "Working\u2026": "در حال کار...",
+  "Would you like to unstar all starred messages?  This action cannot be undone.": "می خواهید همه پیام های ستاره دار، بدون ستاره شوند؟ این اقدام برگشت پذیر نیست.",
+  "Write": "نوشتن",
+  "Yes, delete this stream": "بله، این جریان را حذف کن",
+  "Yes, send": "بله، ارسال کن",
+  "Yes, subscribe __count__ users!": "بله، __count__ کاربر را عضو کن!",
+  "Yes. Members and admins can send invitations.": "بله، کاربران و ادمین هامی توانند دعوت ارسال کنند.",
+  "Yes. Only admins can send invitations.": "بله، فقط ادمین ها می توانند دعوت ارسال کنند.",
+  "Yesterday": "دیروز",
+  "You and __display_reply_to__": "شما و __display_reply_to__",
+  "You and __recipients__": "شما و __recipients__",
+  "You are not currently subscribed to this stream.": "شما اکنون در این جریان عضو نیستید.",
+  "You are not subscribed to stream __stream__": "شما در جریان __stream__ عضو نیستید",
+  "You are searching for messages that are sent by more than one person, which is not possible.": "شما پیام هایی را جستجو می کنید که توسط بیش از یک نفر ارسال شده است که ممکن نیست.",
+  "You are searching for messages that belong to more than one stream, which is not possible.": "شما پیام هایی را جستجو می کنید که به بیش از یک جریان تعلق دارند که ممکن نیست.",
+  "You are searching for messages that belong to more than one topic, which is not possible.": "شما پیام هایی را جستجو می کنید که به بیش از یک موضوع تعلق دارند که ممکن نیست.",
+  "You cannot create a stream with no subscribers!": "نمی توانید جریانی بدون هیچ عضوی ایجاد کنید!",
+  "You have muted the topic <span class=\"topic\"></span> under the <span class=\"stream\"></span> stream.": "شما موضوع <span class=\"topic\"></span> در جریان <span class=\"stream\"></span> را بی صدا کرده اید.",
+  "You have no active bots.": "ربات فعالی ندارید.",
+  "You have no inactive bots.": "شما ربات های غیرفعال ندارید ",
+  "You have not muted any topics yet.": "هنوز هیچ موضوعی را بی صدا نکرده اید.",
+  "You have not uploaded any files.": "هیچ فایلی بارگذاری نکرده اید.",
+  "You have nothing to send!": "شما چیزی برای ارسال کردن ندارید!",
+  "You must be an organization administrator to create a stream without subscribing.": "برای ایجاد یک جریان بدون عضویت، باید یکی از ادمین های سازمان باشید.",
+  "You need to be running Zephyr mirroring in order to send messages!": "برای ارسال پیام نیاز به اجرای بازتاب Zephyr دارید!",
+  "You searched for:": "جستجوی شما:",
+  "You subscribed to stream __stream__": "شما عضو جریان __stream__  شدید",
+  "You unsubscribed from stream __stream__": "شما از جریان __stream__ لغو عضویت شدید",
+  "You're not subscribed to this stream. You will not be notified if other users reply to your message.": "شما عضو این جریان نیستید. اگر دیگران به پیام شما پاسخ دهند اطلاع رسانی نمی شوید.",
+  "Your API key:": "کلید API شما :",
+  "Your reminder note is empty!": "یادداشت یادآوری شما خالی است!",
+  "Zoom API key (required)": "کلید API بزرگ نمایی (الزامی)",
+  "Zoom API secret (required if changed)": "کد امنیتی API بزرگ نمایی (در صورت تغییر الزامی)",
+  "Zoom user ID or email address (required)": "شناسه کاربری یا آدرس ایمیل بزرگ نمایی (الزامی)",
+  "[Condense message]": "[پیام فشرده]",
+  "[Configure]": "[پیکره بندی]",
+  "[Disable]": "[غیرفعال]",
+  "[More...]": "[بیشتر...]",
+  "__days__ days ago": "__days__ روز پیش",
+  "__hours__ hours ago": "__hours__ ساعت قبل",
+  "__last_active_date__": "__last_active_date__",
+  "__minutes__ min to edit": "__minutes__ دقیقه مهلت تا ویرایش",
+  "__minutes__ minutes ago": "__minutes__ دقیقه قبل ",
+  "__seconds__ sec to edit": "__seconds__ ثانیه مهلت تا ویرایش",
+  "__starred_status__ this message": "__starred_status__ کردن پیام",
+  "__wildcard_mention_token__ (Notify stream)": "__wildcard_mention_token__ (جریان را اطلاع رسانی کن)",
+  "and": "و",
+  "clear": "پاک کردن",
+  "cookie": "کوکی",
+  "group private messages with __recipient__": "پیام های خصوصی گروه با دریافت کننده __recipient__",
+  "in 1 hour": "در 1 ساعت ",
+  "in 20 minutes": "در 20 دقیقه",
+  "in 3 hours": "در 3 ساعت",
+  "leafy green vegetable": "سبزیجات سبز برگ",
+  "marketing": "بازاریابی",
+  "more topics": "موضوعات بیشتر",
+  "private messages with __recipient__": "پیام های خصوصی با دریافت کننده __recipient__",
+  "private messages with yourself": "پیام های خصوصی با دریافت کننده شما"
+}
