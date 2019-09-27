@@ -486,23 +486,56 @@ run_test('mentions', () => {
     assert.deepEqual(unread.get_msg_ids_for_mentions(), []);
     test_notifiable_count(counts.home_unread_messages, 0);
 
-    var message = {
+    const muted_stream_id = 401;
+
+    muting.add_muted_topic(401, 'lunch');
+
+    const mention_me_message = {
         id: 15,
         type: 'stream',
-        stream_id: 999,
+        stream_id: 400,
         topic: 'lunch',
         mentioned: true,
+        mentioned_me_directly: true,
         unread: true,
     };
 
-    unread.process_loaded_messages([message]);
+    const mention_all_message = {
+        id: 16,
+        type: 'stream',
+        stream_id: 400,
+        topic: 'lunch',
+        mentioned: true,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    // This message shouldn't affect the unread mention counts.
+    const muted_mention_all_message = {
+        id: 17,
+        type: 'stream',
+        stream_id: muted_stream_id,
+        topic: 'lunch',
+        mentioned: true,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([mention_me_message,
+                                    mention_all_message,
+                                    muted_mention_all_message]);
 
     counts = unread.get_counts();
-    assert.equal(counts.mentioned_message_count, 1);
-    assert.deepEqual(unread.get_msg_ids_for_mentions(), [message.id]);
-    assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
-    test_notifiable_count(counts.home_unread_messages, 1);
-    unread.mark_as_read(message.id);
+    assert.equal(counts.mentioned_message_count, 2);
+    assert.deepEqual(unread.get_msg_ids_for_mentions(), [mention_me_message.id,
+                                                         mention_all_message.id]);
+    assert.deepEqual(unread.get_all_msg_ids(), [mention_me_message.id,
+                                                mention_all_message.id,
+                                                muted_mention_all_message.id]);
+    test_notifiable_count(counts.home_unread_messages, 2);
+
+    unread.mark_as_read(mention_me_message.id);
+    unread.mark_as_read(mention_all_message.id);
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
     test_notifiable_count(counts.home_unread_messages, 0);

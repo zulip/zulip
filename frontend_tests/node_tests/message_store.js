@@ -166,6 +166,11 @@ run_test('update_booleans', () => {
     assert.equal(message.mentioned_me_directly, true);
     assert.equal(message.alerted, true);
 
+    flags = ['wildcard_mentioned', 'unread'];
+    message_store.update_booleans(message, flags);
+    assert.equal(message.mentioned, true);
+    assert.equal(message.mentioned_me_directly, false);
+
     flags = ['read'];
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, false);
