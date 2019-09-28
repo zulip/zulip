@@ -234,7 +234,8 @@ function handle_edit_keydown(from_topic_edited_only, e) {
             composebox_typeahead.handle_enter($(e.target), e);
             return;
         }
-    } else if (e.target.id === "message_edit_topic" && code === 13) {
+    } else if (code === 13 && ($(e.target).hasClass("message_edit_topic") ||
+                               $(e.target).hasClass("message_edit_topic_propagate"))) {
         row = $(e.target).closest(".message_row");
     } else if (e.target.id === "inline_topic_edit" && code === 13) {
         row = $(e.target).closest(".recipient_row");
