@@ -763,9 +763,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
 
+    # The user's name.  We prefer the model of a full_name and
+    # short_name over first+last because cultures vary on how many
+    # names one has, whether the family name is first or last, etc.
+    # It also allows organizations to encode a bit of non-name data in
+    # the "name" attribute if desired, like gender pronouns,
+    # graduation year, etc.  The short_name attribute is currently not
+    # used anywhere, but the intent is that it would be used as the
+    # shorter familiar name for addressing the user in the UI.
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)  # type: str
-
-    # short_name is currently unused.
     short_name = models.CharField(max_length=MAX_NAME_LENGTH)  # type: str
 
     date_joined = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
