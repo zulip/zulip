@@ -74,6 +74,10 @@ def parse_cache_script_args(description):
         "--verbose", dest="verbose", action="store_true",
         help="If specified then script will print a detailed report "
         "of what is being will deleted/kept back.")
+    parser.add_argument(
+        "--no-print-headings", dest="no_headings", action="store_true",
+        help="If specified then script will not print headings for "
+        "what will be deleted/kept back.")
 
     args = parser.parse_args()
     args.verbose |= args.dry_run    # Always print a detailed report in case of dry run.
@@ -290,7 +294,7 @@ def purge_unused_caches(caches_dir, caches_in_use, cache_type, args):
     caches_to_keep = all_caches - caches_to_purge
 
     may_be_perform_purging(
-        caches_to_purge, caches_to_keep, cache_type, args.dry_run, args.verbose)
+        caches_to_purge, caches_to_keep, cache_type, args.dry_run, args.verbose, args.no_headings)
     if args.verbose:
         print("Done!")
 
@@ -321,11 +325,11 @@ def generate_sha1sum_emoji(zulip_path):
 
     return sha.hexdigest()
 
-def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbose):
-    # type: (Set[str], Set[str], str, bool, bool) -> None
+def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbose, no_headings):
+    # type: (Set[str], Set[str], str, bool, bool, bool) -> None
     if dry_run:
         print("Performing a dry run...")
-    else:
+    if not no_headings:
         print("Cleaning unused %ss..." % (dir_type,))
 
     for directory in dirs_to_purge:
