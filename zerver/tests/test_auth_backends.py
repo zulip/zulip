@@ -474,7 +474,7 @@ class SocialAuthBase(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
-        self.name = 'Hamlet'
+        self.name = self.user_profile.full_name
         self.backend = self.BACKEND_CLASS
         self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
         self.user_profile.backend = self.backend
@@ -622,7 +622,7 @@ class SocialAuthBase(ZulipTestCase):
                                        subdomain='zulip', next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(data['next'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
@@ -640,7 +640,7 @@ class SocialAuthBase(ZulipTestCase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(data['next'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
@@ -1030,7 +1030,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                            subdomain='zulip')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
 
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
@@ -1055,7 +1055,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                            subdomain='zulip')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
 
     def test_github_auth_enabled(self) -> None:
@@ -1105,7 +1105,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(data['next'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
