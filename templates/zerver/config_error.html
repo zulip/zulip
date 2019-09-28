@@ -80,6 +80,12 @@
                         {% endif %}
                     {% endif %}
 
+                    {% if saml_error %}
+                    <p>
+                        SAML authentication is eitheir not enabled or misconfigured. See setup instructions
+                        in <code>/etc/zulip/settings.py</code>.
+                    </p>
+                    {% endif %}
                     <p>After making your changes, remember to restart
                     the Zulip server.</p>
                 </div>

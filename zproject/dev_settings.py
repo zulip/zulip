@@ -45,6 +45,7 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',
     'zproject.backends.GitHubAuthBackend',
     'zproject.backends.GoogleAuthBackend',
+    'zproject.backends.SAMLAuthBackend',
     # 'zproject.backends.AzureADAuthBackend',
 )
 

@@ -56,16 +56,19 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
-    PopulateUserLDAPError
+    PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
 from version import ZULIP_VERSION
 
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.response import OneLogin_Saml2_Response
 from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.strategy import DjangoStrategy
 from social_django.storage import BaseDjangoStorage
 
+import base64
 import json
 import urllib
 import ujson
@@ -474,7 +477,7 @@ class SocialAuthBase(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
-        self.name = 'Hamlet'
+        self.name = self.user_profile.full_name
         self.backend = self.BACKEND_CLASS
         self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
         self.user_profile.backend = self.backend
@@ -622,7 +625,7 @@ class SocialAuthBase(ZulipTestCase):
                                        subdomain='zulip', next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(data['next'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
@@ -640,7 +643,7 @@ class SocialAuthBase(ZulipTestCase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(data['next'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
@@ -942,6 +945,154 @@ class SocialAuthBase(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
 
+class SAMLAuthBackendTest(SocialAuthBase):
+    __unittest_skip__ = False
+
+    BACKEND_CLASS = SAMLAuthBackend
+    CLIENT_KEY_SETTING = "SOCIAL_AUTH_SAML_SP_PRIVATE_KEY"
+    LOGIN_URL = "/accounts/login/social/saml"
+    SIGNUP_URL = "/accounts/register/social/saml"
+    AUTHORIZATION_URL = "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO"
+    AUTH_FINISH_URL = "/complete/saml/"
+    CONFIG_ERROR_URL = "/config-error/saml"
+
+    # We have to define our own social_auth_test as the flow of SAML authentication
+    # is different from the other social backends.
+    def social_auth_test(self, account_data_dict: Dict[str, str],
+                         *, subdomain: Optional[str]=None,
+                         mobile_flow_otp: Optional[str]=None,
+                         is_signup: Optional[str]=None,
+                         next: str='',
+                         multiuse_object_key: str='',
+                         **extra_data: Any) -> HttpResponse:
+        url = self.LOGIN_URL
+
+        params = {}
+        headers = {}
+        if subdomain is not None:
+            headers['HTTP_HOST'] = subdomain + ".testserver"
+        if mobile_flow_otp is not None:
+            params['mobile_flow_otp'] = mobile_flow_otp
+            headers['HTTP_USER_AGENT'] = "ZulipAndroid"
+        if is_signup is not None:
+            url = self.SIGNUP_URL
+        params['next'] = next
+        params['multiuse_object_key'] = multiuse_object_key
+        if len(params) > 0:
+            url += "?%s" % (urllib.parse.urlencode(params),)
+
+        result = self.client_get(url, **headers)
+
+        expected_result_url_prefix = 'http://testserver/login/%s/' % (self.backend.name,)
+        if settings.SOCIAL_AUTH_SUBDOMAIN is not None:
+            expected_result_url_prefix = (
+                'http://%s.testserver/login/%s/' % (settings.SOCIAL_AUTH_SUBDOMAIN, self.backend.name)
+            )
+
+        if result.status_code != 302 or not result.url.startswith(expected_result_url_prefix):
+            return result
+
+        result = self.client_get(result.url, **headers)
+
+        self.assertEqual(result.status_code, 302)
+        assert self.AUTHORIZATION_URL in result.url
+        assert "samlrequest" in result.url.lower()
+
+        self.client.cookies = result.cookies
+
+        saml_response = self.generate_saml_response(**account_data_dict)
+        post_params = {"SAMLResponse": saml_response, "RelayState": "test_idp"}
+        # The mock below is necessary, so that python3-saml accepts our SAMLResponse,
+        # and doesn't verify the cryptographic signatures etc., since generating
+        # a perfectly valid SAMLResponse for the purpose of these tests would be too complex,
+        # and we simply use one loaded from a fixture file.
+        with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
+            result = self.client_post(self.AUTH_FINISH_URL, post_params, **headers)
+
+        return result
+
+    def generate_saml_response(self, email: str, name: str) -> str:
+        name_parts = name.split(' ')
+        first_name = name_parts[0]
+        last_name = name_parts[1]
+
+        unencoded_saml_response = self.fixture_data("samlresponse.txt", type="saml").format(
+            email=email,
+            first_name=first_name,
+            last_name=last_name
+        )
+        # SAMLResponse needs to be base64-encoded.
+        saml_response = base64.b64encode(unencoded_saml_response.encode()).decode()  # type: str
+
+        return saml_response
+
+    # get_account_data_dict actually isn't used, but we need to define it to use
+    # our social auth testing framework.
+    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+        return dict(email=email, name=name)
+
+    def test_saml_auth_enabled(self) -> None:
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.SAMLAuthBackend',)):
+            self.assertTrue(saml_auth_enabled())
+            result = self.client_get("/saml/metadata.xml")
+            self.assert_in_success_response(
+                ['entityID="{}"'.format(settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID)], result
+            )
+
+    def test_social_auth_complete(self) -> None:
+        with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
+            with mock.patch.object(OneLogin_Saml2_Auth, 'is_authenticated', return_value=False):
+                # This mock causes AuthFailed to be raised.
+                saml_response = self.generate_saml_response(self.email, self.name)
+                post_params = {"SAMLResponse": saml_response, "RelayState": "test_idp"}
+                result = self.client_post('/complete/saml/',  post_params)
+                self.assertEqual(result.status_code, 302)
+                self.assertIn('login', result.url)
+
+    def test_social_auth_complete_when_base_exc_is_raised(self) -> None:
+        with mock.patch.object(OneLogin_Saml2_Response, 'is_valid', return_value=True):
+            with mock.patch('social_core.backends.saml.SAMLAuth.auth_complete',
+                            side_effect=AuthStateForbidden('State forbidden')), \
+                    mock.patch('zproject.backends.logging.warning'):
+                saml_response = self.generate_saml_response(self.email, self.name)
+                post_params = {"SAMLResponse": saml_response, "RelayState": "test_idp"}
+                result = self.client_post('/complete/saml/',  post_params)
+                self.assertEqual(result.status_code, 302)
+                self.assertIn('login', result.url)
+
+    def test_social_auth_complete_parameters_missing(self) -> None:
+        # Simple GET for /complete/saml without the required parameter.
+        # This tests the auth_complete wrapped in our SAMLAuthBackend,
+        # ensuring it prevents this requests from causing an internal server error.
+        result = self.client_get('/complete/saml/')
+        self.assertEqual(result.status_code, 302)
+        self.assertIn('login', result.url)
+
+        # Check that POSTing the RelayState, but with missing SAMLResponse,
+        # doesn't cause errors either:
+        post_params = {"RelayState": "test_idp"}
+        result = self.client_post('/complete/saml/',  post_params)
+        self.assertEqual(result.status_code, 302)
+        self.assertIn('login', result.url)
+
+    def test_social_auth_saml_multiple_idps_configured(self) -> None:
+        """
+        Using multiple IdPs is not supported right now, and having multiple configured
+        should lead to misconfiguration page.
+        """
+
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS={"test_idp1": {}, "test_idp2": {}}):
+            # We don't need to put full idp configurations in the mock settings above
+            # to trigger the error.
+            with mock.patch("zerver.views.auth.logging.error") as mock_error:
+                result = self.client_get("/accounts/login/social/saml")
+                self.assertEqual(result.status_code, 302)
+                self.assertEqual(result.url, '/config-error/saml')
+                mock_error.assert_called_once_with(
+                    "SAML misconfigured - you have specified multiple IdPs. Only one IdP is supported."
+                )
+
+
 class GitHubAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
 
@@ -1030,7 +1181,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                            subdomain='zulip')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
 
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
@@ -1055,7 +1206,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                            subdomain='zulip')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
 
     def test_github_auth_enabled(self) -> None:
@@ -1105,7 +1256,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(data['next'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)

@@ -52,6 +52,30 @@ def get_config(section: str, key: str, default_value: Optional[Any]=None) -> Opt
         return config_file.get(section, key)
     return default_value
 
+def get_from_file_if_exists(path: str) -> str:
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return f.read()
+    else:
+        return ''
+
+def parse_cryptographic_key_to_single_line(input_key: str) -> str:
+
+    def is_line_redundant(line: str) -> bool:
+        # Check for lines like "-----BEGIN PRIVATE KEY-----" and similar.
+        line = line.strip()
+        if line.startswith('--') and line.endswith('--'):
+            return True
+        return False
+
+    lines = input_key.strip().split('\n')
+    if is_line_redundant(lines[0]):
+        lines = lines[1:]
+    if is_line_redundant(lines[-1]):
+        lines = lines[:-1]
+
+    return ''.join(lines)
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("secret_key")
 
@@ -160,6 +184,14 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_SUBDOMAIN': None,
     'SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET': get_secret('azure_oauth2_secret'),
     'SOCIAL_AUTH_GOOGLE_KEY': get_secret('social_auth_google_key', development_only=True),
+    # SAML:
+    'SOCIAL_AUTH_SAML_SP_ENTITY_ID': None,
+    'SOCIAL_AUTH_SAML_SP_PUBLIC_CERT': None,
+    'SOCIAL_AUTH_SAML_SP_PRIVATE_KEY': None,
+    'SOCIAL_AUTH_SAML_ORG_INFO': None,
+    'SOCIAL_AUTH_SAML_TECHNICAL_CONTACT': None,
+    'SOCIAL_AUTH_SAML_SUPPORT_CONTACT': None,
+    'SOCIAL_AUTH_SAML_ENABLED_IDPS': {},
     # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
     'GOOGLE_OAUTH2_CLIENT_ID': None,
 
@@ -1353,6 +1385,19 @@ SOCIAL_AUTH_GOOGLE_SECRET = get_secret('social_auth_google_secret')
 GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
 SOCIAL_AUTH_GOOGLE_KEY = SOCIAL_AUTH_GOOGLE_KEY or GOOGLE_OAUTH2_CLIENT_ID
 SOCIAL_AUTH_GOOGLE_SECRET = SOCIAL_AUTH_GOOGLE_SECRET or GOOGLE_OAUTH2_CLIENT_SECRET
+
+if PRODUCTION:
+    SOCIAL_AUTH_SAML_SP_PUBLIC_CERT  = parse_cryptographic_key_to_single_line(
+        get_from_file_if_exists("/etc/zulip/saml/zulip-cert.crt")
+    )
+    SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = parse_cryptographic_key_to_single_line(
+        get_from_file_if_exists("/etc/zulip/saml/zulip-private-key.key")
+    )
+
+    for idp_name in SOCIAL_AUTH_SAML_ENABLED_IDPS:
+        SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]['x509cert'] = parse_cryptographic_key_to_single_line(
+            get_from_file_if_exists("/etc/zulip/saml/idps/{}.crt".format(idp_name))
+        )
 
 SOCIAL_AUTH_PIPELINE = [
     'social_core.pipeline.social_auth.social_details',

@@ -632,6 +632,11 @@ button.login-social-button:active {
     box-shadow: 0px 1px 1px hsla(0, 0%, 0%, 0.3);
 }
 
+.saml-wrapper button.login-social-button {
+    background-image: url('/static/images/landing-page/logos/saml-icon.png');
+    width: 100%;
+}
+
 .google-wrapper button.login-social-button {
     background-image: url('/static/images/landing-page/logos/googl_e-icon.png');
     width: 100%;

@@ -120,6 +120,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
+    # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )  # type: Tuple[str, ...]
@@ -185,6 +186,89 @@ AUTHENTICATION_BACKENDS = (
 #
 #SOCIAL_AUTH_SUBDOMAIN = 'auth'
 
+########
+# SAML Authentication
+#
+# In order to set up SAML authentication you will need to configure the
+# settings below, as explained in
+# https://python-social-auth.readthedocs.io/en/latest/backends/saml.html#required-configuration
+# using information given to you by your Identity Provider.
+# In the sample code below, example certificates are inserted for illustration,
+# but they have been modified to be invalid and you should replace them with
+# appropriate certificates of your own, as explained in the document linked above.
+#
+# On the IdP's side, you will have to specify the SSO URL and the Entity ID.
+# The Entity ID is just the value of the SOCIAL_AUTH_SAML_SP_ENTITY_ID setting below.
+# The SSO URL is at the /complete/saml/ endpoint, so the full address should be something like
+# https://yourzulipdomain.example.com/complete/saml/
+#
+# In the SOCIAL_AUTH_SAML_ENABLED_IDPS setting, an important part is the attribute mapping.
+# It should be configured in accordance with how the user attributes are named when sent by
+# your IdP. These names are often configurable in your IdP's interface, when setting up SAML
+# authentication (e.g. with Okta and G Suite providers, you explicitly specify them).
+# For instance, in the example configuration below:
+#         "attr_user_permanent_id": "email",
+#         "attr_first_name": "first_name",
+#         "attr_last_name": "last_name",
+#         "attr_username": "email",
+#         "attr_email": "email",
+# it is assumed the IdP specifies the user's email in the "email" atttribute,
+# the first name in the "first_name" attribute and the last name
+# in the "last_name" attribute.
+# You should generally only adjust the right side of this mapping to the proper attribute
+# names, as provided by your IdP - and leave the left side as it is.
+
+# SOCIAL_AUTH_SAML_SP_ENTITY_ID = 'https://' + EXTERNAL_HOST
+
+# For the public certificate and private key settings below, don't edit them directly,
+# but instead:
+# 1. Put the public certificate in /etc/zulip/saml/zulip-cert.crt
+# 2. Put the private key in /etc/zulip/saml/zulip-private-key.key
+# 3. For security reasons, set the correct ownership and permissions for these files:
+#   chown zulip.zulip /etc/zulip/saml/zulip-cert.crt /etc/zulip/saml/zulip-private-key.key
+#   chmod 644 /etc/zulip/saml/zulip-cert.crt
+#   chmod 640 /etc/zulip/saml/zulip-private-key.key
+
+# SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
+# SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
+
+# SOCIAL_AUTH_SAML_ORG_INFO =  {
+#     "en-US": {
+#         "name": "example",
+#         "displayname": "Example Inc.",
+#         "url": "%s%s" % ('https://', EXTERNAL_HOST),
+#     }
+# }
+
+# SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
+#     "givenName": "Tech Gal",
+#     "emailAddress": "technical@example.com"
+# }
+
+# SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
+#     "givenName": "Support Guy",
+#     "emailAddress": "support@example.com",
+# }
+
+# Important note: Only one IdP is currently supported, don't add
+# any extra IdPs in this setting.
+# SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+#     # Replace idp_name below, with the appropriate name of your choice.
+#     "idp_name": {
+#         # Configure entity_id and url according to information provided to you by your IdP:
+#         "entity_id": "https://idp.testshib.org/idp/shibboleth",
+#         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+#         # Do not edit the x509cert attribute below, instead put the IdP's certificate in:
+#         # /etc/zulip/saml/idps/idp_name.crt
+#         # where idp_name is the name of this IdP, as configured above.
+#         "x509cert": "",
+#         "attr_user_permanent_id": "email",
+#         "attr_first_name": "first_name",
+#         "attr_last_name": "last_name",
+#         "attr_username": "email",
+#         "attr_email": "email",
+#     }
+# }
 
 ########
 # Azure Active Directory OAuth.
@@ -210,7 +294,6 @@ AUTHENTICATION_BACKENDS = (
 # corresponding email address is "username@example.com", set
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None  # type: Optional[str]
-
 
 ################
 # Miscellaneous settings.
