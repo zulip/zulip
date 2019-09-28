@@ -59,7 +59,7 @@ def main():
     deployments_to_purge = get_deployments_to_be_purged(deployments_to_keep)
 
     may_be_perform_purging(
-        deployments_to_purge, deployments_to_keep, "deployment", args.dry_run, args.verbose)
+        deployments_to_purge, deployments_to_keep, "deployment", args.dry_run, args.verbose, True)
 
     if not args.dry_run:
         print("Deployments cleaned successfully...")
