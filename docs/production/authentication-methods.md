@@ -34,6 +34,97 @@ Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`.  Details
 are documented in your `settings.py`.
 
+## SAML
+
+Zulip 2.1 and later has beta support for SAML authentication, used by
+Okta, OneLogin, and many other IdPs (identity providers).  You can
+configure it as follows:
+
+1. These instructions assume you have an installed Zulip server.  You
+   can have created an organization already using EmailAuthBackend, or
+   plan to create the organization using SAML authentication.
+
+1. Tell your IdP how to find your Zulip server:
+
+    * **SP Entity ID**: `https://yourzulipdomain.example.com`.
+    * **SSO URL**:
+      `https://yourzulipdomain.example.com/complete/saml/`.  This is
+      the "SAML ACS url" in SAML terminology.
+
+   The `Entity ID` should match the value of
+   `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
+   You can run on your Zulip server
+   `/home/zulip/deployments/current/scripts/setup/get-django-setting
+   SOCIAL_AUTH_SAML_SP_ENTITY_ID` to get the computed value.
+
+2. Tell Zulip how to connect to your SAML provider server by filling
+   out the section of `/etc/zulip/settings.py` on your Zulip server
+   with the heading "SAML Authentication".
+   * You will need to update `SOCIAL_AUTH_SAML_ORG_INFO` with your
+     organization name (`displayname` may appear in the SAML
+     authentication flow; `name` won't be displayed to humans).
+   * Fill out `SOCIAL_AUTH_SAML_ENABLED_IDPS` with data provided by
+     your identity provider.  You may find [the python-social-auth
+     SAML
+     docs](https://python-social-auth-docs.readthedocs.io/en/latest/backends/saml.html)
+     helpful.  You'll need to obtain several values from your IdP's
+     metadata and enter them on the right-hand side of this
+     Python dictionary:
+     1. Set the outer `idp_name` key to be an identifier for your IdP,
+        e.g. `testshib` or `okta`.  This field may be used later if
+        Zulip adds support for declaring multiple IdPs here.
+     2. The IdP should provide the `url` and `entity_id` values.
+     3. Save the `x509cert` value to a file; you'll use it in the
+        instructions below.
+     4. The values needed in the `attr_` fields are often configurable
+        in your IdP's interface when setting up SAML authentication
+        (referred to as "Attribute Statements" with Okta, or
+        "Attribute Mapping" with GSuite).  You'll want to connect
+        these so that Zulip gets the email address (used as a unique
+        user ID) and name for the user.
+
+3. Install the certificate(s) required for SAML authentication.  You
+    will definitely need the public certificate of your IdP.  Some IdP
+    providers also support the Zulip server (Service Provider) having
+    a certificate used for encryption and signing.  We detail these
+    steps as optional below, because they aren't required for basic
+    setup, and some IdPs like Okta don't fully support Service
+    Provider certificates.  You should install them as follows:
+
+    1. On your Zulip server, `mkdir -p /etc/zulip/saml/idps/`
+    2. Put the IDP public certificate in `/etc/zulip/saml/idps/{idp_name}.crt`
+    3. (Optional) Put the Zulip server public certificate in `/etc/zulip/saml/zulip-cert.crt`
+    4. (Optional) Put the Zulip server private key in `/etc/zulip/saml/zulip-private-key.key`
+    5. Set the proper permissions on these files and directories:
+
+    ```
+    chown -R zulip.zulip /etc/zulip/saml/
+    find /etc/zulip/saml/ -type f -exec chmod 644 -- {} +
+    chmod 640 /etc/zulip/saml/zulip-private-key.key
+    ```
+
+4. (Optional) If you configured the optional public and private server
+   certificates above, you can enable the additional setting
+   `"authnRequestsSigned": True` in `SOCIAL_AUTH_SAML_SECURITY_CONFIG`
+   to have the SAMLRequests the server will be issuing to the IdP
+   signed using those certificates.  Additionally, if the IdP supports
+   it, you can upload the public certificate to enable encryption of
+   assertions in the SAMLResponses the IdP will send about
+   authenticated users.
+
+5. Enable the `zproject.backends.SAMLAuthBackend` auth backend, in
+`AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.
+
+6. [Restart the Zulip server](settings.html) to ensure your settings
+changes take effect.  The Zulip login page should now have a button
+for SAML authentication that you can use to login or create an account
+(including when creating a new organization).
+
+7. If the configuration was successful, the server's metadata can be
+found at `https://yourzulipdomain.example.com/saml/metadata.xml`. You
+can use this for verifying your configuration or provide it to your
+IdP.
+
 ```eval_rst
 .. _ldap:
 ```

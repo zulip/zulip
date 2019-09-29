@@ -7,7 +7,8 @@ from django.contrib.auth.views import password_reset as django_password_reset
 from django.urls import reverse
 from zerver.decorator import require_post, \
     process_client, do_login, log_view_func
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
+    HttpResponseServerError
 from django.template.response import SimpleTemplateResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -37,11 +38,13 @@ from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
-    AUTH_BACKEND_NAME_MAP, auth_enabled_helper
+    AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled
 from version import ZULIP_VERSION
 
 import jwt
 import logging
+
+from social_django.utils import load_backend, load_strategy
 
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -315,7 +318,8 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     return login_or_register_remote_user(request, email, user_profile, remote_user)
 
 def oauth_redirect_to_root(request: HttpRequest, url: str,
-                           sso_type: str, is_signup: bool=False) -> HttpResponse:
+                           sso_type: str, is_signup: bool=False,
+                           extra_url_params: Dict[str, str]={}) -> HttpResponse:
     main_site_uri = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == 'social':
         main_site_uri = (settings.EXTERNAL_URI_SCHEME +
@@ -342,23 +346,54 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
     if next:
         params['next'] = next
 
+    params = {**params, **extra_url_params}
+
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
 def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
+    extra_url_params = {}  # type: Dict[str, str]
+    if backend == "saml":
+        obligatory_saml_settings_list = [
+            settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID,
+            settings.SOCIAL_AUTH_SAML_ORG_INFO,
+            settings.SOCIAL_AUTH_SAML_TECHNICAL_CONTACT,
+            settings.SOCIAL_AUTH_SAML_SUPPORT_CONTACT,
+            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS
+        ]
+        if any(not setting for setting in obligatory_saml_settings_list):
+            return redirect_to_config_error("saml")
+
+        # This backend requires the name of the IdP (from the list of configured ones)
+        # to be passed as the parameter.
+        # Currently we support configuring only one IdP.
+        # TODO: Support multiple IdPs. python-social-auth SAML (which we use here)
+        # already supports that, so essentially only the UI for it on the login pages
+        # needs to be figured out.
+        if len(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS) != 1:
+            logging.error(
+                "SAML misconfigured - you have specified multiple IdPs. Only one IdP is supported."
+            )
+            return redirect_to_config_error("saml")
+        extra_url_params = {'idp': list(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys())[0]}
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and
                                       settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
     if (backend == "google") and not (settings.SOCIAL_AUTH_GOOGLE_KEY and
                                       settings.SOCIAL_AUTH_GOOGLE_SECRET):
         return redirect_to_config_error("google")
-    # TODO: Add a similar block of AzureAD.
+    # TODO: Add a similar block for AzureAD.
 
-    return oauth_redirect_to_root(request, backend_url, 'social')
+    return oauth_redirect_to_root(request, backend_url, 'social', extra_url_params=extra_url_params)
 
 def start_social_signup(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
-    return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True)
+    extra_url_params = {}  # type: Dict[str, str]
+    if backend == "saml":
+        assert len(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS) == 1
+        extra_url_params = {'idp': list(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys())[0]}
+    return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True,
+                                  extra_url_params=extra_url_params)
 
 def authenticate_remote_user(realm: Realm,
                              email_address: Optional[str]) -> Optional[UserProfile]:
@@ -851,3 +886,25 @@ def password_reset(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                                  template_name='zerver/reset.html',
                                  password_reset_form=ZulipPasswordResetForm,
                                  post_reset_redirect='/accounts/password/reset/done/')
+
+@csrf_exempt
+def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # nocoverage
+    """
+    This is the view function for generating our SP metadata
+    for SAML authentication. It's meant for helping check the correctness
+    of the configuration when setting up SAML, or for obtaining the XML metadata
+    if the IdP requires it.
+    Taken from https://python-social-auth.readthedocs.io/en/latest/backends/saml.html
+    """
+    if not saml_auth_enabled():
+        return redirect_to_config_error("saml")
+
+    complete_url = reverse('social:complete', args=("saml",))
+    saml_backend = load_backend(load_strategy(request), "saml",
+                                complete_url)
+    metadata, errors = saml_backend.generate_metadata_xml()
+    if not errors:
+        return HttpResponse(content=metadata,
+                            content_type='text/xml')
+
+    return HttpResponseServerError(content=', '.join(errors))

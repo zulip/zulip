@@ -52,6 +52,13 @@ def get_config(section: str, key: str, default_value: Optional[Any]=None) -> Opt
         return config_file.get(section, key)
     return default_value
 
+def get_from_file_if_exists(path: str) -> str:
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return f.read()
+    else:
+        return ''
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("secret_key")
 
@@ -160,6 +167,14 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_SUBDOMAIN': None,
     'SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET': get_secret('azure_oauth2_secret'),
     'SOCIAL_AUTH_GOOGLE_KEY': get_secret('social_auth_google_key', development_only=True),
+    # SAML:
+    'SOCIAL_AUTH_SAML_SP_ENTITY_ID': None,
+    'SOCIAL_AUTH_SAML_SP_PUBLIC_CERT': '',
+    'SOCIAL_AUTH_SAML_SP_PRIVATE_KEY': '',
+    'SOCIAL_AUTH_SAML_ORG_INFO': None,
+    'SOCIAL_AUTH_SAML_TECHNICAL_CONTACT': None,
+    'SOCIAL_AUTH_SAML_SUPPORT_CONTACT': None,
+    'SOCIAL_AUTH_SAML_ENABLED_IDPS': {},
     # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
     'GOOGLE_OAUTH2_CLIENT_ID': None,
 
@@ -1354,6 +1369,26 @@ SOCIAL_AUTH_GOOGLE_SECRET = get_secret('social_auth_google_secret')
 GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
 SOCIAL_AUTH_GOOGLE_KEY = SOCIAL_AUTH_GOOGLE_KEY or GOOGLE_OAUTH2_CLIENT_ID
 SOCIAL_AUTH_GOOGLE_SECRET = SOCIAL_AUTH_GOOGLE_SECRET or GOOGLE_OAUTH2_CLIENT_SECRET
+
+if PRODUCTION:
+    SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = get_from_file_if_exists("/etc/zulip/saml/zulip-cert.crt")
+    SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("/etc/zulip/saml/zulip-private-key.key")
+
+for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+    if DEVELOPMENT:
+        idp_dict['entity_id'] = get_secret('saml_entity_id', '')
+        idp_dict['url'] = get_secret('saml_url', '')
+        idp_dict['x509cert_path'] = 'zproject/dev_saml.cert'
+
+    # Set `x509cert` if not specified already; also support an override path.
+    if 'x509cert' in idp_dict:
+        continue
+
+    if 'x509cert_path' in idp_dict:
+        path = idp_dict['x509cert_path']
+    else:
+        path = "/etc/zulip/saml/idps/{}.crt".format(idp_name)
+    idp_dict['x509cert'] = get_from_file_if_exists(path)
 
 SOCIAL_AUTH_PIPELINE = [
     'social_core.pipeline.social_auth.social_details',

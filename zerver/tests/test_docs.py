@@ -412,6 +412,14 @@ class ConfigErrorTest(ZulipTestCase):
         self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
         self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
 
+    @override_settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=None)
+    def test_saml_error(self) -> None:
+        result = self.client_get("/accounts/login/social/saml")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/config-error/saml')
+        result = self.client_get(result.url)
+        self.assert_in_success_response(["SAML authentication"], result)
+
     def test_smtp_error(self) -> None:
         result = self.client_get("/config-error/smtp")
         self.assertEqual(result.status_code, 200)

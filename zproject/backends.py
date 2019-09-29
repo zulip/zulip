@@ -15,6 +15,7 @@
 import copy
 import logging
 import magic
+import ujson
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
@@ -28,12 +29,14 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from requests import HTTPError
+from onelogin.saml2.errors import OneLogin_Saml2_Error
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.google import GoogleOAuth2
 from social_core.backends.oauth import BaseOAuth2
+from social_core.backends.saml import SAMLAuth
 from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
@@ -44,10 +47,14 @@ from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
+from zerver.lib.utils import generate_random_token
+from zerver.lib.redis_utils import get_redis_client
 from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
     email_allowed_for_realm, get_default_stream_groups, get_user_profile_by_id, remote_user_to_email, \
     email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
+
+redis_client = get_redis_client()
 
 # This first batch of methods is used by other code in Zulip to check
 # whether a given authentication backend is enabled for a given realm.
@@ -95,6 +102,9 @@ def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
 
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
+
+def saml_auth_enabled(realm: Optional[Realm]=None) -> bool:
+    return auth_enabled_helper(['SAML'], realm)
 
 def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
@@ -1002,6 +1012,124 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
         if email_verified:
             verified_emails.append(details["email"])
         return verified_emails
+
+class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
+    auth_backend_name = "SAML"
+    standard_relay_params = ["subdomain", "multiuse_object_key", "mobile_flow_otp",
+                             "next", "is_signup"]
+    REDIS_EXPIRATION_SECONDS = 60 * 15
+
+    def auth_url(self) -> str:
+        """Get the URL to which we must redirect in order to
+        authenticate the user. Overriding the original SAMLAuth.auth_url.
+        Runs when someone accesses the /login/saml/ endpoint."""
+        try:
+            idp_name = self.strategy.request_data()['idp']
+            auth = self._create_saml_auth(idp=self.get_idp(idp_name))
+        except KeyError:
+            # If the above raise KeyError, it means invalid or no idp was specified,
+            # we should log that and redirect to the login page.
+            logging.info("/login/saml/ : Bad idp param.")
+            return reverse('zerver.views.auth.login_page',
+                           kwargs = {'template_name': 'zerver/login.html'})
+
+        # This where we change things.  We need to pass some params
+        # (`mobile_flow_otp`, `next`, etc.) through RelayState, which
+        # then the IdP will pass back to us so we can read those
+        # parameters in the final part of the authentication flow, at
+        # the /complete/saml/ endpoint.
+        #
+        # To protect against network eavesdropping of these
+        # parameters, we send just a random token to the IdP in
+        # RelayState, which is used as a key into our redis data store
+        # for fetching the actual parameters after the IdP has
+        # returned a successful authentication.
+        params_to_relay = ["idp"] + self.standard_relay_params
+        request_data = self.strategy.request_data().dict()
+        data_to_relay = {
+            key: request_data[key] for key in params_to_relay if key in request_data
+        }
+        relay_state = self.put_data_in_redis(data_to_relay)
+
+        return auth.login(return_to=relay_state)
+
+    @classmethod
+    def put_data_in_redis(cls, data_to_relay: Dict[str, Any]) -> str:
+        with redis_client.pipeline() as pipeline:
+            token = generate_random_token(64)
+            key = "saml_token_{}".format(token)
+            pipeline.set(key, ujson.dumps(data_to_relay))
+            pipeline.expire(key, cls.REDIS_EXPIRATION_SECONDS)
+            pipeline.execute()
+
+        return key
+
+    @classmethod
+    def get_data_from_redis(cls, key: str) -> Optional[Dict[str, Any]]:
+        redis_data = None
+        if key.startswith('saml_token_'):
+            # Safety if statement, to not allow someone to poke around arbitrary redis keys here.
+            redis_data = redis_client.get(key)
+        if redis_data is None:
+            # TODO: We will need some sort of user-facing message
+            # about the authentication session having expired here.
+            logging.info("SAML authentication failed: bad RelayState token.")
+            return None
+
+        return ujson.loads(redis_data)
+
+    def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
+        """
+        Additional ugly wrapping on top of auth_complete in SocialAuthMixin.
+        We handle two things here:
+            1. Working around bad RelayState or SAMLResponse parameters in the request.
+            Both parameters should be present if the user came to /complete/saml/ through
+            the IdP as intended. The errors can happen if someone simply types the endpoint into
+            their browsers, or generally tries messing with it in some ways.
+
+            2. The first part of our SAML authentication flow will encode important parameters
+            into the RelayState. We need to read them and set those values in the session,
+            and then change the RelayState param to the idp_name, because that's what
+            SAMLAuth.auth_complete() expects.
+        """
+        if 'RelayState' not in self.strategy.request_data():
+            logging.info("SAML authentication failed: missing RelayState.")
+            return None
+
+        # Set the relevant params that we transported in the RelayState:
+        redis_key = self.strategy.request_data()['RelayState']
+        relayed_params = self.get_data_from_redis(redis_key)
+        if relayed_params is None:
+            return None
+
+        result = None
+        try:
+            for param, value in relayed_params.items():
+                if param in self.standard_relay_params:
+                    self.strategy.session_set(param, value)
+
+            # super().auth_complete expects to have RelayState set to the idp_name,
+            # so we need to replace this param.
+            post_params = self.strategy.request.POST.copy()
+            post_params['RelayState'] = relayed_params["idp"]
+            self.strategy.request.POST = post_params
+
+            # Call the auth_complete method of SocialAuthMixIn
+            result = super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
+        except OneLogin_Saml2_Error as e:
+            # This will be raised if SAMLResponse is missing.
+            logging.info(str(e))
+            # Fall through to returning None.
+        finally:
+            if result is None:
+                for param in self.standard_relay_params:
+                    # If an attacker managed to eavesdrop on the RelayState token,
+                    # they may pass it here to the endpoint with an invalid SAMLResponse.
+                    # We remove these potentially sensitive parameters that we have set in the session
+                    # ealier, to avoid leaking their values.
+                    self.strategy.session_set(param, None)
+
+        return result
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,

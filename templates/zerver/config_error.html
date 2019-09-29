@@ -80,6 +80,19 @@
                         {% endif %}
                     {% endif %}
 
+                    {% if saml_error %}
+                        <p>
+                            SAML authentication is either not enabled or misconfigured. Have a look at
+                            our <a href="https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#SAML">setup guide</a>.
+                        </p>
+                        {% if development_environment %}
+                        <p>
+                            See also
+                            the <a href="https://zulip.readthedocs.io/en/latest/subsystems/auth.html#saml">SAML
+                                    guide</a> for the development environment.
+                        </p>
+                        {% endif %}
+                    {% endif %}
                     <p>After making your changes, remember to restart
                     the Zulip server.</p>
                 </div>

@@ -120,6 +120,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
+    # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )  # type: Tuple[str, ...]
@@ -185,6 +186,63 @@ AUTHENTICATION_BACKENDS = (
 #
 #SOCIAL_AUTH_SUBDOMAIN = 'auth'
 
+########
+# SAML Authentication
+#
+# For SAML authentication, you will need to configure the settings
+# below using information from your SAML Identity Provider, as
+# explained in:
+#
+#     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#saml
+#
+# You will need to modify these SAML settings:
+SOCIAL_AUTH_SAML_ORG_INFO = {
+    "en-US": {
+        "displayname": "Example Inc.",
+        "name": "example",
+        "url": "%s%s" % ('https://', EXTERNAL_HOST),
+    }
+}
+SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+    # The fields are explained in detail here:
+    #     https://python-social-auth-docs.readthedocs.io/en/latest/backends/saml.html
+    "idp_name": {
+        # Configure entity_id and url according to information provided to you by your IdP:
+        "entity_id": "https://idp.testshib.org/idp/shibboleth",
+        "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+        # The part below corresponds to what's likely referred to as something like
+        # "Attribute Statements" (with Okta as your IdP) or "Attribute Mapping" (with G Suite).
+        # The names on the right side need to correspond to the names under which
+        # the IdP will send the user attributes. With these defaults, it's expected
+        # that the user's email will be sent with the "email" attribute name,
+        # the first name and the last name with the "first_name", "last_name" attribute names.
+        "attr_user_permanent_id": "email",
+        "attr_first_name": "first_name",
+        "attr_last_name": "last_name",
+        "attr_username": "email",
+        "attr_email": "email",
+        # The "x509cert" attribute is automatically read from
+        # /etc/zulip/saml/idps/{idp_name}.crt; don't specify it here.
+    }
+}
+
+SOCIAL_AUTH_SAML_SECURITY_CONFIG = {
+    # If you've set up the optional private and public server keys,
+    # set this to True to enable signing of SAMLRequests using the
+    # private key.
+    "authnRequestsSigned": False,
+}
+
+# These SAML settings you likely won't need to modify.
+SOCIAL_AUTH_SAML_SP_ENTITY_ID = 'https://' + EXTERNAL_HOST
+SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
+    "givenName": "Technical team",
+    "emailAddress": ZULIP_ADMINISTRATOR,
+}
+SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
+    "givenName": "Support team",
+    "emailAddress": ZULIP_ADMINISTRATOR,
+}
 
 ########
 # Azure Active Directory OAuth.
@@ -210,7 +268,6 @@ AUTHENTICATION_BACKENDS = (
 # corresponding email address is "username@example.com", set
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None  # type: Optional[str]
-
 
 ################
 # Miscellaneous settings.

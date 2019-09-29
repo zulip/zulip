@@ -56,6 +56,29 @@ Here are the full procedures for dev:
   `social_auth_github_key` to the client ID and `social_auth_github_secret`
   to the client secret.
 
+### SAML
+
+* Register a SAML authentication with Okta at
+  https://zulipchat-admin.okta.com/admin/apps/saml-wizard/create.  Specify:
+    * `http://localhost:9991/complete/saml/` for the "Single sign on URL"`.
+    * `http://localhost:9991` for the "Audience URI (SP Entity ID)".
+    * Skip "Default RelayState".
+    * Skip "Name ID format".
+    * Set 'Email` for "Application username format".
+    * Provide "Attribute statements" of `email` to `user.email`,
+      `first_name` to `user.firstName`, and `last_name` to `user.lastName`.
+* Assign at least one account to the in the "Assignments" tab.  Uou'll
+  be logging in using this email address in the development
+  environment (so make sure that email has an account and can login
+  to the target realm).
+* Visit the big "Setup instructions" button on the "Sign on" tab.
+* Edit `zproject/dev-secrets.conf` to add the two values provided:
+    * Set `saml_url = http...` from "Identity Provider Single Sign-On
+      URL".
+    * Set `saml_entity_id = http://...` from "Identity Provider Issuer".
+    * Download the certificate and put it at the path `zproject/dev_saml.cert`.
+* Now you should have working SAML authentication!
+
 ### When SSL is required
 
 Some OAuth providers (such as Facebook) require HTTPS on the callback
