@@ -45,6 +45,7 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',
     'zproject.backends.GitHubAuthBackend',
     'zproject.backends.GoogleAuthBackend',
+    'zproject.backends.SAMLAuthBackend',
     # 'zproject.backends.AzureADAuthBackend',
 )
 
@@ -157,3 +158,6 @@ TERMS_OF_SERVICE = 'corporate/terms.md'
 # header.  Important for SAML authentication in the development
 # environment.
 USE_X_FORWARDED_PORT = True
+
+# Override the default SAML entity ID
+SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991/"

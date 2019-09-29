@@ -27,13 +27,16 @@ from django.dispatch import receiver, Signal
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.datastructures import MultiValueDictKeyError
 from requests import HTTPError
+from onelogin.saml2.errors import OneLogin_Saml2_Error
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.google import GoogleOAuth2
 from social_core.backends.oauth import BaseOAuth2
+from social_core.backends.saml import SAMLAuth
 from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
@@ -95,6 +98,9 @@ def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
 
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
+
+def saml_auth_enabled(realm: Optional[Realm]=None) -> bool:
+    return auth_enabled_helper(['SAML'], realm)
 
 def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
@@ -1002,6 +1008,34 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
         if email_verified:
             verified_emails.append(details["email"])
         return verified_emails
+
+class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
+    auth_backend_name = "SAML"
+
+    def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
+        """
+        Additional ugly wrapping on top of auth_complete in SocialAuthMixin.
+        If the /complete/saml endpoint is accessed, but RelayState isn't specified
+        in POST, django.utils.datastructures.MultiValueDictKeyError will be raised
+        inside python-social-auth saml module, which doesn't convert it into something
+        more reasonable.
+        If it is accessed with RelayState specified, but missing SAMLResponse,
+        OneLogin_Saml2_Error ends up raised.
+        We need to catch and handle those here.
+        Both parameters should be present if the user came to /complete/saml/ through
+        the IdP as intended. The errors can happen if someone simply types the endpoint into
+        their browsers, or generally tries messing with it in some ways.
+        """
+        try:
+            # Call the auth_complete method of SocialAuthMixIn
+            return super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
+        except MultiValueDictKeyError as e:
+            logging.info("SAML authentication: MultiValueDictKeyError: " + str(e))
+            return None
+        except OneLogin_Saml2_Error as e:
+            # This error provides a proper description of the issue, so we can simply log str(e)
+            logging.info(str(e))
+            return None
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,

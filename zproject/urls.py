@@ -581,6 +581,9 @@ i18n_urls = [
         template_name='zerver/config_error.html',),
         {'dev_not_supported_error': True},
         name='dev_not_supported'),
+    url(r'^config-error/saml$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'saml_error': True},),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -709,6 +712,7 @@ urls += [
 
 # Python Social Auth
 urls += [url(r'^', include('social_django.urls', namespace='social'))]
+urls += [url(r'^saml/metadata.xml$', zerver.views.auth.saml_sp_metadata)]
 
 # User documentation site
 urls += [url(r'^help/(?P<article>.*)$',

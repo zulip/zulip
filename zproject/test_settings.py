@@ -172,3 +172,38 @@ THUMBOR_SERVES_CAMO = True
 # Logging the emails while running the tests adds them
 # to /emails page.
 DEVELOPMENT_LOG_EMAILS = False
+
+SOCIAL_AUTH_SAML_SP_ENTITY_ID = 'http://' + EXTERNAL_HOST
+SOCIAL_AUTH_SAML_SP_PUBLIC_CERT  = get_from_file_if_exists("zerver/tests/fixtures/saml/zulip.crt")
+SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("zerver/tests/fixtures/saml/zulip.key")
+
+SOCIAL_AUTH_SAML_ORG_INFO = {
+    "en-US": {
+        "name": "example",
+        "displayname": "Example Inc.",
+        "url": "%s%s" % ('http://', EXTERNAL_HOST),
+    }
+}
+
+SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
+    "givenName": "Tech Gal",
+    "emailAddress": "technical@example.com"
+}
+
+SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
+    "givenName": "Support Guy",
+    "emailAddress": "support@example.com",
+}
+
+SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+    "test_idp": {
+        "entity_id": "https://idp.testshib.org/idp/shibboleth",
+        "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+        "x509cert": get_from_file_if_exists("zerver/tests/fixtures/saml/idp.crt"),
+        "attr_user_permanent_id": "email",
+        "attr_first_name": "first_name",
+        "attr_last_name": "last_name",
+        "attr_username": "email",
+        "attr_email": "email",
+    }
+}
