@@ -492,15 +492,14 @@ class SocialAuthBase(ZulipTestCase):
                                  **extra_data: Any) -> None:
         pass
 
-    def social_auth_test(self, account_data_dict: Dict[str, str],
-                         *, subdomain: Optional[str]=None,
-                         mobile_flow_otp: Optional[str]=None,
-                         is_signup: Optional[str]=None,
-                         next: str='',
-                         multiuse_object_key: str='',
-                         expect_choose_email_screen: bool=False,
-                         alternative_start_url: Optional[str]=None,
-                         **extra_data: Any) -> HttpResponse:
+    def prepare_login_url_and_headers(self,
+                                      subdomain: Optional[str]=None,
+                                      mobile_flow_otp: Optional[str]=None,
+                                      is_signup: Optional[str]=None,
+                                      next: str='',
+                                      multiuse_object_key: str='',
+                                      alternative_start_url: Optional[str]=None
+                                      ) -> Tuple[str, Dict[str, Any]]:
         url = self.LOGIN_URL
         if alternative_start_url is not None:
             url = alternative_start_url
@@ -518,6 +517,21 @@ class SocialAuthBase(ZulipTestCase):
         params['multiuse_object_key'] = multiuse_object_key
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params),)
+
+        return url, headers
+
+    def social_auth_test(self, account_data_dict: Dict[str, str],
+                         *, subdomain: Optional[str]=None,
+                         mobile_flow_otp: Optional[str]=None,
+                         is_signup: Optional[str]=None,
+                         next: str='',
+                         multiuse_object_key: str='',
+                         expect_choose_email_screen: bool=False,
+                         alternative_start_url: Optional[str]=None,
+                         **extra_data: Any) -> HttpResponse:
+        url, headers = self.prepare_login_url_and_headers(
+            subdomain, mobile_flow_otp, is_signup, next, multiuse_object_key, alternative_start_url
+        )
 
         result = self.client_get(url, **headers)
 
