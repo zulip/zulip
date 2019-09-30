@@ -78,7 +78,7 @@ this?". Good choices include
   up a page in the CI that has more details on why the job failed.
   For example [this](https://circleci.com/gh/zulip/zulip/16617)
   is the page of the `bionic-python-3.6` job. See our docs on
-  [continuous integration](../testing/continuous-integration.html)
+  [continuous integration](../testing/continuous-integration.md)
   to learn more.
 
 * *Technical design.* There are a lot of considerations here:
@@ -105,7 +105,7 @@ this?". Good choices include
   change being made.  Tests that exclude whole classes of potential
   bugs are preferred when possible (e.g., the common test suite
   `test_bugdown.py` between the Zulip server's [frontend and backend
-  Markdown processors](../subsystems/markdown.html), or the `GetEventsTest` test for
+  Markdown processors](../subsystems/markdown.md), or the `GetEventsTest` test for
   buggy race condition handling).
 
 * *Translation.* Make sure that the strings are marked for
@@ -194,11 +194,11 @@ We also strongly recommend reviewers to go through the following resources.
 * [Code Review - A consolidation of advice and stuff from the
    sinternet](https://gist.github.com/porterjamesj/002fb27dd70df003646df46f15e898de)
   article by James J. Porter
-* [Zulip Code of Conduct](../code-of-conduct.html)
+* [Zulip Code of Conduct](../code-of-conduct.md)
 
-[code-style]: ../contributing/code-style.html
+[code-style]: ../contributing/code-style.md
 [commit-messages]: ../contributing/version-control.html#commit-messages
-[test-writing]: ../testing/testing.html
-[mypy]: ../testing/mypy.html
+[test-writing]: ../testing/testing.md
+[mypy]: ../testing/mypy.md
 [git tool]: ../git/zulip-tools.html#fetch-a-pull-request-and-rebase
-[translation]: ../translating/translating.html
+[translation]: ../translating/translating.md

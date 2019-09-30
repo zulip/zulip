@@ -25,7 +25,7 @@ You can also [upgrade Zulip from Git](../production/maintain-secure-upgrade.html
 
 Zulip has an officially supported, experimental
 [docker image](https://github.com/zulip/docker-zulip).  Please note
-that Zulip's [normal installer](../production/install.html) has been
+that Zulip's [normal installer](../production/install.md) has been
 extremely reliable for years, whereas the Docker image is new and has
 rough edges, so we recommend the normal installer unless you have a
 specific reason to prefer Docker.
@@ -67,7 +67,7 @@ of managing chat.zulip.org and zulipchat.com.
 You cannot use most third-party database-as-a-service provides like
 Amazon RDS as the database provider with Zulip, because Zulip requires
 one of two different [full-text search postgres
-extensions](../subsystems/full-text-search.html) to power its search.
+extensions](../subsystems/full-text-search.md) to power its search.
 Neither is available in Amazon RDS; there should be no issue with
 using Zulip with a different database-as-a-service provider as long as
 one of those postgres extensions is available.

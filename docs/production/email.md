@@ -19,7 +19,7 @@ email addresses and send notifications.
    example: `email_password = abcd1234`.
 
    Like any other change to the Zulip configuration, be sure to
-   [restart the server](settings.html) to make your changes take
+   [restart the server](settings.md) to make your changes take
    effect.
 
 1. Configure your SMTP server to allows your Zulip server to send

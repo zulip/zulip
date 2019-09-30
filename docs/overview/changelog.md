@@ -13,7 +13,7 @@ in bursts.
   improvements that had previously been blocked because they weren't
   worth shipping our own upgraded versions of dependencies.
 - Significantly improved the email->Zulip gateway, and added [nice
-  setup documentation](../production/email-gateway.html).  It now
+  setup documentation](../production/email-gateway.md).  It now
   should be possible to subscribe a Zulip stream to an email list and
   have a good experience.
 - Added production support for Debian buster.
@@ -43,7 +43,7 @@ in bursts.
   readable style.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production.  We're now interested in beta testers for this feature.
-- Added [new documentation](../production/modifying-zulip.html) on
+- Added [new documentation](../production/modifying-zulip.md) on
   maintaining a fork of Zulip.
 - Added new `streams:public` search operator that searches the public
   history of all streams in the organization (even before you joined).
@@ -438,7 +438,7 @@ Zulip installations; it has minimal changes for existing servers.
   disruption by running this migration first, before beginning the
   user-facing downtime.  However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](../production/expensive-migrations.html)
+  [running them first manually](../production/expensive-migrations.md)
   and as well as the usual trick of
   [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
 
@@ -521,7 +521,7 @@ Zulip installations; it has minimal changes for existing servers.
 ### 1.8.1 -- 2018-05-07
 
 - Added an automated tool (`manage.py register_server`) to sign up for
-  the [mobile push notifications service](../production/mobile-push-notifications.html).
+  the [mobile push notifications service](../production/mobile-push-notifications.md).
 - Improved rendering of block quotes in mobile push notifications.
 - Improved some installer error messages.
 - Fixed several minor bugs with the new Slack import feature.
@@ -816,7 +816,7 @@ Backend and scaling
   minimizes disruption by running these first, before beginning the
   user-facing downtime.  However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](../production/expensive-migrations.html) and as well
+  [running them first manually](../production/expensive-migrations.md) and as well
   as the usual trick of
   [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
 
@@ -828,7 +828,7 @@ Backend and scaling
   This change should have no effect for the vast majority of Zulip
   servers that only have one organization.  If you manage a server
   that hosts multiple organizations, you'll want to read [our guide on
-  multiple organizations](../production/multiple-organizations.html).
+  multiple organizations](../production/multiple-organizations.md).
 
 * We simplified the configuration for our password strength checker to
   be much more intuitive.  If you were using the
@@ -976,7 +976,7 @@ Zulip apps.
   Hungarian, Polish, Dutch, Russian, Bulgarian, Portuguese,
   Serbian, Malayalam, Korean, and Italian).
 
-[mobile-push]: ../production/mobile-push-notifications.html
+[mobile-push]: ../production/mobile-push-notifications.md
 [electron-app]: https://github.com/zulip/zulip-desktop/releases
 [ios-app]: https://itunes.apple.com/us/app/zulip/id1203036395
 

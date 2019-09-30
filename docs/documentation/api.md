@@ -9,11 +9,11 @@ it and helping ensure it stays up to date as Zulip's API changes.
 Our API documentation is defined by a few sets of files:
 
 * Most data describing API endpoints and examples is stored in our
-  [OpenAPI configuration](../documentation/openapi.html) at
+  [OpenAPI configuration](../documentation/openapi.md) at
   `zerver/openapi/zulip.yaml`.
 * The top-level templates live under `templates/zerver/api/*`, and are
   written using the markdown framework that powers our [user
-  docs](../documentation/user.html), with some special extensions for
+  docs](../documentation/user.md), with some special extensions for
   rendering nice code blocks and example responses.
 * The text for the Python examples comes from a test suite for the
   Python API documentation (`zerver/openapi/python_examples.py`; run via
@@ -174,7 +174,7 @@ This section offers a step-by-step process for adding documentation
 for a new API endpoint.  It assumes you've read and understood the
 above.
 
-1. Start by adding [OpenAPI format](../documentation/openapi.html)
+1. Start by adding [OpenAPI format](../documentation/openapi.md)
    data to `zerver/openapi/zulip.yaml` for the endpoint.  If you
    copy-paste (which is helpful to get the indentation structure
    right), be sure to update all the content that you copied to

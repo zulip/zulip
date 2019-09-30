@@ -92,19 +92,19 @@ to do the things one does a lot in each type of documentation.
 
 To learn more about Zulip's general user documentation,
 [visit it on zulipchat.com](https://zulipchat.com/help/) or
-[read our guide on writing user documentation](user.html).
+[read our guide on writing user documentation](user.md).
 
 ### Integrations documentation
 
 To learn more about Zulip's integrations documentation,
 [visit it on zulipchat.com](https://zulipchat.com/integrations/) or
-[read our guide on writing user documentation](integrations.html).
+[read our guide on writing user documentation](integrations.md).
 
 ### API documentation
 
 To learn more about Zulip's API documentation,
 [visit it on zulipchat.com](https://zulipchat.com/api/) or
-[read our tutorial on writing user documentation](../documentation/api.html).
+[read our tutorial on writing user documentation](../documentation/api.md).
 
 ## Automated testing
 
@@ -114,7 +114,7 @@ recommend running locally when making significant edits:
 * `tools/lint` catches a number of common mistakes, and we highly
 recommend
 [using our linter pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script).
-See the [main linter doc](../testing/linters.html) for more details.
+See the [main linter doc](../testing/linters.md) for more details.
 
 * The ReadTheDocs docs are built and the links tested by
 `tools/test-documentation`, which runs `build-docs` and then checks

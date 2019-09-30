@@ -4,7 +4,7 @@ Zulip's "events system" is the server-to-client push system that
 powers our real-time sync.  This document explains how it works; to
 read an example of how a complete feature using this system works,
 check out the
-[new application feature tutorial](../tutorials/new-feature-tutorial.html).
+[new application feature tutorial](../tutorials/new-feature-tutorial.md).
 
 Any single-page web application like Zulip needs a story for how
 changes made by one client are synced to other clients, though having
@@ -86,7 +86,7 @@ wide range of possible clients, and make it easy for developers.
 Zulip's event delivery (real-time push) system is based on Tornado,
 which is ideal for handling a large number of open requests.  Details
 on Tornado are available in the
-[architecture overview](../overview/architecture-overview.html), but in short it
+[architecture overview](../overview/architecture-overview.md), but in short it
 is good at holding open a large number of connections for a long time.
 The complete system is about 1500 lines of code in `zerver/tornado/`,
 primarily `zerver/tornado/event_queue.py`.
@@ -262,4 +262,4 @@ correctly, clients are responsible for discarding events related to
 messages that the client has not yet fetched.
 
 Additionally, see
-[the master documentation on sending messages](../subsystems/sending-messages.html)
+[the master documentation on sending messages](../subsystems/sending-messages.md)

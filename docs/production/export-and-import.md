@@ -77,7 +77,7 @@ archive of all the organization's uploaded files.
 
 ## Import into a new Zulip server
 
-(1.) [Install a new Zulip server](../production/install.html),
+(1.) [Install a new Zulip server](../production/install.md),
 skipping "Step 3: Create a Zulip organization, and log in" (you'll
 create your Zulip organization via the data import tool instead).
 
@@ -166,7 +166,7 @@ organization using the following procedure:
 * Start a [Zulip management shell](../production/maintain-secure-upgrade.html#manage-py-shell)
 * In the management shell, run the following commands, replacing `""`
   with the subdomain if [you are hosting the organization on a
-  subdomain](../production/multiple-organizations.html):
+  subdomain](../production/multiple-organizations.md):
 
 ```
 realm = Realm.objects.get(string_id="")
@@ -181,7 +181,7 @@ Now, exit the management shell and run this to clear Zulip's cache:
 ```
 
 Assuming you're using the
-[local file uploads backend](../production/upload-backends.html), you
+[local file uploads backend](../production/upload-backends.md), you
 can additionally delete all file uploads, avatars, and custom emoji on
 a Zulip server (across **all organizations**) with the following
 command:

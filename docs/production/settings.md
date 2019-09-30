@@ -46,7 +46,7 @@ If you want an additional or different authentication backend, you
 will need to uncomment one or more and then do any additional
 configuration required for that backend as documented in the
 `settings.py` file. See the
-[section on Authentication](../production/authentication-methods.html) for more
+[section on Authentication](../production/authentication-methods.md) for more
 detail on the available authentication backends and how to configure
 them.
 
@@ -63,7 +63,7 @@ their push notification protocols, the Zulip mobile apps for
 [Android](https://play.google.com/store/apps/details?id=com.zulipmobile)
 can only receive push notifications from a single Zulip server.  We
 have configured that server to be `push.zulipchat.com`, and offer a
-[push notification forwarding service](mobile-push-notifications.html) that
+[push notification forwarding service](mobile-push-notifications.md) that
 forwards push notifications through our servers to mobile devices.
 Read the linked documentation for instructions on how to register for
 and configure this service.
@@ -92,7 +92,7 @@ been added in more recent versions of Zulip.
 
 Since Zulip's settings file is a Python script, there are a number of
 other things that one can configure that are not documented; ask on
-[chat.zulip.org](../contributing/chat-zulip-org.html)
+[chat.zulip.org](../contributing/chat-zulip-org.md)
 if there's something you'd like to do but can't figure out how to.
 
 [settings-py-template]: https://github.com/zulip/zulip/blob/master/zproject/prod_settings_template.py
@@ -100,7 +100,7 @@ if there's something you'd like to do but can't figure out how to.
 Some popular settings in `/etc/zulip/settings.py` include:
 * The Twitter integration, which provides pretty inline previews of
   tweets.
-* The [email gateway](../production/email-gateway.html), which lets
+* The [email gateway](../production/email-gateway.md), which lets
   users send emails into Zulip.
 
 ## Zulip announcement list
@@ -119,4 +119,4 @@ Zulip documentation cover everything anyone might want to know about
 running Zulip in production.
 
 Next: [Maintaining and upgrading Zulip in
-production](../production/maintain-secure-upgrade.html).
+production](../production/maintain-secure-upgrade.md).

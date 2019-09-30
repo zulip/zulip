@@ -5,18 +5,18 @@
 Zulip has a full test suite that includes many components.  The most
 important components are documented in depth in their own sections:
 
-- [Django](../testing/testing-with-django.html): backend Python tests
-- [Casper](../testing/testing-with-casper.html): end-to-end UI tests
-- [Node](../testing/testing-with-node.html): unit tests for JS front end code
-- [Linters](../testing/linters.html): Our parallel linter suite
-- [CI details](continuous-integration.html): How all of these run in CI
+- [Django](../testing/testing-with-django.md): backend Python tests
+- [Casper](../testing/testing-with-casper.md): end-to-end UI tests
+- [Node](../testing/testing-with-node.md): unit tests for JS front end code
+- [Linters](../testing/linters.md): Our parallel linter suite
+- [CI details](continuous-integration.md): How all of these run in CI
 - [Other test suites](#other-test-suites): Our various smaller test suites.
 
 This document covers more general testing issues, such as how to run the
 entire test suite, how to troubleshoot database issues, how to manually
 test the front end, etc.
 
-We also document [how to manually test the app](manual-testing.html).
+We also document [how to manually test the app](manual-testing.md).
 
 ## Running tests
 
@@ -60,7 +60,7 @@ Zulip also has about a dozen smaller tests suites:
 
 - `tools/test-migrations`: Checks whether the `zerver/migrations`
   migration content the models defined in `zerver/models.py`.  See our
-  [schema migration documentation](../subsystems/schema-migrations.html)
+  [schema migration documentation](../subsystems/schema-migrations.md)
   for details on how to do database migrations correctly.
 - `tools/test-documentation`: Checks for broken links in this
   ReadTheDocs documentation site.
@@ -72,7 +72,7 @@ Zulip also has about a dozen smaller tests suites:
 - `test-locked-requirements`: Verifies that developers didn't forget
   to run `tools/update-locked-requirements` after modifying
   `requirements/*.in`.  See
-  [our dependency documentation](../subsystems/dependencies.html) for
+  [our dependency documentation](../subsystems/dependencies.md) for
   details on the system this is verifying.
 - `tools/check-capitalization`: Checks whether translated strings (aka
   user-facing strings) correctly follow Zulip's capitalization
@@ -223,7 +223,7 @@ it. On Ubuntu:
 
 This section is about troubleshooting your local development environment.
 
-There is a [separate manual testing doc](manual-testing.html) that
+There is a [separate manual testing doc](manual-testing.md) that
 enumerates things you can test as part of manual QA.
 
 ### Clearing the development database

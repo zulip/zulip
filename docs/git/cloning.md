@@ -152,6 +152,6 @@ Zulip.
 [travis-ci]: https://travis-ci.org/
 [circle-ci]:https://circleci.com/
 [travis-ci-profile]: https://travis-ci.org/profile
-[zulip-rtd-dev-first-time]: ../development/setup-vagrant.html
-[zulip-rtd-dev-overview]: ../development/overview.html
+[zulip-rtd-dev-first-time]: ../development/setup-vagrant.md
+[zulip-rtd-dev-overview]: ../development/overview.md
 [zulip-rtd-tools-setup]: ../git/zulip-tools.html#set-up-git-repo-script

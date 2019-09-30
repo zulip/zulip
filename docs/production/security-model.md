@@ -4,7 +4,7 @@ This section attempts to document the Zulip security model.
 It likely does not cover every issue; if
 there are details you're curious about, please feel free to ask
 questions in [#production help](https://chat.zulip.org/#narrow/stream/31-production-help)
-on the [Zulip community server](../contributing/chat-zulip-org.html)
+on the [Zulip community server](../contributing/chat-zulip-org.md)
 (or if you think
 you've found a security bug, please report it to
 zulip-security@googlegroups.com so we can do a responsible security
@@ -39,7 +39,7 @@ announcement).
 * The preferred way to login to Zulip is using an SSO solution like
   Google Auth, LDAP, or similar, but Zulip also supports password
   authentication.  See
-  [the authentication methods documentation](../production/authentication-methods.html)
+  [the authentication methods documentation](../production/authentication-methods.md)
   for details on Zulip's available authentication methods.
 
 ### Passwords
@@ -65,7 +65,7 @@ strength allowed is controlled by two settings in
   By default, `PASSWORD_MIN_GUESSES` is 10000. This provides
   significant protection against online attacks, while limiting the
   burden imposed on users choosing a password. See
-  [password strength](../production/password-strength.html) for an extended
+  [password strength](../production/password-strength.md) for an extended
   discussion on how we chose this value.
 
   Estimating the guessability of a password is a complex problem and

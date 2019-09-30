@@ -82,4 +82,4 @@ developers) should be tagged for [translation][].
 [helpers]: http://handlebarsjs.com/block_helpers.html
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
 [hconditionals]: http://handlebarsjs.com/block_helpers.html
-[translation]: ../translating/translating.html
+[translation]: ../translating/translating.md

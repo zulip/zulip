@@ -69,7 +69,7 @@ The raw Thumbor URLs are ugly, and regardless, have the property that
 we might want to change them over time (a classic case is if one moves
 the thumbor installation to be hosted by a different server).  In
 order to avoid encoding these into Zulip messages, we encode in the
-[HTML rendered message content](../subsystems/markdown.html) URLs of
+[HTML rendered message content](../subsystems/markdown.md) URLs of
 the form
 `/thumbnail/?url=https://example.com/image.png&size=thumbnail` as the
 `src` in our image tags, and that URL serves a

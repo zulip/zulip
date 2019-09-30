@@ -11,7 +11,7 @@ greatly appreciated!
 If you are interested in knowing about the technical end-to-end
 tooling and processes for tagging strings for translation and syncing
 translations in Zulip, read about [Internationalization for
-Developers](../translating/internationalization.html).
+Developers](../translating/internationalization.md).
 
 ## Translators' workflow
 
@@ -24,7 +24,7 @@ Transifex](https://www.transifex.com/zulip/zulip/), requesting access
 to any languages you'd like to contribute to (or add new ones).
 
 1. Join [#translation][translation-stream] in the [Zulip development
-community server](../contributing/chat-zulip-org.html), and say hello.
+community server](../contributing/chat-zulip-org.md), and say hello.
 That stream is also the right place for any questions, updates on your
 progress, reporting problematic strings, etc.
 
@@ -52,7 +52,7 @@ Some useful tips for your translating journey:
 
 - When in doubt, ask for context in
   [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
-  the [Zulip development community server](../contributing/chat-zulip-org.html).
+  the [Zulip development community server](../contributing/chat-zulip-org.md).
 
 - If there are multiple possible translations for a term, search for it in
   the *Concordance* tool (the button with a magnet in the top right corner).
@@ -69,7 +69,7 @@ Some useful tips for your translating journey:
 ### Testing translations
 
 This section assumes you have a
-[Zulip development environment](../development/overview.html) set up;
+[Zulip development environment](../development/overview.md) set up;
 if setting one up is a problem for you, ask in chat.zulip.org and we
 can usually just deploy the latest translations there.
 
@@ -126,18 +126,18 @@ Zulip should be translated into specific languages (e.g. what word to
 translate words like "stream" to), with reasoning, so that future
 translators can understand and preserve those decisions:
 
-* [Chinese](chinese.html)
-* [French](french.html)
-* [German](german.html)
-* [Hindi](hindi.html)
-* [Polish](polish.html)
-* [Russian](russian.html)
-* [Spanish](spanish.html)
+* [Chinese](chinese.md)
+* [French](french.md)
+* [German](german.md)
+* [Hindi](hindi.md)
+* [Polish](polish.md)
+* [Russian](russian.md)
+* [Spanish](spanish.md)
 
 Some translated languages don't have these, but we highly encourage
 translators for new languages (or those updating a language) write a
 style guide as they work (see [our docs on this
-documentation](../documentation/overview.html) for how to submit
+documentation](../documentation/overview.md) for how to submit
 your changes), since it's easy to take notes as you translate, and
 doing so greatly increases the ability of future translators to update
 the translations in a consistent way.

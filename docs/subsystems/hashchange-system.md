@@ -118,6 +118,6 @@ browser, Zulip also does a few bookkeeping things on page reload (like
 cleaning up its event queue, and saving any text in an open compose
 box as a draft).
 
-[testing-with-casper]: ../testing/testing-with-casper.html
+[testing-with-casper]: ../testing/testing-with-casper.md
 [self-server-reloads]: #server-initiated-reloads
-[events-system]: ../subsystems/events-system.html
+[events-system]: ../subsystems/events-system.md

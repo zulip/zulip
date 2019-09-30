@@ -247,7 +247,7 @@ avatars, similar details for streams, recent message history, etc.
 These days are fetched in the `/register` endpoint (or `page_params`
 for the webapp), and kept correct over time.  The key to keeping these
 state up to date is Zulip's
-[real-time events system](../subsystems/events-system.html), which
+[real-time events system](../subsystems/events-system.md), which
 allows the server to notify clients whenever state that might be
 cached by clients is changed.  Clients are responsible for handling
 the events, updating their state, and rerendering any UI components

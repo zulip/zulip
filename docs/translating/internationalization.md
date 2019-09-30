@@ -305,4 +305,4 @@ organizations from the command line.
 [resource]: https://www.i18next.com/add-or-load-translations.html
 [Transifex]: https://transifex.com
 [transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
-[html-templates]: ../subsystems/html-templates.html
+[html-templates]: ../subsystems/html-templates.md

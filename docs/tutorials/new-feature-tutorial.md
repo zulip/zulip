@@ -8,22 +8,22 @@ data system in real-time to all browsers the user may have open.
 
 As you read this, you may find you need to learn about Zulip's
 real-time push system; the
-[real-time push and events](../subsystems/events-system.html)
+[real-time push and events](../subsystems/events-system.md)
 documentation has a detailed explanation of how everything works. You
 may also find it beneficial to read Zulip's
-[architectural overview](../overview/architecture-overview.html).
+[architectural overview](../overview/architecture-overview.md).
 Zulip is a web application built using the
 [Django framework](https://www.djangoproject.com/), and some of the
 processes listed in this tutorial, such as database migrations and
 tests, use Django's tooling.
 
-Zulip's [directory structure](../overview/directory-structure.html)
+Zulip's [directory structure](../overview/directory-structure.md)
 will also be helpful to review when creating a new feature. Many
 aspects of the structure will be familiar to Django developers. Visit
 [Django's documentation](https://docs.djangoproject.com/en/1.11/#index-first-steps)
 for more information about how Django projects are typically
 organized.  And finally, the
-[message sending](../subsystems/sending-messages.html) documentation on
+[message sending](../subsystems/sending-messages.md) documentation on
 the additional complexity involved in sending messages.
 
 ## General Process
@@ -74,7 +74,7 @@ following commands:
 ```
 
 You can read our
-[database migration documentation](../subsystems/schema-migrations.html)
+[database migration documentation](../subsystems/schema-migrations.md)
 to learn more about creating and applying database migrations.
 
 **Test your changes:** Once you've run the migration, flush memcached
@@ -130,7 +130,7 @@ precompiled as part of the build/deploy process.
 
 Zulip is fully internationalized, so when writing both HTML templates
 or JavaScript/TypeScript code that generates user-facing strings, be sure to
-[tag those strings for translation](../translating/translating.html).
+[tag those strings for translation](../translating/translating.md).
 
 **Testing:** There are two types of frontend tests: node-based unit
 tests and blackbox end-to-end tests. The blackbox tests are run in a
@@ -138,14 +138,14 @@ headless browser using Casper.js and are located in
 `frontend_tests/casper_tests/`. The unit tests use Node's `assert`
 module are located in `frontend_tests/node_tests/`. For more
 information on writing and running tests, see the
-[testing documentation](../testing/testing.html).
+[testing documentation](../testing/testing.md).
 
 ### Documentation changes
 
 After implementing the new feature, you should
 document it and update any existing documentation that might be
 relevant to the new feature. For more information on the kinds of
-documentation Zulip has, see [Documentation](../documentation/overview.html).
+documentation Zulip has, see [Documentation](../documentation/overview.md).
 
 ## Example Feature
 
@@ -266,7 +266,7 @@ initial state. Subsequently, clients subscribe to "events," which can
 For the backend piece, we will need our action to make a call to `send_event`
 to send the event to clients that are active. We will also need to
 modify `fetch_initial_state_data` so that the new field is passed to
-clients. See [our event system docs](../subsystems/events-system.html) for all the
+clients. See [our event system docs](../subsystems/events-system.md) for all the
 gory details.
 
 Anyway, getting back to implementation details...
@@ -475,7 +475,7 @@ controls the feature it is supposed to control, however (e.g. for this
 example feature, whether sending a message without a topic fails with
 the setting enabled).
 
-Visit Zulip's [Django testing](../testing/testing-with-django.html)
+Visit Zulip's [Django testing](../testing/testing-with-django.md)
 documentation to learn more about the backend testing framework.
 
 ### Update the front end
@@ -636,8 +636,8 @@ Here are few important cases you should consider when testing your changes:
 ### Front End Tests
 
 A great next step is to write front end tests. There are two types of
-frontend tests: [node-based unit tests](../testing/testing-with-node.html) and
-[Casper end-to-end tests](../testing/testing-with-casper.html).
+frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
+[Casper end-to-end tests](../testing/testing-with-casper.md).
 
 At the minimum, if you created a new function to update UI in
 `settings_org.js`, you will need to mock that function in
@@ -667,4 +667,4 @@ At the very least, this will involve adding (or modifying) a Markdown file
 documenting the feature to `templates/zerver/help/` in the main Zulip
 server repository, where the source for Zulip's user documentation is
 stored. For information on writing user documentation, see
-[Zulip's general user guide documentation](../documentation/user.html).
+[Zulip's general user guide documentation](../documentation/user.md).

@@ -58,7 +58,7 @@ There are various
 [urls.py](https://docs.djangoproject.com/en/1.8/topics/http/urls/)
 files throughout the server codebase, which are covered in more detail
 in
-[the directory structure doc](../overview/directory-structure.html).
+[the directory structure doc](../overview/directory-structure.md).
 
 The main Zulip Django app is `zerver`. The routes are found in
 ```
@@ -188,7 +188,7 @@ find the correct view to show:
 
 ## The view will authorize the user, extract request variables, and validate them
 
-This is covered in good detail in the [writing views doc](writing-views.html).
+This is covered in good detail in the [writing views doc](writing-views.md).
 
 ## Results are given as JSON
 

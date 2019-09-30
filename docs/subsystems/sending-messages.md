@@ -7,9 +7,9 @@ experience.
 This document aims to explain conceptually what happens when a message
 is sent in Zulip, and why that is correct behavior.  It assumes the
 reader is familiar with our
-[real-time sync system](../subsystems/events-system.html) for
+[real-time sync system](../subsystems/events-system.md) for
 server-to-client communication and
-[new application feature tutorial](../tutorials/new-feature-tutorial.html),
+[new application feature tutorial](../tutorials/new-feature-tutorial.md),
 and we generally don't repeat the content discussed there.
 
 ## Message lists
@@ -45,7 +45,7 @@ stream, etc.).
 
 The backend flow for sending messages is similar in many ways to the
 process described in our
-[new application feature tutorial](../tutorials/new-feature-tutorial.html).
+[new application feature tutorial](../tutorials/new-feature-tutorial.md).
 This section details the ways in which it is different:
 
 * There is significant custom code inside the `process_message_event`
@@ -57,7 +57,7 @@ number of purposes:
      computational work inside the Tornado codebase, this logic aims
      to just do the check for whether a notification should be
      generated, and then put an event into an appropriate
-     [queue](../subsystems/queuing.html) to actually send the
+     [queue](../subsystems/queuing.md) to actually send the
      message.  See `maybe_enqueue_notifications` and related code for
      this part of the logic.
    * Splicing user-dependent data (E.g. `flags` such as when the user
@@ -73,7 +73,7 @@ number of purposes:
 * Following our standard naming convention, input validation is done
   inside the `check_message` function, which is responsible for
   validating the user can send to the recipient,
-  [rendering the markdown](../subsystems/markdown.html), etc. --
+  [rendering the markdown](../subsystems/markdown.md), etc. --
   basically everything that can fail due to bad user input.
 * The core `do_send_messages` function (which handles actually sending
   the message) is one of the most optimized and thus complex parts of
@@ -89,7 +89,7 @@ number of purposes:
      open organizations.
    * Do all the database queries to fetch relevant data for and then
      send a `message` event to the
-     [events system](../subsystems/events-system.html) containing the
+     [events system](../subsystems/events-system.md) containing the
      data it will need for the calculations described above.  This
      step adds a lot of complexity, because the events system cannot
      make queries to the database directly.
@@ -114,7 +114,7 @@ library (on the frontend) and `sockjs-tornado` (on the backend).  This
 ends up calling a handler in our Tornado codebase
 (`zerver/tornado/socket.py`), which immediately puts the request into
 the `message_sender` queue.
-* The `message_sender` [queue processor](../subsystems/queuing.html)
+* The `message_sender` [queue processor](../subsystems/queuing.md)
 reformats the request into a Django `HttpRequest` object with a fake
 `SOCKET` HTTP method (which is why these requests appear as `SOCKET`
 in our server logs), calls the Django `get_response` method on that
@@ -141,7 +141,7 @@ browser, and then replace it with data from the server when it
 changes.
 
 Zulip aims for a near-perfect local echo experience, which requires is
-why our [markdown system](../subsystems/markdown.html) requires both
+why our [markdown system](../subsystems/markdown.md) requires both
 an authoritative (backend) markdown implementation and a secondary
 (frontend) markdown implementation, the latter used only for the local
 echo feature.  Read our markdown documentation for all the tricky
@@ -177,7 +177,7 @@ messages.
   unique value within that namespace identifying the message.
 * The `do_send_messages` backend code path includes the `queue_id` and
   `local_id` in the data it passes to the
-  [events system](../subsystems/events-system.html).  The events
+  [events system](../subsystems/events-system.md).  The events
   system will extend the `message` event dictionary it delivers to
   the client containing the `queue_id` with `local_message_id` field,
   containing the `local_id` that the relevant client used when sending
@@ -273,7 +273,7 @@ users.
 message without including the URL embeds/previews, but it will add a
 deferred work item into the `embed_links` queue.
 
-* The [queue processor](../subsystems/queuing.html) for the
+* The [queue processor](../subsystems/queuing.md) for the
 `embed_links` queue will fetch the URLs, and then if they return
 results, rerun the markdown processor and notify clients of the
 updated message `rendered_content`.
@@ -321,7 +321,7 @@ latency was unacceptable: The server backend was introducing a latency
 of about 1 second per 2000 users subscribed to receive the message.
 While these delays may not be immediately obvious to users (Zulip,
 like many other chat applications,
-[local echoes](../subsystems/markdown.html) messages that a user sends
+[local echoes](../subsystems/markdown.md) messages that a user sends
 as soon as the user hits “send”), latency beyond a second or two
 significantly impacts the feeling of interactivity in a chat
 experience (i.e. it feels like everyone takes a long time to reply to
