@@ -41,7 +41,7 @@ datetime==4.3             # via moto
 decorator==4.4.0
 defusedxml==0.6.0
 disposable-email-domains==0.0.53
-django-auth-ldap==2.0.0
+git+https://github.com/zulip/django-auth-ldap.git@e26d0ef2a7ff77ab3fdd7b6578a76081f780778c#egg=django-auth-ldap==2.0.0zulip1
 django-bitfield==1.9.6
 django-formtools==2.1     # via django-two-factor-auth
 django-otp==0.7.2         # via django-two-factor-auth
@@ -133,7 +133,7 @@ python-dateutil==2.8.0
 python-digitalocean==1.14.0
 python-gcm==0.4
 python-jose==3.0.1        # via moto
-python-ldap==3.2.0        # via django-auth-ldap, pyldap
+python-ldap==3.2.0        # via pyldap
 python-magic==0.4.15
 python-slugify==1.2.6     # via transifex-client
 python-twitter==3.5

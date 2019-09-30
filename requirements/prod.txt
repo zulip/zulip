@@ -27,7 +27,7 @@ cssutils==1.0.2           # via premailer
 decorator==4.4.0
 defusedxml==0.6.0
 disposable-email-domains==0.0.53
-django-auth-ldap==2.0.0
+git+https://github.com/zulip/django-auth-ldap.git@e26d0ef2a7ff77ab3fdd7b6578a76081f780778c#egg=django-auth-ldap==2.0.0zulip1
 django-bitfield==1.9.6
 django-formtools==2.1     # via django-two-factor-auth
 django-otp==0.7.2         # via django-two-factor-auth
@@ -87,7 +87,7 @@ pyopenssl==19.0.0         # via requests
 pysocks==1.7.1            # via twilio
 python-dateutil==2.8.0
 python-gcm==0.4
-python-ldap==3.2.0        # via django-auth-ldap
+python-ldap==3.2.0
 python-magic==0.4.15
 python-twitter==3.5
 python3-openid==3.1.0     # via social-auth-core

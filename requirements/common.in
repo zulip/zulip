@@ -35,7 +35,10 @@ boto
 defusedxml
 
 # Needed for LDAP support
-django-auth-ldap
+# Using our fork for the feature of searching users by email.
+# https://github.com/django-auth-ldap/django-auth-ldap/pull/150 for monitoring
+# progress on merging this upstream.
+git+https://github.com/zulip/django-auth-ldap.git@e26d0ef2a7ff77ab3fdd7b6578a76081f780778c#egg=django-auth-ldap==2.0.0zulip1
 
 # Django extension providing bitfield support
 django-bitfield
