@@ -22,6 +22,14 @@
         display: none;
     }
 
+    #sidebar-keyboard-shortcuts {
+        /* This is supposed to fix this appearing improperly in narrow
+        windows.  It's likely the wrong solution; a proper fix likely
+        involves replacing `position: fixed` in #keyboard-icon so that
+        it still appears in the right sidebar overlay. */
+        display: none;
+    }
+
     .column-right.expanded {
         display: block;
         position: absolute;
