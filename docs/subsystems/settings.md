@@ -143,4 +143,4 @@ replaced with realm settings:
   server, and in the realm settings indicating which methods the realm
   administrator wants to allow users to login with.
 
-[doc-newfeat]: ../tutorials/new-feature-tutorial.html
+[doc-newfeat]: ../tutorials/new-feature-tutorial.md

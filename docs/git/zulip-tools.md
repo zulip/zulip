@@ -9,7 +9,7 @@ time when working with Git on the Zulip project.
 [zulip/zulip][github-zulip-zulip] you'll find a bash script
 `setup-git-repo`. This script installs a pre-commit hook, which will
 run each time you `git commit` to automatically run
-[Zulip's linter suite](../testing/linters.html) on just the files that
+[Zulip's linter suite](../testing/linters.md) on just the files that
 the commit modifies (which is really fast!). The hook passes no matter
 the result of the linter, but you should still pay attention to any
 notices or warnings it displays.

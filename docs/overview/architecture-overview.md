@@ -9,7 +9,7 @@ contains the Zulip backend (written in Python 3.x and Django), the
 webapp (written in JavaScript and TypeScript) and our library of
 incoming webhook [integrations](https://zulipchat.com/integrations)
 with other services and applications (see [the directory structure
-guide](../overview/directory-structure.html)).
+guide](../overview/directory-structure.md)).
 
 [Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official
 mobile Zulip client supporting both iOS and Android, written in
@@ -57,7 +57,7 @@ means that one person might be a user of multiple Zulip realms. The
 administrators of an organization have a great deal of control over
 who can register an account, what permissions new users have, etc. For
 more on security considerations and options, see [the security model
-section](../production/security-model.html) and the [Zulip Help
+section](../production/security-model.md) and the [Zulip Help
 Center](https://zulipchat.com/help).
 
 Components
@@ -99,7 +99,7 @@ exception to this is that Zulip uses websockets through Tornado to
 minimize latency on the code path for **sending** messages.
 
 There is detailed documentation on the
-[real-time push and event queue system](../subsystems/events-system.html); most of
+[real-time push and event queue system](../subsystems/events-system.md); most of
 the code is in `zerver/tornado`.
 
 #### HTML templates, JavaScript, etc.
@@ -112,10 +112,10 @@ live-rendering HTML from JavaScript for things like the main message
 feed.
 
 For more details on the frontend, see our documentation on
-[translation](../translating/translating.html),
-[templates](../subsystems/html-templates.html),
-[directory structure](../overview/directory-structure.html), and
-[the static asset pipeline](../subsystems/front-end-build-process.html).
+[translation](../translating/translating.md),
+[templates](../subsystems/html-templates.md),
+[directory structure](../overview/directory-structure.md), and
+[the static asset pipeline](../subsystems/front-end-build-process.md).
 
 [Jinja2]: http://jinja.pocoo.org/
 [Handlebars]: http://handlebarsjs.com/
@@ -166,7 +166,7 @@ processes that process event queues. We use event queues for the kinds
 of tasks that are best run in the background because they are
 expensive (in terms of performance) and don't have to be synchronous
 --- e.g., sending emails or updating analytics. Also see [the queuing
-guide](../subsystems/queuing.html).
+guide](../subsystems/queuing.md).
 
 ### memcached
 
@@ -175,7 +175,7 @@ objects. `zerver/lib/cache.py` and `zerver/lib/cache_helpers.py`
 manage putting things into memcached, and invalidating the cache when
 values change. The memcached configuration is in
 `puppet/zulip/files/memcached.conf`.  See our
-[caching guide](../subsystems/caching.html) to learn how this works in
+[caching guide](../subsystems/caching.md) to learn how this works in
 detail.
 
 ### Redis
@@ -233,7 +233,7 @@ processes started by Supervisor are queue processors that continually
 pull things out of a RabbitMQ queue and handle them; they are defined
 in `zerver/worker/queue_processors.py`.
 
-Also see [the queuing guide](../subsystems/queuing.html).
+Also see [the queuing guide](../subsystems/queuing.md).
 
 ### PostgreSQL
 
@@ -258,7 +258,7 @@ to create the actual database with its schema.
 
 We use Thumbor, a popular open source thumbnailing server, to serve
 images (both for inline URL previews and serving uploaded image
-files).  See [our thumbnailing docs](../subsystems/thumbnailing.html)
+files).  See [our thumbnailing docs](../subsystems/thumbnailing.md)
 for more details on how this works.
 
 ### Nagios

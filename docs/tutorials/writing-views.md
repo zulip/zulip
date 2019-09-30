@@ -3,15 +3,15 @@
 ## What this covers
 
 This page documents how views work in Zulip. You may want to read the
-[new feature tutorial](../tutorials/new-feature-tutorial.html)
+[new feature tutorial](../tutorials/new-feature-tutorial.md)
 and treat this as a reference.
 
 If you have experience with Django, much of this will be familiar, but
 you may want to read about how REST requests are dispatched, and how
 request authentication works.
 
-This document supplements the [new feature tutorial](../tutorials/new-feature-tutorial.html)
-and the [testing](../testing/testing.html)
+This document supplements the [new feature tutorial](../tutorials/new-feature-tutorial.md)
+and the [testing](../testing/testing.md)
 documentation.
 
 ## What is a view?
@@ -366,4 +366,4 @@ def api_pagerduty_webhook(request, user_profile,
 ```
 `request.client` will be the result of `get_client("ZulipPagerDutyWebhook")`
 in this example and it will be passed to `check_send_stream_message`. For
-more information, see [Clients in Zulip](../subsystems/client.html).
+more information, see [Clients in Zulip](../subsystems/client.md).

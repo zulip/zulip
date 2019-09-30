@@ -49,5 +49,5 @@ restart if it crashes, and `upgrade-zulip` will take care of running
 migrations and then cleanly restaring the server for you).
 
 [django-runserver]: https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port
-[new-feature-tutorial]: ../tutorials/new-feature-tutorial.html
-[testing-docs]: ../testing/testing.html
+[new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
+[testing-docs]: ../testing/testing.md

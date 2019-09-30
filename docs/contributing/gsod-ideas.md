@@ -27,7 +27,7 @@ engineers.  Since Zulip is a team chat product, your GSoD experience
 with the Zulip project will be highly interactive.
 
 As part of that commitment, Zulip has over 150,000 words of
-[documentation for developers](../), much of it designed to explain
+[documentation for developers](../index.html#welcome-to-the-zulip-documentation), much of it designed to explain
 not just how Zulip works, but why Zulip works the way that it does.
 
 ### Our history with Google Open Source Programs
@@ -37,7 +37,7 @@ generally have 10-15 GSoC students each summer.  We have some of the highest
 standards of any GSoC organization; successful applications generally
 have dozens of commits integrated into Zulip or other open source
 projects by the time we review their application.  See
-[our contributing guide](../overview/contributing.html) for details on
+[our contributing guide](../overview/contributing.md) for details on
 getting involved with GSoC.
 
 Zulip participated in GSoC 2016 and mentored three successful students
@@ -58,7 +58,7 @@ and keeping your eye on
 [the GSoD timeline](https://developers.google.com/season-of-docs/docs/timeline). The
 application deadline is June 28, 2019.
 
-[Our guide for having a great summer with Zulip](../contributing/summer-with-zulip.html)
+[Our guide for having a great summer with Zulip](../contributing/summer-with-zulip.md)
 is focused on what one should know once doing a GSoC project with
 Zulip; while it is written for the GSoC student audience, it should give
 you a feel for how we interact with and mentor committed contributors.
@@ -73,7 +73,7 @@ For many of our project ideas, you'll be working inside a Zulip
 development environment (because the documentation is implemented as
 markdown in the main Zulip repository, and can be previewed using
 tools in the Zulip development environment).  See
-[our documentation on documentation systems](../documentation/overview.html)
+[our documentation on documentation systems](../documentation/overview.md)
 for details on our various existing documentation systems.
 
 In part due to past work by a technical writer, Zulip has a
@@ -83,7 +83,7 @@ project of its scope. Use
 to get your Zulip development environment set up. If you have any
 trouble, please speak up in
 [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation) on
-[the Zulip development community server](../contributing/chat-zulip-org.html)
+[the Zulip development community server](../contributing/chat-zulip-org.md)
 (use your name as the topic).
 
 ## Application tips, and how to be a strong candidate
@@ -145,7 +145,7 @@ appreciate extra attention on).
 
 We are more interested in candidates if we see them submitting good
 bug reports, helping other people on GitHub and on
-[chat.zulip.org](../contributing/chat-zulip-org.html), and otherwise
+[chat.zulip.org](../contributing/chat-zulip-org.md), and otherwise
 being good members of the community.
 
 ## Mentors
@@ -155,7 +155,7 @@ projects.  We usually decide which members are mentoring which
 projects based in part on who is a good fit for the needs of each
 writer as well as technical expertise.  You can reach us via
 [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation) on
-[the Zulip development community server](../contributing/chat-zulip-org.html),
+[the Zulip development community server](../contributing/chat-zulip-org.md),
 (compose a new stream message with your name as the topic).
 
 Zulip operates under group mentorship.  That means you should
@@ -202,7 +202,7 @@ together a complete project proposal.  It's also fine for you to come
 up with your own project ideas.
 
 For many of our projects, an important skill to develop is a good
-command of Git; read [our Git Guide](../git/overview.html) in full to
+command of Git; read [our Git Guide](../git/overview.md) in full to
 learn how to use it well.  Of particular importance is mastering using
 Git rebase so that you can construct commits that are readable,
 are clearly correct and that explain why they are correct.
@@ -211,7 +211,7 @@ are clearly correct and that explain why they are correct.
 
 Fill in the gaps in Zulip's
 [REST API documentation](https://zulipchat.com/api).  Zulip has a
-[nice framework](../documentation/api.html) for
+[nice framework](../documentation/api.md) for
 writing API documentation built by a student last summer based on the
 OpenAPI standard with built-in automated tests, but there are dozens of
 endpoints that are missing, several of which are quite important.  See

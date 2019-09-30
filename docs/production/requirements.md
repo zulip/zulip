@@ -25,7 +25,7 @@ strongly recommend using either a fresh machine instance in a cloud
 provider, a fresh VM, or a dedicated machine.  If you decide to
 disregard our advice and use a server that hosts other services, we
 can't support you, but
-[we do have some notes on issues you'll encounter](install-existing-server.html).
+[we do have some notes on issues you'll encounter](install-existing-server.md).
 
 #### Operating System
 
@@ -71,7 +71,7 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
   messages sent.  We recommend using an SSD and avoiding cloud storage
   backends that limit the IOPS per second, since the disk is primarily
   used for the database (assuming you're using the
-  [S3 file uploads backend](../production/upload-backends.html)).
+  [S3 file uploads backend](../production/upload-backends.md)).
 
 #### Network and Security Specifications
 
@@ -114,7 +114,7 @@ available: [the `--self-signed-cert` option][doc-self-signed] in the
 installer.
 
 If you'd rather acquire an SSL certificate another way, see our [SSL
-certificate documentation](ssl-certificates.html).
+certificate documentation](ssl-certificates.md).
 
 [doc-certbot]: ssl-certificates.html#certbot-recommended
 [doc-self-signed]: ssl-certificates.html#self-signed-certificate
@@ -129,6 +129,6 @@ certificate documentation](ssl-certificates.html).
   [free outgoing SMTP options and options for prototyping](email.html#free-outgoing-email-services).
 
 Once you have met these requirements, see [full instructions for installing
-Zulip in production](../production/install.html).
+Zulip in production](../production/install.md).
 
 [trusty-eol]: https://wiki.ubuntu.com/Releases

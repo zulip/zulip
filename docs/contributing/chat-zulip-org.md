@@ -32,7 +32,7 @@ minutes to a few hours, depending on the time of day.
   [gender-neutral language](https://en.wikipedia.org/wiki/Gender-neutral_language).
   For example, avoid using a pronoun like her or his in sentences like
   "Every developer should clean [their] keyboard at least once a week."
-* Follow the community [code of conduct](../code-of-conduct.html).
+* Follow the community [code of conduct](../code-of-conduct.md).
 * Participate!  Zulip is a friendly and welcoming community, and we
   love meeting new people, hearing about what brought them to Zulip,
   and getting their feedback.  If you're not sure where to start,

@@ -27,7 +27,7 @@ Errors](#troubleshooting-and-common-errors). If that doesn't help,
 please visit [#provision
 help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
 [Zulip development community
-server](../contributing/chat-zulip-org.html) for real-time help or
+server](../contributing/chat-zulip-org.md) for real-time help or
 [file an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
@@ -297,7 +297,7 @@ does the following:
   downloads all required dependencies, sets up the python environment for
   the Zulip development server, and initializes a default test
   database.  We call this process "provisioning", and it is documented
-  in some detail in our [dependencies documentation](../subsystems/dependencies.html).
+  in some detail in our [dependencies documentation](../subsystems/dependencies.md).
 
 You will need an active internet connection during the entire
 process. (See [Specifying a proxy](#specifying-a-proxy) if you need a
@@ -309,7 +309,7 @@ documented in the
 [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
 section.  If that doesn't help, please visit
 [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.html) for
+in the [Zulip development community server](../contributing/chat-zulip-org.md) for
 real-time help.
 
 On Windows, you will see `The system cannot find the path specified.` message
@@ -420,7 +420,7 @@ It's good to have the terminal running `run-dev.py` up as you work since error
 messages including tracebacks along with every backend request will be printed
 there.
 
-See [Logging](../subsystems/logging.html) for further details on the run-dev.py console
+See [Logging](../subsystems/logging.md) for further details on the run-dev.py console
 output.
 
 #### Committing and pushing changes with git
@@ -449,7 +449,7 @@ After provisioning, you'll want to
 
 If you run into any trouble, the
 [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.html) for
+in the [Zulip development community server](../contributing/chat-zulip-org.md) for
 is a great place to ask for help.
 
 #### Rebuilding the development environment
@@ -547,7 +547,7 @@ If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
 * Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-  in the [Zulip development community server](../contributing/chat-zulip-org.html).
+  in the [Zulip development community server](../contributing/chat-zulip-org.md).
 * [File an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
@@ -1045,12 +1045,12 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
-[install-advanced]: ../development/setup-advanced.html
-[rtd-git-guide]: ../git/index.html
-[rtd-testing]: ../testing/testing.html
-[rtd-using-dev-env]: using.html
-[rtd-dev-remote]: remote.html
+[install-advanced]: ../development/setup-advanced.md
+[rtd-git-guide]: ../git/index.md
+[rtd-testing]: ../testing/testing.md
+[rtd-using-dev-env]: using.md
+[rtd-dev-remote]: remote.md
 [git-bash]: https://git-for-windows.github.io/
 [bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
-[set-up-git]: ../git/setup.html
+[set-up-git]: ../git/setup.md
 [ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork

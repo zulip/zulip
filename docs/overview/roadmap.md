@@ -27,7 +27,7 @@ priority projects.
 We welcome participation from the community in influencing the Zulip
 roadmap.  If a bug or missing feature is causing significant pain for your
 organization, we appreciate your commenting to that effect, either in
-[chat.zulip.org](../contributing/chat-zulip-org.html) or on the
+[chat.zulip.org](../contributing/chat-zulip-org.md) or on the
 relevant GitHub issue, with an explanation of how the issue impacts
 your use case. See [Reporting issues](contributing.html#reporting-issues)
 for more information.

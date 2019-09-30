@@ -80,13 +80,13 @@ And if you've setup the Zulip development environment on a remote
 machine, take a look at our tips for
 [developing remotely][dev-remote].
 
-[dev-remote]: remote.html
+[dev-remote]: remote.md
 [install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
 [install-generic]: ../development/setup-advanced.html#installing-manually-on-unix
-[install-vagrant]: ../development/setup-vagrant.html
+[install-vagrant]: ../development/setup-vagrant.md
 [self-install-remote]: #installing-remotely
 [self-slow-internet]: #slow-internet-connections
 [configure-proxy]: ../development/setup-vagrant.html#specifying-a-proxy
-[using-dev-env]: using.html
-[testing]: ../testing/testing.html
+[using-dev-env]: using.md
+[testing]: ../testing/testing.md
 [ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork

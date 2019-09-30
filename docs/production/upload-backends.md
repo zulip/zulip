@@ -140,7 +140,7 @@ need a block like this:
 ```
 
 The file-uploads bucket should not be world-readable.  See the
-[documentation on the Zulip security model](security-model.html) for
+[documentation on the Zulip security model](security-model.md) for
 details on the security model for uploaded files.
 
 ## Migrating from local uploads to Amazon S3 backend

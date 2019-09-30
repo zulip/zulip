@@ -4,7 +4,7 @@ Zulip is early in the process of migrating our codebase to use
 [TypeScript](https://www.typescriptlang.org/), the leading static type
 system for JavaScript.  It works as an extension of the ES6 JavaScript
 standard, and provides similar benefits to our use of
-[the mypy static type system for Python](../testing/mypy.html).
+[the mypy static type system for Python](../testing/mypy.md).
 
 We expect to eventually migrate the entire JavaScript codebase to
 TypeScript, though our current focus is on getting the tooling and
@@ -33,7 +33,7 @@ The following resources are valuable for learning TypeScript:
 ## Type checking
 
 TypeScript types are checked by the TypeScript compiler, `tsc`, which
-is run as part of our [lint checks](linters.html).  You can run the
+is run as part of our [lint checks](linters.md).  You can run the
 compiler yourself with `tools/run-tsc`, which will check all the
 TypeScript files once, or `tools/run-tsc --watch`, which will
 continually recheck the files as you edit them.

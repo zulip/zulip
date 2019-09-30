@@ -6,7 +6,7 @@ user documentation as an organization (the name "realm" comes from
 [Kerberos](https://web.mit.edu/kerberos/)).
 
 The
-[production docs on multiple realms](../production/multiple-organizations.html)
+[production docs on multiple realms](../production/multiple-organizations.md)
 are likely also relevant reading.
 
 ## Creating Realms
@@ -52,7 +52,7 @@ job.
 
 We also recommend upgrading to at least Zulip 1.7, since older Zulip
 releases had much less nice handling for subdomains.  See our
-[docs on using subdomains](../production/multiple-organizations.html) for
+[docs on using subdomains](../production/multiple-organizations.md) for
 user-facing documentation on this.
 
 ### Working With Subdomains In Development Environment

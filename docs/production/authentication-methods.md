@@ -118,7 +118,7 @@ email address, if it isn't the same as the "Zulip username").
 **If you are using LDAP for authentication**: you will need to enable
 the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
 `AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.  After doing
-so (and as always [restarting the Zulip server](settings.html) to ensure
+so (and as always [restarting the Zulip server](settings.md) to ensure
 your settings changes take effect), you should be able to log into
 Zulip by entering your email address and LDAP password on the Zulip
 login form.
@@ -387,9 +387,9 @@ For example, the
 was about 30 lines of code, plus some documentation and an
 [automatically generated migration][schema-migrations].  We also have
 helpful developer documentation on
-[testing auth backends](../subsystems/auth.html).
+[testing auth backends](../subsystems/auth.md).
 
-[schema-migrations]: ../subsystems/schema-migrations.html
+[schema-migrations]: ../subsystems/schema-migrations.md
 [python-social-auth]: https://python-social-auth.readthedocs.io/en/latest/
 
 ## Development only

@@ -82,5 +82,5 @@ We don't provide a convenient way to uninstall a Zulip server.
 
 Most of the limitations are things we'd accept a pull request to fix;
 we welcome contributions to shrink this list of gotchas.  Chat with us
-in the [chat.zulip.org community](../contributing/chat-zulip-org.html) if you're
+in the [chat.zulip.org community](../contributing/chat-zulip-org.md) if you're
 interested in helping!

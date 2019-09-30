@@ -20,7 +20,7 @@ that's running one of:
 You can just run the Zulip provision script on your machine.
 
 **Note**: you should not use the `root` user to run the installation.
-If you are using a [remote server](../development/remote.html), see
+If you are using a [remote server](../development/remote.md), see
 the
 [section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
 

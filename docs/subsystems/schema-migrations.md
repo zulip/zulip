@@ -3,7 +3,7 @@
 Zulip uses the [standard Django system for doing schema
 migrations](https://docs.djangoproject.com/en/1.10/topics/migrations/).
 There is some example usage in the [new feature
-tutorial](../tutorials/new-feature-tutorial.html).
+tutorial](../tutorials/new-feature-tutorial.md).
 
 This page documents some important issues related to writing schema
 migrations.
@@ -30,7 +30,7 @@ migrations.
   fix this, you can either run `./tools/renumber-migrations` which
   renumbers your migration(s) and fixes up the "dependencies" entries in your
   migration(s), and then rewrite your git history as needed, or you can do it
-  manually. There is a tutorial [here](migration-renumbering.html) that
+  manually. There is a tutorial [here](migration-renumbering.md) that
   walks you though that process.
 
 * **Atomicity**.  By default, each Django migration is run atomically

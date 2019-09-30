@@ -126,7 +126,7 @@ Now you're ready to work on the issue or feature.
 ## Run linters and tests locally
 
 In addition to having Travis run tests and linters each time you push a new
-commit, you can also run them locally. See [testing](../testing/testing.html) for details.
+commit, you can also run them locally. See [testing](../testing/testing.md) for details.
 
 ## Stage changes
 
@@ -446,7 +446,7 @@ complicated rebase.
 [github-help-push]: https://help.github.com/en/articles/pushing-to-a-remote
 [github-help-rebase]: https://help.github.com/en/articles/using-git-rebase
 [github-help-sync-fork]: https://help.github.com/en/articles/syncing-a-fork
-[how-git-is-different]: ./the-git-difference.html
+[how-git-is-different]: ./the-git-difference.md
 [zulip-git-guide-up-to-date]: ../git/using.html#keep-your-fork-up-to-date
 [zulip-rtd-commit-discipline]: ../contributing/version-control.html#commit-discipline
 [zulip-rtd-commit-messages]: ../contributing/version-control.html#commit-messages

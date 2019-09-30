@@ -4,7 +4,7 @@ This page documents the Zulip directory structure, where to find
 things, and how to decide where to put a file.
 
 You may also find the [new application feature
-tutorial](../tutorials/new-feature-tutorial.html) helpful for understanding the
+tutorial](../tutorials/new-feature-tutorial.md) helpful for understanding the
 flow through these files.
 
 ### Core Python files
@@ -30,11 +30,11 @@ paths will be familiar to Django developers.
 
 * `zerver/tornado/views.py` Tornado views.
 
-* `zerver/worker/queue_processors.py` [Queue workers](../subsystems/queuing.html).
+* `zerver/worker/queue_processors.py` [Queue workers](../subsystems/queuing.md).
 
 * `zerver/lib/*.py` Most library code.
 
-* `zerver/lib/bugdown/` [Backend Markdown processor](../subsystems/markdown.html).
+* `zerver/lib/bugdown/` [Backend Markdown processor](../subsystems/markdown.md).
 
 * `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/1.8/topics/auth/customizing/).
 
@@ -42,7 +42,7 @@ paths will be familiar to Django developers.
 
 ### HTML Templates
 
-See [our docs](../subsystems/html-templates.html) for details on Zulip's
+See [our docs](../subsystems/html-templates.md) for details on Zulip's
 templating systems.
 
 * `templates/zerver/` For [Jinja2](http://jinja.pocoo.org/) templates
@@ -87,7 +87,7 @@ These are distinguished from scripts, below, by needing to run a
 Django context (i.e. with database access).
 
 * `zerver/management/commands/`
-  [Management commands](../subsystems/management-commands.html) one might run at a
+  [Management commands](../subsystems/management-commands.md) one might run at a
   production deployment site (e.g. scripts to change a value or
   deactivate a user properly).
 

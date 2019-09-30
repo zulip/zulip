@@ -9,7 +9,7 @@ modified version of Zulip, please be responsible about communicating
 that fact:
 
 * Ideally, you'd reproduce the issue in an unmodified version (e.g. on
-[chat.zulip.org](../contributing/chat-zulip-org.html) or
+[chat.zulip.org](../contributing/chat-zulip-org.md) or
 [zulipchat.com](https://zulipchat.com)).
 * Where that is difficult or you think it's very unlikely your changes
 are related to the issue, just mention your changes in the issue report.
@@ -35,7 +35,7 @@ Instead, we recommend the following GitHub-based workflow (see [our
 Git guide][git-guide] if you need a primer):
 
 * Decide where you're going to edit Zulip's code.  We recommend [using
-  the Zulip development environment](../development/overview.html) on
+  the Zulip development environment](../development/overview.md) on
   a desktop or laptop as it will make it extremely convenient for you
   to test your changes without deploying them in production.  But if
   your changes are small or you're OK with risking downtime, you don't
@@ -192,7 +192,7 @@ make sure you understand:
   for your Zulip server is unacceptable, make sure you have a current
   backup in case the upgrade fails.
 * Our changelog contains [draft release
-  notes](../overview/changelog.html) available listing major changes
+  notes](../overview/changelog.md) available listing major changes
   since the last release.  The **Upgrade notes** section will always
   be current, even if some new features aren't documented.
 
@@ -201,10 +201,10 @@ make sure you understand:
 Zulip contains thousands of changes submitted by volunteer
 contributors like you.  If your changes are likely to be of useful to
 other organizations, consider [contributing
-them](../overview/contributing.html).
+them](../overview/contributing.md).
 
 [fork-clone]: ../git/cloning.html#get-zulip-code
 [upgrade-zulip-from-git]: ../production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
 [upgrade-zulip]: ../production/maintain-secure-upgrade.html#upgrading
-[git-guide]: ../git/index.html
+[git-guide]: ../git/index.md
 [zulip/zulip]: https://github.com/zulip/zulip/

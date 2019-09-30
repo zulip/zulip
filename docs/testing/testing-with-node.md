@@ -2,7 +2,7 @@
 
 Our node-based unit tests system is the preferred way to test
 JavaScript/TypeScript code in Zulip.  We prefer it over the [Casper
-black-box whole-app testing](../testing/testing-with-casper.html),
+black-box whole-app testing](../testing/testing-with-casper.md),
 system since it is much (>100x) faster and also easier to do correctly
 than the Casper system.
 
@@ -41,7 +41,7 @@ and add your own tests.
 
 ## How the node tests work
 
-Unlike the [casper unit tests](../testing/testing-with-casper.html),
+Unlike the [casper unit tests](../testing/testing-with-casper.md),
 which use the `phantomjs` browser connected to a running Zulip
 deveopment server, our node unit tests don't have a browser, don't
 talk to a server, and generally don't use a complete virtual DOM (a

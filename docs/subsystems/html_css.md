@@ -8,7 +8,7 @@ main third-party CSS library.
 
 Zulip currently does not use any CSS preprocessors, and is organized
 into several files.  For most pages, the CSS is combined into a single
-CSS file by the [static asset pipeline](../subsystems/front-end-build-process.html).
+CSS file by the [static asset pipeline](../subsystems/front-end-build-process.md).
 
 The CSS files are:
 

@@ -304,18 +304,8 @@ source_suffix = {
     '.md': 'markdown',
 }
 
-# Temporary workaround to supress warnings after upgrading to recommonmark==0.5.0
-# Otherwise, sphinx build complains about all the links ending in .html
-# See PR # for more details
-def on_missing_reference(app, env, node, contnode):
-    if node['reftype'] == 'any':
-        return contnode
-    else:
-        return None
-
 def setup(app: Any) -> None:
 
-    app.connect('missing-reference', on_missing_reference)
     app.add_config_value('recommonmark_config', {
         'enable_eval_rst': True,
         # Turn off recommonmark features we aren't using.

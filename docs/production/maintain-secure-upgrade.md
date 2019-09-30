@@ -13,7 +13,7 @@ secure Zulip installation, including:
 
 You may also want to read this related content:
 
-- [Security Model](../production/security-model.html)
+- [Security Model](../production/security-model.md)
 
 ## Upgrading
 
@@ -213,7 +213,7 @@ git_repo_url = https://github.com/zulip/zulip.git
 ```
 
 See also our documentation on [modifying
-Zulip](../production/modifying-zulip.html) and [upgrading
+Zulip](../production/modifying-zulip.md) and [upgrading
 docker-zulip](https://github.com/zulip/docker-zulip#upgrading-from-a-git-repository).
 
 **Systems with limited RAM**: If you are running a minimal Zulip
@@ -413,7 +413,7 @@ disrupting service (e.g. `zuliptest.example.com` rather than
 `zulip.example.com`).
 
 If you do so, just like any other time you change the hostname, you'll
-need to [update `EXTERNAL_HOST`](../production/settings.html) and then
+need to [update `EXTERNAL_HOST`](../production/settings.md) and then
 restart the Zulip server (after backup restoration completes).
 
 Until you do, your Zulip server will think its user-facing hostname is
@@ -432,7 +432,7 @@ extracting the entire archive.
 tar -Oaxf /path/to/archive/zulip-backup-rest.tar.gz zulip-backup/zulip-version
 ```
 
-[install-server]: ../production/install.html
+[install-server]: ../production/install.md
 
 ### What is included
 
@@ -459,7 +459,7 @@ backup archives, and you may want to backup separately:
   compared to the rest of the data for a Zulip server.
 
 * Files uploaded with the Zulip
-  [S3 file upload backend](../production/upload-backends.html).  We
+  [S3 file upload backend](../production/upload-backends.md).  We
   don't include these for two reasons. First, the uploaded file data
   in S3 can easily be many times larger than the rest of the backup,
   and downloading it all to a server doing a backup could easily
@@ -515,7 +515,7 @@ more human-readable and easier to parse, and doesn't have the
 requirement that the same set of Zulip organizations exist on the two
 servers (which is critical for migrations to and from Zulip Cloud).
 
-[export-import]: ../production/export-and-import.html
+[export-import]: ../production/export-and-import.md
 
 ### Restore from manual backups
 
@@ -630,16 +630,16 @@ running Zulip with larger teams (especially >1000 users).
 * For an organization with 100+ users, it's important to have more
   than 4GB of RAM on the system.  Zulip will install on a system with
   2GB of RAM, but with less than 3.5GB of RAM, it will run its
-  [queue processors](../subsystems/queuing.html) multithreaded to conserve memory;
+  [queue processors](../subsystems/queuing.md) multithreaded to conserve memory;
   this creates a significant performance bottleneck.
 
-* [chat.zulip.org](../contributing/chat-zulip-org.html), with thousands of user
+* [chat.zulip.org](../contributing/chat-zulip-org.md), with thousands of user
   accounts and thousands of messages sent every week, has 8GB of RAM,
   4 cores, and 80GB of disk.  The CPUs are essentially always idle,
   but the 8GB of RAM is important.
 
 * We recommend using a [remote postgres
-  database](postgres.html) for isolation, though it is
+  database](postgres.md) for isolation, though it is
   not required.  In the following, we discuss a relatively simple
   configuration with two types of servers: application servers
   (running Django, Tornado, RabbitMQ, Redis, Memcached, etc.) and
@@ -698,7 +698,7 @@ welcome!  This is an area we are hoping to improve.
 ## Securing your Zulip server
 
 Zulip's security model is discussed in
-[a separate document](../production/security-model.html).
+[a separate document](../production/security-model.md).
 
 ## Management commands
 
@@ -736,7 +736,7 @@ system-internal bots like `welcome-bot`; you are unlikely to need to
 interact with that realm.)
 
 Unless you are
-[hosting multiple organizations on your Zulip server](../production/multiple-organizations.html),
+[hosting multiple organizations on your Zulip server](../production/multiple-organizations.md),
 your single Zulip organization on the root domain will have the empty
 string (`''`) as its `string_id`.  So you can run e.g.:
 ```
@@ -810,4 +810,4 @@ There are a large number of useful management commands under
 
 ## Hosting multiple Zulip organizations
 
-This is explained in detail on [its own page](../production/multiple-organizations.html).
+This is explained in detail on [its own page](../production/multiple-organizations.md).

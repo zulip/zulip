@@ -6,7 +6,7 @@ environment.
 
 ## Testing OAuth in development
 
-Among the many [authentication methods](../production/authentication-methods.html)
+Among the many [authentication methods](../production/authentication-methods.md)
 we support, a server can be configured to allow users to sign in with
 their Google accounts or GitHub accounts, using the OAuth protocol.
 
@@ -61,7 +61,7 @@ Here are the full procedures for dev:
 Some OAuth providers (such as Facebook) require HTTPS on the callback
 URL they post back to, which isn't supported directly by the Zulip
 development environment.  If you run a
-[remote Zulip development server](../development/remote.html), we have
+[remote Zulip development server](../development/remote.md), we have
 instructions for
 [an nginx reverse proxy with SSL](../development/remote.html#using-an-nginx-reverse-proxy)
 that you can use for your development efforts.
