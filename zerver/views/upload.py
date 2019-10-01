@@ -1,6 +1,7 @@
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, \
     HttpResponseNotFound
 from django.shortcuts import redirect
+from django.utils.cache import patch_cache_control
 from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_success, json_error
@@ -40,8 +41,10 @@ def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
     mimetype, encoding = guess_type(local_path)
     attachment = mimetype not in INLINE_MIME_TYPES
 
-    return sendfile(request, local_path, attachment=attachment,
-                    mimetype=mimetype, encoding=encoding)
+    response = sendfile(request, local_path, attachment=attachment,
+                        mimetype=mimetype, encoding=encoding)
+    patch_cache_control(response, private=True, immutable=True)
+    return response
 
 def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
                        realm_id_str: str, filename: str) -> HttpResponse:

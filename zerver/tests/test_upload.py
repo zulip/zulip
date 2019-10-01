@@ -707,6 +707,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                     self.assertIn(content_disposition, response['Content-disposition'])
                 else:
                     self.assertEqual(response.get('Content-disposition'), None)
+                self.assertEqual(set(response["Cache-Control"].split(", ")),
+                                 {"private", "immutable"})
 
         check_xsend_links('zulip.txt', 'zulip.txt', 'filename="zulip.txt"')
         check_xsend_links('áéБД.txt', '%C3%A1%C3%A9%D0%91%D0%94.txt',

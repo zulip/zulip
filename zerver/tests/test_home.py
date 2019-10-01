@@ -240,6 +240,8 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries:
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
+        self.assertEqual(set(result["Cache-Control"].split(", ")),
+                         {"must-revalidate", "no-store", "no-cache"})
 
         self.assert_length(queries, 45)
         self.assert_length(cache_mock.call_args_list, 7)
@@ -442,6 +444,8 @@ class HomeTest(ZulipTestCase):
         self._sanity_check(result)
         html = result.content.decode('utf-8')
         self.assertIn('lunch', html)
+        self.assertEqual(set(result["Cache-Control"].split(", ")),
+                         {"must-revalidate", "no-store", "no-cache"})
 
     def test_notifications_stream(self) -> None:
         email = self.example_email("hamlet")

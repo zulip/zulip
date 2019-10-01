@@ -16,11 +16,14 @@ from django.conf import settings
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 FLAGS = ('override_api_url_scheme')
 
-def never_cache_responses(view_func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
-    """Patched version of the standard Django decorator that adds headers
-    to a response so that it will never be cached.
+def default_never_cache_responses(
+        view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    """Patched version of the standard Django never_cache_responses
+    decorator that adds headers to a response so that it will never be
+    cached, unless the view code has already set a Cache-Control
+    header.
 
-    We need to patch this because our Django+Tornado
+    We also need to patch this because our Django+Tornado
     RespondAsynchronously hack involves returning a value that isn't a
     Django response object, on which add_never_cache_headers would
     crash.  This only occurs in a case where client-side caching
@@ -30,12 +33,14 @@ def never_cache_responses(view_func: Callable[..., ReturnT]) -> Callable[..., Re
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> ReturnT:
         response = view_func(request, *args, **kwargs)
-        if response is not RespondAsynchronously:
-            add_never_cache_headers(response)
+        if response is RespondAsynchronously or response.has_header("Cache-Control"):
+            return response
+
+        add_never_cache_headers(response)
         return response
     return _wrapped_view_func
 
-@never_cache_responses
+@default_never_cache_responses
 @csrf_exempt
 def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     """Dispatch to a REST API endpoint.

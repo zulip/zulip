@@ -1029,6 +1029,9 @@ class GetOldMessagesTest(ZulipTestCase):
         payload = self.client_get("/json/messages", dict(post_params),
                                   **kwargs)
         self.assert_json_success(payload)
+        self.assertEqual(set(payload["Cache-Control"].split(", ")),
+                         {"must-revalidate", "no-store", "no-cache", "max-age=0"})
+
         result = ujson.loads(payload.content)
 
         self.assertIn("messages", result)
