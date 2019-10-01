@@ -20,7 +20,7 @@ EXCLUDED_URLS = [
     'https://www.git-tower.com/blog/command-line-cheat-sheet/',
     'https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode',
     # Requires authentication
-    'https://circleci.com/gh/zulip/zulip',
+    'https://circleci.com/gh/zulip/zulip/tree/master',
     'https://circleci.com/gh/zulip/zulip/16617',
     'https://www.linkedin.com/company/zulip-project',
 ]
