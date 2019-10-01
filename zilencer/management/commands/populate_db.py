@@ -14,7 +14,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
-    do_change_is_admin, do_send_messages, do_update_user_custom_profile_data, \
+    do_change_is_admin, do_send_messages, do_update_user_custom_profile_data_if_changed, \
     try_add_realm_custom_profile_field, try_add_realm_default_custom_profile_field
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.cache import cache_set
@@ -364,7 +364,7 @@ class Command(BaseCommand):
 
             # Fill in values for Iago and Hamlet
             hamlet = get_user("hamlet@zulip.com", zulip_realm)
-            do_update_user_custom_profile_data(iago, [
+            do_update_user_custom_profile_data_if_changed(iago, [
                 {"id": phone_number.id, "value": "+1-234-567-8901"},
                 {"id": biography.id, "value": "Betrayer of Othello."},
                 {"id": favorite_food.id, "value": "Apples"},
@@ -374,7 +374,7 @@ class Command(BaseCommand):
                 {"id": mentor.id, "value": [hamlet.id]},
                 {"id": github_profile.id, "value": 'zulip'},
             ])
-            do_update_user_custom_profile_data(hamlet, [
+            do_update_user_custom_profile_data_if_changed(hamlet, [
                 {"id": phone_number.id, "value": "+0-11-23-456-7890"},
                 {
                     "id": biography.id,
