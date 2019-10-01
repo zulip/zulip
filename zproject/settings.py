@@ -343,9 +343,13 @@ DEFAULT_SETTINGS.update({
     # this is disabled in production, but we need it in development.
     'POST_MIGRATION_CACHE_FLUSHING': False,
 
-    # Settings for APNS.  Only needed on push.zulipchat.com.
+    # Settings for APNS.  Only needed on push.zulipchat.com or if
+    # rebuilding the mobile app with a different push notifications
+    # server.
     'APNS_CERT_FILE': None,
     'APNS_SANDBOX': True,
+    'APNS_TOPIC': 'org.zulip.Zulip',
+    'ZULIP_IOS_APP_ID': 'org.zulip.Zulip',
 
     # Max number of "remove notification" FCM/GCM messages to send separately
     # in one burst; the rest are batched.  Older clients ignore the batched
@@ -1269,9 +1273,6 @@ LOGIN_REDIRECT_URL = '/'
 # but it's good to have a safety.  This value should be greater than
 # (HEARTBEAT_MIN_FREQ_SECS + 10)
 POLL_TIMEOUT = 90 * 1000
-
-# iOS App IDs
-ZULIP_IOS_APP_ID = 'org.zulip.Zulip'
 
 ########################################################################
 # SSO AND LDAP SETTINGS

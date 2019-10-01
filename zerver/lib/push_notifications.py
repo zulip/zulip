@@ -137,7 +137,7 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
         def attempt_send() -> Optional[str]:
             try:
                 stream_id = client.send_notification_async(
-                    device.token, payload, topic='org.zulip.Zulip',
+                    device.token, payload, topic=settings.APNS_TOPIC,
                     expiration=expiration)
                 return client.get_notification_result(stream_id)
             except HTTP20Error as e:
