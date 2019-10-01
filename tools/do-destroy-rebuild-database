@@ -9,7 +9,7 @@ DROP DATABASE IF EXISTS zulip;
 CREATE DATABASE zulip TEMPLATE zulip_base;
 EOF
 
-sh "$(dirname "$0")/../scripts/setup/flush-memcached"
+"$(dirname "$0")/../scripts/setup/flush-memcached"
 
 ./manage.py purge_queue --all
 ./manage.py migrate --noinput

@@ -17,7 +17,7 @@ if  [ "$1" != "--force" ]; then
 DROP DATABASE IF EXISTS zulip_test;
 CREATE DATABASE zulip_test TEMPLATE zulip_test_template;
 EOF
-    sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
+    "$(dirname "$0")/../../scripts/setup/flush-memcached"
     exit 0
 fi
 
@@ -29,7 +29,7 @@ psql -v ON_ERROR_STOP=1 -h localhost postgres zulip_test <<EOF
 DROP DATABASE IF EXISTS zulip_test;
 CREATE DATABASE zulip_test TEMPLATE zulip_test_base;
 EOF
-sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
+"$(dirname "$0")/../../scripts/setup/flush-memcached"
 
 ./manage.py migrate --noinput
 ./manage.py get_migration_status --output="migration_status_test"

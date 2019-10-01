@@ -106,6 +106,6 @@ psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF
 CREATE DATABASE $DBNAME TEMPLATE $DBNAME_BASE;
 EOF
 
-sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
+"$(dirname "$0")/../../scripts/setup/flush-memcached"
 
 echo "Database created"
