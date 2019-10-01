@@ -3,7 +3,7 @@
 from typing import Union, List, Dict, Any
 
 from zerver.lib.actions import try_add_realm_custom_profile_field, \
-    do_update_user_custom_profile_data, do_remove_realm_custom_profile_field, \
+    do_update_user_custom_profile_data_if_changed, do_remove_realm_custom_profile_field, \
     try_reorder_realm_custom_profile_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.bugdown import convert as bugdown_convert
@@ -311,7 +311,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         field = CustomProfileField.objects.get(name="Mentor", realm=realm)
         data = [{'id': field.id,
                  'value': [self.example_user("aaron").id]}]  # type: List[Dict[str, Union[int, str, List[int]]]]
-        do_update_user_custom_profile_data(iago, data)
+        do_update_user_custom_profile_data_if_changed(iago, data)
 
         iago_value = CustomProfileFieldValue.objects.get(user_profile=iago, field=field)
         converter = field.FIELD_CONVERTERS[field.field_type]
@@ -333,7 +333,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         realm = user_profile.realm
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
         data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, str, List[int]]]]
-        do_update_user_custom_profile_data(user_profile, data)
+        do_update_user_custom_profile_data_if_changed(user_profile, data)
 
         self.assertTrue(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count)
@@ -588,7 +588,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             "id": quote.id,
             "value": "***beware*** of jealousy..."
         }
-        do_update_user_custom_profile_data(iago, [update_dict])
+        do_update_user_custom_profile_data_if_changed(iago, [update_dict])
 
         iago_profile_quote = self.example_user("iago").profile_data[-1]
         value = iago_profile_quote["value"]
@@ -606,12 +606,12 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field = CustomProfileField.objects.get(name="Mentor", realm=realm)
         data = [{'id': field.id,
                  'value': [self.example_user("aaron").id]}]  # type: List[Dict[str, Union[int, str, List[int]]]]
-        do_update_user_custom_profile_data(iago, data)
+        do_update_user_custom_profile_data_if_changed(iago, data)
 
         with mock.patch("zerver.lib.actions.notify_user_update_custom_profile_data") as mock_notify:
             # Attempting to "update" the field value, when it wouldn't actually change,
             # if always_notify is disabled, shouldn't trigger notify.
-            do_update_user_custom_profile_data(iago, data)
+            do_update_user_custom_profile_data_if_changed(iago, data)
             mock_notify.assert_not_called()
 
 class ListCustomProfileFieldTest(CustomProfileFieldTestCase):

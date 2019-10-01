@@ -38,7 +38,7 @@ from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
-    do_update_user_custom_profile_data, validate_email_for_realm
+    do_update_user_custom_profile_data_if_changed, validate_email_for_realm
 from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
@@ -426,7 +426,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 'id': field.id,
                 'value': value,
             })
-        do_update_user_custom_profile_data(user_profile, profile_data)
+        do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
 
     def get_or_build_user(self, username: str,
                           ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:

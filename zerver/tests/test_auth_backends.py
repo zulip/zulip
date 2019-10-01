@@ -2915,7 +2915,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
                                                     'custom_profile_field__birthday': 'birthDate',
                                                     'custom_profile_field__phone_number': 'phoneNumber'}):
-            with mock.patch('zproject.backends.do_update_user_custom_profile_data') as f:
+            with mock.patch('zproject.backends.do_update_user_custom_profile_data_if_changed') as f:
                 self.perform_ldap_sync(self.example_user('hamlet'))
                 f.assert_called_once_with(*expected_call_args)
 

@@ -102,7 +102,7 @@ from zerver.lib.actions import (
     bulk_add_members_to_user_group,
     remove_members_from_user_group,
     check_delete_user_group,
-    do_update_user_custom_profile_data,
+    do_update_user_custom_profile_data_if_changed,
 )
 from zerver.lib.events import (
     apply_events,
@@ -1159,7 +1159,7 @@ class EventsRegisterTest(ZulipTestCase):
             "id": field_id,
             "value": "New value",
         }
-        events = self.do_test(lambda: do_update_user_custom_profile_data(self.user_profile, [field]))
+        events = self.do_test(lambda: do_update_user_custom_profile_data_if_changed(self.user_profile, [field]))
         error = schema_checker_with_rendered_value('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1170,7 +1170,7 @@ class EventsRegisterTest(ZulipTestCase):
             "id": field_id,
             "value": [self.example_user("ZOE").id],
         }
-        events = self.do_test(lambda: do_update_user_custom_profile_data(self.user_profile, [field]))
+        events = self.do_test(lambda: do_update_user_custom_profile_data_if_changed(self.user_profile, [field]))
         error = schema_checker_basic('events[0]', events[0])
         self.assert_on_error(error)
 

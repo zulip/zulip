@@ -5458,8 +5458,9 @@ def notify_user_update_custom_profile_data(user_profile: UserProfile,
     event = dict(type="realm_user", op="update", person=payload)
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm.id))
 
-def do_update_user_custom_profile_data(user_profile: UserProfile,
-                                       data: List[Dict[str, Union[int, str, List[int]]]]) -> None:
+def do_update_user_custom_profile_data_if_changed(user_profile: UserProfile,
+                                                  data: List[Dict[str, Union[int, str, List[int]]]]
+                                                  ) -> None:
     with transaction.atomic():
         for field in data:
             field_value, created = CustomProfileFieldValue.objects.get_or_create(
