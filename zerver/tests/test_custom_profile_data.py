@@ -12,6 +12,8 @@ from zerver.models import CustomProfileField, \
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 import ujson
 
+import mock
+
 class CustomProfileFieldTestCase(ZulipTestCase):
     def setUp(self) -> None:
         self.realm = get_realm("zulip")
@@ -594,6 +596,23 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertIsNotNone(value)
         self.assertIsNotNone(rendered_value)
         self.assertEqual("<p><strong><em>beware</em></strong> of jealousy...</p>", rendered_value)
+
+    def test_do_update_value_not_changed(self) -> None:
+        iago = self.example_user("iago")
+        self.login(iago.email)
+        realm = get_realm("zulip")
+
+        # Set field value:
+        field = CustomProfileField.objects.get(name="Mentor", realm=realm)
+        data = [{'id': field.id,
+                 'value': [self.example_user("aaron").id]}]  # type: List[Dict[str, Union[int, str, List[int]]]]
+        do_update_user_custom_profile_data(iago, data)
+
+        with mock.patch("zerver.lib.actions.notify_user_update_custom_profile_data") as mock_notify:
+            # Attempting to "update" the field value, when it wouldn't actually change,
+            # if always_notify is disabled, shouldn't trigger notify.
+            do_update_user_custom_profile_data(iago, data)
+            mock_notify.assert_not_called()
 
 class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_list(self) -> None:

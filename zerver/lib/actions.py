@@ -5465,6 +5465,14 @@ def do_update_user_custom_profile_data(user_profile: UserProfile,
             field_value, created = CustomProfileFieldValue.objects.get_or_create(
                 user_profile=user_profile,
                 field_id=field['id'])
+
+            if not created and field_value.value == str(field['value']):
+                # If the field value isn't actually being changed to a different one,
+                # and always_notify is disabled, we have nothing to do here for this field.
+                # Note: field_value.value is a TextField() so we need to cast field['value']
+                # to a string for the comparison in this if.
+                continue
+
             field_value.value = field['value']
             if field_value.field.is_renderable():
                 field_value.rendered_value = render_stream_description(str(field['value']))
