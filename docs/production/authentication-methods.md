@@ -46,8 +46,10 @@ configure it as follows:
 
 1. Tell your IdP how to find your Zulip server:
 
-    * **Entity ID**: `https://yourzulipdomain.example.com`
-    * **SSO URL**: `https://yourzulipdomain.example.com/complete/saml/`
+    * **SP Entity ID**: `https://yourzulipdomain.example.com`.
+    * **SSO URL**:
+      `https://yourzulipdomain.example.com/complete/saml/`.  This is
+      the "SAML ACS url" in SAML terminology.
 
    The `Entity ID` should match the value of
    `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.

@@ -1375,6 +1375,11 @@ if PRODUCTION:
     SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("/etc/zulip/saml/zulip-private-key.key")
 
 for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+    if DEVELOPMENT:
+        idp_dict['entity_id'] = get_secret('saml_entity_id', '')
+        idp_dict['url'] = get_secret('saml_url', '')
+        idp_dict['x509cert_path'] = 'zproject/dev_saml.cert'
+
     # Set `x509cert` if not specified already; also support an override path.
     if 'x509cert' in idp_dict:
         continue
