@@ -228,8 +228,8 @@ push notifications through the new app is quite straightforward:
   from Apple's developer console.  Set `APNS_SANDBOX=False` and
   `APNS_CERT_FILE` to be the path of your APNS certificate file in
   `/etc/zulip/settings.py`.
-* A key APNS_TOPIC is provided in `settings.py` which is used in 
-`push_notifications.py` while passing the topic. This key,anyone can override 
+* A key APNS_TOPIC is provided in `settings.py` which is used in 
+`push_notifications.py` while passing the topic. This key,anyone can override 
 in /etc/zulip/settings.py
 * Restart the Zulip server.
 
