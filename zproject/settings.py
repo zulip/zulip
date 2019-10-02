@@ -346,7 +346,7 @@ DEFAULT_SETTINGS.update({
     # Settings for APNS.  Only needed on push.zulipchat.com.
     'APNS_CERT_FILE': None,
     'APNS_SANDBOX': True,
-    'APNS_TOPIC': 'org.zulip.Zulip'
+    'APNS_TOPIC': 'org.zulip.Zulip',
 
     # Max number of "remove notification" FCM/GCM messages to send separately
     # in one burst; the rest are batched.  Older clients ignore the batched
