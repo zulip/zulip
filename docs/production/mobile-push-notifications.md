@@ -228,6 +228,7 @@ push notifications through the new app is quite straightforward:
   from Apple's developer console.  Set `APNS_SANDBOX=False` and
   `APNS_CERT_FILE` to be the path of your APNS certificate file in
   `/etc/zulip/settings.py`.
+* A key APNS_TOPIC is provided in `settings.py` where you can put your bundle identifier and use that key                       in `push_notifications.py` to start sending push notifications directly from your server.
 * Restart the Zulip server.
 
 [apple-docs]: https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html
