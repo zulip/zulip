@@ -3,6 +3,7 @@ import json
 import shlex
 import subprocess
 import markdown
+import os
 
 from zulip import Client
 from zerver.lib.bugdown import api_code_examples
@@ -15,6 +16,13 @@ whitelisted_files = [
     "get-messages.md",
 ]
 
+exclude_list = [
+    # The endpoint in these docs expect one or more param values that reflects the DB state.
+    # We currently get the example values from openapi specs and they don't refelect the
+    # state of the DB. This results in the curl request to fail.
+    'get-raw-message.md',
+]
+
 def test_generated_curl_examples_for_success(client: Client) -> None:
     authentication_line = "{}:{}".format(client.email, client.api_key)
     # A limited markdown engine that just processes the code example syntax.
@@ -23,13 +31,15 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
         api_url=realm.uri + "/api")])
 
     for file_name in glob.glob("templates/zerver/api/*.md"):
+        if os.path.basename(file_name) in exclude_list:
+            print("Skipping", file_name)
+            continue
         documentation_lines = open(file_name, "r").readlines()
         for line in documentation_lines:
             # A typical example from the markdown source looks like this:
             #     {generate_code_example(curl, ...}
             if not line.startswith("{generate_code_example(curl"):
                 continue
-
             # To do an end-to-end test on the documentation examples
             # that will be actually shown to users, we use the
             # markdown rendering pipeline to compute the user-facing
