@@ -150,15 +150,28 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
 
     return json_success()
 
-def validate_count_stats(server: RemoteZulipServer, model: Any,
-                         counts: List[Dict[str, Any]]) -> None:
+def validate_incoming_table_data(server: RemoteZulipServer, model: Any,
+                                 rows: List[Dict[str, Any]], is_count_stat: bool=False) -> None:
     last_id = get_last_id_from_server(server, model)
-    for item in counts:
-        if item['property'] not in COUNT_STATS:
-            raise JsonableError(_("Invalid property %s") % (item['property'],))
-        if item['id'] <= last_id:
+    for row in rows:
+        if is_count_stat and row['property'] not in COUNT_STATS:
+            raise JsonableError(_("Invalid property %s") % (row['property'],))
+        if row['id'] <= last_id:
             raise JsonableError(_("Data is out of order."))
-        last_id = item['id']
+        last_id = row['id']
+
+def batch_create_table_data(server: RemoteZulipServer, model: Any,
+                            row_objects: Union[List[RemoteRealmCount],
+                                               List[RemoteInstallationCount]]) -> None:
+    BATCH_SIZE = 1000
+    while len(row_objects) > 0:
+        try:
+            model.objects.bulk_create(row_objects[:BATCH_SIZE])
+        except IntegrityError:
+            logging.warning("Invalid data saving %s for server %s/%s" % (
+                model._meta.db_table, server.hostname, server.uuid))
+            raise JsonableError(_("Invalid data."))
+        row_objects = row_objects[BATCH_SIZE:]
 
 @has_request_variables
 def remote_server_post_analytics(request: HttpRequest,
@@ -182,50 +195,28 @@ def remote_server_post_analytics(request: HttpRequest,
                                      ])))) -> HttpResponse:
     server = validate_entity(entity)
 
-    validate_count_stats(server, RemoteRealmCount, realm_counts)
-    validate_count_stats(server, RemoteInstallationCount, installation_counts)
+    validate_incoming_table_data(server, RemoteRealmCount, realm_counts, True)
+    validate_incoming_table_data(server, RemoteInstallationCount, installation_counts, True)
 
-    BATCH_SIZE = 1000
-    while len(realm_counts) > 0:
-        batch = realm_counts[0:BATCH_SIZE]
-        realm_counts = realm_counts[BATCH_SIZE:]
+    row_objects = [RemoteRealmCount(
+        property=row['property'],
+        realm_id=row['realm'],
+        remote_id=row['id'],
+        server=server,
+        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=timezone_utc),
+        subgroup=row['subgroup'],
+        value=row['value']) for row in realm_counts]
+    batch_create_table_data(server, RemoteRealmCount, row_objects)
 
-        objects_to_create = []
-        for item in batch:
-            objects_to_create.append(RemoteRealmCount(
-                property=item['property'],
-                realm_id=item['realm'],
-                remote_id=item['id'],
-                server=server,
-                end_time=datetime.datetime.fromtimestamp(item['end_time'], tz=timezone_utc),
-                subgroup=item['subgroup'],
-                value=item['value']))
-        try:
-            RemoteRealmCount.objects.bulk_create(objects_to_create)
-        except IntegrityError:
-            logging.warning("Invalid data saving RemoteRealmCount for server %s/%s" % (
-                server.hostname, server.uuid))
-            return json_error(_("Invalid data."))
+    row_objects = [RemoteInstallationCount(
+        property=row['property'],
+        remote_id=row['id'],
+        server=server,
+        end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=timezone_utc),
+        subgroup=row['subgroup'],
+        value=row['value']) for row in installation_counts]
+    batch_create_table_data(server, RemoteInstallationCount, row_objects)
 
-    while len(installation_counts) > 0:
-        batch = installation_counts[0:BATCH_SIZE]
-        installation_counts = installation_counts[BATCH_SIZE:]
-
-        objects_to_create = []
-        for item in batch:
-            objects_to_create.append(RemoteInstallationCount(
-                property=item['property'],
-                remote_id=item['id'],
-                server=server,
-                end_time=datetime.datetime.fromtimestamp(item['end_time'], tz=timezone_utc),
-                subgroup=item['subgroup'],
-                value=item['value']))
-        try:
-            RemoteInstallationCount.objects.bulk_create(objects_to_create)
-        except IntegrityError:
-            logging.warning("Invalid data saving RemoteInstallationCount for server %s/%s" % (
-                server.hostname, server.uuid))
-            return json_error(_("Invalid data."))
     return json_success()
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:

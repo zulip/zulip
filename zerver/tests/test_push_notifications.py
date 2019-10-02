@@ -372,7 +372,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                                subdomain="")
         self.assert_json_error(result, "Data is out of order.")
 
-        with mock.patch("zilencer.views.validate_count_stats"):
+        with mock.patch("zilencer.views.validate_incoming_table_data"):
             # We need to wrap a transaction here to avoid the
             # IntegrityError that will be thrown in here from breaking
             # the unittest transaction.
