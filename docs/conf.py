@@ -29,7 +29,9 @@ from typing import Any, Dict, List, Optional
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = []  # type: List[str]
+extensions = [
+    'recommonmark',
+]  # type: List[str]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -292,16 +294,15 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
-from recommonmark.parser import CommonMarkParser
 from recommonmark.transform import AutoStructify
 
-source_parsers = {
-    '.md': CommonMarkParser,
+# The suffix(es) of source filenames. You can specify multiple suffix
+# as a dictionary mapping file extensions to file types
+# https://www.sphinx-doc.org/en/master/usage/markdown.html:
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
 }
-
-# The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
-source_suffix = ['.rst', '.md']
 
 # Temporary workaround to supress warnings after upgrading to recommonmark==0.5.0
 # Otherwise, sphinx build complains about all the links ending in .html

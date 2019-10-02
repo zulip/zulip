@@ -143,7 +143,7 @@ pytz==2019.2
 pyyaml==5.1.2             # via cfn-lint, moto, yamole
 qrcode==6.1               # via django-two-factor-auth
 queuelib==1.5.0           # via scrapy
-recommonmark==0.5.0
+recommonmark==0.6.0
 redis==3.3.8
 regex==2019.8.19
 requests-oauthlib==1.2.0  # via python-twitter, social-auth-core

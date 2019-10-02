@@ -81,8 +81,7 @@ This will start up the Zulip server on port 9991. You can then
 navigate to `http://<REMOTE_IP>:9991` and you should see something like
 this screenshot of the Zulip development environment:
 
-![Image of Zulip development
-environment](../images/zulip-dev.png)
+![Image of Zulip development environment](../images/zulip-dev.png)
 
 The `--interface=''` option makes the Zulip development environment
 accessible from any IP address (in contrast with the much more secure
