@@ -18,10 +18,7 @@ UI).
 
 {tab|curl}
 
-``` curl
-curl -X GET {{ api_url }}/v1/messages/{msg_id} \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-```
+{generate_code_example(curl)|/messages/{message_id}:get|example}
 
 {end_tabs}
 
