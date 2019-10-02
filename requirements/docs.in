@@ -12,4 +12,4 @@ sphinx
 sphinx-rtd-theme
 
 # Needed to build markdown docs
-recommonmark==0.6.*  # https://github.com/zulip/zulip/issues/11395
+recommonmark
