@@ -346,6 +346,7 @@ DEFAULT_SETTINGS.update({
     # Settings for APNS.  Only needed on push.zulipchat.com.
     'APNS_CERT_FILE': None,
     'APNS_SANDBOX': True,
+    'APNS_TOPIC': 'org.zulip.Zulip'
 
     # Max number of "remove notification" FCM/GCM messages to send separately
     # in one burst; the rest are batched.  Older clients ignore the batched
@@ -1272,7 +1273,6 @@ POLL_TIMEOUT = 90 * 1000
 
 # iOS App IDs
 ZULIP_IOS_APP_ID = 'org.zulip.Zulip'
-APNS_TOPIC="xxx"
 
 ########################################################################
 # SSO AND LDAP SETTINGS
