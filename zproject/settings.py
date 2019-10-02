@@ -1374,10 +1374,16 @@ if PRODUCTION:
     SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = get_from_file_if_exists("/etc/zulip/saml/zulip-cert.crt")
     SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("/etc/zulip/saml/zulip-private-key.key")
 
-    for idp_name in SOCIAL_AUTH_SAML_ENABLED_IDPS:
-        SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]['x509cert'] = get_from_file_if_exists(
-            "/etc/zulip/saml/idps/{}.crt".format(idp_name)
-        )
+for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+    # Set `x509cert` if not specified already; also support an override path.
+    if 'x509cert' in idp_dict:
+        continue
+
+    if 'x509cert_path' in idp_dict:
+        path = idp_dict['x509cert_path']
+    else:
+        path = "/etc/zulip/saml/idps/{}.crt".format(idp_name)
+    idp_dict['x509cert'] = get_from_file_if_exists(path)
 
 SOCIAL_AUTH_PIPELINE = [
     'social_core.pipeline.social_auth.social_details',
