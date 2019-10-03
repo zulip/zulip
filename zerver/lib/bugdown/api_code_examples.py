@@ -8,8 +8,7 @@ from typing import Any, Dict, Optional, List, Tuple
 import markdown
 
 import zerver.openapi.python_examples
-from zerver.lib.openapi import get_openapi_fixture, openapi_spec, \
-    get_openapi_parameters
+from zerver.lib.openapi import get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
 CODE_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
@@ -128,6 +127,7 @@ def generate_curl_example(endpoint: str, method: str,
                           exclude: List[str]=[]) -> List[str]:
     lines = ["```curl"]
     openapi_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
+    openapi_params = openapi_entry.get("parameters", [])
 
     curl_first_line_parts = ["curl"] + curl_method_arguments(endpoint, method,
                                                              api_url)
@@ -137,7 +137,6 @@ def generate_curl_example(endpoint: str, method: str,
     if authentication_required:
         lines.append("    -u %s:%s" % (auth_email, auth_api_key))
 
-    openapi_params = get_openapi_parameters(endpoint, method)
     for param in openapi_params:
         param_name = param["name"]
         if param_name in exclude:
