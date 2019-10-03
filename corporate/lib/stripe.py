@@ -38,12 +38,18 @@ CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 MIN_INVOICED_LICENSES = 30
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 
-def get_latest_seat_count(realm: Realm) -> int:
-    non_guests = UserProfile.objects.filter(
-        realm=realm, is_active=True, is_bot=False).exclude(role=UserProfile.ROLE_GUEST).count()
-    guests = UserProfile.objects.filter(
-        realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST).count()
+def get_seat_count(log_entry: AbstractRealmAuditLog) -> int:
+    assert log_entry.extra_data is not None  # for mypy
+    role_count = ujson.loads(log_entry.extra_data)[str(RealmAuditLog.ROLE_COUNT)]
+    humans = role_count[str(RealmAuditLog.ROLE_COUNT_HUMANS)]
+    guests = humans[str(UserProfile.ROLE_GUEST)]
+    non_guests = sum(humans.values()) - guests
     return max(non_guests, math.ceil(guests / 5))
+
+def get_latest_seat_count(realm: Realm) -> int:
+    log_entry = RealmAuditLog.objects.filter(
+        realm=realm, event_type__in=RealmAuditLog.SYNCED_BILLING_EVENTS).order_by('-id').first()
+    return get_seat_count(log_entry)
 
 def sign_string(string: str) -> Tuple[str, str]:
     salt = generate_random_token(64)
@@ -366,18 +372,19 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
     from zerver.lib.actions import do_change_plan_type
     do_change_plan_type(realm, Realm.STANDARD)
 
-def update_license_ledger_for_automanaged_plan(realm: Realm, plan: CustomerPlan,
-                                               event_time: datetime) -> None:
-    last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, event_time)
+def update_license_ledger_for_automanaged_plan(log_entry: AbstractRealmAuditLog,
+                                               plan: CustomerPlan) -> None:
+    last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, log_entry.event_time)
     if last_ledger_entry is None:
         return
-    licenses_at_next_renewal = get_latest_seat_count(realm)
+    licenses_at_next_renewal = get_seat_count(log_entry)
     licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
     LicenseLedger.objects.create(
-        plan=plan, event_time=event_time, licenses=licenses,
+        plan=plan, event_time=log_entry.event_time, licenses=licenses,
         licenses_at_next_renewal=licenses_at_next_renewal)
 
-def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
+def update_license_ledger_if_needed(log_entry: AbstractRealmAuditLog) -> None:
+    realm = log_entry.realm
     customer = Customer.objects.filter(realm=realm).first()
     if customer is None:
         return
@@ -386,7 +393,7 @@ def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
         return
     if not plan.automanage_licenses:
         return
-    update_license_ledger_for_automanaged_plan(realm, plan, event_time)
+    update_license_ledger_for_automanaged_plan(log_entry, plan)
 
 def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.invoicing_status == CustomerPlan.STARTED:

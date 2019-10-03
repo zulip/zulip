@@ -15,7 +15,8 @@ from django.utils.timezone import timedelta as timezone_timedelta
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
     do_change_is_admin, do_send_messages, do_update_user_custom_profile_data_if_changed, \
-    try_add_realm_custom_profile_field, try_add_realm_default_custom_profile_field
+    try_add_realm_custom_profile_field, try_add_realm_default_custom_profile_field, \
+    do_record_role_counts
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data
@@ -537,6 +538,8 @@ class Command(BaseCommand):
                         pointer=user['pointer'])
 
             create_user_groups()
+            # Needed for billing-related tests
+            do_record_role_counts(zulip_realm)
 
             if not options["test_suite"]:
                 # We populate the analytics database here for

@@ -214,8 +214,13 @@ class Kandra(object):  # nocoverage: TODO
 class StripeTestCase(ZulipTestCase):
     def setUp(self, *mocks: Mock) -> None:
         super().setUp()
-        # This test suite is not robust to users being added in populate_db. The following
-        # hack ensures get_latest_seat_count is fixed, even as populate_db changes.
+        # Choosing dates with corresponding timestamps below 1500000000 so that they are
+        # not caught by our timestamp normalization regex in normalize_fixture_data
+        self.now = datetime(2012, 1, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
+        self.next_month = datetime(2012, 2, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
+        self.next_year = datetime(2013, 1, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
+        # The following hack ensures get_latest_seat_count is fixed, even as populate_db changes.
+        # The tests below are not otherwise robust to users being added to populate_db.
         realm = get_realm('zulip')
         seat_count = get_latest_seat_count(realm)
         assert(seat_count >= 6)
@@ -225,14 +230,10 @@ class StripeTestCase(ZulipTestCase):
                                            self.example_email('iago')])[:seat_count-6]:
             user.is_active = False
             user.save(update_fields=['is_active'])
+        self.create_billing_log_entry(6, self.now)
         self.assertEqual(get_latest_seat_count(realm), 6)
         self.seat_count = 6
         self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
-        # Choosing dates with corresponding timestamps below 1500000000 so that they are
-        # not caught by our timestamp normalization regex in normalize_fixture_data
-        self.now = datetime(2012, 1, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
-        self.next_month = datetime(2012, 2, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
-        self.next_year = datetime(2013, 1, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
 
     def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
         match = re.search(r'name=\"signed_seat_count\" value=\"(.+)\"', response.content.decode("utf-8"))
@@ -294,6 +295,18 @@ class StripeTestCase(ZulipTestCase):
         for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:
             upgrade_func = patch(mocked_function_name, return_value=StripeMock())(upgrade_func)
         upgrade_func(*args)
+
+    def create_billing_log_entry(self, seat_count: int, event_time: datetime) -> RealmAuditLog:
+        return RealmAuditLog.objects.create(
+            realm=get_realm('zulip'), event_type=RealmAuditLog.BILLING_ROLE_COUNT_RECORDED,
+            event_time=event_time, extra_data=ujson.dumps({
+                RealmAuditLog.ROLE_COUNT: {
+                    RealmAuditLog.ROLE_COUNT_HUMANS: {
+                        UserProfile.ROLE_MEMBER: seat_count,
+                        UserProfile.ROLE_GUEST: 0,
+                    },
+                },
+            }))
 
 class StripeTest(StripeTestCase):
     @patch("corporate.lib.stripe.billing_logger.error")
@@ -726,33 +739,30 @@ class StripeTest(StripeTestCase):
     def test_get_latest_seat_count(self) -> None:
         realm = get_realm("zulip")
         initial_count = get_latest_seat_count(realm)
-        user1 = UserProfile.objects.create(realm=realm, email='user1@zulip.com', pointer=-1)
-        user2 = UserProfile.objects.create(realm=realm, email='user2@zulip.com', pointer=-1)
-        self.assertEqual(get_latest_seat_count(realm), initial_count + 2)
+        human = do_create_user('human@zulip.com', 'password', realm, 'name', 'name')
+        self.assertEqual(get_latest_seat_count(realm), initial_count + 1)
 
         # Test that bots aren't counted
-        user1.is_bot = True
-        user1.save(update_fields=['is_bot'])
+        do_create_user('bot@zulip.com', 'password', realm, 'name', 'name', bot_type=1)
         self.assertEqual(get_latest_seat_count(realm), initial_count + 1)
 
         # Test that inactive users aren't counted
-        do_deactivate_user(user2)
+        do_deactivate_user(human)
         self.assertEqual(get_latest_seat_count(realm), initial_count)
 
         # Test guests
         # Adding a guest to a realm with a lot of members shouldn't change anything
-        UserProfile.objects.create(realm=realm, email='user3@zulip.com', pointer=-1, role=UserProfile.ROLE_GUEST)
+        do_create_user('guest@zulip.com', 'password', realm, 'name', 'name', is_guest=True)
         self.assertEqual(get_latest_seat_count(realm), initial_count)
         # Test 1 member and 5 guests
         realm = Realm.objects.create(string_id='second', name='second')
-        UserProfile.objects.create(realm=realm, email='member@second.com', pointer=-1)
+        do_create_user('member@second.com', 'password', realm, 'name', 'name')
         for i in range(5):
-            UserProfile.objects.create(realm=realm, email='guest{}@second.com'.format(i),
-                                       pointer=-1, role=UserProfile.ROLE_GUEST)
+            do_create_user('guest{}@second.com'.format(i), 'password', realm,
+                           'name', 'name', is_guest=True)
         self.assertEqual(get_latest_seat_count(realm), 1)
         # Test 1 member and 6 guests
-        UserProfile.objects.create(realm=realm, email='guest5@second.com', pointer=-1,
-                                   role=UserProfile.ROLE_GUEST)
+        do_create_user('guest5@second.com', 'password', realm, 'name', 'name', is_guest=True)
         self.assertEqual(get_latest_seat_count(realm), 2)
 
     def test_sign_string(self) -> None:
@@ -892,8 +902,7 @@ class StripeTest(StripeTestCase):
 
         # Verify that we still write LicenseLedger rows during the remaining
         # part of the cycle
-        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
-            update_license_ledger_if_needed(user.realm, self.now)
+        update_license_ledger_if_needed(self.create_billing_log_entry(20, self.now))
         self.assertEqual(LicenseLedger.objects.order_by('-id').values_list(
             'licenses', 'licenses_at_next_renewal').first(), (20, 20))
 
@@ -907,16 +916,14 @@ class StripeTest(StripeTestCase):
         mocked.reset_mock()
 
         # Check that we downgrade properly if the cycle is over
-        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=30):
-            update_license_ledger_if_needed(user.realm, self.next_year)
+        update_license_ledger_if_needed(self.create_billing_log_entry(30, self.next_year))
         self.assertEqual(get_realm('zulip').plan_type, Realm.LIMITED)
         self.assertEqual(CustomerPlan.objects.first().status, CustomerPlan.ENDED)
         self.assertEqual(LicenseLedger.objects.order_by('-id').values_list(
             'licenses', 'licenses_at_next_renewal').first(), (20, 20))
 
         # Verify that we don't write LicenseLedger rows once we've downgraded
-        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=40):
-            update_license_ledger_if_needed(user.realm, self.next_year)
+        update_license_ledger_if_needed(self.create_billing_log_entry(40, self.next_year))
         self.assertEqual(LicenseLedger.objects.order_by('-id').values_list(
             'licenses', 'licenses_at_next_renewal').first(), (20, 20))
 
@@ -931,8 +938,8 @@ class StripeTest(StripeTestCase):
         self.assertIsNone(CustomerPlan.objects.first().next_invoice_date)
 
         # Check that we don't call invoice_plan after that final call
-        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=50):
-            update_license_ledger_if_needed(user.realm, self.next_year + timedelta(days=80))
+        update_license_ledger_if_needed(self.create_billing_log_entry(
+            50, self.next_year + timedelta(days=80)))
         with patch("corporate.lib.stripe.invoice_plan") as mocked:
             invoice_plans_as_needed(self.next_year + timedelta(days=400))
         mocked.assert_not_called()
@@ -1113,45 +1120,44 @@ class LicenseLedgerTest(StripeTestCase):
         self.assertEqual(LicenseLedger.objects.count(), 2)
 
     def test_update_license_ledger_if_needed(self) -> None:
-        realm = get_realm('zulip')
+        log_entry = self.create_billing_log_entry(self.seat_count, self.now)
         # Test no Customer
-        update_license_ledger_if_needed(realm, self.now)
+        update_license_ledger_if_needed(log_entry)
         self.assertFalse(LicenseLedger.objects.exists())
         # Test plan not automanaged
         self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, 'token')
         self.assertEqual(LicenseLedger.objects.count(), 1)
-        update_license_ledger_if_needed(realm, self.now)
+        update_license_ledger_if_needed(log_entry)
         self.assertEqual(LicenseLedger.objects.count(), 1)
         # Test no active plan
         plan = CustomerPlan.objects.get()
         plan.automanage_licenses = True
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=['automanage_licenses', 'status'])
-        update_license_ledger_if_needed(realm, self.now)
+        update_license_ledger_if_needed(log_entry)
         self.assertEqual(LicenseLedger.objects.count(), 1)
         # Test update needed
         plan.status = CustomerPlan.ACTIVE
         plan.save(update_fields=['status'])
-        update_license_ledger_if_needed(realm, self.now)
+        update_license_ledger_if_needed(log_entry)
         self.assertEqual(LicenseLedger.objects.count(), 2)
 
     def test_update_license_ledger_for_automanaged_plan(self) -> None:
-        realm = get_realm('zulip')
         with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
         plan = CustomerPlan.objects.first()
         # Simple increase
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=23):
-            update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+        log_entry = self.create_billing_log_entry(23, self.now)
+        update_license_ledger_for_automanaged_plan(log_entry, plan)
         # Decrease
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=20):
-            update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+        log_entry = self.create_billing_log_entry(20, self.now)
+        update_license_ledger_for_automanaged_plan(log_entry, plan)
         # Increase, but not past high watermark
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=21):
-            update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+        log_entry = self.create_billing_log_entry(21, self.now)
+        update_license_ledger_for_automanaged_plan(log_entry, plan)
         # Increase, but after renewal date, and below last year's high watermark
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=22):
-            update_license_ledger_for_automanaged_plan(realm, plan, self.next_year + timedelta(seconds=1))
+        log_entry = self.create_billing_log_entry(22, self.next_year + timedelta(seconds=1))
+        update_license_ledger_for_automanaged_plan(log_entry, plan)
 
         ledger_entries = list(LicenseLedger.objects.values_list(
             'is_renewal', 'event_time', 'licenses', 'licenses_at_next_renewal').order_by('id'))
@@ -1195,20 +1201,20 @@ class InvoiceTest(StripeTestCase):
         with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
             self.upgrade()
         # Increase
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=self.seat_count + 3):
-            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=100))
+        update_license_ledger_if_needed(self.create_billing_log_entry(
+            self.seat_count + 3, self.now + timedelta(days=100)))
         # Decrease
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=self.seat_count):
-            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=200))
+        update_license_ledger_if_needed(self.create_billing_log_entry(
+            self.seat_count, self.now + timedelta(days=200)))
         # Increase, but not past high watermark
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=self.seat_count + 1):
-            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=300))
+        update_license_ledger_if_needed(self.create_billing_log_entry(
+            self.seat_count + 1, self.now + timedelta(days=300)))
         # Increase, but after renewal date, and below last year's high watermark
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=self.seat_count + 2):
-            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=400))
+        update_license_ledger_if_needed(self.create_billing_log_entry(
+            self.seat_count + 2, self.now + timedelta(days=400)))
         # Increase, but after event_time
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=self.seat_count + 3):
-            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=500))
+        update_license_ledger_if_needed(self.create_billing_log_entry(
+            self.seat_count + 3, self.now + timedelta(days=500)))
         plan = CustomerPlan.objects.first()
         invoice_plan(plan, self.now + timedelta(days=400))
 
