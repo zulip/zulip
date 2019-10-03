@@ -41,7 +41,7 @@ datetime==4.3             # via moto
 decorator==4.4.0
 defusedxml==0.6.0
 disposable-email-domains==0.0.53
-git+https://github.com/zulip/django-auth-ldap.git@e26d0ef2a7ff77ab3fdd7b6578a76081f780778c#egg=django-auth-ldap==2.0.0zulip1
+https://github.com/zulip/django-auth-ldap/archive/e26d0ef2a7ff77ab3fdd7b6578a76081f780778c.zip#egg=django-auth-ldap==2.0.0zulip1
 django-bitfield==1.9.6
 django-formtools==2.1     # via django-two-factor-auth
 django-otp==0.7.2         # via django-two-factor-auth
@@ -83,7 +83,7 @@ jsonpatch==1.24           # via cfn-lint
 jsonpickle==1.2           # via aws-xray-sdk, python-digitalocean
 jsonpointer==2.0          # via jsonpatch
 jsonschema==3.0.2         # via aws-sam-translator, cfn-lint
-git+https://github.com/zulip/libthumbor.git@60ed2431c07686a12f2770b2d852c5650f3ccfc6#egg=libthumbor==1.3.2zulip
+https://github.com/zulip/libthumbor/archive/60ed2431c07686a12f2770b2d852c5650f3ccfc6.zip#egg=libthumbor==1.3.2zulip
 lp37==2.1.1
 lxml==4.4.1
 markdown-include==0.5.1
@@ -174,7 +174,7 @@ sqlalchemy==1.3.8
 sshpubkeys==3.1.0         # via moto
 statsd==3.3.0             # via django-statsd-mozilla
 stripe==2.36.2
-git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
+https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1
 tblib==1.4.0
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
@@ -183,7 +183,7 @@ twilio==6.31.0
 twisted==19.7.0
 typed-ast==1.4.0          # via mypy
 typing-extensions==3.7.4
-git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
+https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab8a8.zip#egg=ujson==1.35+git
 unidecode==1.1.1          # via python-slugify
 urllib3==1.25.5           # via botocore, requests, transifex-client
 virtualenv-clone==0.5.3
@@ -196,9 +196,9 @@ xmlsec==1.3.3             # via python3-saml
 xmltodict==0.12.0         # via moto
 yamole==2.1.6
 zope.interface==4.6.0     # via datetime, twisted
-git+https://github.com/zulip/zulint@aaed679f1ad38b230090eadd3870b7682500f60c#egg=zulint==0.0.1
-git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip==0.6.1_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
+https://github.com/zulip/zulint/archive/aaed679f1ad38b230090eadd3870b7682500f60c.zip#egg=zulint==0.0.1
+https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip==0.6.1_git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
 
 # The following packages are considered to be unsafe in a requirements file:
 pip==19.2.3
