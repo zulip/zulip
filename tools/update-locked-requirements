@@ -13,9 +13,9 @@ compile_requirements () {
 
     echo "Compiling $output"
     if [ "$python_version" == "py2" ]; then
-        /srv/zulip-thumbor-venv/bin/pip-compile --quiet --allow-unsafe --no-header --output-file "$output" "$source"
+        /srv/zulip-thumbor-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
     else
-        /srv/zulip-py3-venv/bin/pip-compile --quiet --allow-unsafe --no-header --output-file "$output" "$source"
+        /srv/zulip-py3-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
 
         # Remove an unnecessary future requirement declared by commonmark,
         # python-jose, and python-twitter.
