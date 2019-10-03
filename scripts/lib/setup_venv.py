@@ -102,8 +102,8 @@ YUM_THUMBOR_VENV_DEPENDENCIES = [
 def install_venv_deps(pip, requirements_file):
     # type: (str, str) -> None
     pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
-    run([pip, "install", "--force-reinstall", "--requirement", pip_requirements])
-    run([pip, "install", "--no-deps", "--requirement", requirements_file])
+    run([pip, "install", "--force-reinstall", "--require-hashes", "--requirement", pip_requirements])
+    run([pip, "install", "--no-deps", "--require-hashes", "--requirement", requirements_file])
 
 def get_index_filename(venv_path):
     # type: (str) -> str
