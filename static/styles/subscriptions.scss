@@ -794,11 +794,15 @@ form#add_new_subscription {
 
         .stream-name {
             display: inline-block;
+            position: relative;
             font-size: 1.5em;
             font-weight: 600;
             margin-left: -3px;
-            white-space: normal;
-            word-break: break-all;
+            padding-bottom: 5px;
+            white-space: nowrap;
+            width: 270px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .deactivate,
@@ -844,7 +848,6 @@ form#add_new_subscription {
         margin-right: 5px;
         text-decoration: none;
         line-height: 16px;
-        vertical-align: middle;
     }
 
     .editable-section {
