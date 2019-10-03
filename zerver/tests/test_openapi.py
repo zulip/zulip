@@ -655,6 +655,30 @@ class TestCurlExampleGeneration(ZulipTestCase):
                     "parameters": [
                         {
                             "name": "param1",
+                            "in": "query",
+                            "description": "An object",
+                            "schema": {
+                                "type": "object"
+                            },
+                            "example": {
+                                "key": "value"
+                            },
+                            "required": True
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    spec_mock_using_param_in_path = {
+        "paths": {
+            "/endpoint/{param1}": {
+                "get": {
+                    "description": "Get some info.",
+                    "parameters": [
+                        {
+                            "name": "param1",
                             "in": "path",
                             "description": "An object",
                             "schema": {
@@ -679,7 +703,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
                     "parameters": [
                         {
                             "name": "param1",
-                            "in": "path",
+                            "in": "query",
                             "description": "An object",
                             "schema": {
                                 "type": "object"
@@ -700,7 +724,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
                     "parameters": [
                         {
                             "name": "param1",
-                            "in": "path",
+                            "in": "query",
                             "description": "An array",
                             "schema": {
                                 "type": "array"
@@ -788,6 +812,17 @@ class TestCurlExampleGeneration(ZulipTestCase):
             '```curl',
             'curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\',
             '    --data-urlencode param1=\'{"key": "value"}\'',
+            '```'
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    def test_generate_and_render_curl_with_object_param_in_path(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_using_param_in_path
+        generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
+        expected_curl_example = [
+            '```curl',
+            'curl -sSX GET -G http://localhost:9991/api/v1/endpoint/{param1}',
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)

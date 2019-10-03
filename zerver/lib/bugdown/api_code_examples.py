@@ -138,6 +138,8 @@ def generate_curl_example(endpoint: str, method: str,
         lines.append("    -u %s:%s" % (auth_email, auth_api_key))
 
     for param in openapi_params:
+        if param["in"] == "path":
+            continue
         param_name = param["name"]
         if param_name in exclude:
             continue
