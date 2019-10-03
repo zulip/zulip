@@ -227,17 +227,17 @@ hear about your experience with the product. If you're not sure what to
 write, here are some questions we're always very curious to know the answer
 to:
 
-* Evaluation: What is the process by which your organization chose or will
+* **Evaluation:** What is the process by which your organization chose or will
   choose a group chat product?
-* Pros and cons: What are the pros and cons of Zulip for your organization,
+* **Pros and cons:** What are the pros and cons of Zulip for your organization,
   and the pros and cons of other products you are evaluating?
-* Features: What are the features that are most important for your
+* **Features:** What are the features that are most important for your
   organization? In the best case scenario, what would your chat solution do
   for you?
-* Onboarding: If you remember it, what was your impression during your first
+* **Onboarding:** If you remember it, what was your impression during your first
   few minutes of using Zulip? What did you notice, and how did you feel? Was
   there anything that stood out to you as confusing, or broken, or great?
-* Organization: What does your organization do? How big is the organization?
+* **Organization:** What does your organization do? How big is the organization?
   A link to your organization's website?
 
 ## Internship programs
