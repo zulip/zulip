@@ -36,7 +36,7 @@ VENV_DEPENDENCIES = [
     "libmagic1",            # Used for install python-magic
     # Needed by python-xmlsec:
     "libxmlsec1-dev",
-    "libxmlsec1-openssl",
+    "pkg-config",
 
     # This is technically a node dependency, but we add it here
     # because we don't have another place that we install apt packages
