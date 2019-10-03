@@ -118,7 +118,7 @@ have a new feature you'd like to add, we recommend you start by posting in
 [#new members](https://chat.zulip.org/#narrow/stream/95-new-members) with the
 feature idea and the problem that you're hoping to solve.
 
-Other notes:
+### Other notes:
 * For a first pull request, it's better to aim for a smaller contribution
   than a bigger one. Many first contributions have fewer than 10 lines of
   changes (not counting changes to tests).
