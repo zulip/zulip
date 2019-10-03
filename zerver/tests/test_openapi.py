@@ -675,6 +675,16 @@ class TestCurlExampleGeneration(ZulipTestCase):
                         {
                             "name": "param1",
                             "in": "path",
+                            "description": "Param in path",
+                            "schema": {
+                                "type": "integer"
+                            },
+                            "example": 35,
+                            "required": True
+                        },
+                        {
+                            "name": "param2",
+                            "in": "query",
                             "description": "An object",
                             "schema": {
                                 "type": "object"
@@ -812,17 +822,6 @@ class TestCurlExampleGeneration(ZulipTestCase):
         self.assertEqual(generated_curl_example, expected_curl_example)
 
     @patch("zerver.lib.openapi.OpenAPISpec.spec")
-    def test_generate_and_render_curl_with_object_param_in_path(self, spec_mock: MagicMock) -> None:
-        spec_mock.return_value = self.spec_mock_using_param_in_path
-        generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
-        expected_curl_example = [
-            '```curl',
-            'curl -sSX GET -G http://localhost:9991/api/v1/endpoint/{param1}',
-            '```'
-        ]
-        self.assertEqual(generated_curl_example, expected_curl_example)
-
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_object_without_example(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_object_without_example
         with self.assertRaises(ValueError):
@@ -833,6 +832,18 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_using_array_without_example
         with self.assertRaises(ValueError):
             self.curl_example("/endpoint", "GET")
+
+    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    def test_generate_and_render_curl_with_param_in_path(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_using_param_in_path
+        generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
+        expected_curl_example = [
+            '```curl',
+            'curl -sSX GET -G http://localhost:9991/api/v1/endpoint/35 \\',
+            '    --data-urlencode param2=\'{"key": "value"}\'',
+            '```'
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
 
     def test_generate_and_render_curl_wrapper(self) -> None:
         generated_curl_example = render_curl_example("/get_stream_id:GET:email:key",
