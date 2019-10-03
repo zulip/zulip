@@ -33,6 +33,7 @@ from zerver.models import (
     get_realm,
     get_stream,
     Recipient,
+    RealmAuditLog,
     Stream,
     Subscription,
 )
@@ -67,7 +68,7 @@ from zerver.lib.test_classes import (
 )
 
 from zilencer.models import RemoteZulipServer, RemotePushDeviceToken, \
-    RemoteRealmCount, RemoteInstallationCount
+    RemoteRealmCount, RemoteInstallationCount, RemoteRealmAuditLog
 from django.utils.timezone import now
 
 ZERVER_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -319,6 +320,23 @@ class AnalyticsBouncerTest(BouncerTestCase):
         user = self.example_user('hamlet')
         end_time = self.TIME_ZERO
 
+        # Send any existing data over, so that we can start the test with a "clean" slate
+        audit_log_max_id = RealmAuditLog.objects.all().order_by('id').last().id
+        send_analytics_to_remote_server()
+        self.assertEqual(mock_request.call_count, 2)
+        remote_audit_log_count = RemoteRealmAuditLog.objects.count()
+        self.assertEqual(RemoteRealmCount.objects.count(), 0)
+        self.assertEqual(RemoteInstallationCount.objects.count(), 0)
+
+        def check_counts(mock_request_call_count: int, remote_realm_count: int,
+                         remote_installation_count: int, remote_realm_audit_log: int) -> None:
+            self.assertEqual(mock_request.call_count, mock_request_call_count)
+            self.assertEqual(RemoteRealmCount.objects.count(), remote_realm_count)
+            self.assertEqual(RemoteInstallationCount.objects.count(), remote_installation_count)
+            self.assertEqual(RemoteRealmAuditLog.objects.count(),
+                             remote_audit_log_count + remote_realm_audit_log)
+
+        # Create some rows we'll send to remote server
         realm_stat = LoggingCountStat('invites_sent::day', RealmCount, CountStat.DAY)
         RealmCount.objects.create(
             realm=user.realm, property=realm_stat.property, end_time=end_time, value=5)
@@ -327,48 +345,63 @@ class AnalyticsBouncerTest(BouncerTestCase):
             # We set a subgroup here to work around:
             # https://github.com/zulip/zulip/issues/12362
             subgroup="test_subgroup")
-
+        # Event type in SYNCED_BILLING_EVENTS -- should be included
+        RealmAuditLog.objects.create(
+            realm=user.realm, modified_user=user, event_type=RealmAuditLog.USER_CREATED,
+            event_time=end_time, extra_data='data')
+        # Event type not in SYNCED_BILLING_EVENTS -- should not be included
+        RealmAuditLog.objects.create(
+            realm=user.realm, modified_user=user, event_type=RealmAuditLog.REALM_LOGO_CHANGED,
+            event_time=end_time, extra_data='data')
         self.assertEqual(RealmCount.objects.count(), 1)
         self.assertEqual(InstallationCount.objects.count(), 1)
+        self.assertEqual(RealmAuditLog.objects.filter(id__gt=audit_log_max_id).count(), 2)
 
-        self.assertEqual(RemoteRealmCount.objects.count(), 0)
-        self.assertEqual(RemoteInstallationCount.objects.count(), 0)
         send_analytics_to_remote_server()
-        self.assertEqual(mock_request.call_count, 2)
-        self.assertEqual(RemoteRealmCount.objects.count(), 1)
-        self.assertEqual(RemoteInstallationCount.objects.count(), 1)
-        send_analytics_to_remote_server()
-        self.assertEqual(mock_request.call_count, 3)
-        self.assertEqual(RemoteRealmCount.objects.count(), 1)
-        self.assertEqual(RemoteInstallationCount.objects.count(), 1)
+        check_counts(4, 1, 1, 1)
 
+        # Test having no new rows
+        send_analytics_to_remote_server()
+        check_counts(5, 1, 1, 1)
+
+        # Test only having new RealmCount rows
         RealmCount.objects.create(
             realm=user.realm, property=realm_stat.property, end_time=end_time + datetime.timedelta(days=1), value=6)
         RealmCount.objects.create(
             realm=user.realm, property=realm_stat.property, end_time=end_time + datetime.timedelta(days=2), value=9)
-        self.assertEqual(RemoteRealmCount.objects.count(), 1)
-        self.assertEqual(mock_request.call_count, 3)
         send_analytics_to_remote_server()
-        self.assertEqual(mock_request.call_count, 5)
-        self.assertEqual(RemoteRealmCount.objects.count(), 3)
-        self.assertEqual(RemoteInstallationCount.objects.count(), 1)
+        check_counts(7, 3, 1, 1)
 
+        # Test only having new InstallationCount rows
         InstallationCount.objects.create(
             property=realm_stat.property, end_time=end_time + datetime.timedelta(days=1), value=6)
-        InstallationCount.objects.create(
-            property=realm_stat.property, end_time=end_time + datetime.timedelta(days=2), value=9)
         send_analytics_to_remote_server()
-        self.assertEqual(mock_request.call_count, 7)
-        self.assertEqual(RemoteRealmCount.objects.count(), 3)
-        self.assertEqual(RemoteInstallationCount.objects.count(), 3)
+        check_counts(9, 3, 2, 1)
+
+        # Test only having new RealmAuditLog rows
+        # Non-synced event
+        RealmAuditLog.objects.create(
+            realm=user.realm, modified_user=user, event_type=RealmAuditLog.REALM_LOGO_CHANGED,
+            event_time=end_time, extra_data='data')
+        send_analytics_to_remote_server()
+        check_counts(10, 3, 2, 1)
+        # Synced event
+        RealmAuditLog.objects.create(
+            realm=user.realm, modified_user=user, event_type=RealmAuditLog.USER_REACTIVATED,
+            event_time=end_time, extra_data='data')
+        send_analytics_to_remote_server()
+        check_counts(12, 3, 2, 2)
 
         (realm_count_data,
-         installation_count_data) = build_analytics_data(RealmCount.objects.all(),
-                                                         InstallationCount.objects.all())
+         installation_count_data,
+         realmauditlog_data) = build_analytics_data(RealmCount.objects.all(),
+                                                    InstallationCount.objects.all(),
+                                                    RealmAuditLog.objects.all())
         result = self.api_post(self.server_uuid,
                                '/api/v1/remotes/server/analytics',
                                {'realm_counts': ujson.dumps(realm_count_data),
-                                'installation_counts': ujson.dumps(installation_count_data)},
+                                'installation_counts': ujson.dumps(installation_count_data),
+                                'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
                                subdomain="")
         self.assert_json_error(result, "Data is out of order.")
 
@@ -381,7 +414,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
                     self.server_uuid,
                     '/api/v1/remotes/server/analytics',
                     {'realm_counts': ujson.dumps(realm_count_data),
-                     'installation_counts': ujson.dumps(installation_count_data)},
+                     'installation_counts': ujson.dumps(installation_count_data),
+                     'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
                     subdomain="")
             self.assert_json_error(result, "Invalid data.")
 
@@ -406,6 +440,73 @@ class AnalyticsBouncerTest(BouncerTestCase):
             send_analytics_to_remote_server()
             log_warning.assert_called_once()
         self.assertEqual(RemoteRealmCount.objects.count(), 0)
+
+    # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
+    # and don't send realmauditlog_rows. Make sure that continues to work.
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
+    @mock.patch('zerver.lib.push_notifications.requests.request')
+    def test_old_two_table_format(self, mock_request: Any) -> None:
+        mock_request.side_effect = self.bounce_request
+        # Send fixture generated with Zulip 2.0 code
+        send_to_push_bouncer('POST', 'server/analytics', {
+            'realm_counts': '[{"id":1,"property":"invites_sent::day","subgroup":null,"end_time":574300800.0,"value":5,"realm":2}]',  # lint:ignore
+            'installation_counts': '[]',
+            'version': '"2.0.6+git"'})
+        self.assertEqual(mock_request.call_count, 1)
+        self.assertEqual(RemoteRealmCount.objects.count(), 1)
+        self.assertEqual(RemoteInstallationCount.objects.count(), 0)
+        self.assertEqual(RemoteRealmAuditLog.objects.count(), 0)
+
+    # Make sure we aren't sending data we don't mean to, even if we don't store it.
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
+    @mock.patch('zerver.lib.push_notifications.requests.request')
+    def test_only_sending_intended_realmauditlog_data(self, mock_request: Any) -> None:
+        mock_request.side_effect = self.bounce_request
+        user = self.example_user('hamlet')
+        # Event type in SYNCED_BILLING_EVENTS -- should be included
+        RealmAuditLog.objects.create(
+            realm=user.realm, modified_user=user, event_type=RealmAuditLog.USER_REACTIVATED,
+            event_time=self.TIME_ZERO, extra_data='data')
+        # Event type not in SYNCED_BILLING_EVENTS -- should not be included
+        RealmAuditLog.objects.create(
+            realm=user.realm, modified_user=user, event_type=RealmAuditLog.REALM_LOGO_CHANGED,
+            event_time=self.TIME_ZERO, extra_data='data')
+
+        def check_for_unwanted_data(*args: Any) -> Any:
+            if check_for_unwanted_data.first_call:  # type: ignore
+                check_for_unwanted_data.first_call = False  # type: ignore
+            else:
+                # Test that we're respecting SYNCED_BILLING_EVENTS
+                self.assertIn('"event_type":{}'.format(RealmAuditLog.USER_REACTIVATED), str(args))
+                self.assertNotIn('"event_type":{}'.format(RealmAuditLog.REALM_LOGO_CHANGED), str(args))
+                # Test that we're respecting REALMAUDITLOG_PUSHED_FIELDS
+                self.assertIn('backfilled', str(args))
+                self.assertNotIn('modified_user', str(args))
+            return send_to_push_bouncer(*args)
+
+        # send_analytics_to_remote_server calls send_to_push_bouncer twice.
+        # We need to distinguish the first and second calls.
+        check_for_unwanted_data.first_call = True  # type: ignore
+        with mock.patch('zerver.lib.remote_server.send_to_push_bouncer',
+                        side_effect=check_for_unwanted_data):
+            send_analytics_to_remote_server()
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
+    @mock.patch('zerver.lib.push_notifications.requests.request')
+    def test_realmauditlog_data_mapping(self, mock_request: Any) -> None:
+        mock_request.side_effect = self.bounce_request
+        user = self.example_user('hamlet')
+        log_entry = RealmAuditLog.objects.create(
+            realm=user.realm, modified_user=user, backfilled=True,
+            event_type=RealmAuditLog.USER_REACTIVATED, event_time=self.TIME_ZERO, extra_data='data')
+        send_analytics_to_remote_server()
+        remote_log_entry = RemoteRealmAuditLog.objects.order_by('id').last()
+        self.assertEqual(remote_log_entry.server.uuid, self.server_uuid)
+        self.assertEqual(remote_log_entry.remote_id, log_entry.id)
+        self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
+        self.assertEqual(remote_log_entry.backfilled, True)
+        self.assertEqual(remote_log_entry.extra_data, 'data')
+        self.assertEqual(remote_log_entry.event_type, RealmAuditLog.USER_REACTIVATED)
 
 class PushNotificationTest(BouncerTestCase):
     def setUp(self) -> None:

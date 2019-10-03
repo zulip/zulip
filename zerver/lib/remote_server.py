@@ -12,6 +12,7 @@ from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import floatify_datetime_fields
+from zerver.models import RealmAuditLog
 
 class PushNotificationBouncerException(Exception):
     pass
@@ -91,24 +92,34 @@ def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, A
         extra_headers={"Content-type": "application/json"},
     )
 
+REALMAUDITLOG_PUSHED_FIELDS = ['id', 'realm', 'event_time', 'backfilled', 'extra_data', 'event_type']
+
 def build_analytics_data(realm_count_query: Any,
-                         installation_count_query: Any) -> Tuple[List[Dict[str, Any]],
-                                                                 List[Dict[str, Any]]]:
+                         installation_count_query: Any,
+                         realmauditlog_query: Any) -> Tuple[List[Dict[str, Any]],
+                                                            List[Dict[str, Any]],
+                                                            List[Dict[str, Any]]]:
     # We limit the batch size on the client side to avoid OOM kills timeouts, etc.
     MAX_CLIENT_BATCH_SIZE = 10000
     data = {}
     data['analytics_realmcount'] = [
-        model_to_dict(realm_count) for realm_count in
+        model_to_dict(row) for row in
         realm_count_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
     data['analytics_installationcount'] = [
-        model_to_dict(count) for count in
+        model_to_dict(row) for row in
         installation_count_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
+    ]
+    data['zerver_realmauditlog'] = [
+        model_to_dict(row, fields=REALMAUDITLOG_PUSHED_FIELDS) for row in
+        realmauditlog_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
 
     floatify_datetime_fields(data, 'analytics_realmcount')
     floatify_datetime_fields(data, 'analytics_installationcount')
-    return (data['analytics_realmcount'], data['analytics_installationcount'])
+    floatify_datetime_fields(data, 'zerver_realmauditlog')
+    return (data['analytics_realmcount'], data['analytics_installationcount'],
+            data['zerver_realmauditlog'])
 
 def send_analytics_to_remote_server() -> None:
     # first, check what's latest
@@ -118,19 +129,24 @@ def send_analytics_to_remote_server() -> None:
 
     last_acked_realm_count_id = result['last_realm_count_id']
     last_acked_installation_count_id = result['last_installation_count_id']
+    last_acked_realmauditlog_id = result['last_realmauditlog_id']
 
-    (realm_count_data, installation_count_data) = build_analytics_data(
+    (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
         realm_count_query=RealmCount.objects.filter(
             id__gt=last_acked_realm_count_id),
         installation_count_query=InstallationCount.objects.filter(
-            id__gt=last_acked_installation_count_id))
+            id__gt=last_acked_installation_count_id),
+        realmauditlog_query=RealmAuditLog.objects.filter(
+            event_type__in=RealmAuditLog.SYNCED_BILLING_EVENTS,
+            id__gt=last_acked_realmauditlog_id))
 
-    if len(realm_count_data) == 0 and len(installation_count_data) == 0:
+    if len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data) == 0:
         return
 
     request = {
         'realm_counts': ujson.dumps(realm_count_data),
         'installation_counts': ujson.dumps(installation_count_data),
+        'realmauditlog_rows': ujson.dumps(realmauditlog_data),
         'version': ujson.dumps(ZULIP_VERSION),
     }
 

@@ -2541,32 +2541,8 @@ EMAIL_TYPES = {
     'invitation_reminder': ScheduledEmail.INVITATION_REMINDER,
 }
 
-class RealmAuditLog(models.Model):
-    """
-    RealmAuditLog tracks important changes to users, streams, and
-    realms in Zulip.  It is intended to support both
-    debugging/introspection (e.g. determining when a user's left a
-    given stream?) as well as help with some database migrations where
-    we might be able to do a better data backfill with it.  Here are a
-    few key details about how this works:
-
-    * acting_user is the user who initiated the state change
-    * modified_user (if present) is the user being modified
-    * modified_stream (if present) is the stream being modified
-
-    For example:
-    * When a user subscribes another user to a stream, modified_user,
-      acting_user, and modified_stream will all be present and different.
-    * When an administrator changes an organization's realm icon,
-      acting_user is that administrator and both modified_user and
-      modified_stream will be None.
-    """
-    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
-    acting_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE)  # type: Optional[UserProfile]
-    modified_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE)  # type: Optional[UserProfile]
-    modified_stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Optional[Stream]
-    event_last_message_id = models.IntegerField(null=True)  # type: Optional[int]
-
+class AbstractRealmAuditLog(models.Model):
+    """Defines fields common to RealmAuditLog and RemoteRealmAuditLog."""
     event_time = models.DateTimeField(db_index=True)  # type: datetime.datetime
     # If True, event_time is an overestimate of the true time. Can be used
     # by migrations when introducing a new event_type.
@@ -2626,6 +2602,35 @@ class RealmAuditLog(models.Model):
     SYNCED_BILLING_EVENTS = [
         USER_CREATED, USER_ACTIVATED, USER_DEACTIVATED, USER_REACTIVATED, USER_ROLE_CHANGED,
         REALM_DEACTIVATED, REALM_REACTIVATED]
+
+    class Meta:
+        abstract = True
+
+class RealmAuditLog(AbstractRealmAuditLog):
+    """
+    RealmAuditLog tracks important changes to users, streams, and
+    realms in Zulip.  It is intended to support both
+    debugging/introspection (e.g. determining when a user's left a
+    given stream?) as well as help with some database migrations where
+    we might be able to do a better data backfill with it.  Here are a
+    few key details about how this works:
+
+    * acting_user is the user who initiated the state change
+    * modified_user (if present) is the user being modified
+    * modified_stream (if present) is the stream being modified
+
+    For example:
+    * When a user subscribes another user to a stream, modified_user,
+      acting_user, and modified_stream will all be present and different.
+    * When an administrator changes an organization's realm icon,
+      acting_user is that administrator and both modified_user and
+      modified_stream will be None.
+    """
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
+    acting_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE)  # type: Optional[UserProfile]
+    modified_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE)  # type: Optional[UserProfile]
+    modified_stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Optional[Stream]
+    event_last_message_id = models.IntegerField(null=True)  # type: Optional[int]
 
     def __str__(self) -> str:
         if self.modified_user is not None:

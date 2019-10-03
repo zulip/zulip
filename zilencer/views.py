@@ -20,11 +20,11 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_int, check_string, \
     check_capped_string, check_string_fixed_length, check_float, check_none_or, \
-    check_dict_only, check_list
+    check_dict_only, check_list, check_bool
 from zerver.models import UserProfile
 from zerver.views.push_notifications import validate_token
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
-    RemoteRealmCount, RemoteInstallationCount
+    RemoteRealmCount, RemoteInstallationCount, RemoteRealmAuditLog
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZulipServer:
     if not isinstance(entity, RemoteZulipServer):
@@ -192,11 +192,22 @@ def remote_server_post_analytics(request: HttpRequest,
                                          ('end_time', check_float),
                                          ('subgroup', check_none_or(check_string)),
                                          ('value', check_int),
-                                     ])))) -> HttpResponse:
+                                     ]))),
+                                 realmauditlog_rows: Optional[List[Dict[str, Any]]]=REQ(
+                                     validator=check_list(check_dict_only([
+                                         ('id', check_int),
+                                         ('realm', check_int),
+                                         ('event_time', check_float),
+                                         ('backfilled', check_bool),
+                                         ('extra_data', check_none_or(check_string)),
+                                         ('event_type', check_int),
+                                     ])), default=None)) -> HttpResponse:
     server = validate_entity(entity)
 
     validate_incoming_table_data(server, RemoteRealmCount, realm_counts, True)
     validate_incoming_table_data(server, RemoteInstallationCount, installation_counts, True)
+    if realmauditlog_rows is not None:
+        validate_incoming_table_data(server, RemoteRealmAuditLog, realmauditlog_rows)
 
     row_objects = [RemoteRealmCount(
         property=row['property'],
@@ -217,6 +228,17 @@ def remote_server_post_analytics(request: HttpRequest,
         value=row['value']) for row in installation_counts]
     batch_create_table_data(server, RemoteInstallationCount, row_objects)
 
+    if realmauditlog_rows is not None:
+        row_objects = [RemoteRealmAuditLog(
+            realm_id=row['realm'],
+            remote_id=row['id'],
+            server=server,
+            event_time=datetime.datetime.fromtimestamp(row['event_time'], tz=timezone_utc),
+            backfilled=row['backfilled'],
+            extra_data=row['extra_data'],
+            event_type=row['event_type']) for row in realmauditlog_rows]
+        batch_create_table_data(server, RemoteRealmAuditLog, row_objects)
+
     return json_success()
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
@@ -234,5 +256,7 @@ def remote_server_check_analytics(request: HttpRequest,
         'last_realm_count_id': get_last_id_from_server(server, RemoteRealmCount),
         'last_installation_count_id': get_last_id_from_server(
             server, RemoteInstallationCount),
+        'last_realmauditlog_id': get_last_id_from_server(
+            server, RemoteRealmAuditLog),
     }
     return json_success(result)

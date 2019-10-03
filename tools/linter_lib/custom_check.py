@@ -264,6 +264,7 @@ python_rules = RuleList(
          'bad_lines': ['a =b', 'asdf =42']},
         {'pattern': r'":\w[^"]*$',
          'description': 'Missing whitespace after ":"',
+         'exclude': set(['zerver/tests/test_push_notifications.py']),
          'good_lines': ['"foo": bar', '"some:string:with:colons"'],
          'bad_lines': ['"foo":bar', '"foo":1']},
         {'pattern': r"':\w[^']*$",

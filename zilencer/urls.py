@@ -19,7 +19,7 @@ v1_api_and_json_patterns = [
     # Push signup doesn't use the REST API, since there's no auth.
     url('^remotes/server/register$', zilencer.views.register_remote_server),
 
-    # For receiving InstallationCount data and similar analytics.
+    # For receiving table data used in analytics and billing
     url('^remotes/server/analytics$', rest_dispatch,
         {'POST': 'zilencer.views.remote_server_post_analytics'}),
     url('^remotes/server/analytics/status$', rest_dispatch,
