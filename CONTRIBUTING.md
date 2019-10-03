@@ -312,7 +312,7 @@ documentation.
 
 ## Zulip Outreach
 
-**Upvoting Zulip**. Upvotes and reviews make a big difference in the public
+**Upvoting Zulip :** Upvotes and reviews make a big difference in the public
 perception of projects like Zulip. We've collected a few sites below
 where we know Zulip has been discussed. Doing everything in the following
 list typically takes about 15 minutes.
@@ -340,7 +340,7 @@ don't already have one.
 We have a doc with more detailed instructions and a few other sites, if you
 have been using Zulip for a while and want to contribute more.
 
-**Blog posts**. Writing a blog post about your experiences with Zulip, or
+**Blog posts :** Writing a blog post about your experiences with Zulip, or
 about a technical aspect of Zulip can be a great way to spread the word
 about Zulip.
 
