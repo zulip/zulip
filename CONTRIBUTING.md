@@ -118,7 +118,7 @@ have a new feature you'd like to add, we recommend you start by posting in
 [#new members](https://chat.zulip.org/#narrow/stream/95-new-members) with the
 feature idea and the problem that you're hoping to solve.
 
-Other notes:
+### Other notes:
 * For a first pull request, it's better to aim for a smaller contribution
   than a bigger one. Many first contributions have fewer than 10 lines of
   changes (not counting changes to tests).
@@ -227,17 +227,17 @@ hear about your experience with the product. If you're not sure what to
 write, here are some questions we're always very curious to know the answer
 to:
 
-* Evaluation: What is the process by which your organization chose or will
+* **Evaluation:** What is the process by which your organization chose or will
   choose a group chat product?
-* Pros and cons: What are the pros and cons of Zulip for your organization,
+* **Pros and cons:** What are the pros and cons of Zulip for your organization,
   and the pros and cons of other products you are evaluating?
-* Features: What are the features that are most important for your
+* **Features:** What are the features that are most important for your
   organization? In the best case scenario, what would your chat solution do
   for you?
-* Onboarding: If you remember it, what was your impression during your first
+* **Onboarding:** If you remember it, what was your impression during your first
   few minutes of using Zulip? What did you notice, and how did you feel? Was
   there anything that stood out to you as confusing, or broken, or great?
-* Organization: What does your organization do? How big is the organization?
+* **Organization:** What does your organization do? How big is the organization?
   A link to your organization's website?
 
 ## Internship programs
@@ -312,7 +312,7 @@ documentation.
 
 ## Zulip Outreach
 
-**Upvoting Zulip**. Upvotes and reviews make a big difference in the public
+**Upvoting Zulip:** Upvotes and reviews make a big difference in the public
 perception of projects like Zulip. We've collected a few sites below
 where we know Zulip has been discussed. Doing everything in the following
 list typically takes about 15 minutes.
@@ -340,7 +340,7 @@ don't already have one.
 We have a doc with more detailed instructions and a few other sites, if you
 have been using Zulip for a while and want to contribute more.
 
-**Blog posts**. Writing a blog post about your experiences with Zulip, or
+**Blog posts:** Writing a blog post about your experiences with Zulip, or
 about a technical aspect of Zulip can be a great way to spread the word
 about Zulip.
 
