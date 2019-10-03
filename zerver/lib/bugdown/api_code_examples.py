@@ -120,6 +120,30 @@ def curl_method_arguments(endpoint: str, method: str,
                                                               valid_methods)
         raise ValueError(msg)
 
+def get_openapi_param_example_value_as_string(endpoint: str, method: str, param: Dict[str, Any],
+                                              curl_argument: bool=False) -> str:
+    param_type = param["schema"]["type"]
+    param_name = param["name"]
+    if param_type in ["object", "array"]:
+        example_value = param.get("example", None)
+        if not example_value:
+            msg = """All array and object type request parameters must have
+concrete examples. The openAPI documentation for {}/{} is missing an example
+value for the {} parameter. Without this we cannot automatically generate a
+cURL example.""".format(endpoint, method, param_name)
+            raise ValueError(msg)
+        ordered_ex_val_str = json.dumps(example_value, sort_keys=True)
+        if curl_argument:
+            return "    --data-urlencode {}='{}'".format(param_name, ordered_ex_val_str)
+        return ordered_ex_val_str  # nocoverage
+    else:
+        example_value = param.get("example", DEFAULT_EXAMPLE[param["schema"]["type"]])
+        if type(example_value) == bool:
+            example_value = str(example_value).lower()
+        if curl_argument:
+            return "    -d '{}={}'".format(param_name, example_value)
+        return example_value
+
 def generate_curl_example(endpoint: str, method: str,
                           api_url: str,
                           auth_email: str=DEFAULT_AUTH_EMAIL,
@@ -138,28 +162,11 @@ def generate_curl_example(endpoint: str, method: str,
         lines.append("    -u %s:%s" % (auth_email, auth_api_key))
 
     for param in openapi_params:
-        if param["in"] == "path":
+        if param["in"] == "path" or param["name"] in exclude:
             continue
-        param_name = param["name"]
-        if param_name in exclude:
-            continue
-        param_type = param["schema"]["type"]
-        if param_type in ["object", "array"]:
-            example_value = param.get("example", None)
-            if not example_value:
-                msg = """All array and object type request parameters must have
-concrete examples. The openAPI documentation for {}/{} is missing an example
-value for the {} parameter. Without this we cannot automatically generate a
-cURL example.""".format(endpoint, method, param_name)
-                raise ValueError(msg)
-            ordered_ex_val_str = json.dumps(example_value, sort_keys=True)
-            line = "    --data-urlencode {}='{}'".format(param_name, ordered_ex_val_str)
-        else:
-            example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
-            if type(example_value) == bool:
-                example_value = str(example_value).lower()
-            line = "    -d '{}={}'".format(param_name, example_value)
-        lines.append(line)
+        example_value = get_openapi_param_example_value_as_string(endpoint, method, param,
+                                                                  curl_argument=True)
+        lines.append(example_value)
 
     for i in range(1, len(lines)-1):
         lines[i] = lines[i] + " \\"
