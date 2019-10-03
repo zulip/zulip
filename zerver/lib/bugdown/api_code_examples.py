@@ -138,13 +138,13 @@ def generate_curl_example(endpoint: str, method: str,
         lines.append("    -u %s:%s" % (auth_email, auth_api_key))
 
     openapi_example_params = get_openapi_parameters(endpoint, method)
-    for packet in openapi_example_params:
-        param_name = packet["name"]
+    for param in openapi_example_params:
+        param_name = param["name"]
         if param_name in exclude:
             continue
-        param_type = packet["schema"]["type"]
+        param_type = param["schema"]["type"]
         if param_type in ["object", "array"]:
-            example_value = packet.get("example", None)
+            example_value = param.get("example", None)
             if not example_value:
                 msg = """All array and object type request parameters must have
 concrete examples. The openAPI documentation for {}/{} is missing an example
@@ -154,7 +154,7 @@ cURL example.""".format(endpoint, method, param_name)
             ordered_ex_val_str = json.dumps(example_value, sort_keys=True)
             line = "    --data-urlencode {}='{}'".format(param_name, ordered_ex_val_str)
         else:
-            example_value = packet.get("example", DEFAULT_EXAMPLE[param_type])
+            example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
             if type(example_value) == bool:
                 example_value = str(example_value).lower()
             line = "    -d '{}={}'".format(param_name, example_value)
