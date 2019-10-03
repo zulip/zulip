@@ -38,7 +38,7 @@ defusedxml
 # Using our fork for the feature of searching users by email.
 # https://github.com/django-auth-ldap/django-auth-ldap/pull/150 for monitoring
 # progress on merging this upstream.
-git+https://github.com/zulip/django-auth-ldap.git@e26d0ef2a7ff77ab3fdd7b6578a76081f780778c#egg=django-auth-ldap==2.0.0zulip1
+https://github.com/zulip/django-auth-ldap/archive/e26d0ef2a7ff77ab3fdd7b6578a76081f780778c.zip#egg=django-auth-ldap==2.0.0zulip1
 
 # Django extension providing bitfield support
 django-bitfield
@@ -52,7 +52,7 @@ python-gcm
 # Needed for the email mirror
 html2text
 httplib2
-git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
+https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1
 
 # Needed for hipchat import
 hypchat
@@ -103,7 +103,7 @@ sourcemap
 tornado==4.*  # https://github.com/zulip/zulip/issues/8913
 
 # Fast JSON parser
-git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
+https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab8a8.zip#egg=ujson==1.35+git
 
 # Django extension for serving webpack modules
 django-webpack-loader
@@ -131,8 +131,8 @@ python-magic
 # these tightly, including fetching content not included in the normal
 # release tarballs (which is a bug).  So we need to pin it makes sense
 # to pin a version from Git rather than a release.
-git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip==0.6.1_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@804501610b6a205334e71b4e441fca60acf650da#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
+https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip==0.6.1_git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
 py3dns
@@ -168,7 +168,7 @@ yamole
 
 # Needed for signing thumbnail requests so that they can be authenticated on the
 # other end.  Using a fork to eliminate a really slow pkgresources import.
-git+https://github.com/zulip/libthumbor.git@60ed2431c07686a12f2770b2d852c5650f3ccfc6#egg=libthumbor==1.3.2zulip
+https://github.com/zulip/libthumbor/archive/60ed2431c07686a12f2770b2d852c5650f3ccfc6.zip#egg=libthumbor==1.3.2zulip
 
 # Needed for string matching in AlertWordProcessor
 pyahocorasick
