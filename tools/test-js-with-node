@@ -23,6 +23,8 @@ USAGE = '''
     '''
 
 enforce_fully_covered = {
+    'static/shared/js/typing_status.js',
+
     'static/js/activity.js',
     'static/js/alert_words.js',
     'static/js/alert_words_ui.js',
@@ -79,7 +81,6 @@ enforce_fully_covered = {
     'static/js/transmit.js',
     'static/js/typeahead_helper.js',
     'static/js/typing_data.js',
-    'static/js/typing_status.js',
     'static/js/unread.js',
     'static/js/user_events.js',
     'static/js/user_groups.js',
