@@ -30,10 +30,10 @@ function get_user_ids_array() {
     return people.user_ids_string_to_ids_array(user_ids_string);
 }
 
-function is_valid_conversation(user_ids_string) {
+function is_valid_conversation(user_ids_array) {
     // TODO: Check to make sure we're in a PM conversation
     //       with valid emails.
-    if (!user_ids_string) {
+    if (!user_ids_array) {
         return false;
     }
 
@@ -62,12 +62,12 @@ function get_current_time() {
     return new Date().getTime();
 }
 
-function notify_server_start(user_ids_string) {
-    send_typing_notification_ajax(user_ids_string, "start");
+function notify_server_start(user_ids_array) {
+    send_typing_notification_ajax(user_ids_array, "start");
 }
 
-function notify_server_stop(user_ids_string) {
-    send_typing_notification_ajax(user_ids_string, "stop");
+function notify_server_stop(user_ids_array) {
+    send_typing_notification_ajax(user_ids_array, "stop");
 }
 
 exports.get_recipient = get_user_ids_array;
