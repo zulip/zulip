@@ -182,6 +182,14 @@ In either configuration, you will need to do the following:
       To do this, set `AUTH_LDAP_USER_SEARCH` to query by LDAP
       username, and `LDAP_EMAIL_ATTR = "email"`.
 
+5. If you're using configuration (A) or (C) you should set
+   `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to query for email address in the attribute
+   that holds email addresses. In most cases it is going to be the username
+   attribute from `AUTH_LDAP_USER_SEARCH` in case of configuration (A)
+   or `LDAP_EMAIL_ATTR` in configuration (C).
+   Finally, set `AUTH_LDAP_USERNAME_ATTR` to the name of the attribute that
+   holds usernames.
+
 You can quickly test whether your configuration works by running:
 
 ```

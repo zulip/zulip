@@ -18,7 +18,8 @@ import magic
 import ujson
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
+from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, \
+    _LDAPUser, ldap_error
 from django.contrib.auth import get_backends
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
@@ -241,6 +242,14 @@ def is_valid_email(email: str) -> bool:
         return False
     return True
 
+def find_ldap_users_by_email(email: str) -> Optional[List[_LDAPUser]]:
+    """
+    Returns list of _LDAPUsers matching the email search,
+    or None if no matches are found.
+    """
+    email_search = LDAPReverseEmailSearch(LDAPBackend(), email)
+    return email_search.search_for_users(should_populate=False)
+
 def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     """Used to make determinations on whether a user's email address is
     managed by LDAP.  For environments using both LDAP and
@@ -252,14 +261,21 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     if not ldap_auth_enabled(realm):
         return False
 
-    # If we don't have an LDAP domain, it's impossible to tell which
-    # accounts are LDAP accounts, so treat all of them as LDAP
-    # accounts
-    if not settings.LDAP_APPEND_DOMAIN:
+    if settings.LDAP_APPEND_DOMAIN:
+        # Check if the email ends with LDAP_APPEND_DOMAIN
+        return email.strip().lower().endswith("@" + settings.LDAP_APPEND_DOMAIN)
+
+    # If we don't have an LDAP domain, we have to do a lookup for the email.
+    if not(settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH):
+        logging.warning("LDAP_APPEND_DOMAIN isn't used, but searching by email "
+                        "is not configured. email_belongs_to_ldap will always return True.")
         return True
 
-    # Otherwise, check if the email ends with LDAP_APPEND_DOMAIN
-    return email.strip().lower().endswith("@" + settings.LDAP_APPEND_DOMAIN)
+    if find_ldap_users_by_email(email):
+        return True
+    else:
+        return False
+
 
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     """Since this inherits from _LDAPUser.AuthenticationFailed, these will

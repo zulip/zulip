@@ -493,6 +493,19 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
 # leave as None and see LDAP_EMAIL_ATTR.
 LDAP_APPEND_DOMAIN = None  # type: Optional[str]
 
+# If you're not using LDAP_APPEND_DOMAIN, for things to work well, you will need to
+# configure the email search settings below.
+# AUTH_LDAP_REVERSE_EMAIL_SEARCH you should configure like you did AUTH_LDAP_USER_SEARCH,
+# but this search query is meant for finding if there are users in LDAP with the
+# specified email address.
+# AUTH_LDAP_USERNAME_ATTR should be set to the attribute that is the username. This should
+# most likely match the attribute by which you're looking up users in AUTH_LDAP_USER_SEARCH.
+#
+# AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+#                                             ldap.SCOPE_SUBTREE, "(email=%(email)s)")
+#
+# AUTH_LDAP_USERNAME_ATTR = "uid"
+
 # LDAP attribute to find a user's email address.
 #
 # Leave as None if users log in with their email addresses,
