@@ -485,12 +485,11 @@ AUTH_LDAP_BIND_DN = ""
 AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
 
-# Domain to combine with a user's username to figure out their email address.
-#
-# If users log in as e.g. "sam" when their email address is "sam@example.com",
-# set this to "example.com".  If users log in with their full email addresses,
-# leave as None; if the username -> email address mapping isn't so simple,
-# leave as None and see LDAP_EMAIL_ATTR.
+# Configuration to lookup a user's LDAP data given their email address
+# (For Zulip reverse mapping).  If users log in as e.g. "sam" when
+# their email address is "sam@example.com", set LDAP_APPEND_DOMAIN to
+# "example.com".  Otherwise, leave LDAP_APPEND_DOMAIN=None and set
+# AUTH_LDAP_REVERSE_EMAIL_SEARCH and AUTH_LDAP_USERNAME_ATTR below.
 LDAP_APPEND_DOMAIN = None  # type: Optional[str]
 
 # LDAP attribute to find a user's email address.
@@ -498,6 +497,16 @@ LDAP_APPEND_DOMAIN = None  # type: Optional[str]
 # Leave as None if users log in with their email addresses,
 # or if using LDAP_APPEND_DOMAIN.
 LDAP_EMAIL_ATTR = None  # type: Optional[str]
+
+# AUTH_LDAP_REVERSE_EMAIL_SEARCH works like AUTH_LDAP_USER_SEARCH and
+# should query an LDAP user given their email address.  It and
+# AUTH_LDAP_USERNAME_ATTR are required when LDAP_APPEND_DOMAIN is None.
+#AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+#                                            ldap.SCOPE_SUBTREE, "(email=%(email)s)")
+
+# AUTH_LDAP_USERNAME_ATTR should be the Zulip username attribute
+# (defined in AUTH_LDAP_USER_SEARCH).
+#AUTH_LDAP_USERNAME_ATTR = "uid"
 
 # This map defines how to populate attributes of a Zulip user from LDAP.
 #

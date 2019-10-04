@@ -147,6 +147,8 @@ DEFAULT_SETTINGS = {
     # LDAP auth
     'AUTH_LDAP_SERVER_URI': "",
     'LDAP_EMAIL_ATTR': None,
+    'AUTH_LDAP_USERNAME_ATTR': None,
+    'AUTH_LDAP_REVERSE_EMAIL_SEARCH': None,
     # AUTH_LDAP_CONNECTION_OPTIONS: we set ldap.OPT_REFERRALS below if unset.
     'AUTH_LDAP_CONNECTION_OPTIONS': {},
     # Disable django-auth-ldap caching, to prevent problems with OU changes.

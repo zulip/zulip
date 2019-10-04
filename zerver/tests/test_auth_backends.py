@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
-from django_auth_ldap.backend import LDAPBackend, _LDAPUser
+from django_auth_ldap.backend import LDAPBackend, LDAPSearch, _LDAPUser
 from django.test.client import RequestFactory
 from django.utils.timezone import now as timezone_now
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
@@ -12,6 +12,7 @@ from django.urls import reverse
 
 import httpretty
 
+import ldap
 import jwt
 import mock
 import re
@@ -56,7 +57,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
-    PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled
+    PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
@@ -2467,6 +2468,44 @@ class TestLDAP(ZulipLDAPTestCase):
 
             assert (user_profile is not None)
             self.assertEqual(user_profile, self.example_user("aaron"))
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
+                                                'zproject.backends.ZulipLDAPAuthBackend',))
+    def test_email_and_ldap_backends_together(self) -> None:
+        with self.settings(
+            LDAP_EMAIL_ATTR='mail',
+            AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                                        ldap.SCOPE_ONELEVEL,
+                                                        "(mail=%(email)s)"),
+            AUTH_LDAP_USERNAME_ATTR = "uid"
+        ):
+            realm = get_realm('zulip')
+            self.assertEqual(email_belongs_to_ldap(realm, self.example_email("aaron")), True)
+            # aaron's uid in our test directory is "letham".
+            user_profile = ZulipLDAPAuthBackend().authenticate(username="letham", password='testing',
+                                                               realm=realm)
+            self.assertEqual(user_profile, self.example_user("aaron"))
+
+            othello = self.example_user('othello')
+            password = "testpassword"
+            othello.set_password(password)
+            othello.save()
+
+            self.assertEqual(email_belongs_to_ldap(realm, othello.email), False)
+            user_profile = EmailAuthBackend().authenticate(username=othello.email, password=password,
+                                                           realm=realm)
+            self.assertEqual(user_profile, othello)
+
+    @override_settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=None, LDAP_APPEND_DOMAIN=None,
+                       AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_no_append_domain_and_email_search_not_configured(self) -> None:
+        with mock.patch("zproject.backends.logging.warning") as mock_warning:
+            result = email_belongs_to_ldap(get_realm("zulip"), "nonexistant@email.com")
+            self.assertEqual(result, True)
+            mock_warning.assert_called_with(
+                "LDAP_APPEND_DOMAIN isn't used, but searching by email "
+                "is not configured. email_belongs_to_ldap will always return True."
+            )
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_wrong_password(self) -> None:

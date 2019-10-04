@@ -182,6 +182,16 @@ In either configuration, you will need to do the following:
       To do this, set `AUTH_LDAP_USER_SEARCH` to query by LDAP
       username, and `LDAP_EMAIL_ATTR = "email"`.
 
+5. In configurations (A) and (C), you need to tell Zulip how to look
+   up a user's LDAP data given their user's email address:
+
+   * Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find an
+   LDAP user given their email address.  Generally, this will be
+   `AUTH_LDAP_USER_SEARCH` in configuration (A) or a search by
+   `LDAP_EMAIL_ATTR` in configuration (C).
+   * Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP attribute
+   for the user's LDAP username in that search result.
+
 You can quickly test whether your configuration works by running:
 
 ```
