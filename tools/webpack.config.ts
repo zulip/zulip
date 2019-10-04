@@ -40,7 +40,10 @@ export default (env?: string): webpack.Configuration[] => {
                 // Transpile .js and .ts files with Babel
                 {
                     test: /\.(js|ts)$/,
-                    include: resolve(__dirname, '../static/js'),
+                    include: [
+                        resolve(__dirname, '../static/shared/js'),
+                        resolve(__dirname, '../static/js'),
+                    ],
                     loader: 'babel-loader',
                 },
                 // Uses script-loader on minified files so we don't change global variables in them.

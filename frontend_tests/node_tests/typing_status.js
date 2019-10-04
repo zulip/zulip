@@ -1,7 +1,7 @@
 zrequire('typing');
 zrequire('people');
 zrequire('compose_pm_pill');
-const typing_status = zrequire('typing_status');
+const typing_status = zrequire('typing_status', 'shared/js/typing_status');
 
 function return_false() { return false; }
 function return_true() { return true; }

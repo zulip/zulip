@@ -22,7 +22,7 @@ exports.patch_builtin = function (name, val) {
 exports.zrequire = function (name, fn) {
     if (fn === undefined) {
         fn = '../../static/js/' + name;
-    } else if (/generated\/|js\/|third\//.test(fn)) {
+    } else if (/^generated\/|^js\/|^shared\/|^third\//.test(fn)) {
         // FIXME: Stealing part of the NPM namespace is confusing.
         fn = '../../static/' + fn;
     }
