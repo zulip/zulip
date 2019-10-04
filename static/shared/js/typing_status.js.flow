@@ -1,0 +1,19 @@
+/**
+ * @flow strict
+ */
+
+"use strict";
+
+type RecipientUserIds = number[];
+
+type Worker = {|
+  get_recipient: () => RecipientUserIds | void,
+  is_valid_conversation: (RecipientUserIds | void) => boolean,
+  get_current_time: () => number, // as ms since epoch
+  notify_server_start: RecipientUserIds => void,
+  notify_server_stop: RecipientUserIds => void
+|};
+
+declare export function handle_text_input(Worker): void;
+
+declare export function stop(Worker): void;
