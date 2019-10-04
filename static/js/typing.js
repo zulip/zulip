@@ -59,7 +59,7 @@ function is_valid_conversation(user_ids_string) {
 }
 
 function get_current_time() {
-    return new Date();
+    return new Date().getTime();
 }
 
 function notify_server_start(user_ids_string) {
