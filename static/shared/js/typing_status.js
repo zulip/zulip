@@ -30,8 +30,10 @@ var TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
     appropriately.)
 */
 
+/** Exported only for tests. */
 export const state = {};
 
+/** Exported only for tests. */
 export function initialize_state() {
     state.current_recipient =  undefined;
     state.next_send_start_time =  undefined;
@@ -40,6 +42,7 @@ export function initialize_state() {
 
 initialize_state();
 
+/** Exported only for tests. */
 export function stop_last_notification(worker) {
     if (state.idle_timer) {
         clearTimeout(state.idle_timer);
@@ -48,6 +51,7 @@ export function stop_last_notification(worker) {
     initialize_state();
 }
 
+/** Exported only for tests. */
 export function start_or_extend_idle_timer(worker) {
     function on_idle_timeout() {
         // We don't do any real error checking here, because
@@ -75,6 +79,7 @@ function actually_ping_server(worker, recipient, current_time) {
     set_next_start_time(current_time);
 }
 
+/** Exported only for tests. */
 export function maybe_ping_server(worker, recipient) {
     var current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
