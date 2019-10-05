@@ -4,7 +4,7 @@ from django.test.utils import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm
-from zproject.backends import ZulipLDAPAuthBackend, ZulipLDAPExceptionOutsideDomain
+from zproject.backends import ZulipLDAPAuthBackend, ZulipLDAPExceptionOutsideDomain, sync_user_from_ldap
 
 from django_auth_ldap.config import LDAPSearch
 
@@ -89,3 +89,23 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
             # Ldap password works now:
             self.assertEqual(authenticate(username=user_profile.email, password="testing", realm=realm),
                              user_profile)
+
+    @override_settings(LDAP_EMAIL_ATTR='mail', LDAP_DEACTIVATE_NON_MATCHING_USERS=True)
+    def test_sync_user_from_ldap_with_email_attr(self) -> None:
+        """
+        In LDAP configurations with LDAP_EMAIL_ATTR and LDAP_DEACTIVATE_NON_MATCHING_USERS,
+        sync_user_from_ldap used to
+        deactivate all ldap users, because of the inability to translate
+        email to ldap username. This tests that this is fixed.
+        """
+
+        user_profile = self.example_user("hamlet")
+        with self.settings():
+            sync_user_from_ldap(user_profile, mock.Mock())
+            # Syncing didn't deactivate the user:
+            self.assertTrue(user_profile.is_active)
+
+        with self.settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=None):
+            # Without email search, the user will get deactivated.
+            sync_user_from_ldap(user_profile, mock.Mock())
+            self.assertFalse(user_profile.is_active)

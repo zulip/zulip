@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
-from django_auth_ldap.backend import LDAPBackend, LDAPSearch
+from django_auth_ldap.backend import LDAPBackend, LDAPSearch, _LDAPUser
 from django.test.client import RequestFactory
 from django.utils.timezone import now as timezone_now
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
@@ -2542,10 +2542,11 @@ class TestLDAP(ZulipLDAPTestCase):
             backend.django_to_ldap_username('"hamlet@test"@test.com')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_ldap_to_django_username(self) -> None:
+    def test_user_email_from_ldapuser_with_append_domain(self) -> None:
         backend = self.backend
         with self.settings(LDAP_APPEND_DOMAIN='zulip.com'):
-            username = backend.ldap_to_django_username('"hamlet@test"')
+            username = backend.user_email_from_ldapuser('this_argument_is_ignored',
+                                                        _LDAPUser(self.backend, username='"hamlet@test"'))
             self.assertEqual(username, '"hamlet@test"@zulip.com')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
