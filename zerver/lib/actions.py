@@ -220,7 +220,7 @@ def private_stream_user_ids(stream_id: int) -> Set[int]:
 
 def public_stream_user_ids(stream: Stream) -> Set[int]:
     guest_subscriptions = get_active_subscriptions_for_stream_id(
-        stream.id).filter(user_profile__is_guest=True)
+        stream.id).filter(user_profile__role=UserProfile.ROLE_GUEST)
     guest_subscriptions = {sub['user_profile_id'] for sub in guest_subscriptions.values('user_profile_id')}
     return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions
 
@@ -3466,9 +3466,14 @@ def do_change_default_all_public_streams(user_profile: UserProfile, value: bool,
 
 def do_change_is_admin(user_profile: UserProfile, value: bool,
                        permission: str='administer') -> None:
+    # TODO: This function and do_change_is_guest should be merged into
+    # a single do_change_user_role function in a future refactor.
     if permission == "administer":
-        user_profile.is_realm_admin = value
-        user_profile.save(update_fields=["is_realm_admin"])
+        if value:
+            user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        else:
+            user_profile.role = UserProfile.ROLE_MEMBER
+        user_profile.save(update_fields=["role"])
     elif permission == "api_super_user":
         user_profile.is_api_super_user = value
         user_profile.save(update_fields=["is_api_super_user"])
@@ -3483,8 +3488,13 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
         send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 def do_change_is_guest(user_profile: UserProfile, value: bool) -> None:
-    user_profile.is_guest = value
-    user_profile.save(update_fields=["is_guest"])
+    # TODO: This function and do_change_is_admin should be merged into
+    # a single do_change_user_role function in a future refactor.
+    if value:
+        user_profile.role = UserProfile.ROLE_GUEST
+    else:
+        user_profile.role = UserProfile.ROLE_MEMBER
+    user_profile.save(update_fields=["role"])
     event = dict(type="realm_user", op="update",
                  person=dict(email=user_profile.email,
                              user_id=user_profile.id,

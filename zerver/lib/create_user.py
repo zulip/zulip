@@ -65,7 +65,6 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
                                default_language=realm.default_language,
                                twenty_four_hour_time=realm.default_twenty_four_hour_time,
                                delivery_email=email)
-
     if bot_type or not active:
         password = None
     if user_profile.email_address_is_realm_public():
@@ -91,8 +90,10 @@ def create_user(email: str, password: Optional[str], realm: Realm,
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy, tos_version, timezone)
-    user_profile.is_realm_admin = is_realm_admin
-    user_profile.is_guest = is_guest
+    if is_realm_admin:
+        user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+    if is_guest:
+        user_profile.role = UserProfile.ROLE_GUEST
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream

@@ -5,6 +5,9 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.import_util import (
     build_user_profile,
 )
+from zerver.models import (
+    UserProfile,
+)
 
 class UserHandler:
     '''
@@ -55,8 +58,7 @@ class UserHandler:
             full_name=full_name,
             id=user_id,
             is_active=False,
-            is_realm_admin=False,
-            is_guest=False,
+            role=UserProfile.ROLE_MEMBER,
             is_mirror_dummy=True,
             realm_id=realm_id,
             short_name=short_name,

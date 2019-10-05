@@ -40,9 +40,9 @@ DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 
 def get_seat_count(realm: Realm) -> int:
     non_guests = UserProfile.objects.filter(
-        realm=realm, is_active=True, is_bot=False, is_guest=False).count()
+        realm=realm, is_active=True, is_bot=False).exclude(role=UserProfile.ROLE_GUEST).count()
     guests = UserProfile.objects.filter(
-        realm=realm, is_active=True, is_bot=False, is_guest=True).count()
+        realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST).count()
     return max(non_guests, math.ceil(guests / 5))
 
 def sign_string(string: str) -> Tuple[str, str]:

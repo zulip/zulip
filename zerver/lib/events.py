@@ -86,8 +86,8 @@ def get_raw_user_data(realm: Realm, client_gravatar: bool) -> Dict[int, Dict[str
             client_gravatar=client_gravatar,
         )
 
-        is_admin = row['is_realm_admin']
-        is_guest = row['is_guest']
+        is_admin = row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
+        is_guest = row['role'] == UserProfile.ROLE_GUEST
         is_bot = row['is_bot']
         # This format should align with get_cross_realm_dicts() and notify_created_user
         result = dict(

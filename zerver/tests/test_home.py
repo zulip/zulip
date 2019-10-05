@@ -634,7 +634,7 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode('utf-8')
         self.assertNotIn('Invite more users', html)
 
-        user_profile.is_realm_admin = True
+        user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         user_profile.save()
         result = self._get_home_page()
         html = result.content.decode('utf-8')
@@ -672,9 +672,9 @@ class HomeTest(ZulipTestCase):
         self.assertIn('Billing', result_html)
 
         # billing admin, with CustomerPlan -> show billing link
-        user.is_realm_admin = False
+        user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         user.is_billing_admin = True
-        user.save(update_fields=['is_realm_admin', 'is_billing_admin'])
+        user.save(update_fields=['role', 'is_billing_admin'])
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertIn('Billing', result_html)
 

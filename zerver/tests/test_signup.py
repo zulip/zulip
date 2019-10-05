@@ -3234,7 +3234,8 @@ class DeactivateUserTest(ZulipTestCase):
 
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm('zulip')
-        UserProfile.objects.filter(realm=realm, is_realm_admin=False).update(is_active=False)
+        UserProfile.objects.filter(realm=realm).exclude(
+            role=UserProfile.ROLE_REALM_ADMINISTRATOR).update(is_active=False)
         email = self.example_email("iago")
         self.login(email)
         result = self.client_delete('/json/users/me')

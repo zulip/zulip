@@ -403,10 +403,6 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person['email'], polonius.email)
         self.assertTrue(person['is_admin'])
 
-        person = events[1]['event']['person']
-        self.assertEqual(person['email'], polonius.email)
-        self.assertFalse(person['is_guest'])
-
     def test_admin_user_can_change_profile_data(self) -> None:
         realm = get_realm('zulip')
         self.login(self.example_email("iago"))

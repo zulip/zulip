@@ -161,7 +161,9 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         avatar_url = build_avatar_url(slack_user_id, user['team_id'],
                                       user['profile']['avatar_hash'])
         build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
-        realm_admin = get_admin(user)
+        role = UserProfile.ROLE_MEMBER
+        if get_admin(user):
+            role = UserProfile.ROLE_REALM_ADMINISTRATOR
         timezone = get_user_timezone(user)
 
         if slack_user_id in slack_user_id_to_custom_profile_fields:
@@ -186,7 +188,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
             avatar_source='U',
             is_bot=user.get('is_bot', False),
             pointer=-1,
-            is_realm_admin=realm_admin,
+            role=role,
             bot_type=1 if user.get('is_bot', False) else None,
             date_joined=timestamp,
             timezone=timezone,

@@ -87,11 +87,10 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
                             validator=check_list(check_dict([('id', check_int)])))) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
-    # This condition is a bit complicated, because the user could
-    # already be a guest/admin, or the request could be to make the
-    # user a guest/admin.  In any case, the point is that we outright
-    # reject requests that would result in a user who is both an admin
-    # and a guest.
+    # Historically, UserProfile had two fields, is_guest and is_realm_admin.
+    # This condition protected against situations where update_user_backend
+    # could cause both is_guest and is_realm_admin to be set.
+    # Once we update the frontend to just send a 'role' value, we can remove this check.
     if (((is_guest is None and target.is_guest) or is_guest) and
             ((is_admin is None and target.is_realm_admin) or is_admin)):
         return json_error(_("Guests cannot be organization administrators"))
@@ -415,10 +414,9 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
         'realm_id',
         'full_name',
         'is_bot',
-        'is_realm_admin',
         'is_active',
-        'is_guest',
         'bot_type',
+        'role',
         'avatar_source',
         'avatar_version',
         'bot_owner__email',
@@ -447,9 +445,9 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
             full_name=row['full_name'],
             is_bot=row['is_bot'],
             is_active=row['is_active'],
-            is_admin=row['is_realm_admin'],
             bot_type=row['bot_type'],
-            is_guest=row['is_guest'],
+            is_admin=row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR,
+            is_guest=row['role'] == UserProfile.ROLE_GUEST,
             timezone=row['timezone'],
         )
 

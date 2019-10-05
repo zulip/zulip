@@ -2268,18 +2268,18 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_can_create_streams(self) -> None:
         othello = self.example_user('othello')
-        othello.is_realm_admin = True
+        othello.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         self.assertTrue(othello.can_create_streams())
 
-        othello.is_realm_admin = False
+        othello.role = UserProfile.ROLE_MEMBER
         othello.realm.create_stream_policy = Realm.CREATE_STREAM_POLICY_ADMINS
         self.assertFalse(othello.can_create_streams())
 
         othello.realm.create_stream_policy = Realm.CREATE_STREAM_POLICY_MEMBERS
-        othello.is_guest = True
+        othello.role = UserProfile.ROLE_GUEST
         self.assertFalse(othello.can_create_streams())
 
-        othello.is_guest = False
+        othello.role = UserProfile.ROLE_MEMBER
         othello.realm.waiting_period_threshold = 1000
         othello.realm.create_stream_policy = Realm.CREATE_STREAM_POLICY_WAITING_PERIOD
         othello.date_joined = timezone_now() - timedelta(days=(othello.realm.waiting_period_threshold - 1))
@@ -3596,7 +3596,7 @@ class GetSubscribersTest(ZulipTestCase):
 
         # Send private stream subscribers to all realm admins.
         def test_admin_case() -> None:
-            self.user_profile.is_realm_admin = True
+            self.user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
             # Test realm admins can get never subscribed private stream's subscribers.
             never_subscribed = get_never_subscribed()
 

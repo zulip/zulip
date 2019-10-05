@@ -21,6 +21,7 @@ from zerver.lib.utils import (
 from zerver.models import (
     RealmEmoji,
     Recipient,
+    UserProfile,
 )
 
 from zerver.data_import.import_util import (
@@ -101,17 +102,21 @@ def convert_user_data(user_handler: UserHandler,
         email = in_dict['email']
         full_name = in_dict['name']
         id = user_id_mapper.get(in_dict['id'])
-        is_realm_admin = in_dict['account_type'] == 'admin'
-        is_guest = in_dict['account_type'] == 'guest'
         is_mirror_dummy = False
         short_name = in_dict['mention_name']
         timezone = in_dict['timezone']
+
+        role = UserProfile.ROLE_MEMBER
+        if in_dict['account_type'] == 'admin':
+            role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        if in_dict['account_type'] == 'guest':
+            role = UserProfile.ROLE_GUEST
 
         date_joined = int(timezone_now().timestamp())
         is_active = not in_dict['is_deleted']
 
         if not email:
-            if is_guest:
+            if role == UserProfile.ROLE_GUEST:
                 # Hipchat guest users don't have emails, so
                 # we just fake them.
                 email = 'guest-{id}@example.com'.format(id=id)
@@ -140,8 +145,7 @@ def convert_user_data(user_handler: UserHandler,
             full_name=full_name,
             id=id,
             is_active=is_active,
-            is_realm_admin=is_realm_admin,
-            is_guest=is_guest,
+            role=role,
             is_mirror_dummy=is_mirror_dummy,
             realm_id=realm_id,
             short_name=short_name,

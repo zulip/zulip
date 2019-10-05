@@ -15,7 +15,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
 
-from zerver.models import Recipient, RealmEmoji, Reaction
+from zerver.models import Recipient, RealmEmoji, Reaction, UserProfile
 from zerver.lib.utils import (
     process_list_in_batches,
 )
@@ -64,11 +64,13 @@ def process_user(user_dict: Dict[str, Any], realm_id: int, team_name: str,
     id = user_id_mapper.get(user_dict['username'])
     delivery_email = user_dict['email']
     email = user_dict['email']
-    is_realm_admin = is_team_admin(user_dict)
-    is_guest = False
     short_name = user_dict['username']
     date_joined = int(timezone_now().timestamp())
     timezone = 'UTC'
+
+    role = UserProfile.ROLE_MEMBER
+    if is_team_admin(user_dict):
+        role = UserProfile.ROLE_REALM_ADMINISTRATOR
 
     if user_dict["is_mirror_dummy"]:
         is_active = False
@@ -85,8 +87,7 @@ def process_user(user_dict: Dict[str, Any], realm_id: int, team_name: str,
         full_name=full_name,
         id=id,
         is_active=is_active,
-        is_realm_admin=is_realm_admin,
-        is_guest=is_guest,
+        role=role,
         is_mirror_dummy=is_mirror_dummy,
         realm_id=realm_id,
         short_name=short_name,

@@ -45,6 +45,7 @@ from zerver.models import (
     get_realm,
     RealmAuditLog,
     Recipient,
+    UserProfile,
 )
 
 import ujson
@@ -272,13 +273,13 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]['is_bot'], False)
         self.assertEqual(zerver_userprofile[0]['is_active'], True)
         self.assertEqual(zerver_userprofile[0]['is_mirror_dummy'], False)
-        self.assertEqual(zerver_userprofile[0]['is_realm_admin'], False)
+        self.assertEqual(zerver_userprofile[0]['role'], UserProfile.ROLE_MEMBER)
         self.assertEqual(zerver_userprofile[0]['enable_desktop_notifications'], True)
         self.assertEqual(zerver_userprofile[0]['email'], 'jon@gmail.com')
         self.assertEqual(zerver_userprofile[0]['full_name'], 'John Doe')
 
         self.assertEqual(zerver_userprofile[1]['id'], test_slack_user_id_to_zulip_user_id['U0CBK5KAT'])
-        self.assertEqual(zerver_userprofile[1]['is_realm_admin'], True)
+        self.assertEqual(zerver_userprofile[1]['role'], UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertEqual(zerver_userprofile[1]['is_staff'], False)
         self.assertEqual(zerver_userprofile[1]['is_active'], True)
         self.assertEqual(zerver_userprofile[0]['is_mirror_dummy'], False)
@@ -292,7 +293,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[2]['avatar_source'], 'U')
 
         self.assertEqual(zerver_userprofile[3]['id'], test_slack_user_id_to_zulip_user_id['UHSG7OPQN'])
-        self.assertEqual(zerver_userprofile[3]['is_realm_admin'], False)
+        self.assertEqual(zerver_userprofile[3]['role'], UserProfile.ROLE_MEMBER)
         self.assertEqual(zerver_userprofile[3]['is_staff'], False)
         self.assertEqual(zerver_userprofile[3]['is_active'], False)
         self.assertEqual(zerver_userprofile[3]['email'], 'matt.perry@foreignteam.slack.com')

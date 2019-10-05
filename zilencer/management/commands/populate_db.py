@@ -219,8 +219,8 @@ class Command(BaseCommand):
             iago.save(update_fields=['is_staff'])
 
             guest_user = get_user("polonius@zulip.com", zulip_realm)
-            guest_user.is_guest = True
-            guest_user.save(update_fields=['is_guest'])
+            guest_user.role = UserProfile.ROLE_GUEST
+            guest_user.save(update_fields=['role'])
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.

@@ -74,8 +74,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["full_name"], "Harry Potter")
         self.assertEqual(user["id"], 1)
         self.assertEqual(user["is_active"], True)
-        self.assertEqual(user["is_realm_admin"], True)
-        self.assertEqual(user["is_guest"], False)
+        self.assertEqual(user["role"], UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertEqual(user["is_mirror_dummy"], False)
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "harry")
@@ -84,7 +83,7 @@ class MatterMostImporter(ZulipTestCase):
         # A user with a `null` team value shouldn't be an admin.
         harry_dict["teams"] = None
         user = process_user(harry_dict, realm_id, team_name, user_id_mapper)
-        self.assertEqual(user["is_realm_admin"], False)
+        self.assertEqual(user["role"], UserProfile.ROLE_MEMBER)
 
         team_name = "slytherin"
         snape_dict = username_to_user["snape"]
@@ -96,8 +95,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["full_name"], "Severus Snape")
         self.assertEqual(user["id"], 2)
         self.assertEqual(user["is_active"], False)
-        self.assertEqual(user["is_realm_admin"], False)
-        self.assertEqual(user["is_guest"], False)
+        self.assertEqual(user["role"], UserProfile.ROLE_MEMBER)
         self.assertEqual(user["is_mirror_dummy"], True)
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "snape")

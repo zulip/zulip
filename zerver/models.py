@@ -397,7 +397,7 @@ class Realm(models.Model):
         notifications to all administrator users.
         """
         # TODO: Change return type to QuerySet[UserProfile]
-        return UserProfile.objects.filter(realm=self, is_realm_admin=True,
+        return UserProfile.objects.filter(realm=self, role=UserProfile.ROLE_REALM_ADMINISTRATOR,
                                           is_active=True)
 
     def get_human_admin_users(self) -> Sequence['UserProfile']:
@@ -406,7 +406,8 @@ class Realm(models.Model):
         realm's administrators (bots don't have real email addresses).
         """
         # TODO: Change return type to QuerySet[UserProfile]
-        return UserProfile.objects.filter(realm=self, is_bot=False, is_realm_admin=True,
+        return UserProfile.objects.filter(realm=self, is_bot=False,
+                                          role=UserProfile.ROLE_REALM_ADMINISTRATOR,
                                           is_active=True)
 
     def get_active_users(self) -> Sequence['UserProfile']:
@@ -793,15 +794,23 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # See also `long_term_idle`.
     is_active = models.BooleanField(default=True, db_index=True)  # type: bool
 
-    is_realm_admin = models.BooleanField(default=False, db_index=True)  # type: bool
     is_billing_admin = models.BooleanField(default=False, db_index=True)  # type: bool
-
-    # Guest users are limited users without default access to public streams (etc.)
-    is_guest = models.BooleanField(default=False, db_index=True)  # type: bool
 
     is_bot = models.BooleanField(default=False, db_index=True)  # type: bool
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)  # type: Optional[int]
     bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)  # type: Optional[UserProfile]
+
+    # Each role has a superset of the permissions of the next higher
+    # numbered role.  When adding new roles, leave enough space for
+    # future roles to be inserted between currently adjacent
+    # roles. These constants appear in RealmAuditLog.extra_data, so
+    # changes to them will require a migration of RealmAuditLog.
+    # ROLE_REALM_OWNER = 100
+    ROLE_REALM_ADMINISTRATOR = 200
+    # ROLE_MODERATOR = 300
+    ROLE_MEMBER = 400
+    ROLE_GUEST = 600
+    role = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)  # type: int
 
     # Whether the user has been "soft-deactivated" due to weeks of inactivity.
     # For these users we avoid doing UserMessage table work, as an optimization
@@ -1017,6 +1026,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return "<UserProfile: %s %s>" % (self.email, self.realm)
+
+    @property
+    def is_realm_admin(self) -> bool:
+        return self.role == UserProfile.ROLE_REALM_ADMINISTRATOR
+
+    @property
+    def is_guest(self) -> bool:
+        return self.role == UserProfile.ROLE_GUEST
 
     @property
     def is_incoming_webhook(self) -> bool:
@@ -2136,8 +2153,9 @@ def active_user_ids(realm_id: int) -> List[int]:
 def active_non_guest_user_ids(realm_id: int) -> List[int]:
     query = UserProfile.objects.filter(
         realm_id=realm_id,
-        is_active=True,
-        is_guest=False,
+        is_active=True
+    ).exclude(
+        role=UserProfile.ROLE_GUEST
     ).values_list('id', flat=True)
     return list(query)
 
