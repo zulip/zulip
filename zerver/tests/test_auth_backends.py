@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
-from django_auth_ldap.backend import LDAPBackend, LDAPSearch, _LDAPUser
+from django_auth_ldap.backend import LDAPBackend, LDAPSearch
 from django.test.client import RequestFactory
 from django.utils.timezone import now as timezone_now
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
@@ -265,42 +265,35 @@ class AuthBackendTest(ZulipTestCase):
         result = self.client_get('/register/')
         self.assert_not_in_success_response(["No authentication backends are enabled"], result)
 
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
+                       LDAP_EMAIL_ATTR="mail")
     def test_ldap_backend(self) -> None:
+        self.init_default_ldap_database()
         user_profile = self.example_user('hamlet')
         email = user_profile.email
-        password = "test_password"
+        password = "testing"
         self.setup_subdomain(user_profile)
 
         username = self.get_username()
         backend = ZulipLDAPAuthBackend()
 
         # Test LDAP auth fails when LDAP server rejects password
-        with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn',
-                        side_effect=_LDAPUser.AuthenticationFailed("Failed")), (
-            mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-            mock.patch('django_auth_ldap.backend._LDAPUser.attrs',
-                       return_value=dict(full_name=['Hamlet']))):
-            self.assertIsNone(backend.authenticate(username=email, password=password, realm=get_realm("zulip")))
+        self.assertIsNone(backend.authenticate(username=email, password="wrongpass", realm=get_realm("zulip")))
 
-        with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
-            mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-            mock.patch('django_auth_ldap.backend._LDAPUser.attrs',
-                       return_value=dict(full_name=['Hamlet']))):
-            self.verify_backend(backend,
-                                bad_kwargs=dict(username=username,
-                                                password=password,
-                                                realm=get_realm('zephyr')),
-                                good_kwargs=dict(username=username,
-                                                 password=password,
-                                                 realm=get_realm('zulip')))
-            self.verify_backend(backend,
-                                bad_kwargs=dict(username=username,
-                                                password=password,
-                                                realm=get_realm('zephyr')),
-                                good_kwargs=dict(username=username,
-                                                 password=password,
-                                                 realm=get_realm('zulip')))
+        self.verify_backend(backend,
+                            bad_kwargs=dict(username=username,
+                                            password=password,
+                                            realm=get_realm('zephyr')),
+                            good_kwargs=dict(username=username,
+                                             password=password,
+                                             realm=get_realm('zulip')))
+        self.verify_backend(backend,
+                            bad_kwargs=dict(username=username,
+                                            password=password,
+                                            realm=get_realm('zephyr')),
+                            good_kwargs=dict(username=username,
+                                             password=password,
+                                             realm=get_realm('zulip')))
 
     def test_devauth_backend(self) -> None:
         self.verify_backend(DevAuthBackend(),

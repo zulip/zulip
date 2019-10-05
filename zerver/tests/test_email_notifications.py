@@ -1,3 +1,4 @@
+import ldap
 import random
 import re
 import ujson
@@ -5,6 +6,7 @@ import ujson
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
+from django_auth_ldap.config import LDAPSearch
 from email.utils import formataddr
 from mock import patch, MagicMock
 from typing import List, Optional
@@ -47,7 +49,11 @@ class TestFollowupEmails(ZulipTestCase):
     # See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
     # for case details.
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
-                                                'zproject.backends.ZulipDummyBackend'))
+                                                'zproject.backends.ZulipDummyBackend'),
+                       # configure email search for email address in the uid attribute:
+                       AUTH_LDAP_REVERSE_EMAIL_SEARCH=LDAPSearch("ou=users,dc=zulip,dc=com",
+                                                                 ldap.SCOPE_ONELEVEL,
+                                                                 "(uid=%(email)s)"))
     def test_day1_email_ldap_case_a_login_credentials(self) -> None:
         self.init_default_ldap_database()
         ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
