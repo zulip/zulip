@@ -240,6 +240,19 @@ def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
 def realm_user_count(realm: Realm) -> int:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
 
+def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
+    human_counts = {UserProfile.ROLE_REALM_ADMINISTRATOR: 0,
+                    UserProfile.ROLE_MEMBER: 0,
+                    UserProfile.ROLE_GUEST: 0}
+    for value_dict in list(UserProfile.objects.filter(
+            realm=realm, is_bot=False, is_active=True).values('role').annotate(Count('role'))):
+        human_counts[value_dict['role']] = value_dict['role__count']
+    bot_count = UserProfile.objects.filter(realm=realm, is_bot=True, is_active=True).count()
+    return {
+        RealmAuditLog.ROLE_COUNT_HUMANS: human_counts,
+        RealmAuditLog.ROLE_COUNT_BOTS: bot_count,
+    }
+
 def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_stream: str,
                         user_profile: UserProfile, internal: bool=False,
                         realm: Optional[Realm]=None) -> None:
@@ -507,8 +520,12 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                                source_profile=source_profile)
 
     event_time = user_profile.date_joined
-    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type=RealmAuditLog.USER_CREATED, event_time=event_time)
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, modified_user=user_profile,
+        event_type=RealmAuditLog.USER_CREATED, event_time=event_time,
+        extra_data=ujson.dumps({
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm)
+        }))
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
@@ -534,8 +551,12 @@ def do_activate_user(user_profile: UserProfile) -> None:
                                      "is_mirror_dummy", "tos_version"])
 
     event_time = user_profile.date_joined
-    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type=RealmAuditLog.USER_ACTIVATED, event_time=event_time)
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, modified_user=user_profile,
+        event_type=RealmAuditLog.USER_ACTIVATED, event_time=event_time,
+        extra_data=ujson.dumps({
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm)
+        }))
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
@@ -550,9 +571,12 @@ def do_reactivate_user(user_profile: UserProfile, acting_user: Optional[UserProf
     user_profile.save(update_fields=["is_active"])
 
     event_time = timezone_now()
-    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type=RealmAuditLog.USER_REACTIVATED, event_time=event_time,
-                                 acting_user=acting_user)
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
+        event_type=RealmAuditLog.USER_REACTIVATED, event_time=event_time,
+        extra_data=ujson.dumps({
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm)
+        }))
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
@@ -755,9 +779,12 @@ def do_deactivate_user(user_profile: UserProfile,
     clear_scheduled_emails([user_profile.id])
 
     event_time = timezone_now()
-    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 acting_user=acting_user,
-                                 event_type=RealmAuditLog.USER_DEACTIVATED, event_time=event_time)
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
+        event_type=RealmAuditLog.USER_DEACTIVATED, event_time=event_time,
+        extra_data=ujson.dumps({
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm)
+        }))
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time, increment=-1)
     if settings.BILLING_ENABLED:
@@ -3469,6 +3496,7 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
     # TODO: This function and do_change_is_guest should be merged into
     # a single do_change_user_role function in a future refactor.
     if permission == "administer":
+        old_value = user_profile.role
         if value:
             user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         else:
@@ -3481,6 +3509,14 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
         raise AssertionError("Invalid admin permission")
 
     if permission == 'administer':
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm, modified_user=user_profile,
+            event_type=RealmAuditLog.USER_ROLE_CHANGED, event_time=timezone_now(),
+            extra_data=ujson.dumps({
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: UserProfile.ROLE_REALM_ADMINISTRATOR,
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            }))
         event = dict(type="realm_user", op="update",
                      person=dict(email=user_profile.email,
                                  user_id=user_profile.id,
@@ -3490,11 +3526,21 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
 def do_change_is_guest(user_profile: UserProfile, value: bool) -> None:
     # TODO: This function and do_change_is_admin should be merged into
     # a single do_change_user_role function in a future refactor.
+    old_value = user_profile.role
     if value:
         user_profile.role = UserProfile.ROLE_GUEST
     else:
         user_profile.role = UserProfile.ROLE_MEMBER
     user_profile.save(update_fields=["role"])
+
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm, modified_user=user_profile,
+        event_type=RealmAuditLog.USER_ROLE_CHANGED, event_time=timezone_now(),
+        extra_data=ujson.dumps({
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: UserProfile.ROLE_GUEST,
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+        }))
     event = dict(type="realm_user", op="update",
                  person=dict(email=user_profile.email,
                              user_id=user_profile.id,

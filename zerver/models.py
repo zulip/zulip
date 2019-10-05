@@ -2571,6 +2571,14 @@ class RealmAuditLog(models.Model):
     # If True, event_time is an overestimate of the true time. Can be used
     # by migrations when introducing a new event_type.
     backfilled = models.BooleanField(default=False)  # type: bool
+
+    # Keys within extra_data, when extra_data is a json dict. Keys are strings because
+    # json keys must always be strings.
+    OLD_VALUE = '1'
+    NEW_VALUE = '2'
+    ROLE_COUNT = '10'
+    ROLE_COUNT_HUMANS = '11'
+    ROLE_COUNT_BOTS = '12'
     extra_data = models.TextField(null=True)  # type: Optional[str]
 
     # USER_* event_types between 100 and 119 are synced from on-prem installations
@@ -2583,6 +2591,7 @@ class RealmAuditLog(models.Model):
     USER_ACTIVATED = 102
     USER_DEACTIVATED = 103
     USER_REACTIVATED = 104
+    USER_ROLE_CHANGED = 105
 
     USER_SOFT_ACTIVATED = 120
     USER_SOFT_DEACTIVATED = 121
