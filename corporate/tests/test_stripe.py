@@ -23,7 +23,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, \
-    get_latest_seat_count, sign_string, unsign_string, \
+    BillingUser, BillingOrg, \
+    sign_string, unsign_string, \
     BillingError, StripeCardError, stripe_get_customer, \
     MIN_INVOICED_LICENSES, \
     add_months, next_month, \
@@ -222,7 +223,8 @@ class StripeTestCase(ZulipTestCase):
         # The following hack ensures get_latest_seat_count is fixed, even as populate_db changes.
         # The tests below are not otherwise robust to users being added to populate_db.
         realm = get_realm('zulip')
-        seat_count = get_latest_seat_count(realm)
+        billing_org = BillingOrg(realm)
+        seat_count = billing_org.get_latest_seat_count()
         assert(seat_count >= 6)
         for user in UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False) \
                                        .exclude(role=UserProfile.ROLE_GUEST).exclude(email__in=[
@@ -231,7 +233,7 @@ class StripeTestCase(ZulipTestCase):
             user.is_active = False
             user.save(update_fields=['is_active'])
         self.create_billing_log_entry(6, self.now)
-        self.assertEqual(get_latest_seat_count(realm), 6)
+        self.assertEqual(billing_org.get_latest_seat_count(), 6)
         self.seat_count = 6
         self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
 
@@ -290,7 +292,7 @@ class StripeTestCase(ZulipTestCase):
                     self.source = StripeMock(depth=2)
 
         def upgrade_func(*args: Any) -> Any:
-            return process_initial_upgrade(self.example_user('hamlet'), *args[:4])
+            return process_initial_upgrade(BillingUser(self.example_user('hamlet')), *args[:4])
 
         for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:
             upgrade_func = patch(mocked_function_name, return_value=StripeMock())(upgrade_func)
@@ -557,7 +559,7 @@ class StripeTest(StripeTestCase):
         self.login(self.example_email("hamlet"))
         new_seat_count = 23
         # Change the seat count while the user is going through the upgrade flow
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=new_seat_count):
+        with patch('corporate.lib.stripe.BillingOrg.get_latest_seat_count', return_value=new_seat_count):
             self.upgrade()
         stripe_customer_id = Customer.objects.first().stripe_customer_id
         # Check that the Charge used the old quantity, not new_seat_count
@@ -605,9 +607,8 @@ class StripeTest(StripeTestCase):
         self.assertEqual('/upgrade/', response.url)
 
         # Try again, with a valid card, after they added a few users
-        with patch('corporate.lib.stripe.get_latest_seat_count', return_value=23):
-            with patch('corporate.views.get_latest_seat_count', return_value=23):
-                self.upgrade()
+        with patch('corporate.lib.stripe.BillingOrg.get_latest_seat_count', return_value=23):
+            self.upgrade()
         customer = Customer.objects.get(realm=get_realm('zulip'))
         # It's impossible to create two Customers, but check that we didn't
         # change stripe_customer_id
@@ -738,32 +739,34 @@ class StripeTest(StripeTestCase):
 
     def test_get_latest_seat_count(self) -> None:
         realm = get_realm("zulip")
-        initial_count = get_latest_seat_count(realm)
+        billing_user = BillingOrg(realm)
+        initial_count = billing_user.get_latest_seat_count()
         human = do_create_user('human@zulip.com', 'password', realm, 'name', 'name')
-        self.assertEqual(get_latest_seat_count(realm), initial_count + 1)
+        self.assertEqual(billing_user.get_latest_seat_count(), initial_count + 1)
 
         # Test that bots aren't counted
         do_create_user('bot@zulip.com', 'password', realm, 'name', 'name', bot_type=1)
-        self.assertEqual(get_latest_seat_count(realm), initial_count + 1)
+        self.assertEqual(billing_user.get_latest_seat_count(), initial_count + 1)
 
         # Test that inactive users aren't counted
         do_deactivate_user(human)
-        self.assertEqual(get_latest_seat_count(realm), initial_count)
+        self.assertEqual(billing_user.get_latest_seat_count(), initial_count)
 
         # Test guests
         # Adding a guest to a realm with a lot of members shouldn't change anything
         do_create_user('guest@zulip.com', 'password', realm, 'name', 'name', is_guest=True)
-        self.assertEqual(get_latest_seat_count(realm), initial_count)
+        self.assertEqual(billing_user.get_latest_seat_count(), initial_count)
         # Test 1 member and 5 guests
         realm = Realm.objects.create(string_id='second', name='second')
+        billing_user = BillingOrg(realm)
         do_create_user('member@second.com', 'password', realm, 'name', 'name')
         for i in range(5):
             do_create_user('guest{}@second.com'.format(i), 'password', realm,
                            'name', 'name', is_guest=True)
-        self.assertEqual(get_latest_seat_count(realm), 1)
+        self.assertEqual(billing_user.get_latest_seat_count(), 1)
         # Test 1 member and 6 guests
         do_create_user('guest5@second.com', 'password', realm, 'name', 'name', is_guest=True)
-        self.assertEqual(get_latest_seat_count(realm), 2)
+        self.assertEqual(billing_user.get_latest_seat_count(), 2)
 
     def test_sign_string(self) -> None:
         string = "abc"
@@ -799,7 +802,8 @@ class StripeTest(StripeTestCase):
     def test_attach_discount_to_realm(self, *mocks: Mock) -> None:
         # Attach discount before Stripe customer exists
         user = self.example_user('hamlet')
-        attach_discount_to_realm(user.realm, Decimal(85))
+        billing_user = BillingUser(user)
+        attach_discount_to_realm(billing_user, Decimal(85))
         self.login(user.email)
         # Check that the discount appears in page_params
         self.assert_in_success_response(['85'], self.client_get("/upgrade/"))
@@ -817,8 +821,9 @@ class StripeTest(StripeTestCase):
         # Attach discount to existing Stripe customer
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=['status'])
-        attach_discount_to_realm(user.realm, Decimal(25))
-        process_initial_upgrade(user, self.seat_count, True, CustomerPlan.ANNUAL, stripe_create_token().id)
+        attach_discount_to_realm(billing_user, Decimal(25))
+        process_initial_upgrade(billing_user, self.seat_count, True,
+                                CustomerPlan.ANNUAL, stripe_create_token().id)
         self.assertEqual(6000 * self.seat_count,
                          [charge for charge in stripe.Charge.list(customer=stripe_customer_id)][0].amount)
         stripe_invoice = [invoice for invoice in stripe.Invoice.list(customer=stripe_customer_id)][0]
@@ -827,11 +832,11 @@ class StripeTest(StripeTestCase):
         plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
 
     def test_get_discount_for_realm(self) -> None:
-        user = self.example_user('hamlet')
-        self.assertEqual(get_discount_for_realm(user.realm), None)
+        billing_org = BillingOrg(get_realm('zulip'))
+        self.assertEqual(get_discount_for_realm(billing_org), None)
 
-        attach_discount_to_realm(user.realm, Decimal(85))
-        self.assertEqual(get_discount_for_realm(user.realm), 85)
+        attach_discount_to_realm(billing_org, Decimal(85))
+        self.assertEqual(get_discount_for_realm(billing_org), 85)
 
     @mock_stripe()
     def test_replace_payment_source(self, *mocks: Mock) -> None:
@@ -1079,21 +1084,21 @@ class BillingHelpersTest(ZulipTestCase):
                 self.assertEqual(output_, output)
 
     def test_update_or_create_stripe_customer_logic(self) -> None:
-        user = self.example_user('hamlet')
+        billing_user = BillingUser(self.example_user('hamlet'))
         # No existing Customer object
         with patch('corporate.lib.stripe.do_create_stripe_customer', return_value='returned') as mocked1:
-            returned = update_or_create_stripe_customer(user, stripe_token='token')
+            returned = update_or_create_stripe_customer(billing_user, stripe_token='token')
         mocked1.assert_called()
         self.assertEqual(returned, 'returned')
         # Customer exists, replace payment source
         Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cus_12345')
         with patch('corporate.lib.stripe.do_replace_payment_source') as mocked2:
-            customer = update_or_create_stripe_customer(self.example_user('hamlet'), 'token')
+            customer = update_or_create_stripe_customer(billing_user, 'token')
         mocked2.assert_called()
         self.assertTrue(isinstance(customer, Customer))
         # Customer exists, do nothing
         with patch('corporate.lib.stripe.do_replace_payment_source') as mocked3:
-            customer = update_or_create_stripe_customer(self.example_user('hamlet'), None)
+            customer = update_or_create_stripe_customer(billing_user, None)
         mocked3.assert_not_called()
         self.assertTrue(isinstance(customer, Customer))
 

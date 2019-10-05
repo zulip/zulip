@@ -495,7 +495,9 @@ class TestSupportEndpoint(ZulipTestCase):
 
         with mock.patch("analytics.views.attach_discount_to_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "discount": "25"})
-            m.assert_called_once_with(get_realm("lear"), 25)
+            billing_org, discount = m.call_args_list[0][0]
+            self.assertEqual(billing_org.realm, get_realm("lear"))
+            self.assertEqual(int(discount), 25)
             self.assert_in_success_response(["Discount of Lear &amp; Co. changed to 25 from None"], result)
 
     def test_activate_or_deactivate_realm(self) -> None:

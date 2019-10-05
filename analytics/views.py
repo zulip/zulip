@@ -44,7 +44,8 @@ from zerver.lib.actions import do_change_plan_type, do_deactivate_realm, \
 from confirmation.settings import STATUS_ACTIVE
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
+    from corporate.lib.stripe import attach_discount_to_realm, \
+        get_discount_for_realm, BillingOrg
 
 from zerver.models import Client, get_realm, Realm, UserActivity, UserActivityInterval, \
     UserProfile, PreregistrationUser, MultiuseInvite
@@ -1076,6 +1077,7 @@ def support(request: HttpRequest) -> HttpResponse:
     if settings.BILLING_ENABLED and request.method == "POST":
         realm_id = request.POST.get("realm_id", None)
         realm = Realm.objects.get(id=realm_id)
+        billing_org = BillingOrg(realm)
 
         new_plan_type = request.POST.get("plan_type", None)
         if new_plan_type is not None:
@@ -1090,8 +1092,8 @@ def support(request: HttpRequest) -> HttpResponse:
         new_discount = request.POST.get("discount", None)
         if new_discount is not None:
             new_discount = Decimal(new_discount)
-            current_discount = get_discount_for_realm(realm)
-            attach_discount_to_realm(realm, new_discount)
+            current_discount = get_discount_for_realm(billing_org)
+            attach_discount_to_realm(billing_org, new_discount)
             msg = "Discount of {} changed to {} from {} ".format(realm.name, new_discount, current_discount)
             context["message"] = msg
 
@@ -1151,8 +1153,11 @@ def support(request: HttpRequest) -> HttpResponse:
     def realm_admin_emails(realm: Realm) -> str:
         return ", ".join(realm.get_human_admin_users().values_list("delivery_email", flat=True))
 
+    def _get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
+        return get_discount_for_realm(BillingOrg(realm))
+
     context["realm_admin_emails"] = realm_admin_emails
-    context["get_discount_for_realm"] = get_discount_for_realm
+    context["get_discount_for_realm"] = _get_discount_for_realm
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
     return render(request, 'analytics/support.html', context=context)

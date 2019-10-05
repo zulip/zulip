@@ -1,3 +1,4 @@
+from decimal import Decimal
 import logging
 import stripe
 from typing import Any, Dict, cast, Optional, Union
@@ -16,14 +17,13 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string, check_int
 from zerver.models import UserProfile
 from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
-    stripe_get_customer, get_latest_seat_count, \
+    stripe_get_customer, \
     process_initial_upgrade, sign_string, \
     unsign_string, BillingError, do_change_plan_status, do_replace_payment_source, \
     MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
     start_of_next_billing_cycle, renewal_amount, \
-    make_end_of_cycle_updates_if_needed
-from corporate.models import Customer, CustomerPlan, \
-    get_current_plan
+    make_end_of_cycle_updates_if_needed, BillingUser
+from corporate.models import CustomerPlan, get_current_plan
 
 billing_logger = logging.getLogger('corporate.stripe')
 
@@ -79,6 +79,7 @@ def upgrade(request: HttpRequest, user: UserProfile,
             stripe_token: str=REQ(validator=check_string, default=None),
             signed_seat_count: str=REQ(validator=check_string),
             salt: str=REQ(validator=check_string)) -> HttpResponse:
+    billing_user = get_billing_user_from_request(request)
     try:
         seat_count = unsign_seat_count(signed_seat_count, salt)
         if billing_modality == 'charge_automatically' and license_management == 'automatic':
@@ -93,7 +94,7 @@ def upgrade(request: HttpRequest, user: UserProfile,
 
         billing_schedule = {'annual': CustomerPlan.ANNUAL,
                             'monthly': CustomerPlan.MONTHLY}[schedule]
-        process_initial_upgrade(user, licenses, automanage_licenses, billing_schedule, stripe_token)
+        process_initial_upgrade(billing_user, licenses, automanage_licenses, billing_schedule, stripe_token)
     except BillingError as e:
         if not settings.TEST_SUITE:  # nocoverage
             billing_logger.warning(
@@ -110,25 +111,28 @@ def upgrade(request: HttpRequest, user: UserProfile,
     else:
         return json_success()
 
+def get_billing_user_from_request(request: HttpRequest) -> BillingUser:
+    return BillingUser(request.user)
+
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if not settings.BILLING_ENABLED:
         return render(request, "404.html")
 
-    user = request.user
-    customer = Customer.objects.filter(realm=user.realm).first()
+    billing_user = get_billing_user_from_request(request)
+    customer = billing_user.get_customer_if_exists()
     if customer is not None and CustomerPlan.objects.filter(customer=customer).exists():
         return HttpResponseRedirect(reverse('corporate.views.billing_home'))
 
-    percent_off = 0
+    percent_off = Decimal(0)
     if customer is not None and customer.default_discount is not None:
         percent_off = customer.default_discount
 
-    seat_count = get_latest_seat_count(user.realm)
+    seat_count = billing_user.get_latest_seat_count()
     signed_seat_count, salt = sign_string(str(seat_count))
     context = {
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
-        'email': user.email,
+        'email': billing_user.get_email(),
         'seat_count': seat_count,
         'signed_seat_count': signed_seat_count,
         'salt': salt,
@@ -147,14 +151,14 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
 
 @zulip_login_required
 def billing_home(request: HttpRequest) -> HttpResponse:
-    user = request.user
-    customer = Customer.objects.filter(realm=user.realm).first()
+    billing_user = get_billing_user_from_request(request)
+    customer = billing_user.get_customer_if_exists()
     if customer is None:
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
     if not CustomerPlan.objects.filter(customer=customer).exists():
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
 
-    if not user.is_realm_admin and not user.is_billing_admin:
+    if not billing_user.has_billing_access():
         context = {'admin_access': False}  # type: Dict[str, Any]
         return render(request, 'corporate/billing.html', context=context)
     context = {'admin_access': True}
@@ -177,7 +181,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, now)
         if last_ledger_entry is not None:
             licenses = last_ledger_entry.licenses
-            licenses_used = get_latest_seat_count(user.realm)
+            licenses_used = billing_user.get_latest_seat_count()
             # Should do this in javascript, using the user's timezone
             renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=start_of_next_billing_cycle(plan, now))
             renewal_cents = renewal_amount(plan, now)
@@ -204,8 +208,9 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 @has_request_variables
 def change_plan_at_end_of_cycle(request: HttpRequest, user: UserProfile,
                                 status: int=REQ("status", validator=check_int)) -> HttpResponse:
+    billing_user = get_billing_user_from_request(request)
     assert(status in [CustomerPlan.ACTIVE, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE])
-    plan = get_current_plan(Customer.objects.get(realm=user.realm))
+    plan = get_current_plan(billing_user.get_customer())
     assert(plan is not None)  # for mypy
     do_change_plan_status(plan, status)
     return json_success()
@@ -214,8 +219,9 @@ def change_plan_at_end_of_cycle(request: HttpRequest, user: UserProfile,
 @has_request_variables
 def replace_payment_source(request: HttpRequest, user: UserProfile,
                            stripe_token: str=REQ("stripe_token", validator=check_string)) -> HttpResponse:
+    billing_user = get_billing_user_from_request(request)
     try:
-        do_replace_payment_source(user, stripe_token, pay_invoices=True)
+        do_replace_payment_source(billing_user, stripe_token, pay_invoices=True)
     except BillingError as e:
         return json_error(e.message, data={'error_description': e.description})
     return json_success()
