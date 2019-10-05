@@ -348,9 +348,35 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
         return username
 
-    def ldap_to_django_username(self, username: str) -> str:
+    def user_email_from_ldapuser(self, username: str, ldap_user: _LDAPUser) -> str:
+        if hasattr(ldap_user, '_username'):
+            # In tests, we sometimes pass a simplified _LDAPUser without _username attr,
+            # and with the intended username in the username argument.
+            username = ldap_user._username
+
         if settings.LDAP_APPEND_DOMAIN:
             return "@".join((username, settings.LDAP_APPEND_DOMAIN))
+
+        if settings.LDAP_EMAIL_ATTR is not None:
+            # Get email from ldap attributes.
+            if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
+                raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
+                    settings.LDAP_EMAIL_ATTR,))
+            else:
+                return ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
+
+        return username
+
+    def ldap_to_django_username(self, username: str) -> str:
+        """
+        This is called inside django_auth_ldap with only one role:
+        to convert _LDAPUser._username to django username (so in Zulip, the email)
+        and pass that as "username" argument to get_or_build_user(username, ldapuser).
+        In many cases, the email is stored in the _LDAPUser's attributes, so it can't be
+        constructed just from the username. We choose to do nothing in this function,
+        and our overrides of get_or_build_user() obtain that username from the _LDAPUser
+        object on their own, through our user_email_from_ldapuser function.
+        """
         return username
 
     def sync_avatar_from_ldap(self, user: UserProfile, ldap_user: _LDAPUser) -> None:
@@ -478,7 +504,13 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
              ./manage.py sync_ldap_user_data
            In authentication contexts, this is overriden in ZulipLDAPAuthBackend.
         """
+        # Obtain the django username from the ldap_user object:
+        username = self.user_email_from_ldapuser(username, ldap_user)
+
+        # Call the library get_or_build_user for building the UserProfile
+        # with the username we obtained:
         (user, built) = super().get_or_build_user(username, ldap_user)
+        # Synchronise the UserProfile with its LDAP attributes:
         if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:
             user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
             if user_disabled_in_ldap:
@@ -549,14 +581,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         """
         return_data = {}  # type: Dict[str, Any]
 
-        if settings.LDAP_EMAIL_ATTR is not None:
-            # Get email from ldap attributes.
-            if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
-                return_data["ldap_missing_attribute"] = settings.LDAP_EMAIL_ATTR
-                raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
-                    settings.LDAP_EMAIL_ATTR,))
-
-            username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
+        username = self.user_email_from_ldapuser(username, ldap_user)
 
         if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:  # nocoverage
             ldap_disabled = self.is_account_control_disabled_user(ldap_user)
