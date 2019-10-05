@@ -328,6 +328,22 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                     raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
                         username, settings.LDAP_APPEND_DOMAIN))
                 return email_to_username(username)
+            else:
+                return username
+
+        if settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH:
+            # We can use find_ldap_users_by_email
+            if is_valid_email(username):
+                result = find_ldap_users_by_email(username)
+                if result:
+                    if len(result) == 1:
+                        return result[0]._username
+                    if len(result) > 1:
+                        # This is possible, but strange, so worth logging a warning about.
+                        # We can't translate the email to a unique username,
+                        # so we don't do anything else here.
+                        logging.warning("Multiple users with email {} found in LDAP.".format(username))
+
         return username
 
     def ldap_to_django_username(self, username: str) -> str:
@@ -492,6 +508,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             return None
 
         try:
+            # If searching for email in LDAP is configured,
+            # django_to_ldap_username can translate email to user's LDAP username,
+            # so that this authenticate() can successfully be called with
+            # user_profile.email .
             username = self.django_to_ldap_username(username)
         except ZulipLDAPExceptionOutsideDomain:
             if return_data is not None:
