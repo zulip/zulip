@@ -109,31 +109,12 @@ descriptions for all of them.  Relevant to almost everyone are these:
 * [#learning](https://chat.zulip.org/#narrow/stream/92-learning) is for
   posting great learning resources one comes across.
 
-## Chat meetings
+## Searching for past conversations
 
-We have regular chat meetings on Zulip to coordinate work on various
-parts of the Zulip project.  While most developer discussions happen
-asynchonrously, these meetings are used mainly to coordinate work
-within a major area of Zulip.  These meetings are usually scheduled in
-Pacific time mornings, since that seems to be the best time for our
-global contributor base (the part of the world where it's the deep
-middle of the night is the Pacific Ocean).
+When [searching][] for previous discussions of a given topic, we
+recommend using the `streams:public keyword` set of operators.  This
+will search the full history of public streams in the organization for
+`keyword` (including messages sent before you joined and on public
+streams you're not subscribed to).
 
-Anyone is welcome to attend and contribute to the discussions in these
-meetings, and they're a great time to stop by and introduce yourself
-if you'd like to get involved (though really, any time is, so).
-
-Here are the regular meetings that exist today along with their usual
-times:
-
-* Mobile team on
-[#mobile](https://chat.zulip.org/#narrow/stream/48-mobile), generally
-Wednesdays at 10AM Pacific time.
-
-* Backend/infrastructure team on
-[#backend](https://chat.zulip.org/#narrow/stream/3-backend), generally
-Fridays at 10AM Pacific time.
-
-* Bots and integrations team on
-[#integrations](https://chat.zulip.org/#narrow/stream/127-integrations),
-generally Fridays at 9AM Pacific time.
+[searching]: https://zulipchat.com/help/search-for-messages
