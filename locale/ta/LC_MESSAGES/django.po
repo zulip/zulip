@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-27 19:24+0000\n"
+"POT-Creation-Date: 2019-10-06 01:01+0000\n"
 "PO-Revision-Date: 2018-04-11 21:06+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Tamil (http://www.transifex.com/zulip/zulip/language/ta/)\n"
@@ -1340,7 +1340,7 @@ msgstr ""
 msgid "Organization permissions"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1738
+#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1744
 msgid "Custom emoji"
 msgstr ""
 
@@ -3270,14 +3270,14 @@ msgstr ""
 msgid "Invalid order mapping."
 msgstr ""
 
-#: zerver/lib/actions.py:5492 zerver/lib/users.py:257
+#: zerver/lib/actions.py:5501 zerver/lib/users.py:257
 #: zerver/views/custom_profile_fields.py:120
 #: zerver/views/custom_profile_fields.py:139
 #, python-brace-format
 msgid "Field id {id} not found."
 msgstr ""
 
-#: zerver/lib/actions.py:5513 zerver/lib/actions.py:5524
+#: zerver/lib/actions.py:5522 zerver/lib/actions.py:5533
 #, python-format
 msgid "User group '%s' already exists."
 msgstr ""
@@ -3606,7 +3606,7 @@ msgstr ""
 msgid "Argument \"%s\" is not valid JSON."
 msgstr ""
 
-#: zerver/lib/rest.py:150 zerver/lib/rest.py:158
+#: zerver/lib/rest.py:155 zerver/lib/rest.py:163
 msgid "Not logged in: API authentication or user session required"
 msgstr ""
 
@@ -3893,54 +3893,54 @@ msgstr ""
 msgid "Invalid URL format string."
 msgstr ""
 
-#: zerver/models.py:1737
+#: zerver/models.py:1743
 msgid "Unicode emoji"
 msgstr ""
 
-#: zerver/models.py:1739
+#: zerver/models.py:1745
 msgid "Zulip extra emoji"
 msgstr ""
 
-#: zerver/models.py:2619
+#: zerver/models.py:2625
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr ""
 
-#: zerver/models.py:2623
+#: zerver/models.py:2629
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr ""
 
-#: zerver/models.py:2626
+#: zerver/models.py:2632
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr ""
 
-#: zerver/models.py:2656
+#: zerver/models.py:2662
 msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:2659
+#: zerver/models.py:2665
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:2671
+#: zerver/models.py:2677
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:2672
+#: zerver/models.py:2678
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:2673
+#: zerver/models.py:2679
 msgid "Date picker"
 msgstr ""
 
-#: zerver/models.py:2674
+#: zerver/models.py:2680
 msgid "Link"
 msgstr ""
 
-#: zerver/models.py:2675
+#: zerver/models.py:2681
 msgid "External account"
 msgstr ""
 
@@ -4343,7 +4343,7 @@ msgid "You must upload exactly one file."
 msgstr ""
 
 #: zerver/views/realm_emoji.py:35 zerver/views/realm_icon.py:22
-#: zerver/views/realm_logo.py:27 zerver/views/upload.py:69
+#: zerver/views/realm_logo.py:27 zerver/views/upload.py:72
 #: zerver/views/user_settings.py:204
 #, python-format
 msgid "Uploaded file is larger than the allowed limit of %s MB"
@@ -4483,7 +4483,7 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr ""
 
-#: zerver/views/thumbnail.py:25 zerver/views/upload.py:54
+#: zerver/views/thumbnail.py:25 zerver/views/upload.py:57
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr ""
 
@@ -4491,15 +4491,15 @@ msgstr ""
 msgid "<p>Invalid size.</p>"
 msgstr ""
 
-#: zerver/views/upload.py:52
+#: zerver/views/upload.py:55
 msgid "<p>File not found.</p>"
 msgstr ""
 
-#: zerver/views/upload.py:62
+#: zerver/views/upload.py:65
 msgid "You must specify a file to upload"
 msgstr ""
 
-#: zerver/views/upload.py:64 zerver/views/users.py:228
+#: zerver/views/upload.py:67 zerver/views/users.py:228
 #: zerver/views/users.py:314
 msgid "You may only upload one file at a time"
 msgstr ""

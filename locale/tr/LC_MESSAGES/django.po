@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-24 19:55+0000\n"
-"PO-Revision-Date: 2019-09-24 19:55+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2019-10-02 06:26+0000\n"
+"Last-Translator: Hüseyin Fahri Uzun <mail@fahriuzun.com>\n"
 "Language-Team: Turkish (http://www.transifex.com/zulip/zulip/language/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -593,7 +593,7 @@ msgid ""
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
 "            here</a>.\n"
 "            "
-msgstr ""
+msgstr "\nAnmalar hakkında daha fazlası için <a href=\"/help/mention-a-user-or-group\">\ntıklayınız </a>."
 
 #: templates/zerver/app/home.html:145
 msgid "No search results"
@@ -1187,7 +1187,7 @@ msgstr "Sadece ileti ID'sine odakla."
 
 #: templates/zerver/app/search_operators.html:45
 msgid "Search all public streams in the organization."
-msgstr ""
+msgstr "Organizasyon içinde tüm açık kanallarda arama yap"
 
 #: templates/zerver/app/search_operators.html:49
 msgid "Narrow to messages with alert words."
@@ -1357,7 +1357,7 @@ msgstr "Davetler"
 
 #: templates/zerver/app/settings_overlay.html:150
 msgid "Data exports"
-msgstr ""
+msgstr "Veri dışa aktarımı"
 
 #: templates/zerver/app/settings_overlay.html:156
 msgid "Show more"
@@ -1756,7 +1756,7 @@ msgid ""
 "style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) "
 "wants you to join them on Zulip — the team communication tool designed for "
 "productivity."
-msgstr ""
+msgstr "%(referrer_full_name)s(<a href=\"mailto:%(referrer_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) senin Zulip'e bağlanmanı istiyor — üretkenlik için dizayn edilmiş takım komünikasyon aracı."
 
 #: templates/zerver/emails/compiled/invitation.html:15
 #: templates/zerver/emails/compiled/invitation_reminder.html:14
@@ -1798,7 +1798,7 @@ msgstr "Bu davet için son hatırlatıcıdır."
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr ""
+msgstr "Bu davetiye iki gün içersinde sona eriyor. Eğer davetiye sona ererse, %(referrer_name)s'a başka bir tanesi için sorman gerekir."
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:9
 #: templates/zerver/emails/notify_change_in_email.source.html:8
@@ -2170,7 +2170,7 @@ msgid ""
 "href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>) wants you to join"
 " them on Zulip &mdash; the team communication tool designed for "
 "productivity."
-msgstr ""
+msgstr "%(referrer_full_name)s(<a href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>) senin Zulip'e bağlanmanı istiyor &mdash; üretkenlik için dizayn edilmiş takım komünikasyon aracı."
 
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
@@ -2402,7 +2402,7 @@ msgstr "Çalışma ortamları için en iyi sohbet programı"
 
 #: templates/zerver/for-open-source.html:23
 msgid "Zulip for open source"
-msgstr ""
+msgstr "Açık kaynak kod için Zulip"
 
 #: templates/zerver/for-working-groups-and-communities.html:19
 msgid "The best chat for working groups and communities"
@@ -2799,7 +2799,7 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr ""
+msgstr "\n<h1 class=\"get-started\">Hesap seç </h1>"
 
 #: templates/zerver/team.html:131
 msgid "Avatar"
@@ -3062,7 +3062,7 @@ msgstr "Varsayılan kanal grup adı '%s' NULL karekterler (0x00) içeriyor."
 msgid ""
 "Your bot `%(bot_identity)s` tried to send a message to stream ID "
 "%(stream_id)s, but there is no stream with that ID."
-msgstr ""
+msgstr "Botun `%(bot_identity)s` %(stream_id)s ID'li kanala mesaj göndermeye çalıştı fakat bu ID ile kanal bulunmamaktadır."
 
 #: zerver/lib/actions.py:2158
 #, python-format
@@ -3070,14 +3070,14 @@ msgid ""
 "Your bot `%(bot_identity)s` tried to send a message to stream "
 "#**%(stream_name)s**, but that stream does not exist. Click "
 "[here](#streams/new) to create it."
-msgstr ""
+msgstr "Botun `%(bot_identity)s` #**%(stream_name)s** mesaj göndermeye çalıştı fakat böyle bir kanal bulunmamaktadır. Oluşturmak için [buraya] tıklayınız."
 
 #: zerver/lib/actions.py:2164
 #, python-format
 msgid ""
 "Your bot `%(bot_identity)s` tried to send a message to stream "
 "#**%(stream_name)s**. The stream exists but does not have any subscribers."
-msgstr ""
+msgstr "Botun `%(bot_identity)s` #**%(stream_name)s** kanalına mesak göndermeye çalıştı. Bu kanal geçerlidir fakat herhangi bir üyesi bulunmamaktadır."
 
 #: zerver/lib/actions.py:2183
 msgid "Only organization administrators can send to this stream."
@@ -3118,7 +3118,7 @@ msgstr "Özel kanal için kayıtlı listesine ulaşılanamadı"
 msgid ""
 "@_**%(user_name)s|%(user_id)d** renamed stream **%(old_stream_name)s** to "
 "**%(new_stream_name)s**."
-msgstr ""
+msgstr "@_** %(user_name)s| %(user_id)d** kanal adını değiştirdi ** %(old_stream_name)s ** > ** %(new_stream_name)s**."
 
 #: zerver/lib/actions.py:3727
 #, python-format
@@ -3169,7 +3169,7 @@ msgstr "Geçersiz etiket: '%s'"
 #: zerver/lib/actions.py:4142
 #, python-format
 msgid "Flag not editable: '%s'"
-msgstr ""
+msgstr "'%s' Etiket düzenlenemez"
 
 #: zerver/lib/actions.py:4158 zerver/lib/actions.py:4160
 #: zerver/lib/message.py:513 zerver/lib/message.py:519
@@ -3179,7 +3179,7 @@ msgstr "Geçersiz ileti(ler)"
 #: zerver/lib/actions.py:4877
 #, python-format
 msgid "%s already has an account"
-msgstr ""
+msgstr "%sZaten bir hesaba sahip"
 
 #: zerver/lib/actions.py:4878
 msgid "Already has an account."
@@ -3187,7 +3187,7 @@ msgstr "Zaten bir hesabı var."
 
 #: zerver/lib/actions.py:4881
 msgid "Account has been deactivated."
-msgstr ""
+msgstr "Hesap devre dışı bırakıldı"
 
 #: zerver/lib/actions.py:4887
 msgid "Invalid address."
@@ -3400,11 +3400,11 @@ msgstr "'{event_type}' , henüz {webhook_name} webhook tarafından desteklenmeme
 
 #: zerver/lib/external_accounts.py:47
 msgid "Custom external account must define url pattern"
-msgstr ""
+msgstr "Özel dış hesap URL kalıbı belirlemelidir"
 
 #: zerver/lib/external_accounts.py:49
 msgid "Invalid external account type"
-msgstr ""
+msgstr "Geçersiz dış hesap tipi"
 
 #: zerver/lib/hotspots.py:12
 msgid "Reply to a message"
@@ -3527,12 +3527,12 @@ msgstr "Jeton (token) bulunamadı"
 #: zerver/lib/push_notifications.py:585
 #, python-format
 msgid "%(full_name)s mentioned you:"
-msgstr ""
+msgstr "%(full_name)s sizden bahsetti:"
 
 #: zerver/lib/push_notifications.py:587
 #, python-format
 msgid "%(full_name)s mentioned everyone:"
-msgstr ""
+msgstr "%(full_name)sherkesten bahsetti:"
 
 #: zerver/lib/remote_server.py:70
 #, python-format
@@ -3647,16 +3647,16 @@ msgstr "Kötü ad veya kullanıcı adı"
 #: zerver/lib/users.py:61
 #, python-format
 msgid "Invalid integration '%s'."
-msgstr ""
+msgstr "'%s' Geçersiz entegrasyon."
 
 #: zerver/lib/users.py:65
 #, python-format
 msgid "Missing configuration parameters: %s"
-msgstr ""
+msgstr "Eksik ayar parametreleri: %s"
 
 #: zerver/lib/users.py:72
 msgid "Invalid {} value {} ({})"
-msgstr ""
+msgstr "Geçersiz {} değer {} ({})"
 
 #: zerver/lib/users.py:87
 msgid "Invalid configuration data!"
@@ -3780,7 +3780,7 @@ msgstr "%s bir URL değil"
 
 #: zerver/lib/validator.py:238
 msgid "Malformed URL pattern."
-msgstr ""
+msgstr "Bozuk URL kalıbı."
 
 #: zerver/lib/validator.py:258
 #, python-brace-format
@@ -3795,12 +3795,12 @@ msgstr "'{value}', '{field_name}' için uygun bir seçenek değil."
 #: zerver/lib/validator.py:337
 #, python-format
 msgid "%s is not a string or an integer list"
-msgstr ""
+msgstr "%sdize veya sayı listesi değil"
 
 #: zerver/lib/validator.py:345
 #, python-format
 msgid "%s is not a string or integer"
-msgstr ""
+msgstr "%sdize veya sayı değil"
 
 #: zerver/lib/webhooks/common.py:51
 #, python-brace-format
@@ -3831,11 +3831,11 @@ msgstr "API kullanım sınırı aşıldı"
 
 #: zerver/models.py:237
 msgid "stream events"
-msgstr ""
+msgstr "kanal iletileri"
 
 #: zerver/models.py:256
 msgid "Available on Zulip Standard. Upgrade to access."
-msgstr ""
+msgstr "Zulip Standard için mevcut. Erişim için yükseltiniz."
 
 #: zerver/models.py:643
 #, python-format
@@ -3895,7 +3895,7 @@ msgstr "Link"
 
 #: zerver/models.py:2675
 msgid "External account"
-msgstr ""
+msgstr "Dış hesap"
 
 #: zerver/signals.py:90
 msgid "Unknown IP address"
@@ -3924,12 +3924,12 @@ msgstr "Bu queue'den event almaya yetkili değilsiniz"
 #: zerver/tornado/event_queue.py:545
 #, python-format
 msgid "An event newer than %s has already been pruned!"
-msgstr ""
+msgstr "%s'dan daha yeni bir olay zaten muaf edilmiştir!"
 
 #: zerver/tornado/event_queue.py:551
 #, python-format
 msgid "Event %s was not in this queue"
-msgstr ""
+msgstr "%s olayı bu sorguya dahil değildir"
 
 #: zerver/tornado/exceptions.py:14
 #, python-brace-format
@@ -4035,7 +4035,7 @@ msgstr "İstekte User-Agent başlığı eksik"
 
 #: zerver/views/custom_profile_fields.py:37
 msgid "Label cannot be blank."
-msgstr ""
+msgstr "Başlık boş geçilemez."
 
 #: zerver/views/custom_profile_fields.py:53
 msgid "Field must have at least one choice."
@@ -4048,11 +4048,11 @@ msgstr "Geçersiz alan türü."
 #: zerver/views/custom_profile_fields.py:112
 #: zerver/views/custom_profile_fields.py:150
 msgid "A field with that label already exists."
-msgstr ""
+msgstr "Bu başlık zaten mevcut."
 
 #: zerver/views/custom_profile_fields.py:143
 msgid "Default custom field cannot be updated."
-msgstr ""
+msgstr "Varsayılan özel alan güncellenemez."
 
 #: zerver/views/hotspots.py:17
 #, python-format
@@ -4244,7 +4244,7 @@ msgstr "En az bir kimlik doğrulama yöntemi etkinleştirilmelidir."
 
 #: zerver/views/realm.py:89
 msgid "Invalid video chat provider {}"
-msgstr ""
+msgstr "Geçersiz video sohbet vericisi {}"
 
 #: zerver/views/realm.py:94 zerver/views/realm_domains.py:28
 msgid "Invalid domain: {}"
@@ -4252,15 +4252,15 @@ msgstr "Geçersiz alan: {}"
 
 #: zerver/views/realm.py:100
 msgid "User ID cannot be empty"
-msgstr ""
+msgstr "Kullanıcı ID'si boş olamaz"
 
 #: zerver/views/realm.py:102
 msgid "API key cannot be empty"
-msgstr ""
+msgstr "API anahtarı boş olamaz"
 
 #: zerver/views/realm.py:104
 msgid "API secret cannot be empty"
-msgstr ""
+msgstr "API gizli anahtarı boş olamaz"
 
 #: zerver/views/realm.py:116
 #, python-format
@@ -4306,20 +4306,20 @@ msgstr "Resim dosyası yüklenemedi."
 
 #: zerver/views/realm_export.py:40
 msgid "Exceeded rate limit."
-msgstr ""
+msgstr "Kullanım sınırı aşıldı."
 
 #: zerver/views/realm_export.py:47
 #, python-format
 msgid "Please request a manual export from %s."
-msgstr ""
+msgstr "%s'dan manuel dışa aktarım talep ediniz."
 
 #: zerver/views/realm_export.py:76
 msgid "Invalid data export ID"
-msgstr ""
+msgstr "Geçersiz veri dışa aktarım ID'si"
 
 #: zerver/views/realm_export.py:80
 msgid "Export already deleted"
-msgstr ""
+msgstr "Dışa aktarım zaten silinmiş"
 
 #: zerver/views/realm_filters.py:39
 msgid "Filter not found"
@@ -4373,12 +4373,12 @@ msgstr "Bu eylem için yönetici yetkisi gerekiyor"
 #: zerver/views/streams.py:276
 #, python-format
 msgid "@**%(full_name)s** subscribed you to the stream #**%(stream_name)s**."
-msgstr ""
+msgstr "@**%(full_name)s** #**%(stream_name)s** kanalına abone oldu."
 
 #: zerver/views/streams.py:280
 #, python-format
 msgid "@**%(full_name)s** subscribed you to the following streams:"
-msgstr ""
+msgstr "@**%(full_name)s** aşağıdaki kanallara abone oldu:"
 
 #: zerver/views/streams.py:334
 #, python-format
@@ -4391,7 +4391,7 @@ msgstr "Sadece diğer Zephyr aynalama kullanıcılarını özel kanallara davet 
 
 #: zerver/views/streams.py:343
 msgid "Only administrators can modify other users' subscriptions."
-msgstr ""
+msgstr "Sadece yöneticiler üyelerin aboneliklerini değiştirebilir."
 
 #: zerver/views/streams.py:348
 msgid "Your account is too new to modify other users' subscriptions."
@@ -4402,21 +4402,21 @@ msgstr "Hesabın diğer kullanıcı aboneliklerini yönetmek için çok yeni."
 msgid ""
 "@_**%(user_name)s|%(user_id)d** created the following streams: "
 "%(stream_str)s."
-msgstr ""
+msgstr "@_**%(user_name)s** | %(user_id)d** aşağıdaki kanalları oluşturdu:\n%(stream_str)s."
 
 #: zerver/views/streams.py:409
 #, python-format
 msgid "@_**%(user_name)s|%(user_id)d** created a new stream %(stream_str)s."
-msgstr ""
+msgstr "@_** %(user_name)s| %(user_id)d** yeni bir kanal oluşturdu %(stream_str)s."
 
 #: zerver/views/streams.py:416
 msgid "new streams"
-msgstr ""
+msgstr "yeni kanallar"
 
 #: zerver/views/streams.py:437
 #, python-format
 msgid "Stream created by @_**%(user_name)s|%(user_id)d**."
-msgstr ""
+msgstr "Bu kanal @_** %(user_name)s| %(user_id)d** tarafından oluşturuldu."
 
 #: zerver/views/streams.py:592
 #, python-format
@@ -4469,7 +4469,7 @@ msgstr "'%s' kullanıcı grubunda üye yok"
 
 #: zerver/views/user_settings.py:29
 msgid "Avatar changes are disabled in this organization."
-msgstr ""
+msgstr "Bu organizasyonda avatar değişiklikleri devre dışı bırakılmıştır."
 
 #: zerver/views/user_settings.py:42 zerver/views/user_settings.py:94
 msgid "Email address changes are disabled in this organization."
@@ -4504,7 +4504,7 @@ msgstr "Geçersiz emojiset '%s'"
 #: zerver/views/user_settings.py:146
 #, python-format
 msgid "Invalid setting value '%s'"
-msgstr ""
+msgstr "Geçersiz ayar değeri '%s'"
 
 #: zerver/views/user_settings.py:184
 #, python-format
@@ -4543,7 +4543,7 @@ msgstr "Bot sahibi değiştirme başarısız oldu. Botlar diğer botların sahib
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr ""
+msgstr "FAKE_EMAIL_DOMAIN doğru ayarlanana kadar bot oluşturulamaz.\nLütfen sistem yöneticisi ile iletişim kurunuz."
 
 #: zerver/views/users.py:289
 msgid "Embedded bots are not enabled."
@@ -4606,7 +4606,7 @@ msgstr "Hatalı biçimlendirilmiş JSON girişi"
 
 #: zerver/webhooks/papertrail/view.py:25
 msgid "Missing expected keys"
-msgstr ""
+msgstr "Eksik beklenen anahtarlar"
 
 #: zerver/webhooks/pivotal/view.py:178
 msgid "Unable to handle Pivotal payload"
@@ -4623,7 +4623,7 @@ msgstr "Slack Mesajı"
 #: zerver/webhooks/wordpress/view.py:45
 #, python-format
 msgid "Unknown WordPress webhook action: %s"
-msgstr ""
+msgstr "Bilinmeyen WordPress eylemi: %s"
 
 #: zerver/webhooks/zabbix/view.py:45
 msgid "Invalid payload"
@@ -4655,4 +4655,4 @@ msgstr "Veri sırası doğru değil"
 
 #: zilencer/views.py:208 zilencer/views.py:228
 msgid "Invalid data."
-msgstr ""
+msgstr "Geçersiz veri."
