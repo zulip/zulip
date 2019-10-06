@@ -953,6 +953,15 @@ HTTPS_PROXY http://proxy_host:port
 NO_PROXY localhost,127.0.0.1,.example.com
 ```
 
+If your proxy expects some form of authentication you could input it as"
+
+```
+HTTP_PROXY http://johnSmith:safePassword@172.31.2.4:8080
+HTTPS_PROXY http://johnSmith:safePassword@172.31.2.4:8080
+NO_PROXY localhost,127.0.0.1,.example.com
+```
+
+
 You'll want to **double-check** your work for mistakes (a common one
 is using `https://` when your proxy expects `http://`).  Invalid proxy
 configuration can cause confusing/weird exceptions; if you're using a
