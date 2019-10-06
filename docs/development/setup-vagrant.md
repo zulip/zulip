@@ -950,7 +950,16 @@ it (with the appropriate values in it for your proxy):
 ```
 HTTP_PROXY http://proxy_host:port
 HTTPS_PROXY http://proxy_host:port
-NO_PROXY localhost,127.0.0.1,.example.com
+NO_PROXY localhost,127.0.0.1,.example.com,.zulipdev.com
+```
+
+For proxies that require authentication, the config will be a bit more
+complex, e.g.:
+
+```
+HTTP_PROXY http://userName:userPassword@192.168.1.1:8080
+HTTPS_PROXY http://userName:userPassword@192.168.1.1:8080
+NO_PROXY localhost,127.0.0.1,.example.com,.zulipdev.com
 ```
 
 You'll want to **double-check** your work for mistakes (a common one
