@@ -478,12 +478,12 @@ input[type=checkbox] + .inline-block {
 #settings_page .icon-button .icon-button-icon {
     vertical-align: bottom;
     margin-right: 3px;
-    font-size: 24px;
-    font-weight: 600;
+    margin-bottom: 1px;
+    font-size: 15px;
+    font-weight: 500;
 }
 
 #settings_page .icon-button.primary .icon-button-icon {
-    font-size: 15px;
     font-weight: lighter;
     color: hsl(0, 0%, 100%);
 }
