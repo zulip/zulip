@@ -38,7 +38,7 @@ CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 MIN_INVOICED_LICENSES = 30
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 
-def get_seat_count(realm: Realm) -> int:
+def get_latest_seat_count(realm: Realm) -> int:
     non_guests = UserProfile.objects.filter(
         realm=realm, is_active=True, is_bot=False).exclude(role=UserProfile.ROLE_GUEST).count()
     guests = UserProfile.objects.filter(
@@ -314,7 +314,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
     with transaction.atomic():
         # billed_licenses can greater than licenses if users are added between the start of
         # this function (process_initial_upgrade) and now
-        billed_licenses = max(get_seat_count(realm), licenses)
+        billed_licenses = max(get_latest_seat_count(realm), licenses)
         plan_params = {
             'automanage_licenses': automanage_licenses,
             'charge_automatically': charge_automatically,
@@ -371,7 +371,7 @@ def update_license_ledger_for_automanaged_plan(realm: Realm, plan: CustomerPlan,
     last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, event_time)
     if last_ledger_entry is None:
         return
-    licenses_at_next_renewal = get_seat_count(realm)
+    licenses_at_next_renewal = get_latest_seat_count(realm)
     licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
     LicenseLedger.objects.create(
         plan=plan, event_time=event_time, licenses=licenses,

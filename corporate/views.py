@@ -16,7 +16,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string, check_int
 from zerver.models import UserProfile
 from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
-    stripe_get_customer, get_seat_count, \
+    stripe_get_customer, get_latest_seat_count, \
     process_initial_upgrade, sign_string, \
     unsign_string, BillingError, do_change_plan_status, do_replace_payment_source, \
     MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
@@ -124,7 +124,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if customer is not None and customer.default_discount is not None:
         percent_off = customer.default_discount
 
-    seat_count = get_seat_count(user.realm)
+    seat_count = get_latest_seat_count(user.realm)
     signed_seat_count, salt = sign_string(str(seat_count))
     context = {
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
@@ -177,7 +177,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, now)
         if last_ledger_entry is not None:
             licenses = last_ledger_entry.licenses
-            licenses_used = get_seat_count(user.realm)
+            licenses_used = get_latest_seat_count(user.realm)
             # Should do this in javascript, using the user's timezone
             renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=start_of_next_billing_cycle(plan, now))
             renewal_cents = renewal_amount(plan, now)
