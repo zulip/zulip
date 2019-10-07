@@ -988,6 +988,23 @@ input[type=checkbox].inline-block {
     white-space: pre;
 }
 
+.new-bot-form {
+    .title {
+        font-size: 1.3em;
+        margin-bottom: 0.2em;
+    }
+    .grey-box {
+        li {
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+            padding: 5px 0px;
+
+            &:last-of-type {
+                border-bottom: none;
+            }
+        }
+    }
+}
+
 #create_bot_form .control-label,
 #create_alert_word_form .control-label,
 .admin-emoji-form .control-label,

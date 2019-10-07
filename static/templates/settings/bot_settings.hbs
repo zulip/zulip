@@ -33,21 +33,22 @@
               class="form-horizontal no-padding {{#unless can_create_new_bots}}hide{{/unless}}">
                 <div class="new-bot-form">
                     <div class="input-group">
-                        <label for="bot_type">
+                        <label for="bot_type" class="title">
                             {{t "Bot type" }}
-                            <i class="fa fa-question-circle settings-info-icon bot_type_tooltip" aria-hidden="true" data-toggle="tooltip"
-                              title='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
-                        <select name="bot_type" id="create_bot_type">
+                        <ul class="grey-box">
                             {{#each page_params.bot_types}}
-                                {{#if this.allowed}}
-                                <option value="{{this.type_id}}">{{this.name}}</option>
-                                {{/if}}
+                            <li>
+                                <label class="radio">
+                                    <input type="radio" name="bot_type" class="create_bot_type" value="{{this.type_id}}">
+                                    <b>{{t this.name}}:</b> {{t this.description}}
+                                </label>
+                            </li>
                             {{/each}}
-                        </select>
+                        </ul>
                     </div>
                     <div class="input-group" id="service_name_list">
-                        <label for="select_service_name">{{t "Bot"}}</label>
+                        <label for="select_service_name" class="title">{{t "Bot"}}</label>
                         <select name="service_name" id="select_service_name">
                             {{#each page_params.realm_embedded_bots}}
                             <option value="{{this.name}}">{{this.name}}</option>
@@ -55,13 +56,13 @@
                         </select>
                     </div>
                     <div class="input-group">
-                        <label for="create_bot_name">{{t "Full name" }}</label>
+                        <label for="create_bot_name" class="title">{{t "Full name" }}</label>
                         <input type="text" name="bot_name" id="create_bot_name" class="required"
                           maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
                         <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
                     </div>
                     <div class="input-group">
-                        <label for="bot_short_name">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
+                        <label for="bot_short_name" class="title">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
                         <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
                           placeholder="{{t 'cookie' }}" value="" />
                         -bot@{{ page_params.realm_bot_domain }}
@@ -71,13 +72,13 @@
                     </div>
                     <div id="payload_url_inputbox">
                         <div class="input-group">
-                            <label for="create_payload_url">{{t "Endpoint URL" }}</label>
+                            <label for="create_payload_url" class="title">{{t "Endpoint URL" }}</label>
                             <input type="text" name="payload_url" id="create_payload_url"
                               maxlength=2083 placeholder="https://hostname.example.com" value="" />
                             <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
                         </div>
                         <div class="input-group">
-                            <label for="interface_type">{{t "Outgoing webhook message format" }}</label>
+                            <label for="interface_type" class="title">{{t "Outgoing webhook message format" }}</label>
                             <select name="interface_type" id="create_interface_type">
                                 <option value="1">Zulip</option>
                                 <option value="2">{{t "Slack compatible" }}</option>

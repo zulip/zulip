@@ -62,12 +62,19 @@ def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[
     return calendar.timegm(user_message.message.date_sent.utctimetuple())
 
 def get_bot_types(user_profile: UserProfile) -> List[Dict[str, object]]:
+    bot_descriptions = {
+        1: "Default Sunt sed officia ex sint exercitation ullamco in dolore in eu.",
+        2: "Incoming Sit labore elit et eu nisi ad anim nostrud enim reprehenderit ut.",
+        3: "Outgoing Dolor excepteur in cupidatat excepteur duis sunt nulla excepteur ut.",
+        4: "Embedded Quis in quis ex ullamco occaecat ut dolor aliqua ut non elit sit."
+    }
     bot_types = []
     for type_id, name in UserProfile.BOT_TYPES.items():
         bot_types.append({
             'type_id': type_id,
             'name': name,
-            'allowed': type_id in user_profile.allowed_bot_types
+            'allowed': type_id in user_profile.allowed_bot_types,
+            'description': bot_descriptions.get(type_id, None)
         })
     return bot_types
 

@@ -248,7 +248,7 @@ exports.set_up = function () {
             exports.hide_errors();
         },
         submitHandler: function () {
-            const bot_type = $('#create_bot_type :selected').val();
+            const bot_type = $('input[name="bot_type"]:checked').val();
             const full_name = $('#create_bot_name').val();
             const short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
             const payload_url = $('#create_payload_url').val();
@@ -294,7 +294,7 @@ exports.set_up = function () {
                     $("[name*='" + service_name + "'] input").each(function () {
                         $(this).val('');
                     });
-                    $('#create_bot_type').val(GENERIC_BOT_TYPE);
+                    $('input[name="bot_type"]:checked').val(GENERIC_BOT_TYPE);
                     $('#select_service_name').val('converter'); // TODO: Later we can change this to hello bot or similar
                     $('#service_name_list').hide();
                     $('#create_bot_button').show();
@@ -313,8 +313,8 @@ exports.set_up = function () {
         },
     });
 
-    $("#create_bot_type").on("change", function () {
-        const bot_type = $('#create_bot_type :selected').val();
+    $(".create_bot_type").on("change", function () {
+        const bot_type = $('input[name="bot_type"]:checked').val();
         // For "generic bot" or "incoming webhook" both these fields need not be displayed.
         $('#service_name_list').hide();
         $('#select_service_name').removeClass('required');
