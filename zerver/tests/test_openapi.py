@@ -236,8 +236,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     # documentation and the actual API and need to be fixed:
     buggy_documentation_endpoints = set([
         '/events',
-        # Docs need update for subject -> topic migration
-        '/messages/{message_id}',
     ])
 
     def convert_regex_to_url_pattern(self, regex_pattern: str) -> str:
@@ -548,7 +546,7 @@ so maybe we shouldn't include it in pending_endpoints.
                     print(" +", openapi_parameter_names)
                     print(" -", accepted_arguments)
                     assert(url_pattern in self.buggy_documentation_endpoints)
-                elif len(accepted_arguments - openapi_parameter_names) > 0:
+                elif len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
                     print("Documented invalid parameters for",
                           url_pattern, method, function_name)
                     print(" -", openapi_parameter_names)

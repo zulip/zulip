@@ -601,7 +601,7 @@ paths:
           type: integer
         example: 42
         required: true
-      - name: subject
+      - name: topic
         in: query
         description: The topic of the message. Only required for stream
           messages. Maximum length of 60 characters.
