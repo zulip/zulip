@@ -1441,7 +1441,7 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
-                           message_id: int=REQ(converter=to_non_negative_int),
+                           message_id: int=REQ(converter=to_non_negative_int, path_only=True),
                            topic_name: Optional[str]=REQ_topic(),
                            propagate_mode: Optional[str]=REQ(default="change_one"),
                            content: Optional[str]=REQ(default=None)) -> HttpResponse:
@@ -1573,7 +1573,8 @@ def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def json_fetch_raw_message(request: HttpRequest, user_profile: UserProfile,
-                           message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
+                           message_id: int=REQ(converter=to_non_negative_int,
+                                               path_only=True)) -> HttpResponse:
     (message, user_message) = access_message(user_profile, message_id)
     return json_success({"raw_content": message.content})
 
