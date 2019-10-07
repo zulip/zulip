@@ -128,3 +128,21 @@ each individual test, because that generally means one can understand
 exactly what data is being used in the test without looking at other
 resources.  It also gives us more freedom to edit the development
 environment directory without worrying about tests.
+
+## Two Factor Authentication
+
+Zulip uses [django-two-factor-auth][0] as a beta 2FA integration.
+
+To enable 2FA, set `TWO_FACTOR_AUTHENTICATION_ENABLED` in settings to
+`True`, then log into Zulip and add otp device from settings
+page. Once the device is added, password based authentication will ask
+for one-time-password.  In the development environment., this
+one-time-password will be printed to the console when you try to
+login.  Just copy-paste it into the form field to continue.
+
+Direct development logins don't prompt for 2FA one-time-passwords, so
+to test 2FA in development, make sure that you login using a
+password.  You can get the passwords for the default test users using
+`./manage.py print_initial_password`.
+
+[0]: https://github.com/Bouke/django-two-factor-auth
