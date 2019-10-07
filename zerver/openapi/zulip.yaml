@@ -1668,7 +1668,14 @@ paths:
         schema:
           type: string
         example: Verona
-        required: true
+        required: false
+      - name: stream_id
+        in: query
+        description: The id of the stream in which to mute the topic.
+        schema:
+          type: integer
+        example: 3
+        required: false
       - name: topic
         in: query
         description: The topic to (un)mute. Note that the request will succeed

@@ -236,7 +236,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     # documentation and the actual API and need to be fixed:
     buggy_documentation_endpoints = set([
         '/events',
-        '/users/me/subscriptions/muted_topics',
         # Docs need update for subject -> topic migration
         '/messages/{message_id}',
     ])
