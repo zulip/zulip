@@ -227,7 +227,7 @@ if __name__ == '__main__':
     # Broken in two to satisfy linter (line too long)
     # curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitaloc
     # ean.com/v2/images?page=5" | grep --color=always base.zulipdev.org
-    template_id = "48106286"
+    template_id = "53247956"
 
     # get command line arguments
     args = parser.parse_args()
