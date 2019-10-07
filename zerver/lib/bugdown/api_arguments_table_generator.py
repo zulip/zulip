@@ -118,7 +118,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         for argument in arguments:
             description = argument['description']
 
-            oneof = ['`' + item + '`'
+            oneof = ['`' + str(item) + '`'
                      for item in argument.get('schema', {}).get('enum', [])]
             if oneof:
                 description += '\nMust be one of: {}.'.format(', '.join(oneof))
