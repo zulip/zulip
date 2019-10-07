@@ -150,3 +150,10 @@ BILLING_ENABLED = True
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'
+
+# Our run-dev.py proxy uses X-Forwarded-Port to communicate to Django
+# that the request is actually on port 9991, not port 9992 (the Django
+# server's own port); this setting tells Django to read that HTTP
+# header.  Important for SAML authentication in the development
+# environment.
+USE_X_FORWARDED_PORT = True

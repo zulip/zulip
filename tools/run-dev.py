@@ -319,6 +319,8 @@ class CombineHandler(BaseWebsocketHandler):
         # type: () -> None
         if 'X-REAL-IP' not in self.request.headers:
             self.request.headers['X-REAL-IP'] = self.request.remote_ip
+        if 'X-FORWARDED_PORT' not in self.request.headers:
+            self.request.headers['X-FORWARDED-PORT'] = str(proxy_port)
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
             return super().prepare()
         url = transform_url(
