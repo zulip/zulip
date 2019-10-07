@@ -237,8 +237,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     buggy_documentation_endpoints = set([
         '/events',
         '/users/me/subscriptions/muted_topics',
-        # List of flags is broader in actual code; fix is to just add them
-        '/settings/notifications',
         # Docs need update for subject -> topic migration
         '/messages/{message_id}',
     ])

@@ -2180,6 +2180,12 @@ paths:
         schema:
           type: boolean
         example: true
+      - name: notification_sound
+        in: query
+        description: Notification sound name.
+        schema:
+          type: string
+        example: ding
       - name: enable_desktop_notifications
         in: query
         description: Enable visual desktop notifications for private messages
@@ -2221,10 +2227,43 @@ paths:
         schema:
           type: boolean
         example: true
+      - name: enable_login_emails
+        in: query
+        description: Enable email notifications for new logins to account.
+        schema:
+          type: boolean
+        example: true
       - name: message_content_in_email_notifications
         in: query
         description: Include the message's content in missed messages email
           notifications.
+        schema:
+          type: boolean
+        example: true
+      - name: pm_content_in_desktop_notifications
+        in: query
+        description: Include content of private messages in desktop notifications.
+        schema:
+          type: boolean
+        example: true
+      - name: desktop_icon_count_display
+        in: query
+        description: >
+          Unread count summary (appears in desktop sidebar and browser tab)
+
+           * 1 - All unreads
+           * 2 - Private messages and mentions
+           * 3 - None
+        schema:
+          type: integer
+          enum:
+            - 1
+            - 2
+            - 3
+        example: 1
+      - name: realm_name_in_notifications
+        in: query
+        description: Include organization name in subject of missed message emails.
         schema:
           type: boolean
         example: true
