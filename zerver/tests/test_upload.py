@@ -706,7 +706,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                     self.assertIn('attachment;', response['Content-disposition'])
                     self.assertIn(content_disposition, response['Content-disposition'])
                 else:
-                    self.assertEqual(response.get('Content-disposition'), None)
+                    self.assertIn('inline;', response['Content-disposition'])
                 self.assertEqual(set(response["Cache-Control"].split(", ")),
                                  {"private", "immutable"})
 
