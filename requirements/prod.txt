@@ -9,9 +9,9 @@
 #
 --no-binary psycopg2
 
-apns2==0.5.0 \
-    --hash=sha256:a4d5b367fb2faff47d3a71699a348045dd0c21b3a663054cbb48fa2af3c309c5 \
-    --hash=sha256:d30dcf227f11948e24a4fd30af82887dcf743aab60b8a4b0624ead5ed3476f03
+apns2==0.7.1 \
+    --hash=sha256:360bcd1f1d6308348adcb317c0192d1631fe01a2b9b73ce95f57c708de2bb88a \
+    --hash=sha256:8c24207aa96dff4687f8d7c9149fc42086f3506b0a76da1f5bf48d74e5569567
 argon2-cffi==19.1.0 \
     --hash=sha256:1029fef2f7808a89e3baa306f5ace36e768a2d847ee7b056399adcd7707f6256 \
     --hash=sha256:206857d870c6ca3c92514ca70a3c371be47383f7ae6a448f5a16aa17baa550ba \
