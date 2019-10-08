@@ -21,13 +21,13 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from django.contrib.auth import get_backends
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
+from django.core import signing
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.dispatch import receiver, Signal
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils.datastructures import MultiValueDictKeyError
 from requests import HTTPError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
@@ -1012,28 +1012,76 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
 
+    def auth_url(self) -> str:
+        """Get the URL to which we must redirect in order to
+        authenticate the user. Overriding the original SAMLAuth.auth_url.
+        Runs when someone accesses the /login/saml/ endpoint."""
+        try:
+            idp_name = self.strategy.request_data()['idp']
+            auth = self._create_saml_auth(idp=self.get_idp(idp_name))
+        except KeyError:
+            # If the above raise KeyError, it means invalid or no idp was specified,
+            # we should log that and redirect to the login page.
+            logging.info("/login/saml/ : Bad idp param.")
+            return reverse('zerver.views.auth.login_page',
+                           kwargs = {'template_name': 'zerver/login.html'})
+
+        # This where we change things. We need to encode some params
+        # and put them in the RelayState, which then the IdP will pass back to us
+        # so we can read those parameters in the final part of the authentication flow,
+        # at the /complete/saml/ endpoint.
+        params_to_relay = ["subdomain", "multiuse_object_key", "mobile_flow_otp",
+                           "next", "is_signup", "idp"]
+        request_data = self.strategy.request_data().dict()
+        data_to_relay = {
+            key: request_data[key] for key in params_to_relay if key in request_data
+        }
+
+        relay_state = signing.dumps(data_to_relay)
+        return auth.login(return_to=relay_state)
+
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """
         Additional ugly wrapping on top of auth_complete in SocialAuthMixin.
-        If the /complete/saml endpoint is accessed, but RelayState isn't specified
-        in POST, django.utils.datastructures.MultiValueDictKeyError will be raised
-        inside python-social-auth saml module, which doesn't convert it into something
-        more reasonable.
-        If it is accessed with RelayState specified, but missing SAMLResponse,
-        OneLogin_Saml2_Error ends up raised.
-        We need to catch and handle those here.
-        Both parameters should be present if the user came to /complete/saml/ through
-        the IdP as intended. The errors can happen if someone simply types the endpoint into
-        their browsers, or generally tries messing with it in some ways.
+        We handle two things here:
+            1. Working around bad RelayState or SAMLResponse parameters in the request.
+            Both parameters should be present if the user came to /complete/saml/ through
+            the IdP as intended. The errors can happen if someone simply types the endpoint into
+            their browsers, or generally tries messing with it in some ways.
+
+            2. The first part of our SAML authentication flow will encode important parameters
+            into the RelayState. We need to read them and set those values in the session,
+            and then change the RelayState param to the idp_name, because that's what
+            SAMLAuth.auth_complete() expects.
         """
+        if 'RelayState' not in self.strategy.request_data():
+            logging.info("SAML authentication failed: missing RelayState.")
+            return None
+
+        # Set the relevant params that we transported in the RelayState:
+        try:
+            relay_state = signing.loads(self.strategy.request_data()['RelayState'])
+        except signing.SignatureExpired:
+            logging.warning('SAML authentication failed: RelayState signature expired.')
+            return None
+        except signing.BadSignature:
+            logging.warning('SAML authentication failed: bad RelayState signature.')
+            return None
+
+        for param, value in relay_state.items():
+            if param in ["subdomain", "multiuse_object_key", "mobile_flow_otp", "next", "is_signup"]:
+                self.strategy.session_set(param, value)
+
+        # super().auth_complete expects to have RelayState set to the idp_name,
+        # so we need to replace this param.
+        post_params = self.strategy.request.POST.copy()
+        post_params['RelayState'] = relay_state["idp"]
+        self.strategy.request.POST = post_params
         try:
             # Call the auth_complete method of SocialAuthMixIn
             return super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
-        except MultiValueDictKeyError as e:
-            logging.info("SAML authentication: MultiValueDictKeyError: " + str(e))
-            return None
         except OneLogin_Saml2_Error as e:
-            # This error provides a proper description of the issue, so we can simply log str(e)
+            # This will be raised if SAMLResponse is missing.
             logging.info(str(e))
             return None
 
