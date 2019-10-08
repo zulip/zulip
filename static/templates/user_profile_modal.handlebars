@@ -1,0 +1,63 @@
+<div id="user-profile-modal" class="modal modal-bg fade{{#unless profile_data.length}} no-fields{{/unless}}" tabindex="-1"
+  role="dialog" aria-labelledby="user_profile_modal label" aria-hidden="true">
+    <div class="modal-body" id="body">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}">
+            <span aria-hidden="true" id="exit-sign">&times;</span>
+        </button>
+        <div id="avatar"{{#if user_is_guest}} class="guest-avatar"{{/if}} style="background-image: url('{{user_avatar}}');" ></div>
+        <div id="default-section">
+            <div id="name">
+                {{full_name}}
+                {{#if is_me}}
+                <a href="/#settings/your-account">
+                    <i class="fa fa-edit" id="edit-button" aria-hidden="true"></i>
+                </a>
+                {{/if}}
+            </div>
+            <br>
+            <div id="email" class="default-field">
+                <span class="name">{{#tr this}}Email{{/tr}}</span>
+                <span class="value">{{email}}</span>
+            </div>
+            <div id="date-joined" class="default-field">
+                <span class="name">{{#tr this}}Joined{{/tr}}</span>
+                <span class="value">{{date_joined}}</span>
+            </div>
+            <div id="user-type" class="default-field">
+                <span class="name">{{#tr this}}Role{{/tr}}</span>
+                <span class="value">{{user_type}}</span>
+            </div>
+            <div class="default-field">
+                <span class="name">{{#tr this}}Last seen{{/tr}}</span>
+                <span class="value">{{last_seen}}</span>
+            </div>
+            {{#if user_time}}
+            <div class="default-field">
+                <span class="name">{{#tr this}}Local time{{/tr}}</span>
+                <span class="value">{{user_time}}</span>
+            </div>
+            {{/if}}
+        </div>
+        <hr>
+        <div id="content">
+            {{#each profile_data}}
+            <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
+                <div class="name">{{this.name}}</div>
+                {{#if this.is_user_field}}
+                    <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                        <div class="input" contenteditable="false" style="display: none;"></div>
+                    </div>
+                    {{else if this.is_link}}
+                    <a href={{this.value}} target="_blank" class="value">{{this.value}}</a>
+                {{else}}
+                    {{#if this.rendered_value}}
+                    <div class="value">{{{this.rendered_value}}}</div>
+                    {{else}}
+                    <div class="value">{{this.value}}</div>
+                    {{/if}}
+                {{/if}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>

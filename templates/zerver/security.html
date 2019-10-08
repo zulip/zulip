@@ -1,0 +1,35 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>Zulip Security</title>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page">
+    <div class="hero bg-pycon security">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Zulip Security</h1>
+            <p></p>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+                {{ render_markdown_path('zerver/security.md') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

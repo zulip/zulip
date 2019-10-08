@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -e
+
+# Make sure the Zulip dev virtualenv exists, and operate within it.
+if [ ! -d /srv/zulip-py3-venv ]; then
+    ./tools/setup/setup_venvs.py
+fi
+source /srv/zulip-py3-venv/bin/activate
+
+compile_requirements () {
+    source="$1"
+    output="$2"
+    python_version="$3"
+
+    pip-compile --output-file "$output" "$source"
+
+    # Remove the editable flag.  It's there because pip-compile can't
+    # yet do without it (see
+    # https://github.com/jazzband/pip-tools/issues/272 upstream), but
+    # in the output of pip-compile it's no longer needed.
+    sed -i 's/-e //' "$output"
+
+    if [ "$python_version" != "py2" ]; then
+        # pip-tools bug; future, futures are obsolete in python3
+        sed -i '/futures==/d' "$output"
+        sed -i '/future==/d' "$output"
+    fi
+
+    (
+        cat <<EOF
+#
+# This file is GENERATED.  Don't edit directly.
+#
+# To update, edit the non-"lock" files in requirements/*.txt, then:
+#
+#    tools/update-locked-requirements
+#
+# For details, see requirements/README.md .
+#
+EOF
+        # This perl invocation strips the existing block of header comments.
+        perl -0pe 's/\A(^#.*\n)*//m' "$output"
+    ) | sponge "$output"
+}
+
+OUTPUT_BASE_DIR='requirements'
+
+# Parse arguments.
+if [ $# -gt 0 ]; then
+    while [ "$1" != "" ]; do
+        case $1 in
+            --output-dir)
+                shift
+                OUTPUT_BASE_DIR=$(readlink -m "$1")
+                ;;
+            *)
+                echo "Invalid arguments passed."
+                echo "Usage: $0 [--output-dir <path-to-output-dir>]"
+                exit
+                ;;
+        esac
+        shift
+    done
+fi
+
+compile_requirements requirements/prod.in "$OUTPUT_BASE_DIR/prod.txt"
+compile_requirements requirements/dev.in "$OUTPUT_BASE_DIR/dev.txt"
+compile_requirements requirements/mypy.in "$OUTPUT_BASE_DIR/mypy.txt"
+compile_requirements requirements/docs.in "$OUTPUT_BASE_DIR/docs.txt"
+compile_requirements requirements/thumbor.in "$OUTPUT_BASE_DIR/thumbor.txt" py2

@@ -12,7 +12,6 @@ echo deadline > /sys/block/xvdc/queue/scheduler
 
 mkfs.xfs /dev/md0
 
-array_name=$(mdadm --examine --scan | sed 's/.*name=//')
 echo "/dev/md0   /srv  xfs    nofail,noatime,barrier 1 1" >> /etc/fstab
 mount /srv
 

@@ -3,30 +3,22 @@ var common = require('../casper_lib/common.js').common;
 var email = 'alice@test.example.com';
 var subdomain = 'testsubdomain';
 var organization_name = 'Awesome Organization';
-var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
-var host;
-var realm_host;
+var host = "zulipdev.com:9981";
+var realm_host = "testsubdomain" + '.' + host;
 
-if (REALMS_HAVE_SUBDOMAINS) {
-    host = 'zulipdev.com:9981';
-    realm_host = subdomain + '.' + host;
-} else {
-    host = realm_host = 'localhost:9981';
-}
-
-casper.start('http://' + host + '/create_realm/');
+casper.start('http://' + host + '/new/');
 
 casper.then(function () {
     // Submit the email for realm creation
-    this.waitUntilVisible('form[action^="/create_realm/"]', function () {
-        this.fill('form[action^="/create_realm/"]', {
+    this.waitUntilVisible('form[name="email_form"]', function () {
+        this.fill('form[name="email_form"]', {
             email: email,
         }, true);
     });
     // Make sure confirmation email is send
-    this.waitWhileVisible('form[action^="/create_realm/"]', function () {
-         var regex = new RegExp('^http://[^/]+/accounts/send_confirm/' + email);
-         this.test.assertUrlMatch(regex, 'Confirmation mail send');
+    this.waitWhileVisible('form[name="email_form"]', function () {
+        var regex = new RegExp('^http://[^/]+/accounts/new/send_confirm/' + email);
+        this.test.assertUrlMatch(regex, 'Confirmation mail send');
     });
 });
 
@@ -43,7 +35,7 @@ casper.then(function () {
 // Make sure the realm creation page is loaded correctly
 casper.then(function () {
     this.waitUntilVisible('.pitch', function () {
-        this.test.assertSelectorContains('.pitch', "You're almost there.");
+        this.test.assertSelectorContains('.pitch', "We just need you to do one last thing.");
     });
 
     this.waitUntilVisible('#id_email', function () {
@@ -65,6 +57,7 @@ casper.then(function () {
             realm_subdomain: subdomain,
             password: 'passwordwhichisreallyreallyreallycomplexandnotguessable',
             terms: true,
+            realm_in_root_domain: false,
         }, true);
     });
 
@@ -74,8 +67,10 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    // The user is logged in to the newly created realm
-    this.test.assertTitle('home - ' + organization_name + ' - Zulip');
+    // The user is logged in to the newly created realm and the app is loaded
+    casper.waitUntilVisible('#zfilt', function () {
+        this.test.assertTitleMatch(/ - Zulip$/, "Successfully logged into Zulip webapp");
+    });
 });
 
 common.then_log_out();

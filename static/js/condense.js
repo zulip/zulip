@@ -31,7 +31,7 @@ exports.uncollapse = function (row) {
     // [Condense] link if necessary.
     var message = current_msg_list.get(rows.id(row));
     message.collapsed = false;
-    message_flags.send_collapsed([message], false);
+    message_flags.save_uncollapsed(message);
 
     var process_row = function process_row(row) {
         var content = row.find(".message_content");
@@ -66,7 +66,16 @@ exports.collapse = function (row) {
     // [Condense] link if necessary.
     var message = current_msg_list.get(rows.id(row));
     message.collapsed = true;
-    message_flags.send_collapsed([message], true);
+
+    if (message.locally_echoed) {
+        // Trying to collapse a locally echoed message is
+        // very rare, and in our current implementation the
+        // server response overwrites the flag, so we just
+        // punt for now.
+        return;
+    }
+
+    message_flags.save_collapsed(message);
 
     var process_row = function process_row(row) {
         row.find(".message_content").addClass("collapsed");
@@ -79,6 +88,29 @@ exports.collapse = function (row) {
     process_row(row);
     process_row(home_row);
 };
+
+exports.toggle_collapse = function (message) {
+    var row = current_msg_list.get_row(message.id);
+    if (!row) {
+        return;
+    }
+    var condensed = row.find(".could-be-condensed");
+    if (message.collapsed) {
+        message.condensed = true;
+        condense.uncollapse(row);
+        condensed.addClass("condensed");
+        exports.show_message_expander(row);
+        row.find(".message_condenser").hide();
+    } else if (!message.collapsed && condensed.hasClass("condensed")) {
+        message.condensed = false;
+        condensed.removeClass("condensed");
+        exports.hide_message_expander(row);
+        row.find(".message_condenser").show();
+    } else if (!message.collapsed && !condensed.hasClass("condensed")) {
+        condense.collapse(row);
+    }
+};
+
 exports.clear_message_content_height_cache = function () {
     _message_content_height_cache = new Dict();
 };
@@ -152,7 +184,7 @@ exports.condense_and_collapse = function (elems) {
     });
 };
 
-$(function () {
+exports.initialize = function () {
     $("#home").on("click", ".message_expander", function () {
         // Expanding a message can mean either uncollapsing or
         // uncondensing it.
@@ -176,7 +208,7 @@ $(function () {
         current_msg_list.get(rows.id(row)).condensed = true;
         condense_row(row);
     });
-});
+};
 
 return exports;
 }());
@@ -184,3 +216,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = condense;
 }
+window.condense = condense;

@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+import argparse
+from subprocess import check_call
+from typing import List, Dict, Union
+
+from zulint.lister import list_files
+
+def do_replace(listing, old_string, new_string):
+    # type: (Union[Dict[str, List[str]], List[str]], str, str) -> None
+    for filename in listing:
+        regex = 's/{}/{}/g'.format(old_string, new_string)
+        check_call(['sed', '-i', regex, filename])
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Replace string in files')
+    parser.add_argument('old_string', help="String to replace")
+    parser.add_argument('new_string', help="String to replace with")
+    parser.add_argument('targets', nargs='*', default=[],
+                        help='files and directories to include in the result. '
+                             'If this is not specified, the current directory '
+                             'is used')
+    parser.add_argument('-m', '--modified', action='store_true',
+                        default=False, help='list only modified files')
+    parser.add_argument('-f', '--ftypes', nargs='+', default=[],
+                        help='list of file types to filter on. All files are '
+                             'included if this option is absent')
+    parser.add_argument('--ext-only', dest='extonly', action='store_true',
+                        default=False,
+                        help='only use extension to determine file type')
+    parser.add_argument('--exclude', nargs='+', default=[],
+                        help='list of files and directories to exclude from '
+                             'results, relative to repo root')
+    parser.add_argument('--extless-only', dest='extless_only',
+                        action='store_true', default=False,
+                        help='only include extensionless files in output')
+    args = parser.parse_args()
+
+    listing = list_files(targets=args.targets, ftypes=args.ftypes,
+                         use_shebang=not args.extonly,
+                         modified_only=args.modified,
+                         exclude=args.exclude,
+                         extless_only=args.extless_only)
+
+    do_replace(listing, args.old_string, args.new_string)

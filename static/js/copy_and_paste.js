@@ -1,6 +1,6 @@
 var copy_and_paste = (function () {
 
-var exports = {}; // we don't actually export anything yet, but that's ok
+var exports = {};
 
 function find_boundary_tr(initial_tr, iterate_row) {
     var j;
@@ -11,7 +11,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // parent tr, we should let the browser handle the copy-paste
     // entirely on its own
     if (tr.length === 0) {
-        return undefined;
+        return;
     }
 
     // If the selection boundary is on a table row that does not have an
@@ -20,11 +20,11 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // To ensure we can't enter an infinite loop, bail out (and let the
     // browser handle the copy-paste on its own) if we don't hit what we
     // are looking for within 10 rows.
-    for (j = 0; (!tr.is('.message_row')) && j < 10; j += 1) {
+    for (j = 0; !tr.is('.message_row') && j < 10; j += 1) {
         tr = iterate_row(tr);
     }
     if (j === 10) {
-        return undefined;
+        return;
     } else if (j !== 0) {
         // If we updated tr, then we are not dealing with a selection
         // that is entirely within one td, and we can skip the same td
@@ -35,6 +35,43 @@ function find_boundary_tr(initial_tr, iterate_row) {
     return [rows.id(tr), skip_same_td_check];
 }
 
+function construct_recipient_header(message_row) {
+    var message_header_content = rows.get_message_recipient_header(message_row)
+        .text()
+        .replace(/\s+/g, " ")
+        .replace(/^\s/, "").replace(/\s$/, "");
+    return $('<p>').append($('<strong>').text(message_header_content));
+}
+
+function construct_copy_div(div, start_id, end_id) {
+    var start_row = current_msg_list.get_row(start_id);
+    var start_recipient_row = rows.get_message_recipient_row(start_row);
+    var start_recipient_row_id = rows.id_for_recipient_row(start_recipient_row);
+    var should_include_start_recipient_header = false;
+
+    var last_recipient_row_id = start_recipient_row_id;
+    for (var row = start_row; rows.id(row) <= end_id; row = rows.next_visible(row)) {
+        var recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row(row));
+        // if we found a message from another recipient,
+        // it means that we have messages from several recipients,
+        // so we have to add new recipient's bar to final copied message
+        // and wouldn't forget to add start_recipient's bar at the beginning of final message
+        if (recipient_row_id !== last_recipient_row_id) {
+            div.append(construct_recipient_header(row));
+            last_recipient_row_id = recipient_row_id;
+            should_include_start_recipient_header = true;
+        }
+        var message = current_msg_list.get(rows.id(row));
+        var message_firstp = $(message.content).slice(0, 1);
+        message_firstp.prepend(message.sender_full_name + ": ");
+        div.append(message_firstp);
+        div.append($(message.content).slice(1));
+    }
+
+    if (should_include_start_recipient_header) {
+        div.prepend(construct_recipient_header(start_row));
+    }
+}
 
 function copy_handler() {
     var selection = window.getSelection();
@@ -46,13 +83,10 @@ function copy_handler() {
     var initial_end_tr;
     var start_id;
     var end_id;
-    var row;
-    var message;
     var start_data;
     var end_data;
     var skip_same_td_check = false;
     var div = $('<div>');
-    var content;
     for (i = 0; i < selection.rangeCount; i += 1) {
         range = selection.getRangeAt(i);
         ranges.push(range);
@@ -96,40 +130,34 @@ function copy_handler() {
             return;
         }
 
-            // Construct a div for what we want to copy (div)
-        for (row = current_msg_list.get_row(start_id);
-             rows.id(row) <= end_id;
-             row = rows.next_visible(row)) {
-             if (row.prev().hasClass("message_header")) {
-                content = $('<div>').text(row.prev().text()
-                                            .replace(/\s+/g, " ")
-                                            .replace(/^\s/, "").replace(/\s$/, ""));
-                div.append($('<p>').append($('<strong>').text(content.text())));
-            }
-            message = current_msg_list.get(rows.id(row));
-            var message_firstp = $(message.content).slice(0, 1);
-            message_firstp.prepend(message.sender_full_name + ": ");
-            div.append(message_firstp);
-            div.append($(message.content).slice(1));
-        }
-    }
-
-    if (window.bridge !== undefined) {
-        // If the user is running the desktop app,
-        // convert emoji images to plain text for
-        // copy-paste purposes.
-        ui.replace_emoji_with_text(div);
+        // Construct a div for what we want to copy (div)
+        construct_copy_div(div, start_id, end_id);
     }
 
     // Select div so that the browser will copy it
     // instead of copying the original selection
     div.css({position: 'absolute', left: '-99999px'})
-            .attr('id', 'copytempdiv');
+        .attr('id', 'copytempdiv');
     $('body').append(div);
     selection.selectAllChildren(div[0]);
 
-    // After the copy has happened, delete the div and
-    // change the selection back to the original selection
+    /*
+    The techniques we use in this code date back to
+    2013 and may be obsolete today (and may not have
+    been even the best workaround back then).
+
+    https://github.com/zulip/zulip/commit/fc0b7c00f16316a554349f0ad58c6517ebdd7ac4
+
+    The idea is that we build a temp div, return from
+    this function, let jQuery process the selection,
+    then restore the selection on a zero-second timer
+    back to the original selection.
+
+    Do not be afraid to change this code if you understand
+    how modern browsers deal with copy/paste.  Just test
+    your changes carefully.
+    */
+
     window.setTimeout(function () {
         selection = window.getSelection();
         selection.removeAllRanges();
@@ -137,13 +165,87 @@ function copy_handler() {
             selection.addRange(range);
         });
         $('#copytempdiv').remove();
-    },0);
+    }, 0);
 }
 
-$(function () {
-    $(document).bind('copy', copy_handler);
-});
+exports.paste_handler_converter = function (paste_html) {
+    var converters = {
+        converters: [
+            {
+                filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+                replacement: function (content) {
+                    return content;
+                },
+            },
 
+            {
+                filter: ['em', 'i'],
+                replacement: function (content) {
+                    return '*' + content + '*';
+                },
+            },
+            {
+                // Checks for raw links without custom text or title.
+                filter: function (node) {
+                    return node.nodeName === "A" &&
+                      node.href === node.innerHTML &&
+                      node.href === node.title;
+                },
+                replacement: function (content) {
+                    return content;
+                },
+            },
+            {
+                // Checks for escaped ordered list syntax.
+                filter: function (node) {
+                    return /(\d+)\\\. /.test(node.innerHTML);
+                },
+                replacement: function (content) {
+                    return content.replace(/(\d+)\\\. /g, '$1. ');
+                },
+            },
+        ],
+    };
+    var markdown_html = toMarkdown(paste_html, converters);
+
+    // Now that we've done the main conversion, we want to remove
+    // any HTML tags that weren't converted to markdown-style
+    // text, since Bugdown doesn't support those.
+    var div = document.createElement("div");
+    div.innerHTML = markdown_html;
+    // Using textContent for modern browsers, innerText works for Internet Explorer
+    var markdown_text = div.textContent || div.innerText || "";
+    markdown_text = markdown_text.trim();
+    // Removes newlines before the start of a list and between list elements.
+    markdown_text = markdown_text.replace(/\n+([*+-])/g, '\n$1');
+    return markdown_text;
+};
+
+exports.paste_handler = function (event) {
+    var clipboardData = event.originalEvent.clipboardData;
+    if (!clipboardData) {
+        // On IE11, ClipboardData isn't defined.  One can instead
+        // access it with `window.clipboardData`, but even that
+        // doesn't support text/html, so this code path couldn't do
+        // anything special anyway.  So we instead just let the
+        // default paste handler run on IE11.
+        return;
+    }
+
+    if (clipboardData.getData) {
+        var paste_html = clipboardData.getData('text/html');
+        if (paste_html && page_params.development_environment) {
+            event.preventDefault();
+            var text = exports.paste_handler_converter(paste_html);
+            compose_ui.insert_syntax_and_focus(text);
+        }
+    }
+};
+
+exports.initialize = function () {
+    $(document).on('copy', copy_handler);
+    $("#compose-textarea").bind('paste', exports.paste_handler);
+};
 
 return exports;
 }());
@@ -151,3 +253,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = copy_and_paste;
 }
+window.copy_and_paste = copy_and_paste;

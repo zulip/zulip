@@ -1,24 +1,21 @@
 # Change your email address
 
-If enabled by Zulip organization administrator, you can change your email address
-using the following steps.
+By default, anyone can change their email address at any time.
 
-{!go-to-the.md!} [Your account](/#settings/your-account)
-{!settings.md!}
+Organization adminstrators can
+[restrict users to certain email domains](/help/change-a-users-name), or
+[prevent users from changing their email](/help/restrict-name-and-email-changes).
 
-2. Click on the **[Change]** link beside your email address.
+{settings_tab|your-account}
 
-    !!! warn ""
-        **Note:** If you do not see the [Change] link,
-        it is probably because your organization's administrators
-        have disabled change of email addresses.
-        If that's the case, then you need to ask them to
-        allow users to change their email address.
+2. Under **User settings**, click on the button with your email address.
 
-3. Change your email in the **Email** field.
+3. Enter your new email, and click **Change**.
 
-4. Click on the **Change** button to receive a confirmation mail.
+4. You will receive a confirmation email within a few minutes. Open it and click **Confirm email change**.
 
-5. Click on the **Confirmation link** send to your new email address.
-
-Congratulations! You have updated your email address.
+!!! warn ""
+    **Note:** If you are unable to click on the button with your email address, check
+    that your organization allows email changes. Follow the steps at
+    [prevent users from changing their names](/help/restrict-name-and-email-changes)
+    to view your organization's settings.

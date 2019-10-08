@@ -1,22 +1,16 @@
-<div id="organization-settings" class="settings-section" data-name="auth-methods">
-    <div class="settings-section-title"><i class="icon-vector-lock settings-section-icon"></i>
-        {{t "Authentication methods" }}</div>
-  <form class="form-horizontal admin-realm-form">
-       <div class="alert" id="admin-realm-authentication-methods-status"></div>
+<div id="admin-auth-settings" class="settings-section" data-name="auth-methods">
+    <form class="form-horizontal admin-realm-form org-authentications-form">
         <div class="admin-table-wrapper">
-          <p>{{#tr this}}Configure the authentication methods for your organization.{{/tr}}</p>
-          <table class="table table-condensed table-striped">
-            <tbody id="admin_auth_methods_table" class=" admin_auth_methods_table">
-              <th>{{t "Method" }}</th>
-              <th>{{t "Enabled" }}</th>
-            </tbody>
-          </table>
+            <h3 class="inline-block">{{t "Authentication methods" }}</h3>
+            <div class="alert-notification" id="admin-realm-authentication-methods-status"></div>
+            <p>{{#tr this}}Configure the authentication methods for your organization.{{/tr}}</p>
+            <table class="table table-condensed table-striped">
+                <tbody id="admin_auth_methods_table" class=" admin_auth_methods_table">
+                    <th>{{t "Method" }}</th>
+                    <th>{{t "Enabled" }}</th>
+                </tbody>
+            </table>
         </div>
         <div id="admin_page_auth_methods_loading_indicator"></div>
-        <div class="input-group">
-            <div class="organization-submission">
-                <input type="submit" class="button" value="{{t 'Save changes' }}" />
-            </div>
-        </div>
-  </form>
+    </form>
 </div>

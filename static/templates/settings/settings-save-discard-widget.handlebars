@@ -1,0 +1,22 @@
+{{#if is_admin }}
+<div class="save-button-controls hide">
+    <div class="inline-block organization-submission subsection-changes-save">
+        <div class="icon-button button primary save-button" type="button" id="org-submit-{{section_name}}" data-status="save">
+            <span class="fa fa-spinner fa-spin icon-button-loading"></span>
+            <span class="fa fa-check icon-button-icon"></span>
+            <span class="icon-button-text">
+                {{t 'Save changes' }}
+            </span>
+        </div>
+    </div>
+    <div class="inline-block subsection-changes-discard">
+        <div class="icon-button button discard-button" type="button" id="org-discard-{{section_name}}">
+            <span class="icon-button-icon">×</span>
+            <span class="icon-button-text">
+                {{t 'Discard' }}
+            </span>
+        </div>
+    </div>
+    <div class="inline-block subsection-failed-status"><p class="hide"></p></div>
+</div>
+{{/if}}

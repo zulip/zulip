@@ -1,137 +1,197 @@
 {% extends "zerver/portico.html" %}
-
 {# Login page. #}
 
 {% block customhead %}
-    {{ super() }}
-    {{ minified_js('signup')|safe }}
-{% endblock %}
-
-{% block os_announcement %}
-  {% if show_oss_announcement %}
-  <div class="os-headline-container">
-    <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
-    <div class="main-headline-text">
-      <span class="tagline os-tagline">
-         {{ _('Zulip has been released as open source software!') }}
-      </span>
-      {% trans %}
-      <span class="footnote os-footnote">
-         Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.
-      </span>
-      {% endtrans %}
-    </div>
-  </div>
-  {% endif %}
+{{ super() }}
+{{ render_bundle('signup') }}
 {% endblock %}
 
 {% block portico_content %}
 
-{% if password_auth_enabled %}
-<script type="text/javascript">
-{% if email %}
-autofocus('#id_password');
-{% else %}
-autofocus('#id_username');
-{% endif %}
-</script>
-{% endif %}
 
 
-<div class="app login-page">
-  <div class="app-main login-page-container">
-    <h3 class="login-page-header">{{ _('You look familiar.') }}</h3>
-
-{% if only_sso %}
-    {# SSO users don't have a password. #}
-
-    <div class="login-sso">
-      <a href="/accounts/login/sso" class="btn btn-large btn-primary">{{ _('Sign in with SSO') }}</a>
-    </div>
-
-{% else %}
-{# Non-SSO users. #}
-
-{% if form.errors %}
-<div class="alert alert-error">
-    {% for error in form.errors.values() %}
-    <div>{{ error | striptags }}</div>
-    {% endfor %}
-</div>
-{% endif %}
-
-    {% if email %}
-    <div class="alert">
-        {{ _("You've already registered with this email address. Please log in below.") }}
-    </div>
-    {% endif %}
-
-    {% if subdomain %}
-    <div class="alert">
-        {{ wrong_subdomain_error }}.
-    </div>
-    {% endif %}
-
-        {% if password_auth_enabled %}
-        <form name="login_form" id="login_form" method="post" class="login-form"
-              action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}"
-        >
-            {{ csrf_input }}
-            <div class="control-group">
-                <label for="id_username" class="control-label">{{ _('Email') }}</label>
-                <div class="controls">
-                  <input id="id_username" type="email" name="username"
-                         class="email required"
-                         {% if email %}
-                         value="{{ email }}"
-                         {% else %}
-                         value=""
-                         {% endif %}
-                         maxlength="72" />
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label for="id_password" class="control-label">{{ _('Password') }}</label>
-                <div class="controls">
-                    <input id="id_password" name="password" class="required" type="password" />
-                </div>
-            </div>
-
-            <div class="control-group">
-                <div class="controls">
-                    <input type="submit" class="btn btn-large btn-primary" value="Log in" />
-                    <span class="login-forgot-password">
-                      <a href="{{ url('django.contrib.auth.views.password_reset') }}">{{ _('Forgot password?') }}</a>
-                    </span>
-                </div>
-            </div>
-        </form>
+    {% if password_auth_enabled %}
+    <script>
+        {% if email %}
+        common.autofocus('#id_password');
+        {% else %}
+        common.autofocus('#id_username');
         {% endif %}
-
-    {% if google_auth_enabled %}
-    <div class="login-google">
-    or <a href="{{ url('zerver.views.auth.start_google_oauth2') }}" class="login-google-button zocial google">{{ _('Sign in with Google') }}</a>
-    </div>
+    </script>
     {% endif %}
 
-    {% if github_auth_enabled %}
-    <div class="login-github">
-        or <a href="{{ url('login-social', args=('github',)) }}" class="login-github-button zocial github">
-            <span>{{ _('Sign in with GitHub') }}</span>
-        </a>
+
+    <div class="app login-page split-view new-style flex full-page">
+        <div class="inline-block">
+            <div class="lead">
+                <h1 class="get-started">{{ _("Log in to Zulip") }}</h1>
+            </div>
+
+            <div class="app-main login-page-container white-box inline-block">
+                {% if only_sso %}
+                    {# SSO users don't have a password. #}
+
+                    <div class="login-sso">
+                        <a id="sso-login" href="/accounts/login/sso/?next={{ next }}" class="btn btn-large btn-primary">
+                            {{ _('Log in with %(identity_provider)s', identity_provider="SSO") }}
+                        </a>
+                    </div>
+
+                {% else %}
+                    {# Non-SSO users. #}
+
+                    {% if realm_name %}
+                    <div class="left-side">
+                        <div class="org-header">
+                            <img class="avatar" src="{{ realm_icon }}" alt="" />
+                            <div class="info-box">
+                                <div class="organization-name">{{ realm_name }}</div>
+                                <div class="organization-path">{{ realm_uri }}</div>
+                            </div>
+                        </div>
+                        <div class="description">
+                            {{ realm_description|safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="right-side">
+                        {% if no_auth_enabled %}
+                            <div class="alert">
+                                <p>No authentication backends are enabled on this
+                                server yet, so it is impossible to login!</p>
+
+                                <p>See the <a href="https://zulip.readthedocs.io/en/latest/production/install.html#step-3-configure-zulip">Zulip
+                                authentication documentation</a> to learn how to configure authentication backends.</p>
+                            </div>
+                        {% else %}
+                            {% if password_auth_enabled %}
+                                <form name="login_form" id="login_form" method="post" class="login-form"
+                                  action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}">
+
+                                    {% if two_factor_authentication_enabled %}
+                                    {{ wizard.management_form }}
+                                    {% endif %}
+                                    {{ csrf_input }}
+
+                                    <!-- .no-validation is for removing the red star in CSS -->
+                                    {% if not two_factor_authentication_enabled or wizard.steps.current == 'auth' %}
+                                    <div class="input-box no-validation">
+                                        <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
+                                          name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
+                                          {% if email %} value="{{ email }}" {% else %} value="" {% endif %}
+                                          maxlength="72" required />
+                                        <label for="id_username">
+                                            {% if not require_email_format_usernames and email_auth_enabled %}
+                                            {{ _('Email or username') }}
+                                            {% elif not require_email_format_usernames %}
+                                            {{ _('Username') }}
+                                            {% else %}
+                                            {{ _('Email') }}
+                                            {% endif %}
+                                        </label>
+                                    </div>
+
+                                    <div class="input-box no-validation">
+                                        <input id="id_password" name="password" class="required" type="password" required />
+                                        <label for="id_password" class="control-label">{{ _('Password') }}</label>
+                                    </div>
+                                    {% else %}
+                                    {% include "two_factor/_wizard_forms.html" %}
+                                    {% endif %}
+
+                                    {% if form.errors %}
+                                    <div class="alert alert-error">
+                                        {% for error in form.errors.values() %}
+                                        <div>{{ error | striptags }}</div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                    {% if already_registered %}
+                                    <div class="alert">
+                                        {{ _("You've already registered with this email address. Please log in below.") }}
+                                    </div>
+                                    {% endif %}
+
+                                    {% if subdomain %}
+                                    <div class="alert">
+                                        {{ wrong_subdomain_error }}
+                                    </div>
+                                    {% endif %}
+
+                                    <button type="submit" name="button" class="full-width">
+                                        <img class="loader" src="/static/images/loader.svg" />
+                                        <span class="text">{{ _("Log in") }}</span>
+                                    </button>
+                                </form>
+
+                                {% if any_oauth_backend_enabled %}
+                                <div class="or"><span>{{ _('OR') }}</span></div>
+                                {% endif %}
+
+                            {% endif %} <!-- if password_auth_enabled -->
+
+                            {% if google_auth_enabled %}
+                            <div class="login-social">
+                                <form id='google_login_form' class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
+                                    <input type="hidden" name="next" value="{{ next }}">
+                                    <button class="login-social-button login-google-button full-width">
+                                        {{ _('Log in with %(identity_provider)s', identity_provider="Google") }}
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+
+                            {% if github_auth_enabled %}
+                            <div class="login-social">
+                                <form id='social_login_form' class="form-inline github-wrapper" action="{{ url('login-social', args=('github',)) }}" method="get">
+                                    <input type="hidden" name="next" value="{{ next }}">
+                                    <button class="login-social-button">
+                                        {{ _('Log in with %(identity_provider)s', identity_provider="GitHub") }}
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+
+                            {% if azuread_auth_enabled %}
+                            <div class="login-social">
+                                <form id='azure_login_form' class="form-inline azure-wrapper" action="{{ url('login-social', args=('azuread-oauth2',)) }}" method="get">
+                                    <input type="hidden" name="next" value="{{ next }}">
+                                    <button class="login-social-button">
+                                        {{ _('Log in with %(identity_provider)s', identity_provider="Azure AD") }}
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+
+                            <div class="actions">
+                                {% if email_auth_enabled %}
+                                <a class="forgot-password" href="/accounts/password/reset/">{{ _('Forgot your password?') }}</a>
+                                {% endif %}
+                                {% if not register_link_disabled %}
+                                <a class="register-link float-right" href="/register/">{{ _('Sign up') }}</a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
-    {% endif %}
+    <script>
+    if (window.location.hash.substring(0, 1) === "#") {
+        /* We append the location.hash to the formaction so that URL can be
+        preserved after user is logged in. See this:
+        https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
+        var email_formaction = $("#login_form").attr('action');
+        $("#login_form").attr('action', email_formaction + '/' + window.location.hash);
+        $("#google_login_form input[name='next']").attr('value', '/' + window.location.hash);
+        $("#social_login_form input[name='next']").attr('value', '/' + window.location.hash);
 
-{% endif %}
-
-</div>
-<div class="footer-padder"></div>
-</div>
-<script type="text/javascript">
-if (window.location.hash.substring(0, 1) === "#") {
-    document.login_form.action += window.location.hash;
-}
-</script>
+        var sso_address = $("#sso-login").attr('href');
+        $("#sso-login").attr('href', sso_address + window.location.hash);
+    }
+    </script>
 
 {% endblock %}

@@ -3,45 +3,50 @@ var navigate = (function () {
 var exports = {};
 
 
-function go_to_row(row) {
-    current_msg_list.select_id(rows.id(row),
+function go_to_row(msg_id) {
+    current_msg_list.select_id(msg_id,
                                {then_scroll: true,
                                 from_scroll: true});
 }
 
 exports.up = function () {
     message_viewport.last_movement_direction = -1;
-    var next_row = rows.prev_visible(current_msg_list.selected_row());
-    if (next_row.length !== 0) {
-        go_to_row(next_row);
+    var msg_id = current_msg_list.prev();
+    if (msg_id === undefined) {
+        return;
     }
+    go_to_row(msg_id);
 };
 
 exports.down = function (with_centering) {
     message_viewport.last_movement_direction = 1;
-    var next_row = rows.next_visible(current_msg_list.selected_row());
-    if (next_row.length !== 0) {
-        go_to_row(next_row);
+
+    if (current_msg_list.is_at_end()) {
+        if (with_centering) {
+            // At the last message, scroll to the bottom so we have
+            // lots of nice whitespace for new messages coming in.
+            var current_msg_table = rows.get_table(current_msg_list.table_name);
+            message_viewport.scrollTop(current_msg_table.safeOuterHeight(true) -
+                                       message_viewport.height() * 0.1);
+            unread_ops.mark_current_list_as_read();
+        }
+
+        return;
     }
-    if (with_centering && (next_row.length === 0)) {
-        // At the last message, scroll to the bottom so we have
-        // lots of nice whitespace for new messages coming in.
-        //
-        // FIXME: this doesn't work for End because rows.last_visible()
-        // always returns a message.
-        var current_msg_table = rows.get_table(current_msg_list.table_name);
-        message_viewport.scrollTop(current_msg_table.outerHeight(true) -
-                                   message_viewport.height() * 0.1);
-        unread_ops.mark_current_list_as_read();
+
+    // Normal path starts here.
+    var msg_id = current_msg_list.next();
+    if (msg_id === undefined) {
+        return;
     }
+    go_to_row(msg_id);
 };
 
 exports.to_home = function () {
     message_viewport.last_movement_direction = -1;
-    var next_row = rows.first_visible(current_msg_list.selected_row());
-    if (next_row.length !== 0) {
-        go_to_row(next_row);
-    }
+    var first_id = current_msg_list.first().id;
+    current_msg_list.select_id(first_id, {then_scroll: true,
+                                          from_scroll: true});
 };
 
 exports.to_end = function () {
@@ -115,42 +120,9 @@ exports.page_down = function () {
     }
 };
 
-exports.cycle_stream = function (direction) {
-    var currentStream;
-    var nextStream;
-    if (narrow.stream() !== undefined) {
-        currentStream = stream_list.get_stream_li(narrow.stream());
-    }
-    switch (direction) {
-        case 'forward':
-            if (narrow.stream() === undefined) {
-                nextStream = $("#stream_filters").children('.narrow-filter').first();
-            } else {
-                nextStream = currentStream.next('.narrow-filter');
-                if (nextStream.length === 0) {
-                    nextStream = $("#stream_filters").children('.narrow-filter').first();
-                }
-            }
-            break;
-        case 'backward':
-            if (narrow.stream() === undefined) {
-                nextStream = $("#stream_filters").children('.narrow-filter').last();
-            } else {
-                nextStream = currentStream.prev('.narrow-filter');
-                if (nextStream.length === 0) {
-                    nextStream = $("#stream_filters").children('.narrow-filter').last();
-                }
-            }
-            break;
-        default:
-            blueslip.error("Invalid parameter to cycle_stream", {value: direction});
-    }
-    narrow.by('stream', nextStream.data('name'));
-};
-
 exports.scroll_to_selected = function () {
     var selected_row = current_msg_list.selected_row();
-    if (selected_row && (selected_row.length !== 0)) {
+    if (selected_row && selected_row.length !== 0) {
         message_viewport.recenter_view(selected_row);
     }
 };
@@ -174,3 +146,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = navigate;
 }
+window.navigate = navigate;

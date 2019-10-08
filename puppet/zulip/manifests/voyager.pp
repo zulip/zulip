@@ -18,4 +18,6 @@ class zulip::voyager {
   include zulip::rabbit
   include zulip::redis
   include zulip::localhost_camo
+  include zulip::static_asset_compiler
+  include zulip::thumbor
 }

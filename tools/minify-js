@@ -1,15 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Minifies JavaScripts, creating source maps
 
-from __future__ import absolute_import
-from __future__ import print_function
 
 import os
 import subprocess
 import argparse
 import sys
-import six
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
@@ -21,7 +19,7 @@ prev_deploy = args.prev_deploy
 # JavaScript source files to minify (and what output files to create).
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import scripts.lib.setup_path_on_import
-from typing import Optional, Set
+from typing import Any, Dict, Optional, Set
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
@@ -37,7 +35,7 @@ subprocess.check_call(['tools/compile-handlebars-templates'])
 subprocess.check_call(['tools/webpack'])
 
 def get_changed_source_files(other_checkout):
-    # type: (Optional[str]) -> Optional[Set[str]]
+    # type: (str) -> Optional[Set[str]]
     """ Get list of changed static files since other_checkout.
     If git fails to return a reasonable looking list, this returns None,
     in which case it should be assumed no files can be reused from
@@ -59,8 +57,11 @@ def get_changed_source_files(other_checkout):
               % (other_checkout,))
         return None
 
-    changed = set() # type: Set[str]
+    changed = set()  # type: Set[str]
     for filename in git_diff.split('\n'):
+        if filename in ["package.json", "zproject/settings.py", "tools/minify-js"]:
+            print("Changed a core JS pipeline file; not reusing cached minification results")
+            return None
         if not filename.startswith(STATIC_PATH):
             continue  # Ignore non-static files.
 
@@ -72,16 +73,17 @@ def get_changed_source_files(other_checkout):
     return changed
 
 
-changed_files = set() # type: Set[str]
+changed_files = set()  # type: Set[str]
 if prev_deploy:
-    changed_files = get_changed_source_files(prev_deploy)
-    if changed_files is None:
+    changed_files_tmp = get_changed_source_files(prev_deploy)
+    if changed_files_tmp is None:
         prev_deploy = None
+    else:
+        changed_files = changed_files_tmp
 
 # Always use the newly compiled handlebars templates and webpack bundle.
 if prev_deploy:
     changed_files.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
-    changed_files.add(os.path.join(STATIC_PATH, 'js/bundle.js'))
 
 JS_SPECS = settings.JS_SPECS
 CLOSURE_BINARY = '/usr/bin/closure-compiler'
@@ -96,9 +98,13 @@ if not os.path.exists(CLOSURE_BINARY):
 # Where to put minified JS and source maps
 MIN_DIR = os.path.join(STATIC_PATH, 'min/')
 MAP_DIR = os.path.join(STATIC_PATH, 'source-map/')
-subprocess.check_call(['mkdir', '-p', MIN_DIR, MAP_DIR])
+os.makedirs(MIN_DIR, exist_ok=True)
+os.makedirs(MAP_DIR, exist_ok=True)
 
-for js_group, filespec in six.iteritems(JS_SPECS):
+for js_group_filespec_pair in JS_SPECS.items():
+    # JS_SPECS is not typed, so forcefully type keys and values being read from JS_SPECS
+    js_group = js_group_filespec_pair[0]  # type: str
+    filespec = js_group_filespec_pair[1]  # type: Dict[str, Any]
     #      JS_SPECS look like        'js/foobar.js'.
     # changed_files look like 'static/js/foobar.js'.
     # So we prepend 'static/' to the JS_SPECS so these match up.
@@ -120,7 +126,7 @@ for js_group, filespec in six.iteritems(JS_SPECS):
                 src = os.path.join(prev_deploy, dest)
                 os.path.getsize(src)  # Just to throw error if it doesn't exist.
                 if os.path.abspath(src) != os.path.abspath(dest):
-                    subprocess.check_call(['cp', src, dest])
+                    shutil.copyfile(src, dest)
             continue  # Copy succeeded, so go on to next file.
         except (subprocess.CalledProcessError, OSError):
             pass  # Copy failed, so fall through to minification instead.
@@ -129,10 +135,11 @@ for js_group, filespec in six.iteritems(JS_SPECS):
     # supposed to work but failed.  Thus, minify the JS anew.
     # (N.B. we include STATIC_HEADER_FILE before the JavaScripts.
     #  This way it doesn't throw off the source map.)
-    cmd = '%s --language_in ECMASCRIPT5 --create_source_map %s %s %s' % (
-        CLOSURE_BINARY, map_file,
-        settings.STATIC_HEADER_FILE, ' '.join(in_files))
-    js = subprocess.check_output(cmd, shell=True)
+    cmd = [
+        CLOSURE_BINARY, '--language_in', 'ECMASCRIPT5',
+        '--create_source_map', map_file,
+        settings.STATIC_HEADER_FILE] + in_files
+    js = subprocess.check_output(cmd)
 
     # Write out the JS
     with open(out_file, 'wb') as fp:

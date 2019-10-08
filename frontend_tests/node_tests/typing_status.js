@@ -1,4 +1,4 @@
-var typing_status = require('js/typing_status');
+zrequire('typing_status');
 
 function return_false() { return false; }
 function return_true() { return true; }
@@ -14,7 +14,7 @@ function returns_time(secs) {
     return function () { return make_time(secs); };
 }
 
-(function test_basics() {
+run_test('basics', () => {
 
     // invalid conversation basically does nothing
     var worker = {
@@ -277,4 +277,4 @@ function returns_time(secs) {
     });
     assert(events.idle_callback);
 
-}());
+});

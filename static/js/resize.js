@@ -27,13 +27,13 @@ function size_blocks(blocks, usable_height) {
     });
 }
 
-function set_user_list_heights(res, usable_height, user_presences, group_pms) {
+function set_user_list_heights(res, usable_height, buddy_list_wrapper, group_pms) {
     // Calculate these heights:
-    //    res.user_presences_max_height
+    //    res.buddy_list_wrapper_max_height
     //    res.group_pms_max_height
     var blocks = [
         {
-            real_height: user_presences.prop('scrollHeight'),
+            real_height: buddy_list_wrapper.prop('scrollHeight'),
         },
         {
             real_height: group_pms.prop('scrollHeight'),
@@ -42,62 +42,59 @@ function set_user_list_heights(res, usable_height, user_presences, group_pms) {
 
     size_blocks(blocks, usable_height);
 
-    res.user_presences_max_height = blocks[0].max_height;
+    res.buddy_list_wrapper_max_height = blocks[0].max_height;
     res.group_pms_max_height = blocks[1].max_height;
 }
 
 function get_new_heights() {
     var res = {};
     var viewport_height = message_viewport.height();
-    var top_navbar_height = $("#top_navbar").outerHeight(true);
-    var invite_user_link_height = $("#invite-user-link").outerHeight(true) || 0;
+    var top_navbar_height = $("#top_navbar").safeOuterHeight(true);
+    var invite_user_link_height = $("#invite-user-link").safeOuterHeight(true) || 0;
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.bottom_sidebar_height = viewport_height - top_navbar_height - 40;
+    res.bottom_sidebar_height = viewport_height - top_navbar_height;
 
     res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
 
     res.stream_filters_max_height =
         res.bottom_sidebar_height
-        - $("#global_filters").outerHeight(true)
-        - $("#streams_header").outerHeight(true)
+        - $("#global_filters").safeOuterHeight(true)
+        - $("#streams_header").safeOuterHeight(true)
         - 10; // stream_filters margin-bottom
-
-    if ($("#share-the-love").is(":visible")) {
-        res.stream_filters_max_height -=
-            $("#share-the-love").outerHeight(true)
-            + 20; // share-the-love margins + 10px of ??
-    }
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
     // RIGHT SIDEBAR
-    var user_presences = $('#user_presences').expectOne();
+    var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
     var group_pms = $('#group-pms').expectOne();
+    var keyboard_popover_shortcut = $('#keyboard-icon').expectOne();
 
     var usable_height =
         res.right_sidebar_height
-        - $("#feedback_section").outerHeight(true)
-        - parseInt(user_presences.css("marginTop"),10)
-        - parseInt(user_presences.css("marginBottom"), 10)
-        - $("#userlist-header").outerHeight(true)
-        - $(".user-list-filter").outerHeight(true)
+        - $("#feedback_section").safeOuterHeight(true)
+        - parseInt(buddy_list_wrapper.css("marginTop"), 10)
+        - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
+        - $("#userlist-header").safeOuterHeight(true)
+        - $(".user-list-filter").safeOuterHeight(true)
         - invite_user_link_height
-        - parseInt(group_pms.css("marginTop"),10)
+        - parseInt(group_pms.css("marginTop"), 10)
         - parseInt(group_pms.css("marginBottom"), 10)
-        - $("#group-pm-header").outerHeight(true);
+        - $("#group-pm-header").safeOuterHeight(true)
+        - keyboard_popover_shortcut.safeOuterHeight(true)
+        - parseInt(keyboard_popover_shortcut.css("marginBottom"), 10);
 
     // set these
-    // res.user_presences_max_height
+    // res.buddy_list_wrapper_max_height
     // res.group_pms_max_height
     set_user_list_heights(
         res,
         usable_height,
-        user_presences,
+        buddy_list_wrapper,
         group_pms
     );
 
@@ -109,14 +106,14 @@ function left_userlist_get_new_heights() {
     var res = {};
     var viewport_height = message_viewport.height();
     var viewport_width = message_viewport.width();
-    var top_navbar_height = $(".header").outerHeight(true);
+    var top_navbar_height = $(".header").safeOuterHeight(true);
 
     var stream_filters = $('#stream_filters').expectOne();
-    var user_presences = $('#user_presences').expectOne();
+    var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
     var group_pms = $('#group-pms').expectOne();
 
     var stream_filters_real_height = stream_filters.prop("scrollHeight");
-    var user_list_real_height = user_presences.prop("scrollHeight");
+    var user_list_real_height = buddy_list_wrapper.prop("scrollHeight");
     var group_pms_real_height = group_pms.prop("scrollHeight");
 
     res.bottom_whitespace_height = viewport_height * 0.4;
@@ -124,19 +121,19 @@ function left_userlist_get_new_heights() {
     res.main_div_min_height = viewport_height - top_navbar_height;
 
     res.bottom_sidebar_height = viewport_height
-                                - parseInt($("#left-sidebar").css("marginTop"),10)
-                                - parseInt($(".bottom_sidebar").css("marginTop"),10);
+                                - parseInt($("#left-sidebar").css("marginTop"), 10)
+                                - parseInt($(".bottom_sidebar").css("marginTop"), 10);
 
 
     res.total_leftlist_height = res.bottom_sidebar_height
-                                - $("#global_filters").outerHeight(true)
-                                - $("#streams_header").outerHeight(true)
-                                - $("#userlist-header").outerHeight(true)
-                                - $(".user-list-filter").outerHeight(true)
-                                - $("#group-pm-header").outerHeight(true)
-                                - parseInt(stream_filters.css("marginBottom"),10)
-                                - parseInt(user_presences.css("marginTop"), 10)
-                                - parseInt(user_presences.css("marginBottom"), 10)
+                                - $("#global_filters").safeOuterHeight(true)
+                                - $("#streams_header").safeOuterHeight(true)
+                                - $("#userlist-header").safeOuterHeight(true)
+                                - $(".user-list-filter").safeOuterHeight(true)
+                                - $("#group-pm-header").safeOuterHeight(true)
+                                - parseInt(stream_filters.css("marginBottom"), 10)
+                                - parseInt(buddy_list_wrapper.css("marginTop"), 10)
+                                - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
                                 - parseInt(group_pms.css("marginTop"), 10)
                                 - parseInt(group_pms.css("marginBottom"), 10)
                                 - 15;
@@ -156,7 +153,7 @@ function left_userlist_get_new_heights() {
     size_blocks(blocks, res.total_leftlist_height);
 
     res.stream_filters_max_height = blocks[0].max_height;
-    res.user_presences_max_height = blocks[1].max_height;
+    res.buddy_list_wrapper_max_height = blocks[1].max_height;
     res.group_pms_max_height = blocks[2].max_height;
 
     res.viewport_height = viewport_height;
@@ -165,10 +162,51 @@ function left_userlist_get_new_heights() {
     return res;
 }
 
+exports.watch_manual_resize = function (element) {
+    return (function on_box_resize(cb) {
+        var box = document.querySelector(element);
+
+        if (!box) {
+            blueslip.error('Bad selector in watch_manual_resize: ' + element);
+            return;
+        }
+
+        var meta = {
+            box: box,
+            height: null,
+            mousedown: false,
+        };
+
+        var box_handler = function () {
+            meta.mousedown = true;
+            meta.height = meta.box.clientHeight;
+        };
+        meta.box.addEventListener("mousedown", box_handler);
+
+        // If the user resizes the textarea manually, we use the
+        // callback to stop autosize from adjusting the height.
+        var body_handler = function () {
+            if (meta.mousedown === true) {
+                meta.mousedown = false;
+                if (meta.height !== meta.box.clientHeight) {
+                    meta.height = meta.box.clientHeight;
+                    cb.call(meta.box, meta.height);
+                }
+            }
+        };
+        document.body.addEventListener("mouseup", body_handler);
+
+        return [box_handler, body_handler];
+    }(function (height) {
+        // This callback disables autosize on the textarea.  It
+        // will be re-enabled when this component is next opened.
+        $(element).trigger("autosize.destroy")
+            .height(height + "px");
+    }));
+};
+
 exports.resize_bottom_whitespace = function (h) {
-    if (page_params.autoscroll_forever) {
-        $("#bottom_whitespace").height($("#compose-container")[0].offsetHeight);
-    } else if (h !== undefined) {
+    if (h !== undefined) {
         $("#bottom_whitespace").height(h.bottom_whitespace_height);
     }
 };
@@ -177,7 +215,7 @@ exports.resize_stream_filters_container = function (h) {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
     exports.resize_bottom_whitespace(h);
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
-    $('#stream-filters-container').perfectScrollbar('update');
+    ui.update_scrollbar($("#stream-filters-container"));
 };
 
 exports.resize_page_components = function () {
@@ -196,8 +234,7 @@ exports.resize_page_components = function () {
             sidebar = $(".bottom_sidebar").expectOne();
             sidebar.append($("#user-list").expectOne());
             sidebar.append($("#group-pm-list").expectOne());
-            sidebar.append($("#share-the-love").expectOne());
-            $("#user_presences").css("margin", "0px");
+            $("#buddy_list_wrapper").css("margin", "0px");
             $("#group-pms").css("margin", "0px");
             $("#userlist-toggle").css("display", "none");
             $("#invite-user-link").hide();
@@ -208,7 +245,7 @@ exports.resize_page_components = function () {
             sidebar = $("#right-sidebar").expectOne();
             sidebar.append($("#user-list").expectOne());
             sidebar.append($("#group-pm-list").expectOne());
-            $("#user_presences").css("margin", '');
+            $("#buddy_list_wrapper").css("margin", '');
             $("#group-pms").css("margin", '');
             $("#userlist-toggle").css("display", '');
             $("#invite-user-link").show();
@@ -218,11 +255,16 @@ exports.resize_page_components = function () {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     exports.resize_bottom_whitespace(h);
-    $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
-    $("#user_presences").css('max-height', h.user_presences_max_height);
+    $("#buddy_list_wrapper").css('max-height', h.buddy_list_wrapper_max_height);
     $("#group-pms").css('max-height', h.group_pms_max_height);
 
-    $('#stream-filters-container').perfectScrollbar('update');
+    $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
+    ui.update_scrollbar($("#stream-filters-container"));
+
+    activity.update_scrollbar.users();
+    activity.update_scrollbar.group_pms();
+
+    panels.resize_app();
 };
 
 var _old_width = $(window).width();
@@ -238,6 +280,9 @@ exports.handler = function () {
     popovers.hide_all();
     exports.resize_page_components();
 
+    // Re-compute and display/remove [More] links to messages
+    condense.condense_and_collapse($("div.message_row"));
+
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
@@ -252,3 +297,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = resize;
 }
+window.resize = resize;

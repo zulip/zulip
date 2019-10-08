@@ -1,205 +1,554 @@
 {% extends "zerver/portico.html" %}
-{% block hello_page_container %} hello-main{% endblock %}
-{% block hello_page_footer %} hello-footer{% endblock %}
-{% block os_announcement %}
-  {% if show_oss_announcement %}
-  <div class="os-headline-container">
-    <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
-    <div class="main-headline-text">
-      <span class="tagline os-tagline">
-         {{ _('Zulip has been released as open source software!') }}
-      </span>
-      <span class="footnote os-footnote">
-         {% trans %}Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.{% endtrans %}
-      </span>
-    </div>
-  </div>
-  {% endif %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Bootstrap 2.3.2-->
+<script src="https://stackpath.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+
+{{ render_bundle('landing-page') }}
+<style>
+    .portico-page {
+    padding-bottom: 0px;
+    }
+</style>
 {% endblock %}
 
 {% block portico_content %}
-<div class="app main-headline">
-  <div class="app-main main-headline-container">
-    <img src="/static/images/logo/textlogo@2x.png" class="main-headline-logo" alt="Zulip logo" />
-    <div class="main-headline-text">
-      <span class="tagline">
-        {{ _('Finally, workplace chat that actually improves your productivity.*') }}
-      </span>
-      <span class="footnote">{{ _("* It's also great for sharing cat pictures.") }}</span>
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="gradients">
+    <div class="gradient sunburst"></div>
+    <div class="gradient dark-blue"></div>
+    <div class="gradient green"></div>
+    <div class="gradient blue"></div>
+    <div class="gradient white-fade"></div>
+</div>
+
+<div class="portico-landing hello show">
+    <div class="hero">
+        <div class="content">
+            <header>
+                <h1>The world&rsquo;s most productive team chat</h1>
+                <p>
+                    Zulip combines the immediacy of real-time chat with an email
+                    threading model. <br class="line-break-desktop">With Zulip, you can catch
+                    up on important conversations while ignoring
+                    irrelevant ones.
+                </p>
+            </header>
+            <div class="tour">
+                <div id="tour-carousel" class="carousel slide carousel-fade">
+                    <!-- Carousel items -->
+                    <div class="carousel-inner">
+                        <div class="item-container">
+                            <div class="item active">
+                                <div class="item-inner">
+
+                                    <button href="#tour-carousel" data-slide="next" type="button" name="button" class="start-button">Take the tour</button>
+                                    <img src="/static/images/story-tutorial/zulip-topic-blurred.png" alt="" class="start-image">
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">In Zulip, you subscribe to <b>streams.</b> Streams are like channels in Slack or IRC.</p>
+                                    <div class="zulip-slack-comparison">
+                                        <div class="comparison-zulip">
+                                            <div class="caption">Zulip</div>
+                                            <img src="/static/images/story-tutorial/zulip-streams.png" class="zulip-streams" alt="{{ _('Streams in Zulip') }}">
+                                        </div>
+                                        <div class="comparison-slack">
+                                            <div class="caption">Other team chat</div>
+                                            <img src="/static/images/story-tutorial/slack-streams.png" class="slack-streams" alt="{{ _('Streams in Slack') }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Each stream message also has a <b>topic.</b> Topics are unique to Zulip.</p>
+                                    <div class="zulip-slack-comparison">
+                                        <div class="comparison-zulip">
+                                            <div class="caption">Zulip</div>
+                                            <img src="/static/images/story-tutorial/zulip-streams-selected.png" class="zulip-streams-selected" alt="{{ _('Topics in Zulip') }}">
+                                        </div>
+                                        <div class="comparison-slack">
+                                            <div class="caption">Other team chat</div>
+                                            <img src="/static/images/story-tutorial/slack-streams-selected.png" class="slack-streams-selected" alt="{{ _('Streams in Slack') }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Topics make it easy to catch up after a day of meetings.</p>
+                                    <div class="zulip-slack-comparison">
+                                        <div class="comparison-zulip">
+                                            <div class="caption comparison-2-caption-zulip">Zulip</div>
+                                            <img src="/static/images/story-tutorial/zulip-streams-unreads-arrows.png" alt="{{ _('Stream topics in Zulip') }}" class="zulip-unreads-arrows">
+                                        </div>
+                                        <div class="comparison-slack">
+                                            <div class="caption comparison-2-caption-slack">Other team chat</div>
+                                            <img src="/static/images/story-tutorial/slack-streams-unreads.png" class="slack-stream-unreads" alt="{{ _('Streams in Slack') }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Let&rsquo;s click on &ldquo;Tuesday night catering.&rdquo;</p>
+                                    <img src="/static/images/story-tutorial/zulip-topic.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="zulip-topic mobile-hide">
+                                    <img src="/static/images/story-tutorial/zulip-topic-crop.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-topic mobile-show">
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Messages in Zulip retain their context even if they&rsquo;re sent hours after the conversation started:</p>
+                                    <img src="/static/images/story-tutorial/zulip-streams-easy.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="zulip-easy mobile-hide">
+                                    <div class="mobile-show">
+                                        <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-top.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip') }}">
+                                        <p class="tour-explanation">Messages sent hours apart are linked in the same topic.</p>
+                                        <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-bottom.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip - compose box') }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Without topics, it&rsquo;s hard to catch up efficiently, and hard to participate in conversations that started while you were away.</p>
+                                    <img src="/static/images/story-tutorial/slack-overwhelming.png" alt="{{ _('The Tuesday night catering topic in Slack') }}" class="slack-overwhelming mobile-hide">
+                                    <div class="mobile-show">
+                                        <img src="/static/images/story-tutorial/slack-overwhelming-mobile.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Slack') }}">
+                                        <p class="tour-explanation">The last message about Tuesday night catering is hidden 56 messages ago. Meanwhile, you just see a mix of unrelated messages.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header tour-item-header-top-push tour-item-header-centered">Zulip Free is free for an unlimited number of users.</p>
+                                    <button href="/plans" type="button" name="button"
+                                      class="call-to-action carousel-link-button">
+                                        {{ _('See plans and pricing') }}
+                                    </button>
+                                    <div class="other-resources">
+                                        <div class="other-resources-section">
+                                            <a href="/why-zulip"><img src="/static/images/landing-page/organised.svg" alt=""></a>
+                                            <p><a href="/why-zulip">Zulip vs Slack &rarr;</a></p>
+                                        </div>
+                                        <div class="other-resources-section">
+                                            <a href="/features"><img src="/static/images/landing-page/featured.svg" alt=""></a>
+                                            <p><a href="/features">See all features &rarr;</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a class="carousel-control left visibility-control hide" href="#tour-carousel" data-slide="prev"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
+                    <a class="carousel-control right visibility-control" href="#tour-carousel" data-slide="next"><i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+                    <ol class="carousel-indicators">
+                        <li data-target="#tour-carousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#tour-carousel" data-slide-to="1"></li>
+                        <li data-target="#tour-carousel" data-slide-to="2"></li>
+                        <li data-target="#tour-carousel" data-slide-to="3"></li>
+                        <li data-target="#tour-carousel" data-slide-to="4"></li>
+                        <li data-target="#tour-carousel" data-slide-to="5"></li>
+                        <li data-target="#tour-carousel" data-slide-to="6"></li>
+                        <li data-target="#tour-carousel" data-slide-to="7"></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="apps">
+        <div class="triangle"></div>
+        <div class="left-side">
+            <div class="content">
+                <header>
+                    <h1>Apps for every platform</h1>
+                </header>
+                <p>
+                    Zulip has modern apps for every major platform,
+                    powered by Electron and React Native.
+                </p>
+                <br />
+            </div>
+
+            <div class="platform-icons">
+                <div class="group">
+                    <h2>Web</h2>
+                    <a href="{{ apps_page_url }}">
+                        <i class="fa fa-desktop platform-icon" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <div class="group">
+                    <h2>Desktop</h2>
+                    <a href="{{ apps_page_url }}mac">
+                        <i class="fa fa-apple platform-icon" aria-hidden="true"></i>
+                    </a>
+                    <a href="{{ apps_page_url }}windows">
+                        <i class="fa fa-windows platform-icon" aria-hidden="true"></i>
+                    </a>
+                    <a href="{{ apps_page_url }}linux">
+                        <i class="fa fa-linux platform-icon" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <div class="group">
+                    <h2>Mobile</h2>
+                    <a href="{{ apps_page_url }}ios">
+                        <i class="fa fa-mobile-phone platform-icon" aria-hidden="true"></i>
+                    </a>
+                    <a href="{{ apps_page_url }}android">
+                        <i class="fa fa-android platform-icon" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="right-side">
+            <div class="screen ios">
+                <div class="main-page">
+                    <div class="navbar"></div>
+                    <div class="center-page">
+                        <div class="message-feed">
+                            <div class="stream">
+                                <div class="line micro red"></div>
+                                <div class="line nano"></div>
+
+                                <div class="message">
+                                    <div class="top">
+                                        <div class="avatar"></div>
+                                        <div class="line top-line"></div>
+                                    </div>
+                                    <div class="content">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line med"></div>
+                                    </div>
+                                </div>
+
+                                <div class="message">
+                                    <div class="top">
+                                        <div class="avatar"></div>
+                                        <div class="line top-line"></div>
+                                    </div>
+                                    <div class="content">
+                                        <div class="line med"></div>
+                                        <div class="line"></div>
+                                        <div class="line small"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stream">
+                                <div class="line micro blue"></div>
+                                <div class="line nano"></div>
+
+                                <div class="message">
+                                    <div class="top">
+                                        <div class="avatar"></div>
+                                        <div class="line top-line"></div>
+                                    </div>
+                                    <div class="content">
+                                        <div class="line med"></div>
+                                        <div class="line med"></div>
+                                        <div class="line small"></div>
+                                    </div>
+                                </div>
+
+                                <div class="message">
+                                    <div class="top">
+                                        <div class="avatar"></div>
+                                        <div class="line top-line"></div>
+                                    </div>
+                                    <div class="content">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line small"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="screen android">
+                <div class="main-page">
+                    <div class="navbar"></div>
+                    <div class="center-page">
+                        <div class="message-feed">
+                            <div class="stream">
+                                <div class="line micro red"></div>
+                                <div class="line nano"></div>
+
+                                <div class="message">
+                                    <div class="top">
+                                        <div class="avatar"></div>
+                                        <div class="line top-line"></div>
+                                    </div>
+                                    <div class="content">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line med"></div>
+                                    </div>
+                                </div>
+
+                                <div class="message">
+                                    <div class="top">
+                                        <div class="avatar"></div>
+                                        <div class="line top-line"></div>
+                                    </div>
+                                    <div class="content">
+                                        <div class="line med"></div>
+                                        <div class="line"></div>
+                                        <div class="line small"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stream">
+                                <div class="line micro blue"></div>
+                                <div class="line nano"></div>
+
+                                <div class="message">
+                                    <div class="top">
+                                        <div class="avatar"></div>
+                                        <div class="line top-line"></div>
+                                    </div>
+                                    <div class="content">
+                                        <div class="line med"></div>
+                                        <div class="line med"></div>
+                                        <div class="line small"></div>
+                                    </div>
+                                </div>
+
+                                <div class="message">
+                                    <div class="top">
+                                        <div class="avatar"></div>
+                                        <div class="line top-line"></div>
+                                    </div>
+                                    <div class="content">
+                                        <div class="line"></div>
+                                        <div class="line"></div>
+                                        <div class="line small"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="open-source">
+        <div class="flex">
+            <img src="/static/images/landing-page/opensource.svg" alt=""/>
+            <div class="il-block">
+                <h2>Open Source</h2>
+                <p>
+                    Zulip is <a href="https://github.com/zulip/zulip">100% open source software</a>,
+                    built by a vibrant community of hundreds of developers
+                    from all around the world.  With 120,000 words of
+                    <a href="https://zulip.readthedocs.io/">developer documentation</a>,
+                    a high quality code base, and a
+                    <a href="https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html">welcoming community</a>,
+                    it&rsquo;s easy to extend or tweak Zulip.
+                </p>
+                <p>
+                    Zulip has a significantly
+                    <a href="https://github.com/zulip/zulip/graphs/contributors">larger and more active</a>
+                    development community than other modern
+                    open source group chat solutions like
+                    <a href="https://github.com/mattermost/mattermost-server/graphs/contributors">Mattermost</a>,
+                    <a href="https://github.com/RocketChat/Rocket.Chat/graphs/contributors">Rocket.Chat</a>,
+                    and <a href="https://github.com/matrix-org/synapse/graphs/contributors">matrix.org</a>.
+                </p>
+                <p>
+                    <a href="https://zulip.readthedocs.io/en/stable/production/install.html"
+                    class="button">Install Zulip {{ latest_release_version }}</a> or <a href="{{ latest_release_announcement }}">read the Zulip {{ latest_major_version }} release announcement</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="integrations">
+        <div class="content">
+            <header>
+                <h1>Seamless integrations with everything you use</h1>
+            </header>
+            <p>
+                Zulip has more than 90 native integrations. Several hundred more
+                are available through
+                <a href="/integrations/doc/hubot">Hubot</a>,
+                <a href="/integrations/doc/zapier">Zapier</a>,
+                and
+                <a href="/integrations/doc/ifttt">IFTTT</a>.
+            </p>
+            <p><a href="/integrations">See all available integrations.</a></p>
+        </div>
+
+        <div class="integration-icons">
+            <a href="/integrations/doc/travis">
+                <div class="group">
+                    <img class="integration-logo" src="/static/images/integrations/logos/travis.svg" alt="{{ _('Travis logo') }}">
+                    <h3 class="integration-name">Travis CI</h3>
+                    <p class="integration-description">See build results immediately</p>
+                </div>
+            </a>
+            <a href="/integrations/doc/github">
+                <div class="group">
+                    <img class="integration-logo" src="/static/images/integrations/logos/github.svg" alt="{{ _('Github logo') }}">
+                    <h3 class="integration-name">Github</h3>
+                    <p class="integration-description">Track issues and pull requests</p>
+                </div>
+            </a>
+            <a href="/integrations/doc/heroku">
+                <div class="group">
+                    <img class="integration-logo" src="/static/images/integrations/logos/heroku.svg" alt="{{ _('Heroku logo') }}">
+                    <h3 class="integration-name">Heroku</h3>
+                    <p class="integration-description">Keep up with deployments</p>
+                </div>
+            </a>
+            <a href="/integrations/doc/zendesk">
+                <div class="group">
+                    <img class="integration-logo" src="/static/images/integrations/logos/zendesk.svg" alt="{{ _('Zendesk logo') }}">
+                    <h3 class="integration-name">Zendesk</h3>
+                    <p class="integration-description">Receive support tickets and updates</p>
+                </div>
+            </a>
+            <a href="/integrations/doc/jira">
+                <div class="group">
+                    <img class="integration-logo" src="/static/images/integrations/logos/jira.png" alt="{{ _('JIRA logo') }}">
+                    <h3 class="integration-name">JIRA</h3>
+                    <p class="integration-description">Monitor project bugs and issues</p>
+                </div>
+            </a>
+            <a href="/integrations/doc/sentry">
+                <div class="group">
+                    <img class="integration-logo" src="/static/images/integrations/logos/sentry.svg" alt="{{ _('Sentry logo') }}">
+                    <h3 class="integration-name">Sentry</h3>
+                    <p class="integration-description">See real-time error tracking</p>
+                </div>
+            </a>
+            <a href="/integrations/doc/pagerduty" class="hide-1">
+                <div class="group">
+                    <img class="integration-logo" src="/static/images/integrations/logos/pagerduty.svg" alt="{{ _('Pagerduty logo') }}">
+                    <h3 class="integration-name">Pagerduty</h3>
+                    <p class="integration-description">Connect to your monitoring systems</p>
+                </div>
+            </a>
+        </div>
+        <div class="content">
+            <p>Or build your own integrations with <a href="/api/integrations-overview">Zulip&rsquo;s powerful API</a>.</p>
+        </div>
+    </div>
+
+    <div class="testimonials">
+        <div class="padded-content">
+            <div id="quote-carousel" class="carousel slide" data-ride="carousel">
+                <div class="carousel-quotes">
+                    <div class="carousel-inner">
+                        <div class="item active quote-container">
+                            <blockquote>
+                                Zulip&rsquo;s unique threading saves me well
+                                over an hour a day in working with our
+                                distributed team of engineers and PMs
+                                across 7+ time zones.  We tried Slack,
+                                Mattermost, and other team chat
+                                products that claim to support
+                                threading, and nothing handles
+                                synchronous and asynchronous
+                                communication so intuitively.
+                            </blockquote>
+                            <cite>Jacinda Shelly, CTO, Doctor on Demand</cite>
+                        </div>
+                        <div class="item quote-container">
+                            <blockquote>
+                                Akamai’s Zulip Enterprise deployment
+                                connects over 2000 users around the planet.
+                                The threading model of conversations
+                                provides a large number of participants the
+                                ability to engage in real, ongoing, and
+                                substantive discussions, without the
+                                overwhelming experience of many other chat
+                                systems.  This coordination across far-flung
+                                teams has had a significant, positive impact
+                                on the happiness and productivity of our
+                                personnel, regardless of location or
+                                seniority.
+                            </blockquote>
+                            <cite>Andy Ellis, Chief Security Officer, Akamai</cite>
+                        </div>
+                        <div class="item quote-container">
+                            <blockquote>
+                                Choosing Zulip over Slack as our group chat is one
+                                of the best decisions we've ever made. Zulip makes
+                                it easy for our community of 1000 Recursers around
+                                the world to stay involved, even years after their
+                                batches finish. No other tool has a user
+                                experience that scales to a community of our
+                                size.
+                            </blockquote>
+                            <cite>Nick Bergson-Shilcock, founder and CEO, Recurse Center</cite>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="left visibility-control hide">
+                    <a class="fa fa-chevron-left" aria-hidden="true" href="#quote-carousel" data-slide="prev"></a>
+                </div>
+                <div class="right visibility-control">
+                    <a class="fa fa-chevron-right" aria-hidden="true" href="#quote-carousel" data-slide="next"></a>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="company-container">
+                <header>
+                    <h2 class="float left">Trusted by thousands of teams</h2>
+                    <div class="float clear"></div>
+                </header>
+                <div class="company-box">
+                    <div class="company akamai"></div>
+                    <div class="company doctorondemand"></div>
+                    <div class="company levelup"></div>
+                    <div class="company recurse"></div>
+                    <div class="company panjiva"></div>
+                    <div class="company layershift"></div>
+                    <div class="company solano"></div>
+                    <div class="company veelo"></div>
+                    <div class="company cmt"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="padded-content call-to-action-bottom">
+        <h1>Experience Zulip today!</h1>
+        {% if root_domain_landing_page %}
+        <a href="{{ url('plans') }}">
+            <button href="" class="download-button" type="button"
+              name="button">{{ _('See plans and pricing') }}</button>
+        </a>
+        {% endif %}
         {% if register_link_disabled %}
         {% elif only_sso %}
-          <a href="{{ url('login-sso') }}" class="main-signup-button btn btn-large btn-primary">{{ _('Log in now!') }}</a>
+        <a href="{{ url('login-sso') }}">
+            <button href="" type="button" name="button">{{ _('Log in now') }}</button>
+        </a>
         {% else %}
-          <a href="{{ url('register') }}" class="main-signup-button btn btn-large btn-primary">{{ _('Register now!') }}</a>
+        <a href="{{ url('register') }}">
+            <button href="" type="button" name="button">{{ _('Sign up now') }}</button>
+        </a>
         {% endif %}
+        <div class="atlassian-migration">
+            Migrating from HipChat or Stride?
+            Check out our <a href="/atlassian">Atlassian migration guide</a>.
+        </div>
+        <div class="zulip-octopus"></div>
     </div>
-    <img src="/static/images/landing-page/laptop-screenshot.png" class="main-image" alt="Screenshot of Zulip" />
-  </div>
-</div>
-
-<div class="app feature-line dark">
-  <div class="app-main feature-line-container">
-   <div class="feature-text">
-    <span class="tagline">
-      {{ _('Make sense of your messages.') }}
-    </span>
-    <span class="description">
-      <p>{% trans %}Every conversation in Zulip has a <em>topic</em>, so it&rsquo;s
-      easy to keep conversations straight. Are other users discussing
-      a software bug and the content of your website at the same time?
-      No problem.{% endtrans %}
-    </p>
-    </span>
-  </div>
-  <div class="feature-illustration">
-    <img class="feature-image" src="/static/images/landing-page/threads.png" alt="message threading in Zulip" />
-  </div>
-  </div>
-</div>
-
-<div class="app feature-line light">
-  <div class="app-main feature-line-container">
-   <div class="feature-text">
-    <span class="tagline">
-      {{ _('Never miss the conversations you care about.') }}
-    </span>
-    <span class="description">
-      <p>{% trans %}Sometimes, important things get discussed when you&rsquo;re not
-      around. Unfortunately, so do a lot of unimportant things.{% endtrans %}</p>
-
-      <p>{% trans %}Zulip makes it easy to review the conversations
-        you missed, so you can focus on that important project
-        without having to catch up on how Jim&rsquo;s guitar
-        lessons are going.{% endtrans %}</p>
-    </span>
-  </div>
-  <div class="feature-illustration">
-    <img class="feature-image shadow" src="/static/images/landing-page/important-things.png" alt="Zulip streams bar" />
-  </div>
-  </div>
-</div>
-
-<div class="app feature-line dark">
-  <div class="app-main feature-line-container">
-   <div class="feature-text">
-    <span class="tagline">
-      {{ _("Fast and powerful search.") }}
-    </span>
-    <span class="description">
-      {% trans %}An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;s
-      Gmail-style search will delight you with how quickly you can find
-      exactly what you&rsquo;re looking for.{% endtrans %}
-    </span>
-  </div>
-  <div class="feature-illustration">
-    <img class="feature-image shadow" src="/static/images/landing-page/better-search.png" alt="example of Zulip search" />
-  </div>
-  </div>
-</div>
-
-<div class="app feature-line light">
-  <div class="app-main feature-line-container">
-   <div class="feature-text">
-    <span class="tagline">
-      {{ _("Integrations that don't intrude.") }}
-    </span>
-    <span class="description">
-      <p>{% trans %}Zulip has <a href="/integrations">many
-      integrations</a> and a powerful <a href="/api">API</a> to
-      match. But here&rsquo;s where it gets interesting: thanks to how
-      Zulip categorizes messages, automated messages never overwhelm
-      you. As with any topic in Zulip, they&rsquo;re easy to focus on,
-      skim, defer to later, or ignore&mdash;as appropriate.{% endtrans %}</p>
-    </span>
-  </div>
-  <div class="feature-illustration">
-    <img class="feature-image shadow" src="/static/images/landing-page/integrations.png" alt="Zulip's Jenkins integration" />
-  </div>
-  </div>
-</div>
-
-<div class="app feature-line dark">
-  <div class="app-main feature-line-container">
-   <div class="feature-text">
-    <span class="tagline">
-      {{ _('As technical as you want to be.') }}
-    </span>
-    <span class="description">
-      <p>{{ _('Keyboard shortcuts? Check.') }}<br />
-        {{ _('Syntax highlighting? Check.') }}<br />
-        {{ _('Discuss code and technical topics with ease.') }}</p>
-    </span>
-  </div>
-  <div class="feature-illustration">
-    <img class="feature-image shadow" src="/static/images/landing-page/technical.png" alt="code highlighting in Zulip" />
-  </div>
-  </div>
-</div>
-
-<div class="app feature-line light">
-  <div class="app-main feature-line-container">
-   <div class="feature-text">
-    <span class="tagline">
-      &hellip; {{ _('Everything else you need to be productive.') }}
-    </span>
-    <span class="description">
-      <p>{% trans %}Drag-and-drop file uploads, image pasting, group
-        private messages, audible notifications, missed-message
-        emails, desktop apps, and <a href="/features">everything else
-        you might want</a>. Including emoji, naturally. And it's all
-        open source under the Apache license!{% endtrans %}</p>
-    </span>
-  </div>
-  <div class="feature-illustration">
-    <img class="feature-image shadow" src="/static/images/landing-page/features.png" alt="unicode and emoji in Zulip" />
-  </div>
-  </div>
-</div>
-
-<div class="app feature-line dark">
-  <div class="app-main feature-line-container">
-   <div class="platform-text">
-    <span class="tagline">
-      {{ _('On the platform of your choice.') }}
-    </span>
-   </div>
-   <div class="platform-icons">
-      <div class="platform">
-         <i class="icon-vector-apple platform-icon"></i>
-         <h4>Mac</h4>
-      </div>
-      <div class="platform">
-         <i class="icon-vector-windows platform-icon"></i>
-         <h4>Windows</h4>
-      </div>
-      <div class="platform">
-         <i class="icon-vector-linux platform-icon"></i>
-         <h4>Linux</h4>
-      </div>
-      <div class="platform">
-         <i class="icon-vector-android platform-icon"></i>
-         <h4>Android</h4>
-      </div>
-      <div class="platform">
-         <i class="icon-vector-mobile-phone platform-icon"></i>
-         <h4>iOS</h4>
-      </div>
-      <div class="platform">
-         <i class="icon-vector-desktop platform-icon"></i>
-         <h4>Web</h4>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="app feature-line light">
-  <div class="app-main feature-line-container centered-content">
-    {% if register_link_disabled %}
-    {% elif only_sso %}
-      <a href="{{ url('login-sso') }}" class="bottom-signup-button btn btn-large btn-primary">{{ _('Log in now') }}</a>
-    {% else %}
-      <a href="{{ url('register') }}" class="bottom-signup-button btn btn-large btn-primary">{{ _('Register now') }}</a>
-    {% endif %}
-  </div>
 </div>
 {% endblock %}

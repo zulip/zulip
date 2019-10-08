@@ -1,24 +1,25 @@
 # Change your password
 
-## If you know your current password
+You can reset your password at any time, as long as you either know your
+current password, or have access to the email address associated with your
+account.
 
-{!go-to-the.md!} [Your account](/#settings/your-account)
-{!settings.md!}
-2. Click the **Change password** button located underneath your name.
-3. You will first be asked to enter your old password, and then to
-   enter a new password and to confirm it.
+### If you've forgotten or never had a password
 
-    !!! warn ""
-        **Note:** Your password must be six characters or longer.
+1. Log out.
 
-{!save-changes.md!} account settings.
+1. Go to your organization's login page.
 
-## If you forgot your password
-If you've forgotten your password, you can easily reset it using your e-mail.
+2. Below the **Password** field, click **Forgot password**.
 
-1. Go to your organization's Zulip homepage.
-2. Click the **Forgot password?** link below the **Password** field.
-3. In the new form you see, enter your email address in the **Email** field
-and click the **Reset password** button.
+3. Enter your email address, and click **Send reset link**.
 
-You will receive an email with instructions on how to reset your password.
+4. You will receive a confirmation email within a few minutes. Open it and click **Reset password**.
+
+### If you know your current password
+
+{settings_tab|your-account}
+
+2. Under **User settings**, click on the password field (it should look like `********`).
+
+3. Enter your old password and your new password, and click **Change**.

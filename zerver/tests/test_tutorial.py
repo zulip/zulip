@@ -1,75 +1,24 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import print_function
+
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import message_stream_count, most_recent_message
+from zerver.models import get_realm, get_user, Recipient, UserProfile
 
 from typing import Any, Dict
-
-from zerver.lib.test_helpers import (
-    get_user_profile_by_email,
-    most_recent_message,
-)
-
-from zerver.lib.test_classes import (
-    ZulipTestCase,
-)
-
-from zerver.models import (
-    UserProfile,
-)
-
 import ujson
 
-def fix_params(raw_params):
-    # type: (Dict[str, Any]) -> Dict[str, str]
-    # A few of our few legacy endpoints need their
-    # individual parameters serialized as JSON.
-    return {k: ujson.dumps(v) for k, v in raw_params.items()}
-
 class TutorialTests(ZulipTestCase):
-    def test_send_message(self):
-        # type: () -> None
-        email = 'hamlet@zulip.com'
-        user = get_user_profile_by_email(email)
-        self.login(email)
+    def setUp(self) -> None:
+        # This emulates the welcome message sent by the welcome bot to hamlet@zulip.com
+        # This is only a quick fix - ideally, we would have this message sent by the initialization
+        # code in populate_db.py
+        user_email = 'hamlet@zulip.com'
+        bot_email = 'welcome-bot@zulip.com'
+        content = 'Shortened welcome message.'
+        self.send_personal_message(bot_email, user_email, content)
 
-        welcome_bot = get_user_profile_by_email("welcome-bot@zulip.com")
-
-        raw_params = dict(
-            type='stream',
-            recipient='Denmark',
-            topic='welcome',
-            content='hello'
-        )
-        params = fix_params(raw_params)
-
-        result = self.client_post("/json/tutorial_send_message", params)
-
-        self.assert_json_success(result)
-        message = most_recent_message(user)
-        self.assertEqual(message.content, 'hello')
-        self.assertEqual(message.sender, welcome_bot)
-
-        # now test some error cases
-
-        result = self.client_post("/json/tutorial_send_message", {})
-        self.assert_json_error(result, "Missing 'type' argument")
-
-        result = self.client_post("/json/tutorial_send_message", raw_params)
-        self.assert_json_error(result, 'argument "type" is not valid json.')
-
-        raw_params = dict(
-            type='INVALID',
-            recipient='Denmark',
-            topic='welcome',
-            content='hello'
-        )
-        params = fix_params(raw_params)
-        result = self.client_post("/json/tutorial_send_message", params)
-        self.assert_json_error(result, 'Bad data passed in to tutorial_send_message')
-
-    def test_tutorial_status(self):
-        # type: () -> None
-        email = 'hamlet@zulip.com'
+    def test_tutorial_status(self) -> None:
+        email = self.example_email('hamlet')
         self.login(email)
 
         cases = [
@@ -77,9 +26,40 @@ class TutorialTests(ZulipTestCase):
             ('finished', UserProfile.TUTORIAL_FINISHED),
         ]
         for incoming_status, expected_db_status in cases:
-            raw_params = dict(status=incoming_status)
-            params = fix_params(raw_params)
-            result = self.client_post('/json/tutorial_status', params)
+            params = dict(status=ujson.dumps(incoming_status))
+            result = self.client_post('/json/users/me/tutorial_status', params)
             self.assert_json_success(result)
-            user = get_user_profile_by_email(email)
+            user = self.example_user('hamlet')
             self.assertEqual(user.tutorial_status, expected_db_status)
+
+    def test_single_response_to_pm(self) -> None:
+        realm = get_realm('zulip')
+        user_email = 'hamlet@zulip.com'
+        bot_email = 'welcome-bot@zulip.com'
+        content = 'whatever'
+        self.login(user_email)
+        self.send_personal_message(user_email, bot_email, content)
+        user = get_user(user_email, realm)
+        user_messages = message_stream_count(user)
+        expected_response = ("Congratulations on your first reply! :tada:\n\n"
+                             "Feel free to continue using this space to practice your new messaging "
+                             "skills. Or, try clicking on some of the stream names to your left!")
+        self.assertEqual(most_recent_message(user).content, expected_response)
+        # Welcome bot shouldn't respond to further PMs.
+        self.send_personal_message(user_email, bot_email, content)
+        self.assertEqual(message_stream_count(user), user_messages+1)
+
+    def test_no_response_to_group_pm(self) -> None:
+        realm = get_realm('zulip')  # Assume realm is always 'zulip'
+        user1_email = self.example_email('hamlet')
+        user2_email = self.example_email('cordelia')
+        bot_email = self.example_email('welcome_bot')
+        content = "whatever"
+        self.login(user1_email)
+        self.send_huddle_message(user1_email, [bot_email, user2_email], content)
+        user1 = get_user(user1_email, realm)
+        user1_messages = message_stream_count(user1)
+        self.assertEqual(most_recent_message(user1).content, content)
+        # Welcome bot should still respond to initial PM after group PM.
+        self.send_personal_message(user1_email, bot_email, content)
+        self.assertEqual(message_stream_count(user1), user1_messages+2)

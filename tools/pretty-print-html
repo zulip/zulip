@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+from typing import List
+from lib.pretty_print import pretty_print_html
+import sys
+
+def clean_html(filenames):
+    # type: (List[str]) -> None
+    for fn in filenames:
+        print('Prettifying: %s' % (fn))
+        file = open(fn)
+        html = file.read()
+        phtml = pretty_print_html(html)
+        file.close()
+        file = open(fn, 'w')
+        file.write(phtml)
+        file.close()
+
+if __name__ == '__main__':
+    # If command arguments are provided, we only check those filenames.
+    # Otherwise, we display a message
+    filenames = sys.argv[1:]
+    if filenames:
+        clean_html(filenames)
+        sys.exit(0)
+    print('Please specify at least one file to prettify')
+    sys.exit(1)

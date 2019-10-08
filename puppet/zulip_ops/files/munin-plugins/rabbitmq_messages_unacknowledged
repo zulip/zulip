@@ -5,7 +5,6 @@
 # Usage: Link or copy into /etc/munin/node.d/
 #
 # Parameters
-#     env.vhost <AMQ virtual host>
 #     env.queue_warn <warning queuesize>
 #     env.queue_crit <critical queuesize>
 #
@@ -29,7 +28,6 @@ fi
 # graphs should look.
 
 HOME=/tmp/
-VHOST=${vhost:-"/"}
 QUEUES=$(HOME=$HOME rabbitmqctl list_queues name | \
 		grep -v '^Listing' | \
 		grep -v 'done\.$' | sed -e 's/[.=-]/_/g' )

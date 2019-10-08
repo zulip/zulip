@@ -1,0 +1,11 @@
+trusty:
+  base_image: buildpack-deps:trusty-scm
+  extra_packages: python-virtualenv postgresql-9.3
+
+xenial:
+  base_image: buildpack-deps:xenial-scm
+  extra_packages: virtualenv postgresql-9.5
+
+bionic:
+  base_image: buildpack-deps:bionic-scm
+  extra_packages: postgresql-10

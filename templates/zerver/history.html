@@ -1,0 +1,182 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>Zulip history</title>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page no-slide">
+    <div class="hero bg-pycon">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Zulip History</h1>
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content history">
+                <div class="photo-description">
+                    Zulip at the PyCon Sprints in Portland, Oregon.
+                    Over seventy-five people sprinted during the four day event.
+                </div>
+
+                <h1>Early history</h1>
+
+                <p>
+                    Zulip was originally developed by Zulip, Inc., a small startup in
+                    Cambridge, Massachusetts.  Zulip, Inc. was founded by the MIT team
+                    that previously created
+                    <a href="https://www.ksplice.com">Ksplice</a>, software for
+                    live-patching a running Linux kernel.  Zulip was inspired by
+                    the <a href="https://barnowl.mit.edu/">Barnowl</a> client for
+                    the <a href="https://en.wikipedia.org/wiki/Zephyr_(protocol)">Zephyr</a>
+                    protocol, and the incredible community that Zephyr supported at MIT.
+                </p>
+
+                <p>
+                    Zulip, Inc. was acquired by Dropbox in early 2014, while the product
+                    was still in private beta.  Zulip's beta
+                    users <a href="https://www.recurse.com/blog/90-zulip-supporting-oss-at-the-recurse-center">loved
+                    Zulip's unique user experience</a> and continued using it, despite
+                    the fact that the product was not being actively developed.  After a
+                    year and a half, Dropbox generously decided to
+                    <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/">release Zulip as open source software</a>
+                    so that Zulip's users could continue enjoying the software.
+                </p>
+
+                <p>
+                    As a result, the first time the public had the opportunity to use
+                    Zulip was when Dropbox
+                    <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/">released
+                    Zulip as open source software</a> in late 2015.  The open sourcing
+                    announcement was very popular, staying at the top of
+                    both <a href="https://news.ycombinator.com/item?id=10279961">Hacker
+                    News</a>
+                    and <a href="https://www.reddit.com/r/programming/comments/3me9qp/dropbox_has_open_sourced_zulip_group_chat_software/">the
+                    programming subreddit</a> for an entire day.
+                </p>
+
+                <p>
+                    Zulip was open sourced with the complete version control history
+                    intact because 10 Zulip users visited Dropbox for a full week to
+                    help with the technical work.  The Zulip community is incredibly
+                    grateful to both Dropbox and those enthusiastic early users for
+                    making the Zulip open source project possible.
+                </p>
+
+                <h1>Success as an open source project</h1>
+
+                <p>
+                    At first, the Zulip open source project was
+                    maintained with just a bit of lead developer Tim
+                    Abbott's nights and weekends.  However, the
+                    community steadily gained new contributors, and
+                    has now grown to be one of the world's largest and
+                    most active open source projects.  We highlight a
+                    few milestones below:
+                </p>
+
+                <ul>
+                    <li>
+                        By the end of 2015, the open source project
+                        was already going strong with a community of
+                        dozens of developers around the world.
+                    </li>
+                    <li>
+                        At the PyCon Sprints in May 2016, dozens of
+                        developers got involved in contributing to
+                        Zulip; a major accomplishment from those
+                        sprints
+                        was <a href="https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/">annotating
+                        Zulip with mypy static types</a>.
+                    </li>
+                    <li>
+                        By late
+                        2016, <a href="https://github.com/zulip/zulip/graphs/contributors">more
+                        than 150 people from all over the world</a>
+                        had contributed almost 1000 pull requests to
+                        the software, and the Zulip project was moving
+                        faster than when the original startup employed
+                        11 full-time engineers.
+                    </li>
+                    <li>
+                        At the PyCon Sprints in May 2017, tens of
+                        Zulip core developers gathered and led the
+                        largest PyCon sprint ever, with over 75
+                        developers contributing to Zulip over course
+                        of the 4-day event.
+                    </li>
+                    <li>
+                        As of October 2018, the Zulip server project had
+                        merged <a href="https://github.com/zulip/zulip/pulls">
+                        6500 pull requests</a> written by over
+                        <a href="https://github.com/zulip/zulip/graphs/contributors">
+                            400 developers</a>.
+                    </li>
+                </ul>
+
+                <h1>Commercial (re-)launch</h1>
+
+                <p>
+                    In 2016, Tim Abbott started a company, Kandra Labs, to
+                    steward and financially sustain Zulip's development.  Kandra
+                    Labs was soon awarded
+                    a <a href="https://seedfund.nsf.gov/">large grant</a> from
+                    the US National Science Foundation, and also acquired
+                    additional sources of funding.
+                </p>
+                <p>
+                    In mid-2017, Kandra Labs launched two products: a hosted
+                    Zulip service
+                    at <a href="https://zulipchat.com">zulipchat.com</a>,
+                    and an enterprise support product for on-premise
+                    deployments.
+                </p>
+                <p>
+                    As of October 2018 the hosted service was seeing 4x year
+                    over year growth in daily active users, and the
+                    on-premise product was seeing rapid adoption (fueled
+                    partly by the sunsetting of HipChat server).
+                </p>
+
+                <h1>Support</h1>
+
+                <p>
+                    Kandra Labs is supported by nearly $1M
+                    in <a href="https://seedfund.nsf.gov/">SBIR
+                    grants</a> from the US National Science
+                    Foundation, and Zulip has benefitted enormously
+                    from the 30+ developers that started working on
+                    Zulip
+                    via <a href="https://summerofcode.withgoogle.com/">Google
+                    Summer of Code</a> and
+                    <a href="https://codein.withgoogle.com/">Google
+                    Code-In</a>.
+                </p>
+                <div class="sponsors">
+                    <div class="sponsor-picture">
+                        <a href="https://seedfund.nsf.gov/">
+                            <img src="/static/images/history/nsf-logo.png" alt="" />
+                        </a>
+                    </div>
+                    <div class="sponsor-picture">
+                        <a href="https://summerofcode.withgoogle.com/">
+                            <img src="/static/images/history/gsoc-logo.png" alt="" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

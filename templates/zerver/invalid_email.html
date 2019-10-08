@@ -1,0 +1,45 @@
+{% extends "zerver/portico.html" %}
+{% block portico_content %}
+
+    <h3>{{ _('Invalid email') }}</h3>
+
+    <p>{{ _('Hi there! Thank you for your interest in Zulip.') }}</p>
+
+    {% if invalid_email %}
+    <p>
+        {% trans %}
+        The email address you are trying to sign up with is not valid.
+        Please sign up using a valid email address.
+        {% endtrans %}
+    </p>
+    {% endif %}
+
+    {% if closed_domain %}
+    <p>
+        {% trans %}
+        The organization you are trying to join, {{ realm_name }},
+        only allows users with email addresses within the
+        organization. Please sign up using appropriate email address.
+        {% endtrans %}
+    </p>
+    {% endif %}
+
+    {% if disposable_emails_not_allowed %}
+    <p>
+        {% trans %}The organization you are trying to join,
+        {{realm_name}}, does not allow signups using disposable email
+        addresses. Please sign up using a real email address.
+        {% endtrans %}
+    </p>
+    {% endif %}
+
+    {% if email_contains_plus %}
+    <p>
+        {% trans %}The organization you are trying to join,
+        {{realm_name}}, does not allow signups using emails
+        that contains +. Please sign up using appropriate email address.
+        {% endtrans %}
+    </p>
+    {% endif %}
+
+{% endblock %}

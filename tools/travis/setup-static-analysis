@@ -1,5 +1,0 @@
-#!/bin/bash
-set -e
-set -x
-pip install --no-deps -r requirements/mypy.txt
-pip install --no-deps -r requirements/py3k.txt

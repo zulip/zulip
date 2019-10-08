@@ -1,0 +1,113 @@
+<div class="overlay-modal hide" id="search-operators" tabindex="-1" role="dialog"
+  aria-label="{{ _('Search operators') }}">
+    <div class="modal-body" tabindex="0">
+        <table class="table table-striped table-condensed table-rounded table-bordered help-table">
+            <thead>
+                <tr>
+                    <th>{{ _('Operator') }}</th>
+                    <th>{{ _('Effect') }}</th>
+                </tr>
+            </thead>
+            <tr>
+                <td class="operator">stream:<span class="operator_value">stream</span></td>
+                <td class="definition">{{ _('Narrow to messages on stream') }} <span class="operator_value">stream</span></td>
+            </tr>
+            <tr>
+                <td class="operator">topic:<span class="operator_value">topic</span></td>
+                <td class="definition">{{ _('Narrow to messages with topic') }} <span class="operator_value">topic</span></td>
+            </tr>
+            <tr>
+                <td class="operator">pm-with:<span class="operator_value">email</span></td>
+                <td class="definition">{{ _('Narrow to private messages with') }} <span class="operator_value">email</span></td>
+            </tr>
+            <tr>
+                <td class="operator">group-pm-with:<span class="operator_value">email</span></td>
+                <td class="definition">{{ _('Narrow to group private messages with') }} <span class="operator_value">email</span></td>
+            </tr>
+            <tr>
+                <td class="operator">sender:<span class="operator_value">email</span></td>
+                <td class="definition">{{ _('Narrow to messages sent by') }} <span class="operator_value">email</span></td>
+            </tr>
+            <tr>
+                <td class="operator">sender:me</td>
+                <td class="definition">{{ _('Narrow to messages sent by you.') }}</td>
+            </tr>
+            <tr>
+                <td class="operator">near:<span class="operator_value">id</span></td>
+                <td class="definition">{{ _('Center the view around message ID') }} <span class="operator_value">id</span></td>
+            </tr>
+            <tr>
+                <td class="operator">id:<span class="operator_value">id</span></td>
+                <td class="definition">{{ _('Narrow to just message ID') }} <span class="operator_value">id</span></td>
+            </tr>
+            <tr>
+                <td class="operator">is:alerted</td>
+                <td class="definition">{{ _('Narrow to messages with alert words.') }}</td>
+            </tr>
+            <tr>
+                <td class="operator">is:mentioned</td>
+                <td class="definition">{{ _('Narrow to messages that mention you.') }}</td>
+            </tr>
+            <tr>
+                <td class="operator">is:private</td>
+                <td class="definition">{{ _('Narrow to private messages.') }}</td>
+            </tr>
+            <tr>
+                <td class="operator">is:starred</td>
+                <td class="definition">{{ _('Narrow to starred messages.') }}</td>
+            </tr>
+            <tr>
+                <td class="operator">is:unread</td>
+                <td class="definition">{{ _('Narrow to unread messages.') }}</td>
+            </tr>
+            <tr>
+                <td class="operator">has:link</td>
+                <td class="definition">{{ _('Narrow to messages containing links.') }}</td>
+            </tr>
+            <tr>
+                <td class="operator">has:image</td>
+                <td class="definition">{{ _('Narrow to messages containing images.') }}</td>
+            </tr>
+            <tr>
+                <td class="operator">has:attachment</td>
+                <td class="definition">{{ _('Narrow to messages containing uploads.') }}</td>
+            </tr>
+            <tr>
+                <td class="operator"><span class="operator_value">keyword</span></td>
+                <td class="definition">{% trans %}Search for <span class="operator_value"> keyword </span> in the topic or message content {% endtrans %}</td>
+            </tr>
+            <tr>
+                <td class="operator">-topic:<span class="operator_value">topic</span></td>
+                <td class="definition">{% trans %}Exclude messages with topic <span class="operator_value">topic</span>{% endtrans %}</td>
+            </tr>
+        </table>
+
+        <p>{% trans %}You can use any combination of these search operators in a single query. Consider the following example:{% endtrans %}</p>
+
+        {% set placeholder_stream = _("streamname") %}
+        {% set placeholder_email = _("user@example.com") %}
+        {% set placeholder_keyword = _("keyword") %}
+
+        <p>
+            &nbsp;
+            <span class="operator">
+                stream:<span class="operator_value">{{ placeholder_email }}</span>
+                sender:<span class="operator_value">{{ placeholder_email }}</span>
+                <span class="operator_value">{{ placeholder_keyword }}</span>
+            </span>
+        </p>
+
+        <p>
+            {% trans %}
+            That query would search for messages sent by
+            <span class="operator_value">{{ placeholder_email }}</span>
+            to stream
+            <span class="operator_value">{{ placeholder_stream }}</span>
+            containing the keyword
+            <span class="operator_value">{{ placeholder_keyword }}</span>.
+            {% endtrans %}
+        </p>
+        <hr/>
+        <a href="/help/search-for-messages#search-operators" target="_blank">{% trans %}Detailed search operators documentation{% endtrans %}</a>
+    </div>
+</div>

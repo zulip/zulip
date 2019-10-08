@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Nagios plugin to check that Zephyr personals mirrors are forwarding.
@@ -8,21 +8,21 @@ This script works by just monitoring the files under
 mirrors when they receive the messages sent every minute by
 /etc/cron.d/test_zephyr_personal_mirrors
 """
-from __future__ import print_function
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Dict
 
 import os
 import time
 
-RESULTS_DIR = "/home/zulip/mirror_status" # type: str
+RESULTS_DIR = "/home/zulip/mirror_status"  # type: str
 
 states = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-} # type: Dict[str, int]
+}  # type: Dict[str, int]
 
 def report(state, output):
     # type: (str, str) -> None

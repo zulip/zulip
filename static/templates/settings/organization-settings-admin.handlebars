@@ -1,185 +1,213 @@
 <div id="organization-settings" data-name="organization-settings" class="settings-section">
-<div class="settings-section-title"><i class="icon-vector-gear settings-section-icon"></i>
-{{t "Organization settings" }}</div>
-  <form class="form-horizontal admin-realm-form">
-    <div class="alert" id="admin-realm-name-status"></div>
-    <div class="alert" id="admin-realm-description-status"></div>
-    <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
-    <div class="alert" id="admin-realm-invite-required-status"></div>
-    <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
-    <div class="alert" id="admin-realm-inline-image-preview-status"></div>
-    <div class="alert" id="admin-realm-inline-url-embed-preview-status"></div>
-    <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
-    <div class="alert" id="admin-realm-add-emoji-by-admins-only-status"></div>
-    <div class="alert" id="admin-realm-message-editing-status"></div>
-    <div class="alert" id="admin-realm-default-language-status"></div>
-    <div class="alert" id="admin-realm-waiting_period_threshold_status"></div>
-    <div class="alert" id="admin-realm-name-changes-disabled-status"></div>
-    <div class="alert" id="admin-realm-email-changes-disabled-status"></div>
+    <form class="form-horizontal admin-realm-form org-settings-form">
+        <div class="alert" id="admin-realm-notifications-stream-status"></div>
+        <div class="alert" id="admin-realm-signup-notifications-stream-status"></div>
 
-    <div class="m-10 inline-block grid organization-settings-parent">
-    <div class="input-group admin-realm">
-      <label for="realm_name">{{t "Your organization's name" }}</label>
-      <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
-             value="{{ realm_name }}" />
-    </div>
-    <div class="input-group admin-realm">
-      <label for="realm_description">{{t "Your organization's description" }}</label>
-      <input type="text" id="id_realm_description" name="realm_description" class="admin-realm-description"
-        maxlength="100" value="{{ realm_description }}" />
-    </div>
-    <div class="input-group admin-restricted-to-domain">
-      <input type="checkbox" class="inline-block" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain"
-         {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
-      <label for="id_realm_restricted_to_domain" class="inline" id="realm_restricted_to_domains_label"
-        title="{{#tr this}}If checked, only users with an e-mail address ending in these domains will be able to join the organization.{{/tr}}">
-      </label>
-      {{#if is_admin }}
-      <a data-toggle="modal" href="#realm_aliases_modal">{{t "[Add or Change]" }}</a>
-      {{/if}}
-    </div>
-    <div class="input-group">
-      <input type="checkbox" class="inline-block" id="id_realm_invite_required" name="realm_invite_required"
-        {{#if realm_invite_required}}checked="checked"{{/if}} />
-      <label for="id_realm_invite_required" class="inline-block"
-        title="{{t 'If checked, users must be invited in order to join your organization.' }}">
-        {{t "E-mail invitation required" }}
-      </label>
-    </div>
-    <div class="input-group disableable {{#unless realm_invite_required}}control-label-disabled{{/unless}}">
-      <input type="checkbox" class="inline-block" id="id_realm_invite_by_admins_only" name="realm_invite_by_admins_only"
-        {{#unless realm_invite_required}}disabled="disabled"{{/unless}}
-        {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
-      <label for="id_realm_invite_by_admins_only"
-        id="id_realm_invite_by_admins_only_label"
-        title="{{t 'If checked, only administrators may invite new users.' }}"
-        class="inline-block">
-        {{t "Only admins may invite" }}
-      </label>
-    </div>
-    {{#if server_inline_image_preview}}
-    <div class="input-group">
-      <input type="checkbox" class="inline-block" id="id_realm_inline_image_preview" name="realm_inline_image_preview"
-        {{#if realm_inline_image_preview}}checked="checked"{{/if}} />
-      <label for="id_realm_inline_image_preview"
-        id="id_realm_inline_image_preview_label"
-        title="{{t 'If checked, image previews will be shown.' }}"
-        class="inline-block" style="width:initial">
-        {{t "Show previews of uploaded and linked images" }}
-      </label>
-    </div>
-    {{/if}}
-    {{#if server_inline_url_embed_preview}}
-    <div class="input-group">
-      <input type="checkbox" class="inline-block" id="id_realm_inline_url_embed_preview" name="realm_inline_url_embed_preview"
-        {{#if realm_inline_url_embed_preview}}checked="checked"{{/if}} />
-      <label for="id_realm_inline_url_embed_preview"
-        id="id_realm_inline_url_embed_preview_label"
-        title="{{t 'If checked, previews of linked websites will be shown.' }}"
-        class="inline-block">
-        {{t "Show previews of linked websites" }}
-      </label>
-    </div>
-    {{/if}}
-    <div class="input-group">
-      <input type="checkbox" class="inline-block" id="id_realm_create_stream_by_admins_only"
-             name="realm_create_stream_by_admins_only"
-        {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
+        <div id="org-msg-editing" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message editing" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "msg-editing" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <label for="realm_msg_edit_limit_setting" class="dropdown-title">{{t "Allow message editing" }}</label>
+                    <select name="realm_msg_edit_limit_setting" id="id_realm_msg_edit_limit_setting">
+                        {{#each msg_edit_limit_dropdown_values}}
+                        <option value="{{@key}}">{{this.text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'N' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_content_edit_limit_minutes"
+                          name="realm_message_content_edit_limit_minutes"
+                          class="admin-realm-time-limit-input"
+                          value="{{ realm_message_content_edit_limit_minutes }}"/>
+                    </div>
+                </div>
 
-      <label for="id_realm_create_stream_by_admins_only" class="inline-block"
-        id="id_realm_create_stream_by_admins_only_label"
-        title="{{t 'If checked, only administrators may create new streams.' }}">
-        {{t "Only admins may create streams" }}
-      </label>
-    </div>
-    <div class="input-group">
-      <input type="checkbox" class="inline-block" id="id_realm_name_changes_disabled"
-             name="realm_name_changes_disabled"
-        {{#if realm_name_changes_disabled}}checked="checked"{{/if}} />
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_allow_community_topic_editing"
+                  "prefix" "id_"
+                  "is_checked" realm_allow_community_topic_editing
+                  "label" admin_settings_label.realm_allow_community_topic_editing}}
 
-      <label for="id_realm_name_changes_disabled" class="inline-block"
-        id="id_realm_name_changes_disabled_label" style="width:initial"
-        title="{{t 'If checked, users will be unable to change their name.' }}">
-        {{t "Prevent users from changing their name" }}
-      </label>
-    </div>
-    <div class="input-group">
-      <input type="checkbox" class="inline-block" id="id_realm_email_changes_disabled"
-             name="realm_email_changes_disabled"
-        {{#if realm_email_changes_disabled}}checked="checked"{{/if}} />
+                <div class="input-group">
+                    <label for="realm_msg_delete_limit_setting" class="dropdown-title">
+                        {{t "Allow message deleting" }}
+                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
+                          aria-hidden="true" title="{{t 'Administrators can always delete any message.' }}"/>
+                    </label>
+                    <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting">
+                        {{#each msg_delete_limit_dropdown_values}}
+                        <option value="{{@key}}">{{this.text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'N' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_content_delete_limit_minutes"
+                          name="realm_message_content_delete_limit_minutes"
+                          class="admin-realm-time-limit-input"
+                          value="{{ realm_message_content_delete_limit_minutes }}"/>
+                    </div>
+                </div>
 
-      <label for="id_realm_email_changes_disabled" class="inline-block"
-        id="id_realm_email_changes_disabled_label" style="width:initial"
-        title="{{t 'If checked, users will be unable to change their email address.' }}">
-        {{t "Prevent users from changing their email address" }}
-      </label>
-    </div>
-    <div class="input-group">
-      <input type="checkbox" class="inline-block" id="id_realm_add_emoji_by_admins_only"
-             name="realm_add_emoji_by_admins_only"
-        {{#if realm_add_emoji_by_admins_only}}checked="checked"{{/if}} />
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_allow_edit_history"
+                  "prefix" "id_"
+                  "is_checked" realm_allow_edit_history
+                  "label" admin_settings_label.realm_allow_edit_history}}
+            </div>
+        </div>
 
-      <label for="id_realm_add_emoji_by_admins_only" class="inline-block"
-        id="id_realm_add_emoji_by_admins_only_label"
-        title="{{t 'If checked, only administrators may add new emoji.'}}">
-        {{t "Only admins may add emoji" }}
-      </label>
-    </div>
-    <div class="input-group">
-      <input type="checkbox" class="inline-block" id="id_realm_allow_message_editing" name="realm_allow_message_editing"
-        {{#if realm_allow_message_editing}}checked="checked"{{/if}} />
+        <div id="org-msg-feed" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message feed" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "msg-feed" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                {{#if false}}
+                <div class="input-group">
+                    <label for="realm_message_retention_days"
+                      id="id_realm_message_retention_days_label">
+                        {{t 'Messages retention period in days (blank means messages are retained forever)' }}
+                    </label>
+                    <input type="text" id="id_realm_message_retention_days"
+                      name="realm_message_retention_days"
+                      class="admin-realm-message-retention-days"
+                      value="{{ realm_message_retention_days }}"/>
+                </div>
+                {{/if}}
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_mandatory_topics"
+                  "prefix" "id_"
+                  "is_checked" realm_mandatory_topics
+                  "label" admin_settings_label.realm_mandatory_topics}}
 
-      <label for="id_realm_allow_message_editing"
-        title="{{t 'If checked, users can edit the content and topics of their old messages.' }}"
-        class="inline-block">
-        {{t "Users can edit old messages" }}
-      </label>
-    </div>
-    <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
-      <label for="realm_message_content_edit_limit_minutes"
-        id="id_realm_message_content_edit_limit_minutes_label"
-        title="{{t 'If non-zero, users can edit their message for this many minutes after it is sent. If zero, users can edit all their past messages.' }}">
-        {{t 'Message edit limit in minutes (0 for no limit)' }}
-      </label>
-      <input type="text" id="id_realm_message_content_edit_limit_minutes"
-             name="realm_message_content_edit_limit_minutes"
-             class="admin-realm-message-content-edit-limit-minutes"
-             value="{{ realm_message_content_edit_limit_minutes }}"
-        {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
-    </div>
-    <div class="input-group">
-      <label for="realm_default_language">{{t "Default language" }}:</label>
-      <select name="realm_default_language" id="id_realm_default_language">
-        {{#each language_list}}
-        <option value='{{this.code}}'>{{this.name}}</option>
-        {{/each}}
-      </select>
-    </div>
-    <div class="input-group">
-        <label for="realm_waiting_period_threshold">{{t "Waiting period for stream creation (in days)" }}</label>
-        <input type="text" id="id_realm_waiting_period_threshold"
-             name="realm_waiting_period_threshold"
-             class="admin-realm-message-content-edit-limit-minutes"
-             value="{{ realm_waiting_period_threshold }}"/>
-    </div>
-    <div class="input-group organization-submission">
-      <input type="submit" class="button" value="{{t 'Save changes' }}" />
-    </div>
-    </div>
-    <div class="realm-icon-section box-shadow border-radius">
-      <div class="inline-block">
-        <img id="realm-settings-icon" src="{{ realm_icon_url }}"/>
-        <div id="realm_icon_file_input_error" class="text-error"></div>
-        <input type="file" name="realm_icon_file_input" class="notvisible"
-               id="realm_icon_file_input" value="{{t 'Upload icon' }}"/>
-        <div id="upload_icon_spinner"></div>
-      </div>
-      <div class="inline-block">
-        <button class="button sea-green w-200 m-t-10 block input-size"
-                id="realm_icon_upload_button">{{t 'Upload new icon' }}</button>
-        <button class="button btn-danger w-200 m-t-10 block input-size"
-                id="realm_icon_delete_button">{{t 'Delete icon' }}</button>
-      </div>
-    </div>
-  </form>
+                {{#if server_inline_image_preview}}
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_inline_image_preview"
+                  "prefix" "id_"
+                  "is_checked" realm_inline_image_preview
+                  "label" admin_settings_label.realm_inline_image_preview}}
+                {{/if}}
+
+                {{#if server_inline_url_embed_preview}}
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_inline_url_embed_preview"
+                  "prefix" "id_"
+                  "is_checked" realm_inline_url_embed_preview
+                  "label" admin_settings_label.realm_inline_url_embed_preview}}
+                {{/if}}
+            </div>
+        </div>
+
+        <div id="org-video-chat" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Video chat provider" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "video-chat" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <select name="realm_video_chat_provider" id="id_realm_video_chat_provider">
+                        {{#each realm_available_video_chat_providers}}
+                        <option value='{{this}}'>{{this}}</option>
+                        {{/each}}
+                    </select>
+                    <div id="google_hangouts_domain">
+                        <label>{{t 'Domain for your <a href="https://gsuite.google.com" target="_blank">G Suite team</a> (required)' }}:</label>
+                        <input type="text" id="id_realm_google_hangouts_domain"
+                          name="realm_google_hangouts_domain"
+                          class="admin-realm-google-hangouts-domain"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-user-defaults" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Default user settings" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "user-defaults" }}
+            </div>
+            <p>{{t "Configure default settings for new users joining this organization." }}</p>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}:</label>
+                    <select name="realm_default_language" id="id_realm_default_language">
+                        {{#each language_list}}
+                        <option value='{{this.code}}'>{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_default_twenty_four_hour_time"
+                  "prefix" "id_"
+                  "is_checked" realm_default_twenty_four_hour_time
+                  "label" admin_settings_label.realm_default_twenty_four_hour_time}}
+            </div>
+        </div>
+
+        <div id="org-notifications" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Notifications" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "notifications" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_send_welcome_emails"
+                  "prefix" "id_"
+                  "is_checked" realm_send_welcome_emails
+                  "label" admin_settings_label.realm_send_welcome_emails}}
+            </div>
+
+            <div class="input-group">
+                <label for="realm_notifications_stream" id="realm_notifications_stream_label" class="inline-block"
+                  title="{{t 'The stream to which new stream notifications go to.' }}">
+                    {{t "New stream notifications:" }}
+                    <span class="dropup actual-dropdown-menu" id="id_realm_notifications_stream"
+                      name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
+                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+                            <span id="realm_notifications_stream_name"></span>
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <ul class="dropdown-menu modal-bg" role="menu">
+                            <li class="dropdown-search" role="presentation">
+                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
+                            </li>
+                            <span class="dropdown-list-body"></span>
+                        </ul>
+                    </span>
+                </label>
+                {{#if is_admin }}
+                <a class="notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
+                {{/if}}
+            </div>
+
+            <div class="input-group">
+                <label for="realm_signup_notifications_stream" id="realm_signup_notifications_stream_label" class="inline-block"
+                  title="{{t 'The stream which new user signup notifications go to.' }}">
+                    {{t "New user notifications:" }}
+                    <span class="dropup actual-dropdown-menu" id="id_realm_signup_notifications_stream"
+                      name="realm_signup_notifications_stream" aria-labelledby="realm_signup_notifications_stream_label">
+                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+                            <span id="realm_signup_notifications_stream_name"></span>
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <ul class="dropdown-menu modal-bg" role="menu">
+                            <li class="dropdown-search" role="presentation">
+                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
+                            </li>
+                            <span class="dropdown-list-body"></span>
+                        </ul>
+                    </span>
+                </label>
+                {{#if is_admin }}
+                <a class="signup-notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
+                {{/if}}
+            </div>
+        </div>
+    </form>
 </div>

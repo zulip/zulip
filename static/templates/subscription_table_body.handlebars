@@ -1,8 +1,8 @@
 <div id="subscription_overlay" class="overlay new-style" data-overlay="subscriptions">
     <div class="flex overlay-content">
-        <div class="subscriptions-container">
+        <div class="subscriptions-container modal-bg">
             <div class="subscriptions-header">
-                <div class="icon-vector-chevron-left"></div>
+                <div class="fa fa-chevron-left"></div>
                 <span class="subscriptions-title">{{t 'Streams' }}</span>
                 <div class="exit">
                     <span class="exit-sign">&times;</span>
@@ -14,17 +14,13 @@
                         <input type="text" name="stream_name" id="search_stream_name"
                           placeholder="{{t 'Filter streams' }}" value="" autocomplete="off" />
                         {{#if can_create_streams}}
-                        <input type="submit" class=""
-                          id="create_stream_button" value="+" />
+                        <input type="submit" class="create_stream_button"
+                          value="+" title="{{t 'Create new stream' }} (n)"/>
                         {{/if}}
                         <div class="float-clear"></div>
                     </form>
-                    <div class="clear-float"></div>
                 </div>
                 <div class="streams-list">
-                    {{#each subscriptions}}
-                    {{partial "subscription"}}
-                    {{/each}}
                 </div>
             </div>
             <div class="right">
@@ -33,14 +29,15 @@
                     <div id="stream_settings_title" class="stream-info-title">{{t 'Stream settings' }}</div>
                 </div>
                 <div class="nothing-selected">
-                    {{t 'Nothing selected.' }}
+                    {{#if can_create_streams}}
+                    <button type="button" class="create_stream_button button small rounded">{{t 'Create stream' }}</button>
+                    <span>{{t 'First time? Read our <a href="/help/getting-your-organization-started-with-zulip#create-streams" target="_blank">guidelines</a> for creating and naming streams.' }}</span>
+                    {{/if}}
                 </div>
                 <div class="settings">
-                    {{#each subscriptions}}
-                    {{ partial "subscription_settings" }}
-                    {{/each}}
+                    {{!-- edit stream here --}}
                 </div>
-                {{ partial "subscription_creation_form" }}
+                {{ partial "stream_creation_form" }}
             </div>
         </div>
     </div>

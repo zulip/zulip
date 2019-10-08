@@ -51,8 +51,6 @@
  */
 ;(function($) {
 
-  jQuery.event.props.push("dataTransfer");
-
   var default_opts = {
       fallback_id: '',
       url: '',
@@ -78,7 +76,7 @@
       beforeEach: empty,
       afterAll: empty,
       rename: empty,
-      error: function(err, file, i, status) {
+      error: function(err, response, file, i) {
         alert(err);
       },
       uploadStarted: empty,
@@ -113,6 +111,11 @@
     });
 
     function drop(e) {
+      if (!e.originalEvent.dataTransfer) {
+        return;
+      }
+
+      files = e.originalEvent.dataTransfer.files;
 
       function has_type(dom_stringlist, type) {
         var j;
@@ -124,19 +127,18 @@
         return false;
       }
 
-      if (e.dataTransfer.files.length === 0) {
+      if (files.length === 0) {
         var i;
         for (i = 0; i < opts.raw_droppable.length; i++) {
           var type = opts.raw_droppable[i];
-          if (has_type(e.dataTransfer.types, type)) {
-            opts.rawDrop(e.dataTransfer.getData(type));
+          if (has_type(e.originalEvent.dataTransfer.types, type)) {
+            opts.rawDrop(e.originalEvent.dataTransfer.getData(type));
             return false;
           }
         }
       }
 
       if( opts.drop.call(this, e) === false ) return false;
-      files = e.dataTransfer.files;
       if (files === null || files === undefined || files.length === 0) {
         opts.error(errors[0]);
         return false;
@@ -149,11 +151,11 @@
 
     function sendRawImageData(event, image) {
       function finished_callback(serverResponse, timeDiff, xhr) {
-        return opts.uploadFinished(-1, undefined, serverResponse, timeDiff, xhr);
+        return opts.uploadFinished(-1, image.file, serverResponse, timeDiff, xhr);
       }
 
       var url_params = "?mimetype=" + encodeURIComponent(image.type);
-      do_xhr("pasted_image", image.data, image.type, {}, url_params, finished_callback, function () {});
+      do_xhr("pasted_image", image.data, image.type, {file: image.file}, url_params, finished_callback, function () {});
     }
 
     function uploadRawImageData(event, image) {
@@ -201,9 +203,10 @@
       var data = item.getAsFile();
       var reader = new FileReader();
       reader.onload = function(event) {
-        sendRawImageData(event, {type: data.type, data: event.target.result});
+        sendRawImageData(event, {type: data.type, data: event.target.result, file: data});
       };
       reader.readAsBinaryString(data);
+      opts.uploadStarted(undefined, data);
     }
 
     function getBuilder(filename, filedata, mime, boundary) {
@@ -339,7 +342,7 @@
 
         if (xhr.responseText) {
           try {
-            serverResponse = jQuery.parseJSON(xhr.responseText);
+            serverResponse = JSON.parse(xhr.responseText);
           }
           catch (e) {
             serverResponse = xhr.responseText;
@@ -360,12 +363,7 @@
 
         // Pass any errors to the error option
         if (xhr.status < 200 || xhr.status > 299) {
-          if (this.responseText.includes("Upload would exceed your maximum quota.")) {
-              var errorString = "QuotaExceeded";
-            on_error(errorString, xhr.status);
-          } else {
-            on_error(xhr.statusText, xhr.status);
-        }
+          on_error(xhr.status, serverResponse);
         }
       };
 
@@ -383,7 +381,7 @@
       if (opts.allowedfiletypes.push && opts.allowedfiletypes.length) {
         for(var fileIndex = files.length;fileIndex--;) {
           if(!files[fileIndex].type || $.inArray(files[fileIndex].type, opts.allowedfiletypes) < 0) {
-            opts.error(errors[3], files[fileIndex]);
+            opts.error(errors[3], null, files[fileIndex], fileIndex);
             return false;
           }
         }
@@ -445,7 +443,7 @@
 
             reader.index = fileIndex;
             if (files[fileIndex].size > max_file_size) {
-              opts.error(errors[2], files[fileIndex], fileIndex);
+              opts.error(errors[2], null, files[fileIndex], fileIndex);
               // Remove from queue
               processingQueue.forEach(function(value, key) {
                 if (value === fileIndex) {
@@ -533,8 +531,8 @@
           return result;
         }
 
-        function on_error(status_text, status) {
-          opts.error(status_text, file, fileIndex, status);
+        function on_error(status_code, response) {
+          opts.error(status_code, response, file, fileIndex);
         }
 
         var fileName,
@@ -549,7 +547,7 @@
                            index: e.target.index };
 
         do_xhr(fileName, fileData, file.type, extra_opts, "", finished_callback, on_error);
-
+        opts.uploadStarted(index, file, files_count);
       };
 
       // Initiate the processing loop

@@ -1,20 +1,22 @@
-// Read https://zulip.readthedocs.io/en/latest/hashchange-system.html
+// Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 var reload = (function () {
 
 var exports = {};
 
-var reload_in_progress = false;
-var reload_pending = false;
-
-exports.is_pending = function () {
-    return reload_pending;
-};
-
-exports.is_in_progress = function () {
-    return reload_in_progress;
-};
-
 function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
+    if (!localstorage.supported()) {
+        // If local storage is not supported by the browser, we can't
+        // save the browser's position across reloads (since there's
+        // no secure way to pass that state in a signed fashion to the
+        // next instance of the browser client).
+        //
+        // So we jure return here and let the reload proceed without
+        // having preserved state.  We keep the hash the same so we'll
+        // at least save their narrow state.
+        blueslip.log("Can't preserve state; no local storage.");
+        return;
+    }
+
     if (send_after_reload === undefined) {
         send_after_reload = 0;
     }
@@ -22,17 +24,18 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
 
     if (save_compose) {
-        if (compose_state.composing() === 'stream') {
+        var msg_type = compose_state.get_message_type();
+        if (msg_type === 'stream') {
             url += "+msg_type=stream";
-            url += "+stream=" + encodeURIComponent(compose.stream_name());
-            url += "+subject=" + encodeURIComponent(compose.subject());
-        } else if (compose_state.composing() === 'private') {
+            url += "+stream=" + encodeURIComponent(compose_state.stream_name());
+            url += "+topic=" + encodeURIComponent(compose_state.topic());
+        } else if (msg_type === 'private') {
             url += "+msg_type=private";
             url += "+recipient=" + encodeURIComponent(compose_state.recipient());
         }
 
-        if (compose_state.composing()) {
-            url += "+msg=" + encodeURIComponent(compose.message_content());
+        if (msg_type) {
+            url += "+msg=" + encodeURIComponent(compose_state.message_content());
         }
     }
 
@@ -45,7 +48,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
     if (save_narrow) {
         var row = home_msg_list.selected_row();
-        if (!narrow.active()) {
+        if (!narrow_state.active()) {
             if (row.length > 0) {
                 url += "+offset=" + row.offset().top;
             }
@@ -69,6 +72,10 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
     url += "+oldhash=" + encodeURIComponent(oldhash);
 
+    var ls = localstorage();
+    // Delete all the previous preserved states.
+    ls.removeRegex('reload:\\d+');
+
     // To protect the browser against CSRF type attacks, the reload
     // logic uses a random token (to distinct this browser from
     // others) which is passed via the URL to the browser (post
@@ -77,8 +84,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     //
     // TODO: Remove the now-unnecessary URL-encoding logic above and
     // just pass the actual data structures through local storage.
-    var token = util.random_int(0, 1024*1024*1024*1024);
-    var ls = localstorage();
+    var token = util.random_int(0, 1024 * 1024 * 1024 * 1024);
 
     ls.set("reload:" + token, url);
     window.location.replace("#reload:" + token);
@@ -87,7 +93,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
-exports.initialize = function reload__initialize() {
+exports.initialize = function () {
     var location = window.location.toString();
     var hash_fragment = location.substring(location.indexOf('#') + 1);
 
@@ -102,7 +108,12 @@ exports.initialize = function reload__initialize() {
     var ls = localstorage();
     var fragment = ls.get(hash_fragment);
     if (fragment === undefined) {
-        blueslip.error("Invalid hash change reload token");
+        // Since this can happen sometimes with hand-reloading, it's
+        // not really worth throwing an exception if these don't
+        // exist, but be log it so that it's available for future
+        // debugging if an exception happens later.
+        blueslip.info("Invalid hash change reload token");
+        hashchange.changehash("");
         return;
     }
     ls.remove(hash_fragment);
@@ -118,21 +129,29 @@ exports.initialize = function reload__initialize() {
     if (vars.msg !== undefined) {
         var send_now = parseInt(vars.send_after_reload, 10);
 
-        // TODO: preserve focus
-        compose_actions.start(vars.msg_type, {stream: vars.stream || '',
-                                      subject: vars.subject || '',
-                                      private_message_recipient: vars.recipient || '',
-                                      content: vars.msg || ''});
-        if (send_now) {
-            compose.finish();
+        try {
+            // TODO: preserve focus
+            var topic = util.get_reload_topic(vars);
+
+            compose_actions.start(vars.msg_type, {stream: vars.stream || '',
+                                                  topic: topic || '',
+                                                  private_message_recipient: vars.recipient || '',
+                                                  content: vars.msg || ''});
+            if (send_now) {
+                compose.finish();
+            }
+        } catch (err) {
+            // We log an error if we can't open the compose box, but otherwise
+            // we continue, since this is not critical.
+            blueslip.warn(err.toString());
         }
     }
 
     var pointer = parseInt(vars.pointer, 10);
 
     if (pointer) {
-        page_params.orig_initial_pointer = page_params.initial_pointer;
-        page_params.initial_pointer = pointer;
+        page_params.orig_initial_pointer = page_params.pointer;
+        page_params.pointer = pointer;
     }
     var offset = parseInt(vars.offset, 10);
     if (offset) {
@@ -152,65 +171,51 @@ exports.initialize = function reload__initialize() {
     hashchange.changehash(vars.oldhash);
 };
 
-function clear_message_list(msg_list) {
-    if (!msg_list) { return; }
-    msg_list.clear();
-    // Some pending ajax calls may still be processed and they to not expect an
-    // empty msg_list.
-    msg_list._items = [{id: 1}];
-}
-
-function cleanup_before_reload() {
-    try {
-        // Unbind all the jQuery event listeners
-        $('*').off();
-
-        // Abort all pending ajax requests`
-        try {
-            channel.abort_all();
-        } catch (ex) {
-            // This seems to throw exceptions for no apparent reason sometimes
-            blueslip.debug("Error aborting XHR requests on reload; ignoring");
-        }
-
-        // Free all the DOM in the main_div
-        $("#main_div").empty();
-
-        // Now that the DOM is empty our beforeunload callback may
-        // have been removed, so explicitly remove event queue here.
-        server_events.cleanup_event_queue();
-
-        // Empty the large collections
-        clear_message_list(message_list.all);
-        clear_message_list(home_msg_list);
-        clear_message_list(message_list.narrowed);
-        message_store.clear();
-
-    } catch (ex) {
-        blueslip.error('Failed to cleanup before reloading',
-                       undefined, ex.stack);
-    }
-}
-
 function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message) {
-    if (reload_in_progress) { return; }
+    if (reload_state.is_in_progress()) {
+        blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
+        return;
+    }
 
     // TODO: we should completely disable the UI here
     if (save_pointer || save_narrow || save_compose) {
-        preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
+        try {
+            preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
+        } catch (ex) {
+            blueslip.error('Failed to preserve state',
+                           undefined, ex.stack);
+        }
     }
 
     if (message === undefined) {
-        message = "Reloading";
+        message = "Reloading ...";
     }
 
     // TODO: We need a better API for showing messages.
     ui_report.message(message, $("#reloading-application"));
     blueslip.log('Starting server requested page reload');
-    reload_in_progress = true;
+    reload_state.set_state_to_in_progress();
 
-    if (feature_flags.cleanup_before_reload) {
-        cleanup_before_reload();
+    // Sometimes the window.location.reload that we attempt has no
+    // immediate effect (likely by browsers trying to save power by
+    // skipping requested reloads), which can leave the Zulip app in a
+    // broken state and cause lots of confusing tracebacks.  So, we
+    // set ourselves to try reloading a bit later, both periodically
+    // and when the user focuses the window.
+    $(window).on('focus', function () {
+        blueslip.log("Retrying on-focus page reload");
+        window.location.reload(true);
+    });
+    setInterval(function () {
+        blueslip.log("Retrying page reload due to 30s timer");
+        window.location.reload(true);
+    }, 30000);
+
+    try {
+        server_events.cleanup_event_queue();
+    } catch (ex) {
+        blueslip.error('Failed to cleanup before reloading',
+                       undefined, ex.stack);
     }
 
     window.location.reload(true);
@@ -239,18 +244,18 @@ exports.initiate = function (options) {
                       options.message);
     }
 
-    if (reload_pending) {
+    if (reload_state.is_pending()) {
         return;
     }
-    reload_pending = true;
+    reload_state.set_state_to_pending();
 
     // If the user is composing a message, reload if they become idle
     // while composing.  If they finish or cancel the compose, wait
     // until they're idle again
     var idle_control;
-    var unconditional_timeout = 1000*60*30 + util.random_int(0, 1000*60*5);
-    var composing_timeout     = 1000*60*5  + util.random_int(0, 1000*60);
-    var home_timeout          = 1000*60    + util.random_int(0, 1000*60);
+    var unconditional_timeout = 1000 * 60 * 30 + util.random_int(0, 1000 * 60 * 5);
+    var composing_timeout     = 1000 * 60 * 5  + util.random_int(0, 1000 * 60);
+    var home_timeout          = 1000 * 60    + util.random_int(0, 1000 * 60);
     var compose_done_handler;
     var compose_started_handler;
 
@@ -300,7 +305,8 @@ window.addEventListener('beforeunload', function () {
     // When that happens we reload the page to correct the problem. If this
     // happens before the navigation is complete the user is kept captive at
     // zulip.
-    reload_in_progress = true;
+    blueslip.log("Setting reload_in_progress in beforeunload handler");
+    reload_state.set_state_to_in_progress();
 });
 
 
@@ -310,3 +316,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = reload;
 }
+window.reload = reload;

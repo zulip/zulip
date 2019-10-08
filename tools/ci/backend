@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+source tools/ci/activate-venv
+echo "Test suite is running under $(python --version)."
+
+set -e
+set -x
+
+./tools/lint --backend --no-gitlint --no-mypy  # gitlint disabled because flaky
+./tools/test-tools
+./tools/test-backend --coverage
+
+# We run mypy after the backend tests so we get output from the
+# backend tests, which tend to uncover more serious problems, first.
+./tools/run-mypy --version
+# We run mypy without daemon mode, since that's faster given that
+# we're only going to run it once.
+./tools/run-mypy --no-daemon
+
+./tools/test-migrations
+./tools/setup/optimize-svg
+# In CI, we only test links we control in test-documentation to avoid flakes
+./tools/test-documentation --skip-external-links
+./tools/test-help-documentation --skip-external-links
+./tools/test-api
+./tools/test-locked-requirements
+./tools/test-run-dev
+
+# This test has been persistently flaky at like 1% frequency, is slow,
+# and is for a very specific single feature, so we don't run it by default:
+# ./tools/test-queue-worker-reload
+
+# NB: Everything here should be in `tools/test-all`.  If there's a
+# reason not to run it there, it should be there as a comment
+# explaining why.

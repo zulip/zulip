@@ -2,6 +2,18 @@ var common = require('../casper_lib/common.js').common;
 
 common.start_and_log_in();
 
+var msgs_qty;
+
+casper.then(function () {
+    casper.waitUntilVisible("#zhome");
+});
+
+casper.then(function () {
+    msgs_qty = this.evaluate(function () {
+        return $('#zhome .message_row').length;
+    });
+});
+
 // Send a message to try replying to
 common.then_send_many([
     { stream: 'Verona',
@@ -13,24 +25,44 @@ common.then_send_many([
     },
 ]);
 
-casper.waitForText("And reply to this message", function () {
+casper.then(function () {
+    casper.waitFor(function check_length() {
+        return casper.evaluate(function (expected_length) {
+            return $('#zhome .message_row').length === expected_length;
+        }, msgs_qty + 2);
+    });
+});
+
+casper.then(function () {
     // TODO: Test opening the compose box from the left side buttons
     casper.click('body');
     casper.page.sendEvent('keypress', "c");
 });
 
+
+function check_compose_is_cleared() {
+    common.check_form(
+        '#send_message_form',
+        {
+            stream_message_recipient_stream: '',
+            stream_message_recipient_topic: '',
+        },
+        "Stream empty on new compose"
+    );
+}
+
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
         casper.test.assertVisible('#stream-message', 'Stream input box visible');
-        common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
+        check_compose_is_cleared();
         casper.click('body');
-        casper.page.sendEvent('keypress', "C");
+        casper.page.sendEvent('keypress', "x");
     });
 });
 
 casper.then(function () {
     casper.waitUntilVisible('#private_message_recipient', function () {
-        common.check_form('#send_message_form', {recipient: ''}, "Recipient empty on new PM");
+        common.pm_recipient.expect("");
         casper.click('body');
         casper.page.sendEvent('keypress', 'c');
     });
@@ -38,7 +70,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
+        check_compose_is_cleared();
 
         // Check that when you reply to a message it pre-populates the stream and subject fields
         casper.click('body');
@@ -53,7 +85,14 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply by click");
+        common.check_form(
+            '#send_message_form',
+            {
+                stream_message_recipient_stream: "Verona",
+                stream_message_recipient_topic: "Reply test",
+            },
+            "Stream populated after reply by click"
+        );
         // Or recipient field
         casper.click('body');
         casper.clickLabel("And reply to this message");
@@ -62,7 +101,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#private_message_recipient', function () {
-        common.check_form('#send_message_form', {recipient: "cordelia@zulip.com"}, "Recipient populated after PM click");
+        common.pm_recipient.expect("cordelia@zulip.com");
 
         common.keypress(27); //escape
         casper.page.sendEvent('keypress', 'k');
@@ -72,7 +111,14 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply with `r`");
+        common.check_form(
+            '#send_message_form',
+            {
+                stream_message_recipient_stream: "Verona",
+                stream_message_recipient_topic: "Reply test",
+            },
+            "Stream populated after reply with `r`"
+        );
 
         // Test "closing" the compose box
         casper.click('body');
@@ -82,7 +128,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitWhileVisible('#stream-message', function () {
         casper.test.assertNotVisible('#stream-message', 'Close stream compose box');
-        casper.page.sendEvent('keypress', "C");
+        casper.page.sendEvent('keypress', "x");
         casper.click('body');
     });
 });
@@ -97,14 +143,14 @@ casper.then(function () {
 casper.then(function () {
     casper.click('*[title="Narrow to your private messages with Cordelia Lear"]');
 });
-casper.waitUntilVisible('#tab_list li.private_message', function () {
+casper.waitUntilVisible('li[data-user-ids-string="3"].expanded_private_message.active-sub-filter', function () {
     casper.page.sendEvent('keypress', 'c');
 });
 
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
         casper.test.assertEval(function () {
-            return document.activeElement === $('.compose_table #stream')[0];
+            return document.activeElement === $('.compose_table #stream_message_recipient_stream')[0];
         }, 'Stream box focused after narrowing to PMs with a user and pressing `c`');
     });
 });
@@ -117,7 +163,7 @@ casper.then(function () {
 casper.waitWhileVisible('.message_comp');
 common.then_send_many([
     { recipient: recipients.join(','),
-      content:   'A huddle to check spaces' }]);
+      content: 'A huddle to check spaces' }]);
 
 casper.then(function () {
     common.keypress(27);  // escape to dismiss compose box
@@ -131,13 +177,7 @@ casper.waitUntilVisible('#zhome', function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
-        // It may be possible to get the textbox contents with CasperJS,
-        // but it's easier to just evaluate jQuery in page context here.
-        var displayed_recipients = casper.evaluate(function () {
-            return $('#private_message_recipient').val();
-        });
-        casper.test.assertEquals(displayed_recipients, recipients.join(', '),
-            'Recipients are displayed correctly in a huddle reply');
+        common.pm_recipient.expect(recipients.join(','));
     });
 });
 

@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -x
-
-cd api/
-# Strip out non-send_message bindings.
-perl -i.bak -ne 'print if !m/Client._register/ ||m/send_message/ ||m/get_messages/ ||m/add_subscriptions/ ||m/list_subscriptions/ ||m/remove_subscriptions/ ||m/get_streams/ ||m/get_members/ ||m/_register.*register/ ||m/get_events/ ||m/get_subscribers/' zulip/__init__.py
-./setup.py sdist
-mv zulip/__init__.py.bak zulip/__init__.py
-echo API tarball written to api/dist

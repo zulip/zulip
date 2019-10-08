@@ -1,115 +1,113 @@
 <div id="bot-settings" class="settings-section" data-name="your-bots">
-
-  <div class="settings-section-title">
-    <i class="icon-vector-github settings-section-icon"></i>
-    {{t "Your bots" }}
-  </div>
-
-  <div class="bot-settings-form">
-    {{#tr this}}
-    <p class="bot-settings-note padded-container">
-      Looking for our <a href="/integrations" target="_blank">Integrations</a>
-      or <a href="{{ server_uri }}/api" target="_blank">API</a> documentation?
-    </p>
-    {{/tr}}
-
-    <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
-      <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
-      <li class="inactive-bots-tab"><a>{{t "Inactive bots" }}</a></li>
-    </ul>
-
-    <ol class="bots_list" id="active_bots_list">
-    </ol>
-
-    <ol class="bots_list" id="inactive_bots_list">
-    </ol>
-
-    <div id="bot_table_error" class="alert alert-error hide"></div>
-
-    <div class="add-new-bot-box grey-bg">
-      <form id="create_bot_form" class="form-horizontal no-padding">
-        <h4 class="new-bot-section-title light no-margin">Add a new bot</h4>
-        <div class="new-bot-form">
-          <div class="input-group">
-            <label for="create_bot_name">{{t "Full name" }}</label>
-            <input type="text" name="bot_name" id="create_bot_name" class="required"
-                   maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
-            <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
-          </div>
-          <div class="input-group">
-            <label for="bot_short_name">{{t "Username" }}</label>
-            <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
-                   placeholder="cookie" value="" />
-                   -bot@{{ page_params.realm_bot_domain }}
-            <div>
-              <label for="create_bot_short_name" generated="true" class="text-error"></label>
-            </div>
-          </div>
-          <div class="input-group new-bot-ui">
-            <label for="create_bot_default_sending_stream">{{t "Send to stream" }}</label>
-            <select name="bot_default_sending_stream" id="create_bot_default_sending_stream"></select>
-          </div>
-          <div class="input-group new-bot-ui">
-            <label for="create_bot_default_events_register_stream">{{t "Listen on" }}</label>
-            <select name="bot_default_events_register_stream" id="create_bot_default_events_register_stream"></select>
-          </div>
-          <div class="input-group">
-            <div id="bot_avatar_file"></div>
-            <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
-            <button class="btn btn-default display-none" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
-            <button class="button white" id="bot_avatar_upload_button">{{t "Customize avatar" }}</button> ({{t "Optional" }})
-          </div>
-          <p>
-            <div id="bot_avatar_file_input_error" class="text-error"></div>
-          </p>
-          <input type="submit" class="button sea-green" id="create_bot_button" value="{{t 'Create bot' }}" />
+    <div class="bot-settings-form">
+        {{#unless page_params.is_guest}}
+        <div class="tip">
+            {{#tr this}}Looking for our <a href="/integrations" target="_blank">Integrations</a> or <a href="/api" target="_blank">API</a> documentation?{{/tr}}
         </div>
-      </form>
-    </div>
+        <div class="tip bot-settings-tip"></div>
 
-    <hr class="settings_separator" />
-
-    <div class="form-horizontal" id="api_key_button_box">
-      <div class="input-group side-padded-container">
-        {{#tr this}}
-        <p class="api-key-note">For most bots using the API, you'll want to give each bot
-          its own name and API key using the above section.  But if you
-          want to write a bot that can access your own private
-          messages, you should use your personal API key.
-        </p>
-        {{/tr}}
-        <button class="button white" id="api_key_button">{{t "Show/change your API key" }}</button>
-      </div>
-    </div>
-    <div id="get_api_key_box" class="side-padded-container">
-      {{#tr this}}
-      <p>Please re-enter your password to confirm your identity.
-        (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
-      {{/tr}}
-      <form action="/json/fetch_api_key" method="post" class="form-horizontal">
-        <div class="control-group">
-          <label for="password" class="control-label">{{t "Current password" }}</label>
-          <input type="password" autocomplete="off"
-                 name="password" id="get_api_key_password" value="" />
+        <div>
+            <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
+            <a type="submit" download="{{botserverrc}}" id= "download_botserverrc" class="btn" title="{{t 'Download botserverrc' }}">
+                <i class="fa fa-download sea-green" aria-hidden="true"></i>
+            </a>
         </div>
-        <div class="control-group">
-          <input type="submit" name="view_api_key" value="{{t 'Get API key' }}"
-                 class="btn btn-primary" />
-        </div>
-      </form>
-    </div>
-    <div id="show_api_key_box" class="side-padded-container">
-      <p>{{t "Your API key:" }}</p>
-      <p><b><span id="api_key_value"></span></b></p>
-      <button type="submit" class="btn btn-primary regenerate_api_key">
-        {{t "Generate new API key" }}
-      </button>
-      <a id="download_zuliprc" download="{{zuliprc}}" class="btn btn-success">
-          {{t "Download .zuliprc" }}
-      </a>
-      <div id="user_api_key_error text-error">
-      </div>
-    </div>
+        {{/unless}}
 
-  </div>
+        <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
+            <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
+            <li class="inactive-bots-tab"><a>{{t "Inactive bots" }}</a></li>
+            <li class="add-a-new-bot-tab {{#unless can_create_new_bots}}hide{{/unless}}"><a>{{t "Add a new bot" }}</a></li>
+        </ul>
+
+        <ol class="bots_list required-text" id="active_bots_list" data-empty="{{t 'You have no active bots.' }}">
+        </ol>
+
+        <ol class="bots_list required-text" id="inactive_bots_list" data-empty="{{t 'You have no inactive bots.' }}">
+        </ol>
+
+        <div id="bot_table_error" class="alert alert-error hide"></div>
+
+        <div id="add-a-new-bot-form">
+            <form id="create_bot_form"
+              class="form-horizontal no-padding {{#unless can_create_new_bots}}hide{{/unless}}">
+                <div class="new-bot-form">
+                    <div class="input-group">
+                        <label for="bot_type">
+                            {{t "Bot type" }}
+                            <i class="fa fa-question-circle settings-info-icon bot_type_tooltip" aria-hidden="true" data-toggle="tooltip"
+                              title='{{t "Incoming webhooks can only send messages." }}'></i>
+                        </label>
+                        <select name="bot_type" id="create_bot_type">
+                            {{#each page_params.bot_types}}
+                                {{#if this.allowed}}
+                                <option value="{{this.type_id}}">{{this.name}}</option>
+                                {{/if}}
+                            {{/each}}
+                        </select>
+                    </div>
+                    <div class="input-group" id="service_name_list">
+                        <label for="select_service_name">{{t "Bot"}}</label>
+                        <select name="service_name" id="select_service_name">
+                            {{#each page_params.realm_embedded_bots}}
+                            <option value="{{this.name}}">{{this.name}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="create_bot_name">{{t "Full name" }}</label>
+                        <input type="text" name="bot_name" id="create_bot_name" class="required"
+                          maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
+                        <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="bot_short_name">{{t "Username (a-z, 0-9, and dashes only)" }}</label>
+                        <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
+                          placeholder="{{t 'cookie' }}" value="" />
+                        -bot@{{ page_params.realm_bot_domain }}
+                        <div>
+                            <label for="create_bot_short_name" generated="true" class="text-error"></label>
+                        </div>
+                    </div>
+                    <div id="payload_url_inputbox">
+                        <div class="input-group">
+                            <label for="create_payload_url">{{t "Endpoint URL" }}</label>
+                            <input type="text" name="payload_url" id="create_payload_url"
+                              maxlength=2083 placeholder="https://hostname.example.com" value="" />
+                            <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
+                        </div>
+                        <div class="input-group">
+                            <label for="interface_type">{{t "Outgoing webhook message format" }}</label>
+                            <select name="interface_type" id="create_interface_type">
+                                <option value="1">Zulip</option>
+                                <option value="2">{{t "Slack compatible" }}</option>
+                            </select>
+                            <div><label for="create_interface_type" generated="true" class="text-error"></label></div>
+                        </div>
+                    </div>
+                    <div id="config_inputbox">
+                        {{#each page_params.realm_embedded_bots as |bot index|}}
+                            {{#each bot.config as |config_value config_key|}}
+                            {{partial "embedded_bot_config_item" "botname" bot.name "key" config_key "value" config_value}}
+                            {{/each}}
+                        {{/each}}
+                    </div>
+                    <div class="input-group">
+                        <div id="bot_avatar_file"></div>
+                        <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
+                        <button class="button white rounded small btn-danger display-none" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
+                        <button class="button white rounded" id="bot_avatar_upload_button">{{t "Customize avatar" }}</button> ({{t "Optional" }})
+                    </div>
+                    <p>
+                        <div id="bot_avatar_file_input_error" class="text-error"></div>
+                    </p>
+                    <button type="submit" class="button white rounded sea-green" id="create_bot_button">
+                        {{t 'Create bot' }}
+                    </button>
+                    <div class="create_bot_spinner"></div>
+                </div>
+            </form>
+        </div>
+
+    </div>
 </div>

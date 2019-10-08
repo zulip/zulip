@@ -2,33 +2,6 @@ var invite = (function () {
 
 var exports = {};
 
-function update_subscription_checkboxes() {
-    // TODO: If we were more clever, we would only do this if the
-    // stream list has actually changed; that way, the settings of the
-    // checkboxes are saved from invocation to invocation (which is
-    // nice if I want to invite a bunch of people at once)
-    var streams = [];
-
-    _.each(stream_data.invite_streams(), function (value) {
-        var is_notifications_stream = value === page_params.notifications_stream;
-        if ((stream_data.subscribed_streams().length === 1) ||
-            !is_notifications_stream ||
-            (is_notifications_stream && stream_data.get_invite_only(value))) {
-            // You can't actually elect not to invite someone to the
-            // notifications stream. We won't even show it as a choice unless
-            // it's the only stream you have, or if you've made it private.
-            var default_status = stream_data.get_default_status(value);
-            var invite_status = stream_data.get_invite_only(value);
-            streams.push({name: value, invite_only: invite_status, default_stream: default_status});
-            // Sort by default status.
-            streams.sort(function (a, b) {
-                return b.default_stream - a.default_stream;
-            });
-        }
-    });
-    $('#streams_to_add').html(templates.render('invite_subscription', {streams: streams}));
-}
-
 function reset_error_messages() {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
@@ -41,23 +14,26 @@ function reset_error_messages() {
     }
 }
 
-function prepare_form_to_be_shown() {
-    $("#invitee_emails").val("");
-    update_subscription_checkboxes();
-    reset_error_messages();
-}
-
-exports.initialize = function () {
+function submit_invitation_form() {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
+    var invite_as = $('#invite_as').val();
+    var data = {
+        invitee_emails: $("#invitee_emails").val(),
+        invite_as_admin: invite_as === 'admin',
+        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr('value'),
+    };
+    var streams = [];
+    $.each($("#invite-stream-checkboxes input:checked"), function () {
+        streams.push($(this).val());
+    });
+    data.stream = streams;
 
-    $('#submit-invitation').button();
-    prepare_form_to_be_shown();
-    invitee_emails.focus().autosize();
-
-    $("#invite_user_form").ajaxForm({
-        dataType: 'json',
+    channel.post({
+        url: "/json/invites",
+        data: data,
+        traditional: true,
         beforeSubmit: function () {
             reset_error_messages();
             // TODO: You could alternatively parse the textarea here, and return errors to
@@ -70,17 +46,14 @@ exports.initialize = function () {
         },
         success: function () {
             $('#submit-invitation').button('reset');
-            invite_status.text(i18n.t('User invited successfully.', {count: (invitee_emails.val().match(/@/g) || [] ).length}))
-                          .addClass('alert-success')
-                          .show();
+            invite_status.text(i18n.t('User(s) invited successfully.'))
+                .addClass('alert-success')
+                .show();
             invitee_emails.val('');
 
             if (page_params.development_environment) {
-                // line-wrapped to avoid the i18n linter, since we don't want to translate this.
-                $('#dev_env_msg').text(
-                    'In the Zulip development environment, outgoing emails are printed to the run-dev.py console.')
-                    .addClass('alert-info')
-                    .show();
+                var rendered_email_msg = templates.render('dev_env_email_access');
+                $('#dev_env_msg').html(rendered_email_msg).addClass('alert-info').show();
             }
 
         },
@@ -90,8 +63,8 @@ exports.initialize = function () {
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
                 invite_status.text(arr.msg)
-                              .addClass('alert-error')
-                              .show();
+                    .addClass('alert-error')
+                    .show();
             } else {
                 // Some users were not invited.
                 var invitee_emails_errored = [];
@@ -102,28 +75,82 @@ exports.initialize = function () {
                 });
 
                 invite_status.addClass('alert-warning')
-                              .empty()
-                              .append($('<p>').text(arr.msg))
-                              .append(error_list)
-                              .show();
+                    .empty()
+                    .append($('<p>').text(arr.msg))
+                    .append(error_list)
+                    .show();
                 invitee_emails_group.addClass('warning');
 
                 if (arr.sent_invitations) {
                     invitee_emails.val(invitee_emails_errored.join('\n'));
-                } else { // Invitations not sent -- keep all emails in the list
-                    var current_emails = invitee_emails.val().split(/\n|,/);
-                    invitee_emails.val(util.move_array_elements_to_front(current_emails, invitee_emails_errored).join('\n'));
                 }
 
             }
 
         },
     });
+}
 
-    $("#invite-user").addClass("show");
+// `get_invite_streams` is further modification of stream_data.invite_streams(), it is
+// defined here to keep stream_data.invite_stream() generic.
+exports.get_invite_streams = function () {
+    var streams = [];
+
+    _.each(stream_data.invite_streams(), function (value) {
+        var is_invite_only = stream_data.get_invite_only(value);
+        var is_notifications_stream = value === page_params.notifications_stream;
+
+        // You can't actually elect to invite someone to the
+        // notifications stream. We won't even show it as a choice unless
+        // it's the only stream you have, or if you've made it private.
+        if (stream_data.subscribed_streams().length === 1 ||
+            !is_notifications_stream ||
+            is_notifications_stream && is_invite_only) {
+
+            streams.push({
+                name: value,
+                invite_only: is_invite_only,
+                default_stream: stream_data.get_default_status(value),
+            });
+
+            // Sort by default status.
+            streams.sort(function (a, b) {
+                return b.default_stream - a.default_stream;
+            });
+        }
+    });
+
+    return streams;
 };
 
-$(function () {
+function update_subscription_checkboxes() {
+    var data = {streams: exports.get_invite_streams()};
+    var html = templates.render('invite_subscription', data);
+    $('#streams_to_add').html(html);
+}
+
+function prepare_form_to_be_shown() {
+    update_subscription_checkboxes();
+    reset_error_messages();
+}
+
+exports.launch = function () {
+    ui.set_up_scrollbar($("#invite_user_form .modal-body"));
+
+    $('#submit-invitation').button();
+    prepare_form_to_be_shown();
+    $("#invitee_emails").focus().autosize();
+
+    overlays.open_overlay({
+        name: 'invite',
+        overlay: $('#invite-user'),
+        on_close: function () {
+            hashchange.exit_overlay();
+        },
+    });
+};
+
+exports.initialize = function () {
     $(document).on('click', '.invite_check_all_button', function (e) {
         $('#streams_to_add :checkbox').prop('checked', true);
         e.preventDefault();
@@ -133,7 +160,8 @@ $(function () {
         $('#streams_to_add :checkbox').prop('checked', false);
         e.preventDefault();
     });
-});
+    $("#submit-invitation").on("click", submit_invitation_form);
+};
 
 return exports;
 
@@ -142,3 +170,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = invite;
 }
+window.invite = invite;

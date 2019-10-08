@@ -1,0 +1,48 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<div class="app goto-account-page flex full-page">
+    <div class="inline-block new-style">
+        <div class="lead">
+            <h1 class="get-started">{{ _("Log in to your organization") }}</h1>
+        </div>
+
+        <div class="app-main goto-account-page-container white-box">
+            <div class="realm-redirect-form">
+                <form class="form-inline" name="realm_redirect_form"
+                  action="/accounts/go/{% if request.GET %}?{{ request.GET.urlencode() }}{% endif %}" method="post">
+                    {{ csrf_input }}
+                    <div class="input-box moving-label horizontal">
+                        <div class="inline-block relative">
+                            <p id="realm_redirect_description">{{ _("Enter your organization's Zulip URL:") }}</p>
+                            <input
+                              type="text" value="{% if form.subdomain.value() %}{{ form.subdomain.value() }}{% endif %}"
+                              placeholder="{{ _('your-organization-url') }}" autofocus id="realm_redirect_subdomain" name="subdomain"
+                              autocomplete="off" required/>
+                            <span id="realm_redirect_external_host">.{{external_host}}</span>
+                        </div>
+                        <div id="errors">
+                            {% if form.subdomain.errors %}
+                                {% for error in form.subdomain.errors %}
+                                <div class="alert alert-error">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <button id="enter-realm-button" type="submit">{{ _('Next') }}</button>
+                        <p id="find-account-section">
+                            {{ _("Don't know your organization URL?") }}
+                            <a target="_blank" class="find-account-link" href="/accounts/find/">{{ _("Find your organization.") }}</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="create-organization-section">
+            {{ _("Need to get your group started on Zulip?") }} <a target="_blank" class="find-account-link" href="/new/">{{ _("Create a new organization.") }}</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

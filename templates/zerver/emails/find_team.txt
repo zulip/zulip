@@ -1,0 +1,14 @@
+{% trans %}
+Hi {{ user_name }},
+{% endtrans %}
+
+{% trans %}You can log in to your Zulip organization, {{ realm_name }},
+at the following link:{% endtrans %}
+    {{ realm_uri }}
+
+{% trans %}The email address associated with your account is {{ email }}.{% endtrans %}
+
+{% trans %}If you have trouble logging in, please contact Zulip support by replying to
+this email.{% endtrans %}
+
+{{ _("Thanks for using Zulip!") }}

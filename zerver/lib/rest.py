@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from typing import Any, Dict
 
@@ -7,7 +6,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
-    process_as_post
+    process_as_post, authenticated_uploads_api_view
 from zerver.lib.response import json_method_not_allowed, json_unauthorized
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.conf import settings
@@ -16,8 +15,7 @@ METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 FLAGS = ('override_api_url_scheme')
 
 @csrf_exempt
-def rest_dispatch(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
+def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     """Dispatch to a REST API endpoint.
 
     Unauthenticated endpoints should not use this, as authentication is verified
@@ -40,7 +38,7 @@ def rest_dispatch(request, **kwargs):
     Never make a urls.py pattern put user input into a variable called GET, POST,
     etc, as that is where we route HTTP verbs to target functions.
     """
-    supported_methods = {} # type: Dict[str, Any]
+    supported_methods = {}  # type: Dict[str, Any]
 
     # duplicate kwargs so we can mutate the original as we go
     for arg in list(kwargs):
@@ -49,7 +47,7 @@ def rest_dispatch(request, **kwargs):
             del kwargs[arg]
 
     if request.method == 'OPTIONS':
-        response = HttpResponse(status=204) # No content
+        response = HttpResponse(status=204)  # No content
         response['Allow'] = ', '.join(sorted(supported_methods.keys()))
         response['Content-Length'] = "0"
         return response
@@ -86,29 +84,51 @@ def rest_dispatch(request, **kwargs):
         # uploaded), we support using the same url for web and API clients.
         if ('override_api_url_scheme' in view_flags and
                 request.META.get('HTTP_AUTHORIZATION', None) is not None):
-            # This request  API based authentication.
-            target_function = authenticated_rest_api_view()(target_function)
+            # This request uses standard API based authentication.
+            # For override_api_url_scheme views, we skip our normal
+            # rate limiting, because there are good reasons clients
+            # might need to (e.g.) request a large number of uploaded
+            # files or avatars in quick succession.
+            target_function = authenticated_rest_api_view(skip_rate_limiting=True)(target_function)
+        elif ('override_api_url_scheme' in view_flags and
+              request.GET.get('api_key') is not None):
+            # This request uses legacy API authentication.  We
+            # unfortunately need that in the React Native mobile apps,
+            # because there's no way to set HTTP_AUTHORIZATION in
+            # React Native.  See last block for rate limiting notes.
+            target_function = authenticated_uploads_api_view(skip_rate_limiting=True)(target_function)
         # /json views (web client) validate with a session token (cookie)
-        elif not request.path.startswith("/api") and request.user.is_authenticated():
+        elif not request.path.startswith("/api") and request.user.is_authenticated:
             # Authenticated via sessions framework, only CSRF check needed
-            target_function = csrf_protect(authenticated_json_view(target_function))
+            auth_kwargs = {}
+            if 'override_api_url_scheme' in view_flags:
+                auth_kwargs["skip_rate_limiting"] = True
+            target_function = csrf_protect(authenticated_json_view(target_function, **auth_kwargs))
 
         # most clients (mobile, bots, etc) use HTTP Basic Auth and REST calls, where instead of
         # username:password, we use email:apiKey
         elif request.META.get('HTTP_AUTHORIZATION', None):
             # Wrap function with decorator to authenticate the user before
             # proceeding
-            target_function = authenticated_rest_api_view()(target_function)
+            view_kwargs = {}
+            if 'allow_incoming_webhooks' in view_flags:
+                view_kwargs['is_webhook'] = True
+            target_function = authenticated_rest_api_view(**view_kwargs)(target_function)  # type: ignore # likely mypy bug
         # Pick a way to tell user they're not authed based on how the request was made
         else:
             # If this looks like a request from a top-level page in a
             # browser, send the user to the login page
             if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
                 # TODO: It seems like the `?next=` part is unlikely to be helpful
-                return HttpResponseRedirect('%s/?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
+                return HttpResponseRedirect('%s?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
             # Ask for basic auth (email:apiKey)
             elif request.path.startswith("/api"):
                 return json_unauthorized(_("Not logged in: API authentication or user session required"))
+            # Logged out user accessing an endpoint with anonymous user access on JSON; proceed.
+            elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
+                auth_kwargs = dict(allow_unauthenticated=True)
+                target_function = csrf_protect(authenticated_json_view(
+                    target_function, **auth_kwargs))
             # Session cookie expired, notify the client
             else:
                 return json_unauthorized(_("Not logged in: API authentication or user session required"),

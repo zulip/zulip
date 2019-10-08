@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if ! [ -d ".git/hooks/" ]; then
     echo "Error: Could not find .git/hooks directory"
@@ -6,6 +6,7 @@ if ! [ -d ".git/hooks/" ]; then
     exit 1
 fi
 
-for hook in pre-commit; do
+for hook in pre-commit commit-msg
+do
     ln -snf ../../tools/"$hook" .git/hooks/
 done

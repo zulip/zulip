@@ -1,17 +1,23 @@
-from django.conf.urls import url, include
 from typing import Any
 
-from zerver.lib.rest import rest_dispatch
+from django.conf.urls import include, url
 
 import zilencer.views
-import zerver.views.report
+from zerver.lib.rest import rest_dispatch
 
-i18n_urlpatterns = [] # type: Any
+i18n_urlpatterns = []  # type: Any
 
 # Zilencer views following the REST API style
 v1_api_and_json_patterns = [
-    url('^deployment/report_error$', rest_dispatch,
-        {'POST': 'zerver.views.report.report_error'}),
+    url('^remotes/push/register$', rest_dispatch,
+        {'POST': 'zilencer.views.register_remote_push_device'}),
+    url('^remotes/push/unregister$', rest_dispatch,
+        {'POST': 'zilencer.views.unregister_remote_push_device'}),
+    url('^remotes/push/notify$', rest_dispatch,
+        {'POST': 'zilencer.views.remote_server_notify_push'}),
+
+    # Push signup doesn't use the REST API, since there's no auth.
+    url('^remotes/server/register$', zilencer.views.register_remote_server),
 ]
 
 urlpatterns = [

@@ -14,16 +14,25 @@ framework.
 
 """
 import os
-from os.path import dirname, abspath
 import sys
+import types
 
-BASE_DIR = dirname(dirname(abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 import scripts.lib.setup_path_on_import
 
+# Performance Hack: We make the pika.adapters.twisted_connection
+# module unavailable, to save ~100ms of import time for most Zulip
+# management commands for code we don't use.  The correct
+# long-term fix for this will be to get a setting integrated
+# upstream to disable pika importing this.
+#   See https://github.com/pika/pika/issues/1128
+sys.modules['pika.adapters.twisted_connection'] = types.ModuleType(
+    'pika.adapters.twisted_connection')
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
 import django
-django.setup() # We need to call setup to load applications.
+django.setup()  # We need to call setup to load applications.
 
 # Because import_module does not correctly handle safe circular imports we
 # need to import zerver.models first before the middleware tries to import it.

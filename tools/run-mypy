@@ -1,122 +1,96 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import absolute_import
-from __future__ import print_function
 
 import os
 import sys
 import argparse
 import subprocess
-import six
 
-import lister
+from zulint import lister
 from typing import cast, Dict, List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 
-exclude_common = """
-api/integrations/basecamp/zulip_basecamp_config.py
-api/integrations/codebase/zulip_codebase_config.py
-api/integrations/git/zulip_git_config.py
-api/integrations/perforce/git_p4.py
-api/integrations/perforce/zulip_perforce_config.py
-api/integrations/svn/zulip_svn_config.py
-api/integrations/trac/zulip_trac_config.py
-api/integrations/git/post-receive
-zproject/settings.py
-zproject/test_settings.py
-""".split()
+sys.path.append(os.path.dirname(TOOLS_DIR))
+from lib.test_script import get_provisioning_status
 
-# We don't run mypy on contrib_bots, since the code there will
-# often be shared with other projects that do not want a mypy
-# dependency (at least while it's still kind of beta).
-exclude_common += ['contrib_bots']
-
-exclude_py2 = [] # type: List[str]
-
-exclude_py3 = """
-bots/process_ccache
+exclude = """
+stubs/
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
-parser.add_argument('targets', nargs='*', default=[],
-                    help="""files and directories to include in the result.
-                    If this is not specified, the current directory is used""")
-parser.add_argument('-m', '--modified', action='store_true', default=False, help='list only modified files')
-parser.add_argument('-a', '--all', dest='all', action='store_true', default=False,
-                    help="""run mypy on all python files, ignoring the exclude list.
-                    This is useful if you have to find out which files fail mypy check.""")
-parser.add_argument('--linecoverage-report', dest='linecoverage_report', action='store_true', default=False,
-                    help="""run the linecoverage report to see annotation coverage""")
-parser.add_argument('--no-disallow-untyped-defs', dest='disallow_untyped_defs', action='store_false', default=True,
-                    help="""Don't throw errors when functions are not annotated""")
-parser.add_argument('--scripts-only', dest='scripts_only', action='store_true', default=False,
-                    help="""Only type check extensionless python scripts""")
-
-group = parser.add_mutually_exclusive_group()
-group.add_argument('--py2', default=False, action='store_true', help="Use Python 2 mode")
-group.add_argument('--py3', default=False, action='store_true', help="Use Python 3 mode")
+parser.add_argument('targets', nargs='*',
+                    help="files and directories to check (default: .)")
+parser.add_argument('--version', action='store_true',
+                    help="show mypy version information and exit")
+parser.add_argument('--quick', action='store_true',
+                    help="pass --quick to mypy")
+parser.add_argument('-m', '--modified', action='store_true',
+                    help="check only modified files")
+parser.add_argument('--no-daemon', action='store_true',
+                    help="Start and run the mypy fine-grained incremental daemon")
+parser.add_argument('--scripts-only', action='store_true',
+                    help="only check extensionless python scripts")
+parser.add_argument('-a', '--all', action='store_true',
+                    help="check all files, bypassing the default exclude list")
+parser.add_argument('--force', action="store_true",
+                    help="run tests despite possible provisioning problems")
 args = parser.parse_args()
 
-if args.py2:
-    py_version = 2
-elif args.py3:
-    py_version = 3
+if not args.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
+
+command_name = "mypy" if (args.no_daemon or args.version) else "dmypy"
+
+# Use zulip-py3-venv's mypy if it's available.
+VENV_DIR = "/srv/zulip-py3-venv"
+MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", command_name)
+if os.path.exists(MYPY_VENV_PATH):
+    mypy_command = MYPY_VENV_PATH
 else:
-    py_version = 2
+    mypy_command = command_name
+
+if args.version:
+    print("mypy command:", mypy_command)
+    sys.exit(subprocess.call([mypy_command, "--version"]))
 
 if args.all:
-    exclude = [] # type: List[str]
-if py_version == 2:
-    exclude = exclude_common + exclude_py2
-else:
-    exclude = exclude_common + exclude_py3
+    exclude = []
 
 # find all non-excluded files in current directory
 files_dict = cast(Dict[str, List[str]],
                   lister.list_files(targets=args.targets, ftypes=['py', 'pyi'],
                                     use_shebang=True, modified_only=args.modified,
-                                    exclude = exclude + ['stubs'], group_by_ftype=True,
+                                    exclude=exclude, group_by_ftype=True,
                                     extless_only=args.scripts_only))
-pyi_files = set(files_dict['pyi'])
+pyi_files = list(files_dict['pyi'])
 python_files = [fpath for fpath in files_dict['py']
                 if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]
-
-# Use zulip-py3-venv's mypy if it's available and we're on python 2
-PY3_VENV_DIR = "/srv/zulip-py3-venv"
-MYPY_VENV_PATH = os.path.join(PY3_VENV_DIR, "bin", "mypy")
-if six.PY2 and os.path.exists(MYPY_VENV_PATH):
-    mypy_command = MYPY_VENV_PATH
-    print("Using mypy from", mypy_command)
-else:
-    mypy_command = "mypy"
-
-extra_args = ["--fast-parser",
-              "--ignore-missing-imports",
-              "--follow-imports=silent",
-              "--check-untyped-defs",
-              "--scripts-are-modules",
-              "-i", "--cache-dir=var/mypy-cache"]
-if py_version == 2:
-    extra_args.append("--py2")
-if args.linecoverage_report:
-    extra_args.append("--linecoverage-report")
-    extra_args.append("var/linecoverage-report")
-if args.disallow_untyped_defs:
-    extra_args.append("--disallow-untyped-defs")
-
-
-# run mypy
-if python_files:
-    rc = subprocess.call([mypy_command] + extra_args + python_files)
-    if args.linecoverage_report:
-        # Move the coverage report to where coveralls will look for it.
-        try:
-            os.rename('var/linecoverage-report/coverage.txt', 'var/.coverage')
-        except OSError:
-            # maybe mypy crashed; exit with its error code
-            pass
-    sys.exit(rc)
-else:
+if not python_files and not pyi_files:
     print("There are no files to run mypy on.")
+    sys.exit(0)
+
+extra_args = []
+if args.quick:
+    extra_args.append("--quick")
+
+mypy_args = extra_args + python_files + pyi_files
+if args.no_daemon:
+    rc = subprocess.call([mypy_command] + mypy_args)
+else:
+    rc = subprocess.call([mypy_command, "status"], stdout=subprocess.PIPE)
+    if rc != 0:
+        print("Starting mypy daemon, this will take a minute...")
+        sys.stdout.flush()
+    rc = subprocess.call([mypy_command, 'run', '--'] + mypy_args)
+
+if rc != 0:
+    print("")
+    print("See https://zulip.readthedocs.io/en/latest/testing/mypy.html for debugging tips.")
+
+sys.exit(rc)

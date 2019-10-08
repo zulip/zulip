@@ -1,70 +1,45 @@
 # Create a stream
 
-In Zulip, streams are like mailing lists in an email tool; each stream
-has a set of subscribers. Your current subscriptions are visible in
-the left sidebar.  Streams can be either:
+By default, all users other than guests can create streams.
 
-* **Public streams** - Public streams are for open discussions. All
-  users can subscribe to public streams and discuss there.
-* **Private streams** - Private streams are for confidential
-  discussions and are only visible to users who've been invited to
-  subscribe to them.
+Organization administrators can
+[restrict stream creation](/help/configure-who-can-create-streams) to
+admins only, or to members meeting a minimum account age.
 
-## Create a new stream
+If you are an administrator setting up streams for the first time, we highly
+recommend reading our
+[guide to streams](/help/getting-your-organization-started-with-zulip#create-streams)
+first.
 
-{!subscriptions.md!}
+## Create a stream
 
-3. Click the plus (<i class="icon-vector-plus"></i>) icon to the right of
-the **Filter streams** input.
+{relative|stream|all}
 
-    !!! warn ""
-        **Note:** If you do not see the plus
-        (<i class="icon-vector-plus"></i>) icon, it
-        is probably because your organization's administrators
-        have disabled stream creation for ordinary users.
-        If that's the case, then you need to ask them to
-        allow ordinary users to create streams, or you will have
-        to ask an administrator for help creating each particular stream.
+1. Click **Create stream** on the right.
 
-4. After clicking the plus (<i class="icon-vector-plus"></i>) icon, at
-right side of the [Streams](/#streams) page, labeled
-**Create stream**, will now display options for creating a stream.
+1. Fill out the requested info, and click **Create**.
 
-5. Enter the title of your stream in the **Stream name** input.
-If you designate your stream as public, the **Stream name** will be
-displayed under the Streams on the left sidebar. Your stream name must
-be unique to all other stream names and can be no longer than
-60 characters.
+!!! warn ""
+    You will only see the **Create stream** button if you have
+    permission to create streams.
 
-    !!! tip ""
-        You can optionally enter a brief description of your stream in
-        **Stream description** to give other users a general idea of
-        what's being discussed in your stream. The description can be
-        seen under the stream name in the stream overview.
+## Stream options
 
-7. The **Stream privacy** option controls the privacy of your
-stream. There are two options:
-    * **Anybody can join** - This option makes your stream **public**
-    and accessible to all users.
+There are several parameters you can set while creating a stream. All but
+**Announce stream** you can change later.
 
-    * **People must be invited** - This option makes your stream
-    **private**. Only users you invite will be able to access this stream.
-    Only the creator of the stream can invite new users this stream.
+* **Stream name**: Appears in the left sidebar for subscribed users. The
+  stream name can be in any language, and can include spaces and other
+  punctuation.
 
-8. If your stream is public, you can choose to alert users about the new
-stream by clicking the **Announce stream** checkbox. Users who have been
-added to the new stream will always be notified, but if the
-**Announce stream** feature is enabled, all users will be notified
-of the stream's creation.
+* **Stream description**: Helps users decide whether to subscribe when they
+  are browsing streams.
 
-9. To automatically subscribe a user to your stream, scroll down to
-**People to add** and tick the checkboxes with the names of the users
-you want to add.
+* **Announce stream**: Posts a message to `#announce` advertising the new
+  stream. Organization administrators can change the stream used for stream
+  creation announcements in organization settings.
 
-    !!! tip ""
-        To search for specific users, enter their usernames in the
-        **Filter names** box.
+* **Stream permissions**: See [Stream permissions](/help/stream-permissions).
 
-10. Once you are ready to create your stream,
-click the **Create** button. The stream will now appear
-in the left sidebar for the users that you subscribed.
+* **People to add**: You can copy the membership from an existing stream, or
+  enter users one by one.

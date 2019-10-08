@@ -1,0 +1,11 @@
+{{#with user_group}}
+<div class="user-group white-box ntm" id="{{id}}">
+    <h4>
+        <span class="name" data-placeholder="{{t 'Name' }}">{{name}}</span>
+        —
+        <span class="description" data-placeholder="{{t 'Description' }}">{{description}}</span>
+    </h4>
+    <p class="subscribers">{{t 'Subscribers' }}</p>
+    <div class="pill-container not-editable" data-group-pills="{{id}}"></div>
+</div>
+{{/with}}

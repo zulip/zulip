@@ -8,12 +8,24 @@ var set_to_start_of_day = function (time) {
     return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
 };
 
-// Given an XDate object 'time', return a two-element list containing
-//   - a string for the current human-formatted version
-//   - a boolean for if it will need to be updated when the day changes
-exports.render_now = function (time) {
-    var start_of_today = set_to_start_of_day(new XDate());
+// Given an XDate object 'time', returns an object:
+// {
+//      time_str:        a string for the current human-formatted version
+//      formal_time_str: a string for the current formally formatted version
+//                          e.g. "Monday, April 15, 2017"
+//      needs_update:    a boolean for if it will need to be updated when the
+//                       day changes
+// }
+exports.render_now = function (time, today) {
+    var start_of_today = set_to_start_of_day(today || new XDate());
     var start_of_other_day = set_to_start_of_day(time.clone());
+
+    var time_str = '';
+    var needs_update = false;
+    // render formal time to be used as title attr tooltip
+    // "\xa0" is U+00A0 NO-BREAK SPACE.
+    // Can't use &nbsp; as that represents the literal string "&nbsp;".
+    var formal_time_str = time.toString('dddd,\xa0MMMM\xa0d,\xa0yyyy');
 
     // How many days old is 'time'? 0 = today, 1 = yesterday, 7 = a
     // week ago, -1 = tomorrow, etc.
@@ -23,21 +35,66 @@ exports.render_now = function (time) {
     // constants.
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
-    if (days_old === 0) {
-        return ["Today", true];
-    } else if (days_old === 1) {
-        return ["Yesterday", true];
-    } else if (days_old >= 365) {
-        // For long running servers, searching backlog can get ambiguous
-        // without a year stamp. Only show year if message is over a year old.
-        return [time.toString("MMM\xa0dd,\xa0yyyy"), false];
-    }
-    // For now, if we get a message from tomorrow, we don't bother
-    // rewriting the timestamp when it gets to be tomorrow.
+    var is_older_year =
+        start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
 
-    // "\xa0" is U+00A0 NO-BREAK SPACE.
-    // Can't use &nbsp; as that represents the literal string "&nbsp;".
-    return [time.toString("MMM\xa0dd"), false];
+    if (days_old === 0) {
+        time_str = i18n.t("Today");
+        needs_update = true;
+    } else if (days_old === 1) {
+        time_str = i18n.t("Yesterday");
+        needs_update = true;
+    } else if (is_older_year) {
+        // For long running servers, searching backlog can get ambiguous
+        // without a year stamp. Only show year if message is from an older year
+        time_str = time.toString("MMM\xa0dd,\xa0yyyy");
+        needs_update = false;
+    } else {
+        // For now, if we get a message from tomorrow, we don't bother
+        // rewriting the timestamp when it gets to be tomorrow.
+        time_str = time.toString("MMM\xa0dd");
+        needs_update = false;
+    }
+    return {
+        time_str: time_str,
+        formal_time_str: formal_time_str,
+        needs_update: needs_update,
+    };
+};
+
+// Current date is passed as an argument for unit testing
+exports.last_seen_status_from_date = function (last_active_date, current_date) {
+    if (typeof  current_date === 'undefined') {
+        current_date = new XDate();
+    }
+
+    var minutes = Math.floor(last_active_date.diffMinutes(current_date));
+    if (minutes <= 2) {
+        return i18n.t("Just now");
+    }
+    if (minutes < 60) {
+        return i18n.t("__minutes__ minutes ago", {minutes: minutes});
+    }
+
+    var hours = Math.floor(minutes / 60);
+    if (hours === 1) {
+        return i18n.t("An hour ago");
+    }
+    if (hours < 24) {
+        return i18n.t("__hours__ hours ago", {hours: hours});
+    }
+
+    var days = Math.floor(hours / 24);
+    if (days === 1) {
+        return [i18n.t("Yesterday")];
+    }
+    if (days < 365) {
+        return i18n.t("On __last_active__",
+                      {last_active: last_active_date.toString("MMM\xa0dd")});
+    }
+
+    return i18n.t("On __last_active_date__",
+                  {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
 };
 
 // List of the dates that need to be updated when the day changes.
@@ -48,30 +105,33 @@ var update_list = [];
 // The time at the beginning of the next day, when the timestamps are updated.
 // Represented as an XDate with hour, minute, second, millisecond 0.
 var next_update;
-$(function () {
+exports.initialize = function () {
     next_update = set_to_start_of_day(new XDate()).addDays(1);
-});
+};
 
 // time_above is an optional argument, to support dates that look like:
 // --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---
-function maybe_add_update_list_entry(needs_update, id, time, time_above) {
-    if (needs_update) {
-        if (time_above !== undefined) {
-            update_list.push([id, time, time_above]);
-        } else {
-            update_list.push([id, time]);
-        }
+function maybe_add_update_list_entry(entry) {
+    if (entry.needs_update) {
+        update_list.push(entry);
     }
 }
 
-function render_date_span(elem, time_str, time_above_str) {
+function render_date_span(elem, rendered_time, rendered_time_above) {
     elem.text("");
-    if (time_above_str !== undefined) {
-        return elem.append('<i class="date-direction icon-vector-caret-up"></i>' +
-                           time_above_str).append($('<hr class="date-line">')).append('<i class="date-direction icon-vector-caret-down"></i>'
-                           + time_str);
+    if (rendered_time_above !== undefined) {
+        var pieces = [
+            '<i class="date-direction fa fa-caret-up"></i>',
+            rendered_time_above.time_str,
+            '<hr class="date-line">',
+            '<i class="date-direction fa fa-caret-down"></i>',
+            rendered_time.time_str,
+        ];
+        elem.append(pieces);
+        return elem;
     }
-    return elem.append(time_str);
+    elem.append(rendered_time.time_str);
+    return elem.attr('title', rendered_time.formal_time_str);
 }
 
 // Given an XDate object 'time', return a DOM node that initially
@@ -83,77 +143,87 @@ function render_date_span(elem, time_str, time_above_str) {
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-exports.render_date = function (time, time_above) {
-    var id = "timerender" + next_timerender_id;
+exports.render_date = function (time, time_above, today) {
+    var className = "timerender" + next_timerender_id;
     next_timerender_id += 1;
-    var rendered_time = exports.render_now(time);
-    var node = $("<span />").attr('id', id);
+    var rendered_time = exports.render_now(time, today);
+    var node = $("<span />").attr('class', className);
     if (time_above !== undefined) {
-        var rendered_time_above = exports.render_now(time_above);
-        node = render_date_span(node, rendered_time[0], rendered_time_above[0]);
+        var rendered_time_above = exports.render_now(time_above, today);
+        node = render_date_span(node, rendered_time, rendered_time_above);
     } else {
-        node = render_date_span(node, rendered_time[0]);
+        node = render_date_span(node, rendered_time);
     }
-    maybe_add_update_list_entry(rendered_time[1], id, time, time_above);
+    maybe_add_update_list_entry({
+        needs_update: rendered_time.needs_update,
+        className: className,
+        time: time,
+        time_above: time_above,
+    });
     return node;
 };
 
 // This isn't expected to be called externally except manually for
 // testing purposes.
 exports.update_timestamps = function () {
-    var time = new XDate();
-    if (time >= next_update) {
+    var now = new XDate();
+    if (now >= next_update) {
         var to_process = update_list;
         update_list = [];
 
-        _.each(to_process, function (elem) {
-            var id = elem[0];
-            var element = document.getElementById(id);
+        _.each(to_process, function (entry) {
+            var className = entry.className;
+            var elements = $('.' + className);
             // The element might not exist any more (because it
             // was in the zfilt table, or because we added
             // messages above it and re-collapsed).
-            if (element !== null) {
-                var time = elem[1];
-                var time_above;
-                var rendered_time = exports.render_now(time);
-                if (elem.length === 3) {
-                    time_above = elem[2];
-                    var rendered_time_above = exports.render_now(time_above);
-                    render_date_span($(element), rendered_time[0], rendered_time_above[0]);
-                } else {
-                    render_date_span($(element), rendered_time[0]);
-                }
-                maybe_add_update_list_entry(rendered_time[1], id, time, time_above);
+            if (elements !== null) {
+                _.each(elements, function (element) {
+                    var time = entry.time;
+                    var time_above = entry.time_above;
+                    var rendered_time = exports.render_now(time);
+                    if (time_above) {
+                        var rendered_time_above = exports.render_now(time_above);
+                        render_date_span($(element), rendered_time, rendered_time_above);
+                    } else {
+                        render_date_span($(element), rendered_time);
+                    }
+                    maybe_add_update_list_entry({
+                        needs_update: rendered_time.needs_update,
+                        className: className,
+                        time: time,
+                        time_above: time_above,
+                    });
+                });
             }
         });
 
-        next_update = set_to_start_of_day(time.clone().addDays(1));
+        next_update = set_to_start_of_day(now.clone().addDays(1));
     }
 };
 
 setInterval(exports.update_timestamps, 60 * 1000);
 
-// TODO: Remove the duplication with the below; it's a bit tricky
-// because the return type models are pretty different.
+// Transform a Unix timestamp into a ISO 8601 formatted date string.
+//   Example: 1978-10-31T13:37:42Z
 exports.get_full_time = function (timestamp) {
-    var time = new XDate(timestamp * 1000);
-    // Convert to number of hours ahead/behind UTC.
-    // The sign of getTimezoneOffset() is reversed wrt
-    // the conventional meaning of UTC+n / UTC-n
-    var tz_offset = -time.getTimezoneOffset() / 60;
-
-    var full_date_str = time.toLocaleDateString();
-    var full_time_str = time.toLocaleTimeString() +
-        ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
-    return full_date_str + ' ' + full_time_str;
+    return new XDate(timestamp * 1000).toISOString();
 };
 
+exports.stringify_time = function (time) {
+    if (page_params.twenty_four_hour_time) {
+        return time.toString('HH:mm');
+    }
+    return time.toString('h:mm TT');
+};
 
 // this is for rendering absolute time based off the preferences for twenty-four
 // hour time in the format of "%mmm %d, %h:%m %p".
 exports.absolute_time = (function () {
-    var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var MONTHS = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
 
     var fmt_time = function (date, H_24) {
         var payload = {
@@ -175,11 +245,20 @@ exports.absolute_time = (function () {
         return str;
     };
 
-    return function (timestamp) {
+    return function (timestamp, today) {
+        if (typeof today === 'undefined') {
+            today = new Date();
+        }
         var date = new Date(timestamp);
+        var is_older_year = today.getFullYear() - date.getFullYear() > 0;
         var H_24 = page_params.twenty_four_hour_time;
-
-        return MONTHS[date.getMonth()] + " " + date.getDate() + ", " + fmt_time(date, H_24);
+        var str = MONTHS[date.getMonth()] + " " + date.getDate();
+        // include year if message date is from a previous year
+        if (is_older_year) {
+            str += ", " + date.getFullYear();
+        }
+        str += " " + fmt_time(date, H_24);
+        return str;
     };
 }());
 
@@ -199,7 +278,7 @@ exports.set_full_datetime = function timerender_set_full_datetime(message, time_
 
     message.full_date_str = time.toLocaleDateString();
     message.full_time_str = time.toLocaleTimeString() +
-        ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
+        ' (UTC' + (tz_offset < 0 ? '' : '+') + tz_offset + ')';
 
     time_elem.attr('title', message.full_date_str + ' ' + message.full_time_str);
 };
@@ -210,3 +289,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = timerender;
 }
+window.timerender = timerender;

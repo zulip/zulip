@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-from __future__ import print_function
-from __future__ import absolute_import
+#!/usr/bin/env python3
+import argparse
 import os
 import sys
 
@@ -9,36 +8,74 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 import django
-TOOLS_DIR = os.path.dirname(__file__)
-ROOT_DIR = os.path.dirname(TOOLS_DIR)
-sys.path.insert(0, ROOT_DIR)
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ZULIP_PATH)
+os.chdir(ZULIP_PATH)
 
-api_path = os.path.abspath(os.path.join(ROOT_DIR, 'api'))
-if not os.path.exists(api_path):
-    raise Exception('programming error--files probably got moved')
-
-sys.path.insert(0, api_path)
 from zulip import Client
 
+from tools.lib.test_script import get_provisioning_status
 from tools.lib.test_server import test_server_running
-from tools.lib.api_tests import test_the_api
+from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key, \
+    test_update_message_edit_permission_error, \
+    test_user_not_authorized_error, test_authorization_errors_fatal
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
-from zerver.models import get_user_profile_by_email
+from zerver.lib.actions import do_create_user
+from zerver.lib.users import get_api_key
+from zerver.models import get_user, get_realm
 
+usage = """test-api [options]"""
+parser = argparse.ArgumentParser(usage)
+parser.add_argument('--force', dest='force',
+                    action="store_true",
+                    default=False, help='Run tests despite possible provisioning problems.')
+options = parser.parse_args()
 
-with test_server_running():
-    email = 'iago@zulip.com' # Iago is an admin
-    api_key = get_user_profile_by_email(email).api_key
-    site = 'http://127.0.0.1:9981'
+if not options.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
+
+with test_server_running(force=options.force, external_host='zulipdev.com:9981'):
+    print("Running API tests...")
+
+    # Prepare the admin client
+    email = 'iago@zulip.com'  # Iago is an admin
+    realm = get_realm("zulip")
+    user = get_user(email, realm)
+    api_key = get_api_key(user)
+    site = 'http://zulip.zulipdev.com:9981'
 
     client = Client(
         email=email,
         api_key=api_key,
-        site=site)
+        site=site
+    )
 
-    print("Running API tests...")
-    test_the_api(client)
+    # Prepare the admin client
+    email = 'guest@zulip.com'  # guest is not an admin
+    guest_user = do_create_user('guest@zulip.com', 'secret',
+                                get_realm('zulip'), 'Mr. Guest', 'guest')
+    api_key = get_api_key(guest_user)
+    nonadmin_client = Client(
+        email=email,
+        api_key=api_key,
+        site=site
+    )
+
+    test_the_api(client, nonadmin_client)
+
+    # Test error payloads
+    client = Client(
+        email=email,
+        api_key='abcedrsdfd',
+        site=site
+    )
+    test_invalid_api_key(client)
+
 
 print("API tests passed!")

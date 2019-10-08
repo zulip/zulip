@@ -1,0 +1,62 @@
+{{#with profile_field}}
+<tr class="profile-field-row movable-profile-field-row" data-profile-field-id="{{id}}">
+    <td>
+        {{#if ../can_modify}}
+        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+        {{/if}}
+        <span class="profile_field_name">{{name}}</span>
+    </td>
+    <td>
+        <span class="profile_field_hint">{{hint}}</span>
+    </td>
+    <td>
+        <span class="profile_field_type">{{type}}</span>
+    </td>
+    {{#if ../can_modify}}
+    <td>
+        <button class="button rounded small delete btn-danger" title="{{t 'Delete' }}" data-profile-field-id="{{id}}">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+        </button>
+        <button class="button rounded small btn-warning open-edit-form" title="{{t 'Edit' }}" data-profile-field-id="{{id}}">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+        </button>
+    </td>
+    {{/if}}
+</tr>
+<tr class="profile-field-form display-none" data-profile-field-id="{{id}}">
+    <td colspan="3">
+        <form class="form-horizontal name-setting">
+            <div class="input-group name_change_container">
+                <label for="name">{{t "Name" }}</label>
+                <input type="text" name="name" value="{{ name }}" maxlength="40" />
+            </div>
+            <div class="input-group hint_change_container">
+                <label for="hint">{{t "Hint" }}</label>
+                <input type="text" name="hint" value="{{ hint }}" maxlength="80" />
+            </div>
+            {{#if is_choice_field }}
+            <div class="input-group">
+                <label for="profile_field_choices_edit">{{t "Field choices" }}</label>
+                <div class="profile-field-choices" name="profile_field_choices_edit">
+                    <hr />
+                    <div class="edit_profile_field_choices_container">
+                        {{#each choices}}
+                        {{partial "profile-field-choice" }}
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+            {{/if}}
+            <div class="input-group">
+                <button type="button" class="button rounded sea-green submit">
+                    {{t 'Save changes' }}
+                </button>
+                <button type="button" class="button rounded btn-danger reset">
+                    {{t 'Cancel' }}
+                </button>
+            </div>
+        </form>
+    </td>
+</tr>
+{{/with}}

@@ -1,132 +1,247 @@
 <div id="account-settings" class="settings-section show" data-name="your-account">
-  <div class="settings-section-title">
-    <i class="icon-vector-user settings-section-icon"></i>
-    {{t "Your account" }}
-  </div>
-  <div class="alert" id="account-settings-status"></div>
-  <div class="account-settings-form">
-    <form class="email-change-form">
-      <p for="change_email" class="inline-block title">
-        {{t "Email" }}: <span id='email_value'>{{page_params.email}}</span>
-        <a id="change_email" href="#change_email" {{#if page_params.realm_email_changes_disabled}}style="display:none" {{/if}}title="{{t 'Change email' }}">[Change]</a>
-        <i class="icon-vector-question-sign change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
-        title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
-      </p>
-
-      <div id="change_email_modal" class="modal hide" tabindex="-1" role="dialog"
-            aria-labelledby="change_email_modal_label" aria-hidden="true">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="change_email_modal_label">{{t "Change email" }}</h3>
-        </div>
-        <div class="modal-body">
-          <div class="input-group email_change_container">
-            <label for="email">{{t "Email" }}</label>
-            <input type="text" name="email" value="{{ page_params.email }}" />
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button id='change_email_button' class="btn btn-success" data-dismiss="modal" aria-hidden="true">{{t "Change" }}</button>
-          <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">{{t "Close" }}</button>
-        </div>
-      </div>
-    </form>
-
-    <form action="/json/settings/change" method="post"
-          class="form-horizontal your-account-settings">
-
-      <div class="m-10 inline-block grid user-name-parent">
-        <div class="user-name-section inline-block">
-          <div class="input-group" id="name_change_container">
-            <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
-            <input type="text" name="full_name" id="full_name" class="w-200 inline-block" value="{{ page_params.fullname }}" {{#if page_params.realm_name_changes_disabled}}disabled="disabled" {{/if}}/>
-            <i class="icon-vector-question-sign change_name_tooltip" data-toggle="tooltip"
-            {{#unless page_params.realm_name_changes_disabled}}style="display:none" {{/unless}}
-            title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
-            <i class="icon-vector-question-sign change_name_tooltip" data-toggle="tooltip"
-            {{#if page_params.realm_name_changes_disabled}}style="display:none" {{/if}}
-            title="{{t 'Zulip has full unicode support, so you can spell your name exactly how you want it to appear.' }}"/>
-            <div class="warning"></div>
-          </div>
-
-          <!-- password start -->
-          {{#if page_params.password_auth_enabled}}
-          <div class="input-group" id="pw_change_link">
-            <label for="change_password_button" class="inline-block title">{{t "Password" }}</label>
-            <button class="change_password_button grey button inline-block input-size" data-dismiss="modal" aria-hidden="true">{{t "Change password" }}</button>
-          </div>
-
-          <div id="pw_change_controls">
-            <div class="input-group">
-              <label for="old_password" class="inline-block title">{{t "Old password" }}</label>
-              <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
-              <div class="warning">
-                <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
-              </div>
-            </div>
-
-            <div class="input-group">
-              <label for="new_password" class="inline-block title">{{t "New password" }}</label>
-              <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value="" />
-              <div class="warning">
-                <div class="progress inline-block" id="pw_strength">
-                  <div class="bar bar-danger fade" style="width: 10%;"></div>
+    <div class="alert" id="account-settings-status"></div>
+    <div class="account-settings-form">
+        <div class="inline-block">
+            <form class="email-change-form grid">
+                <h3>{{t "User settings" }}</h3>
+                <div class="input-group user-name-section">
+                    <label class="inline-block title">{{t "Email" }}</label>
+                    <a id="change_email" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>
+                        <button type="button" class="button small rounded inline-block" id='email_value'
+                          {{#unless page_params.is_admin}}{{#if page_params.realm_email_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
+                            {{page_params.delivery_email}}
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                    </a>
+                    <i class="fa fa-question-circle change_email_tooltip settings-info-icon" {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_email_changes_disabled}}style="display:none"{{/unless}}{{/if}}  data-toggle="tooltip"
+                      title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
                 </div>
-              </div>
+
+                <div id="change_email_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
+                  aria-labelledby="change_email_modal_label" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+                        <h3 id="change_email_modal_label">{{t "Change email" }}</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="input-group email_change_container">
+                            <label for="email">{{t "New email" }}</label>
+                            <input type="text" name="email" value="{{ page_params.delivery_email }}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
+                        </div>
+                    </div>
+                    <div class="alert change_email_info"></div>
+                    <div class="modal-footer">
+                        <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
+                        <button id='change_email_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
+                    </div>
+                </div>
+            </form>
+
+            {{#if page_params.two_fa_enabled }}
+            <p for="two_factor_auth" class="inline-block title">
+                {{t "Two factor authentication" }}: {{#if page_params.two_fa_enabled_user }}{{t "Enabled" }}{{else}}{{t "Disabled" }}{{/if}}
+                <a target="_blank" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Setup two factor authentication' }}">[{{t "Setup" }}]</a>
+            </p>
+            {{/if}}
+
+            <form class="form-horizontal full-name-change-form">
+                <div class="input-group inline-block grid user-name-parent">
+                    <div class="user-name-section inline-block">
+                        <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
+                        <a id="change_full_name" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_name_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>
+                            <button type="button" class="button small white rounded inline-block" id="full_name"{{#unless page_params.is_admin}}{{#if page_params.realm_name_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
+                                <span id="full_name_value">{{page_params.full_name}}</span>
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                        </a>
+                        <i class="fa fa-question-circle change_name_tooltip settings-info-icon" data-toggle="tooltip"
+                          {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_name_changes_disabled}}style="display:none"{{/unless}}{{/if}}
+                          title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
+                    </div>
+                    <div id="change_full_name_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
+                      aria-labelledby="change_full_name_modal_label" aria-hidden="true">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+                            <h3 id="change_full_name_modal_label">{{t "Change full name" }}</h3>
+                        </div>
+                        <div class="modal-body">
+                            <div class="input-group full_name_change_container">
+                                <label for="email">{{t "New full name" }}</label>
+                                <input type="text" name="full_name" value="{{ page_params.full_name }}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
+                            </div>
+                        </div>
+                        <div class="alert change_full_name_info"></div>
+                        <div class="modal-footer">
+                            <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
+                            <button id='change_full_name_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <form class="password-change-form grid">
+                {{#if page_params.realm_email_auth_enabled}}
+                <div class="user-name-section">
+                    <label class="inline-block title">{{t "Password" }}</label>
+                    <a id="change_password" {{#if page_params.realm_email_auth_enabled}}href="#change_password"{{/if}}>
+                        <div class="input-group inline-block" id="pw_change_link">
+                            <button type="button" class="change_password_button small button rounded inline-block" data-dismiss="modal">********<i class="fa fa-pencil"></i>
+                            </button>
+                        </div>
+                    </a>
+                </div>
+                {{/if}}
+
+                <div id="change_password_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
+                  aria-labelledby="change_password_modal_label" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+                        <h3 id="change_password_modal_label">{{t "Change password" }}</h3>
+                    </div>
+                    <div class="flex-row normal">
+                        <div class="field">
+                            <label for="old_password" class="title">{{t "Old password" }}</label>
+                            <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
+                            <div class="info">
+                                <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
+                            </div>
+
+                        </div>
+                        <div class="field">
+                            <label for="new_password" class="title">{{t "New password" }}</label>
+                            <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value=""
+                              data-min-length="{{ page_params.password_min_length }}" data-min-guesses="{{ page_params.password_min_guesses }}" />
+                            <div class="progress inline-block" id="pw_strength">
+                                <div class="bar bar-danger fade" style="width: 10%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert change_password_info"></div>
+                    <div class="modal-footer">
+                        <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
+                        <button id='change_password_button' class="button rounded sea-green">{{t "Change" }}</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="user-role input-group grid">
+                <label for="user_role" class="inline-block title">{{t "Role" }}</label>
+                <button class="button small rounded">
+                    {{#if page_params.is_admin}}
+                    {{t "Administrator" }}
+                    {{else if page_params.is_guest}}
+                    {{t "Guest" }}
+                    {{else}}
+                    {{t "Member" }}
+                    {{/if}}
+                </button>
             </div>
+
+            <form class="deactivate_account grid">
+                <div class="input-group">
+                    <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button">
+                        {{t 'Deactivate account' }}
+                    </button>
+                </div>
+            </form>
+
+            <h3 class="inline-block" id="custom-field-header" {{#unless page_params.custom_profile_fields}}style="display: none"{{/unless}}>{{t "Profile" }}</h3>
+            <div class="alert-notification" id="custom-field-status"></div>
+            <form class="form-horizontal custom-profile-fields-form grid"></form>
+            <button class="button rounded sea-green w-200 block" id="show_my_user_profile_modal">
+                {{t 'Preview profile' }}
+                <i class="fa fa-external-link" aria-hidden="true" title="{{t 'Preview profile' }}"></i>
+            </button>
+
+        </div>
+
+        <div class="inline-block user-avatar-section">
+            <h3>{{t "User avatar" }}</h3>
+
+            <div class="inline-block">
+                <div id="user-settings-avatar">
+                    <div id="user-avatar-block" style="background-image: url({{ page_params.avatar_url_medium }})" {{#if page_params.is_guest}} class="guest-avatar"{{/if}}/>
+                    <div id="user-avatar-source">
+                        <a href="https://en.gravatar.com/" target="_blank" class="white-color">{{t "Avatar from Gravatar" }}</a>
+                    </div>
+                </div>
+                <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
+                <div id="upload_avatar_spinner"></div>
+            </div>
+            <div class="avatar-controls">
+                <button class="button rounded sea-green w-200 block" id="user_avatar_upload_button">
+                    {{t 'Upload new avatar' }}
+                </button>
+                <div id="user_avatar_file_input_error" class="text-error"></div>
+                <button class="button rounded btn-danger w-200 m-t-20 block" id="user_avatar_delete_button">
+                    {{t 'Delete avatar' }}
+                </button>
+            </div>
+        </div>
+        <div class="clear-float"></div>
+
+        <div id="deactivate_self_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_self_modal_label" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+                <h3 id="deactivation_self_modal_label">{{t "Deactivate your account" }} </h3>
+            </div>
+            <div class="modal-body">
+                <p>{{#tr this}}By deactivating your account, you will be logged out immediately.{{/tr}}</p>
+                <p>{{t "Note that any bots that you maintain will be disabled." }}</p>
+            </div>
+            <div class="modal-footer">
+                <button class="button" data-dismiss="modal">{{t "Cancel" }}</button>
+                <button class="button btn-danger rounded" id="do_deactivate_self_button">
+                    <object class="loader" type="image/svg+xml" data="/static/images/loader.svg"></object>
+                    <span>{{t "Deactivate now" }}</span>
+                </button>
+            </div>
+        </div>
+
+        <hr class="settings_separator" />
+
+        <div class="form-horizontal" id="api_key_button_box">
+            <h3>{{t "API key" }}</h3>
 
             <div class="input-group">
-              <label class="inline-block title" for="confirm_password title">{{t "Confirm password" }}</label>
-              <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" class="w-200 inline-block" value="" />
+                <p class="api-key-note">
+                    {{#tr this}}
+                    An API key can be used to programmatically access a Zulip account.
+                    Anyone with access to your API key has the ability to read your messages, send
+                    messages on your behalf, and otherwise impersonate you on Zulip, so you should
+                    guard your API key as carefully as you guard your password. <br />
+                    We recommend creating bots and using the bots' accounts and API keys to access
+                    the Zulip API, unless the task requires access to your account.
+                    {{/tr}}
+                </p>
+                <button class="button rounded" id="api_key_button">{{t "Show/change your API key" }}</button>
             </div>
-          </div>
-          {{/if}}
-
-          <div class="input-group no-border">
-            <label for="" class="inline-block"></label>
-            <input type="submit" class="button w-200 sea-green input-size" name="change_settings" value="Save Changes" />
-          </div>
-          <div class="input-group">
-            <label for="" class="inline-block"></label>
-            <button type="submit" class="button w-200 btn-danger input-size" id="user_deactivate_account_button">{{t 'Deactivate account' }}</button>
-          </div>
         </div>
-      </div>
-
-      <div class="user-avatar-section box-shadow border-radius">
-        <div class="inline-block">
-          {{#if page_params.avatar_url_medium }}
-            <img id="user-settings-avatar" src="{{ page_params.avatar_url_medium }}" />
-          {{else}}
-            <img id="user-settings-avatar" src="{{ page_params.avatar_url }}" />
-          {{/if}}
-          <div id="user_avatar_file_input_error" class="text-error"></div>
-          <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
-          <div id="upload_avatar_spinner"></div>
+        <div id="get_api_key_box">
+            <p>{{t "Please re-enter your password to confirm your identity." }}
+              <a href="/accounts/password/reset/" target="_blank">{{t "Never had one? Forgotten it?" }}</a></p>
+            <form cslass="form-horizontal" id="get_api_key_form">
+                <div class="control-group">
+                    <label for="password" class="control-label">{{t "Current password" }}</label>
+                    <input type="password" autocomplete="off"
+                      name="password" id="get_api_key_password" value="" />
+                    <button type="submit" name="view_api_key" id="get_api_key_button"
+                      class="button sea-green">{{t 'Get API key' }}</button>
+                </div>
+            </form>
         </div>
-        <div class="inline-block">
-            <button class="button sea-green w-200 m-t-20 block input-size" id="user_avatar_upload_button">{{t 'Upload new avatar' }}</button>
-            <button class="button btn-danger w-200 m-t-20 block input-size" id="user_avatar_delete_button">{{t 'Delete avatar' }}</button>
+        <div id="show_api_key_box">
+            <p>{{t "Your API key:" }}</p>
+            <p><b><span id="api_key_value"></span></b></p>
+            <div id="api_key_buttons">
+                <button type="submit" class="button white rounded regenerate_api_key">
+                    {{t "Generate new API key" }}
+                </button>
+                <a id="download_zuliprc" download="{{zuliprc}}" class="button sea-green">
+                    {{t "Download .zuliprc" }}
+                </a>
+            </div>
+            <div id="user_api_key_error" class="text-error"></div>
         </div>
-      </div>
-
-    </form>
-
-      <div id="deactivate_self_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_self_modal_label" aria-hidden="true">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="deactivation_user_modal_label">{{t "Deactivate your account" }} </h3>
-        </div>
-        <div class="modal-body">
-          <p>{{#tr this}}By deactivating your account, you will be logged out immediately.{{/tr}}</p>
-          <p>{{t "Note that any bots that you maintain will be disabled." }}</p>
-        </div>
-        <div class="modal-footer">
-          <button class="button white" data-dismiss="modal" aria-hidden="true">{{t "Cancel" }}</button>
-          <button class="button btn-danger" id="do_deactivate_self_button">{{t "Deactivate now" }}</button>
-
-        </div>
-      </div>
-
-  </div>
+    </div>
 </div>

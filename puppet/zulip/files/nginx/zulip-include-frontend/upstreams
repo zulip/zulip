@@ -3,14 +3,18 @@ upstream django {
 }
 
 upstream tornado {
-    server localhost:9993;
+    server 127.0.0.1:9993;
     keepalive 10000;
 }
 
 upstream localhost_sso {
-    server localhost:8888;
+    server 127.0.0.1:8888;
 }
 
 upstream camo {
-    server localhost:9292;
+    server 127.0.0.1:9292;
+}
+
+upstream thumbor {
+    server localhost:9995;
 }

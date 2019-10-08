@@ -1,0 +1,21 @@
+<div class="input-group {{#if is_nested}}disableable{{/if}} {{#if_not_a_or_b_and_not_c is_parent_setting_enabled push_notifications_tooltip page_params.realm_push_notifications_enabled}}control-label-disabled{{/if_not_a_or_b_and_not_c}}">
+    <label class="checkbox">
+        <input type="checkbox" class="inline-block" name="{{setting_name}}"
+          id="{{prefix}}{{setting_name}}"
+          {{#if_not_a_or_b_and_not_c is_parent_setting_enabled push_notifications_tooltip page_params.realm_push_notifications_enabled}}disabled="disabled"{{/if_not_a_or_b_and_not_c}}
+          {{#if is_checked}}
+          {{#unless_a_not_b push_notifications_tooltip page_params.realm_push_notifications_enabled}}
+          checked="checked"
+          {{/unless_a_not_b}}
+          {{/if}} />
+        <span></span>
+    </label>
+    <label for="{{prefix}}{{setting_name}}" class="inline-block" id="{{prefix}}{{setting_name}}_label">
+        {{{label}}}
+    </label>
+    {{#if push_notifications_tooltip}}
+    <i class="fa fa-question-circle settings-info-icon" {{#if page_params.realm_push_notifications_enabled}}style="display:none"{{/if}}  data-toggle="tooltip"
+      title="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
+    {{/if}}
+    {{{end_content}}}
+</div>

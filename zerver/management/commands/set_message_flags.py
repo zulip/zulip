@@ -1,26 +1,21 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
-from typing import Any, Iterable
-
-from optparse import make_option
 import logging
 import sys
+from typing import Any, Iterable
 
-from django.core.management.base import BaseCommand, CommandParser
-
-from zerver.lib import utils
-from zerver.models import UserMessage, get_user_profile_by_email
+from django.core.management.base import CommandParser
 from django.db import models
 
+from zerver.lib import utils
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import UserMessage
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Sets user message flags. Used internally by actions.py. Marks all
     Expects a comma-delimited list of user message ids via stdin, and an EOF to terminate."""
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
-        parser.add_argument('-r', '--for-real',
+    def add_arguments(self, parser: CommandParser) -> None:
+        parser.add_argument('-l', '--for-real',
                             dest='for_real',
                             action='store_true',
                             default=False,
@@ -45,9 +40,9 @@ class Command(BaseCommand):
                             dest='email',
                             type=str,
                             help="Email to set messages for")
+        self.add_realm_args(parser)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         if not options["flag"] or not options["op"] or not options["email"]:
             print("Please specify an operation, a flag and an email")
             exit(1)
@@ -57,7 +52,8 @@ class Command(BaseCommand):
         all_until = options['all_until']
         email = options['email']
 
-        user_profile = get_user_profile_by_email(email)
+        realm = self.get_realm(options)
+        user_profile = self.get_user(email, realm)
 
         if all_until:
             filt = models.Q(id__lte=all_until)
@@ -71,8 +67,7 @@ class Command(BaseCommand):
             sys.stdout.close()
             sys.stderr.close()
 
-        def do_update(batch):
-            # type: (Iterable[int]) -> None
+        def do_update(batch: Iterable[int]) -> None:
             msgs = UserMessage.objects.filter(id__in=batch)
             if op == 'add':
                 msgs.update(flags=models.F('flags').bitor(flag))

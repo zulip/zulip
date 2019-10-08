@@ -1,18 +1,18 @@
 class zulip::camo {
   $camo_packages = [# Needed for camo
-                    "nodejs",
-                    "camo",
+                    'nodejs',
+                    'camo',
                     ]
-  package { $camo_packages: ensure => "installed" }
+  package { $camo_packages: ensure => 'installed' }
 
-  $camo_key = zulipsecret("secrets", "camo_key", '')
+  $camo_key = zulipsecret('secrets', 'camo_key', '')
 
-  file { "/etc/default/camo":
+  file { '/etc/default/camo':
+    ensure  => file,
     require => Package[camo],
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    content => template("zulip/camo_defaults.template.erb"),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/camo_defaults.template.erb'),
   }
 }

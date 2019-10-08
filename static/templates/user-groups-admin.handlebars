@@ -1,0 +1,29 @@
+<div id="user-groups-admin" class="settings-section" data-name="user-groups-admin">
+    {{#unless is_admin}}
+    <div class="tip">Only group members and organization administrators can modify a group.</div>
+    {{/unless}}
+    {{#unless is_guest}}
+    <form class="form-horizontal admin-user-group-form">
+        <div class="add-new-user-group-box grey-box">
+            <div class="new-user-group-form">
+                <div class="settings-section-title new-user-group-section-title no-padding">{{t "Add a new user group" }}</div>
+                <div class="alert" id="admin-user-group-status"></div>
+                <div class="inline-block">
+                    <label for="user_group_name">{{t "Name" }}</label>
+                    <input type="text" name="name" id="user_group_name" maxlength="100" placeholder="{{t 'marketing' }}" />
+                </div>
+                <div class="inline-block">
+                    <label for="user_group_description">{{t "Description" }}</label>
+                    <input type="text" name="description" id="user_group_description" maxlength="300" placeholder="{{t 'Marketing team' }}" />
+                </div>
+                <button type="submit" class="button rounded sea-green">
+                    {{t 'Submit' }}
+                </button>
+            </div>
+        </div>
+    </form>
+    {{/unless}}
+
+    <p>{{#tr this}}Add members of your organization to mentionable user groups.{{/tr}}</p>
+    <div id="user-groups" class="new-style"></div>
+</div>

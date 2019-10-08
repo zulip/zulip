@@ -1,161 +1,119 @@
 # -*- coding: utf-8 -*-
-from typing import Text
-from zerver.lib.test_classes import WebhookTestCase
 
 import mock
 
+from zerver.lib.test_classes import WebhookTestCase
+
 class StripeHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
-    URL_TEMPLATE = "/api/v1/external/stripe?&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/stripe?&api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'stripe'
 
-    def test_charge_dispute_closed(self):
-        # type: () -> None
-        expected_subject = u"Charge ch_00000000000000"
-        expected_message = u"A charge dispute for **10.01aud** has been closed as **won**.\nThe charge in dispute was **[ch_00000000000000](https://dashboard.stripe.com/payments/ch_00000000000000)**."
-
-        # use fixture named stripe_charge_dispute_closed
-        self.send_and_test_stream_message('charge_dispute_closed', expected_subject, expected_message,
+    def test_charge_dispute_closed(self) -> None:
+        expected_topic = u"disputes"
+        expected_message = u"[Dispute](https://dashboard.stripe.com/disputes/dp_00000000000000) closed. Current status: won."
+        self.send_and_test_stream_message('charge_dispute_closed', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_charge_dispute_created(self):
-        # type: () -> None
-        expected_subject = u"Charge ch_00000000000000"
-        expected_message = u"A charge dispute for **1000jpy** has been created.\nThe charge in dispute is **[ch_00000000000000](https://dashboard.stripe.com/payments/ch_00000000000000)**."
-
-        # use fixture named stripe_charge_dispute_created
-        self.send_and_test_stream_message('charge_dispute_created', expected_subject, expected_message,
+    def test_charge_dispute_created(self) -> None:
+        expected_topic = u"disputes"
+        expected_message = u"[Dispute](https://dashboard.stripe.com/disputes/dp_00000000000000) created. Current status: needs response."
+        self.send_and_test_stream_message('charge_dispute_created', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_charge_failed(self):
-        # type: () -> None
-        expected_subject = u"Charge ch_00000000000000"
-        expected_message = u"A charge with id **[ch_00000000000000](https://dashboard.stripe.com/payments/ch_00000000000000)** for **1.00aud** has failed."
-
-        # use fixture named stripe_charge_failed
-        self.send_and_test_stream_message('charge_failed', expected_subject, expected_message,
+    def test_charge_failed(self) -> None:
+        expected_topic = u"charges"
+        expected_message = u"[Charge](https://dashboard.stripe.com/charges/ch_00000000000000) for 1.00 AUD failed"
+        self.send_and_test_stream_message('charge_failed', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_charge_succeeded(self):
-        # type: () -> None
-        expected_subject = u"Charge ch_00000000000000"
-        expected_message = u"A charge with id **[ch_00000000000000](https://dashboard.stripe.com/payments/ch_00000000000000)** for **1.00aud** has succeeded."
-
-        # use fixture named stripe_charge_succeeded
-        self.send_and_test_stream_message('charge_succeeded', expected_subject, expected_message,
+    # Credit card charge
+    def test_charge_succeeded__card(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Charge](https://dashboard.stripe.com/charges/ch_000000000000000000000000) for 1.00 AUD succeeded"
+        self.send_and_test_stream_message('charge_succeeded__card', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_customer_created_email(self):
-        # type: () -> None
-        expected_subject = u"Customer cus_00000000000000"
-        expected_message = u"A new customer with id **[cus_00000000000000](https://dashboard.stripe.com/customers/cus_00000000000000)** and email **example@abc.com** has been created."
-
-        # use fixture named stripe_customer_created_email
-        self.send_and_test_stream_message('customer_created_email', expected_subject, expected_message,
+    # ACH payment (really a 'payment', rather than a 'charge')
+    def test_charge_succeeded__invoice(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Payment](https://dashboard.stripe.com/payments/py_000000000000000000000000) for $1.00 succeeded"
+        self.send_and_test_stream_message('charge_succeeded__invoice', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_customer_created(self):
-        # type: () -> None
-        expected_subject = u"Customer cus_00000000000000"
-        expected_message = u"A new customer with id **[cus_00000000000000](https://dashboard.stripe.com/customers/cus_00000000000000)** has been created."
-
-        # use fixture named stripe_customer_created
-        self.send_and_test_stream_message('customer_created', expected_subject, expected_message,
+    def test_customer_created(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) created"
+        self.send_and_test_stream_message('customer_created', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_customer_deleted(self):
-        # type: () -> None
-        expected_subject = u"Customer cus_00000000000000"
-        expected_message = u"A customer with id **[cus_00000000000000](https://dashboard.stripe.com/customers/cus_00000000000000)** has been deleted."
-
-        # use fixture named stripe_customer_deleted
-        self.send_and_test_stream_message('customer_deleted', expected_subject, expected_message,
+    def test_customer_created_email(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) created\nEmail: example@abc.com"
+        self.send_and_test_stream_message('customer_created_email', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_customer_subscription_created(self):
-        # type: () -> None
-        expected_subject = u"Customer sub_00000000000000"
-        expected_message = u"A new customer subscription for **20.00aud** every **month** has been created.\nThe subscription has id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)**."
-
-        # use fixture named stripe_customer_subscription_created
-        self.send_and_test_stream_message('customer_subscription_created', expected_subject, expected_message,
+    def test_customer_deleted(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) deleted"
+        self.send_and_test_stream_message('customer_deleted', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_customer_subscription_deleted(self):
-        # type: () -> None
-        expected_subject = u"Customer sub_00000000000000"
-        expected_message = u"The customer subscription with id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)** was deleted."
-
-        # use fixture named stripe_customer_subscription_deleted
-        self.send_and_test_stream_message('customer_subscription_deleted', expected_subject, expected_message,
+    def test_customer_subscription_created(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"""\
+[Subscription](https://dashboard.stripe.com/subscriptions/sub_E6STM5w5EX3K28) created
+Plan: [flatrate](https://dashboard.stripe.com/plans/plan_E6SQ6RAtmLVtzg)
+Quantity: 800
+Billing method: send invoice"""
+        self.send_and_test_stream_message('customer_subscription_created', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_customer_subscription_trial_will_end(self):
-        # type: () -> None
-        expected_subject = u"Customer sub_00000000000000"
-        expected_message = u"The customer subscription trial with id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)** will end in 3 days."
+    def test_customer_subscription_deleted(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Subscription](https://dashboard.stripe.com/subscriptions/sub_00000000000000) deleted"
+        self.send_and_test_stream_message('customer_subscription_deleted', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
 
+    def test_customer_subscription_updated(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = """\
+[Subscription](https://dashboard.stripe.com/subscriptions/sub_E6STM5w5EX3K28) updated
+* Billing cycle anchor is now Nov 01, 2019, 12:00:00 UTC
+* Current period end is now Nov 01, 2019, 12:00:00 UTC
+* Current period start is now Dec 06, 2018, 05:53:55 UTC
+* Start is now Dec 06, 2018, 05:53:55 UTC
+* Status is now trialing
+* Trial end is now Nov 01, 2019, 12:00:00 UTC
+* Trial start is now Dec 06, 2018, 05:53:55 UTC"""
+        self.send_and_test_stream_message('customer_subscription_updated', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_customer_subscription_trial_will_end(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Subscription](https://dashboard.stripe.com/subscriptions/sub_00000000000000) trial will end in 3 days"
         # 3 days before the end of the trial, plus a little bit to make sure the rounding is working
         with mock.patch('time.time', return_value=1480892861 - 3*3600*24 + 100):
             # use fixture named stripe_customer_subscription_trial_will_end
             self.send_and_test_stream_message('customer_subscription_trial_will_end',
-                                              expected_subject, expected_message,
+                                              expected_topic, expected_message,
                                               content_type="application/x-www-form-urlencoded")
 
-    def test_invoice_payment_failed(self):
-        # type: () -> None
-        expected_subject = u"Invoice in_00000000000000"
-        expected_message = u"An invoice payment on invoice with id **[in_00000000000000](https://dashboard.stripe.com/invoices/in_00000000000000)** and with **0.00aud** due has failed."
-
-        # use fixture named stripe_invoice_payment_failed
-        self.send_and_test_stream_message('invoice_payment_failed', expected_subject, expected_message,
+    def test_customer_updated__account_balance(self) -> None:
+        expected_topic = "cus_00000000000000"
+        expected_message = "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) updated" + \
+                           "\n* Account balance is now 100"
+        self.send_and_test_stream_message('customer_updated__account_balance', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_order_payment_failed(self):
-        # type: () -> None
-        expected_subject = u"Order or_00000000000000"
-        expected_message = u"An order payment on order with id **[or_00000000000000](https://dashboard.stripe.com/orders/or_00000000000000)** for **15.00aud** has failed."
-
-        # use fixture named stripe_order_payment_failed
-        self.send_and_test_stream_message('order_payment_failed', expected_subject, expected_message,
+    def test_customer_discount_created(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"Discount created ([25.5% off](https://dashboard.stripe.com/coupons/25_00000000000000))."
+        self.send_and_test_stream_message('customer_discount_created', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_order_payment_succeeded(self):
-        # type: () -> None
-        expected_subject = u"Order or_00000000000000"
-        expected_message = u"An order payment on order with id **[or_00000000000000](https://dashboard.stripe.com/orders/or_00000000000000)** for **15.00aud** has succeeded."
-
-        # use fixture named stripe_order_payment_succeeded
-        self.send_and_test_stream_message('order_payment_succeeded', expected_subject, expected_message,
+    def test_invoice_payment_failed(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Invoice](https://dashboard.stripe.com/invoices/in_00000000000000) payment failed"
+        self.send_and_test_stream_message('invoice_payment_failed', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
-
-    def test_order_updated(self):
-        # type: () -> None
-        expected_subject = u"Order or_00000000000000"
-        expected_message = u"The order with id **[or_00000000000000](https://dashboard.stripe.com/orders/or_00000000000000)** for **15.00aud** has been updated."
-
-        # use fixture named stripe_order_updated
-        self.send_and_test_stream_message('order_updated', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def test_transfer_failed(self):
-        # type: () -> None
-        expected_subject = u"Transfer tr_00000000000000"
-        expected_message = u"The transfer with description **Transfer to test@example.com** and id **[tr_00000000000000](https://dashboard.stripe.com/transfers/tr_00000000000000)** for amount **11.00aud** has failed."
-
-        # use fixture named stripe_transfer_failed
-        self.send_and_test_stream_message('transfer_failed', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def test_transfer_paid(self):
-        # type: () -> None
-        expected_subject = u"Transfer tr_00000000000000"
-        expected_message = u"The transfer with description **Transfer to test@example.com** and id **[tr_00000000000000](https://dashboard.stripe.com/transfers/tr_00000000000000)** for amount **11.00aud** has been paid."
-
-        # use fixture named stripe_transfer_paid
-        self.send_and_test_stream_message('transfer_paid', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name):
-        # type: (Text) -> Text
-        return self.fixture_data("stripe", fixture_name, file_type="json")

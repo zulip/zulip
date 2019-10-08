@@ -1,0 +1,3037 @@
+@import './reuseable_components.scss';
+
+body,
+html {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+
+    touch-action: manipulation;
+}
+
+#css-loading {
+    display: none !important; /* We are now loaded, by definition. */
+}
+
+body {
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* Common background color */
+body,
+#tab_bar_underpadding {
+    background-color: hsl(0, 0%, 100%);
+    @include prefixed-transition(background-color, 200ms, linear);
+}
+
+input,
+button,
+select,
+textarea {
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    line-height: normal;
+}
+
+blockquote p {
+    font-weight: normal;
+}
+
+a {
+    cursor: pointer;
+}
+
+.no-select {
+    @include prefixed-user-select(none);
+}
+
+.auto-select {
+    @include prefixed-user-select(auto);
+}
+
+.text-select {
+    @include prefixed-user-select(text);
+}
+
+p.n-margin {
+    margin: 10px 0px 0px 0px;
+}
+
+.small-line-height {
+    line-height: 1.1;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-clear {
+    clear: both;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.border-radius {
+    border-radius: 4px;
+}
+
+.modal-backdrop {
+    z-index: 102;
+}
+
+.history-limited-box {
+    color: hsl(16, 60%, 45%);
+    border: 1px solid hsl(16, 60%, 45%);
+    border-radius: 4px;
+    box-shadow: 0 0 2px hsl(16, 60%, 45%);
+    display: none;
+    height: 28x;
+    font-size: 16px;
+    margin: 0 auto 12px;
+    padding: 5px;
+    i {
+        margin: 0 3px 0 1px;
+    }
+    p {
+        margin: 0;
+        padding: 4px;
+    }
+}
+
+.top-messages-logo {
+    width: 24px;
+    height: 24px;
+    margin: 0 auto 12px;
+}
+
+.top-messages-logo svg circle {
+    fill: hsl(0, 0%, 27%);
+    stroke: hsl(0, 0%, 27%);
+}
+
+.top-messages-logo svg path {
+    fill: hsl(0, 0%, 100%);
+    stroke: hsl(0, 0%, 100%);
+}
+
+#feedback_container {
+    display: none;
+    position: absolute;
+    width: 400px;
+    top: 0px;
+    left: calc(50vw - 220px);
+    padding: 15px;
+
+    background-color: hsl(0, 0%, 98%);
+    border-radius: 5px;
+    box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.25);
+    z-index: 110;
+
+    animation-name: pulse;
+    animation-iteration-count: infinite;
+    animation-duration: 2s;
+
+    transition-property: top, bottom;
+    transition-duration: 0.5s;
+}
+
+#feedback_container.show {
+    top: 50px;
+}
+
+#feedback_container h3 {
+    font-size: 16pt;
+    margin-top: 2px;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
+    }
+
+    50% {
+        box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.15);
+    }
+
+    100% {
+        box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
+    }
+}
+
+.fade-in-message {
+    animation-name: fadeInMessage;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+}
+
+.fade-in-message .message_edit_notice {
+    animation-name: fadeInEditNotice;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+}
+
+#feedback_container .exit-me {
+    font-size: 30pt;
+    font-weight: 200;
+    margin: 5px 0px 0px 10px;
+    cursor: pointer;
+}
+
+.header {
+    position: fixed;
+    z-index: 102; /* Needs to be higher than .alert-bar-container */
+    width: 100%;
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+    height: 40px;
+}
+
+#panels {
+    -webkit-font-smoothing: antialiased;
+
+    font-size: 1rem;
+}
+
+#panels .alert {
+    margin: 0;
+    padding-top: 12px;
+    padding-bottom: 12px;
+
+    border: none;
+    border-radius: 0;
+
+    text-align: center;
+    text-shadow: none;
+    color: hsl(0, 0%, 100%);
+}
+
+#panels .alert.alert-info {
+    background-color: hsl(170, 46%, 54%);
+}
+
+#panels .alert.alert-info.red {
+    background-color: hsl(0, 46%, 54%);
+}
+
+#panels .alert .close {
+    line-height: 24px;
+}
+
+#panels .alert .alert-link {
+    color: hsl(169, 100%, 88%);
+    font-weight: 600;
+}
+
+#panels .alert.red .alert-link {
+    color: hsl(0, 100%, 88%);
+}
+
+#panels .alert .buttons .alert-link {
+    margin: 0px 5px;
+}
+
+.app {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    z-index: 99;
+    -webkit-overflow-scrolling: touch;
+}
+
+.app-main,
+.header-main {
+    width: 100%;
+    max-width: 1400px;
+    min-width: 950px;
+    margin: 0px auto;
+    padding: 0px;
+    position: relative;
+    background-color: hsl(0, 0%, 100%);
+}
+
+.app-main {
+    height: 100%;
+    min-height: 100%;
+}
+
+.fixed-app {
+    width: 100%;
+    position: fixed;
+    z-index: 98;
+    left: 0px;
+}
+
+.column-left,
+.column-right {
+    width: 250px;
+    max-width: 250px;
+}
+
+.column-left {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.column-right {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
+
+.app-main .column-left .left-sidebar,
+.app-main .column-right .right-sidebar {
+    position: fixed;
+    margin-top: 50px;
+    z-index: 100;
+}
+
+.app-main .column-left .left-sidebar {
+    width: 242px;
+    padding-left: 0px;
+}
+
+.app-main .column-right .right-sidebar {
+    padding-left: 10px;
+    width: 240px;
+}
+
+.app-main .column-middle {
+    min-height: 100%;
+}
+
+.column-middle {
+    margin-right: 250px;
+    margin-left: 250px;
+    position: relative;
+}
+
+textarea,
+input {
+    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+}
+
+/* Override Bootstrap's fixed sizes for various elements */
+textarea,
+label {
+    font-size: inherit;
+    line-height: inherit;
+}
+
+/* List of text-like input types taken from Bootstrap */
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="color"] {
+    font-size: inherit;
+    height: 1.4em;
+}
+
+li,
+.table th,
+.table td {
+    line-height: inherit;
+}
+
+.btn {
+    font-size: inherit;
+    height: auto;
+    line-height: 100%;
+}
+
+.copy_message,
+.copy_message:focus {
+    background-color: hsl(0, 0%, 100%);
+    height: 20px;
+    width: 15px;
+    padding: 5px 10px;
+    border: none;
+    position: relative;
+    top: 28px;
+    left: -5px;
+    margin-top: -24px;
+    display: block;
+}
+
+#clipboard_image {
+    margin-top: -5px;
+    margin-left: -8px;
+}
+
+.copy_message:hover svg path {
+    fill: hsl(0, 0%, 0%);
+}
+
+.btn-large {
+    font-size: 115%;
+}
+
+.header-main .logo {
+    display: inline-block;
+    font-size: 120%;
+    font-weight: 900;
+    text-shadow: none;
+    color: hsl(0, 0%, 100%);
+    font-variant: small-caps;
+    letter-spacing: 2px;
+    line-height: 18px;
+    text-decoration: none;
+    position: relative;
+}
+
+.header-main .logoimage {
+    height: 40px;
+    width: auto;
+}
+
+#user-settings-avatar {
+    width: 100px;
+    height: 100px;
+}
+
+/* Classes for hiding and showing controls */
+
+.notdisplayed {
+    display: none !important;
+}
+
+.notvisible {
+    visibility: hidden !important;
+    width: 0px !important;
+    min-width: 0px !important;
+    min-height: 0px !important;
+    height: 0px !important;
+    overflow: hidden !important;
+    position: absolute !important;
+}
+
+/* Lighter strong */
+
+strong {
+    font-weight: 600;
+}
+
+/* Inline and block code */
+
+code {
+    /* 12/14 em, so bootstrap's default 12 px,
+       when body is the default 14 px */
+    font-size: 0.857em;
+}
+
+code::before {
+    /* Add a left-to-right embedding character before each code block */
+    content: '\202a';
+}
+
+code::after {
+    /* And add a pop directional formatting character after each code block */
+    content: '\202c';
+}
+
+.message_content code {
+    white-space: pre-wrap;
+    padding: 0px 4px;
+    background-color: hsl(0, 0%, 100%);
+}
+
+/* This ensures bulleted lists are nicely centered in 1-line messages */
+.message_content ul {
+    margin: 5px 0 5px 20px;
+}
+
+.rtl.message_content ul {
+    margin: 5px 20px 5px 0;
+}
+
+.codehilite {
+    display: block !important;
+    border: none !important;
+    background: none !important;
+}
+
+pre {
+    direction: ltr;
+    /* code block text is a bit smaller than normal text */
+    font-size: 0.8em;
+    line-height: 1.4;
+    white-space: pre;
+    overflow-x: auto;
+    word-wrap: normal;
+    /* Bootstrap's default here is top: 0px, bottom: 10px */
+    margin-top: 5px;
+    margin-bottom: 5px;
+    /* Bootstrap's default here is 9.5 on all sides */
+    padding-top: 5px;
+    padding-bottom: 3px;
+    padding-left: 7px;
+    padding-right: 7px;
+}
+
+/* Ensure the horizontal scrollbar is visible on Mac */
+pre::-webkit-scrollbar {
+    height: 8px;
+
+    background-color: hsla(0, 0%, 0%, 0.05);
+}
+
+pre::-webkit-scrollbar-thumb {
+    background-color: hsla(0, 0%, 0%, 0.3);
+    border-radius: 20px;
+
+    transition: all 0.2s ease;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+    background-color: hsla(0, 0%, 0%, 0.6);
+}
+
+pre code {
+    overflow-x: scroll;
+    white-space: pre;
+}
+
+/* Style inline code inside a link
+   to look more like a normal link */
+a code {
+    color: hsl(200, 100%, 40%);
+    border-color: hsl(200, 100%, 40%);
+}
+
+a:hover code {
+    color: hsl(200, 100%, 25%);
+    border-color: hsl(200, 100%, 25%);
+}
+
+.preserve_spaces {
+    white-space: pre-wrap;
+}
+
+.sp-input {
+    width: calc(100% - 14px);
+    box-sizing: initial !important;
+    -webkit-box-sizing: initial !important;
+    -moz-box-sizing: initial !important;
+}
+
+.logout {
+    white-space: nowrap;
+}
+
+.sidebar-title {
+    font-size: 1em;
+    color: hsl(0, 0%, 43%);
+    font-weight: normal;
+    display: inline;
+}
+
+.tooltip.in {
+    font-size: 12px;
+    line-height: 1.3;
+
+    opacity: 1;
+}
+
+.tooltip.in.left {
+    margin-left: -12px;
+    margin-top: 3px;
+}
+
+.tooltip .tooltip-inner {
+    background-color: hsla(0, 0%, 7%, 0.8);
+    padding: 3px 5px;
+}
+
+#message_edit_tooltip {
+    float: right;
+    color: hsl(0, 0%, 0%);
+    font-size: 13px;
+    margin-top: 3px;
+    margin-left: 6px;
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+#message_edit_tooltip:hover {
+    opacity: 1.0;
+}
+
+.message-edit-tooltip-inner {
+    width: 200px;
+    position: absolute;
+    right: 7px;
+    top: -18px;
+}
+
+.narrow-filter {
+    display: block;
+    position: relative;
+}
+
+.message_header_stream a.message_label_clickable {
+    color: inherit;
+}
+
+li.actual-dropdown-menu i {
+    /* In gear menu, make icons the same width so labels line up. */
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+.message_area_padder {
+    /* The height of the header and the tabbar plus a small gap */
+    margin-top: 57px;
+    /* This is needed for the floating recipient bar
+       in Firefox only, for some reason;
+       otherwise it gets a scrollbar */
+    overflow: visible;
+}
+
+td.pointer {
+    vertical-align: top;
+    padding-top: 10px;
+    background-color: hsl(0, 0%, 100%);
+}
+
+.new_messages {
+    background-color: hsl(194, 53%, 79%);
+}
+
+.new_messages,
+.new_messages_fadeout {
+    @include prefixed-transition(all, 3s, ease-in-out);
+}
+
+.include-sender .message_edit_notice {
+    display: inline-block;
+    vertical-align: top;
+    line-height: 14px;
+    margin-left: 0px;
+    position: static;
+    padding: 0px;
+    width: auto;
+}
+
+.sender-status .message_edit_notice {
+    line-height: 18px;
+}
+
+.message_edit_notice {
+    font-size: 10px;
+    opacity: 0.5;
+    line-height: 0px;
+    text-align: right;
+    width: 45px;
+    position: absolute;
+    left: 0px;
+    top: 16px;
+    @include prefixed-user-select(none);
+}
+
+.include-sender .message_time {
+    top: -4px;
+}
+
+.message_time {
+    display: block;
+    font-size: 12px;
+    opacity: 0.4;
+    vertical-align: middle;
+    padding: 1px;
+    font-weight: 400;
+    position: absolute;
+    right: -105px;
+    line-height: 20px;
+    text-align: right;
+    @include prefixed-transition(background-color, 1.5s, ease-in, color 1.5s ease-in);
+}
+
+#message-edit-history .message_time {
+    position: static;
+}
+
+/* The way this overrides the menus with a background-color and a high
+   z-index is kinda hacky, and requires some annoying color-matching,
+   but it works. */
+.alert-msg {
+    position: absolute;
+    right: -110px;
+    font-size: 14px;
+    color: hsl(170, 48%, 54%);
+    background-color: hsl(0, 0%, 100%);
+    z-index: 999;
+    padding-left: 20px;
+    padding-right: 40px;
+    font-weight: 400;
+    display: none;
+}
+
+.private-message .alert-msg {
+    background-color: hsl(192, 20%, 95%);
+}
+
+.include-sender .alert-msg {
+    top: -3px;
+}
+
+.status-time {
+    top: 8px !important;
+}
+
+.message_controls {
+    display: inline-block;
+    position: absolute;
+    top: 2px;
+    right: -56px;
+    z-index: 1;
+}
+
+.message_controls > div {
+    opacity: 0;
+    pointer-events: none;
+
+    transition: all 0.2s ease;
+}
+
+.messagebox:hover .message_controls > div {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.message_controls > div {
+    padding: 0px 1px;
+}
+
+.include-sender .message_controls {
+    top: -3px;
+}
+
+.message_data {
+    vertical-align: top;
+    text-align: left;
+    padding: 0px;
+    background-color: hsl(0, 0%, 100%);
+    position: relative;
+}
+
+.message_header {
+    vertical-align: middle;
+    text-align: left;
+    /* We can overflow-y if the font size gets big */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    line-height: 14px;
+    position: relative;
+    z-index: 0;
+}
+
+.message_list .recipient_row {
+    border-bottom: 1px solid hsl(0, 0%, 88%);
+    margin-bottom: 10px;
+}
+
+.floating_recipient .recipient_row {
+    border-top: 1px solid hsl(0, 0%, 88%);
+}
+
+.stream_label {
+    display: inline-block;
+    padding: 4px 6px 3px 6px;
+    font-weight: normal;
+    height: 17px;
+    line-height: 17px;
+    border-top-color: hsla(0, 0%, 0%, 0.0);
+    border-right-color: hsla(0, 0%, 0%, 0.0);
+    border-bottom-color: hsla(0, 0%, 0%, 0.0);
+    background-color: hsl(0, 0%, 88%);
+    border-left-color: hsl(0, 0%, 88%);
+    border-width: 0px;
+    position: relative;
+    text-decoration: none;
+}
+
+.stream_label .invite-stream-icon {
+    font-size: 12px;
+    line-height: 17px;
+}
+
+.message_list .stream_label {
+    margin-left: 0px;
+}
+
+.stream_label:hover {
+    color: inherit !important;
+    text-decoration: none;
+}
+
+.stream_label::after {
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -11px;
+    border-style: solid;
+    border-width: 11px 0 11px 5px;
+    border-color: inherit;
+    z-index: 2;
+    -moz-transform: scale(.9999);
+}
+
+.stream_label::before {
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -14px;
+    border-style: solid;
+    border-width: 14px 0 14px 6px;
+    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) transparent;
+    z-index: 1;
+    -moz-transform: scale(.9999);
+}
+
+.stream_topic {
+    display: inline-block;
+    padding: 3px 3px 2px 12px;
+    margin-left: -5px;
+    height: 17px;
+    line-height: 17px;
+}
+
+.recipient_row_date {
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    color: hsl(0, 0%, 53%);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 11px 2px 10px;
+    height: 17px;
+    line-height: 17px;
+}
+
+.recipient_row_date.hide-date {
+    display: none;
+}
+
+/*
+   used to override .hide-date when floating_recipient_bar just begins to
+   overlap the top-most recipient_bar
+*/
+.recipient_row_date.temp-show-date {
+    display: block !important;
+}
+
+.floating_recipient .recipient_row_date.hide-date {
+    display: block;
+}
+
+.summary_row .message_header {
+    padding: 5px 0px 4px 5px;
+}
+
+.summary_row .message_header {
+    border-radius: 0;
+}
+
+.bookend_tr + .summary_row .message_header {
+    border-top-right-radius: 3px;
+}
+
+.bookend_tr + .summary_row .summary_colorblock {
+    border-top-left-radius: 3px;
+}
+
+.summary_row.last_message .message_header {
+    border-bottom-right-radius: 3px;
+    box-shadow:
+        inset 0px 2px 1px -2px hsl(0, 0%, 20%),
+        inset -2px 0px 1px -2px hsl(0, 0%, 20%),
+        inset 0px -2px 1px -2px hsl(0, 0%, 20%);
+}
+
+.summary_row.last_message .summary_colorblock {
+    border-bottom-left-radius: 3px;
+}
+
+.copy-paste-text {
+    /* Hide the text that we want copy paste to capture */
+    position: absolute;
+    text-indent: -99999px;
+    float: left;
+    width: 0px;
+}
+
+.summary_row_private_message .summary_colorblock {
+    background-color: hsl(0, 0%, 0%);
+}
+
+.messages-expand,
+.messages-collapse {
+    cursor: pointer;
+}
+
+/*
+   We can't collapse the floating recipient bar yet, so this is
+   just a temporary hack.
+*/
+.floating_recipient .messages-collapse {
+    display: none;
+}
+
+.message_failed .rotating {
+    display: inline-block;
+
+    -webkit-animation: rotate 1s infinite linear;
+    -moz-animation: rotate 1s infinite linear;
+    -ms-animation: rotate 1s infinite linear;
+    -o-animation: rotate 1s infinite linear;
+    animation: rotate 1s infinite linear;
+}
+
+@-webkit-keyframes rotate {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+
+    to {
+        -webkit-transform: rotate(359deg);
+    }
+}
+
+@-moz-keyframes rotate {
+    from {
+        -moz-transform: rotate(0deg);
+    }
+
+    to {
+        -moz-transform: rotate(359deg);
+    }
+}
+
+@-ms-keyframes rotate {
+    from {
+        -ms-transform: rotate(0deg);
+    }
+
+    to {
+        -ms-transform: rotate(359deg);
+    }
+}
+
+@-moz-keyframes rotate {
+    from {
+        -o-transform: rotate(0deg);
+    }
+
+    to {
+        -o-transform: rotate(359deg);
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+@-webkit-keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+@-moz-keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+@keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+.floating_recipient .message_header_private_message {
+    border-bottom: 0px;
+    border-left: 0px;
+}
+
+.message_header_private_message .message_label_clickable {
+    background-color: hsl(0, 0%, 27%);
+    display: inline-block;
+    padding: 3px 6px 2px 6px;
+    font-weight: normal;
+    font-size: 14px;
+    height: 17px;
+    line-height: 17px;
+    border-left-color: hsl(0, 0%, 27%);
+}
+
+/* Base color backgrounds for messageboxes,
+   private messages, mentions, and unread messages */
+
+.messagebox {
+    position: relative;
+}
+
+.private-message .messagebox,
+.message_header_private_message .message-header-contents {
+    background-color: hsla(192, 19%, 75%, 0.2);
+    box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
+}
+
+.message-header-contents {
+    border-right: 1px solid hsl(0, 0%, 88%);
+}
+
+.mention .messagebox {
+    background-color: hsl(8, 94%, 94%);
+}
+
+.messagebox .message_top_line {
+    position: relative;
+}
+
+.recipient_row .message_row:first-child .unread_marker {
+    top: 0px;
+}
+
+.unread_marker {
+    display: block;
+    position: absolute;
+    left: 2px;
+    top: 0px;
+    padding-bottom: 2px;
+    opacity: 0;
+    z-index: 1;
+    height: 100%;
+    @include prefixed-transition(all, 0.3s, ease-out);
+}
+
+.unread-marker-fill {
+    background-color: hsl(107, 74%, 29%);
+    width: 3px;
+    height: 100%;
+    box-shadow: inset 0px -1px 0px 0px hsl(0, 0%, 100%);
+}
+
+.last_message .unread-marker-fill {
+    box-shadow: none;
+}
+
+.unread .unread_marker {
+    @include prefixed-transition(all, 0.3s, ease-out);
+    opacity: 1;
+}
+
+.unread_marker.slow_fade {
+    @include prefixed-transition(all, 2s, ease-out);
+}
+
+.unread_marker.fast_fade {
+    @include prefixed-transition(all, 0.3s, ease-out);
+}
+
+.selected_message .messagebox {
+    z-index: 1;
+}
+
+.selected_message .messagebox-content {
+    box-shadow:
+        inset 0px 0px 0px 2px hsl(215, 47%, 50%),
+        -1px -1px 0px 0px hsl(215, 47%, 50%),
+        1px 1px 0px 0px hsl(215, 47%, 50%),
+        -1px 1px 0px 0px hsl(215, 47%, 50%),
+        1px -1px 0px 0px hsl(215, 47%, 50%);
+}
+
+.message_sender {
+    height: 0px;
+    vertical-align: top;
+    position: relative;
+}
+
+.sender_name {
+    display: inline-block;
+    font-weight: 700;
+    vertical-align: top;
+    line-height: 12px;
+    font-size: 14px;
+    margin-left: -3px;
+}
+
+.sender-status {
+    display: inline-block;
+    margin: 8px 0px 8px -3px;
+    /* this normalizes the margin of the emoji reactions with normal messages. */
+    padding-bottom: 5px;
+    vertical-align: middle;
+    line-height: 18px;
+    font-size: 14px;
+    position: relative;
+    max-width: calc(100% - 50px);
+}
+
+.message_controls.sender-status-controls {
+    top: 10px;
+}
+
+.sender_name-in-status {
+    margin-right: 3px;
+    font-weight: 700;
+}
+
+.sender_name_hovered .sender_name,
+.sender_name_hovered .sender_name-in-status {
+    color: hsl(200, 100%, 40%);
+}
+
+.message_sender i.zulip-icon.bot,
+.popover_info i.zulip-icon.bot {
+    color: hsl(180, 5%, 74%);
+    vertical-align: top;
+    padding: 0 2px;
+}
+
+.message_sender i.zulip-icon.bot {
+    font-size: 12px;
+}
+
+.popover_info i.zulip-icon.bot {
+    margin-top: 3px;
+}
+
+.actions_hover:hover {
+    color: hsl(200, 100%, 40%);
+}
+
+.message_failed,
+.message_local {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.message_failed {
+    font-weight: bold;
+    color: hsl(0, 100%, 50%);
+    position: relative;
+}
+
+a.message_label_clickable:hover {
+    cursor: pointer;
+    color: hsl(200, 100%, 40%);
+}
+
+.on_hover_topic_edit {
+    opacity: .1;
+}
+
+.always_visible_topic_edit {
+    opacity: .7;
+}
+
+.on_hover_topic_edit:hover,
+.always_visible_topic_edit:hover {
+    cursor: pointer;
+    opacity: 1.0;
+}
+
+.on_hover_topic_mute {
+    padding-left: 3px;
+    opacity: .1;
+}
+
+.on_hover_topic_mute:hover {
+    cursor: pointer;
+    opacity: 1.0;
+}
+
+.edit_content {
+    width: 12px;
+    display: inline-block;
+    position: relative;
+    color: hsl(0, 0%, 73%);
+}
+
+.edit_content:hover {
+    cursor: pointer;
+    color: hsl(200, 100%, 40%);
+}
+
+.message_controls > .reaction_button {
+    display: inline-block;
+    position: relative;
+    color: hsl(0, 0%, 73%);
+}
+
+.message_controls > .reaction_button:hover {
+    color: hsl(200, 100%, 40%);
+}
+
+.message_hovered .info,
+.has_actions_popover .info,
+.message_hovered .empty-star {
+    opacity: 1;
+}
+
+/* Brighten text because of the dark background */
+.dark_background a,
+.dark_background a:hover,
+a.dark_background:hover,
+.dark_background {
+    color: hsl(0, 0%, 100%) !important;
+}
+
+.dark_background a.message_label_clickable:hover {
+    color: hsl(200, 99%, 60%);
+}
+
+.message_top_line {
+    pointer-events: none;
+    position: relative;
+}
+
+.message_top_line * {
+    pointer-events: auto;
+}
+
+.include-sender .message_top_line {
+    margin-top: 6px;
+}
+
+.small {
+    font-size: 80%;
+}
+
+.tiny {
+    font-size: 60%;
+}
+
+.actions_hovered .message_time,
+.actions_hovered .info {
+    color: hsl(200, 100%, 40%);
+    cursor: pointer;
+}
+
+.info {
+    display: inline-block;
+    position: relative;
+    font-size: 15px;
+    color: hsl(0, 0%, 73%);
+}
+
+.actions_hovered .actions_link {
+    text-decoration: underline;
+}
+
+div.message_table {
+    border-collapse: separate;
+    margin-left: auto;
+    display: none;
+    width: 100%;
+}
+
+.message_row {
+    position: relative;
+    border-left: 1px solid hsla(0, 0%, 0%, 0.10);
+    border-right: 1px solid hsla(0, 0%, 0%, 0.10);
+}
+
+.message_row.selected_message {
+    z-index: 2;
+}
+
+div.focused_table {
+    display: block;
+}
+
+.include-sender .message_content:not(:empty) {
+    margin-top: -16px;
+}
+
+.message_content {
+    line-height: 17px;
+    min-height: 17px;
+    font-size: 14px;
+    margin-left: 46px;
+    display: block;
+    position: relative;
+}
+
+.rtl {
+    direction: rtl;
+}
+
+.message_content:empty {
+    display: none;
+}
+
+.message_edit_content {
+    line-height: 18px;
+    resize: vertical !important;
+    max-height: 24em;
+}
+
+.message_edit_countdown_timer {
+    text-align: right;
+    display: inline;
+    color: hsl(0, 0%, 63%);
+}
+
+.message_edit_tooltip {
+    display: inline;
+    color: hsl(0, 0%, 63%);
+}
+
+.message-edit-timer-control-group {
+    float: right;
+    display: none;
+    margin-top: 5px;
+}
+
+.message-edit-feature-group {
+    display: inline-block;
+    margin-bottom: -5px;
+}
+
+.topic_edit {
+    display: none;
+    line-height: 22px;
+}
+
+#inline_topic_edit,
+#message_edit_topic {
+    margin-bottom: 5px;
+}
+
+#inline_topic_edit.header-v {
+    height: 18px;
+    display: inline-block;
+    padding: 0px 3px;
+    vertical-align: baseline;
+
+    line-height: 0px;
+    font-size: 14px;
+
+    box-shadow: none;
+}
+
+#inline_topic_edit:focus,
+#message_edit_topic:focus {
+    outline: none;
+}
+
+.message_edit_topic_propagate {
+    display: inline-block;
+    width: 300px;
+    margin-bottom: 5px !important;
+    max-width: 100%;
+}
+
+#message-edit-history .message_author {
+    position: relative;
+}
+
+#message-edit-history .author_details {
+    display: block;
+    font-size: 12px;
+    padding: 1px;
+    text-align: right;
+}
+
+.message_content.condensed {
+    max-height: 8.5em;
+    min-height: 0em;
+    overflow: hidden;
+}
+
+.message_content.collapsed {
+    max-height: 0em;
+    min-height: 0em;
+    overflow: hidden;
+}
+
+.message_length_controller {
+    display: none;
+    text-align: center;
+    color: hsl(200, 100%, 40%);
+
+    /* to match .message_content */
+    margin-left: 5px;
+    margin-right: 35px;
+    /* to make message-uncollapse easier */
+    margin-top: 10px;
+}
+
+.message_length_controller:hover {
+    text-decoration: underline;
+}
+
+div.message_content table {
+    padding-right: 10px;
+    margin: 5px 5px 5px 5px;
+    width: 99%;
+}
+
+div.message_content thead {
+    background-color: hsl(0, 0%, 93%);
+}
+
+div.message_content tr {
+    display: table-row;
+    vertical-align: inherit;
+}
+
+div.message_content tr th {
+    border: 1px solid hsl(0, 0%, 80%);
+    padding: 4px;
+    text-align: left;
+}
+
+div.message_content tr td {
+    border: 1px solid hsl(0, 0%, 80%);
+    padding: 4px;
+}
+
+blockquote {
+    margin-bottom: 6px;
+}
+
+blockquote p {
+    line-height: inherit;
+    font-size: inherit;
+}
+
+.messagebox {
+    word-wrap: break-word;
+    cursor: pointer;
+    vertical-align: top;
+    border: none;
+}
+
+.messagebox-content {
+    padding: 4px 115px 1px 10px;
+}
+
+#message-edit-history .messagebox-content {
+    padding: 0px 10px;
+}
+
+.last_message .messagebox-content {
+    padding-bottom: 1px;
+}
+
+.messagebox p {
+    margin: 3px 0px 10px 0px;
+}
+
+.messagebox p:last-of-type {
+    margin-bottom: 3px;
+}
+
+.messagebox blockquote {
+    padding-left: 5px;
+    margin-left: 10px;
+    border-left-color: hsl(0, 0%, 87%);
+}
+
+.messagebox .rtl blockquote {
+    padding-left: unset;
+    padding-right: 5px;
+    margin-left: unset;
+    margin-right: 10px;
+    border-left: unset;
+    border-right: 5px solid hsl(0, 0%, 87%);
+}
+
+.bookend {
+    margin-top: 10px;
+    background-color: transparent;
+}
+
+.prev_is_same_sender.messagebox {
+    padding-top: 0px;
+}
+
+.prev_is_same_sender.message_data {
+    padding-top: 0px;
+}
+
+.next_is_same_sender {
+    border-bottom: 0px;
+    padding-bottom: 0px;
+}
+
+.inline_profile_picture {
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    margin-right: 11px;
+    vertical-align: top;
+    border-radius: 4px;
+    overflow: hidden;
+
+    &.guest-avatar::after {
+        outline: 2px solid hsl(0, 0%, 100%);
+    }
+}
+
+.home-error-bar {
+    margin-top: 5px;
+    display: none;
+}
+
+.streamname {
+    font-weight: bold;
+}
+
+.home-error-bar .alert {
+    margin-bottom: auto;
+}
+
+.brand.skinny-user-gravatar {
+    display: table-cell;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+    white-space: nowrap;
+}
+
+#tab_bar {
+    z-index: 2;
+    padding-top: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    float: left;
+    letter-spacing: normal;
+    height: 40px;
+}
+
+#tab_list {
+    list-style: none;
+    margin: 0px 0px 0px 0px;
+    height: 40px;
+    line-height: 40px;
+    font-size: 16px;
+    border: none;
+    white-space: nowrap;
+}
+
+#tab_list li {
+    white-space: nowrap;
+    list-style-type: none;
+    display: inline-block;
+    position: relative;
+    font-weight: 300;
+    background-color: hsl(0, 0%, 98%);
+    margin: 0px;
+    padding: 0px;
+    text-overflow: ellipsis;
+    height: 40px;
+    padding: 0 5px;
+}
+
+#tab_list li.inactive {
+    background-color: hsl(0, 0%, 88%);
+    border-width: 0px;
+    margin-right: -4px;
+    font-size: 14px;
+}
+
+#tab_list li.private_message a {
+    color: hsl(0, 0%, 100%);
+}
+
+#tab_list li.inactive::before {
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+    -moz-transform: scale(.9999);
+}
+
+#tab_list a {
+    text-decoration: none;
+    color: inherit;
+    border-color: inherit;
+    width: 100%;
+    display: inline-block;
+    padding: 0px 5px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#tab_list li.active {
+    background-color: hsl(0, 0%, 88%);
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#tab_list li.active.root {
+    padding: 0px 10px;
+}
+
+#tab_list li.private_message {
+    border-top-color: hsla(0, 0%, 0%, 0.0);
+    border-right-color: hsla(0, 0%, 0%, 0.0);
+    border-bottom-color: hsla(0, 0%, 0%, 0.0);
+    background-color: hsl(0, 0%, 27%);
+    border-left-color: hsl(0, 0%, 27%);
+    color: hsl(0, 0%, 100%);
+    border-width: 0px;
+}
+
+#tab_list .root {
+    border-color: hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%);
+    margin: 0px;
+}
+
+#tab_list li.root a {
+    color: hsl(0, 0%, 52%);
+    padding-right: 2px;
+}
+
+#tab_list .root a:hover {
+    color: hsl(0, 0%, 0%);
+}
+
+#tab_bar_underpadding {
+    position: absolute;
+    width: 100%;
+    top: 40px;
+    height: 10px;
+    z-index: 99;
+}
+
+#navbar-buttons {
+    white-space: nowrap;
+    margin-left: 15px;
+    margin-top: 7px;
+    display: inline-block;
+    float: right;
+}
+
+#navbar-buttons ul.nav {
+    margin: 0px;
+}
+
+#streamlist-toggle {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    text-align: center;
+    vertical-align: middle;
+    border-right: 2px solid hsl(204, 20%, 74%);
+}
+
+#streamlist-toggle-button {
+    text-decoration: none;
+    color: hsl(0, 0%, 52%);
+    display: block;
+    position: relative;
+    background-color: hsl(0, 0%, 89%);
+    width: 40px;
+    height: 19px;
+    padding-top: 12px;
+    padding-bottom: 9px;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    position: absolute;
+    display: none;
+    height: 12px;
+    min-width: 12px;
+    line-height: 12px;
+    background-color: hsl(0, 100%, 20%);
+    top: 4px;
+    right: 4px;
+    border: 1px solid hsl(0, 0%, 93%);
+    box-shadow: 0px 0px 1px hsla(0, 0%, 0%, 0.2);
+    border-radius: 12px;
+    padding: 1px 1px 1px 1px;
+    font-size: 9px;
+    z-index: 15;
+    font-weight: normal;
+    color: hsl(0, 0%, 100%);
+}
+
+.nav .dropdown-menu {
+    left: auto;
+    right: 0px;
+    top: 30px;
+    min-width: 180px;
+    -webkit-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+    -moz-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+}
+
+.nav .dropdown-menu a,
+.typeahead.dropdown-menu a {
+    color: inherit;
+}
+
+.typeahead.dropdown-menu .active {
+    color: hsl(0, 0%, 100%);
+}
+
+.typeahead.dropdown-menu .unsubscribed_icon {
+    display: none;
+}
+
+.typeahead.dropdown-menu .active .unsubscribed_icon {
+    display: block;
+    float: right;
+    margin-top: 5px;
+    margin-right: -12px;
+    font-size: 0.8em;
+    color: hsl(96, 7%, 73%);
+}
+
+.typeahead-image {
+    display: inline-block;
+    height: 21px;
+    width: 21px;
+    position: relative;
+    margin-top: -7px;
+    vertical-align: middle;
+    top: 2px;
+    right: 8px;
+    border-radius: 4px;
+
+    /* For FontAwesome icons used in place of images for some users. */
+    font-size: 19px;
+    text-align: center;
+}
+
+.nav .dropdown-menu::after {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    top: -7px;
+    right: 10px;
+    display: inline-block;
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid hsl(0, 0%, 67%);
+    border-left: 7px solid transparent;
+    content: '';
+    z-index: 10;
+}
+
+#navbar-buttons ul.nav {
+    .dropdown-toggle,
+    li.active .dropdown-toggle {
+        font-size: 20px;
+        color: inherit;
+        opacity: 0.5;
+        text-shadow: none;
+        padding-left: 0px !important;
+        background-color: inherit;
+        box-shadow: inherit;
+        -webkit-box-shadow: inherit;
+        -moz-box-shadow: inherit;
+        display: block;
+        position: absolute;
+        right: 0px;
+        top: 3px;
+    }
+
+    .dropdown-toggle,
+    li.active .dropdown-toggle:hover {
+        opacity: 1;
+    }
+
+    li.dropdown.open .dropdown-toggle {
+        background: none;
+        opacity: 1;
+        text-shadow: none;
+    }
+}
+
+nav .column-left {
+    text-align: center;
+}
+
+nav a.no-style:hover {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+nav .column-left .nav-logo {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 8px;
+    height: 25px;
+    max-width: 200px;
+}
+
+nav .column-left .company-name {
+    display: inline-block;
+    vertical-align: top;
+    text-transform: uppercase;
+    margin-top: 12px;
+    margin-left: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: hsl(170, 48%, 54%);
+    letter-spacing: 0.1em;
+    cursor: pointer;
+}
+
+nav a .no-style {
+    text-decoration: none;
+}
+
+.modal-bg {
+    background-color: hsl(0, 0%, 98%);
+}
+
+#searchbox {
+    display: flex;
+    width: 100%;
+    height: 40px;
+    border-left: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(0, 0%, 88%);
+
+    .navbar-search {
+        margin-top: 0px;
+        width: calc(100% - 66px);
+        float: none;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .input-append {
+        height: 100%;
+        align-items: center;
+        display: flex;
+        flex-wrap: nowrap;
+        position: relative;
+        width: calc(100% - 28px);
+    }
+
+    #search_query {
+        width: 100%;
+        font-size: 16px;
+        height: 40px;
+        padding: 0px;
+        padding-left: 5px;
+        padding-right: 20px;
+        border: none;
+        border-radius: 0px;
+        font-family: 'Source Sans Pro';
+        font-weight: 300;
+        line-height: 40px;
+    }
+
+    .search_button,
+    .search_button[disabled]:hover {
+        position: relative;
+        background: none;
+        height: 40px;
+        padding: 4px;
+        color: hsl(0, 0%, 80%);
+        font-size: 18px;
+        box-shadow: none;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        text-shadow: none;
+        z-index: 5;
+        float: right;
+    }
+
+    .search_button:hover {
+        color: hsl(0, 0%, 0%);
+    }
+
+    .search_button[disabled] {
+        visibility: hidden;
+    }
+
+    a.search_icon {
+        display: table;
+        height: 100%;
+        color: hsl(0, 0%, 80%);
+        text-decoration: none;
+        padding: 0 10px;
+        font-size: 20px;
+        z-index: 5;
+        float: left;
+
+        i {
+            display: table-cell;
+            vertical-align: middle;
+        }
+    }
+
+    a.search_icon:hover {
+        color: hsl(0, 0%, 0%);
+        text-decoration: none;
+    }
+
+    #search_arrows {
+        font-size: 90%;
+        letter-spacing: normal;
+        border: none;
+        background-color: inherit;
+    }
+
+    @media (min-width: 500px) {
+        .pill {
+            padding: 2px 0px 2px 0px !important;
+            font-size: 14px;
+        }
+    }
+    @media (max-width: 500px) {
+        #search_arrows .pill {
+            line-height: 20px;
+
+            .exit {
+                top: 0;
+            }
+        }
+    }
+}
+
+#searchbox_legacy {
+    width: 100%;
+    height: 40px;
+
+    .navbar-search {
+        margin-top: 0px;
+        width: auto;
+        float: none;
+        overflow: hidden;
+        height: 40px;
+    }
+
+    .input-append {
+        position: relative;
+        width: 100%;
+
+        .fa-search {
+            padding: 0px;
+            font-size: 20px;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 5;
+        }
+    }
+
+    #search_query {
+        width: 100%;
+        font-size: 16px;
+        height: 40px;
+        padding: 0px;
+        padding-left: 35px;
+        padding-right: 20px;
+        border: none;
+        border-radius: 0px;
+        font-family: 'Source Sans Pro';
+        font-weight: 300;
+        line-height: 27px;
+    }
+
+    #search_query:focus {
+        box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
+    }
+
+    .search_button,
+    .search_button[disabled]:hover {
+        position: absolute;
+        right: 2px;
+        top: 6px;
+        background: none;
+        border-radius: 0px;
+        border: none;
+        height: 30px;
+        text-align: center;
+        padding: 4px;
+        color: hsl(0, 0%, 80%);
+        font-size: 18px;
+        box-shadow: none;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        text-shadow: none;
+        z-index: 5;
+    }
+
+    .search_button:hover {
+        color: hsl(0, 0%, 0%);
+    }
+
+    .search_button[disabled] {
+        visibility: hidden;
+    }
+
+    a.search_icon {
+        color: hsl(0, 0%, 80%);
+        text-decoration: none;
+        display: block;
+        width: 1px;
+        height: 1px;
+    }
+
+    a.search_icon:hover {
+        color: hsl(0, 0%, 0%);
+        text-decoration: none;
+    }
+
+    #search_arrows {
+        /* Bootstrap wants font-size: 0 to eliminate space between
+       the buttons.  We need to inherit the font size, so we
+       remove the button gap by adjusting "letter" spacing. */
+        font-size: 90%;
+        letter-spacing: -.3em;
+    }
+
+    #search_arrows input {
+        /* Chrome and Firefox do this already via default browser stylesheet;
+       but Opera needs this to avoid smushed letters in the search box. */
+        letter-spacing: normal;
+    }
+}
+
+div.floating_recipient {
+    border-collapse: separate;
+    width: 100%;
+    position: relative;
+}
+
+#floating_recipient_bar {
+    top: 50px;
+}
+
+.message-header-contents {
+    background-color: hsl(0, 0%, 88%);
+}
+
+.recipient_row.sticky {
+    margin-top: 22px;
+}
+
+.sticky .message_header {
+    position: fixed;
+    z-index: 99;
+    top: 50px;
+    width: 100%;
+    left: 0px;
+}
+
+.sticky .message-header-wrapper {
+    max-width: 1400px;
+    margin: auto;
+}
+
+.sticky .message-header-contents {
+    margin-left: 250px;
+    margin-right: 251px;
+}
+
+#bottom_whitespace {
+    display: block;
+    height: 300px;
+}
+
+.loading_indicator_spinner {
+    /* If you change these, make sure to adjust the constants in
+       loading.make_indicator as well */
+    height: 38px;
+    width: 38px;
+    float: left;
+}
+
+.loading_indicator_text {
+    /* If you change these, make sure to adjust the constants in
+       loading.make_indicator as well */
+    margin-left: 5px;
+    font-size: 1.2em;
+    font-weight: 300;
+    line-height: 38px;
+}
+
+.settings-section #admin_page_users_loading_indicator,
+.settings-section #attachments_loading_indicator,
+.settings-section #admin_page_deactivated_users_loading_indicator,
+.settings-section #admin_page_bots_loading_indicator {
+    margin: 0 auto;
+}
+
+.settings-section .loading_indicator_text {
+    font-size: 12px;
+    font-weight: 400;
+    vertical-align: middle;
+    line-height: 20px;
+    display: inline-block;
+    float: none;
+    margin-top: 9px;
+}
+
+.settings-section .loading_indicator_spinner {
+    width: 30%;
+    height: 30px;
+    margin-top: 7px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.settings-section .realm-icon-section .loading_indicator_text,
+.settings-section .realm-logo-section .loading_indicator_text {
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    line-height: 20px;
+    display: inline-block;
+    float: none;
+    margin-top: 0px;
+    margin-left: -12px;
+}
+
+.settings-section .realm-logo-section .loading_indicator_spinner,
+.settings-section .realm-icon-section .loading_indicator_spinner {
+    width: 10%;
+    height: 16px;
+    margin-top: 2px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.settings-section #default_language {
+    text-decoration: none;
+}
+
+.settings-section #default_language_modal table {
+    width: 90%;
+    margin-top: 20px;
+}
+
+.settings-section #default_language_modal td {
+    padding-left: 80px;
+}
+
+.settings-section .inline {
+    display: inline !important;
+}
+
+.twitter-image,
+.message_inline_image {
+    position: relative;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    height: 100px;
+    display: block !important;
+    border: none !important;
+}
+
+.rtl .twitter-image,
+.rtl .message_inline_image {
+    margin-left: unset;
+    margin-right: 5px;
+}
+
+.highlight {
+    background-color: hsl(51, 94%, 74%);
+}
+
+.highlight_text_inserted {
+    color: hsl(122, 72%, 30%);
+    background-color: hsl(120, 64%, 95%);
+}
+
+.highlight_text_deleted {
+    color: hsl(0, 0%, 73%);
+    text-decoration: line-through;
+    background-color: hsl(7, 90%, 92%);
+    word-break: break-all;
+}
+
+#message-edit-history .message_inline_image {
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    margin: 0px;
+}
+
+.message_inline_ref {
+    margin-bottom: 5px;
+    margin-left: 5px;
+    height: 50px;
+    display: block !important;
+    border: none !important;
+}
+
+.rtl .message_inline_ref {
+    margin-left: unset;
+    margin-right: 5px;
+}
+
+.twitter-image img,
+.message_inline_image img,
+.message_inline_ref img {
+    height: auto;
+    max-height: 100%;
+    float: left;
+    margin-right: 10px;
+}
+
+.message_inline_image img {
+    cursor: zoom-in;
+}
+
+.youtube-video img,
+.vimeo-video img {
+    cursor: pointer;
+}
+
+.rtl .twitter-image img,
+.rtl .message_inline_image img,
+.rtl .message_inline_ref img {
+    float: right;
+    margin-right: unset;
+    margin-left: 10px;
+}
+
+#message-edit-history .message_inline_image img {
+    max-height: 100px;
+}
+
+li .message_inline_image img {
+    float: none;
+}
+
+.youtube-video .fa-play::before {
+    position: absolute;
+    margin: 32px 0 0 45px;
+    padding: 5px 8px 5px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    background-color: hsl(0, 0%, 0%);
+    color: hsl(0, 0%, 100%);
+    opacity: 0.7;
+}
+
+.message_inline_image_title {
+    font-weight: bold;
+}
+
+.katex-html {
+    line-height: initial;
+    white-space: initial;
+}
+
+.katex-display .katex-html {
+    line-height: 3em;
+}
+
+.katex-display {
+    margin: 0em 0;
+}
+
+.tex-error {
+    color: hsl(0, 0%, 50%);
+}
+
+.operator_value {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    color: hsl(353, 70%, 65%);
+}
+
+.operator {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+#loading_more_messages_indicator {
+    margin: 10px;
+}
+
+#loading_more_messages_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#loading_more_messages_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -43px;
+    z-index: 1;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+
+#page_loading_indicator {
+    margin: 10px auto;
+}
+
+#page_loading_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#page_loading_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -43px;
+    z-index: 1;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+
+.table-striped thead th {
+    background-color: hsl(0, 0%, 27%);
+    color: hsl(0, 0%, 100%);
+}
+
+.help-table {
+    table-layout: fixed;
+}
+
+.conversation-partners {
+    display: inline-block;
+    line-height: 1.2;
+    width: 90%;
+    overflow: hidden;
+}
+
+#user-checkboxes {
+    margin-top: 10px;
+}
+
+#user-checkboxes .checkbox {
+    display: block;
+}
+
+#user-checkboxes .checkbox input[type=checkbox] {
+    margin: 5px 0px;
+    float: none;
+}
+
+#stream-checkboxes {
+    margin-top: 10px;
+    display: none;
+}
+
+#stream-checkboxes .checkbox {
+    display: block;
+}
+
+#stream-checkboxes .checkbox input[type=checkbox] {
+    margin: 5px 0px;
+    float: none;
+}
+
+#copy-from-stream-expand-collapse {
+    cursor: pointer;
+}
+
+.sub_button_row {
+    text-align: center;
+}
+
+button.primary {
+    background-color: hsl(207, 21%, 62%);
+    padding: 2px;
+    color: hsl(0, 0%, 100%);
+    border: none;
+    border-radius: 0px;
+}
+
+button.primary:hover {
+    background-color: hsl(207, 25%, 65%);
+}
+
+button.primary:focus {
+    outline: none;
+}
+
+button.topic_edit_save,
+button.topic_edit_cancel {
+    font-size: 12px;
+    width: 18px;
+    height: 18px;
+    vertical-align: baseline;
+    border-radius: 4px;
+}
+
+div.topic_edit_spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-top: -1px;
+    padding: 2px;
+    vertical-align: middle;
+}
+
+div.topic_edit_spinner .loading_indicator_spinner {
+    width: 14px;
+    height: 14px;
+}
+
+.modal {
+    overflow: hidden;
+    margin-top: 0;
+    top: 5%;
+    /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
+       so avoid the outline it causes */
+    outline: 0;
+}
+
+.modal-body {
+    max-height: 60vh;
+}
+
+.modal form {
+    margin-bottom: 0px;
+}
+
+#invite-user {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#invite-user .modal-header {
+    padding: 7px 15px;
+    border-color: hsl(0, 0%, 87%);
+}
+
+#invite-user .modal-header .exit {
+    font-size: 1.5rem;
+    font-weight: 600;
+    background-color: transparent;
+    border: none;
+    position: absolute;
+    top: 6px;
+    right: 5px;
+    color: hsl(0, 0%, 67%);
+}
+
+#invitee_emails {
+    min-height: 40px;
+    max-height: 300px;
+}
+
+#invite-user .overlay-content {
+    position: relative;
+    width: 500px;
+    border-radius: 4px;
+}
+
+#invite-user .modal-body {
+    margin-bottom: 58px;
+    position: relative;
+}
+
+#invite-user .modal-footer {
+    position: absolute;
+    bottom: 0px;
+    width: calc(100% - 30px);
+}
+
+#invite_status {
+    display: none;
+}
+
+#invite-user #invite-user-label {
+    font-size: 1em;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+#invite-user .invite-stream-controls {
+    margin-top: 5px;
+}
+
+.settings-dropdown-caret {
+    margin-left: 8px;
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+#notifications-area {
+    position: fixed;
+    z-index: 10;
+    bottom: 0px;
+    right: 20px;
+    width: 200px;
+    height: auto;
+}
+
+.notifications-gravatar img {
+    max-width: 25px;
+    max-height: 25px;
+    padding-left: 4px;
+    padding-top: 4px;
+}
+
+.empty_feed_notice {
+    padding: 3em 1em;
+    display: none;
+    text-align: center;
+}
+
+.notification {
+    cursor: pointer;
+}
+
+.message-fade,
+.user_sidebar_entry.user-fade {
+    opacity: 0.4;
+}
+
+.emoji {
+    height: 25px;
+    width: 25px;
+    position: relative;
+    margin-top: -7px;
+    vertical-align: middle;
+    top: 3px;
+}
+
+.twitter-tweet {
+    border: 1px solid hsl(0, 0%, 87%);
+    padding: .5em .75em;
+    margin-bottom: 0.25em;
+    word-break: break-word;
+    min-height: 48px;
+}
+
+.twitter-avatar {
+    float: left;
+    width: 48px;
+    height: 48px;
+    margin-right: .75em;
+}
+
+.star {
+    display: inline-block;
+    font-size: 14px;
+}
+
+.star:not(.empty-star) {
+    opacity: 1 !important;
+    pointer-events: all !important;
+    color: hsl(106, 77%, 29%);
+}
+
+.messagebox:hover .message_controls .empty-star {
+    opacity: 0.4;
+}
+
+.messagebox:hover .message_controls .empty-star:hover {
+    cursor: pointer;
+    opacity: 1;
+}
+
+.star:hover {
+    cursor: pointer;
+    color: hsl(153, 80%, 25%);
+}
+
+/* FIXME: Combine this rule with the one in portico.css somehow? */
+#pw_strength {
+    width: 100%;
+    height: 10px;
+    margin-bottom: 0px;
+}
+
+/* Override padding-top on form labels when they label only text */
+.form-horizontal .label_for_text {
+    padding-top: 0;
+}
+
+#pw_change_controls {
+    display: none;
+}
+
+.sub-unsub-message,
+.date_row {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.date_row .date-direction {
+    display: inline-block;
+    padding-right: 5px;
+}
+
+.date_row .date-line {
+    display: inline-block;
+    vertical-align: middle;
+    width: 33%;
+    border-top: 1px solid hsl(0, 0%, 88%);
+    border-bottom: 1px solid hsl(0, 0%, 100%);
+    margin: 0px 5px 0px 5px;
+}
+
+.sub-unsub-message span,
+.date_row span {
+    display: block;
+    background: inherit;
+    padding: 4px;
+    overflow: hidden;
+    text-transform: uppercase;
+    font-size: 0.8em;
+    opacity: 0.5;
+}
+
+.sub-unsub-message span {
+    font-size: 1em;
+    text-transform: none;
+}
+
+.sub-unsub-message span::before,
+.sub-unsub-message span::after,
+.date_row span::before,
+.date_row span::after {
+    display: inline-block;
+    position: relative;
+    content: " ";
+    vertical-align: middle;
+    width: 50%;
+    height: 0px;
+    border-top: 1px solid hsl(0, 0%, 88%);
+    border-bottom: 1px solid hsl(0, 0%, 100%);
+}
+
+.sub-unsub-message span::before,
+.date_row span::before {
+    right: 0.5em;
+    margin-left: -50%;
+}
+
+.sub-unsub-message span::after,
+.date_row span::after {
+    left: 0.5em;
+    margin-right: -50%;
+}
+
+.include-sender .message_edit {
+    margin-top: -14px;
+}
+
+.message_edit {
+    display: none;
+    margin-top: 5px;
+    margin-left: 47px;
+}
+
+/* Reduce some of the heavy padding from Bootstrap. */
+#message_edit_form {
+    margin-bottom: 10px;
+    cursor: default;
+}
+
+#message_edit_form .edit-controls {
+    margin-left: 0px;
+    margin-top: 0px;
+}
+
+#message_edit_form textarea {
+    width: 100%;
+    min-width: 206px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+#message_edit_form .control-group.no-margin {
+    margin-bottom: 0px;
+}
+
+#message_edit_form a.message-control-button {
+    display: inline;
+    color: hsl(0, 0%, 47%);
+    text-decoration: none;
+    font-size: 12px;
+    width: 12px;
+    height: 14px;
+    text-align: center;
+    float: right;
+    padding-left: 5px;
+    padding-top: 3px;
+}
+
+#message_edit_form .action-buttons {
+    margin: 10px 0px;
+}
+
+#topic_edit_form {
+    display: inline-block;
+    margin: 0 0 0 0;
+    height: 22px;
+    padding-left: 20px;
+    padding-right: 3px;
+    line-height: 22px;
+    margin-left: -15px;
+}
+
+.message_body_gravatar {
+    width: 20px;
+    height: 20px;
+    margin: 2px 2px 2px 0px;
+    vertical-align: text-bottom;
+}
+
+.user-group-mention,
+.user-mention {
+    background-color: hsl(0, 0%, 93%);
+    border-radius: 3px;
+    padding: 0 0.2em;
+    box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
+    margin-right: 2px;
+    margin-left: 2px;
+    white-space: nowrap;
+    background: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsla(0, 0%, 0%, 0.1)), color-stop(100%, hsla(0, 0%, 0%, 0.0)));
+    background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    display: inline-block;
+    margin-bottom: 1px;
+}
+
+.user-mention-me {
+    background-color: hsl(112, 88%, 87%);
+}
+
+.alert-word {
+    background-color: hsla(102, 85%, 57%, 0.5);
+}
+
+#organization h1,
+#settings h1 {
+    font-size: 25px;
+    font-weight: 300;
+}
+
+#organization .organization-icon,
+#settings .settings-icon {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+#home {
+    margin-top: 41px;
+}
+
+.screen {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: hsl(0, 0%, 0%);
+    z-index: 20000;
+}
+
+.tutorial-done-button {
+    text-align: right;
+    margin-top: 9px;
+    margin-bottom: 8px;
+}
+
+.btn-skip {
+    position: relative;
+    left: -10px;
+    margin-right: 25px;
+}
+
+.deactivated_user .user_name,
+.deactivated_user .email {
+    text-decoration: line-through;
+}
+
+/* embed */
+.message_content .message_embed {
+    display: block;
+    position: relative;
+    margin: 5px 0px;
+    border: none;
+    border-left: 3px solid hsl(0, 0%, 93%);
+    height: 80px;
+    padding: 5px;
+    z-index: 1;
+
+    -moz-osx-font-smoothing: grayscale;
+    font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased;
+    text-shadow: rgba(0, 0, 0, .01) 0 0 1px;
+}
+
+.rtl.message_content .message_embed {
+    border-left: unset;
+    border-right: 3px solid hsl(0, 0%, 93%);
+}
+
+.message_content .message_embed > * {
+    display: inherit;
+    padding: 5px;
+    border: none;
+}
+
+.message_embed .message_embed_title {
+    padding-top: 0px;
+    /* to remove the spacing that the font has from the top of the container. */
+    margin-top: -5px;
+
+    font-size: 1.2em;
+    line-height: normal;
+}
+
+.message_embed .message_embed_description {
+    position: relative;
+    max-width: 500px;
+    margin-top: 3px;
+
+    /* to put it below the container gradient. */
+    z-index: -1;
+}
+
+.message_embed .message_embed_image {
+    display: inline-block;
+    width: 70px;
+    height: 70px;
+    background-size: cover;
+    background-position: center;
+}
+
+.message_embed .data-container {
+    position: relative;
+    padding: 0px 5px;
+    display: inline-block;
+    vertical-align: top;
+    max-width: calc(100% - 115px);
+    max-height: 80px;
+    overflow: hidden;
+}
+
+.message_embed .data-container div {
+    display: block;
+    border: none;
+}
+
+.message_embed .data-container::after {
+    content: " ";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+
+    background: linear-gradient(0deg, hsl(0, 0%, 100%), transparent 10%);
+}
+
+@media (max-width: 600px) {
+    .message_content .message_embed {
+        height: auto;
+    }
+
+    .message_embed .message_embed_image {
+        width: 100%;
+        height: 100px;
+    }
+
+    .message_embed .data-container {
+        display: block;
+        max-width: 100%;
+        margin-top: 10px;
+    }
+}
+
+.no-drag {
+    user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.user_popover_email {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: all 0.4s ease;
+
+    .tooltip_holder {
+        display: none;
+        position: absolute;
+        left: 50%;
+    }
+
+    i {
+        cursor: pointer;
+    }
+}
+
+.email_copied,
+.user_popover_email i:hover {
+    color: hsl(170, 48%, 54%);
+}
+
+.email_copied i {
+    display: none !important;
+}
+
+.display-tooltip {
+    display: block !important;
+}
+
+.email_tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: relative;
+    padding: 5px 8px;
+    left: -50%;
+    top: 10px;
+    border-radius: 6px;
+    background-color: hsl(0, 0%, 30%);
+    color: hsl(0, 0%, 100%);
+    transition: visibility 0.2s ease-out, opacity 0.2s linear;
+
+    ::after {
+        content: "";
+        position: absolute;
+        top: -47%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 7px;
+        border-style: solid;
+        border-color: transparent;
+        border-bottom: hsl(0, 0%, 30%) solid 7px;
+    }
+}
+
+.user_popover_email:hover .email_tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.user_popover_email i.hide_copy_icon {
+    display: none;
+}
+
+.hotkey-hint {
+    opacity: 0.75;
+}
+
+div.message_content table.tictactoe {
+    width: 80px;
+    margin-left: 0px;
+}
+
+div.message_content td.tictactoe {
+    width: 15px;
+    border: none;
+    padding: 2px;
+}
+
+div.message_content button.tictactoe-square {
+    background-color: hsl(156, 30%, 62%);
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 3px;
+    font-size: 25px;
+    color: hsl(0, 0%, 100%);
+}
+
+div.message_content button.tictactoe-square:hover {
+    background-color: hsl(155, 5%, 53%);
+}
+
+div.message_content button.tictactoe-square:disabled {
+    background-color: hsl(156, 33%, 81%);
+}
+
+// Hide the up and down arrows in the Flatpickr datepicker year
+.flatpickr-months .numInputWrapper span {
+    display: none;
+}

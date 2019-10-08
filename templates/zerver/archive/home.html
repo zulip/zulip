@@ -1,0 +1,18 @@
+<div class="message_area_padder message_list" id="main_div">
+{% if is_web_public and message_list %}
+<div class="message_table focused_table" id="zhome">
+    <span id="display_recipient">{{ stream }}-{{ topic }}</span>
+    {% for msg in message_list %}
+    {{ msg|safe }}
+    {% endfor %}
+</div>
+{% elif is_web_public %}
+<p>
+    This topic does not exist.
+</p>
+{% else %}
+<p>
+    This stream does not exist.
+</p>
+{% endif %}
+</div>

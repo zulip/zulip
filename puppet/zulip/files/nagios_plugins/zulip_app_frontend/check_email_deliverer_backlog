@@ -1,13 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -eu
 
 #"OK": 0
 #"WARNING": 1
 #"CRITICAL": 2
 #"UNKNOWN": 3
 
-cd /home/zulip/deployments/current
+# checks if the user is root, and if not, try to re-exec.
+if [ "$(id -u)" = "0" ]; then
+    su zulip -c "$0"
+    exit 0
+fi
 
-BACKLOG=$(./manage.py print_email_delivery_backlog)
+cd /home/zulip/deployments/current
+BACKLOG="$(./manage.py print_email_delivery_backlog)"
 
 if [ "$BACKLOG" -gt 0 ] && [ "$BACKLOG" -lt 10 ]
 then

@@ -1,0 +1,7 @@
+location /serve_uploads {
+    internal;
+    add_header X-Content-Type-Options nosniff;
+    add_header Content-Security-Policy "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'; object-src 'self'; plugin-types application/pdf;";
+    include /etc/nginx/zulip-include/uploads.types;
+    alias /home/zulip/uploads/files;
+}

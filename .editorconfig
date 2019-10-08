@@ -6,9 +6,15 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[*.{sh,py,js, json,yml,xml, css, md,markdown, handlebars,html}]
+[*.{sh,py,pyi,js,json,yml,xml,css,md,markdown,handlebars,html}]
 indent_style = space
 indent_size = 4
+
+[*.{py}]
+max_line_length = 110
+
+[*.{js}]
+max_line_length = 120
 
 [*.{svg,rb,pp,pl}]
 indent_style = space

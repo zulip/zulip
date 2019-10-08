@@ -1,0 +1,111 @@
+.informational-overlays .overlay-content {
+    /* because zoom breaks at 525px perhaps due to rounding errors, so add a
+       trivial amount of width so it doesn't break. */
+    width: 550px;
+    margin: 0 auto;
+    position: relative;
+    top: calc((30vh - 50px) / 2);
+    border-radius: 4px;
+    overflow: hidden;
+
+    background-color: hsl(0, 0%, 100%);
+}
+
+.informational-overlays .overlay-tabs {
+    padding: 10px 0px;
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+}
+
+.informational-overlays .overlay-tabs .tab-switcher {
+    margin-left: 15px;
+}
+
+.informational-overlays .overlay-tabs .exit {
+    float: right;
+    font-size: 1.5rem;
+    color: hsl(0, 0%, 67%);
+    font-weight: 600;
+    margin: 1px 15px;
+}
+
+.informational-overlays .overlay-modal {
+    padding-bottom: 10px;
+}
+
+.informational-overlays .overlay-modal .modal-body {
+    height: 70vh;
+    text-align: center;
+    outline: none;
+}
+
+.informational-overlays .overlay-modal .modal-header h3 {
+    font-weight: 300;
+}
+
+.informational-overlays .overlay-modal .modal-body th {
+    font-weight: 400;
+}
+
+.informational-overlays td.operator {
+    font-size: 0.9em;
+}
+
+.hotkeys_table {
+    width: 247px;
+    /* this is because some generic setting for striped tables in settings.css
+       overrides this. */
+    margin: 5px !important;
+    font-size: 90%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.hotkeys_table:not(.hotkeys_full_table) th {
+    width: 245px;
+}
+
+.hotkeys_table .hotkey {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    text-align: right;
+    font-weight: bold;
+    font-size: 90%;
+    white-space: nowrap;
+}
+
+.hotkeys_full_table {
+    display: table;
+    width: calc(100% - 11px) !important;
+}
+
+.hotkeys_full_table td.hotkey {
+    /* this is to keep the <td> for hotkey the same width as the two-col layout. */
+    width: 131px;
+}
+
+#keyboard-shortcuts table {
+    margin-bottom: 10px;
+}
+
+@media only screen and (max-width: 768px) {
+    .informational-overlays .overlay-content {
+        width: calc(100% - 20px);
+    }
+
+    .informational-overlays .tab-switcher.large .ind-tab {
+        width: 100%;
+    }
+
+    .informational-overlays .tab-switcher {
+        display: flex;
+    }
+
+    .informational-overlays .table.table-condensed.table-striped {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .informational-overlays .hotkeys_table {
+        width: 100%;
+        display: table;
+    }
+}

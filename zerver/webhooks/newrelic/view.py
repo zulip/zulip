@@ -1,23 +1,23 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
 from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
-from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    UnexpectedWebhookEventType
 from zerver.lib.validator import check_dict
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile, Stream, Client
-
+from zerver.models import Stream, UserProfile
 
 @api_key_only_webhook_view("NewRelic")
 @has_request_variables
-def api_newrelic_webhook(request, user_profile, client, stream=REQ(),
-                         alert=REQ(validator=check_dict([]), default=None),
-                         deployment=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, Client, Optional[Stream], Optional[Dict[str, Any]], Optional[Dict[str, Any]]) -> HttpResponse
+def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
+                         alert: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
+                         deployment: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
+                         )-> HttpResponse:
     if alert:
         # Use the message as the subject because it stays the same for
         # "opened", "acknowledged", and "closed" messages that should be
@@ -31,8 +31,7 @@ def api_newrelic_webhook(request, user_profile, client, stream=REQ(),
 
 %(changelog)s""" % (deployment)
     else:
-        return json_error(_("Unknown webhook request"))
+        raise UnexpectedWebhookEventType('New Relic', 'Unknown Event Type')
 
-    check_send_message(user_profile, client, "stream",
-                       [stream], subject, content)
+    check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

@@ -46,7 +46,7 @@ exports.last_visible = function () {
 };
 
 exports.id = function (message_row) {
-    return parseFloat(message_row.attr('zid'), 10);
+    return parseFloat(message_row.attr('zid'));
 };
 
 var valid_table_names = {
@@ -55,11 +55,20 @@ var valid_table_names = {
 };
 
 exports.get_table = function (table_name) {
-    if (! valid_table_names.hasOwnProperty(table_name)) {
+    if (!valid_table_names.hasOwnProperty(table_name)) {
         return $();
     }
 
     return $('#' + table_name);
+};
+
+exports.get_message_id = function (elem) {
+    // Gets the message_id for elem, where elem is a DOM
+    // element inside a message.  This is typically used
+    // in click handlers for things like the reaction button.
+    var row = $(elem).closest(".message_row");
+    var message_id = exports.id(row);
+    return message_id;
 };
 
 exports.get_closest_group = function (element) {
@@ -105,3 +114,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = rows;
 }
+window.rows = rows;

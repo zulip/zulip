@@ -1,6 +1,8 @@
 var typing_events = (function () {
 var exports = {};
 
+// See docs/subsystems/typing-indicators.md for details on typing indicators.
+
 // This code handles the inbound side of typing notifications.
 // When another user is typing, we process the events here.
 //
@@ -15,15 +17,20 @@ var TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
 // that make typing indicators work.
 
 function get_users_typing_for_narrow() {
-    if (!narrow.narrowed_to_pms()) {
+    if (!narrow_state.narrowed_to_pms()) {
         // Narrow is neither pm-with nor is: private
         return [];
     }
-    if (narrow.operators()[0].operator === 'pm-with') {
+
+    var first_term = narrow_state.operators()[0];
+    if (first_term.operator === 'pm-with') {
         // Get list of users typing in this conversation
-        var narrow_emails_string = narrow.operators()[0].operand;
+        var narrow_emails_string = first_term.operand;
         // TODO: Create people.emails_strings_to_user_ids.
-        var narrow_user_ids_string = people.emails_strings_to_user_ids_string(narrow_emails_string);
+        var narrow_user_ids_string = people.reply_to_to_user_ids_string(narrow_emails_string);
+        if (!narrow_user_ids_string) {
+            return [];
+        }
         var narrow_user_ids = narrow_user_ids_string.split(',').map(function (user_id_string) {
             return parseInt(user_id_string, 10);
         });
@@ -34,7 +41,7 @@ function get_users_typing_for_narrow() {
     return typing_data.get_all_typists();
 }
 
-function render_notifications_for_narrow() {
+exports.render_notifications_for_narrow = function () {
     var user_ids = get_users_typing_for_narrow();
     var users_typing = user_ids.map(people.get_person_from_user_id);
     if (users_typing.length === 0) {
@@ -43,7 +50,7 @@ function render_notifications_for_narrow() {
         $('#typing_notifications').html(templates.render('typing_notifications', {users: users_typing}));
         $('#typing_notifications').show();
     }
-}
+};
 
 exports.hide_notification = function (event) {
     var recipients = event.recipients.map(function (user) {
@@ -56,7 +63,7 @@ exports.hide_notification = function (event) {
     var removed = typing_data.remove_typist(recipients, event.sender.user_id);
 
     if (removed) {
-        render_notifications_for_narrow();
+        exports.render_notifications_for_narrow();
     }
 };
 
@@ -71,7 +78,7 @@ exports.display_notification = function (event) {
 
     typing_data.add_typist(recipients, sender_id);
 
-    render_notifications_for_narrow();
+    exports.render_notifications_for_narrow();
 
     typing_data.kickstart_inbound_timer(
         recipients,
@@ -81,14 +88,10 @@ exports.display_notification = function (event) {
         }
     );
 };
-
-$(document).on('narrow_activated.zulip', render_notifications_for_narrow);
-$(document).on('narrow_deactivated.zulip', render_notifications_for_narrow);
-
-
 return exports;
 }());
 
 if (typeof module !== 'undefined') {
     module.exports = typing_events;
 }
+window.typing_events = typing_events;

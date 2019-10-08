@@ -6,7 +6,7 @@ var ls = {
         try {
             return JSON.parse(str);
         } catch (err) {
-            return undefined;
+            return;
         }
     },
 
@@ -59,6 +59,18 @@ var ls = {
         var key = this.formGetter(version, name);
 
         localStorage.removeItem(key);
+    },
+
+    // Remove keys which match a regex.
+    removeDataRegex: function (version, regex) {
+        var key_regex = new RegExp(this.formGetter(version, regex));
+        var keys = Object.keys(localStorage).filter(function (key) {
+            return key_regex.test(key);
+        });
+
+        keys.forEach(function (key) {
+            localStorage.removeItem(key);
+        });
     },
 
     // migrate from an older version of a data src to a newer one with a
@@ -125,6 +137,11 @@ var exports = function () {
             ls.removeData(_data.VERSION, name);
         },
 
+        // Remove keys which match the pattern given by name.
+        removeRegex: function (name) {
+            ls.removeDataRegex(_data.VERSION, name);
+        },
+
         migrate: function (name, v1, v2, callback) {
             return ls.migrate(name, v1, v2, callback);
         },
@@ -165,3 +182,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = localstorage;
 }
+window.localstorage = localstorage;

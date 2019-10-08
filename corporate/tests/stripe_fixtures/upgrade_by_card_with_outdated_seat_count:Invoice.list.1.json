@@ -1,0 +1,97 @@
+{
+  "data": [
+    {
+      "amount_due": 120000,
+      "amount_paid": 0,
+      "amount_remaining": 120000,
+      "application_fee": null,
+      "attempt_count": 0,
+      "attempted": false,
+      "auto_advance": true,
+      "billing": "charge_automatically",
+      "billing_reason": "manual",
+      "charge": null,
+      "currency": "usd",
+      "customer": "cus_EAy6kkzDX4Fbrg",
+      "date": 1545114880,
+      "default_source": null,
+      "description": "",
+      "discount": null,
+      "due_date": 1547706881,
+      "ending_balance": 0,
+      "finalized_at": 1545114881,
+      "hosted_invoice_url": "https://pay.stripe.com/invoice/invst_1porn68AVPRdxT19RtTE3iEDQv",
+      "id": "in_1DicA8Gh0CmXqmnwX4YFyVkR",
+      "invoice_pdf": "https://pay.stripe.com/invoice/invst_1porn68AVPRdxT19RtTE3iEDQv/pdf",
+      "lines": {
+        "data": [
+          {
+            "amount": 184000,
+            "currency": "usd",
+            "description": "Zulip Standard",
+            "discountable": false,
+            "id": "ii_1DicA8Gh0CmXqmnwTGTKsCq2",
+            "invoice_item": "ii_1DicA8Gh0CmXqmnwTGTKsCq2",
+            "livemode": false,
+            "metadata": {},
+            "object": "line_item",
+            "period": {
+              "end": 1576650878,
+              "start": 1545114878
+            },
+            "plan": null,
+            "proration": false,
+            "quantity": 23,
+            "subscription": null,
+            "type": "invoiceitem"
+          },
+          {
+            "amount": -64000,
+            "currency": "usd",
+            "description": "Payment (Card ending in 4242)",
+            "discountable": false,
+            "id": "ii_1DicA7Gh0CmXqmnwjg3JpXff",
+            "invoice_item": "ii_1DicA7Gh0CmXqmnwjg3JpXff",
+            "livemode": false,
+            "metadata": {},
+            "object": "line_item",
+            "period": {
+              "end": 1545114879,
+              "start": 1545114879
+            },
+            "plan": null,
+            "proration": false,
+            "quantity": 1,
+            "subscription": null,
+            "type": "invoiceitem"
+          }
+        ],
+        "has_more": false,
+        "object": "list",
+        "total_count": 2,
+        "url": "/v1/invoices/in_1DicA8Gh0CmXqmnwX4YFyVkR/lines"
+      },
+      "livemode": false,
+      "metadata": {},
+      "next_payment_attempt": 1545118480,
+      "number": "52AE018-0001",
+      "object": "invoice",
+      "paid": false,
+      "period_end": 1545114880,
+      "period_start": 1545114880,
+      "receipt_number": null,
+      "starting_balance": 0,
+      "statement_descriptor": "Zulip Standard",
+      "status": "open",
+      "subscription": null,
+      "subtotal": 120000,
+      "tax": 0,
+      "tax_percent": null,
+      "total": 120000,
+      "webhooks_delivered_at": 1545114880
+    }
+  ],
+  "has_more": false,
+  "object": "list",
+  "url": "/v1/invoices"
+}

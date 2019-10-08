@@ -1,21 +1,14 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
-from typing import Any
 
 from argparse import ArgumentParser
-import sys
+from typing import Any
 
-from django.contrib.auth import authenticate, login, get_backends
-from django.core.management.base import BaseCommand
 from django.conf import settings
-
+from django.contrib.auth import get_backends
+from django.core.management.base import BaseCommand
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
-
 # Quick tool to test whether you're correctly authenticating to LDAP
-def query_ldap(**options):
-    # type: (**str) -> None
+def query_ldap(**options: str) -> None:
     email = options['email']
     for backend in get_backends():
         if isinstance(backend, LDAPBackend):
@@ -24,14 +17,18 @@ def query_ldap(**options):
                 print("No such user found")
             else:
                 for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
-                    print("%s: %s" % (django_field, ldap_attrs[ldap_field]))
+                    value = ldap_attrs[ldap_field]
+                    if django_field == "avatar":
+                        if isinstance(value[0], bytes):
+                            value = "(An avatar image file)"
+                    print("%s: %s" % (django_field, value))
+                if settings.LDAP_EMAIL_ATTR is not None:
+                    print("%s: %s" % ('email', ldap_attrs[settings.LDAP_EMAIL_ATTR]))
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('email', metavar='<email>', type=str,
                             help="email of user to query")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         query_ldap(**options)

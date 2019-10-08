@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2013 Zulip, Inc.
@@ -53,8 +53,8 @@ import sys
 
 import boto.utils
 import netifaces
-from six.moves import range
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Optional
 
 def address_of(device_id):
@@ -65,11 +65,14 @@ def address_of(device_id):
         return None
 
 def guess_gateway(device_id):
-    # type: (int) -> str
+    # type: (int) -> Optional[str]
     # This will not work if the default gateway isn't n.n.n.1.
-    address = address_of(device_id).split('.')
-    address[3] = '1'
-    return '.'.join(address)
+    address = address_of(device_id)
+    if address is None:
+        return None
+    gateway = address.split('.')
+    gateway[3] = '1'
+    return '.'.join(gateway)
 
 log = logging.getLogger('configure-cloud-interfaces')
 log.setLevel(logging.DEBUG)
@@ -78,7 +81,12 @@ log.addHandler(logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHa
 log.addHandler(logging.StreamHandler())
 log.info("Starting.")
 
-macs = boto.utils.get_instance_metadata()["network"]["interfaces"]["macs"] # type: ignore # boto.utils has no stubs
+metadata = boto.utils.get_instance_metadata()
+if metadata is None:
+    log.error("Could not get instance metadata!")
+    sys.exit(1)
+
+macs = metadata["network"]["interfaces"]["macs"]
 ids = [int(macdata['device-number']) for macdata in macs.values()]
 ifaces = [iface for iface in netifaces.interfaces() if ":" not in iface and iface != "lo"]
 
@@ -102,23 +110,31 @@ for device in macs.values():
         # HACK: It appears on Xenial device_number in the data set is 0 but in reality it is 3
         device_number += 3
 
-    if address_of(device_number) is None:
+    address = address_of(device_number)
+
+    if address is None:
         # If the device was not autoconfigured, do so now.
         log.info("Device ens%i not configured, starting dhcpd" % (device_number,))
         subprocess.check_call(['/sbin/dhcpcd', 'ens%i' % device_number])
 
+        dev_num = str(device_number)
+        address = address_of(device_number)
+        gateway = guess_gateway(device_number)
+        assert(address is not None)
+        assert(gateway is not None)
+
         # Horrible hack to route return packets on the correct interface
         # See http://unix.stackexchange.com/a/4421/933
         subprocess.check_call(
-            ['/sbin/ip', 'rule', 'add', 'fwmark', str(device_number), 'table', str(device_number)])
+            ['/sbin/ip', 'rule', 'add', 'fwmark', dev_num, 'table', dev_num])
         subprocess.check_call(
-            ['/sbin/ip', 'route', 'add', '0.0.0.0/0', 'table', str(device_number), 'dev',
-             'ens%i' % device_number, 'via', guess_gateway(device_number)])
+            ['/sbin/ip', 'route', 'add', '0.0.0.0/0', 'table', dev_num, 'dev',
+             'ens%i' % device_number, 'via', gateway])
         subprocess.check_call(
             ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
-             address_of(device_number), '-j', 'MARK', '--set-mark', str(device_number)])
+             address, '-j', 'MARK', '--set-mark', dev_num])
 
-    to_configure.remove(address_of(device_number))
+    to_configure.remove(address)
 
     for (count, ip) in enumerate(to_configure):
         # Configure the IP via a virtual interface

@@ -1,0 +1,11 @@
+{{#each comments}}
+<li>
+    <button class="poll-vote" data-key="{{ key }}">
+        {{ count }}
+    </button>
+    <span class="poll-option">{{ comment }}</span>
+    {{#if names}}
+    <span class="poll-names">({{ names }})</span>
+    {{/if}}
+</li>
+{{/each}}

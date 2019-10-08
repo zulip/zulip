@@ -1,0 +1,1101 @@
+#subs_page_loading_indicator {
+    margin: 10px auto;
+}
+
+.subscriber_list_loading_indicator {
+    margin: 10px auto;
+}
+
+.subscriber_list_loading_indicator:empty {
+    margin: 0;
+}
+
+.email_address_hint {
+    max-width: 430px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.subscription-email-hint-image {
+    float: right;
+    width: 80px;
+}
+
+.subscription_header.collapsed {
+    background-color: inherit;
+}
+
+.color_swatch {
+    display: inline-block;
+    height: 18px;
+    width: 18px;
+    padding: 0;
+    margin: 0 0 0 10px;
+    vertical-align: middle;
+}
+
+.subscriptions {
+    -webkit-font-smoothing: antialiased;
+}
+
+.subscriptions div #response {
+    overflow-wrap: break-word;
+}
+
+#subscriptions_table .subscription_block {
+    padding-left: 0.5em;
+    vertical-align: middle;
+}
+
+.subscription-info-container {
+    display: inline-block;
+    /* subtract out the width of the subscribe button and arrow. */
+    width: calc(100% - 260px);
+    /* to center the container vertically. */
+    margin-top: 13px;
+}
+
+.subscription-setting-icon {
+    vertical-align: top;
+    display: inline-block;
+}
+
+.subscription-info {
+    display: inline-block;
+    /* to provide space for the setting-icon. */
+    max-width: calc(100% - 31px);
+    margin-top: 1px;
+    overflow: hidden;
+    word-wrap: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.subscription-info .light {
+    font-weight: 300;
+}
+
+#add_new_subscription {
+    text-align: left;
+}
+
+.subscription_header {
+    min-height: 47px;
+}
+
+.subscription-name-row {
+    display: inline-block;
+}
+
+.subscription-name-row,
+.subscription-description-row {
+    vertical-align: top;
+}
+
+.subscription_header .subscription_lock {
+    font-size: 23px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 12px;
+    margin-right: 1px;
+}
+
+.subscription_settings .btn {
+    border-radius: 2px;
+}
+
+.subscription_settings ul {
+    list-style-type: none;
+}
+
+.stream-email {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    padding: 5px;
+    font-size: 0.9em;
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+}
+
+.subscription-control-label {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 18px;
+    padding: 5px;
+}
+
+.sp-preview {
+    width: 20px;
+    border: none;
+    box-shadow: 0px 0px 1px hsla(0, 0%, 0%, 1.0);
+}
+
+.sp-replacer {
+    margin-right: 12px;
+    border: none;
+    box-shadow: 0px 0px 2px hsla(0, 0%, 0%, 0.8);
+}
+
+.stream-email .email-address {
+    display: block;
+    margin: auto;
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+}
+
+.muted-sub {
+    color: hsl(0, 0%, 64%);
+}
+
+.mute-note {
+    font-size: 90%;
+    opacity: 0.5;
+}
+
+.hide-mute-note {
+    display: none;
+}
+
+.sub_setting_control {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.stream-row:hover .preview-stream {
+    display: inline-block;
+}
+
+.preview-stream {
+    display: none;
+    float: right;
+    padding: 3px 10px;
+    border: 1px solid hsl(0, 0%, 80%);
+    margin: 9px 10px 0px 0px;
+    color: hsl(0, 0%, 20%);
+}
+
+.preview-stream:hover {
+    color: hsl(0, 0%, 20%);
+    text-decoration: none;
+    background-color: hsl(0, 0%, 92%);
+    border: 1px solid hsl(0, 0%, 68%);
+}
+
+form#add_new_subscription {
+    margin: 0;
+}
+
+.create_stream_button {
+    margin: 0px 0px 0px 5px;
+
+    border: none;
+    outline: none;
+    background-color: transparent;
+
+    font-size: 2.2em;
+    font-weight: 300;
+    line-height: 1;
+    color: hsl(0, 0%, 67%);
+
+    display: inline-block;
+    transition: all 0.2s ease;
+    padding-bottom: 0px;
+    padding-top: 0px;
+}
+
+.create_stream_button:hover {
+    color: hsl(0, 0%, 27%);
+}
+
+#create_stream_description {
+    width: calc(100% - 15px);
+}
+
+.stream_creation_error {
+    display: none;
+    margin-left: 2px;
+    color: hsl(0, 100%, 50%);
+}
+
+.sub_settings_title {
+    line-height: 30px;
+    margin: 10px 0 0 0;
+    font-size: 16px;
+}
+
+.new-stream-name,
+.stream-rename-button {
+    margin-top: 10px;
+}
+
+.settings_committed {
+    margin: 10px;
+}
+
+.subscriber-list-box {
+    text-align: center;
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+}
+
+.subscriber_list_container {
+    position: relative;
+    max-height: 300px;
+    overflow: auto;
+    text-align: left;
+    -webkit-overflow-scrolling: touch;
+}
+
+.subscriber_list_container .form_inline input {
+    vertical-align: top;
+}
+
+.subscriber-list {
+    width: 100%;
+    margin: auto;
+    border-radius: 6px;
+}
+
+.subscriber-list tr {
+    border-bottom: 1px solid hsl(0, 0%, 93%);
+}
+
+.subscriber-list tr:last-of-type {
+    border-bottom: none;
+}
+
+.subscriber-list tr td {
+    padding: 4px 0px;
+}
+
+.subscriber-list tr td:first-of-type {
+    padding-left: 10px;
+}
+
+.subscriber-list tr td:last-of-type {
+    padding-right: 10px;
+}
+
+.subscriber-list tr td.unsubscribe {
+    text-align: right;
+}
+
+.subscriber-list .subscriber_list_remove {
+    display: inline-block;
+}
+
+.hide-subscriber-list {
+    display: block;
+    padding: 5px;
+    text-align: center;
+    color: hsl(0, 0%, 67%);
+}
+
+.subscriber-list tbody:empty::after,
+.subscriber-list:empty::after {
+    content: "No subscribers to this stream.";
+    display: block;
+
+    text-align: center;
+    color: hsl(0, 0%, 67%);
+}
+
+.subscriber-list:empty {
+    display: block;
+    padding: 5px;
+}
+
+.subscriber-name,
+.subscriber-email {
+    padding: 5px;
+}
+
+.subscriber-email {
+    margin-left: 20px;
+    padding-right: 8px;
+}
+
+.subscriber_list_add {
+    width: 100%;
+    margin: 10px auto;
+    text-align: right;
+}
+
+.subscriber_list_add .search {
+    float: left;
+}
+
+.subscriber_list_add .form-inline {
+    margin-bottom: 0px;
+}
+
+.remove-subscriber-form {
+    margin: 0px 0px 0px 0px;
+}
+
+#subscription-status {
+    width: 200px;
+    position: absolute;
+    left: 50%;
+    margin-left: -100px;
+    bottom: 30px;
+    text-align: center;
+    border-radius: 2px;
+}
+
+#subscriptions h1 {
+    font-size: 25px;
+    font-weight: 300;
+    padding-top: 40px;
+}
+
+#subscriptions .streams-icon {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+.change-stream-privacy {
+    width: 100%;
+    text-align: center;
+}
+
+.change-stream-privacy-feedback {
+    display: none;
+}
+
+.subscriptions-overlay-bg {
+    font: menu;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: hsla(0, 0%, 8%, 0.7);
+    color: hsl(0, 0%, 27%);
+}
+
+.subscriptions-container {
+    position: relative;
+    height: 95%;
+    border-radius: 4px;
+    padding: 0px;
+    width: 97%;
+    overflow: hidden;
+    max-width: 1200px;
+    max-height: 1000px;
+}
+
+.subscriptions-header {
+    padding: 12px;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+.subscriptions-header .fa-chevron-left {
+    display: none;
+}
+
+.subscriptions-header .fa-chevron-left,
+#settings_overlay_container .settings-header.mobile .fa-chevron-left {
+    position: relative;
+    transform: translate(-50px, 0px);
+    opacity: 0;
+    color: hsl(0, 0%, 67%);
+
+    float: left;
+    padding: 2px 10px;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+.subscriptions-header.slide-left .fa-chevron-left,
+#settings_overlay_container .settings-header.mobile.slide-left .fa-chevron-left {
+    transform: translate(-0px, 0px);
+    opacity: 1;
+}
+
+.subscriptions-header .subscriptions-title {
+    display: inline-block;
+    transition: all 0.3s ease;
+    transform: translate(-13px, 0px);
+}
+
+.subscriptions-container .exit {
+    font-weight: 600;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: hsl(0, 0%, 67%);
+    cursor: pointer;
+}
+
+.subscriptions-container .exit-sign {
+    position: relative;
+    top: 3px;
+    margin-left: 3px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.subscriptions-container .left,
+.subscriptions-container .right {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    width: 50%;
+    height: calc(100% - 45px);
+    margin: 0px -2px;
+}
+
+.subscriptions-container .right {
+    width: calc(50% - -1px);
+}
+
+.subscriptions-container .right .nothing-selected {
+    display: block;
+    margin-top: calc(45vh - 75px);
+    text-align: center;
+    font-size: 1em;
+    -webkit-font-smoothing: antialiased;
+}
+
+.subscriptions-container .right .nothing-selected span {
+    color: hsl(0, 0%, 67%);
+}
+
+.subscriptions-container .right .nothing-selected button {
+    padding: 6px 10px 8px 10px;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
+.subscriptions-container .left {
+    border-right: 1px solid hsl(0, 0%, 87%);
+}
+
+.subscriptions-container .left .search-container {
+    padding: 6px 8px;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+    display: flex;
+    justify-content: space-between;
+}
+
+.subscriptions-container .right .display-type {
+    padding: 6px;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+.subscriptions-container .display-type.preview::after {
+    content: "Preview";
+}
+
+.subscriptions-container .display-type.preferences::after {
+    content: "Preferences";
+}
+
+.subscriptions-container .display-type .stream-info-title {
+    display: none;
+    font-size: 1em;
+    line-height: 1;
+    margin: 9px 0px;
+    font-weight: 600;
+}
+
+.subscriptions-container .right #preview_iframe {
+    width: 100%;
+    height: calc(100% - 45px);
+    border: none;
+    background-color: hsl(0, 0%, 98%);
+    box-shadow: inset 0px 0px 50px hsla(0, 0%, 0%, 0.5);
+    background-image: url(../images/preview-loading.png);
+    background-size: 150px auto;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.subscriptions-container input[type=text].small {
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 4px;
+    padding: 3px;
+    outline: none;
+    color: hsl(0, 0%, 27%);
+    text-align: center;
+}
+
+.subscriptions-container input[type=text].small:focus {
+    text-align: left;
+}
+
+.subscriptions-container input[type=text].small:valid {
+    text-align: left;
+}
+
+#search_stream_name {
+    width: 190px;
+    padding: 3px 5px;
+    margin: 2px 0px;
+    display: inline-block;
+    border-radius: 5px;
+    box-shadow: none;
+}
+
+.stream-title {
+    font-size: 1.3em;
+    font-weight: 400;
+}
+
+.stream-creation-info {
+    font-style: italic;
+    margin-bottom: 10px;
+}
+
+.stream-creation-body section.block {
+    margin-bottom: 20px;
+}
+
+.stream-creation-body #make-invite-only .radio {
+    margin: 5px;
+}
+
+.stream-creation-body #make-invite-only .grey-box .checkbox {
+    margin: 5px;
+}
+
+#announce-new-stream {
+    margin-top: 10px;
+}
+
+.stream-creation-body #announce-new-stream div[class^="fa"] {
+    margin-left: 3px;
+    margin-right: 8px;
+}
+
+.streams-list {
+    position: relative;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    height: calc(100% - 45px);
+    width: 100%;
+}
+
+.stream-row {
+    padding: 15px 10px 11px 10px;
+    border-bottom: 1px solid hsl(0, 0%, 93%);
+    cursor: pointer;
+}
+
+.stream-row.active {
+    background-color: hsl(0, 0%, 93%);
+}
+
+.stream-row > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.stream-row::-moz-selection,
+.stream-row .icon .hashtag::-moz-selection {
+    background-color: transparent;
+}
+
+.stream-row::selection,
+.stream-row .icon .hashtag::selection {
+    background-color: transparent;
+}
+
+.stream-row .check {
+    width: 25px;
+    height: 25px;
+    position: relative;
+    margin-right: 8px;
+    margin-top: 9px;
+    background-size: 60% auto;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.stream-row .check svg {
+    fill: transparent;
+    width: 70%;
+    margin: 0% 15%;
+}
+
+.stream-row:hover .check:not(.checked) svg,
+.stream-row.active:hover .check:not(.checked) svg {
+    fill: hsl(0, 0%, 87%);
+}
+
+.stream-row .check:not(.checked):hover svg,
+.stream-row.active .check:not(.checked):hover svg {
+    fill: hsl(0, 0%, 72%);
+}
+
+.stream-row .check.checked:hover svg {
+    opacity: 0.5;
+}
+
+.stream-row .checked svg {
+    fill: hsl(170, 48%, 54%);
+}
+
+.stream-row .icon {
+    width: 35px;
+    height: 35px;
+    margin-right: 8px;
+    margin-top: 4px;
+    background-color: hsl(300, 100%, 25%);
+    border-radius: 4px;
+    color: hsl(0, 0%, 100%);
+}
+
+.stream-row .icon .symbol {
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.stream-row .icon .fa-lock {
+    font-size: 1.4em;
+}
+
+.stream-row .icon .hashtag {
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+.stream-row .sub-info-box {
+    width: calc(100% - 90px);
+}
+
+.stream-row .sub-info-box .top-bar,
+.stream-row .sub-info-box .bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+}
+
+.stream-row .sub-info-box .top-bar > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.stream-row .sub-info-box .top-bar .stream-name,
+.stream-row .sub-info-box .bottom-bar .description {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stream-row .sub-info-box .top-bar .stream-name {
+    font-weight: 600;
+}
+
+.stream-row .sub-info-box .top-bar .subscriber-count,
+.stream-row .sub-info-box .bottom-bar .stream-message-count {
+    white-space: nowrap;
+    color: hsl(0, 0%, 67%);
+}
+
+.stream-row .sub-info-box .top-bar .subscriber-count-text,
+.stream-row .sub-info-box .top-bar .subscriber-count-lock,
+.stream-row .sub-info-box .bottom-bar .stream-message-count-text {
+    margin-right: 5px;
+}
+
+.stream-row .sub-info-box .bottom-bar > div {
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.stream-row .sub-info-box .bottom-bar {
+    margin-top: 2px;
+    line-height: 1.5;
+}
+
+#subscription_overlay .stream-description .stream-description-editable:empty::after,
+.stream-row .sub-info-box .description:empty::after {
+    content: attr(data-no-description);
+    font-style: italic;
+    color: hsl(0, 0%, 67%);
+}
+
+#subscription_overlay #stream-creation {
+    max-height: calc(100% - 102px);
+    overflow: auto;
+    outline: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+#subscription_overlay #stream-creation .modal-footer {
+    position: absolute;
+    bottom: 0;
+    width: calc(100% - 27px);
+}
+
+#stream-creation .stream-creation-body {
+    padding: 15px;
+}
+
+.stream-row .settings-dropdown-trigger {
+    float: right;
+    margin-left: 10px;
+    color: hsl(0, 0%, 67%);
+}
+
+.add-user-label {
+    margin: 8px 0px;
+}
+
+.add-user-list-filter {
+    width: calc(100% - 10px);
+}
+
+#stream_creation_form {
+    margin: 0px;
+}
+
+#stream_creation_form #stream_creating_indicator:not(:empty) {
+    position: absolute;
+    width: 100% !important;
+    height: calc(100% - 105px) !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    background-color: hsla(0, 0%, 100%, 0.9);
+    z-index: 1;
+}
+
+#stream_creation_form #stream_creating_indicator .loading_indicator_text {
+    font-weight: 400;
+}
+
+#subscription_overlay .inner-box {
+    margin: 20px;
+}
+
+#subscription_overlay .stream-header {
+    margin-bottom: 20px;
+    white-space: nowrap;
+}
+
+#subscription_overlay .stream-header .stream-name {
+    display: inline-block;
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-left: -3px;
+    white-space: normal;
+    word-break: break-all;
+}
+
+#subscription_overlay .stream-header .deactivate,
+#subscription_overlay .stream-header .subscribe-button {
+    float: right;
+    margin-top: -5px;
+    margin-right: 5px;
+}
+
+#subscription_overlay .stream-header .button-group {
+    float: right;
+}
+
+#subscription_overlay .stream-header .subscribe-button.unsubscribed {
+    color: hsl(156, 39%, 54%);
+    border-color: hsl(156, 39%, 77%);
+}
+
+#subscription_overlay .stream-header .subscribe-button.unsubscribed:active {
+    background-color: hsla(156, 39%, 54%, 0.2);
+}
+
+#subscription_overlay .stream-header .large-icon {
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 5px;
+    font-size: 1.5em;
+}
+
+#subscription_overlay .stream-description {
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+#preview-stream-button {
+    float: right;
+    margin-top: -5px;
+    margin-right: 5px;
+    text-decoration: none;
+    line-height: 16px;
+    vertical-align: middle;
+}
+
+.editable-section {
+    position: relative;
+    display: inline;
+    min-width: 10px;
+    max-width: 100%;
+}
+
+.editable-section[contenteditable=true] {
+    display: inline-block;
+    color: hsl(170, 48%, 54%);
+}
+
+.editable-section[contenteditable=true]:focus {
+    outline: none;
+}
+
+#subscription_overlay .editable {
+    position: relative;
+    top: -1px;
+    margin-left: 5px;
+    color: hsl(0, 0%, 67%);
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 300;
+
+    transition: all 0.3s ease;
+}
+
+#subscription_overlay .editable:empty::before {
+    content: "\f040";
+    font-family: "FontAwesome";
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+#subscription_overlay .editable:not(:empty) {
+    position: relative;
+    top: 2px;
+}
+
+#subscription_overlay .editable:hover {
+    color: hsl(0, 0%, 27%);
+}
+
+#subscription_overlay .checkmark {
+    display: none;
+    margin-left: 5px;
+    font-size: 0.9rem;
+    color: hsl(0, 0%, 67%);
+
+    cursor: pointer;
+}
+
+#subscription_overlay .checkmark.show {
+    display: block;
+}
+
+#subscription_overlay .subscription-type {
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    opacity: 0.5;
+}
+
+#subscription_overlay .subscription-type .subscription-type-text {
+    display: inline;
+}
+
+#subscription_overlay .subscription-type b {
+    font-weight: 600;
+}
+
+#subscription_overlay .stream-header .large-icon.hash::after {
+    position: relative;
+    top: 1px;
+    content: "#";
+    font-weight: 800;
+}
+
+#subscription_overlay .settings {
+    position: relative;
+    height: calc(100% - 45px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#subscription_overlay .subscription_settings {
+    display: none;
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 4px;
+    top: -1px;
+}
+
+#subscription_overlay .subscription_settings.show {
+    display: block;
+}
+
+#stream_privacy_modal ul.grey-box {
+    border-style: none;
+}
+
+#stream_privacy_modal ul.grey-box li,
+#subscription_overlay ul.grey-box li {
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+    padding: 5px 0px;
+}
+
+#stream_privacy_modal ul.grey-box li input[type=checkbox] {
+    margin-top: 4px;
+}
+
+#subscription_overlay ul.grey-box li input[type=checkbox] {
+    margin-top: 0px;
+}
+
+#stream_privacy_modal ul.grey-box li:last-of-type,
+#subscription_overlay ul.grey-box li:last-of-type {
+    border-bottom: none;
+}
+
+#stream_privacy_modal ul.grey-box li .sp-replacer,
+#subscription_overlay ul.grey-box li .sp-replacer {
+    box-shadow: none;
+}
+
+#stream_privacy_modal ul.grey-box li input[type=radio],
+#subscription_overlay ul.grey-box li input[type=radio] {
+    margin-right: 5px;
+}
+
+@media (max-width: 1130px) {
+    .subscriptions-container {
+        max-width: 95%;
+    }
+
+    #subscription_overlay .left {
+        width: 40%;
+    }
+
+    #subscription_overlay .right {
+        width: calc(60% - 1px);
+    }
+
+    #search_stream_name {
+        width: 100px;
+        margin-top: 2px;
+        margin-bottom: 0px;
+    }
+}
+
+@media (max-width: 1033px) {
+    #search_stream_name {
+        display: none;
+    }
+
+    .search-container {
+        text-align: center;
+    }
+
+    .subscriber_list_settings input {
+        float: left;
+        margin: 0px 5px 0px 0px;
+        width: calc(50% - 45px);
+    }
+
+    #subscription_overlay .stream-header .button-group {
+        float: none;
+        display: block;
+        clear: both;
+        margin-top: 10px;
+    }
+
+    #subscription_overlay .stream-header .button-group > * {
+        float: none !important;
+        vertical-align: top;
+    }
+
+    #subscription_overlay .stream-header .deactivate,
+    #subscription_overlay .stream-header .subscribe-button {
+        margin-top: -7px;
+    }
+}
+
+@media (max-width: 700px) {
+    .subscriptions-container {
+        position: relative;
+    }
+
+    .subscriptions-header .fa-chevron-left {
+        display: block;
+    }
+
+    #subscription_overlay .left,
+    #subscription_overlay .right,
+    #settings_page .left,
+    #settings_page .content-wrapper.right {
+        position: absolute;
+        display: block;
+        margin: 0;
+        width: 100%;
+        height: calc(100% - 45px);
+
+        border: none;
+    }
+
+    .subscriptions-container {
+        overflow: hidden;
+    }
+
+    .subscriptions-container .search-container {
+        text-align: left;
+    }
+
+    #subscription_overlay .right,
+    #settings_page .content-wrapper.right {
+        position: absolute;
+        left: 101%;
+
+        top: 45px;
+        border-top: 1px solid hsl(0, 0%, 87%);
+        background-color: hsl(0, 0%, 100%);
+        border-top: none;
+
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    #subscription_overlay .right.show,
+    #settings_page .content-wrapper.right.show {
+        left: 0%;
+    }
+
+    #subscription_overlay .display-type {
+        display: none;
+    }
+
+    #subscription_overlay .subscriptions-container {
+        height: 95%;
+    }
+
+    #subscription_overlay .settings {
+        overflow: auto;
+        height: calc(100% - 20px);
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 367px) {
+    #subscription_overlay .subscription_settings .button-group {
+        margin-top: 10px;
+        float: none;
+        display: inline-block;
+        vertical-align: top;
+    }
+}
+
+#stream-creation #invites-warning-modal .modal-footer {
+    position: static;
+}

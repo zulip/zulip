@@ -10,12 +10,12 @@
     not put sensitive information here. */
 
 /*
-      print_elapsed_time("foo", foo)
+      debug.print_elapsed_time("foo", foo)
 
     evaluates to foo() and prints the elapsed time
     to the console along with the name "foo". */
 
-function print_elapsed_time(name, fun) {
+export function print_elapsed_time(name, fun) {
     var t0 = new Date().getTime();
     var out = fun();
     var t1 = new Date().getTime();
@@ -23,7 +23,7 @@ function print_elapsed_time(name, fun) {
     return out;
 }
 
-function check_duplicate_ids() {
+export function check_duplicate_ids() {
     var ids = {};
     var collisions = [];
     var total_collisions = 0;
@@ -66,7 +66,7 @@ function check_duplicate_ids() {
  *
  * Example:
  *
- *     var ip = new IterationProfiler();
+ *     var ip = new debug.IterationProfiler();
  *     _.each(myarray, function (elem) {
  *         ip.iteration_start();
  *
@@ -89,7 +89,7 @@ function check_duplicate_ids() {
  * The _rest_of_iteration section is the region of the iteration body
  * after section b.
  */
-function IterationProfiler() {
+export function IterationProfiler() {
     this.sections = {};
     this.last_time = window.performance.now();
 }
@@ -116,7 +116,7 @@ IterationProfiler.prototype = {
         if (this.sections[label] === undefined) {
             this.sections[label] = 0;
         }
-        this.sections[label] += (now - this.last_time);
+        this.sections[label] += now - this.last_time;
         this.last_time = now;
     },
 

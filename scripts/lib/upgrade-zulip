@@ -1,24 +1,28 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import os
 import shutil
 import sys
 import subprocess
 import logging
+import time
+import configparser
 
 TARBALL_ARCHIVE_PATH = "/home/zulip/archives"
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, \
-    mkdir_p, su_to_zulip, get_deployment_lock, release_deployment_lock
+    su_to_zulip, get_deployment_lock, release_deployment_lock, assert_running_as_root, \
+    get_config_file, get_deploy_options
 
+config_file = get_config_file()  # type: configparser.RawConfigParser
+deploy_options = get_deploy_options(config_file)
+
+assert_running_as_root(strip_lib_from_paths=True)
+
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
                     level=logging.INFO)
-
-if os.getuid() != 0:
-    logging.error("Must be run as root.")
-    sys.exit(1)
 
 if len(sys.argv) != 2:
     print(FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC)
@@ -35,7 +39,7 @@ try:
     # we can unpack using the Zulip user even if the original path was
     # not readable by the Zulip user.
     logging.info("Archiving the tarball under %s" % (TARBALL_ARCHIVE_PATH,))
-    mkdir_p(TARBALL_ARCHIVE_PATH)
+    os.makedirs(TARBALL_ARCHIVE_PATH, exist_ok=True)
     archived_tarball_path = os.path.join(TARBALL_ARCHIVE_PATH, os.path.basename(tarball_path))
     shutil.copy(tarball_path, archived_tarball_path)
     subprocess.check_output(["chown", "-R", "zulip:zulip", TARBALL_ARCHIVE_PATH])
@@ -50,6 +54,7 @@ try:
     # version is much better for fixing bugs in the upgrade process).
     deploy_path = deploy_path.strip()
     os.chdir(deploy_path)
-    subprocess.check_call([os.path.abspath("./scripts/lib/upgrade-zulip-stage-2"), deploy_path])
+    subprocess.check_call([os.path.abspath("./scripts/lib/upgrade-zulip-stage-2"), deploy_path]
+                          + deploy_options)
 finally:
     release_deployment_lock()

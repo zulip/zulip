@@ -1,0 +1,43 @@
+{
+    "id":"5b64d2c3792f8946ae9ddc8b",
+    "site_id":"6f2ad239-fce7-4b54-81fe-873d4fcf5c78",
+    "build_id":"5b64d2c3792f8946ae9ddc8c",
+    "state":"ready",
+    "name":"objective-jepsen-35fbb2",
+    "url":"http://objective-jepsen-35fbb2.netlify.com",
+    "ssl_url":"https://objective-jepsen-35fbb2.netlify.com",
+    "admin_url":"https://app.netlify.com/sites/objective-jepsen-35fbb2",
+    "deploy_url":"http://5b78192ac9659217dbf7c9aa.objective-jepsen-35fbb2.netlify.com",
+    "deploy_ssl_url":"https://5b78192ac9659217dbf7c9aa--objective-jepsen-35fbb2.netlify.com",
+    "created_at":"2018-08-03T22:10:11.180Z",
+    "updated_at":"2018-08-03T22:24:04.622Z",
+    "user_id":"5b64d15c82d3f16bcbbdcdbe",
+    "error_message":null,
+    "required":[
+
+    ],
+    "required_functions":[
+
+    ],
+    "commit_ref":null,
+    "review_id":null,
+    "branch":"master",
+    "commit_url":null,
+    "skipped":null,
+    "locked":false,
+    "log_access_attributes":{
+        "type":"firebase",
+        "url":"https://netlify.firebaseio.com/builds/5b64d2c3792f8946ae9ddc8c/log"
+    },
+    "title":null,
+    "review_url":null,
+    "published_at":"2018-08-03T22:21:59.747Z",
+    "context":"production",
+    "deploy_time":2,
+    "available_functions":[
+
+    ],
+    "summary":{
+
+    }
+}

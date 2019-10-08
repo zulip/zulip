@@ -1,8 +1,4 @@
-from __future__ import absolute_import
-from __future__ import print_function
-from typing import Callable, List, Optional
-from six.moves import range
-import re
+from typing import Callable, List, Optional, Text
 
 class TemplateParserException(Exception):
     def __init__(self, message):
@@ -15,18 +11,18 @@ class TemplateParserException(Exception):
 
 class TokenizationException(Exception):
     def __init__(self, message, line_content=None):
-        # type: (str, str) -> None
+        # type: (str, Optional[str]) -> None
         self.message = message
         self.line_content = line_content
 
-class TokenizerState(object):
+class TokenizerState:
     def __init__(self):
         # type: () -> None
         self.i = 0
         self.line = 1
         self.col = 1
 
-class Token(object):
+class Token:
     def __init__(self, kind, s, tag, line, col, line_span):
         # type: (str, str, str, int, int, int) -> None
         self.kind = kind
@@ -63,6 +59,9 @@ def tokenize(text):
     def looking_at_djangocomment():
         # type: () -> bool
         return looking_at("{#")
+
+    def looking_at_handlebarpartial() -> bool:
+        return looking_at("{{partial")
 
     def looking_at_html_start():
         # type: () -> bool
@@ -105,6 +104,10 @@ def tokenize(text):
                 s = get_django_comment(text, state.i)
                 tag = s[2:-2]
                 kind = 'django_comment'
+            elif looking_at_handlebarpartial():
+                s = get_handlebar_partial(text, state.i)
+                tag = s[9:-2]
+                kind = 'handlebars_singleton'
             elif looking_at_html_start():
                 s = get_html_tag(text, state.i)
                 tag_parts = s[1:-1].split()
@@ -116,7 +119,7 @@ def tokenize(text):
 
                 if is_special_html_tag(s, tag):
                     kind = 'html_special'
-                elif s.endswith('/>'):
+                elif is_self_closing_html_tag(s, tag):
                     kind = 'html_singleton'
                 else:
                     kind = 'html_start'
@@ -159,12 +162,10 @@ def tokenize(text):
         )
         tokens.append(token)
         advance(len(s))
-        if kind == 'html_singleton':
-            # Here we insert a Pseudo html_singleton_end tag so as to have
-            # ease of detection of end of singleton html tags which might be
-            # needed in some cases as with our html pretty printer.
+
+        def add_pseudo_end_token(kind: str) -> None:
             token = Token(
-                kind='html_singleton_end',
+                kind=kind,
                 s='</' + tag + '>',
                 tag=tag,
                 line=state.line,
@@ -172,6 +173,16 @@ def tokenize(text):
                 line_span=1
             )
             tokens.append(token)
+
+        if kind == 'html_singleton':
+            # Here we insert a Pseudo html_singleton_end tag so as to have
+            # ease of detection of end of singleton html tags which might be
+            # needed in some cases as with our html pretty printer.
+            add_pseudo_end_token('html_singleton_end')
+        if kind == 'handlebars_singleton':
+            # We insert a pseudo handlbar end tag for singleton cases of
+            # handlebars like the partials. This helps in indenting multi line partials.
+            add_pseudo_end_token('handlebars_singleton_end')
 
     return tokens
 
@@ -187,7 +198,7 @@ def validate(fn=None, text=None, check_indent=True):
 
     tokens = tokenize(text)
 
-    class State(object):
+    class State:
         def __init__(self, func):
             # type: (Callable[[Token], None]) -> None
             self.depth = 0
@@ -208,7 +219,7 @@ def validate(fn=None, text=None, check_indent=True):
     def start_tag_matcher(start_token):
         # type: (Token) -> None
         state.depth += 1
-        start_tag = start_token.tag
+        start_tag = start_token.tag.strip('~')
         start_line = start_token.line
         start_col = start_token.col
 
@@ -217,7 +228,7 @@ def validate(fn=None, text=None, check_indent=True):
         def f(end_token):
             # type: (Token) -> None
 
-            end_tag = end_token.tag
+            end_tag = end_token.tag.strip('~')
             end_line = end_token.line
             end_col = end_token.col
 
@@ -276,6 +287,24 @@ def is_special_html_tag(s, tag):
     # type: (str, str) -> bool
     return tag in ['link', 'meta', '!DOCTYPE']
 
+def is_self_closing_html_tag(s: Text, tag: Text) -> bool:
+    self_closing_tag = tag in [
+        'area',
+        'base',
+        'br',
+        'col',
+        'embed',
+        'hr',
+        'img',
+        'input',
+        'param',
+        'source',
+        'track',
+        'wbr',
+    ]
+    singleton_tag = s.endswith('/>')
+    return self_closing_tag or singleton_tag
+
 def is_django_block_tag(tag):
     # type: (str) -> bool
     return tag in [
@@ -289,6 +318,7 @@ def is_django_block_tag(tag):
         'blocktrans',
         'trans',
         'raw',
+        'with',
     ]
 
 def get_handlebars_tag(text, i):
@@ -367,3 +397,15 @@ def get_django_comment(text, i):
             unclosed_end = end
         end += 1
     raise TokenizationException('Unclosed comment', text[i:unclosed_end])
+
+def get_handlebar_partial(text, i):
+    # type: (str, int) -> str
+    end = i + 10
+    unclosed_end = 0
+    while end <= len(text):
+        if text[end-2:end] == '}}':
+            return text[i:end]
+        if not unclosed_end and text[end] == '<':
+            unclosed_end = end
+        end += 1
+    raise TokenizationException('Unclosed partial', text[i:unclosed_end])

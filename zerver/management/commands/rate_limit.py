@@ -1,20 +1,16 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
-from typing import Any
 
 from argparse import ArgumentParser
-from zerver.models import UserProfile, get_user_profile_by_email
-from zerver.lib.rate_limiter import block_user, unblock_user
+from typing import Any
 
-from django.core.management.base import BaseCommand
-from optparse import make_option
+from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.rate_limiter import RateLimitedUser, \
+    block_access, unblock_access
+from zerver.models import UserProfile, get_user_profile_by_api_key
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Manually block or unblock a user from accessing the API"""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-e', '--email',
                             dest='email',
                             help="Email account of user.")
@@ -37,20 +33,21 @@ class Command(BaseCommand):
                             help="Whether or not to also block all bots for this user.")
         parser.add_argument('operation', metavar='<operation>', type=str, choices=['block', 'unblock'],
                             help="operation to perform (block or unblock)")
+        self.add_realm_args(parser)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         if (not options['api_key'] and not options['email']) or \
            (options['api_key'] and options['email']):
             print("Please enter either an email or API key to manage")
             exit(1)
 
+        realm = self.get_realm(options)
         if options['email']:
-            user_profile = get_user_profile_by_email(options['email'])
+            user_profile = self.get_user(options['email'], realm)
         else:
             try:
-                user_profile = UserProfile.objects.get(api_key=options['api_key'])
-            except Exception:
+                user_profile = get_user_profile_by_api_key(options['api_key'])
+            except UserProfile.DoesNotExist:
                 print("Unable to get user profile for api key %s" % (options['api_key'],))
                 exit(1)
 
@@ -64,6 +61,7 @@ class Command(BaseCommand):
             print("Applying operation to User ID: %s: %s" % (user.id, operation))
 
             if operation == 'block':
-                block_user(user, options['seconds'], options['domain'])
+                block_access(RateLimitedUser(user, domain=options['domain']),
+                             options['seconds'])
             elif operation == 'unblock':
-                unblock_user(user, options['domain'])
+                unblock_access(RateLimitedUser(user, domain=options['domain']))

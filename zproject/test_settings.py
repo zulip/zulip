@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 # test_settings.py works differently from
 # dev_settings.py/prod_settings.py; it actually is directly referenced
@@ -19,8 +18,14 @@ if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 from .settings import *
 
+# Clear out the REALM_HOSTS set in dev_settings.py
+REALM_HOSTS = {}
+
+# Used to clone DBs in backend tests.
+BACKEND_DATABASE_TEMPLATE = 'zulip_test_template'
+
 DATABASES["default"] = {
-    "NAME": "zulip_test",
+    "NAME": os.getenv("ZULIP_DB_NAME", "zulip_test"),
     "USER": "zulip_test",
     "PASSWORD": LOCAL_DATABASE_PASSWORD,
     "HOST": "localhost",
@@ -29,20 +34,6 @@ DATABASES["default"] = {
     "TEST_NAME": "django_zulip_tests",
     "OPTIONS": {"connection_factory": TimeTrackingConnection},
 }
-if USING_PGROONGA:
-    # We need to have "pgroonga" schema before "pg_catalog" schema in
-    # the PostgreSQL search path, because "pgroonga" schema overrides
-    # the "@@" operator from "pg_catalog" schema, and "pg_catalog"
-    # schema is searched first if not specified in the search path.
-    # See also: http://www.postgresql.org/docs/current/static/runtime-config-client.html
-    pg_options = '-c search_path=%(SCHEMA)s,zulip,public,pgroonga,pg_catalog' % \
-        DATABASES['default']
-    DATABASES['default']['OPTIONS']['options'] = pg_options
-
-# In theory this should just go in zproject/settings.py inside the `if
-# PIPELINE_ENABLED` statement, but because zproject/settings.py is processed
-# first, we have to add it here as a hack.
-JS_SPECS['app']['source_filenames'].append('js/bundle.js')
 
 if "TORNADO_SERVER" in os.environ:
     # This covers the Casper test suite case
@@ -50,11 +41,13 @@ if "TORNADO_SERVER" in os.environ:
 else:
     # This covers the backend test suite case
     TORNADO_SERVER = None
-    CAMO_URI = 'https://external-content.zulipcdn.net/'
+    CAMO_URI = 'https://external-content.zulipcdn.net/external_content/'
     CAMO_KEY = 'dummy'
 
 if "CASPER_TESTS" in os.environ:
     CASPER_TESTS = True
+    # Disable search pills prototype for production use
+    SEARCH_PILLS_ENABLED = False
 
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
@@ -63,7 +56,7 @@ POLL_TIMEOUT = 1000
 # Don't use the real message log for tests
 EVENT_LOG_DIR = '/tmp/zulip-test-event-log'
 
-# Print our emails rather than sending them
+# Stores the messages in `django.core.mail.outbox` rather than sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 # The test suite uses EmailAuthBackend
@@ -96,19 +89,36 @@ CACHES['database'] = {
     }
 }
 
+# Disable caching on sessions to make query counts consistent
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
+# Use production config from Webpack in tests
 if CASPER_TESTS:
-    # Don't auto-restart Tornado server during casper tests
-    AUTORELOAD = False
+    WEBPACK_FILE = 'webpack-stats-production.json'
 else:
+    WEBPACK_FILE = os.path.join('var', 'webpack-stats-test.json')
+WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(DEPLOY_ROOT, WEBPACK_FILE)
+
+# Don't auto-restart Tornado server during automated tests
+AUTORELOAD = False
+
+if not CASPER_TESTS:
     # Use local memory cache for backend tests.
     CACHES['default'] = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
     }
-    LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
-    LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
-    LOGGING['loggers']['django.request'] = {'level': 'ERROR'}
-    LOGGING['loggers']['fakeldap'] = {'level': 'ERROR'}
+
+    def set_loglevel(logger_name, level) -> None:
+        LOGGING['loggers'].setdefault(logger_name, {})['level'] = level
+    set_loglevel('zulip.requests', 'CRITICAL')
+    set_loglevel('zulip.management', 'CRITICAL')
+    set_loglevel('django.request', 'ERROR')
+    set_loglevel('fakeldap', 'ERROR')
+    set_loglevel('zulip.send_email', 'ERROR')
+    set_loglevel('zerver.lib.push_notifications', 'WARNING')
+    set_loglevel('zerver.lib.digest', 'ERROR')
+    set_loglevel('zerver.lib.email_mirror', 'ERROR')
+    set_loglevel('zerver.worker.queue_processors', 'WARNING')
 
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
@@ -119,12 +129,39 @@ LOCAL_UPLOADS_DIR = 'var/test_uploads'
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
 S3_AUTH_UPLOADS_BUCKET = 'test-authed-bucket'
-REALMS_HAVE_SUBDOMAINS = bool(os.getenv('REALMS_HAVE_SUBDOMAINS', False))
+S3_AVATAR_BUCKET = 'test-avatar-bucket'
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'
 
 INLINE_URL_EMBED_PREVIEW = False
 
-HOME_NOT_LOGGED_IN = '/login'
-LOGIN_URL = '/accounts/login'
+HOME_NOT_LOGGED_IN = '/login/'
+LOGIN_URL = '/accounts/login/'
+
+# By default will not send emails when login occurs.
+# Explicity set this to True within tests that must have this on.
+SEND_LOGIN_EMAILS = False
+
+GOOGLE_OAUTH2_CLIENT_ID = "id"
+GOOGLE_OAUTH2_CLIENT_SECRET = "secret"
+
+SOCIAL_AUTH_GITHUB_KEY = "key"
+SOCIAL_AUTH_GITHUB_SECRET = "secret"
+SOCIAL_AUTH_SUBDOMAIN = 'www'
+
+# By default two factor authentication is disabled in tests.
+# Explicitly set this to True within tests that must have this on.
+TWO_FACTOR_AUTHENTICATION_ENABLED = False
+PUSH_NOTIFICATION_BOUNCER_URL = None
+
+# Disable messages from slow queries as they affect backend tests.
+SLOW_QUERY_LOGS_STREAM = None
+
+THUMBOR_URL = 'http://127.0.0.1:9995'
+THUMBNAIL_IMAGES = True
+THUMBOR_SERVES_CAMO = True
+
+# Logging the emails while running the tests adds them
+# to /emails page.
+DEVELOPMENT_LOG_EMAILS = False

@@ -3,38 +3,9 @@ var stream_color = (function () {
 var exports = {};
 
 exports.default_color = "#c2c2c2";
-// Auto-assigned colors should be from the default palette so it's easy to undo
-// changes, so if that pallete changes, change these colors.
-var stream_assignment_colors = ["#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
-                                "#bfd56f", "#f4ae55", "#b0a5fd", "#addfe5",
-                                "#f5ce6e", "#c2726a", "#94c849", "#bd86e5",
-                                "#ee7e4a", "#a6dcbf", "#95a5fd", "#53a063",
-                                "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
-                                "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"];
 
 // Classes which could be returned by get_color_class.
 exports.color_classes = 'dark_background';
-
-exports.pick_color = function (used_colors) {
-    var colors = _.shuffle(stream_assignment_colors);
-    var used_color_hash = {};
-
-    _.each(used_colors, function (color) {
-        used_color_hash[color] = true;
-    });
-
-    var color = _.find(colors, function (color) {
-        return !_.has(used_color_hash, color);
-    });
-
-    if (color) {
-        return color;
-    }
-
-    // All available colors were used.
-    return colors[0];
-};
-
 
 function update_table_stream_color(table, stream_name, color) {
     // This is ugly, but temporary, as the new design will make it
@@ -50,7 +21,7 @@ function update_table_stream_color(table, stream_name, color) {
             var messages = $label.closest(".recipient_row").children(".message_row");
             messages.children(".messagebox").css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
             $label.css({background: style,
-                          "border-left-color": style});
+                        "border-left-color": style});
             $label.removeClass(exports.color_classes);
             $label.addClass(color_class);
         }
@@ -85,7 +56,8 @@ var subscriptions_table_colorpicker_options = {
 
 exports.set_colorpicker_color = function (colorpicker, color) {
     colorpicker.spectrum(_.extend(subscriptions_table_colorpicker_options,
-                         {color: color, container: "#subscription_overlay .subscription_settings.show"}));
+                                  {color: color,
+                                   container: "#subscription_overlay .subscription_settings.show"}));
 };
 
 exports.update_stream_color = function (sub, color, opts) {
@@ -102,7 +74,9 @@ exports.update_stream_color = function (sub, color, opts) {
         update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(id, color);
-    tab_bar.colorize_tab_bar();
+    if (!page_params.search_pills_enabled) {
+        tab_bar.colorize_tab_bar();
+    }
 };
 
 function picker_do_change_color(color) {
@@ -134,7 +108,7 @@ exports.sidebar_popover_colorpicker_options_full = {
 };
 
 var lightness_threshold;
-$(function () {
+exports.initialize = function () {
     // sRGB color component for dark label text.
     // 0x33 to match the color #333333 set by Bootstrap.
     var label_color = 0x33;
@@ -143,7 +117,7 @@ $(function () {
 
     // Compute midpoint lightness between that and white (100).
     lightness_threshold = (lightness + 100) / 2;
-});
+};
 
 // From a background color (in format "#fff" or "#ffffff")
 // pick a CSS class (or empty string) to determine the
@@ -176,8 +150,8 @@ exports.get_color_class = _.memoize(function (color) {
 
     // CSS colors are specified in the sRGB color space.
     // Convert to linear intensity values.
-    for (i=0; i<3; i += 1) {
-        channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i+1], 16));
+    for (i = 0; i < 3; i += 1) {
+        channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i + 1], 16));
     }
 
     // Compute perceived lightness as CIE L*.
@@ -186,7 +160,7 @@ exports.get_color_class = _.memoize(function (color) {
 
     // Determine if we're past the midpoint between the
     // dark and light label lightness.
-    return (lightness < lightness_threshold) ? 'dark_background' : '';
+    return lightness < lightness_threshold ? 'dark_background' : '';
 });
 
 return exports;
@@ -195,3 +169,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_color;
 }
+window.stream_color = stream_color;

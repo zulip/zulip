@@ -1,0 +1,286 @@
+/* icon */
+.hotspot-icon {
+    position: fixed;
+    cursor: pointer;
+    z-index: 100;
+}
+
+.hotspot-icon .dot {
+    width: 25px;
+    height: 25px;
+    margin: -12.5px 0 0 -12.5px;
+    border-radius: 50%;
+    position: absolute;
+    background-color: hsla(196, 100%, 82%, 0.3);
+    border: 2px solid hsl(215, 47%, 50%);
+    top: 50%;
+    left: 50%;
+}
+
+.hotspot-icon .pulse {
+    width: 25px;
+    height: 25px;
+    margin: -11.5px 0 0 -11.5px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: hsl(0, 0%, 100%);
+    border-radius: 50%;
+    border: 1px solid hsl(205, 100%, 70%);
+    animation: pulsate 1.5s ease-out;
+    animation-iteration-count: infinite;
+}
+
+@keyframes pulsate {
+    0% {
+        -webkit-transform: scale(1.0, 1.0);
+        opacity: 0.8;
+    }
+
+    100% {
+        -webkit-transform: scale(2.2, 2.2);
+        opacity: 0.0;
+    }
+}
+
+.hotspot-icon .bounce {
+    -moz-animation: bounce 0.75s infinite;
+    -webkit-animation: bounce 0.75s infinite;
+    animation: bounce 0.75s infinite;
+}
+
+.hotspot-icon .bounce .bounce-icon {
+    position: absolute;
+    left: -5px;
+    bottom: 3px;
+    transform: rotate(7deg);
+    color: hsl(215, 47%, 50%);
+    font-size: 2.75em;
+    font-weight: 600;
+}
+
+@keyframes bounce {
+    0%,
+    100% {
+        -webkit-transform: translateY(0px);
+    }
+
+    50% {
+        -webkit-transform: translateY(4px);
+    }
+}
+
+/* popover */
+.hotspot.overlay {
+    z-index: 104;
+    background-color: hsla(191, 7%, 20%, 0.15);
+
+    -webkit-font-smoothing: antialiased;
+}
+
+.hotspot.overlay .hotspot-popover {
+    position: fixed;
+    width: 250px;
+    text-align: left;
+    box-shadow: 0 5px 10px hsla(223, 4%, 54%, 0.2);
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 4px;
+}
+
+.hotspot.overlay .hotspot-popover-top {
+    padding: 0 15px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    background-color: hsl(164, 44%, 47%);
+}
+
+.hotspot.overlay .hotspot-title {
+    margin: 0;
+    font-size: 1.15em;
+    font-weight: 600;
+    color: hsl(0, 0%, 100%);
+}
+
+.hotspot.overlay .hotspot-popover-content {
+    background-color: hsl(0, 0%, 100%);
+    padding: 15px;
+}
+
+.hotspot.overlay .hotspot-popover-bottom {
+    background-color: hsl(0, 0%, 100%);
+    height: 90px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.hotspot-img {
+    height: 83px;
+}
+
+.hotspot.overlay .hotspot-img {
+    position: absolute;
+    bottom: 10px;
+    left: 4px;
+}
+
+.hotspot-inline .hotspot-img {
+    margin-left: 5px;
+}
+
+.hotspot-confirm {
+    max-width: 125px;
+    max-height: 70px;
+    border: none;
+    font-size: 1.15em;
+    font-weight: 600;
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(164, 44%, 47%);
+    border-radius: 4px;
+    white-space: normal;
+    padding: 7px 20px;
+    outline: none;
+}
+
+.hotspot-confirm:hover {
+    background-color: hsl(164, 44%, 56%);
+}
+
+.hotspot.overlay .hotspot-confirm {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
+
+.hotspot-inline .hotspot-confirm {
+    display: block;
+}
+
+/* arrows */
+.hotspot-popover::after,
+.hotspot-popover::before {
+    border: solid transparent;
+    content: '';
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.hotspot-popover::after {
+    border-width: 12px;
+}
+
+.hotspot-popover::before {
+    border-width: 13px;
+}
+
+.hotspot-popover.arrow-top::before,
+.hotspot-popover.arrow-top::after {
+    bottom: 100%;
+    right: 50%;
+}
+
+.hotspot-popover.arrow-top::after {
+    border-bottom-color: hsl(164, 44%, 47%);
+    margin-right: -12px;
+}
+
+.hotspot-popover.arrow-top::before {
+    border-bottom-color: hsl(0, 0%, 80%);
+    margin-right: -13px;
+}
+
+.hotspot-popover.arrow-left::before,
+.hotspot-popover.arrow-left::after {
+    right: 100%;
+    top: 50%;
+}
+
+.hotspot-popover.arrow-left::after {
+    border-right-color: hsl(0, 0%, 100%);
+    margin-top: -12px;
+}
+
+.hotspot-popover.arrow-left::before {
+    border-right-color: hsl(0, 0%, 80%);
+    margin-top: -13px;
+}
+
+.hotspot-popover.arrow-bottom::before,
+.hotspot-popover.arrow-bottom::after {
+    top: 100%;
+    right: 50%;
+}
+
+.hotspot-popover.arrow-bottom::after {
+    border-top-color: hsl(0, 0%, 100%);
+    margin-right: -12px;
+}
+
+.hotspot-popover.arrow-bottom::before {
+    border-top-color: hsl(0, 0%, 80%);
+    margin-right: -13px;
+}
+
+.hotspot-popover.arrow-right::before,
+.hotspot-popover.arrow-right::after {
+    left: 100%;
+    top: 50%;
+}
+
+.hotspot-popover.arrow-right::after {
+    border-left-color: hsl(0, 0%, 100%);
+    margin-top: -12px;
+}
+
+.hotspot-popover.arrow-right::before {
+    border-left-color: hsl(0, 0%, 80%);
+    margin-top: -13px;
+}
+
+/* individual icon z-indexing */
+#hotspot_intro_streams_icon,
+#hotspot_intro_topics_icon {
+    z-index: 103;
+}
+
+.hotspot-inline {
+    width: 350px;
+    max-width: 95%;
+    box-shadow: 0 5px 10px rgba(133, 136, 142, 0.1);
+    border-radius: 4px;
+    background-color: hsl(0, 0%, 98%);
+    margin: 0 auto;
+    position: relative;
+}
+
+.hotspot-inline-top .hotspot-title {
+    background-color: hsl(168, 100%, 35%);
+    margin: 0;
+    color: hsl(0, 0%, 100%);
+    font-weight: 600;
+    line-height: 24px;
+    padding: 5px 13px;
+    font-size: 1.15em;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.hotspot-inline-left {
+    display: inline-block;
+    width: 90px;
+}
+
+.hotspot-inline-right {
+    display: inline-block;
+    width: auto;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+#hotspot_intro_reply_icon {
+    position: relative;
+    background-color: hsl(0, 0%, 100%);
+    top: 50%;
+    transform: perspective(1px) translateY(-75%);
+}

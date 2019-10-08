@@ -1,0 +1,252 @@
+.app-main {
+    padding: 0;
+    width: auto;
+    max-width: none;
+}
+
+body {
+    font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
+    background-color: hsl(0, 0%, 98%);
+
+    -webkit-font-smoothing: antialiased;
+}
+
+p {
+    margin-bottom: 0px;
+}
+
+.svg-container {
+    margin: 20px;
+}
+
+.center-charts {
+    margin: 30px auto;
+    width: 790px; /* chart = 750px + 20px padding */
+}
+
+.chart-container {
+    display: inline-block;
+    vertical-align: top;
+
+    margin: 10px 0px;
+    padding: 20px;
+
+    border: 2px solid hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 100%);
+}
+
+.analytics-page-header {
+    margin-left: 10px;
+}
+
+hr {
+    border-width: 2px;
+}
+
+.rangeslider-container {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.rangeselector text {
+    font-weight: 400;
+}
+
+.pie-chart .number-stat {
+    float: left;
+    font-size: 0.8em;
+    font-weight: 400;
+}
+
+.chart-container:not(.pie-chart) .number-stat {
+    position: relative;
+    top: -30px;
+}
+
+.buttons button {
+    background-color: hsl(0, 0%, 94%);
+}
+
+.buttons button.selected {
+    background-color: hsl(0, 0%, 85%);
+}
+
+.pie-chart .buttons {
+    float: right;
+}
+
+.pie-chart .buttons button {
+    padding: 2px 6px;
+}
+
+.chart-container.pie-chart hr {
+    margin-bottom: 8px;
+}
+
+.chart-container button {
+    position: relative;
+    z-index: 1;
+}
+
+.chart-container h1 {
+    margin-top: 0px;
+    font-size: 1.5em;
+}
+
+.chart-container .button-container {
+    position: relative;
+    z-index: 1;
+}
+
+.chart-container .button-container label {
+    margin: 3px;
+}
+
+.button-active-users {
+    float: right;
+}
+
+.chart-container .button-container > * {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.alert {
+    display: none;
+}
+
+#id_messages_sent_by_client {
+    min-height: 100px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_by_message_type {
+    height: 300px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_over_time {
+    height: 400px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
+    opacity: 0.5;
+}
+
+#id_number_of_users {
+    height: 370px;
+    width: 750px;
+    position: relative;
+}
+
+#users_hover_info,
+#hoverinfo {
+    display: none;
+}
+
+.button {
+    font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
+    border: none;
+    border-radius: 4px;
+    outline: none;
+}
+
+.button:hover {
+    background-color: hsl(0, 0%, 84%) !important;
+}
+
+.button[data-user="everyone"] {
+    margin-right: 10px;
+}
+
+.docs_link a {
+    font-weight: 300;
+    color: inherit;
+    text-decoration: none;
+}
+
+.tooltip-inner {
+    padding: 10px;
+    max-width: 350px;
+
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.last-update {
+    margin: 0px 0px 30px 0px;
+
+    font-size: 0.8em;
+    font-weight: 400;
+    text-align: center;
+    color: hsl(0, 0%, 67%);
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner::before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    margin-left: -15px;
+    border-radius: 50%;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-top-color: hsl(155, 93%, 42%);
+    animation: spinner 1s linear infinite;
+}
+
+#users_hover_info,
+#hoverinfo {
+    font-size: 0.8em;
+    font-weight: 400;
+}
+
+#users_hover_humans,
+#hover_human {
+    margin-left: 10px;
+}
+
+#hoverinfo,
+#users_hover_info {
+    position: relative;
+    height: 0px;
+    top: -35px;
+    left: 40px;
+}
+
+#users_hover_info {
+    left: 25px;
+    top: -40px;
+}
+
+@media (min-width: 1680px) {
+    .center-charts {
+        width: calc(816px * 2); /* 790px + 4px for borders + 2px for il-block + 20px margins */
+    }
+
+    .center-charts .left,
+    .center-charts .right {
+        display: inline-block;
+        vertical-align: top;
+        margin: 0px 10px;
+
+        width: 790px;
+    }
+}

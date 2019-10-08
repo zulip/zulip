@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import absolute_import
-from __future__ import print_function
+#!/usr/bin/env python3
 from lib.template_parser import validate
 from lib.html_branches import build_id_dict
 from lib.pretty_print import validate_indent_html
@@ -8,18 +6,18 @@ import argparse
 import sys
 import logging
 
-from six.moves import filter
-
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-import lister
+from zulint import lister
 from typing import cast, Callable, Dict, Iterable, List
 
 EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests
     "tools/tests/test_template_data",
+    # Our parser doesn't handle the way its conditionals are layered
+    'templates/zerver/emails/missed_message.source.html',
 ]
 
 def check_our_files(modified_only, all_dups, targets):
@@ -39,7 +37,6 @@ def check_html_templates(templates, all_dups):
     # type: (Iterable[str], bool) -> None
     # Our files with .html extensions are usually for Django, but we also
     # have a few static .html files.
-    # The file base.html has a bit of funny HTML that we can't parse here yet.
     #
     # We also have .html files that we vendored from Casper.
     # The casperjs files use HTML5 (whereas Zulip prefers XHTML), and
@@ -47,46 +44,71 @@ def check_html_templates(templates, all_dups):
     # so we exclude them from our linter.
     logging.basicConfig(format='%(levelname)s:%(message)s')
     templates = filter(
-        lambda fn: (('base.html' not in fn) and ('casperjs' not in fn)),
+        lambda fn: ('casperjs' not in fn),
         templates)
     templates = sorted(list(templates))
+    # Use of underscore templates <%= %>.
+    if 'templates/zerver/team.html' in templates:
+        templates.remove('templates/zerver/team.html')
 
-    template_id_dict = build_id_dict(templates)
-    # TODO: Clean up these cases of duplicate ids in the code
-    IGNORE_IDS = [
-        'api-example-tabs',
-        'errors',
-        'email',
-        'messages',
-        'registration',
-        'pw_strength',
-        'id_password',
-        'top_navbar',
-        'id_email',
-        'id_terms',
-        'send_confirm',
-        'register',
-    ]
-    bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
-                    if (ids not in IGNORE_IDS) and len(fns) > 1}
+    def check_for_duplicate_ids(templates: List[str]) -> Dict[str, List[str]]:
+        template_id_dict = build_id_dict(templates)
+        # TODO: Clean up these cases of duplicate ids in the code
+        IGNORE_IDS = [
+            'api-example-tabs',
+            'errors',
+            'error-message-box',
+            'email',
+            'messages',
+            'registration',
+            'pw_strength',
+            'id_password',
+            'top_navbar',
+            'id_email',
+            'id_terms',
+            'send_confirm',
+            'register',
+            'footer',
+            # Temporary while we have searchbox forked
+            'search_exit',
+            'search_query',
+            'tab_bar',
+            'search_arrows',
+            'searchbox_form',
+            'searchbox',
+        ]
+        bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
+                        if (ids not in IGNORE_IDS) and len(fns) > 1}
 
-    if all_dups:
-        ignorable_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
-                              if ids in IGNORE_IDS and len(fns) > 1}
+        if all_dups:
+            ignorable_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
+                                  if ids in IGNORE_IDS and len(fns) > 1}
 
-        for ids, fns in ignorable_ids_dict.items():
-            logging.warning("Duplicate ID(s) detected :Id '" + ids +
-                            "' present at following files:")
+            for ids, fns in ignorable_ids_dict.items():
+                logging.warning("Duplicate ID(s) detected :Id '" + ids +
+                                "' present at following files:")
+                for fn in fns:
+                    print(fn)
+
+        for ids, fns in bad_ids_dict.items():
+            logging.error("Duplicate ID(s) detected :Id '" + ids +
+                          "' present at following files:")
             for fn in fns:
                 print(fn)
+        return bad_ids_dict
 
-    for ids, fns in bad_ids_dict.items():
-        logging.error("Duplicate ID(s) detected :Id '" + ids +
-                      "' present at following files:")
-        for fn in fns:
-            print(fn)
+    bad_ids_list = []  # type: List[str]
+    archive_templates = list(filter(
+        lambda fn: ('templates/zerver/archive' in fn),
+        templates))
+    templates = list(filter(
+        lambda fn: ('templates/zerver/archive' not in fn),
+        templates))
 
-    if list(bad_ids_dict.keys()):
+    bad_ids_list += list(check_for_duplicate_ids(archive_templates).keys())
+    bad_ids_list += list(check_for_duplicate_ids(templates).keys())
+
+    if bad_ids_list:
         print('Exiting--please clean up all duplicates before running this again.')
         sys.exit(1)
 
@@ -97,88 +119,22 @@ def check_html_templates(templates, all_dups):
         # and might eventually require more scrutiny for things like
         # localization.  See github #1236.
         bad_files = [
-            'static/html/5xx.html',
-            'templates/500.html',
-            'templates/confirmation/confirm.html',
-            'templates/corporate/mit.html',
-            'templates/corporate/privacy.html',
+            # These use various whitespace-dependent formatting that
+            # prevent cleaning them.
             'templates/corporate/zephyr-mirror.html',
-            'templates/corporate/zephyr.html',
-            'templates/zerver/accounts_home.html',
-            'templates/zerver/accounts_send_confirm.html',
-            'templates/zerver/api.html',
-            'templates/zerver/api_endpoints.html',
-            'templates/zerver/apps.html',
-            'templates/zerver/create_realm.html',
-            'templates/zerver/emails/followup/day1.html',
-            'templates/zerver/emails/followup/day2.html',
-            'templates/zerver/features.html',
-            'templates/zerver/hello.html',
-            'templates/zerver/home.html',
-            'templates/zerver/integrations.html',
-            'templates/zerver/invite_user.html',
-            'templates/zerver/login.html',
-            'templates/zerver/markdown_help.html',
-            'templates/zerver/register.html',
-            'templates/zerver/search_operators.html',
-
-            'zerver/webhooks/deskdotcom/doc.html',
-            'zerver/webhooks/freshdesk/doc.html',
-            'zerver/webhooks/taiga/doc.html',
-            'zerver/webhooks/zendesk/doc.html',
+            # Can't clean this because of `preserve_spaces`
+            'templates/zerver/app/markdown_help.html',
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
     # Ignore these files since these have not been cleaned yet :/
     IGNORE_FILES = [
-        'puppet/zulip_ops/files/sparkle/mac/sparkle-changelog.html',
-        'puppet/zulip_ops/files/sparkle/sso/mac/sparkle-changelog.html',
-        'puppet/zulip_ops/files/sparkle/sso/win/sparkle-changelog.html',
-        'puppet/zulip_ops/files/sparkle/win/sparkle-changelog.html',
-        'static/html/404.html',
-        'static/html/5xx.html',
-        'templates/500.html',
-        'templates/analytics/activity.html',
-        'templates/analytics/ad_hoc_query.html',
-        'templates/analytics/realm_summary_table.html',
-        'templates/analytics/stats.html',
-        'templates/confirmation/confirm.html',
-        'templates/confirmation/confirm_email_change.html',
-        'templates/confirmation/emailchangestatus_confirmation_email.html',
-        'templates/confirmation/invite_email.html',
-        'templates/confirmation/preregistrationuser_confirmation_email.html',
-        'templates/corporate/privacy.html',
+        # zephyr-mirror.html has some whitespace-dependent formatting
+        # for code blocks that prevent cleaning it.  Might make sense
+        # to convert it to a /help/ markdown article.
         'templates/corporate/zephyr-mirror.html',
-        'templates/corporate/zephyr.html',
-        'templates/zerver/api.html',
-        'templates/zerver/apps.html',
-        'templates/zerver/compose.html',
-        'templates/zerver/emails/digest/digest_email.html',
-        'templates/zerver/emails/find_team/find_team_email.html',
-        'templates/zerver/emails/followup/day1.html',
-        'templates/zerver/emails/followup/day2.html',
-        'templates/zerver/emails/invitation/invitation_reminder_email.html',
-        'templates/zerver/hello.html',
-        'templates/zerver/help/main.html',
-        'templates/zerver/home.html',
-        'templates/zerver/index.html',
-        'templates/zerver/integrations.html',
-        'templates/zerver/keyboard_shortcuts.html',
-        'templates/zerver/landing_nav.html',
-        'templates/zerver/left_sidebar.html',
-        'templates/zerver/login.html',
-        'templates/zerver/markdown_help.html',
-        'templates/zerver/navbar.html',
-        'templates/zerver/register.html',
-        'zerver/webhooks/deskdotcom/doc.html',
-        'zerver/webhooks/greenhouse/doc.html',
-        'zerver/webhooks/librato/doc.html',
-        'zerver/webhooks/pivotal/doc.html',
-        'zerver/webhooks/splunk/doc.html',
-        'zerver/webhooks/stripe/doc.html',
-        'zerver/webhooks/trello/doc.html',
-        'zerver/webhooks/wordpress/doc.html',
-        'zerver/webhooks/zapier/doc.html',
+        # Can't clean this because of `preserve_spaces`
+        'templates/zerver/app/markdown_help.html',
     ]
     # TODO: Clean these files
     for fn in templates:
@@ -190,51 +146,22 @@ def check_handlebar_templates(templates):
     # type: (Iterable[str]) -> None
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith('.handlebars')]
+
+    IGNORE_FILES = [
+        # TODO: Add some exclude mechanism for the line-wrapping issue here.
+        'static/templates/recipient_row.handlebars',
+    ]
+
     for fn in templates:
+        if fn in IGNORE_FILES:
+            continue
         validate(fn=fn, check_indent=True)
 
-    # Ignore these files since these have not been cleaned yet :/
-    IGNORE_FILES = [
-        'static/templates/actions_popover_content.handlebars',
-        'static/templates/admin_user_list.handlebars',
-        'static/templates/bot_avatar_row.handlebars',
-        'static/templates/draft.handlebars',
-        'static/templates/message_edit_form.handlebars',
-        'static/templates/message_edit_history.handlebars',
-        'static/templates/recipient_row.handlebars',
-        'static/templates/single_message.handlebars',
-        'static/templates/stream_privacy.handlebars',
-        'static/templates/stream_sidebar_row.handlebars',
-        'static/templates/subscription_settings.handlebars',
-        'static/templates/user_sidebar_actions.handlebars',
-        'static/templates/settings/account-settings.handlebars',
-        'static/templates/settings/admin-alias-list.handlebars',
-        'static/templates/settings/admin_auth_methods_list.handlebars',
-        'static/templates/settings/alert-word-settings.handlebars',
-        'static/templates/settings/attachment-item.handlebars',
-        'static/templates/settings/auth-methods-settings-admin.handlebars',
-        'static/templates/settings/bot-list-admin.handlebars',
-        'static/templates/settings/bot-settings.handlebars',
-        'static/templates/settings/deactivated-users-admin.handlebars',
-        'static/templates/settings/deactivation-stream-modal.handlebars',
-        'static/templates/settings/deactivation-user-modal.handlebars',
-        'static/templates/settings/default-streams-list-admin.handlebars',
-        'static/templates/settings/display-settings.handlebars',
-        'static/templates/settings/emoji-settings-admin.handlebars',
-        'static/templates/settings/muted-topics-settings.handlebars',
-        'static/templates/settings/notification-settings.handlebars',
-        'static/templates/settings/organization-settings-admin.handlebars',
-        'static/templates/settings/realm-domains-modal.handlebars',
-        'static/templates/settings/realm-filter-settings-admin.handlebars',
-        'static/templates/settings/streams-list-admin.handlebars',
-        'static/templates/settings/ui-settings.handlebars',
-        'static/templates/settings/user-list-admin.handlebars',
-    ]
-    # TODO: Clean these files
     for fn in templates:
-        if fn not in IGNORE_FILES:
-            if not validate_indent_html(fn):
-                sys.exit(1)
+        if fn in IGNORE_FILES:
+            continue
+        if not validate_indent_html(fn):
+            sys.exit(1)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

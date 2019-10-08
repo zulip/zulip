@@ -1,0 +1,107 @@
+<div id="organization-permissions" data-name="organization-permissions" class="settings-section">
+    <form class="form-horizontal admin-realm-form org-permissions-form">
+
+        <div id="org-org-join" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Joining the organization" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "org-join" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                <div class="input-group">
+                    <label for="realm_user_invite_restriction" class="dropdown-title">{{t "Are invitations required for joining the organization?" }}</label>
+                    <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction">
+                        <option value="no_invite_required">{{t "No" }}</option>
+                        <option value="by_anyone">{{t "Yes. Members and admins can send invitations." }}</option>
+                        <option value="by_admins_only">{{t "Yes. Only admins can send invitations." }}</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Restrict email domains of new users?" }}</label>
+                    <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions">
+                        <option value="no_restriction">{{t "No restrictions" }}</option>
+                        <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
+                        <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
+                    </select>
+                </div>
+                <div class="dependent-block">
+                    <p id="allowed_domains_label" class="inline-block"></p>
+                    {{#if is_admin }}
+                    <a data-toggle="modal" href="#realm_domains_modal">{{t "[Configure]" }}</a>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <div id="org-user-identity" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "User identity" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "user-identity" }}
+            </div>
+            <div class="inline-block organization-permissions-parent">
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_name_changes_disabled"
+                  "prefix" "id_"
+                  "is_checked" realm_name_changes_disabled
+                  "label" admin_settings_label.realm_name_changes_disabled}}
+
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_email_changes_disabled"
+                  "prefix" "id_"
+                  "is_checked" realm_email_changes_disabled
+                  "label" admin_settings_label.realm_email_changes_disabled}}
+            </div>
+        </div>
+
+        <div id="org-other-permissions" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Other permissions" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "other-permissions" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                <div class="input-group">
+                    <label for="realm_create_stream_permission" class="dropdown-title">{{t "Who can create streams" }}</label>
+                    <select name="realm_create_stream_permission" id="id_realm_create_stream_permission">
+                        <option value="by_anyone">{{t "Members and admins" }}</option>
+                        <option value="by_admins_only">{{t "Admins only" }}</option>
+                        <option value="by_admin_user_with_three_days_old">{{t "All admins, and members with accounts at least 3 days old." }}</option>
+                        <option value="by_admin_user_with_custom_time">{{t "All admins, and members with accounts at least N days old." }}</option>
+                    </select>
+                </div>
+                <div class="dependent-block">
+                    <label for="aitin" class="inline-block">{{t "Minimum account age (N)" }}:</label>
+                    <input type="text" id="id_realm_waiting_period_threshold"
+                      name="realm_waiting_period_threshold"
+                      class="admin-realm-time-limit-input"
+                      value="{{ realm_waiting_period_threshold }}"/>
+                </div>
+
+                <div class="input-group">
+                    <label for="realm_bot_creation_policy">{{t "Who can add bots" }}</label>
+                    <select name="realm_bot_creation_policy" id="id_realm_bot_creation_policy">
+                        {{#each bot_creation_policy_values}}
+                        <option value='{{this.code}}'>{{this.description}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                <div class="input-group" {{#if development}}{{else}}style="display: none"{{/if}}>
+                    <label for="realm_email_address_visibility">{{t "Who can see users email addresses" }}</label>
+                    <select name="realm_email_address_visibility" id="id_realm_email_address_visibility">
+                        {{#each email_address_visibility_values}}
+                        <option value='{{this.code}}'>{{this.description}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                <div class="inline-block">
+                    <label for="realm_add_emoji_by_admins_only" class="dropdown-title">{{t "Who can add custom emoji" }}</label>
+                    <select name="realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only">
+                        <option value="by_anyone">{{t "Members and admins" }}</option>
+                        <option value="by_admins_only">{{t "Admins only" }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

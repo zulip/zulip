@@ -1,18 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Nagios plugin paired with a cron job.  This just verifies that the
 file output by the cron job is correct.
 """
-from __future__ import print_function
-
 import sys
 import time
 
-# Avoid requiring the typing module to be installed
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Tuple
 
-def nagios_from_file(results_file):
-    # type: (str) -> Tuple[int, str]
+def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int, str]':
     """Returns a nagios-appropriate string and return code obtained by
     parsing the desired file on disk. The file on disk should be of format
 
@@ -31,8 +28,8 @@ def nagios_from_file(results_file):
     else:
         timestamp = int(pieces[0])
 
-        time_diff = time.time() - timestamp
-        if time_diff > 60 * 2:
+        time_diff = int(time.time() - timestamp)
+        if time_diff > max_time_diff:
             ret = 3
             state = 'UNKNOWN'
             data = "Results file is stale"
@@ -45,7 +42,10 @@ def nagios_from_file(results_file):
 
 if __name__ == "__main__":
     RESULTS_FILE = sys.argv[1]
-    ret, result = nagios_from_file(RESULTS_FILE)
+    extra_args = {}
+    if len(sys.argv) > 2:
+        extra_args['max_time_diff'] = int(sys.argv[2])
+    ret, result = nagios_from_file(RESULTS_FILE, **extra_args)
 
     print(result)
     exit(ret)

@@ -1,0 +1,161 @@
+# See https://zulip.readthedocs.io/en/latest/testing/continuous-integration.html for
+#   high-level documentation on our CircleCI setup.
+# See CircleCI upstream's docs on this config format:
+#   https://circleci.com/docs/2.0/language-python/
+#
+version: 2
+aliases:
+  - &create_cache_directories
+    run:
+      name: create cache directories
+      command: |
+          dirs=(/srv/zulip-{npm,venv}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R circleci "${dirs[@]}"
+
+  - &restore_cache_package_json
+    restore_cache:
+      keys:
+      - v1-npm-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+
+  - &restore_cache_requirements
+    restore_cache:
+      keys:
+      - v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+
+  - &install_dependencies
+    run:
+      name: install dependencies
+      command: |
+        sudo apt-get update
+        # Install moreutils so we can use `ts` and `mispipe` in the following.
+        sudo apt-get install -y moreutils
+
+        # CircleCI sets the following in Git config at clone time:
+        #   url.ssh://git@github.com.insteadOf https://github.com
+        # This breaks the Git clones in the NVM `install.sh` we run
+        # in `install-node`.
+        # TODO: figure out why that breaks, and whether we want it.
+        #   (Is it an optimization?)
+        rm -f /home/circleci/.gitconfig
+
+        # This is the main setup job for the test suite
+        mispipe "tools/ci/setup-backend" ts
+
+        # Cleaning caches is mostly unnecessary in Circle, because
+        # most builds don't get to write to the cache.
+        # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0" ts
+
+  - &save_cache_package_json
+    save_cache:
+      paths:
+        - /srv/zulip-npm-cache
+      key: v1-npm-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+
+  - &save_cache_requirements
+    save_cache:
+      paths:
+        - /srv/zulip-venv-cache
+      key: v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+    # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
+
+  - &run_backend_tests
+    run:
+      name: run backend tests
+      command: |
+        . /srv/zulip-py3-venv/bin/activate
+        mispipe ./tools/ci/backend ts
+
+  - &run_frontend_tests
+    run:
+      name: run frontend tests
+      command: |
+        . /srv/zulip-py3-venv/bin/activate
+        mispipe ./tools/ci/frontend ts
+
+  - &upload_coverage_report
+    run:
+     name: upload coverage report
+     command: |
+       . /srv/zulip-py3-venv/bin/activate
+       pip install codecov && codecov \
+         || echo "Error in uploading coverage reports to codecov.io."
+
+jobs:
+  "trusty-python-3.4":
+    docker:
+      # This is built from tools/circleci/images/trusty/Dockerfile .
+      - image: gregprice/circleci:trusty-python-5.test
+
+    working_directory: ~/zulip
+
+    steps:
+      - checkout
+
+      - *create_cache_directories
+      - *restore_cache_package_json
+      - *restore_cache_requirements
+      - *install_dependencies
+      - *save_cache_package_json
+      - *save_cache_requirements
+      - *run_backend_tests
+      - *run_frontend_tests
+      - *upload_coverage_report
+
+      # - store_artifacts:  # TODO
+      #     path: var/casper/
+      #     # also /tmp/zulip-test-event-log/
+      #     destination: test-reports
+
+  "xenial-python-3.5":
+    docker:
+      # This is built from tools/circleci/images/xenial/Dockerfile .
+      - image: gregprice/circleci:xenial-python-4.test
+
+    working_directory: ~/zulip
+
+    steps:
+      - checkout
+      - *create_cache_directories
+      - *restore_cache_package_json
+      - *restore_cache_requirements
+      - *install_dependencies
+      - *save_cache_package_json
+      - *save_cache_requirements
+      - *run_backend_tests
+      - *upload_coverage_report
+
+  "bionic-python-3.6":
+    docker:
+      # This is built from tools/circleci/images/bionic/Dockerfile .
+      - image: gregprice/circleci:bionic-python-1.test
+
+    working_directory: ~/zulip
+
+    steps:
+      - checkout
+
+      - *create_cache_directories
+
+      - run:
+          name: do Bionic hack
+          command: |
+              # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
+              # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
+              redis-server --daemonize yes
+
+      - *restore_cache_package_json
+      - *restore_cache_requirements
+      - *install_dependencies
+      - *save_cache_package_json
+      - *save_cache_requirements
+      - *run_backend_tests
+      - *upload_coverage_report
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - "trusty-python-3.4"
+      - "xenial-python-3.5"
+      - "bionic-python-3.6"

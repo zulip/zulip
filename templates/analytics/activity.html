@@ -9,41 +9,40 @@
 
 {% block customhead %}
 {{ super() }}
-{{ minified_js('activity')|safe }}
-{% stylesheet 'activity' %}
+{{ render_bundle('activity') }}
 {% endblock %}
 
 {% block content %}
 
-{% if not is_home %}
-<a class="show-all" href="/activity">Home</a>
-<br />
-{% endif %}
+    {% if not is_home %}
+    <a class="show-all" href="/activity">Home</a>
+    <br />
+    {% endif %}
 
-<h4>{{ title }}</h4>
+    <h4>{{ title }}</h4>
 
-{% if realm_link %}
-<a href="{{ realm_link }}">Graph</a><br />
-{% endif %}
+    {% if realm_link %}
+    <a href="{{ realm_link }}">Graph</a><br />
+    {% endif %}
 
-<ul class="nav nav-tabs">
-{% for name, activity in data %}
-    <li {% if loop.first %} class="active" {% endif %}>
-        <a href="#{{ name|slugify }}" data-toggle="tab">{{ name }}</a>
-    </li>
-{% endfor %}
-</ul>
+    <ul class="nav nav-tabs">
+        {% for name, activity in data %}
+        <li {% if loop.first %} class="active" {% endif %}>
+            <a href="#{{ name|slugify }}" data-toggle="tab">{{ name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
 
-<div class="tab-content">
+    <div class="tab-content">
 
-{% for name, activity in data %}
+        {% for name, activity in data %}
 
-    <div class="tab-pane {% if loop.first %} active {% endif %}" id="{{ name|slugify }}">
-        {{ activity|safe }}
+        <div class="tab-pane {% if loop.first %} active {% endif %}" id="{{ name|slugify }}">
+            {{ activity|safe }}
+        </div>
+
+        {% endfor %}
+
     </div>
-
-{% endfor %}
-
-</div>
 
 {% endblock %}

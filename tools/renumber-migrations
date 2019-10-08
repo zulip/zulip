@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+
+import glob
+import os
+import sys
+import fileinput
+import re
+
+from typing import List
+
+def validate_order(order, length):
+    # type: (List[int], int) -> None
+    if len(order) != length:
+        print("Please enter the sequence of all the conflicting files at once")
+        sys.exit(1)
+
+    for i in order:
+        if i > length or i < 1 or order.count(i) > 1:
+            print("Incorrect input")
+            sys.exit(1)
+
+def renumber_migration(conflicts, order, last_correct_migration):
+    # type: (List[str], List[int], str) -> None
+    stack = []  # type: List[str]
+    for i in order:
+        if conflicts[i-1][0:4] not in stack:
+            stack.append(conflicts[i-1][0:4])
+        else:
+            # Replace dependencies with the last correct migration
+            file = fileinput.FileInput('zerver/migrations/' + conflicts[i-1], inplace=True)
+            for line in file:
+                print(re.sub(r'[\d]+(_[a-z0-9]+)+', last_correct_migration, line), end='')
+
+            # Rename the migration indexing at the end
+            new_name = conflicts[i-1].replace(conflicts[i-1][0:4],
+                                              '%04d' % (int(last_correct_migration[0:4]) + 1,))
+            os.rename('zerver/migrations/' + conflicts[i-1], 'zerver/migrations/' + new_name)
+
+            last_correct_migration = new_name.replace('.py', '')
+
+def resolve_conflicts(conflicts, files_list):
+    # type: (List[str], List[str]) -> None
+    print("Conflicting migrations:")
+    for i in range(0, len(conflicts)):
+        print(str(i+1) + '. ' + conflicts[i])
+
+    order_input = input("Enter the order in which these migrations should be arranged: ")
+    order = list(map(int, order_input.split()))
+    validate_order(order, len(conflicts))
+
+    last_correct_migration = conflicts[order[0] - 1]
+
+    last_correct_migration = last_correct_migration.replace('.py', '')
+    renumber_migration(conflicts, order, last_correct_migration)
+
+if __name__ == '__main__':
+
+    while True:
+        conflicts = []  # type: List[str]
+        stack = []  # type: List[str]
+        files_list = [os.path.basename(path) for path in glob.glob("zerver/migrations/????_*.py")]
+        file_index = [file[0:4] for file in files_list]
+
+        for file in file_index:
+            migration_number = file[0:4]
+            counter = file_index.count(migration_number)
+            if counter > 1 and file[0:4] not in stack:
+                conflicts += [file_name for file_name in files_list if file_name.startswith(migration_number)]
+                stack.append(migration_number)
+
+        if len(conflicts) > 0:
+            resolve_conflicts(conflicts, files_list)
+        else:
+            break
+
+    print("All conflicts resolved")

@@ -7,10 +7,10 @@ if [ "$(uname)" = "OpenBSD" ]; then
   DEFAULT_USER="_postgresql"
 fi
 
-ROOT_POSTGRES="sudo -i -u "$DEFAULT_USER" psql"
+ROOT_POSTGRES=(sudo -i -u "$DEFAULT_USER" psql)
 DEFAULT_DB=""
 if [ "$(uname)" = "Darwin" ]; then
-   ROOT_POSTGRES="psql"
+   ROOT_POSTGRES=(psql)
    DEFAULT_DB="postgres"
 fi
 
@@ -43,12 +43,13 @@ if ! pg_isready -U "$DEFAULT_USER" -q; then
     set +x
     echo
     echo 'ERROR: PostgreSQL Server is not running! Ensure the service is enabled.'
+    # shellcheck disable=SC2016
     echo 'ERROR: Try `sudo service postgresql start`?'
     echo "ERROR: You can easily test if you fixed it using: pg_isready -U \$DEFAULT_USER"
     exit 1
 fi
 
-$ROOT_POSTGRES "$DEFAULT_DB" << EOF
+"${ROOT_POSTGRES[@]}" "$DEFAULT_DB" << EOF
 CREATE USER $USERNAME;
 ALTER USER $USERNAME PASSWORD '$PASSWORD';
 ALTER USER $USERNAME CREATEDB;
@@ -61,7 +62,7 @@ EOF
 
 umask go-rw
 PGPASS_PREFIX="*:*:*:$USERNAME:"
-PGPASS_ESCAPED_PREFIX="*:\*:\*:$USERNAME:"
+PGPASS_ESCAPED_PREFIX="*:\\*:\\*:$USERNAME:"
 if ! grep -q "$PGPASS_ESCAPED_PREFIX" ~/.pgpass; then
     echo "$PGPASS_PREFIX$PASSWORD" >> ~/.pgpass
 else
@@ -81,7 +82,7 @@ psql -h localhost "$DBNAME_BASE" "$USERNAME" <<EOF
 CREATE SCHEMA zulip;
 EOF
 
-$ROOT_POSTGRES "$DBNAME_BASE" << EOF
+"${ROOT_POSTGRES[@]}" "$DBNAME_BASE" << EOF
 CREATE EXTENSION tsearch_extras SCHEMA zulip;
 CREATE EXTENSION pgroonga;
 GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;

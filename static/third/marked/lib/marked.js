@@ -15,19 +15,18 @@ var block = {
   code: /^( {4}[^\n]+\n*)+/,
   fences: noop,
   hr: /^( *[-*_]){3,} *(?:\n+|$)/,
-  heading: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
   nptable: noop,
-  lheading: /^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
-  blockquote: /^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
+  blockquote: /^(?!( *>\s*($|\n))*($|\n))( *>[^\n]*(\n(?!def)[^\n]+)*\n*)+/,
   list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
   html: /^ *(?:comment *(?:\n|\s*$)|closed *(?:\n{2,}|\s*$)|closing *(?:\n{2,}|\s*$))/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
   table: noop,
-  paragraph: /^((?:[^\n]+\n?(?!hr|heading|lheading|blockquote|tag|def))+)\n*/,
+  paragraph: /^((?:[^\n]+\n?(?!hr|blockquote|tag|def))+)\n*/,
   text: /^[^\n]+/
 };
 
-block.bullet = /(?:[*+-]|\d+\.)/;
+// Zulip modification: Remove numbers from this pattern.
+block.bullet = /(?:[*+-])/;
 block.item = /^( *)(bull) [^\n]*(?:\n(?!\1bull )[^\n]*)*/;
 block.item = replace(block.item, 'gm')
   (/bull/g, block.bullet)
@@ -57,8 +56,6 @@ block.html = replace(block.html)
 
 block.paragraph = replace(block.paragraph)
   ('hr', block.hr)
-  ('heading', block.heading)
-  ('lheading', block.lheading)
   ('blockquote', block.blockquote)
   ('tag', '<' + block._tag)
   ('def', block.def)
@@ -77,7 +74,6 @@ block.normal = merge({}, block);
 block.gfm = merge({}, block.normal, {
   fences: /^ *(`{3,}|~{3,})[ \.]*(\S+)? *\n([\s\S]*?)\s*\1 *(?:\n+|$)/,
   paragraph: /^/,
-  heading: /^ *(#{1,6}) +([^\n]+?) *#* *(?:\n+|$)/
 });
 
 block.gfm.paragraph = replace(block.paragraph)
@@ -208,17 +204,6 @@ Lexer.prototype.token = function(src, top, bq) {
       continue;
     }
 
-    // heading
-    if (cap = this.rules.heading.exec(src)) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'heading',
-        depth: cap[1].length,
-        text: cap[2]
-      });
-      continue;
-    }
-
     // table no leading pipe (gfm)
     if (top && (cap = this.rules.nptable.exec(src))) {
       src = src.substring(cap[0].length);
@@ -248,17 +233,6 @@ Lexer.prototype.token = function(src, top, bq) {
 
       this.tokens.push(item);
 
-      continue;
-    }
-
-    // lheading
-    if (cap = this.rules.lheading.exec(src)) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'heading',
-        depth: cap[2] === '=' ? 1 : 2,
-        text: cap[1]
-      });
       continue;
     }
 
@@ -471,12 +445,13 @@ var inline = {
   nolink: /^!?\[((?:\[[^\]]*\]|[^\[\]])*)\]/,
   strong: /^__([\s\S]+?)__(?!_)|^\*\*([\s\S]+?)\*\*(?!\*)/,
   em: /^\b_((?:[^_]|__)+?)_\b|^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,
-  code: /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
+  code: /^(`+)(\s*[\s\S]*?[^`]\s*)\1(?!`)/,
   br: /^ {2,}\n(?!\s*$)/,
   del: noop,
   emoji: noop,
   unicodeemoji: noop,
   usermention: noop,
+  groupmention: noop,
   stream: noop,
   avatar: noop,
   tex: noop,
@@ -537,16 +512,24 @@ inline.breaks = merge({}, inline.gfm, {
 
 inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
-  unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|[\u2600-\u26FF]|[\u2700-\u27BF])/,
-  usermention: /^(@(?:\*\*([^\*]+)\*\*|(\w+)))/m, // Match multi-word string between @** ** or match any one-word
-  stream: /^#\*\*([^\*]+)\*\*/m,
+  unicodeemoji: RegExp('^(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
+                       '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
+                       '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
+                       '[\u3000-\u303F]|[\u3200-\u32FF])'),
+  usermention: /^(@(?:\*\*([^\*]+)\*\*))/, // Match potentially multi-word string between @** **
+  groupmention: /^@\*([^\*]+)\*/, // Match multi-word string between @* *
+  stream: /^#\*\*([^\*]+)\*\*/,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
-  tex: /^(\$\$([^ _$](\\\$|[^$])*)(?! )\$\$)\B/,
+  tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
   realm_filters: [],
   text: replace(inline.breaks.text)
-    ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|[\u2600-\u26FF]|[\u2700-\u27BF])|')
+    ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
+          '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
+          '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
+          '[\u3000-\u303F]|[\u3200-\u32FF])|')
     (']|', '#@:]|')
+    ('^[', '^^\\${3,}|^^[')
     ()
 });
 
@@ -729,6 +712,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // groupmention (zulip)
+    if (cap = this.rules.groupmention.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.groupmention(cap[1], cap[0]);
+      continue;
+    }
+
     // stream (zulip)
     if (cap = this.rules.stream.exec(src)) {
       src = src.substring(cap[0].length);
@@ -746,7 +736,7 @@ InlineLexer.prototype.output = function(src) {
     // em
     if (cap = this.rules.em.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.renderer.em(cap[1] + cap[2]);
+      out += this.renderer.em(this.output(cap[1] + cap[2]));
       continue;
     }
 
@@ -806,6 +796,10 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // WARNING: Do not place any parsing logic below this comment.
+    // Any parsing logic place after the `text` block below will most
+    // likely be silently never executed.
+
     // text
     if (cap = this.rules.text.exec(src)) {
       src = src.substring(cap[0].length);
@@ -835,6 +829,7 @@ InlineLexer.prototype.outputLink = function(cap, link) {
     : this.renderer.image(href, title, escape(cap[1]));
 };
 InlineLexer.prototype.emoji = function (name) {
+  name = escape(name)
   if (typeof this.options.emojiHandler !== 'function')
     return ':' + name + ':';
 
@@ -842,6 +837,7 @@ InlineLexer.prototype.emoji = function (name) {
 };
 
 InlineLexer.prototype.unicodeEmoji = function (name) {
+  name = escape(name)
   if (typeof this.options.unicodeEmojiHandler !== 'function')
     return name;
   return this.options.unicodeEmojiHandler(name);
@@ -854,12 +850,14 @@ InlineLexer.prototype.tex = function (tex, fullmatch) {
 };
 
 InlineLexer.prototype.userAvatar = function (email) {
+  email = escape(email);
   if (typeof this.options.avatarHandler !== 'function')
     return '!avatar(' + email + ')';
   return this.options.avatarHandler(email);
 };
 
 InlineLexer.prototype.userGravatar = function (email) {
+  email = escape(email);
   if (typeof this.options.avatarHandler !== 'function')
     return '!gravatar(' + email + ')';
   return this.options.avatarHandler(email);
@@ -873,6 +871,7 @@ InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
 };
 
 InlineLexer.prototype.usermention = function (username, orig) {
+  orig = escape(orig);
   if (typeof this.options.userMentionHandler !== 'function')
   {
     return orig;
@@ -886,7 +885,23 @@ InlineLexer.prototype.usermention = function (username, orig) {
   return orig;
 };
 
+InlineLexer.prototype.groupmention = function (groupname, orig) {
+  orig = escape(orig);
+  if (typeof this.options.groupMentionHandler !== 'function')
+  {
+    return orig;
+  }
+
+  var handled = this.options.groupMentionHandler(groupname);
+  if (handled !== undefined) {
+    return handled;
+  }
+
+  return orig;
+};
+
 InlineLexer.prototype.stream = function (streamName, orig) {
+  orig = escape(orig);
   if (typeof this.options.streamHandler !== 'function')
     return orig;
 
@@ -981,19 +996,6 @@ Renderer.prototype.html = function(html) {
   return html;
 };
 
-Renderer.prototype.heading = function(text, level, raw) {
-  return '<h'
-    + level
-    + ' id="'
-    + this.options.headerPrefix
-    + raw.toLowerCase().replace(/[^\w]+/g, '-')
-    + '">'
-    + text
-    + '</h'
-    + level
-    + '>\n';
-};
-
 Renderer.prototype.hr = function() {
   return this.options.xhtml ? '<hr/>\n' : '<hr>\n';
 };
@@ -1040,6 +1042,7 @@ Renderer.prototype.strong = function(text) {
 };
 
 Renderer.prototype.em = function(text) {
+  text = escape(text);
   return '<em>' + text + '</em>';
 };
 
@@ -1189,12 +1192,6 @@ Parser.prototype.tok = function() {
     }
     case 'hr': {
       return this.renderer.hr();
-    }
-    case 'heading': {
-      return this.renderer.heading(
-        this.inline.output(this.token.text),
-        this.token.depth,
-        this.token.text);
     }
     case 'code': {
       return this.renderer.code(this.token.text,
@@ -1441,7 +1438,7 @@ function marked(src, opt, callback) {
   } catch (e) {
     e.message += '\nPlease report this to https://github.com/chjj/marked.';
     if ((opt || marked.defaults).silent) {
-      return '<p>An error occured:</p><pre>'
+      return '<p>An error occurred:</p><pre>'
         + escape(e.message + '', true)
         + '</pre>';
     }

@@ -1,0 +1,44 @@
+<div id="invite-user" class="overlay flex new-style" tabindex="-1" role="dialog" data-overlay="invite"
+  aria-labelledby="invite-user-label" aria-hidden="true">
+    <div class="overlay-content modal-bg">
+        <div class="modal-header">
+            <button type="button" class="exit" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
+            <h3 id="invite-user-label">{% trans %}Invite users to Zulip{% endtrans %}</h3>
+        </div>
+        <form id="invite_user_form" class="form-horizontal">{{ csrf_input }}
+            <div class="modal-body">
+                <div class="control-group">
+                    <div id="invite-result"></div>
+                    <label class="control-label" for="invitee_emails">{{ _('Emails (one on each line or comma-separated)') }}</label>
+                    <div class="controls">
+                        <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{ _('One or more email addresses...') }}"></textarea>
+                    </div>
+                </div>
+                {% if is_admin %}
+                <div class="control-group">
+                    <label class="control-label" for="invite_as">{{ _('User(s) join as') }}</label>
+                    <div class="controls">
+                        <select id="invite_as">
+                            <option name="invite_as" value="normal">{{ _('Members') }}</option>
+                            <option name="invite_as" value="admin">{{ _('Organization administrators') }}</option>
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="alert" id="invite_status"></div>
+                {% if development_environment %}
+                <div class="alert" id="dev_env_msg"></div>
+                {% endif %}
+                <div class="control-group">
+                    <label class="control-label">{{ _('Streams they should join') }}</label>
+                    <div class="controls" id="streams_to_add"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="button exit small rounded" data-dismiss="modal">{{ _('Cancel') }}</button>
+                <button id="submit-invitation" class="button small rounded sea-green" type="button"
+                  data-loading-text="{{ _('Inviting...') }}">{{ _('Invite') }}</button>
+            </div>
+        </form>
+    </div>
+</div>

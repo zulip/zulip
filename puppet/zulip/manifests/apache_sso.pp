@@ -1,30 +1,46 @@
 class zulip::apache_sso {
   include zulip::localhost_sso
 
-  $apache_packages = [ "apache2", "libapache2-mod-wsgi", ]
-  package { $apache_packages: ensure => "installed" }
+  case $::osfamily {
+    'debian': {
+      $apache_packages = [ 'apache2', 'libapache2-mod-wsgi-py3', ]
+      $apache_former_packages = [ 'libapache2-mod-wsgi', ]
+      $conf_dir = '/etc/apache2'
+      $apache2 = 'apache2'
+    }
+    'redhat': {
+      $apache_packages = [ 'httpd', 'python36u-mod_wsgi', ]
+      $apache_former_packages = []
+      $conf_dir = '/etc/httpd'
+      $apache2 = 'httpd'
+    }
+    default: {
+      fail('osfamily not supported')
+    }
+  }
+  package { $apache_packages: ensure => 'installed' }
+  package { $apache_former_packages: ensure => 'absent' }
 
-  apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "ssl", ]:
+  apache2mod { [ 'headers', 'proxy', 'proxy_http', 'rewrite', 'ssl', 'wsgi', ]:
     ensure  => present,
-    require => Package['apache2'],
+    require => Package[$apache2],
   }
 
-  file { "/etc/apache2/ports.conf":
-    require => Package[apache2],
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 640,
-    source => "puppet:///modules/zulip/apache/ports.conf",
+  file { "${conf_dir}/ports.conf":
+    ensure  => file,
+    require => Package[$apache2],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    source  => 'puppet:///modules/zulip/apache/ports.conf',
   }
 
-  file { "/etc/apache2/sites-available/":
+  file { "${conf_dir}/sites-available/":
     recurse => true,
-    require => Package[apache2],
-    owner  => "root",
-    group  => "root",
-    mode => 640,
-    source => "puppet:///modules/zulip/apache/sites/",
+    require => Package[$apache2],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    source  => 'puppet:///modules/zulip/apache/sites/',
   }
-
 }

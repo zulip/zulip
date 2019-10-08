@@ -1,3 +1,0 @@
--r py3_common.txt
--r dev.txt
--r mypy.txt

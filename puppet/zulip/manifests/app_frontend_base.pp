@@ -5,86 +5,110 @@ class zulip::app_frontend_base {
   include zulip::supervisor
 
   $web_packages = [
-                    # Needed to access our database
-                    "postgresql-client-${zulip::base::postgres_version}",
-                    ]
-  define safepackage ( $ensure = present ) {
-    if !defined(Package[$title]) {
-      package { $title: ensure => $ensure }
-    }
-  }
-  safepackage { $web_packages: ensure => "installed" }
+    # Needed to access our database
+    "postgresql-client-${zulip::base::postgres_version}",
+  ]
+  zulip::safepackage { $web_packages: ensure => 'installed' }
 
-  file { "/etc/nginx/zulip-include/app":
-    require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/nginx/zulip-include-frontend/app",
-    notify => Service["nginx"],
+  $nagios_plugins = $::osfamily ? {
+    'debian' => 'nagios-plugins-basic',
+    'redhat' => 'nagios-plugins',
   }
-  file { "/etc/nginx/zulip-include/upstreams":
-    require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/nginx/zulip-include-frontend/upstreams",
-    notify => Service["nginx"],
+
+  file { '/etc/nginx/zulip-include/app':
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/app',
+    notify  => Service['nginx'],
   }
-  file { "/etc/nginx/zulip-include/uploads.types":
-    require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/nginx/zulip-include-frontend/uploads.types",
-    notify => Service["nginx"],
+  file { '/etc/nginx/zulip-include/upstreams':
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/upstreams',
+    notify  => Service['nginx'],
   }
-  file { "/etc/nginx/zulip-include/app.d/":
+  file { '/etc/nginx/zulip-include/uploads.types':
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/uploads.types',
+    notify  => Service['nginx'],
+  }
+  file { '/etc/nginx/zulip-include/app.d/':
     ensure => directory,
-    owner => "root",
-    group => "root",
-    mode => 755,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
   }
 
-  $loadbalancers = split(zulipconf("loadbalancer", "ips", ""), ",")
+  $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
   if $loadbalancers != [] {
-    file { "/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf":
-      require => File["/etc/nginx/zulip-include/app.d"],
-      owner  => "root",
-      group  => "root",
-      mode => 644,
-      content => template("zulip/accept-loadbalancer.conf.template.erb"),
-      notify => Service["nginx"],
+    file { '/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf':
+      require => File['/etc/nginx/zulip-include/app.d'],
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      content => template('zulip/accept-loadbalancer.conf.template.erb'),
+      notify  => Service['nginx'],
     }
   }
 
+  # The number of Tornado processes to run on the server;
+  # historically, this has always been 1, but we now have experimental
+  # support for Tornado sharding.
+  $tornado_processes = zulipconf('application_server', 'tornado_processes', 1)
+  if $tornado_processes > 1 {
+    $tornado_ports = range(9800, 9800 + $tornado_processes)
+    $tornado_multiprocess = true
+  } else {
+    $tornado_multiprocess = false
+  }
+
+  # This determines whether we run queue processors multithreaded or
+  # multiprocess.  Multiprocess scales much better, but requires more
+  # RAM; we just auto-detect based on available system RAM.
+  $queues_multiprocess = $zulip::base::total_memory_mb > 3500
   $queues = $zulip::base::normal_queues
-  file { "/etc/supervisor/conf.d/zulip.conf":
+  if $queues_multiprocess {
+    $message_sender_default_processes = 4
+    $uwsgi_default_processes = 6
+  } else {
+    $message_sender_default_processes = 2
+    $uwsgi_default_processes = 4
+  }
+  $message_sender_processes = zulipconf('application_server', 'message_sender_processes',
+                                        $message_sender_default_processes)
+  file { '/etc/supervisor/conf.d/zulip.conf':
+    ensure  => file,
     require => Package[supervisor],
-    ensure => file,
-    owner => "root",
-    group => "root",
-    mode => 644,
-    content => template("zulip/supervisor/zulip.conf.template.erb"),
-    notify => Service["supervisor"],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/supervisor/zulip.conf.template.erb'),
+    notify  => Service['supervisor'],
   }
 
-  $uwsgi_processes = zulipconf("application_server", "uwsgi_processes", "5")
-  file { "/etc/zulip/uwsgi.ini":
+  $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
+  file { '/etc/zulip/uwsgi.ini':
+    ensure  => file,
     require => Package[supervisor],
-    ensure => file,
-    owner => "root",
-    group => "root",
-    mode => 644,
-    content => template("zulip/uwsgi.ini.template.erb"),
-    notify => Service["supervisor"],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/uwsgi.ini.template.erb'),
+    notify  => Service['supervisor'],
   }
 
-  file { "/home/zulip/tornado":
+  file { '/home/zulip/tornado':
     ensure => directory,
-    owner => "zulip",
-    group => "zulip",
-    mode => 755,
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0755',
   }
   file { '/home/zulip/logs':
     ensure => 'directory',
@@ -101,28 +125,28 @@ class zulip::app_frontend_base {
     owner  => 'zulip',
     group  => 'zulip',
   }
-  file { "/srv/zulip-npm-cache":
+  file { '/srv/zulip-npm-cache':
     ensure => directory,
-    owner => "zulip",
-    group => "zulip",
-    mode => 755,
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0755',
   }
-  file { "/srv/zulip-emoji-cache":
+  file { '/srv/zulip-emoji-cache':
     ensure => directory,
-    owner => "zulip",
-    group => "zulip",
-    mode => 755,
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0755',
   }
-  file { "/etc/cron.d/email-mirror":
+  file { '/etc/cron.d/email-mirror':
     ensure => absent,
   }
-  file { "/usr/lib/nagios/plugins/zulip_app_frontend":
-    require => Package[nagios-plugins-basic],
+  file { '/usr/lib/nagios/plugins/zulip_app_frontend':
+    require => Package[$nagios_plugins],
     recurse => true,
-    purge => true,
-    owner => "root",
-    group => "root",
-    mode => 755,
-    source => "puppet:///modules/zulip/nagios_plugins/zulip_app_frontend",
+    purge   => true,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_app_frontend',
   }
 }

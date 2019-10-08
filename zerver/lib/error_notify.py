@@ -1,28 +1,30 @@
-from __future__ import absolute_import
+# System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 
 import logging
-import six
 
 from collections import defaultdict
 from django.conf import settings
 from django.core.mail import mail_admins
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Any, Dict, Text
+from typing import cast, Any, Dict, Optional
 
-from zerver.models import get_user_profile_by_email
+from zerver.filters import clean_data_from_query_parameters
+from zerver.models import get_system_bot
 from zerver.lib.actions import internal_send_message
 from zerver.lib.response import json_success, json_error
 
-def format_subject(subject):
-    # type: (str) -> str
+def format_email_subject(email_subject: str) -> str:
     """
     Escape CR and LF characters.
     """
-    return subject.replace('\n', '\\n').replace('\r', '\\r')
+    return email_subject.replace('\n', '\\n').replace('\r', '\\r')
 
-def user_info_str(report):
-    # type: (Dict[str, Any]) -> str
+def logger_repr(report: Dict[str, Any]) -> str:
+    return ("Logger %(logger_name)s, from module %(log_module)s line %(log_lineno)d:"
+            % report)
+
+def user_info_str(report: Dict[str, Any]) -> str:
     if report['user_full_name'] and report['user_email']:
         user_info = "%(user_full_name)s (%(user_email)s)" % (report)
     else:
@@ -31,19 +33,28 @@ def user_info_str(report):
     user_info += " on %s deployment"  % (report['deployment'],)
     return user_info
 
-def notify_browser_error(report):
-    # type: (Dict[str, Any]) -> None
+def deployment_repr(report: Dict[str, Any]) -> str:
+    deployment = 'Deployed code:\n'
+    for (label, field) in [('git', 'git_described'),
+                           ('ZULIP_VERSION', 'zulip_version_const'),
+                           ('version', 'zulip_version_file'),
+                           ]:
+        if report[field] is not None:
+            deployment += '- %s: %s\n' % (label, report[field])
+    return deployment
+
+def notify_browser_error(report: Dict[str, Any]) -> None:
     report = defaultdict(lambda: None, report)
     if settings.ERROR_BOT:
         zulip_browser_error(report)
     email_browser_error(report)
 
-def email_browser_error(report):
-    # type: (Dict[str, Any]) -> None
-    subject = "Browser error for %s" % (user_info_str(report))
+def email_browser_error(report: Dict[str, Any]) -> None:
+    email_subject = "Browser error for %s" % (user_info_str(report))
 
     body = ("User: %(user_full_name)s <%(user_email)s> on %(deployment)s\n\n"
             "Message:\n%(message)s\n\nStacktrace:\n%(stacktrace)s\n\n"
+            "IP address: %(ip_address)s\n"
             "User agent: %(user_agent)s\n"
             "href: %(href)s\n"
             "Server path: %(server_path)s\n"
@@ -53,16 +64,15 @@ def email_browser_error(report):
     more_info = report['more_info']
     if more_info is not None:
         body += "\nAdditional information:"
-        for (key, value) in six.iteritems(more_info):
+        for (key, value) in more_info.items():
             body += "\n  %s: %s" % (key, value)
 
     body += "\n\nLog:\n%s" % (report['log'],)
 
-    mail_admins(subject, body)
+    mail_admins(email_subject, body)
 
-def zulip_browser_error(report):
-    # type: (Dict[str, Any]) -> None
-    subject = "JS error: %s" % (report['user_email'],)
+def zulip_browser_error(report: Dict[str, Any]) -> None:
+    email_subject = "JS error: %s" % (report['user_email'],)
 
     user_info = user_info_str(report)
 
@@ -70,60 +80,70 @@ def zulip_browser_error(report):
     body += ("Message: %(message)s\n"
              % (report))
 
-    realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+    realm = get_system_bot(settings.ERROR_BOT).realm
     internal_send_message(realm, settings.ERROR_BOT,
-                          "stream", "errors", format_subject(subject), body)
+                          "stream", "errors", format_email_subject(email_subject), body)
 
-def notify_server_error(report):
-    # type: (Dict[str, Any]) -> None
+def notify_server_error(report: Dict[str, Any], skip_error_zulip: Optional[bool]=False) -> None:
     report = defaultdict(lambda: None, report)
     email_server_error(report)
-    if settings.ERROR_BOT:
+    if settings.ERROR_BOT and not skip_error_zulip:
         zulip_server_error(report)
 
-def zulip_server_error(report):
-    # type: (Dict[str, Any]) -> None
-    subject = '%(node)s: %(message)s' % (report)
-    stack_trace = report['stack_trace'] or "No stack trace available"
+def zulip_server_error(report: Dict[str, Any]) -> None:
+    email_subject = '%(node)s: %(message)s' % (report)
 
+    logger_str = logger_repr(report)
     user_info = user_info_str(report)
+    deployment = deployment_repr(report)
 
-    request_repr = (
-        "Request info:\n~~~~\n"
-        "- path: %(path)s\n"
-        "- %(method)s: %(data)s\n") % (report)
+    if report['has_request']:
+        request_repr = (
+            "Request info:\n~~~~\n"
+            "- path: %(path)s\n"
+            "- %(method)s: %(data)s\n") % (report)
+        for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
+            val = report.get(field.lower())
+            if field == "QUERY_STRING":
+                val = clean_data_from_query_parameters(str(val))
+            request_repr += "- %s: \"%s\"\n" % (field, val)
+        request_repr += "~~~~"
+    else:
+        request_repr = "Request info: none"
 
-    for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
-        request_repr += "- %s: \"%s\"\n" % (field, report.get(field.lower()))
-    request_repr += "~~~~"
+    message = ("%s\nError generated by %s\n\n~~~~ pytb\n%s\n\n~~~~\n%s\n%s"
+               % (logger_str, user_info, report['stack_trace'], deployment, request_repr))
 
-    realm = get_user_profile_by_email(settings.ERROR_BOT).realm
-    internal_send_message(realm, settings.ERROR_BOT,
-                          "stream", "errors", format_subject(subject),
-                          "Error generated by %s\n\n~~~~ pytb\n%s\n\n~~~~\n%s" % (
-                              user_info, stack_trace, request_repr))
+    realm = get_system_bot(settings.ERROR_BOT).realm
+    internal_send_message(realm, settings.ERROR_BOT, "stream", "errors",
+                          format_email_subject(email_subject), message)
 
-def email_server_error(report):
-    # type: (Dict[str, Any]) -> None
-    subject = '%(node)s: %(message)s' % (report)
+def email_server_error(report: Dict[str, Any]) -> None:
+    email_subject = '%(node)s: %(message)s' % (report)
 
+    logger_str = logger_repr(report)
     user_info = user_info_str(report)
+    deployment = deployment_repr(report)
 
-    request_repr = (
-        "Request info:\n"
-        "- path: %(path)s\n"
-        "- %(method)s: %(data)s\n") % (report)
+    if report['has_request']:
+        request_repr = (
+            "Request info:\n"
+            "- path: %(path)s\n"
+            "- %(method)s: %(data)s\n") % (report)
+        for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
+            val = report.get(field.lower())
+            if field == "QUERY_STRING":
+                val = clean_data_from_query_parameters(str(val))
+            request_repr += "- %s: \"%s\"\n" % (field, val)
+    else:
+        request_repr = "Request info: none\n"
 
-    for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
-        request_repr += "- %s: \"%s\"\n" % (field, report.get(field.lower()))
+    message = ("%s\nError generated by %s\n\n%s\n\n%s\n\n%s"
+               % (logger_str, user_info, report['stack_trace'], deployment, request_repr))
 
-    message = "Error generated by %s\n\n%s\n\n%s" % (user_info, report['stack_trace'],
-                                                     request_repr)
+    mail_admins(format_email_subject(email_subject), message, fail_silently=True)
 
-    mail_admins(format_subject(subject), message, fail_silently=True)
-
-def do_report_error(deployment_name, type, report):
-    # type: (Text, Text, Dict[str, Any]) -> HttpResponse
+def do_report_error(deployment_name: str, type: str, report: Dict[str, Any]) -> HttpResponse:
     report['deployment'] = deployment_name
     if type == 'browser':
         notify_browser_error(report)

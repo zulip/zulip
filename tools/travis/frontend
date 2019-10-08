@@ -1,9 +1,0 @@
-#!/bin/bash
-
-source tools/travis/activate-venv
-
-set -e
-set -x
-
-./tools/test-js-with-node
-./tools/test-js-with-casper

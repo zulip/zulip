@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage() {
+    cat <<EOF >&2
+Usage: $0 --email=admin@example.com [--method={webroot|standalone}] \
+[--no-zulip-conf] hostname.example.com [another.example.com]
+EOF
+    exit 1
+}
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root" >&2
+    exit 1
+fi
+
+method=webroot
+args="$(getopt -o '' --long help,email:,method:,deploy-hook:,no-zulip-conf,agree-tos -n "$0" -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --email)
+            EMAIL="$2"
+            shift
+            shift
+            ;;
+        --method)
+            method="$2"
+            shift
+            shift
+            ;;
+        --deploy-hook)
+            deploy_hook=(--deploy-hook "$2")
+            shift
+            shift
+            ;;
+        --agree-tos)
+            agree_tos=--agree-tos
+            shift
+            ;;
+        --no-zulip-conf)
+            no_zulip_conf=1
+            shift
+            ;;
+        --help)
+            show_help=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+# Parse the remaining arguments as Subject Alternative Names to pass to certbot
+HOSTNAMES=()
+for arg; do
+    HOSTNAMES+=(-d "$arg")
+done
+DOMAIN=$1
+
+if [ -n "$show_help" ]; then
+    usage
+fi
+
+if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
+    usage
+fi
+
+case "$method" in
+    standalone)
+        method_args=(--standalone)
+        ;;
+    webroot)
+        method_args=(--webroot '--webroot-path=/var/lib/zulip/certbot-webroot/')
+        ;;
+    *)
+        usage
+        ;;
+esac
+
+set -x
+
+CERTBOT_PATH="/usr/local/sbin/certbot-auto"
+# For reference https://certbot.eff.org/all-instructions/#debian-other-nginx
+wget -q https://dl.eff.org/certbot-auto -O "$CERTBOT_PATH"
+chmod a+x "$CERTBOT_PATH"
+
+# First, we install the OS packages with --quiet, to suppress `apt`
+# prompting the user for input.  This can't be part of the same
+# invocation as gets the certs, since `certonly --quiet --force-interactive`
+# rejects the Certbot ToS, causing Certbot to fail.
+"$CERTBOT_PATH" --os-packages-only --quiet
+# We don't use --no-interactive, because certbot needs to ask the user
+# to agree to the Let's Encrypt Subscriber Agreement (aka ToS).
+# Passing --force-interactive suppresses a warning, but also brings up
+# an annoying prompt we stifle with --no-eff-email.
+"$CERTBOT_PATH" certonly "${method_args[@]}" \
+                "${HOSTNAMES[@]}" -m "$EMAIL" \
+                $agree_tos --force-renewal \
+                "${deploy_hook[@]}" \
+                --force-interactive --no-eff-email
+
+symlink_with_backup() {
+    if [ -e "$2" ]; then
+        # If the user is setting up our automatic certbot-management on a
+        # system that already has certs for Zulip, use some extra caution
+        # to keep the old certs available.
+        mv -f --backup=numbered "$2" "$2".setup-certbot || true
+    fi
+    ln -nsf "$1" "$2"
+}
+
+if [ ${#deploy_hook} -eq 0 ]; then
+    # If no deploy hook was specified, assume we're deploying to the default
+    # location Zulip wants.
+    CERT_DIR=/etc/letsencrypt/live/"$DOMAIN"
+    symlink_with_backup "$CERT_DIR"/privkey.pem /etc/ssl/private/zulip.key
+    symlink_with_backup "$CERT_DIR"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
+fi
+
+case "$method" in
+    webroot)
+        service nginx reload
+        ;;
+esac
+
+if [ -z "$no_zulip_conf" ]; then
+    crudini --set /etc/zulip/zulip.conf certbot auto_renew yes
+fi
+
+echo "Certbot SSL certificate configuration succeeded."

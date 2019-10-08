@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -x
+set -e
+
+# Has only been tested on Red Hat systems; gmake is wrong for others.
+
+cd "$(mktemp -d)"
+
+git clone https://github.com/zulip/tsearch_extras
+(cd tsearch_extras && gmake && make install)
+
+PGVER=10
+# Link installed hunspell-en-US to tsearch data
+ln -sf /usr/share/myspell/en_US.dic "/usr/pgsql-$PGVER/share/tsearch_data/en_us.dict"
+ln -sf /usr/share/myspell/en_US.aff "/usr/pgsql-$PGVER/share/tsearch_data/en_us.affix"

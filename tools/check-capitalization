@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import absolute_import
-from __future__ import print_function
+#!/usr/bin/env python3
 
 # check for the venv
 from lib import sanity_check
@@ -26,19 +24,24 @@ if __name__ == '__main__':
                         action='store_true', dest='show_ignored', default=False,
                         help='Show strings that passed the check because they '
                              'contained ignored phrases.')
+    parser.add_argument('--no-generate',
+                        action='store_true', dest='no_generate', default=False,
+                        help="Don't run makemessages command.")
     args = parser.parse_args()
 
-    subprocess.call(['./manage.py', 'makemessages'], stderr=subprocess.STDOUT)
+    if not args.no_generate:
+        subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'],
+                        stderr=subprocess.STDOUT)
 
     with open('static/locale/en/translations.json') as f:
         data = json.load(f)
         frontend = check_capitalization(list(data.keys()))
-        frontend_errors, frontend_ignored = frontend
+        frontend_errors, frontend_ignored, banned_errors_front = frontend
 
     with open('static/locale/en/LC_MESSAGES/django.po') as f:
         rows = [r for r in DJANGO_PO_REGEX.findall(f.read()) if r]
         backend = check_capitalization(rows)
-        backend_errors, backend_ignored = backend
+        backend_errors, backend_ignored, banned_errors_back = backend
 
     if frontend_errors:
         print(WARNING + "Strings not properly capitalized in frontend:" + ENDC)
@@ -48,13 +51,22 @@ if __name__ == '__main__':
         print(WARNING + "Strings not properly capitalized in backend:" + ENDC)
         print('\n'.join(backend_errors))
 
+    if banned_errors_front:
+        print(WARNING + "Found banned words in frontend strings" + ENDC)
+        print('\n'.join(banned_errors_front))
+
+    if banned_errors_back:
+        print(WARNING + "Found banned words in backend strings" + ENDC)
+        print('\n'.join(banned_errors_back))
+
     if args.show_ignored:
         print(WARNING + "Strings which were ignored: " + ENDC)
         print('\n'.join(frontend_ignored + backend_ignored))
 
-    if frontend_errors or backend_errors:
+    if frontend_errors or backend_errors or banned_errors_back or banned_errors_front:
         # Point the user to the documentation on what the policy is.
-        print(WARNING + "See https://zulip.readthedocs.io/en/latest/translating.html#capitalization" + ENDC)
+        docs_url = "https://zulip.readthedocs.io/en/latest/translating/translating.html#capitalization"
+        print(WARNING + "See " + docs_url + ENDC)
         print(FAIL + "Failed!" + ENDC)
         sys.exit(1)
     else:

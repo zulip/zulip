@@ -1,0 +1,84 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<div class="error_page" style="padding-bottom: 60px;">
+    <div class="container">
+        <div class="row-fluid">
+            <img src="/static/images/500art.svg" alt=""/>
+            <div class="errorbox config-error">
+                <div class="errorcontent">
+                    <h1 class="lead">Configuration error</h1>
+                    <br/>
+                    {% if ldap_error_realm_is_none %}
+                        {% trans %}
+                        You are trying to login using LDAP without creating an
+                        organization first. Please use EmailAuthBackend to create
+                        your organization and then try again.
+                        {% endtrans %}
+                    {% endif %}
+
+                    {% if smtp_error %}
+                        <p>
+                            It appears there are problems with the
+                            email configuration.
+                        </p>
+                        {% if not development_environment %}
+                        <p>
+                            See <code>/var/log/zulip/errors.log</code> for more
+                            details on the error.
+                        </p>
+                        <p>
+                            You may also want to test your email configuration,
+                            as described in the
+                            <a href="https://zulip.readthedocs.io/en/latest/production/email.html">
+                            Production installation docs</a>.
+                        </p>
+                        {% else %}
+                        <p>
+                            Please have a look at our
+                            <a target="_blank" href="https://zulip.readthedocs.io/en/latest/subsystems/email.html#development-and-testing">
+                            setup guide</a> for forwarding emails sent in development
+                            environment to an email account.
+                        </p>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if dev_not_supported_error %}
+                    {{ render_markdown_path('zerver/dev-not-supported-error.md', {"settings_path": settings_path}) }}
+                    {% endif %}
+
+                    {% if google_error %}
+                    {{ render_markdown_path('zerver/google-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
+                    {% endif %}
+
+                    {% if github_error %}
+                    {{ render_markdown_path('zerver/github-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
+                    {% endif %}
+
+                    {% if google_error or github_error %}
+                        {% if development_environment %}
+                        <p>
+                            For more information, have a look at
+                            the <a href="https://zulip.readthedocs.io/en/latest/subsystems/settings.html#testing-google-github-authentication">authentication
+                            setup guide</a> for the development environment.
+                        </p>
+                        {% else %}
+                        <p>
+                            For more information, have a look at
+                            our <a href="https://zulip.readthedocs.io/en/latest/production/authentication-methods.html">authentication
+                            setup guide</a> and the comments in <code>{{ settings_comments_path }}</code>.
+                        </p>
+                        {% endif %}
+                    {% endif %}
+
+                    <p>After making your changes, remember to restart
+                    the Zulip server.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -111,4 +111,4 @@ mailman   unix  -       n       n       -       -       pipe
   flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
   ${nexthop} ${user}
 zulip unix  -       n       n       -       -       pipe
-  flags= user=zulip argv=/home/zulip/deployments/current/manage.py email_mirror ${original_recipient}
+  flags= user=zulip argv=/home/zulip/deployments/current/scripts/lib/email-mirror-postfix -r ${original_recipient}

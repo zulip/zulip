@@ -1,8 +1,8 @@
 <ul class='expanded_private_messages {{zoom_class}}' data-name='private'>
     {{#each messages}}
-    <li class='{{#if is_zero}}zero-subject-unreads{{/if}} {{#if zoom_out_hide}}zoom-out-hide{{/if}} expanded_private_message' data-user-ids-string='{{user_ids_string}}'>
+    <li class='{{#if is_zero}}zero-topic-unreads{{/if}} {{#if zoom_out_hide}}zoom-out-hide{{/if}} expanded_private_message' data-user-ids-string='{{user_ids_string}}'>
         <span class='pm-box'>
-            <a href='{{url}}' class="conversation-partners">
+            <a href='{{url}}' class="conversation-partners" title="{{ recipients }}">
                 {{recipients}}
             </a>
             <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
@@ -10,7 +10,7 @@
             </div>
         </span>
         <span class="arrow topic-sidebar-arrow">
-            <i class="icon-vector-chevron-down"></i>
+            <i class="fa fa-chevron-down" aria-hidden="true"></i>
         </span>
     </li>
     {{/each}}

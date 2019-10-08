@@ -1,22 +1,17 @@
-from __future__ import absolute_import
-
-from typing import Any, Iterable, Tuple, Text
-
-from django.core.management.base import BaseCommand
-
-from django.contrib.sites.models import Site
-from zerver.models import UserProfile, Stream, Recipient, \
-    Subscription, Realm, get_client, email_to_username
-from django.conf import settings
-from zerver.lib.bulk_create import bulk_create_users
-from zerver.lib.actions import set_default_streams, do_create_realm
 
 from argparse import ArgumentParser
+from typing import Any, Iterable, Tuple, Optional
+
+from django.conf import settings
+from django.core.management.base import BaseCommand
+
+from zerver.lib.bulk_create import bulk_create_users
+from zerver.models import Realm, UserProfile, \
+    email_to_username, get_client, get_system_bot
 
 settings.TORNADO_SERVER = None
 
-def create_users(realm, name_list, bot_type=None):
-    # type: (Realm, Iterable[Tuple[Text, Text]], int) -> None
+def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: Optional[int]=None) -> None:
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
@@ -26,18 +21,18 @@ def create_users(realm, name_list, bot_type=None):
 class Command(BaseCommand):
     help = "Populate an initial database for Zulip Voyager"
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--extra-users',
                             dest='extra_users',
                             type=int,
                             default=0,
                             help='The number of extra users to create')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
-        realm = Realm.objects.create(string_id=settings.INTERNAL_BOT_DOMAIN.split('.')[0],
-                                     domain=settings.INTERNAL_BOT_DOMAIN)
+    def handle(self, *args: Any, **options: Any) -> None:
+        if Realm.objects.count() > 0:
+            print("Database already initialized; doing nothing.")
+            return
+        realm = Realm.objects.create(string_id=settings.INTERNAL_BOT_DOMAIN.split('.')[0])
 
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
         create_users(realm, names, bot_type=UserProfile.DEFAULT_BOT)
@@ -55,13 +50,10 @@ class Command(BaseCommand):
             bot.save()
 
         # Initialize the email gateway bot as an API Super User
-        email_gateway_bot = UserProfile.objects.get(email__iexact=settings.EMAIL_GATEWAY_BOT)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
         email_gateway_bot.is_api_super_user = True
         email_gateway_bot.save()
 
         self.stdout.write("Successfully populated database with initial data.\n")
-        self.stdout.write("Please run ./manage.py generate_realm_creation_link to generate link for creating organization")
-
-    site = Site.objects.get_current()
-    site.domain = settings.EXTERNAL_HOST
-    site.save()
+        self.stdout.write("Please run ./manage.py generate_realm_creation_link "
+                          "to generate link for creating organization")

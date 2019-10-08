@@ -1,102 +1,179 @@
 # Keyboard shortcuts
 
-Keyboard shortcuts allow a user to use Zulip easily and efficiently
-for a better user experience.
+Everything in Zulip can be done with the mouse, but mastering a few keyboard
+shortcuts will change your experience of the app. Start with the basics
+below, and add more to your repertoire as needed.
 
-Zulip keyboard shortcuts are divided into four categories:
+* [The basics](#the-basics)
 * [Navigation](#navigation)
-* [Composing messages](#composing-messages)
 * [Narrowing](#narrowing)
+* [Composing messages](#composing-messages)
+* [Message actions](#message-actions)
+* [Drafts](#drafts)
 * [Menus](#menus)
+* [Streams settings](#streams-settings-page)
 
-!!! warn ""
-    Note: We note how to enter keyboard shortcuts using keys not
-    present on MacOS keyboard in parentheticals below.
+## The basics
+
+* **Reply to message**: `r` or `Enter` — Reply to the selected
+  message (outlined in blue).
+
+* **New stream message**: `c` — Start a new topic in the current stream.
+
+* **New private message**: `x`
+
+* **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
+  the unsent message as a draft.
+
+* **View drafts**: `d` — Use the arrow keys and `Enter` to restore a draft.
+  Press `d` again to close.
+
+* **Next message**: `↓` or `j`
+
+* **Last message**: `End` or `G` — Also marks all messages in
+  the current view as read.
+
+* **Next unread topic**: `n`
+
+* **Next unread private message**: `p`
+
+* **All private messages**: `P`
+
+* **Search messages**: `/`
+
+* **Toggle keyboard shortcuts view**: `?`
 
 ## Navigation
 
-* **Initiate a search**: `/` - This shortcut moves the user's cursor to
-  the message search bar at the top of the window to allow them to
-  begin searching for messages belonging to a specific topic, stream,
-  view, etc. in the organization.
-* **Search people**: `q` - This shortcut moves the user's cursor to the
-  user search bar in the right sidebar to to allow them to begin
-  searching for a particular user in the organization.
-* **Search streams**: `w` - This shortcut moves the user's cursor to
-  the stream search bar in the left sidebar to to allow them to begin
-  searching for a particular stream in the organization.
-* **Previous message**: `k` or `↑` - This shortcut allows the user
-  to scroll up to the previous message in their view.
-* **Next message**: `j` or `↓` - This shortcut allows the user to
-  scroll down to the next message in their view.
-* **Scroll up**: `K` or `PgUp` (`Fn` + `↑` on Mac) - This shortcut
-  allows the user to scroll up through the messages in their view.
-* **Scroll down**: `J`, `Spacebar`, or `PgDn` (`Fn` + `↓` on Mac) -
-  This shortcut allows the user to scroll down through the messages in
-  their view.
-* **Last message**: `End` (`Fn`+`⇾` on Mac) or `G` - This shortcut
-  allows the user to scroll to the most recent message in their view.
-* **First message in view**: `Home` (`Fn`+`⇽` on Mac) - This shortcut
-  allows the user to scroll to the most recent message in their view.
+* **Search messages**: `/` or `Ctrl+k`
 
-## Composing messages
-* **Reply to message**: `r` or `Enter` (`Return` on Mac) - This
-  shortcut allows the user to begin replying to the selected message
-  (outlined in blue).
-* **Reply to author**: `R` - This shortcut allows the user to begin
-  writing a private message to the author of the selected message
-  (outlined in blue).
-* **Reply to message mentioning the author**: `@` - This
-  shortcut allows the user to begin replying to the selected message
-  (outlined in blue), @-mentioning the author of the selected message.
-* **New stream message**: `c` - This shortcut allows the user to begin
-  composing a new stream message.
-* **New private message**: `C` - This shortcut allows the user to begin
-  composing a new private message.
-* **Send message**: `Tab key` then `Enter` (`Return` on Mac) - This
-  shortcut allows the user to send the message that they've written.
-* **Cancel compose**: `Esc` - This shortcut allows the user to cancel
-  and discard their unsent message.
+* **Search streams**: `q`
+
+* **Search people**: `w`
+
+* **Last message**: `End` or `G` — Also marks all messages in
+  the current view as read.
+
+* **First message**: `Home`
+
+* **Previous message**: `↑` or `k`
+
+* **Next message**: `↓` or `j`
+
+* **Scroll up**: `PgUp` or `K`
+
+* **Scroll down**: `PgDn`, `J`, or `Spacebar`
 
 ## Narrowing
 
-* **Narrow by stream**: `s` - This shortcut narrows the view to show
-  all messages in the stream of the selected message (outlined in
-  blue).
-* **Narrow by topic**: `S` - This shortcut narrows the view to show all
-  messages with the topic of the selected message (outlined in blue).
-* **Narrow to all private messages**: `P` - This shortcut narrows the
-  view to show all of the user's private messages.
-* **Cycle between stream narrows**: `A` and `D` - This shortcut allows the
-  user to cycle through the narrows showing the messages of a stream
-  according to Stream order in the left sidebar. `A` allows the user
-  to navigate to the previous stream narrow, and `D` allows the user
-  to navigate to the next stream narrow.
-* **Return to home view**: `Esc` - This shortcut makes the user return
-  to the Home view, showing all messages in the organization.
+* **Narrow to next unread topic**: `n`
+
+* **Narrow to next unread private message**: `p`
+
+* **Narrow to stream**: `s`
+
+* **Narrow to topic**: `S`
+
+* **Narrow to all private messages**: `P`
+
+* **Cycle between stream narrows**: `A` (previous) and `D` (next)
+
+* **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.
+
+* **Narrow to current compose box recipient**: `Ctrl` + `.`
+
+## Composing messages
+
+* **Reply to message**: `r` or `Enter` — Reply to the selected
+  message (outlined in blue). Same behavior as clicking on the message.
+
+* **Reply to message, mentioning author**: `@`
+
+* **Reply only to author**: `R`
+
+* **Quote and reply to message**: `>`
+
+* **New stream message**: `c` — For starting a new topic in a stream.
+
+* **New private message**: `x`
+
+### In the compose box
+
+* **Send message**: `Enter`, `Tab` then `Enter`, and/or `Ctrl` + `Enter`,
+  depending on your settings. See
+  [enable enter to send](https://zulipchat.com/help/enable-enter-to-send).
+
+* **Insert new line**: `Enter`, or `Shift` + `Enter`, depending on your
+  settings. See
+  [enable enter to send](https://zulipchat.com/help/enable-enter-to-send).
+
+* **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
+  the unsent message as a draft.
+
+## Message actions
+
+* **Edit last message**: `⇽` — Open the last editable message in the current
+  view (if any).
+
+### For a selected message (outlined in blue)
+
+* **Show sender's profile**: `u`
+
+* **View image**: `v`
+
+* **Edit message**: `i` then `Enter`
+
+* **Star message**: `Ctrl + s`
+
+* **React with <img alt=":thumbs_up:" class="emoji"
+src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
+title="thumbs up"/>**: `+`
+
+* **Collapse/show message**: `-`
+
+* **Toggle topic mute**: `M` — Muted topics don't show up in any views
+  (including All messages), and don't contribute to unread counts. Read more about
+  [muting topics](/help/mute-a-topic).
+
+## Drafts
+
+* **Toggle drafts view**: `d`
+
+### Within the drafts view
+
+* **Edit selected draft**: `Enter`
+
+* **Delete selected draft**: `Backspace`
+
+Keyboard navigation (e.g. arrow keys) works as expected.
 
 ## Menus
 
-* **Open message actions menu**: `i` - This shortcut shows the
-  available message actions of the selected message (outlined in
-  blue).
-* **Open lightbox for selected message**: `v` - This opens the lightbox
-  if the selected message has images or videos embedded.
-* **Edit last message you sent**: `⇽` - This starts editing the
-  last editable message that you sent in the current view (if any).
-* **Edit selected message**: `i` then `Enter` (`Return` on Mac) -
-  This shortcut allows the user to edit the selected message (outlined
-  in blue) if the user authored the selected message. If the selected
-  message was written by another user, this shortcut will enable the
-  user to view the source code of the message.
-* **Toggle starred flag**: `*` - This shortcut stars the selected
-  message.
-* **Show the keyboard shortcuts**: `?` - This shortcut makes a modal
-  window with a guide to all possible keyboard shortcuts appear.
-* **Open gear menu**: `g` - This shortcut opens the page's upper-right
-  gear menu.
-* **Open reaction popover menu**: `:` - This shortcut shows the
-  reaction popover menu of the selected message (outlined in blue).
-* **React to selected message with +1**: `+` - This shortcut allows
-  you to react to the selected message (outlined in blue) with the
-  +1 (thumbs up) emoji.
+* **Toggle shortcuts help**: `?`
+
+* **Toggle gear menu**: `g`
+
+### For a selected message (outlined in blue)
+
+* **Toggle emoji reactions menu**: `:`
+
+* **Toggle message actions menu**: `i`
+
+## Streams settings page
+
+* **Scroll through streams**: `↑` and `↓`
+
+    !!! tip ""
+        Pressing `↑` from the first stream in the list moves
+        you to the **Filter streams** input.
+
+* **Switch between tabs**: `⇽` and `⇾` — Switch between the
+**Subscribed** and **All streams** tabs.
+
+* **Create new stream**: `n`
+
+### For a selected stream
+
+* **View stream messages**: `V`
+
+* **Toggle subscription**: `S`

@@ -1,29 +1,36 @@
-#!/usr/bin/env python
-from __future__ import absolute_import
-from __future__ import print_function
+#!/usr/bin/env python3
 from lib.css_parser import parse, CssParserException
-from typing import Iterable, Text
-import os
+from typing import Iterable
 import sys
 import glob
+import subprocess
 
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 def validate(fn):
-    # type: (Text) -> None
+    # type: (str) -> None
     text = open(fn).read()
     section_list = parse(text)
     if text != section_list.text():
-        print('%s seems to be broken:' % (fn,))
+        sys.stderr.write('''
+FAIL: {} is being rejected by our finicky linter)
+(you can manually apply the diff to fix)\n\n'''.format(fn,))
+        sys.stderr.flush()
+
         open('/var/tmp/pretty_css.txt', 'w').write(section_list.text())
-        os.system('diff %s /var/tmp/pretty_css.txt' % (fn,))
+        subprocess.call(['diff', '-u', fn, '/var/tmp/pretty_css.txt'], stderr=subprocess.STDOUT)
         sys.exit(1)
 
 def check_our_files(filenames):
-    # type: (Iterable[Text]) -> None
+    # type: (Iterable[str]) -> None
     for filename in filenames:
+        if 'pygments.css' in filename:
+            # This just has really strange formatting that our
+            # parser doesn't like
+            continue
+
         try:
             validate(filename)
         except CssParserException as e:

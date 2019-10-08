@@ -1,0 +1,9 @@
+<div class='pill' data-id='{{ id }}' tabindex=0>
+    {{#if has_image}}
+    <img class="pill-image" src={{img_src}} />
+    {{/if}}
+    <span class="pill-value">{{ display_value }}</span>
+    <div class="exit">
+        <span aria-hidden="true">&times;</span>
+    </div>
+</div>

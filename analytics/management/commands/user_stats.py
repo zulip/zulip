@@ -1,33 +1,25 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
-from argparse import ArgumentParser
 import datetime
-import pytz
+from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import BaseCommand
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
-from zerver.models import UserProfile, Realm, Stream, Message, get_realm
-from six.moves import range
+from zerver.models import Message, Realm, Stream, UserProfile, get_realm
 
 class Command(BaseCommand):
     help = "Generate statistics on user activity."
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('realms', metavar='<realm>', type=str, nargs='*',
                             help="realm to generate statistics for")
 
-    def messages_sent_by(self, user, week):
-        # type: (UserProfile, int) -> int
-        start = timezone.now() - datetime.timedelta(days=(week + 1)*7)
-        end = timezone.now() - datetime.timedelta(days=week*7)
+    def messages_sent_by(self, user: UserProfile, week: int) -> int:
+        start = timezone_now() - datetime.timedelta(days=(week + 1)*7)
+        end = timezone_now() - datetime.timedelta(days=week*7)
         return Message.objects.filter(sender=user, pub_date__gt=start, pub_date__lte=end).count()
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         if options['realms']:
             try:
                 realms = [get_realm(string_id) for string_id in options['realms']]

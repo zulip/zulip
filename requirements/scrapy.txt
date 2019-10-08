@@ -1,7 +1,0 @@
-Scrapy==1.3.2
-cryptography==1.7.2
-parsel==1.1.0
-pyOpenSSL==16.2.0
-w3lib==1.17.0
-PyDispatcher==2.0.5
-queuelib==1.4.2

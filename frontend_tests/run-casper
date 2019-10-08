@@ -1,10 +1,10 @@
-#!/usr/bin/env python
-from __future__ import print_function
-import optparse
+#!/usr/bin/env python3
+import argparse
 import subprocess
 import sys
 import os
 import glob
+import shlex
 
 #
 # In order to use remote casperjs debugging, pass the --remote-debug flag
@@ -14,31 +14,36 @@ import glob
 # on how to use remote debugging
 #
 
-os.environ["CASPER_TESTS"] = "1"
-os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(os.path.dirname(__file__), "../node_modules/.bin/phantomjs")
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-usage = """%prog [options]
+os.environ["CASPER_TESTS"] = "1"
+os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(ZULIP_PATH, "node_modules/.bin/phantomjs")
+os.environ["http_proxy"] = ""
+os.environ["https_proxy"] = ""
+
+usage = """test-js-with-casper [options]
     test-js-with-casper # Run all test files
     test-js-with-casper 09-navigation.js # Run a single test file
     test-js-with-casper 09 # Run a single test file 09-navigation.js
     test-js-with-casper 01-login.js 03-narrow.js # Run a few test files
     test-js-with-casper 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
-parser = optparse.OptionParser(usage)
+parser = argparse.ArgumentParser(usage)
 
-parser.add_option('--skip-flaky-tests', dest='skip_flaky',
-                  action="store_true",
-                  default=False, help='Skip flaky tests')
-parser.add_option('--force', dest='force',
-                  action="store_true",
-                  default=False, help='Run tests despite possible problems.')
-parser.add_option('--remote-debug',
-                  help='Whether or not to enable remote debugging on port 7777',
-                  action="store_true",
-                  default=False)
-(options, args) = parser.parse_args()
+parser.add_argument('--skip-flaky-tests', dest='skip_flaky',
+                    action="store_true",
+                    default=False, help='Skip flaky tests')
+parser.add_argument('--force', dest='force',
+                    action="store_true",
+                    default=False, help='Run tests despite possible problems.')
+parser.add_argument('--remote-debug',
+                    help='Whether or not to enable remote debugging on port 7777',
+                    action="store_true",
+                    default=False)
+parser.add_argument('tests', nargs=argparse.REMAINDER,
+                    help='Specific tests to run; by default, runs all tests')
+options = parser.parse_args()
 
-TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+sys.path.insert(0, ZULIP_PATH)
 
 # check for the venv
 from tools.lib import sanity_check
@@ -47,7 +52,7 @@ sanity_check.check_venv(__file__)
 from tools.lib.test_script import get_provisioning_status
 from tools.lib.test_server import test_server_running
 
-from typing import Iterable
+from typing import Iterable, List
 
 if not options.force:
     ok, msg = get_provisioning_status()
@@ -56,19 +61,15 @@ if not options.force:
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
 
-os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+os.chdir(ZULIP_PATH)
 
-subprocess.check_call('tools/setup/generate-test-credentials')
+os.makedirs('var/casper', exist_ok=True)
 
-subprocess.check_call(['mkdir', '-p', 'var/casper'])
+for f in glob.glob('var/casper/casper-failure*.png'):
+    os.remove(f)
 
-subprocess.check_call(['rm', '-f'] + glob.glob('var/casper/casper-failure*.png'))
-
-LOG_FILE = 'var/casper/server.log'
-
-def run_tests(realms_have_subdomains, files, external_host):
-    # type: (bool, Iterable[str], str) -> None
-    test_dir = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests')
+def run_tests(files: Iterable[str], external_host: str) -> None:
+    test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/casper_tests')
     test_files = []
     for file in files:
         for file_name in os.listdir(test_dir):
@@ -86,38 +87,32 @@ def run_tests(realms_have_subdomains, files, external_host):
     if options.skip_flaky:
         test_files = [fn for fn in test_files if '10-admin' not in fn]
 
-    remote_debug = ""
+    remote_debug = []  # type: List[str]
     if options.remote_debug:
-        remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
+        remote_debug = ["--remote-debugger-port=7777", "--remote-debugger-autorun=yes"]
 
-    with test_server_running(options.force, external_host, log_file=LOG_FILE, dots=True):
+    with test_server_running(options.force, external_host):
+        # Important: do this next call inside the `with` block, when Django
+        #            will be pointing at the test database.
+        subprocess.check_call('tools/setup/generate-test-credentials')
+
         ret = 1
         for test_file in test_files:
-            cmd = "node_modules/.bin/casperjs %s test --subdomains=%s %s" % (
-                remote_debug, realms_have_subdomains, test_file)
-            print("\n\nRunning %s" % (cmd,))
-            ret = subprocess.call(cmd, shell=True)
+            test_name = os.path.basename(test_file)
+            cmd = ["node_modules/.bin/casperjs"] + remote_debug + ["test", test_file]
+            print("\n\n===================== %s\nRunning %s\n\n" % (test_name, " ".join(map(shlex.quote, cmd))))
+            ret = subprocess.call(cmd)
             if ret != 0:
                 break
     if ret != 0:
         print("""
 Oops, the frontend tests failed. Tips for debugging:
- * Check the frontend test server logs at %s
  * Check the screenshots of failed tests at var/casper/casper-failure*.png
- * Try remote debugging the test web browser as described in docs/testing-with-casper.md
-""" % (LOG_FILE,), file=sys.stderr)
+ * Try remote debugging the test web browser as described in docs/testing/testing-with-casper.md
+""", file=sys.stderr)
 
         sys.exit(ret)
 
-external_host = "localhost:9981"
-# First, run all tests with REALMS_HAVE_SUBDOMAINS set to False
-run_tests(False, args, external_host)
-
-# Now run a subset of the tests with REALMS_HAVE_SUBDOMAINS set to True
-os.environ["REALMS_HAVE_SUBDOMAINS"] = "True"
 external_host = "zulipdev.com:9981"
-if len(args) == 0:
-    run_tests(True, ["00-realm-creation.js", "01-login.js", "02-site.js"], external_host)
-else:
-    run_tests(True, args, external_host)
+run_tests(options.tests, external_host)
 sys.exit(0)

@@ -1,0 +1,1078 @@
+html {
+    min-height: 500px;
+}
+
+.flex {
+    display: flex;
+    padding: 80px 0px;
+    align-items: center;
+    justify-content: center;
+
+    min-height: calc(100vh - 402px);
+}
+
+.m-10 {
+    margin: 10px;
+}
+
+.white-box {
+    position: relative;
+    padding: 30px;
+    min-width: 0px;
+
+    background-color: hsl(0, 0%, 100%);
+    box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+}
+
+.grey {
+    color: hsl(0, 0%, 67%);
+}
+
+.find-account-page-container #find_account i {
+    font-size: 0.8em;
+}
+
+.login-page-container .group {
+    margin: 0px 20px;
+    display: inline-block;
+}
+
+.app-main .login-page-header {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin: 0px;
+    height: 0px;
+}
+
+.login-page-container.dev-login {
+    margin-top: 20px;
+    border: none;
+}
+
+.login-page-container.dev-login .login-form {
+    width: auto;
+}
+
+.new-style .login-page-container .alert,
+.register-page-container .new-style .alert {
+    margin: 0;
+    text-align: left;
+    font-size: 0.7em;
+    font-weight: 600;
+}
+
+.register-page-container.closed-realm .right-side {
+    display: none;
+}
+
+.register-page-container.closed-realm .left-side {
+    border-right: none;
+}
+
+.register-page-container .invite-required {
+    display: none;
+    line-height: 1;
+}
+
+.register-page-container .invite-required i {
+    margin-right: 5px;
+}
+
+.register-page-container.closed-realm .invite-required {
+    display: block;
+
+    color: hsl(0, 0%, 67%);
+    font-weight: normal;
+}
+
+.new-style .inline-block {
+    text-align: left;
+}
+
+.app-main .login-page-header {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin-top: 0px;
+    transform: translateX(-15px) translateY(-60px);
+    text-align: left;
+}
+
+.app-main .login-page-container.dev-login .login-page-header {
+    height: auto;
+    margin-top: 20px;
+    transform: none;
+    text-align: center;
+}
+
+.app-main .login-page-container.dev-login h2 {
+    font-size: 1em;
+    font-weight: 400;
+}
+
+.app-main .login-page-container .group {
+    display: inline-block;
+    vertical-align: top;
+
+    margin: 0px 20px;
+}
+
+.app-main.forgot-password-container {
+    font-weight: 400;
+}
+
+.app-main.find-account-page-container {
+    width: 500px;
+    font-weight: 400;
+}
+
+.app-main.goto-account-page-container {
+    width: 500px;
+    font-weight: 400;
+}
+
+.app-main.confirm-continue-page-container {
+    width: 400px;
+    font-weight: 400;
+}
+
+.app-main.confirm-continue-page-container .white-box {
+    min-width: 365px;
+}
+
+.app-main.confirm-continue-page-container .form-inline {
+    display: inline-block;
+}
+
+.app-main.confirm-continue-page-container .form-inline .outline {
+    border: 2px inset hsl(213, 23%, 25%);
+    background-color: hsl(0, 0%, 100%);
+    color: hsl(213, 23%, 25%);
+    padding: 13px 20px 11px 20px;
+}
+
+.app-main.confirm-continue-page-container .form-inline .outline:hover {
+    background-color: hsl(213, 65%, 97%);
+}
+
+.app-main.confirm-continue-page-container p {
+    font-size: 19px;
+}
+
+.find-account-page-container h3,
+.forgot-password-container h3 {
+    margin-top: 0px;
+
+    font-weight: 300;
+    font-size: 2em;
+}
+
+.forgot-password-container h3 {
+    margin-bottom: 0px;
+}
+
+.forgot-password-container {
+    width: 503px;
+}
+
+.forgot-password-container form {
+    margin-bottom: 0px;
+}
+
+.deactivated-realm-container {
+    width: 503px;
+}
+
+.header {
+    color: hsl(0, 0%, 27%);
+}
+
+.header {
+    background-color: hsl(0, 0%, 100%);
+    position: fixed;
+    width: 100%;
+    top: 0;
+}
+
+.header .top-links a,
+.header .header-main .logo span {
+    color: hsl(0, 0%, 27%);
+}
+
+.header .header-main .logo .brand-logo circle {
+    fill: hsl(0, 0%, 27%) !important;
+}
+
+.header .header-main .logo .brand-logo path {
+    fill: hsl(0, 0%, 100%) !important;
+    stroke: hsl(0, 0%, 100%) !important;
+}
+
+.new-style {
+    -webkit-font-smoothing: antialiased;
+}
+
+.register-form.new-style {
+    text-align: left;
+    color: hsl(0, 0%, 45%);
+}
+
+.register-form #errors {
+    font-size: 0.8em;
+    font-weight: 400;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.register-form #errors:empty {
+    margin-top: 0px;
+}
+
+.account-accept-terms-page .terms-of-service .input-group {
+    width: 450px;
+    margin: 0 auto 10px;
+}
+
+.register-account .terms-of-service .input-group {
+    width: 330px;
+    margin: 0 auto 10px;
+}
+
+.register-account .terms-of-service .text-error {
+    position: relative;
+    display: block;
+    top: -5px;
+    padding: 0;
+    height: 0;
+
+    font-size: 0.7em;
+    font-weight: 600;
+}
+
+.account-creation {
+    font-weight: 400;
+}
+
+.account-creation .pitch {
+    margin-bottom: 0px;
+}
+
+.account-creation .alert.alert-info {
+    padding: 8px 14px;
+    text-align: left;
+
+    font-size: 1em;
+    line-height: 1.3;
+}
+
+.account-creation .white-box p:last-of-type {
+    margin-bottom: 0px;
+}
+
+.relative {
+    position: relative;
+}
+
+.new-style .input-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+}
+
+#login_form .input-box {
+    display: block;
+}
+
+.new-style .form-inline {
+    margin: 0px;
+}
+
+.new-style button {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 25px;
+}
+
+.new-style button:focus {
+    outline: 3px solid hsl(213, 81%, 79%);
+}
+
+.new-style button.full-width {
+    width: 100%;
+}
+
+.register-form button {
+    margin-top: 22px;
+}
+
+.register-page .register-form .new-organization-button {
+    margin-top: 25px;
+}
+
+.register-page .register-form .bottom-text {
+    font-size: 1.2rem;
+    margin-top: 40px;
+}
+
+.new-style .alert:not(.alert-info) {
+    padding: 0;
+    margin-bottom: 0;
+    font-weight: 600;
+    font-size: 0.7em;
+    line-height: 1.2;
+    background-color: transparent;
+
+    border: none;
+    color: hsl(0, 44%, 54%);
+}
+
+.new-style .right-side .alert {
+    max-width: 328px;
+}
+
+.new-style .alert.alert-error {
+    text-align: left;
+}
+
+.new-style .input-box input[type=text],
+.new-style .input-box input[type=email],
+.new-style .input-box input[type=password] {
+    padding: 9px 32px 11px 12px;
+    margin: 25px 0 4px;
+
+    font-family: "Source Sans Pro";
+    font-size: 1.2rem;
+    line-height: normal;
+    height: auto;
+
+    width: 280px;
+
+    border: 1px solid hsl(0, 0%, 87%);
+    box-shadow: none;
+    border-radius: 4px;
+
+    transition: border 0.3s ease;
+}
+
+.new-style .input-box input[type=email] {
+    margin-bottom: 10px;
+}
+
+.new-style .input-box label {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    margin-top: 1px;
+
+    transition: all 0.3s ease;
+}
+
+.new-style .input-box.moving-label input[type=text]:invalid + label,
+.new-style .input-box.moving-label input[type=email]:invalid + label,
+.new-style .input-box.moving-label input[type=password]:invalid + label {
+    transform: translateY(35px) translateX(14px);
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: hsl(0, 0%, 67%);
+
+    pointer-events: none;
+}
+
+.new-style .input-box input[type=text]:focus:invalid,
+.new-style .input-box input[type=email]:focus:invalid,
+.new-style .input-box input[type=password]:focus:invalid {
+    box-shadow: none;
+    color: hsl(0, 0%, 27%);
+}
+
+.new-style .input-box input[type=text]:focus,
+.new-style .input-box input[type=email]:focus,
+.new-style .input-box input[type=password]:focus {
+    border: 1px solid hsl(0, 0%, 53%);
+}
+
+.new-style .input-box label,
+.new-style .input-box input[type=text]:focus + label,
+.new-style .input-box input[type=email]:focus + label,
+.new-style .input-box input[type=password]:focus + label,
+.new-style .input-box input[type=text]:valid + label,
+.new-style .input-box input[type=email]:valid + label,
+.new-style .input-box input[type=password]:valid + label {
+    left: 0px;
+    transform: translateY(-0px) translateX(0px);
+    pointer-events: auto;
+
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(0, 0%, 27%);
+}
+
+.new-style .input-box p.text-error {
+    display: block;
+    padding: 0px;
+
+    color: hsl(0, 54%, 61%);
+    font-size: 0.7em;
+    font-weight: 600;
+    text-align: left;
+    height: 0;
+
+    position: relative;
+    top: -4px;
+    left: 1px;
+}
+
+.new-style .input-box label.text-error {
+    display: block;
+
+    top: 66px;
+    color: hsl(0, 54%, 61%);
+    font-size: 0.7em;
+    font-weight: 600;
+    padding-left: 0px;
+}
+
+.new-style .get-started {
+    font-size: 2.5rem;
+    text-align: center;
+    color: hsl(0, 0%, 40%);
+}
+
+.new-style button {
+    display: inline-block;
+    vertical-align: top;
+    padding: 13px 22px 13px 22px;
+
+    font-family: "Source Sans Pro";
+
+    font-size: 1.2rem;
+    font-weight: 400;
+    box-sizing: border-box;
+    outline: none;
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(213, 23%, 25%);
+
+    border: none;
+    border-radius: 4px;
+
+    transition: all 0.3s ease;
+}
+
+.new-style button:hover {
+    background-color: hsl(213, 33%, 31%);
+}
+
+.new-style button:active {
+    background-color: hsl(214, 28%, 16%);
+}
+
+/* -- /accounts/register/ page -- */
+.portico-page .pitch h1 {
+    margin-bottom: 0px;
+}
+
+.portico-page .pitch p {
+    font-weight: 400;
+    color: hsl(0, 0%, 67%);
+}
+
+.register-account .pitch,
+.account-accept-terms-page .pitch {
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.login-page-container input[type=submit] {
+    color: hsl(0, 0%, 67%);
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+    background-color: transparent;
+
+    transition: color 0.3s ease, border 0.3s ease;
+}
+
+.login-page-container input[type=submit]:hover {
+    border-color: hsl(0, 0%, 53%);
+    color: hsl(0, 0%, 27%);
+}
+
+.login-page-container input[type=submit].btn-admin {
+    border-color: hsl(170, 41%, 52%);
+    color: hsl(170, 41%, 52%);
+}
+
+.login-page-container input[type=submit].btn-admin:hover {
+    color: hsl(156, 62%, 61%);
+    border-color: hsl(156, 62%, 61%);
+}
+
+.split-view .org-header {
+    text-align: left;
+}
+
+.split-view .right-side .form-inline {
+    width: 328px;
+}
+
+.split-view .org-header .avatar,
+.register-page-container .org-header .avatar {
+    display: inline-block;
+    vertical-align: top;
+
+    width: 100px;
+    height: 100px;
+}
+
+.split-view .org-header .info-box {
+    display: inline-block;
+    position: relative;
+    margin: 20px 0px 0px 20px;
+    width: calc(100% - 125px);
+
+    /* full width minus the avatar + padding + borders */
+    text-align: left;
+}
+
+.info-box .organization-name,
+.info-box .organization-path {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.info-box .organization-name {
+    font-size: 1.5em;
+    font-weight: 300;
+    line-height: 1.2;
+}
+
+.info-box .organization-path {
+    font-weight: 400;
+    color: hsl(0, 0%, 47%);
+    margin-top: 5px;
+}
+
+.new-style .lead {
+    margin: 0px;
+}
+
+.confirm-email-change-page .white-box {
+    max-width: 500px;
+}
+
+.portico-page .or {
+    width: 100%;
+    display: block;
+    margin: 10px auto;
+    color: hsl(0, 0%, 34%);
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.portico-page .or::before {
+    content: " ";
+
+    display: inline-block;
+    position: absolute;
+    width: calc(100% - 5px);
+    top: calc(50% - 2px);
+    left: 0;
+    z-index: -1;
+
+    border-bottom: 2px solid hsl(0, 0%, 87%);
+}
+
+.portico-page .or span {
+    background-color: hsl(0, 0%, 100%);
+    padding: 0 5px;
+}
+
+button.login-social-button {
+    width: 328px;
+    padding-left: 35px;
+
+    background-size: auto 60%;
+    background-repeat: no-repeat;
+    background-position: 13px 50%;
+    margin-left: 0px;
+    margin-top: 0px;
+
+    color: hsl(0, 0%, 100%);
+}
+
+button.login-social-button {
+    background-color: hsl(0, 0%, 100%);
+    box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.3), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
+    color: hsl(0, 0%, 34%);
+}
+
+button.login-social-button:hover {
+    background-color: hsl(0, 0%, 98%);
+    box-shadow: 1px 2px 5px hsla(0, 0%, 0%, 0.2);
+}
+
+button.login-social-button:active {
+    background-color: hsl(0, 0%, 93%);
+    box-shadow: 0px 1px 1px hsla(0, 0%, 0%, 0.3);
+}
+
+button.login-google-button {
+    background-image: url(/static/images/landing-page/logos/google-icon.png);
+}
+
+.github-wrapper::before {
+    content: "\f09b";
+    position: absolute;
+
+    font-family: "FontAwesome";
+    font-size: 2rem;
+    color: hsl(0, 0%, 20%);
+    transform: translateX(15px) translateY(13px);
+}
+
+.azure-wrapper::before {
+    content: "\f17a";
+    position: absolute;
+
+    font-family: "FontAwesome";
+    font-size: 2rem;
+    color: hsl(0, 0%, 20%);
+    transform: translateX(15px) translateY(13px);
+}
+
+.login-page-container .right-side .actions,
+.forgot-password-container .actions {
+    margin: 20px 0px 0px;
+    text-align: left;
+}
+
+.forgot-password-container .actions {
+    line-height: 0;
+}
+
+.forgot-password-container .actions .back-to-login i {
+    position: relative;
+    top: 5px;
+
+    font-size: 0.8em;
+}
+
+#find-account-section {
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8em;
+    line-height: 1.5;
+    vertical-align: top;
+
+    #find-account-link {
+        color: hsl(164, 100%, 23%);
+    }
+}
+
+.split-view .actions a,
+.back-to-login {
+    color: hsl(164, 100%, 23%);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8em;
+    line-height: 1.5;
+    vertical-align: top;
+
+    transition: color 0.2s ease;
+}
+
+.split-view .actions a:hover,
+.back-to-login:hover {
+    text-decoration: none;
+    color: hsl(156, 62%, 61%);
+}
+
+#registration {
+    width: auto;
+    padding: 0;
+    margin: 30px;
+}
+
+#registration section {
+    margin: 30px;
+}
+
+#registration .info-box {
+    margin: 10px 0px 0px 20px;
+}
+
+#registration .info-box .organization-name {
+    max-width: 228px;
+}
+
+#registration .input-box {
+    display: block;
+    text-align: center;
+    width: 330px;
+    margin: 30px auto 10px;
+    position: relative;
+}
+
+#registration .input-box.with-top-space {
+    margin-top: 50px;
+}
+
+#registration .input-box label {
+    position: absolute;
+    margin: 0;
+    top: 0;
+    left: 2px;
+}
+
+#registration .input-box label.static {
+    width: 100%;
+    text-align: left;
+    position: static !important;
+    margin-left: 2px;
+}
+
+#registration [for="realm_in_root_domain"] {
+    font-weight: normal !important;
+}
+
+#registration .register-button-box {
+    text-align: center;
+}
+
+#registration .register-button {
+    margin: 25px auto 30px;
+    width: 330px;
+    border-radius: 4px;
+}
+
+#registration #id_team_subdomain.subdomain {
+    text-align: right;
+    position: relative;
+    padding-right: 10px;
+
+    width: 150px;
+}
+
+#registration #id_team_subdomain-error {
+    margin-top: 5px;
+    display: block;
+}
+
+#registration #id_team_subdomain.subdomain + .realm_subdomain_label {
+    margin-top: 12px;
+    margin-left: 180px;
+    display: inline-block;
+
+    font-weight: normal;
+    font-size: inherit;
+}
+
+#registration #id_team_subdomain.subdomain {
+    margin-top: 0px;
+}
+
+#registration #subdomain_section .inline-block {
+    width: 100%;
+}
+
+#registration #subdomain_section .or {
+    margin-top: 0px;
+}
+
+.static.org-url + #subdomain_section {
+    margin-top: 0px !important;
+}
+
+.static.org-url + #subdomain_section .or {
+    display: none;
+}
+
+#registration .input-box.full-width {
+    width: calc(100% - 20px);
+}
+
+#registration .help-box {
+    width: calc(100% - 25px);
+    max-width: none;
+    margin: 0 auto;
+}
+
+#registration .help-box.margin-top {
+    margin-top: 21px;
+    text-align: left;
+}
+
+#registration .external-host {
+    margin: 25px 0px 0px -3px;
+    padding: 11.5px 10px;
+
+    font-weight: 400;
+    font-size: 1.2rem;
+
+    background-color: hsl(0, 0%, 87%);
+}
+
+#registration .center-block .pitch {
+    margin-bottom: 0px;
+}
+
+#registration .input-group label {
+    font-size: 1rem;
+}
+
+#registration .input-group.radio {
+    margin: 0;
+    padding: 0;
+}
+
+#registration .input-group label.inline-block {
+    margin-top: -1px;
+}
+
+#registration .org-url {
+    margin-bottom: 5px !important;
+}
+
+.split-view .right-side,
+.split-view .left-side {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.split-view .left-side {
+    width: 500px;
+    border-right: 1px solid hsl(0, 0%, 93%);
+    position: relative;
+    left: -1px;
+}
+
+.split-view .left-side + .right-side {
+    border-left: 1px solid hsl(0, 0%, 93%);
+    /* this is to make sure the borders of the left and right side overlap
+       each other. */
+    padding-left: 15px;
+    margin-left: -5px;
+}
+
+.split-view .left-side .description {
+    text-align: left;
+    font-weight: normal;
+
+    margin-top: 20px;
+    margin-right: 10px;
+}
+
+#profile_info_section {
+    #profile_avatar {
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 8px;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 10px;
+    }
+
+    #profile_full_name {
+        font-size: 1.2rem;
+        font-weight: 400;
+    }
+}
+
+/* -- media queries -- */
+
+@media (max-width: 950px) {
+    .split-view .left-side {
+        width: 400px;
+    }
+}
+
+@media (max-width: 850px) {
+    .split-view .left-side {
+        width: 350px;
+    }
+}
+
+@media (max-width: 815px) {
+    .flex {
+        min-height: calc(100vh - 530px);
+    }
+}
+
+@media (max-width: 795px) {
+    .register-account #registration {
+        padding: 10px;
+    }
+
+    .register-page-container,
+    .login-page-container {
+        width: 400px;
+        text-align: center;
+    }
+
+    .split-view .org-header .avatar {
+        width: 50px;
+        height: 50px;
+    }
+
+    .split-view .org-header .info-box {
+        margin-top: 0px;
+    }
+
+    .split-view .org-header .info-box .organization-path {
+        margin-top: 0px;
+    }
+
+    .split-view .left-side,
+    .split-view .right-side {
+        display: block;
+        margin: 0 auto !important;
+        max-width: 100%;
+    }
+
+    .split-view .left-side + .right-side {
+        border-left: none;
+        padding: 0;
+        margin: 0 auto;
+    }
+
+    .split-view .left-side {
+        border: none;
+        margin-right: 0px;
+        min-height: 0px;
+        margin-bottom: 20px;
+        width: 324px;
+    }
+
+    .split-view .left-side .description {
+        margin: 20px 0px;
+    }
+
+    .split-view .left-side .description a {
+        color: hsl(200, 100%, 36%);
+    }
+
+    .split-view .right-side {
+        width: 324px;
+    }
+}
+
+@media (max-width: 500px) {
+    .new-style .get-started {
+        font-size: 1.6em;
+    }
+
+    .app-main.register-page-container,
+    .app-main.login-page-container,
+    .app-main.find-account-page-container,
+    .app-main.goto-account-page-container,
+    .app-main.forgot-password-container {
+        display: inline-block;
+        padding: 20px;
+        width: calc(100% - 40px);
+    }
+
+    .forgot-password-container form .input-box {
+        text-align: center;
+    }
+
+    .forgot-password-container form button {
+        width: 328px;
+    }
+
+    .white-box {
+        box-shadow: none;
+    }
+
+    .footer-navigation li,
+    .footer-navigation li a {
+        font-size: 1em;
+    }
+
+    .account-creation {
+        font-weight: 400;
+    }
+
+    .flex {
+        /* the header becomes smaller, so comp for that. */
+        min-height: calc(100vh - 505px);
+    }
+}
+
+@media (max-width: 400px) {
+    .flex {
+        min-height: calc(100vh - 560px);
+    }
+}
+
+#login_form .loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+
+    height: 30px;
+    margin-top: -10px;
+    top: 5px;
+}
+
+#source_realm_select_section {
+    position: relative;
+    top: 15px;
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+#source_realm_select {
+    font-size: 1.2rem;
+    height: 45px;
+    width: 325px;
+    &:focus {
+        outline: none;
+    }
+}
+
+.goto-account-page {
+    #realm_redirect_subdomain {
+        text-align: right;
+        position: relative;
+        padding-right: 10px;
+    }
+
+    #realm_redirect_external_host {
+        font-size: 20px;
+        top: 13px;
+        left: 5px;
+        position: relative;
+    }
+
+    #realm_redirect_description {
+        top: 15px;
+        position: relative;
+    }
+
+    #enter-realm-button {
+        margin-top: 14px;
+    }
+
+    #find-account-section {
+        margin-top: 20px;
+        text-align: center;
+        font-weight: 500;
+        font-size: 0.9em;
+    }
+
+    #create-organization-section {
+        text-align: center;
+        margin-top: 20px;
+        font-weight: 500;
+        margin-left: -28px;
+        font-size: 0.9em;
+    }
+
+    .find-account-link {
+        color: hsl(165, 100.0%, 14.7%);
+    }
+}

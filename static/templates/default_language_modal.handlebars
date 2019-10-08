@@ -1,0 +1,48 @@
+<div id="default_language_modal" class="modal hide modal-bg fade" tabindex="-1" role="dialog"
+  aria-labelledby="default_language_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="default_language_modal_label">{{t "Select default language" }}</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            The following is a few of the languages we have started to
+            support or are hoping to support in the near future. We would
+            love help translating; if you're interested in helping, make an
+            account at <a href='https://www.transifex.com/zulip/zulip/'>
+            https://www.transifex.com/zulip/zulip/</a>, and sign up for a
+            language! You can also request any language we don't currently
+            have. It only takes a few hours to translate the most important
+            parts of the app.
+        </p>
+        <div>
+            <table>
+                {{#each page_params.language_list_dbl_col}}
+                <tr>
+                    <td>
+                        <a class="language" data-code="{{this.first.code}}" data-name="{{this.first.name}}">
+                            {{#if this.first.selected}}
+                            <b>{{this.first.percent}}</b>
+                            {{else}}
+                            {{this.first.percent}}
+                            {{/if}}
+                        </a>
+                    </td>
+                    <td>
+                        <a class="language" data-code="{{this.second.code}}" data-name="{{this.second.name}}">
+                            {{#if this.second.selected}}
+                            <b>{{this.second.percent}}</b>
+                            {{else}}
+                            {{this.second.percent}}
+                            {{/if}}
+                        </a>
+                    </td>
+                </tr>
+                {{/each}}
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal">{{t "Close" }}</button>
+    </div>
+</div>

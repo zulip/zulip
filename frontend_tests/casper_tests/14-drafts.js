@@ -48,10 +48,9 @@ casper.then(function () {
     casper.click('body');
     casper.page.sendEvent('keypress', "c");
     casper.waitUntilVisible('#stream-message', function () {
-        casper.test.info('Creating Private Message Draft');
         casper.fill('form#send_message_form', {
-            stream: 'all',
-            subject: 'tests',
+            stream_message_recipient_stream: 'all',
+            stream_message_recipient_topic: 'tests',
             content: 'Test Stream Message',
         }, false);
         casper.click("#compose_close");
@@ -61,13 +60,23 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info('Creating Private Message Draft');
     casper.click('body');
-    casper.page.sendEvent('keypress', "C");
+    casper.page.sendEvent('keypress', "x");
     casper.waitUntilVisible('#private-message', function () {
         casper.fill('form#send_message_form', {
-            recipient: 'cordelia@zulip.com, hamlet@zulip.com',
             content: 'Test Private Message',
         }, false);
+        common.pm_recipient.set('cordelia@zulip.com, hamlet@zulip.com');
         casper.click("#compose_close");
+    });
+});
+
+casper.then(function () {
+    casper.test.info('Opening Markdown Preview');
+    casper.waitUntilVisible('#left_bar_compose_stream_button_big', function () {
+        casper.click('#left_bar_compose_stream_button_big');
+    });
+    casper.waitUntilVisible('#markdown_preview', function () {
+        casper.click('#markdown_preview');
     });
 });
 
@@ -96,19 +105,21 @@ casper.then(function () {
     casper.click("#drafts_table .message_row:not(.private-message) .restore-draft");
     waitWhileDraftsVisible(function () {
         casper.test.assertVisible('#stream-message', 'Stream Message Box Restored');
+        casper.test.assertNotVisible('#preview_message_area', 'Preview Was Hidden');
         common.check_form('form#send_message_form', {
-            stream: 'all',
-            subject: 'tests',
+            stream_message_recipient_stream: 'all',
+            stream_message_recipient_topic: 'tests',
             content: 'Test Stream Message',
         }, "Stream message box filled with draft content");
+        casper.test.assertSelectorHasText('title', 'tests - Zulip Dev - Zulip', 'Narrowed to topic');
     });
 });
 
 casper.then(function () {
     casper.test.info('Editing Stream Message Draft');
     casper.fill('form#send_message_form', {
-        stream: 'all',
-        subject: 'tests',
+        stream_message_recipient_stream: 'all',
+        stream_message_recipient_topic: 'tests',
         content: 'Updated Stream Message',
     }, false);
     casper.click("#compose_close");
@@ -134,9 +145,10 @@ casper.then(function () {
     waitWhileDraftsVisible(function () {
         casper.test.assertVisible('#private-message', 'Private Message Box Restored');
         common.check_form('form#send_message_form', {
-            recipient: 'cordelia@zulip.com, hamlet@zulip.com',
             content: 'Test Private Message',
         }, "Private message box filled with draft content");
+        common.pm_recipient.expect('cordelia@zulip.com,hamlet@zulip.com');
+        casper.test.assertSelectorHasText('title', 'private - Zulip Dev - Zulip', 'Narrowed to huddle');
     });
 });
 
@@ -159,22 +171,27 @@ casper.then(function () {
     casper.click('#draft_overlay .exit');
     waitWhileDraftsVisible(function () {
         casper.click('body');
-        casper.page.sendEvent('keypress', "C");
+        casper.page.sendEvent('keypress', "x");
     });
 });
 
 casper.then(function () {
     casper.waitUntilVisible('#private-message', function () {
         casper.fill('form#send_message_form', {
-            recipient: 'cordelia@zulip.com',
             content: 'Test Private Message',
         }, false);
+        common.pm_recipient.set('cordelia@zulip.com');
     });
     casper.reload();
 });
 
 casper.then(function () {
     casper.test.info('Finished reloading; now opening drafts again');
+    // Reloading into a narrow opens compose box automatically
+
+    casper.waitUntilVisible("#compose_close", function () {
+        casper.click("#compose_close");
+    });
     casper.waitUntilVisible('.drafts-link', function () {
         casper.click('.drafts-link');
     });
@@ -195,7 +212,10 @@ casper.then(function () {
     casper.click("#drafts_table .message_row.private-message .restore-draft");
     waitWhileDraftsVisible(function () {
         casper.test.assertVisible('#private-message');
-        casper.click('#compose-send-button');
+        casper.click("#enter_sends");
+        casper.waitUntilVisible('#compose-send-button', function () {
+            casper.click('#compose-send-button');
+        });
     });
 });
 

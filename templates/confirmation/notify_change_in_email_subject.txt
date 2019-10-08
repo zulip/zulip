@@ -1,1 +1,0 @@
-[Zulip] Email address changed for {{ realm.name }}

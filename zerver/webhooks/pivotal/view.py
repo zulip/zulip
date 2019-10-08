@@ -1,28 +1,25 @@
 """Webhooks for external integrations."""
-from __future__ import absolute_import
-
-from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
-
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
-from zerver.models import UserProfile, Client
-
-from defusedxml.ElementTree import fromstring as xml_fromstring
 
 import logging
 import re
+from typing import Any, Dict, List, Optional, Tuple
+
 import ujson
-from typing import Dict, List, Optional, Tuple, Text
+from defusedxml.ElementTree import fromstring as xml_fromstring
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    UnexpectedWebhookEventType
+from zerver.models import UserProfile
 
-def api_pivotal_webhook_v3(request, user_profile, stream):
-    # type: (HttpRequest, UserProfile, Text) -> Tuple[Text, Text]
+def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
     payload = xml_fromstring(request.body)
 
-    def get_text(attrs):
-        # type: (List[str]) -> str
+    def get_text(attrs: List[str]) -> str:
         start = payload
         try:
             for attr in attrs:
@@ -46,7 +43,7 @@ def api_pivotal_webhook_v3(request, user_profile, stream):
     if match and len(match.groups()):
         name = match.group(1)
     else:
-        name = "Story changed" # Failed for an unknown reason, show something
+        name = "Story changed"  # Failed for an unknown reason, show something
     more_info = " [(view)](%s)" % (url,)
 
     if event_type == 'story_update':
@@ -72,8 +69,18 @@ def api_pivotal_webhook_v3(request, user_profile, stream):
             more_info)
     return subject, content
 
-def api_pivotal_webhook_v5(request, user_profile, stream):
-    # type: (HttpRequest, UserProfile, Text) -> Tuple[Text, Text]
+UNSUPPORTED_EVENT_TYPES = [
+    "task_create_activity",
+    "comment_delete_activity",
+    "task_delete_activity",
+    "task_update_activity",
+    "story_move_from_project_activity",
+    "story_delete_activity",
+    "story_move_into_project_activity",
+    "epic_update_activity",
+]
+
+def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
     payload = ujson.loads(request.body)
 
     event_type = payload["kind"]
@@ -83,7 +90,7 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
 
     primary_resources = payload["primary_resources"][0]
     story_url = primary_resources["url"]
-    story_type = primary_resources["story_type"]
+    story_type = primary_resources.get("story_type")
     story_id = primary_resources["id"]
     story_name = primary_resources["name"]
 
@@ -97,8 +104,7 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
     content = ""
     subject = "#%s: %s" % (story_id, story_name)
 
-    def extract_comment(change):
-        # type: (Dict[str, Dict]) -> Optional[Text]
+    def extract_comment(change: Dict[str, Any]) -> Optional[str]:
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None
@@ -133,7 +139,8 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
         for change in changes:
             comment = extract_comment(change)
             if comment is not None:
-                content += "%s added a comment to %s:\n~~~quote\n%s\n~~~" % (performed_by, story_info, comment)
+                content += "%s added a comment to %s:\n~~~quote\n%s\n~~~" % (
+                    performed_by, story_info, comment)
     elif event_type == "story_create_activity":
         content += "%s created %s: %s\n" % (performed_by, story_type, story_info)
         for change in changes:
@@ -148,37 +155,28 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
             old_values = change.get("original_values", {})
             new_values = change["new_values"]
             if "current_state" in old_values and "current_state" in new_values:
-                content += " from **%s** to **%s**" % (old_values["current_state"], new_values["current_state"])
-    elif event_type in ["task_create_activity", "comment_delete_activity",
-                        "task_delete_activity", "task_update_activity",
-                        "story_move_from_project_activity", "story_delete_activity",
-                        "story_move_into_project_activity"]:
+                content += " from **%s** to **%s**" % (old_values["current_state"],
+                                                       new_values["current_state"])
+    elif event_type in UNSUPPORTED_EVENT_TYPES:
         # Known but unsupported Pivotal event types
         pass
     else:
-        logging.warning("Unknown Pivotal event type: %s" % (event_type,))
+        raise UnexpectedWebhookEventType('Pivotal Tracker', event_type)
 
     return subject, content
 
 @api_key_only_webhook_view("Pivotal")
 @has_request_variables
-def api_pivotal_webhook(request, user_profile, client, stream=REQ()):
-    # type: (HttpRequest, UserProfile, Client, Text) -> HttpResponse
+def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     subject = content = None
     try:
-        subject, content = api_pivotal_webhook_v3(request, user_profile, stream)
-    except AttributeError:
-        return json_error(_("Failed to extract data from Pivotal XML response"))
+        subject, content = api_pivotal_webhook_v3(request, user_profile)
     except Exception:
         # Attempt to parse v5 JSON payload
-        try:
-            subject, content = api_pivotal_webhook_v5(request, user_profile, stream)
-        except AttributeError:
-            return json_error(_("Failed to extract data from Pivotal V5 JSON response"))
+        subject, content = api_pivotal_webhook_v5(request, user_profile)
 
-    if subject is None or content is None:
+    if subject is None or content is None or not content:
         return json_error(_("Unable to handle Pivotal payload"))
 
-    check_send_message(user_profile, client, "stream",
-                       [stream], subject, content)
+    check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 from typing import Optional, Any
 
 import sys
@@ -18,26 +15,16 @@ except ImportError:
     sys.exit(1)
 
 class ParserTest(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
-        # This method should be removed when we migrate to version 3 of Python
-        import six
-        if six.PY2:
-            self.assertRaisesRegex = self.assertRaisesRegexp  # type: ignore
-        super(ParserTest, self).__init__(*args, **kwargs)
-
-    def _assert_validate_error(self, error, fn=None, text=None, check_indent=True):
-        # type: (str, Optional[str], Optional[str], bool) -> None
-        with self.assertRaisesRegex(TemplateParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+    def _assert_validate_error(self, error: str, fn: Optional[str]=None,
+                               text: Optional[str]=None, check_indent: bool=True) -> None:
+        with self.assertRaisesRegex(TemplateParserException, error):
             validate(fn=fn, text=text, check_indent=check_indent)
 
-    def test_is_django_block_tag(self):
-        # type: () -> None
+    def test_is_django_block_tag(self) -> None:
         self.assertTrue(is_django_block_tag('block'))
         self.assertFalse(is_django_block_tag('not a django tag'))
 
-    def test_validate_vanilla_html(self):
-        # type: () -> None
+    def test_validate_vanilla_html(self) -> None:
         '''
         Verify that validate() does not raise errors for
         well-formed HTML.
@@ -50,8 +37,7 @@ class ParserTest(unittest.TestCase):
             </table>'''
         validate(text=my_html)
 
-    def test_validate_handlebars(self):
-        # type: () -> None
+    def test_validate_handlebars(self) -> None:
         my_html = '''
             {{#with stream}}
                 <p>{{stream}}</p>
@@ -59,16 +45,14 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
-    def test_validate_comment(self):
-        # type: () -> None
+    def test_validate_comment(self) -> None:
         my_html = '''
             <!---
                 <h1>foo</h1>
             -->'''
         validate(text=my_html)
 
-    def test_validate_django(self):
-        # type: () -> None
+    def test_validate_django(self) -> None:
         my_html = '''
             {% include "some_other.html" %}
             {% if foo %}
@@ -77,22 +61,28 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
-    def test_validate_no_start_tag(self):
-        # type: () -> None
+        my_html = '''
+            {% block "content" %}
+                {% with className="class" %}
+                {% include 'foobar' %}
+                {% endwith %}
+            {% endblock %}
+            '''
+        validate(text=my_html)
+
+    def test_validate_no_start_tag(self) -> None:
         my_html = '''
             foo</p>
         '''
         self._assert_validate_error('No start tag', text=my_html)
 
-    def test_validate_mismatched_tag(self):
-        # type: () -> None
+    def test_validate_mismatched_tag(self) -> None:
         my_html = '''
             <b>foo</i>
         '''
         self._assert_validate_error('Mismatched tag.', text=my_html)
 
-    def test_validate_bad_indentation(self):
-        # type: () -> None
+    def test_validate_bad_indentation(self) -> None:
         my_html = '''
             <p>
                 foo
@@ -100,53 +90,46 @@ class ParserTest(unittest.TestCase):
         '''
         self._assert_validate_error('Bad indentation.', text=my_html, check_indent=True)
 
-    def test_validate_state_depth(self):
-        # type: () -> None
+    def test_validate_state_depth(self) -> None:
         my_html = '''
             <b>
         '''
         self._assert_validate_error('Missing end tag', text=my_html)
 
-    def test_validate_incomplete_handlebars_tag_1(self):
-        # type: () -> None
+    def test_validate_incomplete_handlebars_tag_1(self) -> None:
         my_html = '''
             {{# foo
         '''
         self._assert_validate_error('''Tag missing "}}" at Line 2 Col 13:"{{# foo
         "''', text=my_html)
 
-    def test_validate_incomplete_handlebars_tag_2(self):
-        # type: () -> None
+    def test_validate_incomplete_handlebars_tag_2(self) -> None:
         my_html = '''
             {{# foo }
         '''
         self._assert_validate_error('Tag missing "}}" at Line 2 Col 13:"{{# foo }\n"', text=my_html)
 
-    def test_validate_incomplete_django_tag_1(self):
-        # type: () -> None
+    def test_validate_incomplete_django_tag_1(self) -> None:
         my_html = '''
             {% foo
         '''
         self._assert_validate_error('''Tag missing "%}" at Line 2 Col 13:"{% foo
         "''', text=my_html)
 
-    def test_validate_incomplete_django_tag_2(self):
-        # type: () -> None
+    def test_validate_incomplete_django_tag_2(self) -> None:
         my_html = '''
             {% foo %
         '''
         self._assert_validate_error('Tag missing "%}" at Line 2 Col 13:"{% foo %\n"', text=my_html)
 
-    def test_validate_incomplete_html_tag_1(self):
-        # type: () -> None
+    def test_validate_incomplete_html_tag_1(self) -> None:
         my_html = '''
             <b
         '''
         self._assert_validate_error('''Tag missing ">" at Line 2 Col 13:"<b
         "''', text=my_html)
 
-    def test_validate_incomplete_html_tag_2(self):
-        # type: () -> None
+    def test_validate_incomplete_html_tag_2(self) -> None:
         my_html = '''
             <a href="
         '''
@@ -158,15 +141,13 @@ class ParserTest(unittest.TestCase):
         self._assert_validate_error('''Unbalanced Quotes at Line 2 Col 13:"<a href="
         "''', text=my_html)
 
-    def test_validate_empty_html_tag(self):
-        # type: () -> None
+    def test_validate_empty_html_tag(self) -> None:
         my_html = '''
             < >
         '''
         self._assert_validate_error('Tag name missing', text=my_html)
 
-    def test_code_blocks(self):
-        # type: () -> None
+    def test_code_blocks(self) -> None:
 
         # This is fine.
         my_html = '''
@@ -187,8 +168,7 @@ class ParserTest(unittest.TestCase):
             '''
         self._assert_validate_error('Code tag is split across two lines.', text=my_html)
 
-    def test_anchor_blocks(self):
-        # type: () -> None
+    def test_anchor_blocks(self) -> None:
 
         # This is allowed, although strange.
         my_html = '''
@@ -211,8 +191,7 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
-    def test_tokenize(self):
-        # type: () -> None
+    def test_tokenize(self) -> None:
         tag = '<meta whatever>bla'
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, 'html_special')
@@ -226,6 +205,16 @@ class ParserTest(unittest.TestCase):
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, 'html_singleton')
         self.assertEqual(token.tag, 'br')
+
+        tag = '<input>bla'
+        token = tokenize(tag)[0]
+        self.assertEqual(token.kind, 'html_singleton')
+        self.assertEqual(token.tag, 'input')
+
+        tag = '<input />bla'
+        token = tokenize(tag)[0]
+        self.assertEqual(token.kind, 'html_singleton')
+        self.assertEqual(token.tag, 'input')
 
         tag = '</a>bla'
         token = tokenize(tag)[0]

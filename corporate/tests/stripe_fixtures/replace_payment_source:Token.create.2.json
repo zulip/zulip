@@ -1,0 +1,33 @@
+{
+  "card": {
+    "address_city": "Pacific",
+    "address_country": "United States",
+    "address_line1": "Under the sea,",
+    "address_line1_check": "unchecked",
+    "address_line2": null,
+    "address_state": null,
+    "address_zip": "33333",
+    "address_zip_check": "unchecked",
+    "brand": "MasterCard",
+    "country": "US",
+    "cvc_check": "unchecked",
+    "dynamic_last4": null,
+    "exp_month": 3,
+    "exp_year": 2033,
+    "fingerprint": "NORMALIZED000002",
+    "funding": "credit",
+    "id": "card_NORMALIZED00000000000002",
+    "last4": "4444",
+    "metadata": {},
+    "name": "Ada Starr",
+    "object": "card",
+    "tokenization_method": null
+  },
+  "client_ip": "0.0.0.0",
+  "created": 1000000000,
+  "id": "tok_NORMALIZED00000000000002",
+  "livemode": false,
+  "object": "token",
+  "type": "card",
+  "used": false
+}

@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+set -e
+
+usage () {
+    cat >&2 <<EOF
+usage: $0 PULL_REQUEST_ID [REMOTE]
+
+Force-push our HEAD to the given GitHub pull request branch.
+
+Useful for a maintainer to run just before pushing to master,
+after tweaking the branch and/or rebasing to latest.  This causes
+GitHub to see the subsequent push to master as representing a
+merge of the PR, rather than requiring the PR to be manually
+(and to the casual observer misleadingly) closed instead.
+
+REMOTE defaults to the value of the Git config variable
+\`zulip.zulipRemote\` if set, else to \`upstream\`.
+
+See also \`reset-to-pull-request\`.
+EOF
+    exit 1
+}
+
+remote_default="$(git config zulip.zulipRemote || echo upstream)"
+pseudo_remote="$(git config zulip.prPseudoRemote || echo)"
+
+pr_id="$1"
+remote="${2:-"$remote_default"}"
+
+if [ -z "$pr_id" ]; then
+    usage
+fi
+
+if ! jq --version >/dev/null 2>&1; then
+    cat >&2 <<EOF
+error: not found: jq
+
+push-to-pull-request requires the \`jq\` utility; you should install it.
+Try:
+
+  sudo apt install jq
+EOF
+    exit 1
+fi
+
+remote_url="$(git config remote."$remote".url)"
+repo_fq="$(echo "$remote_url" | perl -lne 'print $1 if (
+    m, ^ git\@github\.com:
+         ([^/]+ / [^/]+?)
+         (?:\.git)?
+       $ ,x )')"
+
+if [ -z "$repo_fq" ]; then
+    # We're pretty specific about what we expect the URL to look like;
+    # there are probably more cases we could legitimately cover, which
+    # we can add if/when they come up for someone.
+    echo "error: couldn't parse remote URL as GitHub repo" >&2
+    exit 1
+fi
+
+# See https://developer.github.com/v3/pulls/#get-a-single-pull-request .
+# This is the old REST API; the new GraphQL API does look neat, but it
+# seems to require authentication even for simple lookups of public data,
+# and that'd be a pain for a simple script like this.
+pr_url=https://api.github.com/repos/"${repo_fq}"/pulls/"${pr_id}"
+pr_details="$(curl -s "$pr_url")"
+
+pr_jq () {
+    echo "$pr_details" | jq "$@"
+}
+
+if [ "$(pr_jq -r .message)" = "Not Found" ]; then
+    echo "error: invalid PR URL: $pr_url" >&2
+    exit 1
+fi
+
+if [ "$(pr_jq .maintainer_can_modify)" != "true" ]; then
+    # This happens when the PR has already been merged or closed, or
+    # if the contributor has turned off the (default) setting to allow
+    # maintainers of the target repo to push to their PR branch.
+    #
+    # The latter seems to be rare (in Greg's experience doing the
+    # manual equivalent of this script for many different
+    # contributors, none have ever chosen this setting), but give a
+    # decent error message if it does happen.
+    echo "error: PR already closed, or contributor has disallowed pushing to branch" >&2
+    exit 1
+fi
+
+pr_head_repo_fq="$(pr_jq -r .head.repo.full_name)"
+pr_head_refname="$(pr_jq -r .head.ref)"
+
+tracking_ref=
+if [ -n "$pseudo_remote" ]; then
+    tracking_ref=$(git rev-parse -q --verify --symbolic refs/remotes/"$pseudo_remote"/"$pr_id" || echo)
+fi
+
+set -x
+git push git@github.com:"$pr_head_repo_fq" +@:"$pr_head_refname"
+
+{ set +x; } 2>&-
+if [ -n "$tracking_ref" ]; then
+    set -x
+    git update-ref "$tracking_ref" @
+fi

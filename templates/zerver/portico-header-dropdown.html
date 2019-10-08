@@ -1,0 +1,21 @@
+<div class="dropdown">
+    <div class="dropdown-pill">
+        <img class="header-realm-icon" src="{{ realm_icon }}" alt="{{ _('Go to Zulip') }}"/>
+        <div class="realm-name">{{ realm_name }}<i class="fa fa-chevron-down"></i></div>
+    </div>
+    <ul>
+        <li>
+            <a href="/">
+                <i class="fa fa-home"></i>
+                Go home
+            </a>
+        </li>
+        <li class="logout">
+            {% include 'zerver/app/logout.html' %}
+            <a href="#logout">
+                <i class="fa fa-off"></i>
+                Log out
+            </a>
+        </li>
+    </ul>
+</div>

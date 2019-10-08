@@ -1,18 +1,18 @@
-from __future__ import absolute_import
-from __future__ import print_function
-from typing import Any, Dict, Generator, Iterable, Tuple
+from typing import Dict, Iterable, Tuple, Callable, TypeVar, Iterator
 
 import os
 import pty
 import sys
 import errno
 
-def run_parallel(job, data, threads=6):
-    # type: (Any, Iterable[Any], int) -> Generator[Tuple[int, Any], None, None]
-    pids = {} # type: Dict[int, Any]
+JobData = TypeVar('JobData')
 
-    def wait_for_one():
-        # type: () -> Tuple[int, Any]
+def run_parallel(job: Callable[[JobData], int],
+                 data: Iterable[JobData],
+                 threads: int=6) -> Iterator[Tuple[int, JobData]]:
+    pids = {}  # type: Dict[int, JobData]
+
+    def wait_for_one() -> Tuple[int, JobData]:
         while True:
             try:
                 (pid, status) = os.wait()
@@ -29,7 +29,7 @@ def run_parallel(job, data, threads=6):
             except OSError as e:
                 if e.errno != errno.EBADF:
                     raise
-            sys.stdin = open("/dev/null", "r") # type: ignore # py2 and py3 stubs are not compatible
+            sys.stdin = open("/dev/null", "r")
             os._exit(job(item))
 
         pids[pid] = item
@@ -59,8 +59,7 @@ if __name__ == "__main__":
     jobs = [10, 19, 18, 6, 14, 12, 8, 2, 1, 13, 3, 17, 9, 11, 5, 16, 7, 15, 4]
     expected_output = [6, 10, 12, 2, 1, 14, 8, 3, 18, 19, 5, 9, 13, 11, 4, 7, 17, 16, 15]
 
-    def wait_and_print(x):
-        # type: (int) -> int
+    def wait_and_print(x: int) -> int:
         time.sleep(x * 0.1)
         return 0
 

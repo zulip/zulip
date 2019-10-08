@@ -1,12 +1,16 @@
 <div id="admin-deactivated-users-list" class="settings-section" data-name="deactivated-users-admin">
-<div class="settings-section-title"><i class="icon-vector-trash settings-section-icon"></i>
-{{t "Deactivated users" }}</div>
-<table class="table table-condensed table-striped">
-  <tbody id="admin_deactivated_users_table" class="admin_user_table">
-    <th>{{t "Name" }}</th>
-    <th>{{t "Email" }}</th>
-    <th>{{t "Actions" }}</th>
-  </tbody>
-</table>
-<div id="admin_page_deactivated_users_loading_indicator"></div>
+    <input type="text" class="search" placeholder="{{t 'Filter deactivated users' }}" aria-label="{{t 'Filter deactivated users' }}"/>
+    <div class="clear-float"></div>
+
+    <div class="progressive-table-wrapper">
+        <table class="table table-condensed table-striped">
+            <thead>
+                <th>{{t "Name" }}</th>
+                <th>{{t "Email" }}</th>
+                <th class="actions">{{t "Actions" }}</th>
+            </thead>
+            <tbody id="admin_deactivated_users_table" class="required-text thick admin_user_table" data-empty="{{t 'No users match your current filter.' }}"></tbody>
+        </table>
+    </div>
+    <div id="admin_page_deactivated_users_loading_indicator"></div>
 </div>

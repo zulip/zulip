@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 sudo service rabbitmq-server restart
 sudo service postgresql restart
 sudo service redis-server restart
 sudo service memcached restart
+# shellcheck source=/dev/null
 source /home/zulip/.bash_profile
 /srv/zulip/tools/test-all

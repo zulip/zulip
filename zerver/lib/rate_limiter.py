@@ -1,10 +1,10 @@
-from __future__ import absolute_import
 
-from typing import Any, Iterator, List, Tuple, Text
+import os
+
+from typing import Any, Iterator, List, Optional, Tuple
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
-from six.moves import zip
 
 from zerver.models import UserProfile
 
@@ -16,71 +16,87 @@ import logging
 # http://blog.domaintools.com/2013/04/rate-limiting-with-redis/
 
 client = get_redis_client()
-rules = settings.RATE_LIMITING_RULES # type: List[Tuple[int, int]]
-def _rules_for_user(user):
-    # type: (UserProfile) -> List[Tuple[int, int]]
-    if user.rate_limits != "":
-        result = [] # type: List[Tuple[int, int]]
-        for limit in user.rate_limits.split(','):
-            (seconds, requests) = limit.split(':', 2)
-            result.append((int(seconds), int(requests)))
-        return result
-    return rules
+rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
 
-def redis_key(user, domain):
-    # type: (UserProfile, Text) -> List[Text]
-    """Return the redis keys for this user"""
-    return ["ratelimit:%s:%s:%s:%s" % (type(user), user.id, domain, keytype) for keytype in ['list', 'zset', 'block']]
+KEY_PREFIX = ''
 
-def max_api_calls(user):
-    # type: (UserProfile) -> int
+class RateLimiterLockingException(Exception):
+    pass
+
+class RateLimitedObject:
+    def get_keys(self) -> List[str]:
+        key_fragment = self.key_fragment()
+        return ["{}ratelimit:{}:{}".format(KEY_PREFIX, key_fragment, keytype)
+                for keytype in ['list', 'zset', 'block']]
+
+    def key_fragment(self) -> str:
+        raise NotImplementedError()
+
+    def rules(self) -> List[Tuple[int, int]]:
+        raise NotImplementedError()
+
+class RateLimitedUser(RateLimitedObject):
+    def __init__(self, user: UserProfile, domain: str='all') -> None:
+        self.user = user
+        self.domain = domain
+
+    def key_fragment(self) -> str:
+        return "{}:{}:{}".format(type(self.user), self.user.id, self.domain)
+
+    def rules(self) -> List[Tuple[int, int]]:
+        if self.user.rate_limits != "":
+            result = []  # type: List[Tuple[int, int]]
+            for limit in self.user.rate_limits.split(','):
+                (seconds, requests) = limit.split(':', 2)
+                result.append((int(seconds), int(requests)))
+            return result
+        return rules
+
+def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
+    global KEY_PREFIX
+    KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
+
+def max_api_calls(entity: RateLimitedObject) -> int:
     "Returns the API rate limit for the highest limit"
-    return _rules_for_user(user)[-1][1]
+    return entity.rules()[-1][1]
 
-def max_api_window(user):
-    # type: (UserProfile) -> int
+def max_api_window(entity: RateLimitedObject) -> int:
     "Returns the API time window for the highest limit"
-    return _rules_for_user(user)[-1][0]
+    return entity.rules()[-1][0]
 
-def add_ratelimit_rule(range_seconds, num_requests):
-    # type: (int , int) -> None
+def add_ratelimit_rule(range_seconds: int, num_requests: int) -> None:
     "Add a rate-limiting rule to the ratelimiter"
     global rules
 
     rules.append((range_seconds, num_requests))
     rules.sort(key=lambda x: x[0])
 
-def remove_ratelimit_rule(range_seconds, num_requests):
-    # type: (int , int) -> None
+def remove_ratelimit_rule(range_seconds: int, num_requests: int) -> None:
     global rules
     rules = [x for x in rules if x[0] != range_seconds and x[1] != num_requests]
 
-def block_user(user, seconds, domain='all'):
-    # type: (UserProfile, int, Text) -> None
-    "Manually blocks a user id for the desired number of seconds"
-    _, _, blocking_key = redis_key(user, domain)
+def block_access(entity: RateLimitedObject, seconds: int) -> None:
+    "Manually blocks an entity for the desired number of seconds"
+    _, _, blocking_key = entity.get_keys()
     with client.pipeline() as pipe:
         pipe.set(blocking_key, 1)
         pipe.expire(blocking_key, seconds)
         pipe.execute()
 
-def unblock_user(user, domain='all'):
-    # type: (UserProfile, str) -> None
-    _, _, blocking_key = redis_key(user, domain)
+def unblock_access(entity: RateLimitedObject) -> None:
+    _, _, blocking_key = entity.get_keys()
     client.delete(blocking_key)
 
-def clear_user_history(user, domain='all'):
-    # type: (UserProfile, Text) -> None
+def clear_history(entity: RateLimitedObject) -> None:
     '''
     This is only used by test code now, where it's very helpful in
     allowing us to run tests quickly, by giving a user a clean slate.
     '''
-    for key in redis_key(user, domain):
+    for key in entity.get_keys():
         client.delete(key)
 
-def _get_api_calls_left(user, domain, range_seconds, max_calls):
-    # type: (UserProfile, Text, int, int) -> Tuple[int, float]
-    list_key, set_key, _ = redis_key(user, domain)
+def _get_api_calls_left(entity: RateLimitedObject, range_seconds: int, max_calls: int) -> Tuple[int, float]:
+    list_key, set_key, _ = entity.get_keys()
     # Count the number of values in our sorted set
     # that are between now and the cutoff
     now = time.time()
@@ -95,8 +111,8 @@ def _get_api_calls_left(user, domain, range_seconds, max_calls):
 
         results = pipe.execute()
 
-    count = results[0]
-    newest_call = results[1]
+    count = results[0]  # type: int
+    newest_call = results[1]  # type: Optional[bytes]
 
     calls_left = max_calls - count
     if newest_call is not None:
@@ -106,20 +122,18 @@ def _get_api_calls_left(user, domain, range_seconds, max_calls):
 
     return calls_left, time_reset
 
-def api_calls_left(user, domain='all'):
-    # type: (UserProfile, Text) -> Tuple[int, float]
+def api_calls_left(entity: RateLimitedObject) -> Tuple[int, float]:
     """Returns how many API calls in this range this client has, as well as when
        the rate-limit will be reset to 0"""
-    max_window = _rules_for_user(user)[-1][0]
-    max_calls = _rules_for_user(user)[-1][1]
-    return _get_api_calls_left(user, domain, max_window, max_calls)
+    max_window = max_api_window(entity)
+    max_calls = max_api_calls(entity)
+    return _get_api_calls_left(entity, max_window, max_calls)
 
-def is_ratelimited(user, domain='all'):
-    # type: (UserProfile, Text) -> Tuple[bool, float]
+def is_ratelimited(entity: RateLimitedObject) -> Tuple[bool, float]:
     "Returns a tuple of (rate_limited, time_till_free)"
-    list_key, set_key, blocking_key = redis_key(user, domain)
+    list_key, set_key, blocking_key = entity.get_keys()
 
-    rules = _rules_for_user(user)
+    rules = entity.rules()
 
     if len(rules) == 0:
         return False, 0.0
@@ -129,24 +143,24 @@ def is_ratelimited(user, domain='all'):
     # get the timestamps for each nth items
     with client.pipeline() as pipe:
         for _, request_count in rules:
-            pipe.lindex(list_key, request_count - 1) # 0-indexed list
+            pipe.lindex(list_key, request_count - 1)  # 0-indexed list
 
         # Get blocking info
         pipe.get(blocking_key)
         pipe.ttl(blocking_key)
 
-        rule_timestamps = pipe.execute()
+        rule_timestamps = pipe.execute()  # type: List[Optional[bytes]]
 
     # Check if there is a manual block on this API key
-    blocking_ttl = rule_timestamps.pop()
+    blocking_ttl_b = rule_timestamps.pop()
     key_blocked = rule_timestamps.pop()
 
     if key_blocked is not None:
         # We are manually blocked. Report for how much longer we will be
-        if blocking_ttl is None:
+        if blocking_ttl_b is None:
             blocking_ttl = 0.5
         else:
-            blocking_ttl = int(blocking_ttl)
+            blocking_ttl = int(blocking_ttl_b)
         return True, blocking_ttl
 
     now = time.time()
@@ -156,8 +170,7 @@ def is_ratelimited(user, domain='all'):
         if timestamp is None:
             continue
 
-        timestamp = float(timestamp)
-        boundary = timestamp + range_seconds
+        boundary = float(timestamp) + range_seconds
         if boundary > now:
             free = boundary - now
             return True, free
@@ -165,10 +178,9 @@ def is_ratelimited(user, domain='all'):
     # No api calls recorded yet
     return False, 0.0
 
-def incr_ratelimit(user, domain='all'):
-    # type: (UserProfile, Text) -> None
-    """Increases the rate-limit for the specified user"""
-    list_key, set_key, _ = redis_key(user, domain)
+def incr_ratelimit(entity: RateLimitedObject) -> None:
+    """Increases the rate-limit for the specified entity"""
+    list_key, set_key, _ = entity.get_keys()
     now = time.time()
 
     # If we have no rules, we don't store anything
@@ -187,7 +199,7 @@ def incr_ratelimit(user, domain='all'):
                 pipe.watch(list_key)
 
                 # Get the last elem that we'll trim (so we can remove it from our sorted set)
-                last_val = pipe.lindex(list_key, max_api_calls(user) - 1)
+                last_val = pipe.lindex(list_key, max_api_calls(entity) - 1)
 
                 # Restart buffered execution
                 pipe.multi()
@@ -196,7 +208,7 @@ def incr_ratelimit(user, domain='all'):
                 pipe.lpush(list_key, now)
 
                 # Trim our list to the oldest rule we have
-                pipe.ltrim(list_key, 0, max_api_calls(user) - 1)
+                pipe.ltrim(list_key, 0, max_api_calls(entity) - 1)
 
                 # Add our new value to the sorted set that we keep
                 # We need to put the score and val both as timestamp,
@@ -208,7 +220,7 @@ def incr_ratelimit(user, domain='all'):
                     pipe.zrem(set_key, last_val)
 
                 # Set the TTL for our keys as well
-                api_window = max_api_window(user)
+                api_window = max_api_window(entity)
                 pipe.expire(list_key, api_window)
                 pipe.expire(set_key, api_window)
 
@@ -218,9 +230,7 @@ def incr_ratelimit(user, domain='all'):
                 break
             except redis.WatchError:
                 if count > 10:
-                    logging.error("Failed to complete incr_ratelimit transaction without interference 10 times "
-                                  "in a row! Aborting rate-limit increment")
-                    break
+                    raise RateLimiterLockingException()
                 count += 1
 
                 continue

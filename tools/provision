@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Use this script to provision dependencies for your Zulip installation.
 # This script is idempotent, so it can be restarted at any time, and it
@@ -10,31 +10,43 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
-#Make the script independent of the location from where it is
-#executed
-PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
+FAIL='\033[91m'
+WARNING='\033[93m'
+ENDC='\033[0m'
+
+# Make the script independent of the location from where it is executed
+PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$PARENT_PATH"
 mkdir -p ../var/log
 LOG_PATH="../var/log/provision.log"
-PROVISION_PATH="lib/provision.py"
 
 echo "PROVISIONING STARTING." >> $LOG_PATH
 
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.
 export PYTHONUNBUFFERED=1
-python "$PROVISION_PATH" $@ 2>&1 | tee -a "$LOG_PATH"
+./lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
 failed=${PIPESTATUS[0]}
 
-if [ $failed = 1 ]; then
-    echo -e "\033[0;31m"
+if [ "$failed" = 1 ]; then
+    echo -e "$FAIL"
     echo "Provisioning failed!"
     echo
     echo "* Look at the traceback(s) above to find more about the errors."
     echo "* Resolve the errors or get help on chat."
     echo "* If you can fix this yourself, you can re-run tools/provision at any time."
     echo "* Logs are here: zulip/var/log/provision.log"
-    echo -e "\033[0m"
+    echo -e "$ENDC"
     exit 1
+elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${TRAVIS}${SKIP_VENV_SHELL_WARNING}" ]; then
+    echo -e "$WARNING"
+    echo "WARNING: This shell does not have the Zulip Python 3 virtualenv activated."
+    echo "Zulip commands will fail until you activate the virtualenv."
+    echo
+    echo "To update the shell, run:"
+    echo "    source /srv/zulip-py3-venv/bin/activate"
+    # shellcheck disable=SC2016
+    echo 'or just close this shell and start a new one (with Vagrant, `vagrant ssh`).'
+    echo -en "$ENDC"
 fi
 exit 0

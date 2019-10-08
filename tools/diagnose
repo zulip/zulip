@@ -1,21 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 import platform
+import shlex
 import sys
 import subprocess
 
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Callable, List
 
 TOOLS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 sys.path.insert(0, ROOT_DIR)
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
+UUID_VAR_PATH = get_dev_uuid_var_path()
 
 def run(check_func):
-    # type: (Callable) -> None
+    # type: (Callable[[], bool]) -> None
     '''
     This decorator simply runs functions.  It makes it more
     convenient to add new checks without a big main() function.
@@ -26,7 +28,7 @@ def run(check_func):
 
 def run_command(args):
     # type: (List[str]) -> None
-    print(' '.join(args))
+    print(' '.join(map(shlex.quote, args)))
     subprocess.check_call(args)
 
 @run
@@ -38,7 +40,7 @@ def check_python_version():
 @run
 def pwd():
     # type: () -> bool
-    subprocess.check_call('pwd')
+    print(os.getcwd())
     return True
 
 @run
@@ -63,7 +65,7 @@ def check_django():
 
             Make sure your shell does this at init time:
 
-            source /srv/zulip-venv/bin/activate
+            source /srv/zulip-py3-venv/bin/activate
 
             Or maybe you forget to run inside your VM?
             ''')
@@ -72,7 +74,7 @@ def check_django():
 @run
 def provision_version():
     # type: () -> bool
-    fn = os.path.join(ROOT_DIR, 'var/provision_version')
+    fn = os.path.join(UUID_VAR_PATH, 'provision_version')
     with open(fn) as f:
         version = f.read().strip()
     print('latest version provisioned:', version)
@@ -107,7 +109,7 @@ def check_venv():
     # type: () -> bool
     path = os.path.join(ROOT_DIR, 'scripts', 'lib', 'hash_reqs.py')
     cache_dir = '/srv/zulip-venv-cache/'
-    for fn in ['py2_dev.txt', 'py3_dev.txt']:
+    for fn in ['dev.txt']:
         requirements_file = os.path.join(ROOT_DIR, "requirements", fn)
         output = subprocess.check_output([path, requirements_file], universal_newlines=True)
         sha1sum = output.split()[0]

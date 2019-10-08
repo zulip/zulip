@@ -2,15 +2,13 @@
 Context managers, i.e. things you can use with the 'with' statement.
 """
 
-from __future__ import absolute_import
 
 import fcntl
 from contextlib import contextmanager
-from typing import Iterator
+from typing import Iterator, IO, Any, Union
 
 @contextmanager
-def flock(lockfile, shared=False):
-    # type: (int, bool) -> Iterator[None]
+def flock(lockfile: Union[int, IO[Any]], shared: bool=False) -> Iterator[None]:
     """Lock a file object using flock(2) for the duration of a 'with' statement.
 
        If shared is True, use a LOCK_SH lock, otherwise LOCK_EX."""
@@ -22,8 +20,7 @@ def flock(lockfile, shared=False):
         fcntl.flock(lockfile, fcntl.LOCK_UN)
 
 @contextmanager
-def lockfile(filename, shared=False):
-    # type: (str, bool) -> Iterator[None]
+def lockfile(filename: str, shared: bool=False) -> Iterator[None]:
     """Lock a file using flock(2) for the duration of a 'with' statement.
 
        If shared is True, use a LOCK_SH lock, otherwise LOCK_EX.

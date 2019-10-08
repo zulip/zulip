@@ -1,27 +1,18 @@
 {{! Stream sidebar rows }}
 
-<li data-name="{{name}}" class="narrow-filter{{#if not_in_home_view}} out_of_home_view{{/if}}"
-    id="stream_sidebar_{{id}}">
+<li class="narrow-filter{{#if not_in_home_view}} out_of_home_view{{/if}}"
+  data-stream-id="{{id}}" data-stream-name="{{name}}">
+    <div class="subscription_block selectable_sidebar_block">
 
-    {{! For some reason, even though the span is inline-block, if it is empty it
-      takes up no space and you don't see the background color. Thus, add a
-      &nbsp; to get the inline-block behavior we want. }}
+        <span id="stream_sidebar_privacy_swatch_{{id}}" class="stream-privacy" style="color: {{color}}">
+            {{! This controls whether the swatchnext to streams in the left sidebar has a lock icon. }}
+            {{ partial "stream_privacy" }}
+        </span>
 
-    <div class="subscription_block selectable_sidebar_block" data-name="{{name}}">
+        <a href="{{uri}}" class="stream-name">{{name}}</a>
 
-      <div id="stream_sidebar_swatch_{{id}}" class="streamlist_swatch{{#if invite_only}} private-stream-swatch{{/if}}"
-       style="background-color: {{color}}">&nbsp;</div>
-
-      <a href="{{uri}}" class="stream-name">{{name}}
-      </a>
-
-      <div class="count"><div class="value"></div></div>
-
-      <span id="stream_sidebar_privacy_swatch_{{id}}" class="stream-privacy" style="color: {{color}}">
-        {{partial "stream_privacy"}}
-      </span>
-
+        <div class="count"><div class="value"></div></div>
     </div>
-    <span class="arrow stream-sidebar-arrow"><i class="icon-vector-chevron-down"></i></span>
+    <span class="arrow stream-sidebar-arrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
 
 </li>

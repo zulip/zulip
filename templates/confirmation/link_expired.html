@@ -1,0 +1,17 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+<div class="error_page">
+    <div class="container">
+        <div class="row-fluid">
+            <img class="hourglass-img" src="/static/images/timeout_hourglass.png" alt=""/>
+            <div class="errorbox">
+                <div class="errorcontent">
+                    <h1 class="lead">Whoops. The confirmation link has expired or been deactivated.</h1>
+                    <p>Please contact your organization administrator for a new one.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

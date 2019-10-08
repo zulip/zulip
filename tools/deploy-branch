@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function error_out {
     echo -en '\e[0;31m'
@@ -8,19 +8,16 @@ function error_out {
 }
 
 status=$(git status --porcelain | grep -v '^??')
-[ ! -z "$status" ] && error_out "Working directory or index not clean"
+[ -n "$status" ] && error_out "Working directory or index not clean"
 
 old_ref=$(git rev-list --max-count=1 HEAD)
 branch=$1
-branch_ref=$(git rev-list --max-count=1 "$branch")
-
-[ $? -ne 0 ] && error_out "Unknown branch: $branch"
+branch_ref=$(git rev-list --max-count=1 "$branch") || error_out "Unknown branch: $branch"
 
 if [ "$old_ref" == "$branch_ref" ]; then
     new_ref=master
 else
-    ref_name=$(git describe --all --exact "$old_ref")
-    if [ $? -eq 0 ]; then
+    if ref_name=$(git describe --all --exact "$old_ref"); then
         new_ref=$(echo "$ref_name" | perl -pe 's{^(heads|remotes)/}{}')
     else
         new_ref=$old_ref
@@ -31,12 +28,10 @@ fi
 
 git fetch -p
 
-git rebase origin/master "$branch"
-[ $? -ne 0 ] && error_out "Rebase onto origin/master failed"
+git rebase origin/master "$branch" || error_out "Rebase onto origin/master failed"
 
 git push . HEAD:master
-git push origin master
-[ $? -ne 0 ] && error_out "Push of master to origin/master failed"
+git push origin master || error_out "Push of master to origin/master failed"
 
 git checkout "$new_ref"
 git branch -D "$branch"

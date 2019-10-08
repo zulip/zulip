@@ -1,0 +1,52 @@
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev.txt.
+# See requirements/README.md for more detail.
+-r common.in
+-r docs.in
+
+# moto s3 mock
+moto==1.3.3
+
+# Needed for running tools/run-dev.py
+Twisted==18.9.0
+
+# Needed for documentation links test
+Scrapy==1.5.1
+
+# Needed to compute test coverage
+coverage==4.5.2
+
+# fake for LDAP testing
+fakeldap==0.6.1
+
+# For testing mock http requests
+httpretty==0.9.6
+
+# For sorting imports
+isort==4.3.4
+
+# for pep8 linter
+pycodestyle==2.4.0
+
+# Needed to run pyflakes linter
+pyflakes==2.0.0
+
+# Needed to run tests in parallel
+tblib==1.3.2
+
+# Needed to lint Git commit messages
+gitlint==0.10.0
+
+# Needed for visualising cprofile reports
+snakeviz==1.0.0
+
+# Needed to sync translations from transifex
+transifex-client==0.12.5
+
+# Needed for creating digital ocean droplets
+python-digitalocean==1.14.0
+
+# Needed for updating the locked pip dependencies
+pip-tools==2.0.2
+
+-r mypy.in

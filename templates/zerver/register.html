@@ -8,205 +8,212 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
 {% block customhead %}
 {{ super() }}
-{{ minified_js('zxcvbn')|safe }}
+{{ render_bundle('zxcvbn') }}
+{{ render_bundle('translations') }}
 {% endblock %}
 
 {% block portico_content %}
-<div class="center-container">
-  <div class="center-block" style="padding: 20px 0px">
-    <div class="pitch">
-        {% trans %}
-        <h1>You're almost there.</h1>
-        <p>
-          We just need you to do one last thing.
-        </p>
-        {% endtrans %}
-    </div>
+<div class="register-account flex full-page">
+    <div class="center-block new-style" style="padding: 20px 0px">
 
-    <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
-    {{ csrf_input }}
-        <div class="input-group grid">
-            <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
-            <input type='hidden' name='key' value='{{ key }}' />
-            <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" />
+        <div class="pitch">
+            {% trans %}
+            <h1>You&rsquo;re almost there.</h1>
+            <p>We just need you to do one last thing.</p>
+            {% endtrans %}
         </div>
 
-        <div class="input-group grid">
-            <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
-            {% if lock_name %}
-                <p class="fakecontrol">{{ full_name }}</p>
-            {% else %}
-                <input id="id_full_name" class="required" type="text" name="full_name" placeholder='{{ "Wile E. Coyote" }}'
-                value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                    maxlength="100" />
-                {% if form.full_name.errors %}
-                    {% for error in form.full_name.errors %}
-                        <div class="help-inline text-error">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endif %}
-            <div class="help-box">
-                {{ _('Zulip has full unicode support, so you can spell your name exactly how you want it to appear.') }}
-            </div>
-        </div>
+        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
+            {{ csrf_input }}
 
-
-        {% if password_auth_enabled %}
-        <div class="input-group grid">
-            <label for="id_password" class="inline-block">{{ _('Password') }}</label>
-            <input id="id_password" class="required" type="password" name="password"
-                   value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                   maxlength="100"
-                   data-min-length="{{password_min_length}}"
-                   data-min-quality="{{password_min_quality}}"/>
-            {% if full_name %}
-            <span class="help-inline">
-              {{ _('This is used for mobile applications and other tools that require a password.') }}
-            </span>
-            {% endif %}
-            {% if form.password.errors %}
-            {% for error in form.password.errors %}
-            <div class="help-inline text-error">{{ error }}</div>
-            {% endfor %}
-            {% endif %}
-            <br />
-            <label class="inline-block"></label>
-            <div class="progress" id="pw_strength" title="{{ _('Password strength') }}">
-                <div class="bar bar-danger" style="width: 10%;"></div>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if creating_new_team %}
-        <div class="input-group grid">
-            <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
-            <input id="id_team_name" class="required" type="text"
-                placeholder="Acme"
-                value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
-                name="realm_name" maxlength="40" />
-                {% if form.realm_name.errors %}
-                    {% for error in form.realm_name.errors %}
-                        <div class="help-inline text-error">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
-            <div class="help-box">
-                {{ _('This can be changed later on the settings page.') }}
-            </div>
-        </div>
-
-        <div class="input-group grid">
-            <label for="id_team_subdomain" class="inline-block label-title">
-                {% if realms_have_subdomains %}
-                    {{ _('Subdomain') }}
-                {% else %}
-                    {{ _('Short name') }}
-                {% endif %}
-            </label>
-            <div class="breakpoint">
-                <input id="id_team_subdomain" class="required" type="text"
-                    placeholder="acme"
-                    value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
-                    name="realm_subdomain" maxlength="40" />
-                {% if realms_have_subdomains %}
-                <b> .{{ external_host }}</b>
-                {% endif %}
-                    {% if form.realm_subdomain.errors %}
-                        {% for error in form.realm_subdomain.errors %}
-                            <div class="help-inline text-error">{{ error }}</div>
+            <section class="org-registration">
+                {% if creating_new_team %}
+                <div class="input-box">
+                    <div class="inline-block relative">
+                        <input id="id_team_name" class="required" type="text"
+                          placeholder="Acme or Aκμή"
+                          value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
+                          name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
+                    </div>
+                    <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
+                    {% if form.realm_name.errors %}
+                        {% for error in form.realm_name.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
                         {% endfor %}
                     {% endif %}
-            </div>
-            <div class="help-box">
-                {% if realms_have_subdomains %}
-                    {{ _("The address you'll use to sign in to your organization.") }}
-                {% else %}
-                    {{ _("A short, unique name for your organization, with no spaces.") }}
+
+                    <div class="help-box margin-top">
+                        {{ _('Shorter is better than longer.') }}
+                    </div>
+                </div>
+
+                <div class="input-box">
+                    <label class="static org-url">
+                        {{ _('Organization URL') }}
+                    </label>
+                    {% if root_domain_available %}
+                    <label class="checkbox static" for="realm_in_root_domain">
+                        <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
+                          {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
+                        <span></span>
+                        {% trans %}Use {{ external_host }}{% endtrans %}
+                    </label>
+                    {% endif %}
+
+                    <div id="subdomain_section" {% if root_domain_available and
+                      not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
+                        <div class="or"><span>{{ _('OR') }}</span></div>
+                        <div class="inline-block relative">
+                            <input id="id_team_subdomain"
+                              class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
+                              placeholder="acme"
+                              value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
+                              name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }}
+                              {% if root_domain_landing_page %}required{% endif %} />
+                            <label for="id_team_subdomain" class="realm_subdomain_label">.{{ external_host }}</label>
+                            <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
+                        </div>
+                        {% if form.realm_subdomain.errors %}
+                            {% for error in form.realm_subdomain.errors %}
+                            <p class="error help-inline text-error team_subdomain_error_server">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="help-box margin-top">
+                        {{ _("The address you'll use to log in to your organization.") }}
+                    </div>
+                </div>
                 {% endif %}
-            </div>
-        </div>
+            </section>
 
-        <div class="m-v-20">
-          <label for="id_org_type" class="label-title">{{ _('Organization type') }}</label>
-
-          {% for org_type_value, org_type_text in form.realm_org_type.field.choices %}
-          <div class="input-group radio">
-            <input id="id_radio_{{ org_type_value }}" class="required inline-block" type="radio"
-                name="realm_org_type" value="{{ org_type_value }}"
-                {% if org_type_value|string == form.realm_org_type.value()|string %} checked {% endif %} />
-            <label for="id_radio_{{ org_type_value }}" class="inline-block">{{ org_type_text }}</label>
-          </div>
-          {% endfor %}
-        </div>
-        <div class="m-v-20">
-          <div class="help-box">
-            <div id="org_type_blob_1" class="blob display-none">
-              {% trans %}
-              Create a corporate organization if your users will be members of the
-              same company, where the privacy expectation is that the company's
-              organization administrators may need to have access to your users'
-              private message history. Zulip features that allow organization
-              administrators to take control of accounts or access private message
-              history for other users are only available to corporate organizations.
-              {% endtrans %}
-            </div>
-            <div id="org_type_blob_2" class="blob">
-              {% trans %}
-              Create a community organization for an open source project, social
-              group, or other community where the privacy expectation is that you
-              and other organization administrators won't have access to your users'
-              private message history. Zulip features that allow organization
-              administrators to take control of accounts or access private message
-              history for other users are disabled in community organizations.
-              {% endtrans %}
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-        <div class="input-group margin">
-            {% if terms_of_service %}
-            <div class="float-left">
-                {#
-                This is somewhat subtle.
-                Checkboxes have a name and value, and when the checkbox is ticked, the form posts
-                with name=value. If the checkbox is unticked, the field just isn't present at all.
-
-                This is distinct from 'checked', which determines whether the checkbox appears
-                at all. (So, it's not symmetric to the code above.)
-                #}
-                <input id="id_terms" class="required" type="checkbox" name="terms"
-                       {% if form.terms.value() %}checked="checked"{% endif %} />
-                <label for="id_terms" class="inline-block">
-                  {% trans %}I agree to the <a href="{{ server_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
-                </label>
-                {% if form.terms.errors %}
-                    {% for error in form.terms.errors %}
-                        <div class="help-inline text-error">{{ error }}</div>
-                    {% endfor %}
+            <section class="user-registration">
+                {% if realm_name and not creating_new_team %}
+                <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
+                <div class="info-box inline-block">
+                    <div class="organization-name">{{ realm_name }}</div>
+                    <div class="organization-path">{{ realm_uri }}</div>
+                </div>
                 {% endif %}
+
+                <div class="input-box no-validation">
+                    <input type='hidden' name='key' value='{{ key }}' />
+                    <input type='hidden' name='timezone' id='timezone'/>
+                    <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" required />
+                    <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+                </div>
+
+                {% if accounts %}
+                <div class="input-box">
+                    <label for="source_realm" class="inline-block">{{ _('Import settings from existing Zulip account') }}</label>
+                </div>
+                <div id="source_realm_select_section" class="input-group m-10 inline-block">
+                    <select class="select" name="source_realm" id="source_realm_select">
+                        <option value="on"
+                          {% if "source_realm" in form.data and form.data["source_realm"] == "on" %}selected {% endif %}>
+                            {{ _('Don&rsquo;t import settings') }}
+                        </option>
+                        {% for account in accounts %}
+                        <option value="{{ account.string_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
+                          {% if ("source_realm" in form.data and account.string_id == form.data["source_realm"])
+                          or ("source_realm" not in form.data and loop.index0 == 0) %} selected {% endif %}>
+                            {{ account.realm_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div class="input-box" id="full_name_input_section">
+                    {% if lock_name %}
+                        <p class="fakecontrol">{{ full_name }}</p>
+                    {% else %}
+                        <input id="id_full_name" class="required" type="text" name="full_name"
+                          value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
+                          maxlength={{ MAX_NAME_LENGTH }} placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
+                        <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
+                        {% if form.full_name.errors %}
+                            {% for error in form.full_name.errors %}
+                            <p class="help-inline text-error">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="input-box" id="profile_info_section" style="display:none;">
+                    <img id="profile_avatar" />
+                    <div id="profile_full_name"></div>
+                </div>
+
+                {% if password_required %}
+                <div class="input-box">
+                    <input id="id_password" class="required" type="password" name="password"
+                      value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
+                      maxlength={{ MAX_PASSWORD_LENGTH }}
+                      data-min-length="{{password_min_length}}"
+                      data-min-guesses="{{password_min_guesses}}" required />
+                    <label for="id_password" class="inline-block">{{ _('Password') }}</label>
+                    {% if full_name %}
+                    <span class="help-inline">
+                        {{ _('This is used for mobile applications and other tools that require a password.') }}
+                    </span>
+                    {% endif %}
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    <div class="progress" id="pw_strength" title="{{ _('Password strength') }}">
+                        <div class="bar bar-danger" style="width: 10%;"></div>
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+
+            {% if default_stream_groups %}
+            <div class="input-group m-10 inline-block">
+                <label for="default_stream_group">{{ _('What parts of the organization are you interested in?') }}</label>
+                {% for default_stream_group in default_stream_groups %}
+                <div class="input-group radio">
+                    <input class="inline-block" type="checkbox" name="default_stream_group" value="{{ default_stream_group.name }}"
+                      {% if "default_stream_group" in  form.data and default_stream_group.name in form.data.getlist('default_stream_group') %} checked {% endif %} />
+                    <label for="id_radio_{{ default_stream_group.name }}" class="inline-block">{{ default_stream_group.name }}</label>
+                </div>
+                {% endfor %}
             </div>
             {% endif %}
-            <div class="submit-button-box float-right">
-                <input type="submit" class="button-new sea-green"
-                       value="{{ _('Register') }}" /><br />
-                <input type="hidden" name="next" value="{{ next }}" />
+
+            <div class="input-group margin terms-of-service">
+                {% if terms_of_service %}
+                <div class="input-group">
+                    {#
+                    This is somewhat subtle.
+                    Checkboxes have a name and value, and when the checkbox is ticked, the form posts
+                    with name=value. If the checkbox is unticked, the field just isn't present at all.
+
+                    This is distinct from 'checked', which determines whether the checkbox appears
+                    at all. (So, it's not symmetric to the code above.)
+                    #}
+                    <label for="id_terms" class="inline-block checkbox">
+                        <input id="id_terms" class="required" type="checkbox" name="terms"
+                          {% if form.terms.value() %}checked="checked"{% endif %} />
+                        <span></span>
+                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
+                    </label>
+                    {% if form.terms.errors %}
+                        {% for error in form.terms.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% endif %}
+                <div class="register-button-box">
+                    <button class="register-button" type="submit">{{ _('Sign up') }}</button>
+                    <input type="hidden" name="next" value="{{ next }}" />
+                </div>
             </div>
-        </div>
-    </form>
-  </div>
+        </form>
+
+    </div>
 </div>
-
-<script type="text/javascript">
-if ($('#id_email:visible').length) {
-    autofocus('#id_email');
-} else if ($('#id_full_name:visible').length) {
-    autofocus('#id_full_name');
-}
-
-$("[name=realm_org_type]").on("change", function () {
-    $(".blob").hide();
-    $("#org_type_blob_" + this.value).show();
-});
-</script>
 
 {% endblock %}

@@ -1,4 +1,6 @@
 {{! This controls whether the swatchnext to streams in the left sidebar has a lock icon. }}
 {{#if invite_only}}
-  <i class="icon-vector-lock"></i>
+<i class="fa fa-lock" aria-hidden="true"></i>
+{{ else }}
+<span class="hashtag"></span>
 {{/if}}

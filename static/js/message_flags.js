@@ -1,9 +1,19 @@
 var message_flags = (function () {
 var exports = {};
 
-var batched_updaters = {};
+function send_flag_update(message, flag, op) {
+    channel.post({
+        url: '/json/messages/flags',
+        idempotent: true,
+        data: {
+            messages: JSON.stringify([message.id]),
+            flag: flag,
+            op: op,
+        },
+    });
+}
 
-function batched_updater(flag, op, immediate) {
+exports.send_read = (function () {
     var queue = [];
     var on_success;
     var start;
@@ -11,7 +21,7 @@ function batched_updater(flag, op, immediate) {
     function server_request() {
         // Wait for server IDs before sending flags
         var real_msgs = _.filter(queue, function (msg) {
-            return msg.local_id === undefined;
+            return !msg.locally_echoed;
         });
         var real_msg_ids = _.map(real_msgs, function (msg) {
             return msg.id;
@@ -26,20 +36,16 @@ function batched_updater(flag, op, immediate) {
         // call finishes, they will be handled in the success callback.
 
         channel.post({
-            url:      '/json/messages/flags',
+            url: '/json/messages/flags',
             idempotent: true,
-            data:     {messages: JSON.stringify(real_msg_ids),
-                       op:       op,
-                       flag:     flag},
-            success:  on_success,
+            data: {messages: JSON.stringify(real_msg_ids),
+                   op: 'add',
+                   flag: 'read'},
+            success: on_success,
         });
     }
 
-    if (immediate) {
-        start = server_request;
-    } else {
-        start = _.debounce(server_request, 1000);
-    }
+    start = _.throttle(server_request, 1000);
 
     on_success = function on_success(data) {
         if (data ===  undefined || data.messages === undefined) {
@@ -55,62 +61,55 @@ function batched_updater(flag, op, immediate) {
         }
     };
 
-    function add(message) {
-        if (message.flags === undefined) {
-            message.flags = [];
-        }
-        if (op === 'add')  {
-            message.flags.push(flag);
-        } else {
-            message.flags = _.without(message.flags, flag);
-        }
-        queue.push(message);
+    function add(messages) {
+        queue = queue.concat(messages);
         start();
     }
 
     return add;
-}
+}());
 
-exports.send_read = batched_updater('read', 'add');
+exports.save_collapsed = function (message) {
+    send_flag_update(message, 'collapsed', 'add');
+};
 
-function send_flag(messages, flag_name, set_flag) {
-    var op = set_flag ? 'add' : 'remove';
-    var flag_key = flag_name + '_' + op;
-    var updater;
+exports.save_uncollapsed = function (message) {
+    send_flag_update(message, 'collapsed', 'remove');
+};
 
-    if (batched_updaters.hasOwnProperty(flag_key)) {
-        updater = batched_updaters[flag_key];
-    } else {
-        updater = batched_updater(flag_name, op, true);
-        batched_updaters[flag_key] = updater;
+// This updates the state of the starred flag in local data
+// structures, and triggers a UI rerender.
+exports.update_starred_flag = function (message_id, new_value) {
+    var message = message_store.get(message_id);
+    if (message === undefined) {
+        // If we don't have the message locally, do nothing; if later
+        // we fetch it, it'll come with the correct `starred` state.
+        return;
+    }
+    message.starred = new_value;
+    ui.update_starred_view(message_id, new_value);
+};
+
+exports.toggle_starred_and_update_server = function (message) {
+    if (message.locally_echoed) {
+        // This is defensive code for when you hit the "*" key
+        // before we get a server ack.  It's rare that somebody
+        // can star this quickly, and we don't have a good way
+        // to tell the server which message was starred.
+        return;
     }
 
-    _.each(messages, function (message) {
-        updater(message);
-    });
-}
+    message.starred = !message.starred;
 
-exports.send_collapsed = function send_collapse(messages, value) {
-    send_flag(messages, "collapsed", value);
-};
+    unread_ops.notify_server_message_read(message);
+    ui.update_starred_view(message.id, message.starred);
 
-exports.send_starred = function send_starred(messages, value) {
-    send_flag(messages, "starred", value);
-};
-
-exports.send_force_expand = function send_force_expand(messages, value) {
-    send_flag(messages, "force_expand", value);
-};
-
-exports.send_force_collapse = function send_force_collapse(messages, value) {
-    send_flag(messages, "force_collapse", value);
-};
-
-exports.toggle_starred = function (message) {
-    if (message.flags.indexOf("starred") === -1) {
-        exports.send_starred([message], true);
+    if (message.starred) {
+        send_flag_update(message, 'starred', 'add');
+        starred_messages.add([message.id]);
     } else {
-        exports.send_starred([message], false);
+        send_flag_update(message, 'starred', 'remove');
+        starred_messages.remove([message.id]);
     }
 };
 
@@ -120,3 +119,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_flags;
 }
+window.message_flags = message_flags;

@@ -1,169 +1,127 @@
 <div id="notification-settings" class="settings-section" data-name="notifications">
-  <div class="settings-section-title">
-    <i class="icon-vector-warning-sign settings-section-icon"></i>
-    {{t "Notifications" }}
-  </div>
+    <form class="notification-settings-form">
+        <div class="notification-reminder tip">{{#tr this }}Notifications are triggered when a message arrives and Zulip isn't in focus or the message is offscreen.{{/tr}}</div>
 
-  <form class="notification-settings-form">
-    <div class="notification-reminder w-70 padded-container center-block">{{#tr this }}You'll receive notifications when a message arrives and Zulip isn't in focus or the message is offscreen.{{/tr}}</div>
-    <div class="alert" id="notify-settings-status"></div>
+        <div id="stream-notify-settings">
+            <h3 class="inline-block">{{t "Stream messages" }}</h3>
+            <div class="alert-notification" id="stream-notify-settings-status"></div>
+            <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
 
-    <h4>{{t "Stream messages" }}</h4>
+            {{partial "settings_checkbox"
+              "setting_name" "enable_stream_desktop_notifications"
+              "is_checked" page_params.enable_stream_desktop_notifications
+              "label" settings_label.enable_stream_desktop_notifications
+              "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
 
-    <div class="padded-container">
-      <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
 
-      <div class="input-group">
-        <label class="checkbox">
-          <input type="checkbox" class="inline-block" name="enable_stream_desktop_notifications"
-                 id="enable_stream_desktop_notifications"
-                 {{#if page_params.stream_desktop_notifications_enabled}}
-                 checked="checked"
-                 {{/if}} />
-          <span></span>
+            {{partial "settings_checkbox"
+              "setting_name" "enable_stream_sounds"
+              "is_checked" page_params.enable_stream_sounds
+              "label" settings_label.enable_stream_sounds
+              "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_stream_push_notifications"
+              "is_checked" page_params.enable_stream_push_notifications
+              "label" settings_label.enable_stream_push_notifications
+              "push_notifications_tooltip" true
+              "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_stream_email_notifications"
+              "is_checked" page_params.enable_stream_email_notifications
+              "label" settings_label.enable_stream_email_notifications
+              "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
+
+            <p class="notification-settings-note">
+                {{#tr this}}Change notification settings for individual streams on your <a href="/#streams">Streams page</a>.{{/tr}}
+            </p>
+        </div>
+
+        <div id="pm-mention-notify-settings">
+            <h3 class="inline-block">{{t "Private messages and @-mentions" }}</h3>
+            <div class="alert-notification" id="pm-mention-notify-settings-status"></div>
+            <p>{{t "I want:" }}</p>
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_desktop_notifications"
+              "is_checked" page_params.enable_desktop_notifications
+              "label" settings_label.enable_desktop_notifications}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "pm_content_in_desktop_notifications"
+              "is_checked" page_params.pm_content_in_desktop_notifications
+              "is_parent_setting_enabled" page_params.enable_desktop_notifications
+              "is_nested" true
+              "label" settings_label.pm_content_in_desktop_notifications}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_sounds"
+              "is_checked" page_params.enable_sounds
+              "label" settings_label.enable_sounds}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_offline_email_notifications"
+              "is_checked" page_params.enable_offline_email_notifications
+              "label" settings_label.enable_offline_email_notifications}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_offline_push_notifications"
+              "is_checked" page_params.enable_offline_push_notifications
+              "label" settings_label.enable_offline_push_notifications
+              "push_notifications_tooltip" true}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_online_push_notifications"
+              "is_checked" page_params.enable_online_push_notifications
+              "is_parent_setting_enabled" page_params.enable_offline_push_notifications
+              "is_nested" true
+              "label" settings_label.enable_online_push_notifications
+              "push_notifications_tooltip" true}}
+        </div>
+
+        <div id="other_notifications">
+
+            <h3 class="inline-block">{{t "Other notification settings" }}</h3>
+            <div class="alert-notification" id="other-notify-settings-status"></div>
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_digest_emails"
+              "is_checked" page_params.enable_digest_emails
+              "label" settings_label.enable_digest_emails}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "enable_login_emails"
+              "is_checked" page_params.enable_login_emails
+              "label" settings_label.enable_login_emails}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "message_content_in_email_notifications"
+              "is_checked" page_params.message_content_in_email_notifications
+              "label" settings_label.message_content_in_email_notifications}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "realm_name_in_notifications"
+              "is_checked" page_params.realm_name_in_notifications
+              "label" settings_label.realm_name_in_notifications}}
+        </div>
+
+        <label for="notification_sound">
+            {{t "Notification sound:" }}
         </label>
-        <label for="enable_stream_desktop_notifications" class="inline-block">
-          {{t "Desktop notifications" }}
-        </label>
-        <div class="propagate_stream_notifications_change"></div>
-      </div>
 
-      <div class="input-group">
-        <label class="checkbox">
-          <input type="checkbox" class="inline-block" name="enable_stream_sounds" id="enable_stream_sounds"
-                 {{#if page_params.stream_sounds_enabled}}
-                 checked="checked"
-                 {{/if}} />
-          <span></span>
-        </label>
-        <label for="enable_stream_sounds" class="inline-block no-border">
-          {{t "Audible notifications" }}
-        </label>
-        <div class="propagate_stream_notifications_change"></div>
-      </div>
-
-      <p class="notification-settings-note">
-        {{#tr this}}Change notification settings for individual streams on your <a href="/#streams">Streams page</a>.{{/tr}}
-      </p>
-    </div>
-
-    <h4>{{t "Private messages and @-mentions" }}</h4>
-
-    <div class="padded-container">
-      <p>{{t "I want:" }}</p>
-
-      <div class="input-group">
-        <label class="checkbox">
-          <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
-                 {{#if page_params.desktop_notifications_enabled}}
-                 checked="checked"
-                 {{/if}} />
-          <span></span>
-        </label>
-        <label for="enable_desktop_notifications" class="inline-block">
-          {{t "Desktop notifications" }}
-        </label>
-      </div>
-
-      <div class="input-group">
-        <label class="checkbox">
-          <input type="checkbox" name="pm_content_in_desktop_notifications"
-                    id="pm_content_in_desktop_notifications"
-                 {{#if page_params.pm_content_in_desktop_notifications}}
-                 checked="checked"
-                 {{/if}} />
-          <span></span>
-        </label>
-        <label for="pm_content_in_desktop_notifications" class="inline-block">
-          {{t "Include content of private messages in desktop notifications" }}
-        </label>
-      </div>
-
-      <div class="input-group">
-        <label class="checkbox">
-          <input type="checkbox" name="enable_sounds" id="enable_sounds"
-                 {{#if page_params.sounds_enabled}}
-                 checked="checked"
-                 {{/if}} />
-          <span></span>
-        </label>
-        <label for="enable_sounds" class="inline-block">
-          {{t "Audible notifications" }}
-        </label>
-      </div>
-
-      <div class="input-group">
-        <label class="checkbox">
-          <input type="checkbox" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
-                 {{#if page_params.enable_offline_email_notifications}}
-                 checked="checked"
-                 {{/if}} />
-          <span></span>
-        </label>
-        <label for="enable_offline_email_notifications" class="inline-block">
-          {{t "Email notifications when offline" }}
-        </label>
-      </div>
-
-      <div class="input-group">
-        <label class="checkbox">
-          <input type="checkbox" name="enable_offline_push_notifications" id="enable_offline_push_notifications"
-                 {{#if page_params.enable_offline_push_notifications}}
-                 checked="checked"
-                 {{/if}} />
-          <span></span>
-        </label>
-        <label for="enable_offline_push_notifications" class="inline-block">
-          {{t "Mobile push notifications when offline" }}
-        </label>
-      </div>
-
-      <div class="input-group">
-        <label class="checkbox">
-          <input type="checkbox" name="enable_online_push_notifications" id="enable_online_push_notifications"
-                 {{#if page_params.enable_online_push_notifications}}
-                 checked="checked"
-                 {{/if}} />
-          <span></span>
-        </label>
-        <label for="enable_online_push_notifications" class="inline-block">
-          {{t "Mobile push notifications always (even when online)" }}
-        </label>
-      </div>
-
-    </div>
-
-    <div id="other_notifications">
-
-    <h4>{{t "Other notifications I want:" }}</h4>
-
-    <div class="padded-container">
-      <div class="input-group no-margin" id="digest_container">
-        <label class="checkbox">
-          <input type="checkbox" name="enable_digest_emails" id="enable_digest_emails"
-                 {{#if page_params.enable_digest_emails}}
-                 checked="checked"
-                 {{/if}} />
-          <span></span>
-        </label>
-        <label for="enable_digest_emails" class="inline-block">
-          {{t "Digest emails when I'm away" }}
-        </label>
-      </div>
-    </div>
-    {{!-- If you add another control group here, make sure to change
-          $("#other_notifications").hide(); in settings.js to
-                $("#digest_container").hide();
-    --}}
-    </div>
-
-    <div class="input-group no-border">
-      <div class="controls notification-submission">
-        <input type="submit" id="change_notification_settings"
-               name="change_notification_settings" value="{{t 'Save changes' }}"
-               class="button sea-green" />
-      </div>
-    </div>
-  </form>
-
+        <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
+            <select name="notification_sound" id="notification_sound"
+              {{#unless enable_sound_select}}
+              disabled
+              {{/unless}}>
+                {{#each page_params.available_notification_sounds}}
+                <option value="{{ this }}">{{ this }}</option>
+                {{/each}}
+            </select>
+            <a id="play_notification_sound">
+                {{t "Play sound" }}
+            </a>
+        </div>
+    </form>
 </div>

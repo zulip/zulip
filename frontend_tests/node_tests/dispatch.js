@@ -1,28 +1,13 @@
-var assert = require('assert');
-var _ = global._;
-
 var noop = function () {};
 
-// The next section of cruft will go away when we can pull out
-// dispatcher from server_events.
-(function work_around_server_events_loading_issues() {
-    add_dependencies({
-        util: 'js/util.js',
-    });
-    set_global('document', {});
-    set_global('window', {
-        addEventListener: noop,
-    });
-    global.stub_out_jquery();
-}());
+set_global('document', 'document-stub');
+set_global('$', global.make_zjquery());
+
+global.patch_builtin('window', {});
+global.patch_builtin('setTimeout', func => func());
 
 // These dependencies are closer to the dispatcher, and they
 // apply to all tests.
-set_global('tutorial', {
-    is_running: function () {
-        return false;
-    },
-});
 set_global('home_msg_list', {
     rerender: noop,
     select_id: noop,
@@ -32,7 +17,43 @@ set_global('echo', {
     process_from_server: function (messages) {
         return messages;
     },
+});
+
+set_global('markdown', {
     set_realm_filters: noop,
+});
+
+set_global('notifications', {
+    redraw_title: noop,
+});
+
+set_global('settings_emoji', {
+    update_custom_emoji_ui: noop,
+});
+
+set_global('settings_account', {
+    update_email_change_display: noop,
+    update_name_change_display: noop,
+    add_custom_profile_fields_to_settings: noop,
+});
+set_global('settings_display', {
+    update_page: noop,
+});
+
+set_global('settings_notifications', {
+    update_page: noop,
+});
+
+set_global('settings_org', {
+    sync_realm_settings: noop,
+});
+
+set_global('message_edit', {
+    update_message_topic_editing_pencil: noop,
+});
+
+set_global('settings_bots', {
+    update_bot_permissions_ui: noop,
 });
 
 // page_params is highly coupled to dispatching now
@@ -41,10 +62,7 @@ var page_params = global.page_params;
 
 // alert_words is coupled to dispatching in the sense
 // that we write directly to alert_words.words
-add_dependencies({alert_words: 'js/alert_words.js'});
-
-// we also directly write to pointer
-set_global('pointer', {});
+zrequire('alert_words');
 
 // We access various msg_list object to rerender them
 set_global('current_msg_list', {rerender: noop});
@@ -62,27 +80,15 @@ set_global('blueslip', {
     },
 });
 
-var server_events = require('js/server_events.js');
+set_global('starred_messages', {
+    add: noop,
+});
 
-// This also goes away if we can isolate the dispatcher.  We
-// have to call it after doing the require on server_events.js,
-// so that it can set a private variable for us that bypasses
-// code that queue up events and early-exits.
-server_events.home_view_loaded();
+zrequire('server_events_dispatch');
+var sed = server_events_dispatch;
 
-// This jQuery shim can go away when we remove $.each from
-// server_events.js.  (It's a simple change that just
-// requires some manual testing.)
-$.each = function (data, f) {
-    _.each(data, function (value, key) {
-        f(key, value);
-    });
-};
-
-// Set up our dispatch function to point to _get_events_success
-// now.
 function dispatch(ev) {
-    server_events._get_events_success([ev]);
+    sed.dispatch_normal_event(ev);
 }
 
 
@@ -97,6 +103,10 @@ var event_fixtures = {
     alert_words: {
         type: 'alert_words',
         alert_words: ['fire', 'lunch'],
+    },
+
+    attachment: {
+        type: 'attachment',
     },
 
     default_streams: {
@@ -117,22 +127,18 @@ var event_fixtures = {
         ],
     },
 
-    message: {
-        type: 'message',
-        message: {
-            content: 'hello',
-        },
-        flags: [],
+    hotspots: {
+        type: 'hotspots',
+        hotspots: ['nice', 'chicken'],
+    },
+
+    invites_changed: {
+        type: 'invites_changed',
     },
 
     muted_topics: {
         type: 'muted_topics',
         muted_topics: [['devel', 'js'], ['lunch', 'burritos']],
-    },
-
-    pointer: {
-        type: 'pointer',
-        pointer: 999,
     },
 
     presence: {
@@ -144,6 +150,26 @@ var event_fixtures = {
             // etc.
         },
         server_timestamp: 999999,
+    },
+
+    reaction__add: {
+        type: 'reaction',
+        op: 'add',
+        message_id: 128,
+        emoji_name: 'anguished_pig',
+        user: {
+            id: "1",
+        },
+    },
+
+    reaction__remove: {
+        type: 'reaction',
+        op: 'remove',
+        message_id: 256,
+        emoji_name: 'angery',
+        user: {
+            id: "1",
+        },
     },
 
     // Please keep this next section un-nested, as we want this to partly
@@ -176,11 +202,46 @@ var event_fixtures = {
         value: 'new_realm_name',
     },
 
-    realm__update__restricted_to_domain: {
+    realm__update__emails_restricted_to_domains: {
         type: 'realm',
         op: 'update',
-        property: 'restricted_to_domain',
+        property: 'emails_restricted_to_domains',
         value: false,
+    },
+
+    realm__update__bot_creation_policy: {
+        type: 'realm',
+        op: 'update',
+        property: 'bot_creation_policy',
+        value: 1,
+    },
+
+    realm__update__disallow_disposable_email_addresses: {
+        type: 'realm',
+        op: 'update',
+        property: 'disallow_disposable_email_addresses',
+        value: false,
+    },
+
+    realm__update_default_twenty_four_hour_time: {
+        type: 'realm',
+        op: 'update',
+        property: 'default_twenty_four_hour_time',
+        value: false,
+    },
+
+    realm__update_notifications_stream_id: {
+        type: 'realm',
+        op: 'update',
+        property: 'notifications_stream_id',
+        value: 42,
+    },
+
+    realm__update_signup_notifications_stream_id: {
+        type: 'realm',
+        op: 'update',
+        property: 'signup_notifications_stream_id',
+        value: 41,
     },
 
     realm__update_dict__default: {
@@ -190,7 +251,25 @@ var event_fixtures = {
         data: {
             allow_message_editing: true,
             message_content_edit_limit_seconds: 5,
+            authentication_methods: {
+                Google: true,
+            },
         },
+    },
+
+    realm__update_dict__icon: {
+        type: 'realm',
+        op: 'update_dict',
+        property: 'icon',
+        data: {
+            icon_url: 'icon.png',
+            icon_source: 'U',
+        },
+    },
+
+    realm__deactivated: {
+        type: 'realm',
+        op: 'deactivated',
     },
 
     realm_bot__add: {
@@ -208,7 +287,17 @@ var event_fixtures = {
         op: 'remove',
         bot: {
             email: 'the-bot@example.com',
+            user_id: '42',
             full_name: 'The Bot',
+        },
+    },
+
+    realm_bot__delete: {
+        type: 'realm_bot',
+        op: 'delete',
+        bot: {
+            email: 'the-bot@example.com',
+            user_id: '42',
         },
     },
 
@@ -222,11 +311,22 @@ var event_fixtures = {
         },
     },
 
+    realm_bot__update_owner: {
+        type: 'realm_bot',
+        op: 'update',
+        bot: {
+            email: 'the-bot@example.com',
+            user_id: 4321,
+            full_name: 'The Bot Has A New Name',
+            owner_id: 42,
+        },
+    },
+
     realm_emoji: {
         type: 'realm_emoji',
         realm_emoji: {
             airplane: {
-                display_url: 'some_url',
+                source_url: 'some_url',
             },
         },
     },
@@ -236,6 +336,30 @@ var event_fixtures = {
         realm_filters: [
             ['#[123]', 'ticket %(id)s'],
         ],
+    },
+
+    realm_domains__add: {
+        type: 'realm_domains',
+        op: 'add',
+        realm_domain: {
+            domain: 'ramen',
+            allow_subdomains: false,
+        },
+    },
+
+    realm_domains__change: {
+        type: 'realm_domains',
+        op: 'change',
+        realm_domain: {
+            domain: 'ramen',
+            allow_subdomains: true,
+        },
+    },
+
+    realm_domains__remove: {
+        type: 'realm_domains',
+        op: 'remove',
+        domain: 'ramen',
     },
 
     realm_user__add: {
@@ -268,26 +392,45 @@ var event_fixtures = {
         },
     },
 
-    referral: {
-        type: 'referral',
-        referrals: {
-            granted: 10,
-            used: 5,
-        },
-    },
-
     restart: {
         type: 'restart',
         immediate: true,
     },
 
-    stream: {
+    stream__update: {
         type: 'stream',
         op: 'update',
         name: 'devel',
         stream_id: 99,
         property: 'color',
         value: 'blue',
+    },
+
+    stream__create: {
+        type: 'stream',
+        op: 'create',
+        streams: [
+            {stream_id: 42},
+            {stream_id: 99},
+        ],
+    },
+
+    stream__delete: {
+        type: 'stream',
+        op: 'delete',
+        streams: [
+            {stream_id: 42},
+            {stream_id: 99},
+        ],
+    },
+
+    submessage: {
+        type: 'submessage',
+        submessage_id: 99,
+        sender_id: 42,
+        msg_type: 'stream',
+        message_id: 56,
+        content: 'test',
     },
 
     subscription__add: {
@@ -298,6 +441,7 @@ var event_fixtures = {
                 name: 'devel',
                 stream_id: 42,
                 subscribers: ['alice@example.com', 'bob@example.com'],
+                email_address: 'devel+0138515295f4@zulipdev.com:9991',
                 // etc.
             },
         ],
@@ -347,10 +491,34 @@ var event_fixtures = {
         value: 'black',
     },
 
+    typing__start: {
+        type: 'typing',
+        sender: {
+            user_id: 4,
+        },
+        op: 'start',
+    },
+
+    typing__stop: {
+        type: 'typing',
+        sender: {
+            user_id: 6,
+        },
+        op: 'stop',
+    },
+
+    typing__self: {
+        type: 'typing',
+        sender: {
+            user_id: 5,
+        },
+    },
+
     update_display_settings__default_language: {
         type: 'update_display_settings',
         setting_name: 'default_language',
         setting: 'fr',
+        language_name: 'French',
     },
 
     update_display_settings__left_side_userlist: {
@@ -359,16 +527,46 @@ var event_fixtures = {
         setting: true,
     },
 
-    update_display_settings__emoji_alt_code: {
-        type: 'update_display_settings',
-        setting_name: 'emoji_alt_code',
-        setting: true,
-    },
-
     update_display_settings__twenty_four_hour_time: {
         type: 'update_display_settings',
         setting_name: 'twenty_four_hour_time',
         setting: true,
+    },
+
+    update_display_settings__high_contrast_mode: {
+        type: 'update_display_settings',
+        setting_name: 'high_contrast_mode',
+        setting: true,
+    },
+
+    update_display_settings__dense_mode: {
+        type: 'update_display_settings',
+        setting_name: 'dense_mode',
+        setting: true,
+    },
+
+    update_display_settings__night_mode: {
+        type: 'update_display_settings',
+        setting_name: 'night_mode',
+        setting: true,
+    },
+
+    update_display_settings__night_mode_false: {
+        type: 'update_display_settings',
+        setting_name: 'night_mode',
+        setting: false,
+    },
+
+    update_display_settings__translate_emoticons: {
+        type: 'update_display_settings',
+        setting_name: 'translate_emoticons',
+        setting: true,
+    },
+
+    update_display_settings__emojiset: {
+        type: 'update_display_settings',
+        setting_name: 'emojiset',
+        setting: 'google',
     },
 
     update_global_notifications: {
@@ -390,6 +588,62 @@ var event_fixtures = {
         flag: 'starred',
         messages: [99],
     },
+
+    delete_message: {
+        type: 'delete_message',
+        message_id: 1337,
+        message_type: "stream",
+        stream_id: 99,
+        topic: 'topic1',
+    },
+
+    custom_profile_fields: {
+        type: 'custom_profile_fields',
+        fields: [
+            {id: 1, name: 'teams', type: 1},
+            {id: 2, name: 'hobbies', type: 1},
+        ],
+    },
+    user_group__add: {
+        type: 'user_group',
+        op: 'add',
+        group: {
+            name: 'Mobile',
+            id: '1',
+            members: [1],
+        },
+    },
+    user_group__add_members: {
+        type: 'user_group',
+        op: 'add_members',
+        group_id: 1,
+        user_ids: [2],
+    },
+    user_group__remove_members: {
+        type: 'user_group',
+        op: 'remove_members',
+        group_id: 3,
+        user_ids: [99, 100],
+    },
+    user_group__update: {
+        type: 'user_group',
+        op: 'update',
+        group_id: 3,
+        data: {
+            name: 'Frontend',
+            description: 'All Frontend people',
+        },
+    },
+    user_status__revoke_away: {
+        type: 'user_status',
+        user_id: 63,
+        away: false,
+    },
+    user_status__set_away: {
+        type: 'user_status',
+        user_id: 55,
+        away: true,
+    },
 };
 
 function assert_same(actual, expected) {
@@ -401,8 +655,9 @@ function assert_same(actual, expected) {
 
 var with_overrides = global.with_overrides; // make lint happy
 
-with_overrides(function () {
+with_overrides(function (override) {
     // alert_words
+    override('alert_words_ui.render_alert_words_ui', noop);
     var event = event_fixtures.alert_words;
     dispatch(event);
     assert_same(global.alert_words.words, ['fire', 'lunch']);
@@ -410,23 +665,93 @@ with_overrides(function () {
 });
 
 with_overrides(function (override) {
-    // default_streams
-    var event = event_fixtures.default_streams;
-    override('admin.update_default_streams_table', noop);
+    // attachements
+    var event = event_fixtures.attachment;
+    global.with_stub(function (stub) {
+        override('attachments_ui.update_attachments', stub.f);
+        dispatch(event);
+        assert_same(stub.get_args('event').event, event);
+    });
+});
+
+with_overrides(function (override) {
+    // User groups
+    var event = event_fixtures.user_group__add;
+    override('settings_user_groups.reload', noop);
+    global.with_stub(function (stub) {
+        override('user_groups.add', stub.f);
+        dispatch(event);
+        var args = stub.get_args('group');
+        assert_same(args.group, event.group);
+    });
+
+    event = event_fixtures.user_group__add_members;
+    global.with_stub(function (stub) {
+        override('user_groups.add_members', stub.f);
+        dispatch(event);
+        var args = stub.get_args('group_id', 'user_ids');
+        assert_same(args.group_id, event.group_id);
+        assert_same(args.user_ids, event.user_ids);
+    });
+
+    event = event_fixtures.user_group__remove_members;
+    global.with_stub(function (stub) {
+        override('user_groups.remove_members', stub.f);
+        dispatch(event);
+        var args = stub.get_args('group_id', 'user_ids');
+        assert_same(args.group_id, event.group_id);
+        assert_same(args.user_ids, event.user_ids);
+    });
+
+    event = event_fixtures.user_group__update;
+    global.with_stub(function (stub) {
+        override('user_groups.update', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.group_id, event.group_id);
+        assert_same(args.event.data.name, event.data.name);
+        assert_same(args.event.data.description, event.data.description);
+    });
+});
+
+with_overrides(function (override) {
+    // custom profile fields
+    var event = event_fixtures.custom_profile_fields;
+    override('settings_profile_fields.populate_profile_fields', noop);
+    override('settings_profile_fields.report_success', noop);
     dispatch(event);
-    assert_same(page_params.realm_default_streams, event.default_streams);
+    assert_same(global.page_params.custom_profile_fields, event.fields);
 
 });
 
 with_overrides(function (override) {
-    // message
-    var event = event_fixtures.message;
-
+    // default_streams
+    var event = event_fixtures.default_streams;
+    override('settings_streams.update_default_streams_table', noop);
     global.with_stub(function (stub) {
-        override('message_events.insert_new_messages', stub.f);
+        override('stream_data.set_realm_default_streams', stub.f);
         dispatch(event);
-        var args = stub.get_args('messages');
-        assert_same(args.messages[0].content, event.message.content);
+        var args = stub.get_args('realm_default_streams');
+        assert_same(args.realm_default_streams, event.default_streams);
+    });
+
+});
+
+with_overrides(function (override) {
+    // hotspots
+    var event = event_fixtures.hotspots;
+    override('hotspots.load_new', noop);
+    dispatch(event);
+    assert_same(page_params.hotspots, event.hotspots);
+});
+
+with_overrides(function (override) {
+    // invites_changed
+    var event = event_fixtures.invites_changed;
+    $('#admin-invites-list').length = 1;
+    global.with_stub(function (stub) {
+        override('settings_invites.set_up', stub.f);
+        dispatch(event); // stub automatically checks if stub.f is called once
     });
 });
 
@@ -442,28 +767,38 @@ with_overrides(function (override) {
     });
 });
 
-with_overrides(function () {
-    // pointer
-    var event = event_fixtures.pointer;
-    global.pointer.furthest_read = 0;
-    global.pointer.server_furthest_read = 0;
-    dispatch(event);
-    assert_same(global.pointer.furthest_read, event.pointer);
-    assert_same(global.pointer.server_furthest_read, event.pointer);
-
-});
-
 with_overrides(function (override) {
     // presence
     var event = event_fixtures.presence;
 
     global.with_stub(function (stub) {
-        override('activity.set_user_status', stub.f);
+        override('activity.update_presence_info', stub.f);
         dispatch(event);
         var args = stub.get_args('email', 'presence', 'server_time');
         assert_same(args.email, 'alice@example.com');
         assert_same(args.presence, event.presence);
         assert_same(args.server_time, event.server_timestamp);
+    });
+});
+
+with_overrides(function (override) {
+    // reaction
+    var event = event_fixtures.reaction__add;
+    global.with_stub(function (stub) {
+        override('reactions.add_reaction', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.emoji_name, event.emoji_name);
+        assert_same(args.event.message_id, event.message_id);
+    });
+
+    event = event_fixtures.reaction__remove;
+    global.with_stub(function (stub) {
+        override('reactions.remove_reaction', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.emoji_name, event.emoji_name);
+        assert_same(args.event.message_id, event.message_id);
     });
 });
 
@@ -491,20 +826,72 @@ with_overrides(function (override) {
     test_realm_boolean(event, 'realm_invite_required');
 
     event = event_fixtures.realm__update__name;
-    override('notifications.redraw_title', noop);
     dispatch(event);
     assert_same(page_params.realm_name, 'new_realm_name');
 
-    event = event_fixtures.realm__update__restricted_to_domain;
-    test_realm_boolean(event, 'realm_restricted_to_domain');
+    var called = false;
+    window.electron_bridge = {
+        send_event: (key, val) => {
+            assert_same(key, 'realm_name');
+            assert_same(val, 'new_realm_name');
+            called = true;
+        },
+    };
+
+    dispatch(event);
+    assert_same(called, true);
+
+    event = event_fixtures.realm__update__emails_restricted_to_domains;
+    test_realm_boolean(event, 'realm_emails_restricted_to_domains');
+
+    event = event_fixtures.realm__update__disallow_disposable_email_addresses;
+    test_realm_boolean(event, 'realm_disallow_disposable_email_addresses');
+
+    event = event_fixtures.realm__update__create_stream_by_admins_only;
+    test_realm_boolean(event, 'realm_create_stream_by_admins_only');
+
+    event = event_fixtures.realm__update_notifications_stream_id;
+    override('settings_org.render_notifications_stream_ui', noop);
+    dispatch(event);
+    assert_same(page_params.realm_notifications_stream_id, 42);
+    page_params.realm_notifications_stream_id = -1;  // make sure to reset for future tests
+
+    event = event_fixtures.realm__update_signup_notifications_stream_id;
+    dispatch(event);
+    assert_same(page_params.realm_signup_notifications_stream_id, 41);
+    page_params.realm_signup_notifications_stream_id = -1; // make sure to reset for future tests
 
     event = event_fixtures.realm__update_dict__default;
     page_params.realm_allow_message_editing = false;
     page_params.realm_message_content_edit_limit_seconds = 0;
+    override('settings_org.populate_auth_methods', noop);
     dispatch(event);
     assert_same(page_params.realm_allow_message_editing, true);
     assert_same(page_params.realm_message_content_edit_limit_seconds, 5);
+    assert_same(page_params.realm_authentication_methods, {Google: true});
 
+    event = event_fixtures.realm__update_dict__icon;
+    override('realm_icon.rerender', noop);
+
+    called = false;
+    window.electron_bridge = {
+        send_event: (key, val) => {
+            assert_same(key, 'realm_icon_url');
+            assert_same(val, 'icon.png');
+            called = true;
+        },
+    };
+
+    dispatch(event);
+
+    assert_same(called, true);
+    assert_same(page_params.realm_icon_url, 'icon.png');
+    assert_same(page_params.realm_icon_source, 'U');
+
+    event = event_fixtures.realm__deactivated;
+    window.location = {};
+    dispatch(event);
+    assert_same(window.location.href, "/accounts/deactivated/");
 });
 
 with_overrides(function (override) {
@@ -513,12 +900,12 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.add', bot_stub.f);
-            override('admin.update_user_data', admin_stub.f);
+            override('settings_users.update_user_data', admin_stub.f);
             dispatch(event);
             var args = bot_stub.get_args('bot');
             assert_same(args.bot, event.bot);
 
-            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+            admin_stub.get_args('update_user_id', 'update_bot_data');
         });
     });
 
@@ -526,12 +913,25 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.deactivate', bot_stub.f);
-            override('admin.update_user_data', admin_stub.f);
+            override('settings_users.update_user_data', admin_stub.f);
             dispatch(event);
-            var args = bot_stub.get_args('email');
-            assert_same(args.email, event.bot.email);
+            var args = bot_stub.get_args('user_id');
+            assert_same(args.user_id, event.bot.user_id);
 
-            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+            admin_stub.get_args('update_user_id', 'update_bot_data');
+        });
+    });
+
+    event = event_fixtures.realm_bot__delete;
+    global.with_stub(function (bot_stub) {
+        global.with_stub(function (admin_stub) {
+            override('bot_data.delete', bot_stub.f);
+            override('settings_users.update_user_data', admin_stub.f);
+            dispatch(event);
+            var args = bot_stub.get_args('bot_id');
+            assert_same(args.bot_id, event.bot.user_id);
+
+            admin_stub.get_args('update_user_id', 'update_bot_data');
         });
     });
 
@@ -539,12 +939,12 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.update', bot_stub.f);
-            override('admin.update_user_data', admin_stub.f);
+            override('settings_users.update_user_data', admin_stub.f);
 
             dispatch(event);
 
-            var args = bot_stub.get_args('email', 'bot');
-            assert_same(args.email, event.bot.email);
+            var args = bot_stub.get_args('user_id', 'bot');
+            assert_same(args.user_id, event.bot.user_id);
             assert_same(args.bot, event.bot);
 
             args = admin_stub.get_args('update_user_id', 'update_bot_data');
@@ -552,6 +952,17 @@ with_overrides(function (override) {
             assert_same(args.update_bot_data, event.bot);
         });
     });
+
+    event = event_fixtures.realm_bot__update_owner;
+    override('bot_data.update', noop);
+    override('settings_users.update_user_data', noop);
+    override('people.get_person_from_user_id', function (id) {
+        assert_same(id, 42);
+        return {email: 'test@example.com'};
+    });
+
+    dispatch(event);
+    assert_same(event.bot.owner, 'test@example.com');
 });
 
 with_overrides(function (override) {
@@ -560,7 +971,8 @@ with_overrides(function (override) {
 
     global.with_stub(function (stub) {
         override('emoji.update_emojis', stub.f);
-        override('admin.populate_emoji', noop);
+        override('settings_emoji.populate_emoji', noop);
+        override('emoji_picker.generate_emoji_picker_data', noop);
         dispatch(event);
         var args = stub.get_args('realm_emoji');
         assert_same(args.realm_emoji, event.realm_emoji);
@@ -571,10 +983,27 @@ with_overrides(function (override) {
     // realm_filters
     var event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
-    override('admin.populate_filters', noop);
+    override('settings_linkifiers.populate_filters', noop);
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
 
+});
+
+with_overrides(function (override) {
+    // realm_domains
+    var event = event_fixtures.realm_domains__add;
+    page_params.realm_domains = [];
+    override('settings_org.populate_realm_domains', noop);
+    dispatch(event);
+    assert_same(page_params.realm_domains, [event.realm_domain]);
+
+    event = event_fixtures.realm_domains__change;
+    dispatch(event);
+    assert_same(page_params.realm_domains, [event.realm_domain]);
+
+    event = event_fixtures.realm_domains__remove;
+    dispatch(event);
+    assert_same(page_params.realm_domains, []);
 });
 
 with_overrides(function (override) {
@@ -590,6 +1019,7 @@ with_overrides(function (override) {
     event = event_fixtures.realm_user__remove;
     global.with_stub(function (stub) {
         override('people.deactivate', stub.f);
+        override('stream_events.remove_deactivated_user_from_all_streams', noop);
         dispatch(event);
         var args = stub.get_args('person');
         assert_same(args.person, event.person);
@@ -601,18 +1031,6 @@ with_overrides(function (override) {
         dispatch(event);
         var args = stub.get_args('person');
         assert_same(args.person, event.person);
-    });
-});
-
-with_overrides(function (override) {
-    // referral
-    var event = event_fixtures.referral;
-    global.with_stub(function (stub) {
-        override('referral.update_state', stub.f);
-        dispatch(event);
-        var args = stub.get_args('granted', 'used');
-        assert_same(args.granted, event.referrals.granted);
-        assert_same(args.used, event.referrals.used);
     });
 });
 
@@ -629,17 +1047,73 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
-    // stream
-    var event = event_fixtures.stream;
+    // stream update
+    var event = event_fixtures.stream__update;
 
     global.with_stub(function (stub) {
         override('stream_events.update_property', stub.f);
-        override('admin.update_default_streams_table', noop);
+        override('settings_streams.update_default_streams_table', noop);
         dispatch(event);
         var args = stub.get_args('stream_id', 'property', 'value');
         assert_same(args.stream_id, event.stream_id);
         assert_same(args.property, event.property);
         assert_same(args.value, event.value);
+    });
+
+    // stream create
+    event = event_fixtures.stream__create;
+    global.with_stub(function (stub) {
+        override('stream_data.create_streams', stub.f);
+        override('stream_data.get_sub_by_id', noop);
+        override('stream_data.update_calculated_fields', noop);
+        override('subs.add_sub_to_table', noop);
+        dispatch(event);
+        var args = stub.get_args('streams');
+        assert_same(_.pluck(args.streams, 'stream_id'), [42, 99]);
+    });
+
+    // stream delete
+    event = event_fixtures.stream__delete;
+    global.with_stub(function (stub) {
+        override('subs.remove_stream', noop);
+        override('stream_data.delete_sub', noop);
+        override('settings_streams.remove_default_stream', noop);
+        override('stream_data.remove_default_stream', noop);
+
+        override('stream_data.get_sub_by_id', function (id) {
+            return id === 42 ? {subscribed: true} : {subscribed: false};
+        });
+        override('stream_list.remove_sidebar_row', stub.f);
+        dispatch(event);
+        var args = stub.get_args('stream_id');
+        assert_same(args.stream_id, 42);
+
+        override('stream_list.remove_sidebar_row', noop);
+        override('settings_org.render_notifications_stream_ui', noop);
+        page_params.realm_notifications_stream_id = 42;
+        dispatch(event);
+        assert_same(page_params.realm_notifications_stream_id, -1);
+
+        page_params.realm_signup_notifications_stream_id = 42;
+        dispatch(event);
+        assert_same(page_params.realm_signup_notifications_stream_id, -1);
+    });
+});
+
+with_overrides(function (override) {
+    // submessage
+    var event = event_fixtures.submessage;
+    global.with_stub(function (stub) {
+        override('submessage.handle_event', stub.f);
+        dispatch(event);
+        var submsg = stub.get_args('submsg').submsg;
+        assert_same(submsg, {
+            id: 99,
+            sender_id: 42,
+            msg_type: 'stream',
+            message_id: 56,
+            content: 'test',
+        });
     });
 });
 
@@ -654,15 +1128,21 @@ with_overrides(function (override) {
     });
 
     var event = event_fixtures.subscription__add;
-    global.with_stub(function (stub) {
-        override('stream_data.get_sub_by_id', function (stream_id) {
-            return {stream_id: stream_id};
+    global.with_stub(function (subscription_stub) {
+        global.with_stub(function (stream_email_stub) {
+            override('stream_data.get_sub_by_id', function (stream_id) {
+                return {stream_id: stream_id};
+            });
+            override('stream_events.mark_subscribed', subscription_stub.f);
+            override('stream_data.update_stream_email_address', stream_email_stub.f);
+            dispatch(event);
+            var args = subscription_stub.get_args('sub', 'subscribers');
+            assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
+            assert_same(args.subscribers, event.subscriptions[0].subscribers);
+            args = stream_email_stub.get_args('sub', 'email_address');
+            assert_same(args.email_address, event.subscriptions[0].email_address);
+            assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
         });
-        override('stream_events.mark_subscribed', stub.f);
-        dispatch(event);
-        var args = stub.get_args('sub', 'subscribers');
-        assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
-        assert_same(args.subscribers, event.subscriptions[0].subscribers);
     });
 
     event = event_fixtures.subscription__peer_add;
@@ -707,6 +1187,54 @@ with_overrides(function (override) {
         assert_same(args.property, event.property);
         assert_same(args.value, event.value);
     });
+
+    // test blueslip errors/warns
+    event = event_fixtures.subscription__add;
+    global.with_stub(function (stub) {
+        override('stream_data.get_sub_by_id', noop);
+        override('blueslip.error', stub.f);
+        dispatch(event);
+        assert_same(stub.get_args('param').param, 'Subscribing to unknown stream with ID 42');
+    });
+
+    event = event_fixtures.subscription__peer_add;
+    global.with_stub(function (stub) {
+        override('stream_data.add_subscriber', noop);
+        override('blueslip.warn', stub.f);
+        dispatch(event);
+        assert_same(stub.get_args('param').param, 'Cannot process peer_add event');
+    });
+
+    event = event_fixtures.subscription__peer_remove;
+    global.with_stub(function (stub) {
+        override('stream_data.remove_subscriber', noop);
+        override('blueslip.warn', stub.f);
+        dispatch(event);
+        assert_same(stub.get_args('param').param, 'Cannot process peer_remove event.');
+    });
+});
+
+with_overrides(function (override) {
+    // typing
+    var event = event_fixtures.typing__start;
+    global.with_stub(function (stub) {
+        override('typing_events.display_notification', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.sender.user_id, 4);
+    });
+
+    event = event_fixtures.typing__stop;
+    global.with_stub(function (stub) {
+        override('typing_events.hide_notification', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.sender.user_id, 6);
+    });
+
+    page_params.user_id = 5;
+    event = event_fixtures.typing__self;
+    dispatch(event); // get line coverage
 });
 
 with_overrides(function (override) {
@@ -721,17 +1249,68 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(page_params.left_side_userlist, true);
 
-    override('message_list.narrowed', noop);
+    var called = false;
+    current_msg_list.rerender = () => {
+        called = true;
+    };
+
+    override('message_list.narrowed', current_msg_list);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
     dispatch(event);
     assert_same(page_params.twenty_four_hour_time, true);
+    assert_same(called, true);
 
-    event = event_fixtures.update_display_settings__emoji_alt_code;
-    page_params.emoji_alt_code = false;
+    event = event_fixtures.update_display_settings__translate_emoticons;
+    page_params.translate_emoticons = false;
     dispatch(event);
-    assert_same(page_params.emoji_alt_code, true);
+    assert_same(page_params.translate_emoticons, true);
 
+    event = event_fixtures.update_display_settings__high_contrast_mode;
+    page_params.high_contrast_mode = false;
+    var toggled = [];
+    $("body").toggleClass = (cls) => {
+        toggled.push(cls);
+    };
+    dispatch(event);
+    assert_same(page_params.high_contrast_mode, true);
+    assert_same(toggled, ['high-contrast']);
+
+    event = event_fixtures.update_display_settings__dense_mode;
+    page_params.dense_mode = false;
+    toggled = [];
+    dispatch(event);
+    assert_same(page_params.dense_mode, true);
+    assert_same(toggled, ['less_dense_mode', 'more_dense_mode']);
+
+    $("body").fadeOut = (secs) => { assert_same(secs, 300); };
+    $("body").fadeIn  = (secs) => { assert_same(secs, 300); };
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__night_mode;
+        page_params.night_mode = false;
+        override('night_mode.enable', stub.f); // automatically checks if called
+        dispatch(event);
+        assert_same(page_params.night_mode, true);
+    });
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__night_mode_false;
+        page_params.night_mode = true;
+        override('night_mode.disable', stub.f); // automatically checks if called
+        dispatch(event);
+        assert(!page_params.night_mode);
+    });
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__emojiset;
+        called = false;
+        override('settings_display.report_emojiset_change', stub.f);
+        page_params.emojiset = 'text';
+        dispatch(event);
+        assert_same(called, true);
+        assert_same(page_params.emojiset, 'google');
+    });
 });
 
 with_overrides(function (override) {
@@ -749,24 +1328,78 @@ with_overrides(function (override) {
 with_overrides(function (override) {
     // update_message_flags__read
     var event = event_fixtures.update_message_flags__read;
-    override('unread_ops.mark_messages_as_read', noop);
 
     global.with_stub(function (stub) {
-        override('message_store.get', stub.f);
+        override('unread_ops.process_read_messages_event', stub.f);
         dispatch(event);
-        var args = stub.get_args('message_id');
-        assert_same(args.message_id, 999);
+        var args = stub.get_args('message_ids');
+        assert_same(args.message_ids, [999]);
     });
+});
+
+// notify_server_message_read requires message_store and these dependencies.
+zrequire('unread_ops');
+zrequire('unread');
+zrequire('topic_data');
+zrequire('stream_list');
+zrequire("message_flags");
+set_global('message_store', {
+    get: function () {return {};},
 });
 
 with_overrides(function (override) {
     // update_message_flags__starred
     var event = event_fixtures.update_message_flags__starred;
     global.with_stub(function (stub) {
-        override('ui.update_starred', stub.f);
+        override('ui.update_starred_view', stub.f);
         dispatch(event);
         var args = stub.get_args('message_id', 'new_value');
         assert_same(args.message_id, 99);
         assert_same(args.new_value, true); // for 'add'
+    });
+});
+
+with_overrides(function (override) {
+    // delete_message
+    var event = event_fixtures.delete_message;
+
+    override('stream_list.update_streams_sidebar', noop);
+    global.with_stub(function (stub) {
+        override('ui.remove_message', stub.f);
+        dispatch(event);
+        var args = stub.get_args('message_id');
+        assert_same(args.message_id, 1337);
+    });
+    global.with_stub(function (stub) {
+        override('unread_ops.process_read_messages_event', stub.f);
+        dispatch(event);
+        var args = stub.get_args('message_ids');
+        assert_same(args.message_ids, [1337]);
+    });
+    global.with_stub(function (stub) {
+        override('topic_data.remove_message', stub.f);
+        dispatch(event);
+        var args = stub.get_args('opts');
+        assert_same(args.opts.stream_id, 99);
+        assert_same(args.opts.topic_name, 'topic1');
+    });
+});
+
+with_overrides(function (override) {
+    // attachements
+    var event = event_fixtures.user_status__set_away;
+    global.with_stub(function (stub) {
+        override('activity.on_set_away', stub.f);
+        dispatch(event);
+        var args = stub.get_args('user_id');
+        assert_same(args.user_id, 55);
+    });
+
+    event = event_fixtures.user_status__revoke_away;
+    global.with_stub(function (stub) {
+        override('activity.on_revoke_away', stub.f);
+        dispatch(event);
+        var args = stub.get_args('user_id');
+        assert_same(args.user_id, 63);
     });
 });

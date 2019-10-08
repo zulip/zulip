@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+# Make sure the current working directory is readable
+cd /
+
+DATABASE_CREATE="
+CREATE USER zulip;
+ALTER ROLE zulip SET search_path TO zulip,public;
+CREATE DATABASE zulip OWNER=zulip;
+\\connect zulip
+CREATE SCHEMA zulip AUTHORIZATION zulip;
+CREATE EXTENSION tsearch_extras SCHEMA zulip;
+CREATE EXTENSION pgroonga;
+GRANT USAGE ON SCHEMA pgroonga TO zulip;
+"
+
+if [ -f /.dockerenv ]; then
+    echo "$DATABASE_CREATE" | psql
+else
+    echo "$DATABASE_CREATE" | su postgres -c psql
+fi

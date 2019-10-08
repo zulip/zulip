@@ -1,7 +1,7 @@
-var typing_data = require("js/typing_data.js");
+zrequire("util");
+zrequire("typing_data");
 
-
-(function test_basics() {
+run_test('basics', () => {
     // The typing_data needs to be robust with lists of
     // user ids being in arbitrary sorting order and
     // possibly in string form instead of integer. So all
@@ -44,10 +44,10 @@ var typing_data = require("js/typing_data.js");
     // test duplicate ids in a groups
     typing_data.add_typist([20, 40, 20], 20);
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
-}());
+});
 
 
-(function test_timers() {
+run_test('timers', () => {
     var events = {};
 
     var stub_timer_id = 'timer_id_stub';
@@ -118,5 +118,5 @@ var typing_data = require("js/typing_data.js");
         timer_set: false,
     });
 
-}());
+});
 

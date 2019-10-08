@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -eu
+
+version=0.6.0
+
+if ! out="$(shellcheck --version 2>/dev/null)" || [[ "$out" != *"
+version: $version
+"* ]]; then
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    wget -nv "https://storage.googleapis.com/shellcheck/shellcheck-v$version.linux.x86_64.tar.xz"
+    tar -xJf "shellcheck-v$version.linux.x86_64.tar.xz" --no-same-owner --strip-components=1 -C /usr/local/bin "shellcheck-v$version/shellcheck"
+fi

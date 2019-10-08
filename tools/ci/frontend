@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+source tools/ci/activate-venv
+
+set -e
+set -x
+
+./tools/lint --frontend --no-gitlint  # gitlint disabled because flaky
+
+# Run the node tests first, since they're fast and deterministic
+./tools/test-js-with-node --coverage
+
+# Check capitalization of strings
+./manage.py makemessages --locale en
+PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+
+# Run the slower Casper tests last
+./tools/test-js-with-casper
+
+# NB: Everything here should be in `tools/test-all`.  If there's a
+# reason not to run it there, it should be there as a comment
+# explaining why.

@@ -1,0 +1,161 @@
+{# Home tab of the app, containing messages. #}
+<div class="message_area_padder message_list" id="main_div">
+    <div class="top-messages-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+            <g transform="translate(-297.14285,-466.64792)">
+                <circle cx="317.14285" cy="486.64792" r="19.030317" style="stroke-width:1.93936479;"/>
+                <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z"/>
+            </g>
+        </svg>
+    </div>
+    <div class="history-limited-box">
+        <p>
+            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+            {% trans %}
+            Some older messages are unavailable.
+            <a href="/plans/" target="_blank">Upgrade your organization</a>
+            to access your full message history.
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="loading_more_messages_indicator"></div>
+    <div id="page_loading_indicator"></div>
+    <div id="first_run_message" class="empty_feed_notice">
+        <h4>{% trans %}Welcome to Zulip.{% endtrans %}</h4>
+        <p>
+            {% trans %}
+            See, the thing about it is... there aren't any messages
+            here for you right now. I'm sure someone will eventually send
+            you one.
+            {% endtrans %}
+        </p>
+
+        <p>
+            {% trans %}
+            Or, <strong>take matters into your own hands</strong>,
+            and <a href="#" class="empty_feed_compose_stream">
+            compose a new stream message</a>.
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="empty_narrow_message" class="empty_feed_notice">
+        <h4>{{ _("Nothing's been sent here yet!") }}</h4>
+
+        <p>
+            {% trans %}
+            Why not <a href="#" class="empty_feed_compose_stream">
+            start the conversation</a>?
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="empty_narrow_all_private_message" class="empty_feed_notice">
+        <h4>{{ _('You have no private messages yet!') }}</h4>
+
+        <p>
+            {% trans %}
+            Why not <a href="#" class="empty_feed_compose_private">
+            start the conversation</a>?
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="empty_narrow_private_message" class="empty_feed_notice">
+        <h4>{{ _('You have no private messages with this person yet!') }}</h4>
+
+        <p>
+            {% trans %}
+            Why not <a href="#" class="empty_feed_compose_private">
+            start the conversation</a>?
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="empty_narrow_self_private_message" class="empty_feed_notice">
+        <h4>{{ _('You have not sent any private messages to yourself yet!') }}</h4>
+
+        <p>
+            {% trans %}
+            Why not <a href="#" class="empty_feed_compose_private">
+            start a conversation with yourself</a>?
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="empty_narrow_group_private_message" class="empty_feed_notice">
+        <h4>{{ _('You have no group private messages with this person yet!') }}</h4>
+
+        <p>
+            {% trans %}
+            Why not <a href="#" class="empty_feed_compose_private">
+            start the conversation</a>?
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="empty_narrow_multi_private_message" class="empty_feed_notice">
+        <h4>{{ _('You have no private messages with these people yet!') }}</h4>
+
+        <p>
+            {% trans %}
+            Why not <a href="#" class="empty_feed_compose_private">
+            start the conversation</a>?
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="silent_user" class="empty_feed_notice">
+        <h4>{{ _("You haven't received any messages sent by this user yet!") }}</h4>
+    </div>
+    <div id="non_existing_user" class="empty_feed_notice">
+        <h4>{{ _("This user does not exist!") }}</h4>
+    </div>
+    <div id="non_existing_users" class="empty_feed_notice">
+        <h4>{{ _("One or more of these users do not exist!") }}</h4>
+    </div>
+    <div id="nonsubbed_stream_narrow_message" class="empty_feed_notice">
+        <h4>{{ _("You aren't subscribed to this stream and nobody has talked about that yet!") }}</h4>
+        <div class="sub_button_row new-style">
+            <button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">
+                {{ _('Subscribe') }}
+            </button>
+        </div>
+    </div>
+    <div id="nonsubbed_private_nonexistent_stream_narrow_message" class="empty_feed_notice">
+        <h4>{{ _("This stream does not exist or is private.") }}</h4>
+    </div>
+    <div id="empty_star_narrow_message" class="empty_feed_notice">
+        <h4>{{ _("You haven't starred anything yet!") }}</h4>
+
+        <p>
+            {% trans %}
+            Learn more about starring messages <a href="/help/star-a-message">
+            here</a>.
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="no_unread_narrow_message" class="empty_feed_notice">
+        <h4>{{ _("You have no unread messages!") }}</h4>
+    </div>
+    <div id="empty_narrow_all_mentioned" class="empty_feed_notice">
+        <h4>{{ _("You haven't been mentioned yet!") }}</h4>
+
+        <p>
+            {% trans %}
+            Learn more about mentions <a href="/help/at-mention-a-team-member">
+            here</a>.
+            {% endtrans %}
+        </p>
+    </div>
+    <div id="empty_search_narrow_message" class="empty_feed_notice">
+        <h4>{{ _('Nobody has talked about that yet!') }}</h4>
+    </div>
+    <div class="message_table focused_table" id="zhome" role="list" aria-live="polite" aria-label="{{ _('Messages') }}">
+    </div>
+    <div class="message_table" id="zfilt" role="list" aria-live="polite" aria-label="{{ _('Messages') }}">
+    </div>
+    <div id="typing_notifications">
+    </div>
+    <div id="bottom_whitespace"></div>
+</div>
+
+
+{% include "zerver/app/message_history.html" %}
+{% include "zerver/app/delete_message.html" %}
+{% include "zerver/app/compose.html" %}
+<div id="notifications-area">
+</div>

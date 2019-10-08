@@ -1,38 +1,33 @@
 #!/usr/bin/env bash
-set -eux
+set -eu
 
 usage() {
-    echo "Usage: $0 [--py3] <ZULIP_VERSION>" >&2
+    echo "Usage: $0 <ZULIP_VERSION> [--authors-not-required]" >&2
     exit 1
 }
 
-args="$(getopt -o '' -l 'py3' -n "$0" -- "$@")"
+args="$(getopt -o '' -l 'authors-not-required,help' -n "$0" -- "$@")"
 eval "set -- $args"
 
-py3=
+authors_not_required=
 while true; do
     case "$1" in
-        --py3) py3=t; shift;;
+        --authors-not-required)
+            authors_not_required=--authors-not-required; shift;;
         --) shift; break;;
         *) usage;;
     esac
 done
 
-GITID=$(git rev-parse HEAD)
-
 if [ -z "${1:-}" ]; then
     usage
 fi
+
 version="$1"
 prefix="zulip-server-$version"
 
-if [ "$(uname)" = "Darwin" ]; then
-    TMPDIR=/tmp/voyager-build
-    rm -Rf "$TMPDIR"
-    mkdir -p "$TMPDIR"
-else
-    TMPDIR=$(mktemp -d)
-fi
+set -x
+GITID=$(git rev-parse HEAD)
 
 if ! git diff --exit-code >/dev/null; then
     set +x
@@ -40,34 +35,34 @@ if ! git diff --exit-code >/dev/null; then
     echo "will not be included; you should commit or stash them based on "
     echo "what you want and then try again."
     echo
+    git diff
     exit 1
 fi
 
-TMP_CHECKOUT=$TMPDIR/$prefix/
+TMPDIR=$(mktemp -d)
 TARBALL=$TMPDIR/$prefix.tar
+BASEDIR=$(pwd)
 
-# .gitattributes lists the files that are not exported
 git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
+cd "$TMPDIR"
+tar -xf "$TARBALL"
+while read -r i; do
+    rm -r --interactive=never "${TMPDIR:?}/$prefix/$i";
+done < "$TMPDIR/$prefix/tools/release-tarball-exclude.txt"
+tar -cf "$TARBALL" "$prefix"
+rm -rf "$prefix"
 
-if tar -tf "$TARBALL" | grep -q -e zilencer -e zproject/local_settings.py -e puppet/zulip_internal; then
-	echo "Excluded files remain in tarball!";
-	echo "Versions of git 1.8.1.1 - 1.8.1.6 have broken .gitattributes syntax";
-	exit 1;
-else
-	echo "Check for excluded files passed";
+if tar -tf "$TARBALL" | grep -q -e ^zerver/tests; then
+    set +x
+    echo "BUG: Excluded files remain in tarball!"
+    exit 1
 fi
-
-if [ "$py3" ]; then
-    tools/replace-tarball-shebang \
-        '#!/usr/bin/env python' '#!/usr/bin/env python3' \
-        < "$TARBALL" > "$TARBALL.new"
-    mv "$TARBALL.new" "$TARBALL"
-fi
+cd "$BASEDIR"
 
 # Check out a temporary full copy of the index to generate static files
-git checkout-index -f -a --prefix "$TMP_CHECKOUT"
-cd "$TMP_CHECKOUT"
+git checkout-index -f -a --prefix "$TMPDIR/$prefix/"
+cd "$TMPDIR/$prefix"
 
 # create var/log directory in the new temporary checkout
 mkdir -p "var/log"
@@ -75,8 +70,8 @@ mkdir -p "var/log"
 # Some settings need to be updated for update-prod-static to work
 #
 # TODO: Would be much better to instead run the below tools with some
-# sort of environment hack to make settings.VOYAGER=True so that we
-# don't need to create this dummy secrets file.
+# sort of environment hack so that we don't need to create this dummy
+# secrets file.
 cat >> zproject/prod_settings_template.py <<EOF
 DEBUG = False
 EOF
@@ -90,34 +85,35 @@ rabbitmq_password = 'not_used_here'
 initial_password_salt = 'not_used_here'
 EOF
 
-# update-prod-static generates the prod-static directory.
-# See COLLECTSTATIC in settings.py
-set +x
 # We do a bit of gymnastics to have update-prod-static.log be easily
 # visible to the user and end up in the same directory as the final
 # release tarball.
-USER_PROD_STATIC_LOGPATH="${TMPDIR}/update-prod-static.log"
-BUILD_PROD_STATIC_LOGPATH="${TMP_CHECKOUT}/var/log/update-prod-static.log"
+USER_PROD_STATIC_LOGPATH="$TMPDIR/update-prod-static.log"
+BUILD_PROD_STATIC_LOGPATH="$TMPDIR/$prefix/var/log/update-prod-static.log"
 ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
-echo; echo -e "\033[33mRunning update-prod-static; check ${TMPDIR}/update-prod-static.log if it fails\033[0m"; echo
-set -x
 
-./tools/update-prod-static
-echo "$GITID" > build_id
-echo "$version" > version
+./tools/update-prod-static $authors_not_required || (
+    set +x
+    echo; echo -ne '\033[33mRunning update-prod-static failed. '
+    echo -e "Check $TMPDIR/update-prod-static.log for more information.\\033[0m"
+    exit 1
+)
 rm -f "$USER_PROD_STATIC_LOGPATH"
 mv "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
-
-rm -f zproject/dev-secrets.conf
 
 # We don't need duplicate copies of emoji with hashed paths, and they would break bugdown
 find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
 
+echo "$GITID" > build_id
+echo "$version" > version
+
 cd "$TMPDIR"
 
-tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json"
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
 
 rm -rf "$prefix"
 
 gzip "$TARBALL"
+
+set +x
 echo "Generated $TARBALL.gz"

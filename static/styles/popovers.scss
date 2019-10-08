@@ -1,0 +1,329 @@
+.popover {
+    width: auto;
+}
+
+.popover-content {
+    padding: 5px 0px;
+}
+
+.popover-title {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.popover-title:empty {
+    display: none;
+}
+
+.popover_info {
+    text-align: center;
+}
+
+.popover hr {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.popover-left,
+.popover-right {
+    max-width: 200px;
+}
+
+.streams_popover .sp-container {
+    background-color: hsl(0, 0%, 100%);
+    cursor: pointer;
+    border: none;
+}
+
+.sp-container {
+    z-index: 100;
+}
+
+.colorpicker-container .sp-container input {
+    -webkit-box-sizing: initial;
+    -moz-box-sizing: inherit;
+    -ms-box-sizing: inherit;
+    box-sizing: initial;
+
+    width: calc(100% - 13px);
+}
+
+.mobile-message-buttons-popover {
+    position: absolute;
+    top: auto !important;
+    right: 8px;
+    bottom: 48px;
+    left: auto !important;
+    width: 175px;
+    height: 65px;
+}
+
+.streams_popover .sp-palette-container {
+    border-right: none;
+}
+
+.streams_popover .colorpicker-container {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.streams_popover .popover_sub_unsub_button {
+    margin-top: 0px;
+    float: none;
+}
+
+ul.info_popover_actions i,
+ul.actions_popover i,
+ul.streams_popover i,
+ul.topics_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+ul.remind_me_popover .remind_icon {
+    text-align: center;
+}
+
+.user_popover {
+    width: 240px;
+    top: 100px !important;
+
+    margin: -14px;
+    padding: 0;
+}
+
+.message-info-popover {
+    width: 240px;
+}
+
+.group-info-popover .group-info,
+.group-info-popover .manage-group a {
+    text-align: center;
+}
+
+.group-info-popover .group-info .group-name {
+    font-weight: bold;
+}
+
+.group-info-popover .member-list {
+    position: relative;
+    max-height: 300px;
+    overflow-y: auto;
+    list-style: none;
+    margin-left: 0;
+}
+
+.group-info-popover .member-list .bot {
+    color: hsl(180, 5%, 74%);
+    vertical-align: top;
+    width: 20px;
+    padding-top: 3.5px;
+    text-align: center;
+}
+
+.user_popover .popover-title {
+    padding: 0;
+}
+
+.user_popover .popover_info li {
+    word-wrap: break-word;
+}
+
+.message-info-popover .popover-title,
+.user_popover .popover-title {
+    border-color: hsla(0, 0%, 0%, 0.2);
+}
+
+.popover-avatar .popover-inner {
+    width: 240px;
+}
+
+.popover-avatar {
+    height: 240px;
+    width: 240px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+
+    &.guest-avatar::after {
+        outline: 10px solid hsl(0, 0%, 100%);
+    }
+}
+
+#user-profile-modal {
+    border-radius: 4px;
+
+    #exit-sign {
+        font-size: 1.5rem;
+    }
+
+    #avatar {
+        display: inline-block;
+        height: 180px;
+        width: 180px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 5px;
+        margin-right: 10px;
+        border: 1px solid hsla(0, 0%, 0%, 0.2);
+
+        &.guest-avatar::after {
+            outline: 9px solid hsl(0, 0%, 100%);
+        }
+    }
+
+    #default-section {
+        font-size: 15px;
+        display: inline-block;
+        vertical-align: top;
+
+        .default-field {
+            margin-bottom: 5px;
+
+            .name {
+                color: hsl(0, 0%, 55%);
+                display: inline-block;
+                min-width: 120px;
+            }
+        }
+
+        #user-type {
+            margin-bottom: 15px;
+        }
+
+        #name {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 5px;
+
+            #edit-button {
+                font-size: 18px;
+                margin-left: 10px;
+            }
+        }
+    }
+
+    hr {
+        border: 1px solid hsl(0, 0%, 93%);
+        margin: 5px 0;
+    }
+
+    #content {
+        margin-top: 10px;
+
+        .field-section {
+            margin-top: 8px;
+
+            .name {
+                color: hsl(0, 0%, 55%);
+            }
+
+            .value {
+                font-size: 15px;
+            }
+
+            &[data-type="2"] .value {
+                white-space: pre-line;
+                overflow-wrap: break-word;
+            }
+        }
+    }
+
+    &.no-fields {
+        hr,
+        #content {
+            display: none;
+        }
+    }
+
+    &:not(.no-fields) {
+        #body {
+            padding-bottom: 10px;
+            padding-top: 4px;
+            margin: 10px 0;
+        }
+    }
+}
+
+.message-info-popover {
+    padding: 0;
+}
+
+.message-info-popover .popover-title {
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .message-info-popover {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        /* these are to override JS embedded inline styles. */
+        top: 0px !important;
+        left: 0px !important;
+        margin: 0 !important;
+        width: 100vw;
+        height: 100vh;
+
+        background-color: hsla(0, 0%, 0%, 0.7);
+        border-radius: 0px;
+        border: none;
+
+        pointer-events: none;
+    }
+
+    .message-info-popover .popover-inner {
+        background-color: hsl(0, 0%, 100%);
+        pointer-events: all;
+    }
+
+    .popover-flex {
+        position: absolute;
+        top: 0 !important;
+        left: 0 !important;
+
+        width: 100vw;
+        height: 100vh;
+
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        background-color: rgba(0, 0, 0, 0.7);
+
+        z-index: 103;
+
+        opacity: 0;
+        pointer-events: none;
+
+        transition: all 0.3s ease;
+    }
+
+    .popover-flex.fade.in {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .popover-flex .popover {
+        display: inline-block;
+    }
+
+    .emoji-info-popover {
+        position: static;
+        margin-right: 0;
+    }
+}
+
+.popover_user_presence {
+    display: inline-block;
+    float: initial;
+    position: relative;
+    top: 1px;
+}

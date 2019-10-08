@@ -1,0 +1,368 @@
+/* Reusable, object-oriented CSS base components for the Zulip webapp
+   (not included in the portico CSS) */
+
+.flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hide {
+    display: none;
+}
+
+.light {
+    font-weight: 300;
+}
+
+.display-none {
+    display: none;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.display-block {
+    display: block !important;
+}
+
+.box-shadow {
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
+}
+
+.bg-white {
+    background-color: hsl(0, 0%, 100%);
+}
+
+.clear-float {
+    clear: both;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+/* -- base button styling -- */
+.new-style .button {
+    padding: 7px 14px;
+    margin: 0;
+    min-width: 130px;
+
+    font-weight: 400;
+    line-height: normal;
+    text-align: center;
+
+    background-color: hsl(0, 0%, 100%);
+    color: inherit;
+    outline: none;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 2px;
+
+    box-shadow: none;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* -- button style variations -- */
+.new-style .button.no-style {
+    padding: 0px;
+    background-color: transparent;
+    border: none;
+    min-width: 0px;
+    width: auto;
+    outline: none;
+    box-shadow: none !important;
+}
+
+.new-style .button.rounded {
+    border-radius: 4px;
+}
+
+.new-style .button.green {
+    background-color: hsl(150, 31%, 53%);
+}
+
+.new-style .button.grey {
+    background-color: hsl(0, 0%, 67%);
+}
+
+.new-style .button.standalone {
+    margin-top: 10px;
+}
+
+.new-style .button.small {
+    font-size: 0.8rem;
+    min-width: inherit;
+    padding: 6px 10px;
+}
+
+.new-style .button.small-flex {
+    width: auto;
+    min-width: inherit;
+}
+
+.new-style .button.sea-green {
+    color: hsl(156, 41%, 40%);
+    border-color: hsl(156, 28%, 70%);
+}
+
+.new-style .button.btn-warning {
+    color: hsl(35, 70%, 56%);
+    border-color: hsl(35, 98%, 84%);
+}
+
+.new-style .button.btn-danger {
+    color: hsl(357, 64%, 72%);
+    border-color: hsl(4, 56%, 82%);
+}
+
+/* -- button states -- */
+.new-style .button:hover,
+.new-style .button:focus {
+    border-color: hsl(0, 0%, 60%);
+}
+
+.new-style .button:active {
+    border-color: hsl(0, 0%, 60%);
+    color: inherit;
+    background-color: hsl(0, 0%, 95%);
+}
+
+.new-style .button.sea-green:hover,
+.new-style .button.sea-green:focus {
+    border-color: hsl(156, 30%, 50%);
+}
+
+.new-style .button.sea-green:active {
+    border-color: hsl(156, 30%, 40%);
+    color: hsl(156, 44%, 43%);
+    background-color: hsl(154, 33%, 96%);
+}
+
+.new-style .button.btn-danger:hover,
+.new-style .button.btn-danger:focus {
+    border-color: hsl(2, 46%, 68%);
+}
+
+.new-style .button.btn-danger:active {
+    color: hsl(357, 55%, 63%);
+    border-color: hsl(2, 46%, 68%);
+    background-color: hsl(7, 82%, 98%);
+}
+
+.new-style .button.btn-warning:hover {
+    border-color: hsl(35, 55%, 70%);
+}
+
+.new-style .button.btn-warning:active {
+    color: hsl(35, 82%, 40%);
+    border-color: hsl(35, 55%, 70%);
+    background-color: hsl(33, 48%, 96%);
+}
+
+.new-style .button[disabled="disabled"] {
+    cursor: not-allowed;
+    -moz-filter: saturate(0);
+    filter: saturate(0);
+    background-color: hsl(0, 0%, 93%);
+    color: hsl(0, 3%, 52%);
+}
+
+.new-style .button[disabled="disabled"]:hover {
+    background-color: hsl(0, 0%, 93%);
+    color: hsl(156, 39%, 54%);
+    border-color: hsl(156, 39%, 77%);
+}
+
+/* -- tab switcher -- */
+
+.new-style .tab-switcher {
+    font-weight: initial;
+    margin: 2px 4px;
+    display: inline-block;
+}
+
+.new-style .tab-switcher .ind-tab {
+    display: inline-block;
+    width: 90px;
+    margin: 0px -0.5px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    vertical-align: bottom; /* See http://stackoverflow.com/a/43266155/ */
+    padding: 3px 10px;
+    background-color: hsl(0, 0%, 100%);
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+}
+
+.new-style .tab-switcher .ind-tab:focus {
+    outline: none;
+}
+
+.informational-overlays .tab-switcher {
+    display: flex;
+}
+
+.informational-overlays .tab-switcher .ind-tab {
+    display: flex;
+    text-overflow: initial;
+    white-space: initial;
+    vertical-align: middle;
+}
+
+.new-style .tab-switcher.large .ind-tab {
+    width: 100%;
+}
+
+.new-style .tab-switcher .ind-tab:not(.selected) {
+    border: 1px solid hsl(0, 0%, 80%);
+}
+
+.new-style .tab-switcher .ind-tab.first {
+    border-radius: 5px 0px 0px 5px;
+    border-right: 1px solid transparent;
+}
+
+.new-style .tab-switcher .ind-tab.middle {
+    border-right: 1px solid transparent;
+}
+
+.new-style .tab-switcher .ind-tab.last {
+    border-radius: 0px 5px 5px 0px;
+}
+
+.new-style .tab-switcher .ind-tab.selected {
+    position: relative;
+    background-color: hsl(0, 0%, 53%);
+    color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(0, 0%, 47%);
+    z-index: 2;
+}
+
+.new-style .tab-switcher .ind-tab.disabled {
+    pointer-events: none;
+    color: hsl(0, 0%, 80%);
+    border-color: hsl(0, 0%, 87%);
+}
+
+/* -- unified overlay design component -- */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+
+    background-color: hsla(0, 0%, 13%, 0.8);
+    z-index: 105;
+
+    pointer-events: none;
+    opacity: 0;
+
+    transition: opacity 0.3s ease;
+    overflow: hidden;
+}
+
+.overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.overlay .overlay-content {
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+
+    z-index: 102;
+
+    transition: transform 0.3s ease;
+}
+
+.overlay.show .overlay-content {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+.input-append {
+    font-size: 90%;
+    letter-spacing: -.3em;
+}
+
+.input-append input[type=text],
+.new-style input[type=text] {
+    border-radius: 5px;
+    box-shadow: none;
+    margin: 0px;
+}
+
+.clear_search_button:hover {
+    color: hsl(0, 0%, 0%);
+}
+
+.clear_search_button[disabled] {
+    visibility: hidden;
+}
+
+.clear_search_button,
+.clear_search_button:focus,
+.clear_search_button:active,
+.clear_search_button[disabled]:hover {
+    position: relative;
+    right: 20px;
+    background: none;
+    border: none;
+    text-align: center;
+    padding-top: 8px;
+    padding-left: 4px;
+    color: hsl(0, 0%, 80%);
+    text-shadow: none;
+    outline: none !important;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    z-index: 5;
+}
+
+.grey-box {
+    margin: 0px;
+    padding: 5px 10px;
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+
+    list-style-type: none;
+}
+
+.white-box {
+    background-color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(0, 0%, 87%);
+}
+
+.guest-avatar {
+    position: relative;
+    background-size: 100%;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    &::after {
+        content: " ";
+        background-color: hsl(0, 0%, 47%);
+        position: absolute;
+        bottom: -30%;
+        right: -30%;
+        width: 50%;
+        height: 50%;
+        -webkit-transform: rotate(45deg);
+        -moz-transform: rotate(45deg);
+        transform: rotate(45deg);
+    }
+}

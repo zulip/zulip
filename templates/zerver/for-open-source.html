@@ -1,0 +1,122 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>Zulip: the best group chat for open source projects</title>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ render_bundle('landing-page') }}
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing hello why-page">
+    <div class="hero">
+        <h1 class="center">{% trans %}The best chat for open source projects{% endtrans %}</h1>
+        <p>Engage your community with fun, thoughtful, and organized discussion</p>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+                {{ render_markdown_path('zerver/for/open-source.md') }}
+            </div>
+        </div>
+    </div>
+
+    <div class="testimonials">
+        <div class="padded-content">
+            <div id="os-quote-carousel" class="carousel slide" data-ride="carousel">
+                <div class="carousel-quotes">
+                    <div class="carousel-inner">
+                        <div class="item active quote-container">
+                            <blockquote>
+                                Zulip helped the FHIR community grow from a
+                                tiny group of dreamers to 500 active users
+                                sending 6000 messages per month, all driving
+                                the creation of better healthcare
+                                standards. Zulip’s topic-based threading
+                                helps us manage simultaneous discussions
+                                with clarity, ensuring the right people can
+                                pay attention to the right messages. This
+                                makes our large-group discussion far more
+                                manageable than what we've experienced with
+                                Skype and Slack.”
+                            </blockquote>
+                            <cite>Grahame Grieve, founder, FHIR health care standards body</cite>
+                        </div>
+                        <div class="item quote-container">
+                            <blockquote>
+                                Choosing Zulip over Slack as our group chat is one
+                                of the best decisions we've ever made. Zulip makes
+                                it easy for our community of 1000 Recursers around
+                                the world to stay involved, even years after their
+                                batches finish. No other tool has a user
+                                experience that scales to a community of our
+                                size.
+                            </blockquote>
+                            <cite>Nick Bergson-Shilcock, founder and CEO, Recurse Center</cite>
+                        </div>
+                        <div class="item quote-container">
+                            <blockquote>
+                                Wikimedia uses Zulip for its participation
+                                in open source mentoring programs. Zulip's
+                                threaded discussions help busy organization
+                                administrators and mentors stay in close
+                                communication with students during all
+                                phases of the programs.
+                            </blockquote>
+                            <cite>Srishti Sethi, Developer Advocate, Wikimedia Foundation</cite>
+                        </div>
+                        <div class="item quote-container">
+                            <blockquote>
+                                I highly recommend Zulip to other communities.
+                                We're coming from Freenode as our only
+                                real-time communication so the difference is
+                                night and day. Slack is a no-go for many due
+                                to not being FLOSS, and I'm concerned about
+                                vendor lock-in if they were to stop being so
+                                generous.
+
+                                Slack's threading model is much worse than
+                                Zulip's IMO. The streams/topics flow is an
+                                incredibly intuitive way to keep track of
+                                everything that is going on.
+                            </blockquote>
+                            <cite>RJ Ryan, Mixxx Developer</cite>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="left visibility-control hide">
+                    <a class="fa fa-chevron-left" aria-hidden="true" href="#os-quote-carousel" data-slide="prev"></a>
+                </div>
+                <div class="right visibility-control">
+                    <a class="fa fa-chevron-right" aria-hidden="true" href="#os-quote-carousel" data-slide="next"></a>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="company-container">
+                <header>
+                    <h2 class="float left">Leading organizations use Zulip:</h2>
+                    <div class="float clear"></div>
+                </header>
+                <div class="company-box">
+                    <div class="company wikimedia-outreach"></div>
+                    <div class="company wildfly"></div>
+                    <div class="company hail"></div>
+                    <div class="company openshot"></div>
+                    <div class="company mixxx"></div>
+                    <div class="company fhir"></div>
+                    <div class="company hl7"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

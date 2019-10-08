@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Script to provide information about send-receive times.
@@ -8,17 +8,14 @@ It supports both munin and nagios outputs
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
-from __future__ import print_function
-from __future__ import division
-
 import sys
-import optparse
+import argparse
 import random
-import subprocess
 import time
 import traceback
 import os
 
+sys.path.append('.')
 sys.path.append('/home/zulip/deployments/current')
 import scripts.lib.setup_path_on_import
 
@@ -31,40 +28,38 @@ usage = """Usage: send-receive.py [options] [config]
        'config' is optional, if present will return config info.
         Otherwise, returns the output data."""
 
-parser = optparse.OptionParser(usage=usage)
-parser.add_option('--site',
-                  dest='site',
-                  default="https://api.zulip.com",
-                  action='store')
+parser = argparse.ArgumentParser(usage=usage)
+parser.add_argument('--site',
+                    dest='site',
+                    default="https://api.zulip.com",
+                    action='store')
 
-parser.add_option('--nagios',
-                  dest='nagios',
-                  action='store_true')
+parser.add_argument('--nagios',
+                    dest='nagios',
+                    action='store_true')
 
-parser.add_option('--insecure',
-                  dest='insecure',
-                  action='store_true')
+parser.add_argument('--insecure',
+                    dest='insecure',
+                    action='store_true')
 
-parser.add_option('--munin',
-                  dest='munin',
-                  action='store_true')
+parser.add_argument('--munin',
+                    dest='munin',
+                    action='store_true')
 
-parser.add_option('--websocket',
-                  dest='websocket',
-                  action='store_true')
+parser.add_argument('--websocket',
+                    dest='websocket',
+                    action='store_true')
 
-(options, args) = parser.parse_args()
+parser.add_argument('config', nargs='?', default=None)
+
+options = parser.parse_args()
 
 if not options.nagios and not options.munin:
     print('No output options specified! Please provide --munin or --nagios')
     sys.exit(0)
 
-if len(args) > 2:
-    print(usage)
-    sys.exit(0)
-
 if options.munin:
-    if len(args) and args[0] == 'config':
+    if options.config == 'config':
         print("""graph_title Send-Receive times
 graph_info The number of seconds it takes to send and receive a message from the server
 graph_args -u 5 -l 0
@@ -82,7 +77,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
 
 django.setup()
 
-from zerver.models import get_user_profile_by_email
+from zerver.models import get_system_bot
 from zerver.tornado.websocket_client import WebsocketClient
 from django.conf import settings
 
@@ -104,7 +99,7 @@ def report(state, timestamp=None, msg=None):
         state_file_path = "/var/lib/nagios_state/check_send_receive_state"
     with open(state_file_path + ".tmp", 'w') as f:
         f.write("%s|%s|%s|%s\n" % (now, states[state], state, msg))
-    subprocess.check_call(["mv", state_file_path + ".tmp", state_file_path])
+    os.rename(state_file_path + ".tmp", state_file_path)
     print("%s: %s" % (state, msg))
     exit(states[state])
 
@@ -118,7 +113,7 @@ def get_zulips():
     # type: () -> List[Dict[str, Any]]
     global queue_id, last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
-    if 'error' in res.get('result'):
+    if 'error' in res.get('result', {}):
         report("CRITICAL", msg="Error receiving Zulips, error was: %s" % (res["msg"]))
     for event in res['events']:
         last_event_id = max(last_event_id, int(event['id']))
@@ -134,11 +129,11 @@ def send_message_via_websocket(websocket_client, recepient_email, content):
 
 if "staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None and \
         settings.NAGIOS_STAGING_RECEIVE_BOT is not None:
-    sender = get_user_profile_by_email(settings.NAGIOS_STAGING_SEND_BOT)
-    recipient = get_user_profile_by_email(settings.NAGIOS_STAGING_RECEIVE_BOT)
+    sender = get_system_bot(settings.NAGIOS_STAGING_SEND_BOT)
+    recipient = get_system_bot(settings.NAGIOS_STAGING_RECEIVE_BOT)
 else:
-    sender = get_user_profile_by_email(settings.NAGIOS_SEND_BOT)
-    recipient = get_user_profile_by_email(settings.NAGIOS_RECEIVE_BOT)
+    sender = get_system_bot(settings.NAGIOS_SEND_BOT)
+    recipient = get_system_bot(settings.NAGIOS_RECEIVE_BOT)
 
 zulip_sender = zulip.Client(
     email=sender.email,
@@ -158,7 +153,7 @@ zulip_recipient = zulip.Client(
 
 try:
     res = zulip_recipient.register(event_types=["message"])
-    if 'error' in res.get('result'):
+    if 'error' in res.get('result', {}):
         report("CRITICAL", msg="Error subscribing to Zulips: %s" % (res['msg']))
     queue_id, last_event_id = (res['queue_id'], res['last_event_id'])
 except Exception:
@@ -180,7 +175,7 @@ else:
         "to": recipient.email,
     })
 
-msg_content = [] # type: List[str]
+msg_content = []  # type: List[str]
 
 while msg_to_send not in msg_content:
     messages = get_zulips()

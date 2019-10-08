@@ -1,13 +1,12 @@
-from __future__ import print_function
 
 import os
-import sys
-from os.path import dirname, abspath
+import shutil
 import subprocess
-from scripts.lib.zulip_tools import run
+import sys
+from scripts.lib.zulip_tools import run, ENDC, WARNING, parse_lsb_release
 from scripts.lib.hash_reqs import expand_reqs
 
-ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
 
 if 'TRAVIS' in os.environ:
@@ -15,25 +14,97 @@ if 'TRAVIS' in os.environ:
     VENV_CACHE_PATH = "/home/travis/zulip-venv-cache"
 
 if False:
-    # Don't add a runtime dependency on typing
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import List, Optional, Tuple, Set
 
 VENV_DEPENDENCIES = [
     "build-essential",
     "libffi-dev",
     "libfreetype6-dev",     # Needed for image types with Pillow
-    "libz-dev",             # Needed to handle compressed PNGs with Pillow
+    "zlib1g-dev",             # Needed to handle compressed PNGs with Pillow
     "libjpeg-dev",          # Needed to handle JPEGs with Pillow
     "libldap2-dev",
     "libmemcached-dev",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
     "python-dev",
+    "python3-pip",
     "python-pip",
-    "python-virtualenv",
+    "python-virtualenv",    # Trusty lacks `python3-virtualenv`.
+                            # Fortunately we don't need the library,
+                            # only the command, and this suffices.
+    "python3-six",
+    "python-six",
     "libxml2-dev",          # Used for installing talon
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
+    "libssl-dev",           # Needed to build pycurl and other libraries
+
+    # This is technically a node dependency, but we add it here
+    # because we don't have another place that we install apt packages
+    # on upgrade of a production server, and it's not worth adding
+    # another call to `apt install` for.
+    "jq",                   # Used by scripts/lib/install-node to check yarn version
 ]
+
+COMMON_YUM_VENV_DEPENDENCIES = [
+    "libffi-devel",
+    "freetype-devel",
+    "zlib-devel",
+    "libjpeg-turbo-devel",
+    "openldap-devel",
+    "libmemcached-devel",
+    "python-devel",
+    "python2-pip",
+    "python-six",
+    "libxml2-devel",
+    "libxslt-devel",
+    "postgresql-libs",  # libpq-dev on apt
+    "openssl-devel",
+    "jq",
+]
+
+REDHAT_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
+    "python36-devel",
+    "python36-six",
+    "python-virtualenv",
+]
+
+FEDORA_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
+    "python3-devel",
+    "python3-pip",
+    "python3-six",
+    "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
+]
+
+codename = parse_lsb_release()["DISTRIB_CODENAME"]
+
+if codename != "trusty":
+    # Workaround for the fact that trusty has a different package name here.
+    VENV_DEPENDENCIES.append("virtualenv")
+
+THUMBOR_VENV_DEPENDENCIES = [
+    "libcurl4-openssl-dev",
+    "libjpeg-dev",
+    "zlib1g-dev",
+    "libfreetype6-dev",
+    "libpng-dev",
+    "gifsicle",
+]
+
+YUM_THUMBOR_VENV_DEPENDENCIES = [
+    "libcurl-devel",
+    "libjpeg-turbo-devel",
+    "zlib-devel",
+    "freetype-devel",
+    "libpng-devel",
+    "gifsicle",
+]
+
+def install_venv_deps(requirements_file):
+    # type: (str) -> None
+    pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
+    run(["pip", "install", "-U", "--requirement", pip_requirements])
+    run(["pip", "install", "--no-deps", "--requirement", requirements_file])
 
 def get_index_filename(venv_path):
     # type: (str) -> str
@@ -132,6 +203,9 @@ def try_to_copy_venv(venv_path, new_packages):
                                                     source=source_venv_path,
                                                     target=venv_path).split()
         try:
+            # TODO: We can probably remove this in a few months, now
+            # that we can expect that virtualenv-clone is present in
+            # all of our recent virtualenvs.
             run(cmd)
         except Exception:
             # Virtualenv-clone is not installed. Install it and try running
@@ -161,7 +235,7 @@ def get_logfile_name(venv_path):
 def create_log_entry(target_log, parent, copied_packages, new_packages):
     # type: (str, str, Set[str], Set[str]) -> None
 
-    venv_path = dirname(target_log)
+    venv_path = os.path.dirname(target_log)
     with open(target_log, 'a') as writer:
         writer.write("{}\n".format(venv_path))
         if copied_packages:
@@ -177,7 +251,7 @@ def create_log_entry(target_log, parent, copied_packages, new_packages):
 def copy_parent_log(source_log, target_log):
     # type: (str, str) -> None
     if os.path.exists(source_log):
-        run('cp {} {}'.format(source_log, target_log).split())
+        shutil.copyfile(source_log, target_log)
 
 def do_patch_activate_script(venv_path):
     # type: (str) -> None
@@ -213,7 +287,7 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
     if not os.path.exists(success_stamp):
         do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args or [])
-        run(["touch", success_stamp])
+        open(success_stamp, 'w').close()
 
     print("Using cached Python venv from %s" % (cached_venv_path,))
     if target_venv_path is not None:
@@ -223,6 +297,13 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
     activate_this = os.path.join(cached_venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
     return cached_venv_path
+
+def add_cert_to_pipconf():
+    # type: () -> None
+    conffile = os.path.expanduser("~/.pip/pip.conf")
+    confdir = os.path.expanduser("~/.pip/")
+    os.makedirs(confdir, exist_ok=True)
+    run(["crudini", "--set", conffile, "global", "cert", os.environ["CUSTOM_CA_CERTIFICATES"]])
 
 def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # type: (str, str, List[str]) -> None
@@ -244,7 +325,42 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     activate_this = os.path.join(venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
 
-    run(["pip", "install", "-U", "setuptools"])
-    run(["pip", "install", "--upgrade", "pip", "wheel"])
-    run(["pip", "install", "--no-deps", "--requirement", requirements_file])
+    # use custom certificate if needed
+    if os.environ.get('CUSTOM_CA_CERTIFICATES'):
+        print("Configuring pip to use custom CA certificates...")
+        add_cert_to_pipconf()
+
+    # CentOS-specific hack/workaround
+    # Install pycurl with custom flag due to this error when installing
+    # via pip:
+    # __main__.ConfigurationError: Curl is configured to use SSL, but
+    # we have not been able to determine which SSL backend it is using.
+    # Please see PycURL documentation for how to specify the SSL
+    # backend manually.
+    # See https://github.com/pycurl/pycurl/issues/526
+    # The fix exists on pycurl master, but not yet in any release
+    # We can likely remove this when pycurl > 7.43.0.2 comes out.
+    if os.path.exists("/etc/redhat-release"):
+        pycurl_env = os.environ.copy()
+        pycurl_env["PYCURL_SSL_LIBRARY"] = "nss"
+        run(["pip", "install", "pycurl==7.43.0.2", "--compile", "--no-cache-dir"],
+            env=pycurl_env)
+
+    try:
+        install_venv_deps(requirements_file)
+    except subprocess.CalledProcessError:
+        # Might be a failure due to network connection issues. Retrying...
+        print(WARNING + "`pip install` failed; retrying..." + ENDC)
+        install_venv_deps(requirements_file)
+
+    # The typing module has been included in stdlib since 3.5.
+    # Installing a pypi version of it has been harmless until a bug
+    # "AttributeError: type object 'Callable' has no attribute
+    # '_abc_registry'" happens in 3.7. And so just to be safe, it is
+    # disabled from now on for all >= 3.5 versions.
+    # Remove this once 3.4 is no longer supported.
+    at_least_35 = (sys.version_info.major == 3) and (sys.version_info.minor >= 5)
+    if at_least_35 and ('python2.7' not in virtualenv_args):
+        run(["pip", "uninstall", "-y", "typing"])
+
     run(["sudo", "chmod", "-R", "a+rX", venv_path])

@@ -17,37 +17,23 @@ Comment:
  information or errors found in these notices.
 
 Files: *
-Copyright: 2011-2016 Dropbox, Inc. and contributors
+Copyright: 2011-2017 Dropbox, Inc., Kandra Labs, Inc., and contributors
 License: Apache-2
-
-Files: api/*
-Copyright: 2012-2016 Dropbox, Inc. and contributors
-License: Expat
-
-Files: api/integrations/perforce/git_p4.py
-Copyright: 2007 Simon Hausmann <simon@lst.de>,
- 2007 Trolltech ASA
-License: Expat
-Comment: https://raw.github.com/git/git/34022ba/git-p4.py
-
-Files: bots/jabber_mirror_backend.py
-Copyright: 2013 Permabit, Inc., 2013-2014 Dropbox, Inc.
-License: Expat
 
 Files: confirmation/*
 Copyright: 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 License: BSD-3-Clause
 
-Files: puppet/apt/*
-Copyright: 2011, Evolving Web Inc.
-License: Expat
+Files: docs/code-of-conduct.md
+Copyright: 2017, Kandra Labs Inc.
+License: CC-BY-SA-4.0
 
-Files: puppet/stdlib/*
+Files: puppet/zulip/lib/puppet/parser/functions/join.rb puppet/zulip/lib/puppet/parser/functions/range.rb
 Copyright: 2011, Krzysztof Wilczynski
  2011, Puppet Labs Inc
 License: Apache-2.0
 
-File: puppet/zulip_internal/files/mediawiki/Auth_remoteuser.php
+File: puppet/zulip_ops/files/mediawiki/Auth_remoteuser.php
 Copyright: 2006 Otheus Shelling
  2007 Rusty Burchfield
  2009 James Kinsman
@@ -69,30 +55,32 @@ Files: puppet/zulip/files/nagios_plugins/zulip_nagios_server/check_website_respo
 Copyright: 2011 Chris Freeman
 License: GPL-2.0
 
-Files: puppet/zulip_internal/files/trac/cgi-bin/
+Files: puppet/zulip_ops/files/trac/cgi-bin/
 Copyright: 2003-2009 Edgewall Software
  2003-2004 Jonas Borgström <jonas@edgewall.com>
 License: BSD-3-Clause
 
-Files: puppet/zulip_internal/files/pagerduty_nagios.pl
-Copyright: 2011, PagerDuty, Inc.
+Files: puppet/zulip_ops/files/zulip-ec2-configure-interfaces
+Copyright: 2013-2017, Dropbox, Inc., Kandra Labs, Inc., and contributors
+License: Expat
+
+Files: scripts/setup/generate-self-signed-cert
+Copyright: 2003-2006 Thom May
+           2006 Fabio M. Di Nitto
+           2006 Adam Conrad
+           2006-2008 Tollef Fog Heen
+           2008-2015 Stefan Fritsch
+           2018 Kandra Labs, Inc., and contributors
 License: BSD-3-Clause
 
-Files: puppet/zulip_internal/files/zulip-ec2-configure-interfaces
-Copyright: 2013-2016, Dropbox, Inc. and contributors
-License: Expat
+Files: static/audio/notification_sounds/ding.*
+Copyright: 2017 InspectorJ
+License: CC-BY-3.0
+Comment: From https://freesound.org/s/411089/.
 
-Files: static/audio/zulip.*
+Files: static/audio/notification_sounds/zulip.*
 Copyright: 2011 Vidsyn
 License: CC-0-1.0
-
-Files: static/third/thirdparty-fonts.css
-Copyright: 2012-2013 Dave Gandy
-License: Expat
-
-Files: static/third/fontawesome/*
-Copyright: 2012-2013 Dave Gandy
-License: SIL-OFL-1.1
 
 Files: static/third/bootstrap/bootstrap-btn.css
 Copyright: 2011-2014 Twitter, Inc
@@ -107,6 +95,11 @@ Files: static/third/bootstrap/js/bootstrap.js
 Copyright: 2012 Twitter, Inc
 License: Apache-2.0
 Comment: The software has been modified.
+
+Files: static/third/bootstrap-typeahead/*
+Copyright: 2012 Twitter, Inc
+License: Apache-2.0
+Comment: Bootstrap typeahead.  The software has been modified.
 
 Files: static/third/bootstrap-notify/*
 Copyright: 2013 Nijiko Yonskai
@@ -141,30 +134,10 @@ Files: static/third/jquery-filedrop/jquery.filedrop.js
 Copyright: Resopollution
 License: Expat
 
-Files: static/third/jquery-form/jquery.form.js
-Copyright: M. Alsup
-License: Expat or GPL-2.0
-
 Files: static/third/jquery-idle/jquery.idle.js
 Copyright: 2011-2013 Henrique Boaventura
 License: Expat
 Comment: The software has been modified.
-
-Files: static/third/jquery-mousewheel/jquery.mousewheel.js
-Copyright: 2011 Brandon Aaron
-License: Expat
-
-Files: static/third/jquery-perfect-scrollbar/*
-Copyright: 2012 HyeonJe Jun
-License: Expat
-
-Files: static/third/jquery-throttle-debounce/*
-Copyright: 2010 "Cowboy" Ben Alman
-License: Expat or GPL
-
-Files: src/zulip/static/third/lazyload/*
-Copyright: 2011 Ryan Grove
-License: Expat
 
 Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
@@ -174,10 +147,6 @@ Files: static/third/sockjs/sockjs-0.3.4.js
 Copyright: 2011-2012 VMware, Inc.
  2012 Douglas Crockford
 License: Expat and public-domain
-
-Files: static/third/sorttable/sorttable.js
-Copyright: 2007 Stuart Langridge
-License: X11
 
 Files: static/third/sourcesans/*
 Copyright: 2010, 2012, 2014 Adobe Systems Incorporated
@@ -203,6 +172,10 @@ License: Expat
 Files: zerver/lib/decorator.py zerver/management/commands/runtornado.py scripts/setup/generate_secrets.py
 Copyright: Django Software Foundation and individual contributors
 License: BSD-3-Clause
+
+Files: zerver/lib/json_encoder_for_html.py zerver/tests/test_json_encoder_for_html.py
+Copyright: 2006 Bob Ippolito
+License: MIT or Academic Free License v. 2.1
 
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");

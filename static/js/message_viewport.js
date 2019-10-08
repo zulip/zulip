@@ -11,7 +11,7 @@ var in_stoppable_autoscroll = false;
 exports.last_movement_direction = 1;
 
 exports.at_top = function () {
-    return (exports.scrollTop() <= 0);
+    return exports.scrollTop() <= 0;
 };
 
 exports.message_viewport_info = function () {
@@ -28,7 +28,7 @@ exports.message_viewport_info = function () {
     var element_just_above_us = $(".floating_recipient");
 
     res.visible_top = element_just_above_us.offset().top
-        + element_just_above_us.outerHeight();
+        + element_just_above_us.safeOuterHeight();
 
     var element_just_below_us = $("#compose");
 
@@ -106,18 +106,18 @@ exports.set_message_position = function (message_top, message_height, viewport_i
 function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed,
                              require_fully_visible) {
     if (require_fully_visible) {
-        return ((rect.top > top_of_feed) && // Message top is in view and
-                ((rect.bottom < bottom_of_feed) || // message is fully in view or
-                 ((rect.height > bottom_of_feed - top_of_feed) &&
-                  (rect.top < bottom_of_feed)))); // message is tall.
+        return rect.top > top_of_feed && // Message top is in view and
+                (rect.bottom < bottom_of_feed || // message is fully in view or
+                 rect.height > bottom_of_feed - top_of_feed &&
+                  rect.top < bottom_of_feed); // message is tall.
     }
-    return (rect.bottom > top_of_feed && rect.top < bottom_of_feed);
+    return rect.bottom > top_of_feed && rect.top < bottom_of_feed;
 }
 
 function add_to_visible(candidates, visible,
-                                 top_of_feed, bottom_of_feed,
-                                 require_fully_visible,
-                                 row_to_id) {
+                        top_of_feed, bottom_of_feed,
+                        require_fully_visible,
+                        row_to_id) {
     _.every(candidates, function (row) {
         var row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
@@ -132,7 +132,7 @@ function add_to_visible(candidates, visible,
 
 var top_of_feed = new util.CachedValue({
     compute_value: function () {
-        return $(".floating_recipient").offset().top + $(".floating_recipient").outerHeight();
+        return $(".floating_recipient").offset().top + $(".floating_recipient").safeOuterHeight();
     },
 });
 
@@ -157,11 +157,11 @@ function _visible_divs(selected_row, row_min_height, row_to_output, div_class,
     var above_pointer = selected_row.prevAll("div." + div_class + ":lt(" + num_neighbors + ")");
     var below_pointer = selected_row.nextAll("div." + div_class + ":lt(" + num_neighbors + ")");
     add_to_visible(selected_row, visible, top_of_feed.get(), bottom_of_feed.get(),
-            require_fully_visible, row_to_output);
+                   require_fully_visible, row_to_output);
     add_to_visible(above_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
-            require_fully_visible, row_to_output);
+                   require_fully_visible, row_to_output);
     add_to_visible(below_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
-            require_fully_visible, row_to_output);
+                   require_fully_visible, row_to_output);
 
     return visible;
 }
@@ -223,11 +223,6 @@ exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
     return ret;
 };
 
-exports.set_message_offset = function viewport_set_message_offset(offset) {
-    var msg = current_msg_list.selected_row();
-    exports.scrollTop(exports.scrollTop() + msg.offset().top - offset);
-};
-
 function make_dimen_wrapper(dimen_name, dimen_func) {
     dimensions[dimen_name] = new util.CachedValue({
         compute_value: function () {
@@ -244,7 +239,7 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
 }
 
 exports.height = make_dimen_wrapper('height', $(exports.message_pane).height);
-exports.width  = make_dimen_wrapper('width',  $(exports.message_pane).width);
+exports.width = make_dimen_wrapper('width', $(exports.message_pane).width);
 
 exports.stop_auto_scrolling = function () {
     if (in_stoppable_autoscroll) {
@@ -255,9 +250,9 @@ exports.stop_auto_scrolling = function () {
 exports.is_narrow = function () {
     // This basically returns true when we hide the right sidebar for
     // the left_side_userlist skinny mode.  It would be nice to have a less brittle
-    // test for this.  See the "@media (max-width: 975px)" section in
-    // zulip.css.
-    return window.innerWidth <= 975;
+    // test for this.  See the "@media (max-width: 1165px)" section in
+    // media.scss.
+    return window.innerWidth <= 1165;
 };
 
 exports.system_initiated_animate_scroll = function (scroll_amount) {
@@ -296,7 +291,7 @@ exports.recenter_view = function (message, opts) {
     var bottom_threshold = viewport_info.visible_top + viewport_info.visible_height;
 
     var message_top = message.offset().top;
-    var message_height = message.outerHeight(true);
+    var message_height = message.safeOuterHeight(true);
     var message_bottom = message_top + message_height;
 
     var is_above = message_top < top_threshold;
@@ -317,9 +312,9 @@ exports.recenter_view = function (message, opts) {
     }
 
     if (is_above || opts.force_center) {
-        exports.set_message_position(message_top, message_height, viewport_info, 1/2);
+        exports.set_message_position(message_top, message_height, viewport_info, 1 / 2);
     } else if (is_below) {
-        exports.set_message_position(message_top, message_height, viewport_info, 1/7);
+        exports.set_message_position(message_top, message_height, viewport_info, 1 / 7);
     }
 };
 
@@ -339,8 +334,8 @@ exports.keep_pointer_in_view = function () {
     }
 
     var info = message_viewport.message_viewport_info();
-    var top_threshold = info.visible_top + (1/10 * info.visible_height);
-    var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
+    var top_threshold = info.visible_top + 1 / 10 * info.visible_height;
+    var bottom_threshold = info.visible_top + 9 / 10 * info.visible_height;
 
     function message_is_far_enough_down() {
         if (message_viewport.at_top()) {
@@ -359,7 +354,7 @@ exports.keep_pointer_in_view = function () {
 
         // If at least part of the message is below top_threshold (10% from
         // the top), then we also leave it alone.
-        var bottom_offset = message_top + next_row.outerHeight(true);
+        var bottom_offset = message_top + next_row.safeOuterHeight(true);
         if (bottom_offset >= top_threshold) {
             return true;
         }
@@ -370,7 +365,7 @@ exports.keep_pointer_in_view = function () {
 
     function message_is_far_enough_up() {
         return message_viewport.at_bottom() ||
-            (next_row.offset().top <= bottom_threshold);
+            next_row.offset().top <= bottom_threshold;
     }
 
     function adjust(in_view, get_next_row) {
@@ -396,7 +391,7 @@ exports.keep_pointer_in_view = function () {
     current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
 };
 
-$(function () {
+exports.initialize = function () {
     jwindow = $(window);
     exports.message_pane = $(".app");
     // This handler must be placed before all resize handlers in our application
@@ -410,7 +405,7 @@ $(function () {
     $(document).on('compose_started compose_canceled compose_finished', function () {
         bottom_of_feed.reset();
     });
-});
+};
 
 return exports;
 }());
@@ -418,3 +413,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_viewport;
 }
+window.message_viewport = message_viewport;

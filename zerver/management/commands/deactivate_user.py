@@ -1,22 +1,16 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
-from typing import Any
 
 from argparse import ArgumentParser
-from optparse import make_option
-
-from django.core.management.base import BaseCommand
+from typing import Any
 
 from zerver.lib.actions import do_deactivate_user
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.sessions import user_sessions
-from zerver.models import get_user_profile_by_email, UserProfile
+from zerver.models import UserProfile
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = "Deactivate a user, including forcibly logging them out."
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-f', '--for-real',
                             dest='for_real',
                             action='store_true',
@@ -24,10 +18,11 @@ class Command(BaseCommand):
                             help="Actually deactivate the user. Default is a dry run.")
         parser.add_argument('email', metavar='<email>', type=str,
                             help='email of user to deactivate')
+        self.add_realm_args(parser)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
-        user_profile = get_user_profile_by_email(options['email'])
+    def handle(self, *args: Any, **options: Any) -> None:
+        realm = self.get_realm(options)
+        user_profile = self.get_user(options['email'], realm)
 
         print("Deactivating %s (%s) - %s" % (user_profile.full_name,
                                              user_profile.email,

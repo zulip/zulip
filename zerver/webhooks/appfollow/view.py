@@ -1,33 +1,31 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
 import re
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile, Client
-
-from typing import Dict, Any, Text
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.models import UserProfile
 
 @api_key_only_webhook_view("AppFollow")
 @has_request_variables
-def api_appfollow_webhook(request, user_profile, client, stream=REQ(default="appfollow"),
-                          payload=REQ(argument_type="body")):
-    # type: (HttpRequest, UserProfile, Client, Text, Dict[str, Any]) -> HttpResponse
-    try:
-        message = payload["text"]
-    except KeyError:
-        return json_error(_("Missing 'text' argument in JSON"))
-    app_name = re.search('\A(.+)', message).group(0)
+def api_appfollow_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: Dict[str, Any]=REQ(argument_type="body")) -> HttpResponse:
+    message = payload["text"]
+    app_name_search = re.search(r'\A(.+)', message)
+    assert app_name_search is not None
+    app_name = app_name_search.group(0)
+    topic = app_name
 
-    check_send_message(user_profile, client, "stream", [stream], app_name, convert_markdown(message))
+    check_send_webhook_message(request, user_profile, topic,
+                               body=convert_markdown(message))
     return json_success()
 
-def convert_markdown(text):
-    # type: (Text) -> Text
+def convert_markdown(text: str) -> str:
     # Converts Slack-style markdown to Zulip format
     # Implemented mainly for AppFollow messages
     # Not ready for general use as some edge-cases not handled

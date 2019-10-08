@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Nagios plugin to check that our MIT users' Zephyr mirrors are running.
@@ -6,9 +6,6 @@ Nagios plugin to check that our MIT users' Zephyr mirrors are running.
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
-from __future__ import print_function
-from __future__ import division
-
 import datetime
 import os
 import sys
@@ -18,7 +15,7 @@ sys.path.append('/home/zulip/deployments/current')
 import scripts.lib.setup_path_on_import
 
 import django
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
 sys.path.append('/home/zulip/deployments/current')
@@ -29,17 +26,18 @@ django.setup()
 from zerver.models import UserActivity
 
 if False:
-    from typing import Any, Dict, Set
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
+    from typing import Any, Dict, Set, Optional
 
 states = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-} # type: Dict[str, int]
+}  # type: Dict[str, int]
 
 def report(state, short_msg, too_old=None):
-    # type: (str, str, Set[Any]) -> None
+    # type: (str, str, Optional[Set[Any]]) -> None
     too_old_data = ""
     if too_old:
         too_old_data = "\nLast call to get_message for recently out of date mirrors:\n" + "\n".join(
@@ -51,9 +49,9 @@ def report(state, short_msg, too_old=None):
 
     exit(states[state])
 
-now = timezone.now()
+now = timezone_now()
 
-all_users = UserActivity.objects.filter(query__in=["get_events_backend", "/api/v1/events"],
+all_users = UserActivity.objects.filter(query__in=["get_events", "/api/v1/events"],
                                         client__name="zephyr_mirror")
 new_inactive_users = [user for user in all_users if user.last_visit <
                       now - datetime.timedelta(minutes=10)]

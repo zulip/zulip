@@ -1,22 +1,20 @@
-from __future__ import absolute_import, print_function
-
-from django.conf import settings
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from zerver.models import UserProfile
 
 import argparse
 from datetime import datetime
+from typing import Any
+
 import requests
 import ujson
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from django.utils.timezone import now as timezone_now
 
-from typing import Any
+from zerver.models import UserProfile
 
 class Command(BaseCommand):
     help = """Add users to a MailChimp mailing list."""
 
-    def add_arguments(self, parser):
-        # type: (argparse.ArgumentParser) -> None
+    def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('--api-key',
                             dest='api_key',
                             type=str,
@@ -28,11 +26,10 @@ class Command(BaseCommand):
         parser.add_argument('--optin-time',
                             dest='optin_time',
                             type=str,
-                            default=datetime.isoformat(timezone.now().replace(microsecond=0)),
+                            default=datetime.isoformat(timezone_now().replace(microsecond=0)),
                             help='Opt-in time of the users.')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         if options['api_key'] is None:
             try:
                 if settings.MAILCHIMP_API_KEY is None:

@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import os
+import re
 
-from django.db import migrations
-
+from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id
+attachment_url_re = re.compile(r'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
 
+def attachment_url_to_path_id(attachment_url: str) -> str:
+    path_id_raw = re.sub(r'[/\-]user[\-_]uploads[/\.-]', '', attachment_url)
+    # Remove any extra '.' after file extension. These are probably added by the user
+    return re.sub('[.]+$', '', path_id_raw, re.M)
 
-def check_and_create_attachments(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def check_and_create_attachments(apps: StateApps,
+                                 schema_editor: DatabaseSchemaEditor) -> None:
     STREAM = 2
     Message = apps.get_model('zerver', 'Message')
     Attachment = apps.get_model('zerver', 'Attachment')
@@ -25,7 +28,7 @@ def check_and_create_attachments(apps, schema_editor):
             is_message_realm_public = False
             if message.recipient.type == STREAM:
                 stream = Stream.objects.get(id=message.recipient.type_id)
-                is_message_realm_public = not stream.invite_only and not stream.realm.is_zephyr_mirror_realm
+                is_message_realm_public = not stream.invite_only and stream.realm.domain != "mit.edu"
 
             if path_id is not None:
                 attachment = Attachment.objects.create(
@@ -41,5 +44,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # The TextField change was originally in the next migration,
+        # but because it fixes a problem that causes the RunPython
+        # part of this migration to crash, we've copied it here.
+        migrations.AlterField(
+            model_name='attachment',
+            name='file_name',
+            field=models.TextField(db_index=True),
+        ),
         migrations.RunPython(check_and_create_attachments)
     ]

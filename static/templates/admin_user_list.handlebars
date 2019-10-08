@@ -1,64 +1,52 @@
 {{#with user}}
 <tr class="user_row{{#unless is_active}} deactivated_user{{/unless}}" data-user-id="{{user_id}}" data-email="{{email}}">
-  <td>
-    <span class="user_name">{{full_name}}</span>
-  </td>
-  <td>
-    <span class="email">{{email}}</span>
-  </td>
-  {{#if is_bot}}
     <td>
-      <span class="owner">{{bot_owner}}</span>
+        <span class="user_name">{{full_name}}</span>
     </td>
-  {{/if}}
-  <td>
-    {{#if is_active}}
-      <button class="button deactivate btn-danger">
-        {{t "Deactivate" }}
-      </button>
-    {{else}}
-      <button class="button reactivate btn-warning">
-        {{t "Reactivate" }}
-      </button>
+    <td>
+        <span class="email">{{email}}</span>
+    </td>
+    {{#unless is_bot}}
+    <td>
+        <span class="user_role">
+            {{#if is_admin}}
+            {{t "Administrator" }}
+            {{else if is_guest}}
+            {{t "Guest" }}
+            {{else}}
+            {{t "Member" }}
+            {{/if}}
+        </span>
+    </td>
+    {{/unless}}
+    {{#if is_bot}}
+    <td>
+        <span class="owner">{{bot_owner}}</span>
+    </td>
+    <td>
+        <span class="bot type">{{bot_type}}</span>
+    </td>
+    {{else if is_active}}
+    <td class="last_active">
+    </td>
     {{/if}}
-    <span class="user-admin-settings">
-      {{#if is_active_human}}
-        {{#if is_admin}}
-          <button class="button remove-admin btn-danger">
-            {{t "Remove admin" }}
-          </button>
-        {{else}}
-          <button class="button make-admin btn-warning">
-            {{t "Make admin" }}
-          </button>
-        {{/if}}
-      {{/if}}
-    </span>
-    <button class="button btn-primary open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
-        <i class="icon-vector-pencil"></i>
-    </button>
-    <div class='admin-user-status'>
-    </div>
-  </td>
-</tr>
-<tr class="user-name-form display-none" data-user-id="{{user_id}}">
-  <td colspan="{{#if is_bot}}4{{else}}3{{/if}}">
-    <form class="form-horizontal name-setting">
-      <input type="hidden" name="is_full_name" value="true" />
-      <div class="input-group name_change_container">
-        <label for="full_name">{{t "Full name" }}</label>
-        <input type="text" name="full_name" value="{{ full_name }}" />
-      </div>
-      {{#if is_bot}}
-        <div class="input-group edit_bot_owner_container">
-          <label for="bot_owner_select">{{t "Owner" }}</label>
-        </div>
-      {{/if}}
-      <div class="input-group">
-        <input type="button" class="btn btn-primary submit_name_changes" value="{{t 'Save changes' }}" />
-        <button type="button" class="btn btn-default reset_edit_user">{{t 'Cancel' }}</button>
-      </div>
-    </form>
-  </td>
+    {{#if ../can_modify}}
+    <td>
+        <span class="user-status-settings">
+            {{#if is_active}}
+            <button class="button rounded small deactivate btn-danger">
+                {{t "Deactivate" }}
+            </button>
+            {{else}}
+            <button class="button rounded small reactivate btn-warning">
+                {{t "Reactivate" }}
+            </button>
+            {{/if}}
+        </span>
+        <button class="button rounded small btn-warning open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+        </button>
+    </td>
+    {{/if}}
 </tr>
 {{/with}}

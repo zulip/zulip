@@ -32,7 +32,7 @@ function then_navigate_to_settings() {
                 casper.click('a[href^="#settings"]');
                 casper.waitUntilVisible('#settings_page', function () {
                     casper.test.assertExists('#settings_page', "Settings page is active");
-                    casper.click("#settings_page .exit");
+                    casper.click('#settings_page .exit');
                 });
             });
         });
@@ -49,6 +49,7 @@ function then_navigate_to_subscriptions() {
             casper.click('a[href^="#streams"]');
             casper.waitUntilVisible("#subscription_overlay", function () {
                 casper.test.assertExists('#subscriptions_table', "#subscriptions page is active");
+                casper.click('#subscription_overlay .exit');
             });
         });
     });
@@ -57,14 +58,24 @@ function then_navigate_to_subscriptions() {
 // Take a navigation tour of the app.
 // Entries are (click target, tab that should be active after clicking).
 then_navigate_to_settings();
-then_navigate_to('narrow/stream/Verona', 'home');
-then_navigate_to('home', 'home');
-then_navigate_to_subscriptions();
-then_navigate_to('', 'home');
-then_navigate_to_settings();
-then_navigate_to('narrow/is/private', 'home');
-then_navigate_to_subscriptions();
-then_navigate_to('narrow/stream/Verona', 'home');
+
+var verona_narrow;
+casper.then(function () {
+    var verona_id = casper.evaluate(function () {
+        return stream_data.get_stream_id('Verona');
+    });
+    verona_narrow = 'narrow/stream/' + verona_id + '-Verona';
+    casper.test.info(verona_narrow);
+
+    then_navigate_to(verona_narrow, 'home');
+    then_navigate_to('home', 'home');
+    then_navigate_to_subscriptions();
+    then_navigate_to('', 'home');
+    then_navigate_to_settings();
+    then_navigate_to('narrow/is/private', 'home');
+    then_navigate_to_subscriptions();
+    then_navigate_to(verona_narrow, 'home');
+});
 
 var initial_page_load_time;
 var hash;

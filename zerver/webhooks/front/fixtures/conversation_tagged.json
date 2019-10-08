@@ -1,0 +1,120 @@
+{
+  "_links": {
+    "self": "https://api2.frontapp.com/events/evt_28duooi"
+  },
+  "id": "evt_28duooi",
+  "type": "tag",
+  "emitted_at": 1518309239.379,
+  "conversation": {
+    "_links": {
+      "self": "https://api2.frontapp.com/conversations/cnv_keocka",
+      "related": {
+        "events": "https://api2.frontapp.com/conversations/cnv_keocka/events",
+        "followers": "https://api2.frontapp.com/conversations/cnv_keocka/followers",
+        "messages": "https://api2.frontapp.com/conversations/cnv_keocka/messages",
+        "comments": "https://api2.frontapp.com/conversations/cnv_keocka/comments",
+        "inboxes": "https://api2.frontapp.com/conversations/cnv_keocka/inboxes"
+      }
+    },
+    "id": "cnv_keocka",
+    "subject": "Being a robot is great, but...",
+    "status": "unassigned",
+    "assignee": null,
+    "recipient": {
+      "_links": {
+        "related": {
+          "contact": "https://api2.frontapp.com/contacts/crd_62euuy"
+        }
+      },
+      "handle": "calculon@momsbot.com",
+      "role": "from"
+    },
+    "tags": [
+      {
+        "_links": {
+          "self": "https://api2.frontapp.com/tags/tag_11dg2",
+          "related": {
+            "conversations": "https://api2.frontapp.com/tags/tag_11dg2/conversations"
+          }
+        },
+        "id": "tag_11dg2",
+        "name": "Urgent"
+      }
+    ],
+    "last_message": {
+      "_links": {
+        "self": "https://api2.frontapp.com/messages/msg_1176r8y",
+        "related": {
+          "conversation": "https://api2.frontapp.com/conversations/cnv_keocka"
+        }
+      },
+      "id": "msg_1176r8y",
+      "type": "email",
+      "is_inbound": true,
+      "created_at": 1518309200,
+      "blurb": "We don't have emotions, and sometimes that makes me very sad. ",
+      "body": "<div>We don't have emotions, and sometimes that makes me very sad.</div>",
+      "text": "We don't have emotions, and sometimes that makes me very sad.\n",
+      "metadata": {},
+      "author": null,
+      "recipients": [
+        {
+          "_links": {
+            "related": {
+              "contact": "https://api2.frontapp.com/contacts/crd_62euuy"
+            }
+          },
+          "handle": "calculon@momsbot.com",
+          "role": "from"
+        },
+        {
+          "_links": {
+            "related": {
+              "contact": null
+            }
+          },
+          "handle": "support@planet-express.com",
+          "role": "to"
+        }
+      ],
+      "attachments": []
+    },
+    "created_at": 1518309203.872
+  },
+  "source": {
+    "_meta": {
+      "type": "teammate"
+    },
+    "data": {
+      "_links": {
+        "self": "https://api2.frontapp.com/teammates/tea_40yq",
+        "related": {
+          "inboxes": "https://api2.frontapp.com/teammates/tea_40yq/inboxes",
+          "conversations": "https://api2.frontapp.com/teammates/tea_40yq/conversations"
+        }
+      },
+      "id": "tea_40yq",
+      "email": "leela@planet-express.com",
+      "username": "leela",
+      "first_name": "Leela",
+      "last_name": "Turanga",
+      "is_admin": true,
+      "is_available": true
+    }
+  },
+  "target": {
+    "_meta": {
+      "type": "tag"
+    },
+    "data": {
+      "_links": {
+        "self": "https://api2.frontapp.com/tags/tag_11dg2",
+        "related": {
+          "conversations": "https://api2.frontapp.com/tags/tag_11dg2/conversations"
+        }
+      },
+      "id": "tag_11dg2",
+      "name": "Urgent"
+    }
+  }
+}

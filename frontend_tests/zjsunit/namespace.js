@@ -19,12 +19,15 @@ exports.patch_builtin = function (name, val) {
     return val;
 };
 
-exports.add_dependencies = function (dct) {
-    _.each(dct, function (fn, name) {
-        var obj = require(fn);
-        requires.push(fn);
-        set_global(name, obj);
-    });
+exports.zrequire = function (name, fn) {
+    if (fn === undefined) {
+        fn = 'js/' + name;
+    }
+    delete require.cache[require.resolve(fn)];
+    var obj = require(fn);
+    requires.push(fn);
+    set_global(name, obj);
+    return obj;
 };
 
 exports.restore = function () {
@@ -45,6 +48,7 @@ exports.stub_out_jquery = function () {
             on: function () {},
             trigger: function () {},
             hide: function () {},
+            removeClass: function () {},
         };
     });
     $.fn = {};

@@ -1,39 +1,79 @@
-from __future__ import absolute_import
 
 from django.http import HttpResponse, HttpRequest
-from typing import List, Text
+from typing import Optional
 
 import ujson
 
 from django.utils.translation import ugettext as _
-from zerver.decorator import authenticated_json_post_view
-from zerver.lib.actions import do_set_muted_topics, do_update_muted_topic
+from zerver.lib.actions import do_mute_topic, do_unmute_topic
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_string, check_list
-from zerver.models import UserProfile
+from zerver.lib.topic_mutes import topic_is_muted
+from zerver.lib.streams import (
+    access_stream_by_id,
+    access_stream_by_name,
+    access_stream_for_unmute_topic_by_id,
+    access_stream_for_unmute_topic_by_name,
+    check_for_exactly_one_stream_arg,
+)
+from zerver.lib.validator import check_int
+from zerver.models import get_stream, Stream, UserProfile
 
-@has_request_variables
-def set_muted_topics(request, user_profile,
-                     muted_topics=REQ(validator=check_list(
-                         check_list(check_string, length=2)), default=[])):
-    # type: (HttpRequest, UserProfile, List[List[Text]]) -> HttpResponse
-    do_set_muted_topics(user_profile, muted_topics)
+def mute_topic(user_profile: UserProfile,
+               stream_id: Optional[int],
+               stream_name: Optional[str],
+               topic_name: str) -> HttpResponse:
+    if stream_name is not None:
+        (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    else:
+        assert stream_id is not None
+        (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+
+    if topic_is_muted(user_profile, stream.id, topic_name):
+        return json_error(_("Topic already muted"))
+
+    do_mute_topic(user_profile, stream, recipient, topic_name)
+    return json_success()
+
+def unmute_topic(user_profile: UserProfile,
+                 stream_id: Optional[int],
+                 stream_name: Optional[str],
+                 topic_name: str) -> HttpResponse:
+    error = _("Topic is not muted")
+
+    if stream_name is not None:
+        stream = access_stream_for_unmute_topic_by_name(user_profile, stream_name, error)
+    else:
+        assert stream_id is not None
+        stream = access_stream_for_unmute_topic_by_id(user_profile, stream_id, error)
+
+    if not topic_is_muted(user_profile, stream.id, topic_name):
+        return json_error(error)
+
+    do_unmute_topic(user_profile, stream, topic_name)
     return json_success()
 
 @has_request_variables
-def update_muted_topic(request, user_profile, stream=REQ(),
-                       topic=REQ(), op=REQ()):
-    # type: (HttpRequest, UserProfile, str, str, str) -> HttpResponse
-    muted_topics = ujson.loads(user_profile.muted_topics)
+def update_muted_topic(request: HttpRequest,
+                       user_profile: UserProfile,
+                       stream_id: Optional[int]=REQ(validator=check_int, default=None),
+                       stream: Optional[str]=REQ(default=None),
+                       topic: str=REQ(),
+                       op: str=REQ()) -> HttpResponse:
+
+    check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
+
     if op == 'add':
-        if [stream, topic] in muted_topics:
-            return json_error(_("Topic already muted"))
-        muted_topics.append([stream, topic])
+        return mute_topic(
+            user_profile=user_profile,
+            stream_id=stream_id,
+            stream_name=stream,
+            topic_name=topic,
+        )
     elif op == 'remove':
-        if [stream, topic] not in muted_topics:
-            return json_error(_("Topic is not there in the muted_topics list"))
-        muted_topics.remove([stream, topic])
-
-    do_update_muted_topic(user_profile, stream, topic, op)
-    return json_success()
+        return unmute_topic(
+            user_profile=user_profile,
+            stream_id=stream_id,
+            stream_name=stream,
+            topic_name=topic,
+        )

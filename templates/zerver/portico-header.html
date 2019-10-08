@@ -1,0 +1,48 @@
+<div class="header portico-header">
+    <div class="header-main" id="top_navbar">
+        <div class="float-left">
+            <div>
+                {% if custom_logo_url %}
+                <a class="brand logo" href="{{ root_domain_uri }}/"><img draggable="false" src="{{ custom_logo_url }}" class="portico-logo" alt="{{ _('Zulip') }}" content="Zulip" /></a>
+                {% else %}
+                <a class="brand logo" href="{{ root_domain_uri }}{% if page_is_help_center %}/help/{% endif %}">
+                    <svg class="brand-logo" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+                        <g transform="translate(-297.14285,-466.64792)">
+                            <circle cx="317.14285" cy="486.64792" r="19.030317" style="fill:#fff;stroke-width:1.93936479;stroke:transparent"></circle>
+                            <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z" style="fill:#52c2af;stroke:#52c2af"></path>
+                        </g>
+                    </svg>
+                    <span>Zulip</span>
+                    {% if page_is_help_center %}
+                    <div class="light"> | User Documentation</div>
+                    {% endif %}
+                    {% if page_is_api_center %}
+                    <div class="light"> | API Documentation</div>
+                    {% endif %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="float-right top-links">
+            {% if user_is_authenticated %}
+                {% include 'zerver/portico-header-dropdown.html' %}
+            {% else %}
+                {% if login_link_disabled %}
+                {% elif not only_sso %}
+                <a href="{{login_url}}">{{ _('Log in') }}</a>
+                {% endif %}
+            {% endif %}
+
+            {% if register_link_disabled %}
+            {% elif only_sso %}
+                <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
+            {% else %}
+                {% if user_is_authenticated %}
+                {% else %}
+                <a href="{{ url('register') }}">{{ _('Sign up') }}</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>

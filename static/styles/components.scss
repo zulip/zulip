@@ -1,0 +1,103 @@
+/* Reusable, object-oriented CSS base components for all Zulip pages
+   (both webapp and portico). */
+
+.new-style label.checkbox {
+    padding: 0px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.new-style label.checkbox input[type=checkbox] {
+    display: none;
+}
+
+.new-style label.checkbox input[type=checkbox] ~ span {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+
+    padding: 2px;
+    margin: 0px 5px 0px 0px;
+    height: 10px;
+    width: 10px;
+
+    font-weight: 300;
+    line-height: 0.8;
+    font-size: 1.3rem;
+    text-align: center;
+    border: 1px solid hsla(0, 0%, 0%, 0.6);
+    color: hsl(0, 0%, 80%);
+
+    border-radius: 4px;
+    -webkit-filter: brightness(0.80);
+
+    cursor: pointer;
+}
+
+.new-style label.checkbox input[type=checkbox]:checked ~ span {
+    color: transparent;
+
+    background-image: url(/static/images/checkbox.svg);
+    background-size: 85%;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+}
+
+.new-style label.checkbox input[type=checkbox]:disabled ~ span {
+    opacity: 0.50;
+    cursor: default;
+}
+
+.new-style a.no-style {
+    color: inherit;
+}
+
+a.no-underline,
+a.no-underline:hover {
+    text-decoration: none;
+}
+
+.half-opacity {
+    opacity: 0.5;
+}
+
+.italic {
+    font-style: italic;
+}
+
+.ps--scrolling-x > .ps__rail-x > .ps__thumb-x:hover {
+    background-color: hsl(0, 0%, 38%);
+}
+
+.ps--scrolling-y > .ps__rail-y > .ps__thumb-y:hover {
+    background-color: hsl(0, 0%, 38%);
+}
+
+/* -- flex forms -- */
+.flex-row * {
+    box-sizing: border-box;
+}
+
+.flex-row input[type=text],
+.flex-row input[type=password] {
+    height: auto;
+    width: 100%;
+}
+
+.flex-row {
+    display: flex;
+}
+
+.flex-row.normal {
+    width: 500px;
+}
+
+.flex-row .field {
+    margin: 10px 10px;
+    width: 100%;
+}
+
+.flex-row .field + .field {
+    margin-left: 10px;
+}

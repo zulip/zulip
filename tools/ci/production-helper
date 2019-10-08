@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# This test installs a Zulip production environment (from the release
+# tarball from setup-production), and then runs some Nagios checks and
+# other tools to verify that everything is working properly.
+set -e
+set -x
+
+ZULIP_PATH=$(mktemp -d)
+tar -xf zulip-server-travis.tar.gz -C "$ZULIP_PATH" --strip-components=1
+
+# Do an apt upgrade to start with an up-to-date machine
+APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold')
+apt-get update
+# Hold upgrades to packages which are expensive to upgrade due to size
+# or computational cost (e.g. initramfs rebuilds) and aren't really
+# used by Zulip in production.
+apt-mark hold initramfs-tools initramfs-tools-bin oracle-java8-installer oracle-java9-installer udev base-files linux-firmware chromium-browser google-chrome-stable g++-4.8 gcc-4.8 cpp-4.8 openjdk-7-jre-headless linux-image-generic-lts-xenial
+# And hold tons more packages that aren't expensive to upgrade but
+# there are a lot of.  This is super ugly, but since Travis CI's
+# machines never update, we can avoid years of package upgrades (takes
+# ~80s to install) by doing this.
+apt-mark hold accountsservice apparmor apport apt apt-transport-https apt-utils bash bash-completion bind9-host binutils binutils-doc bsdutils bzr cloud-guest-utils cloud-init coreutils cpio dbus dnsutils dosfstools dpkg dpkg-dev e2fslibs e2fsprogs eject gcc-4.9-base git-core grub-common grub-pc grub-pc-bin grub2-common icedtea-7-plugin icedtea-netx icedtea-netx-common icu-devtools ifupdown imagemagick imagemagick-common init-system-helpers initscripts irqbalance isc-dhcp-client isc-dhcp-common klibc-utils krb5-locales krb5-multidev landscape-client landscape-common libaccountsservice0 libapparmor-perl libapparmor1 libapt-inst1.5 libapt-pkg4.12 libarchive13 libbind9-90 libblkid1 libc-bin libc-dev-bin libc6 libc6-dev libcdt5 libcgmanager0 libcgraph6 libcups2 libcurl3-gnutls libdbus-1-3 libdns100 libdpkg-perl libdrm-dev libdrm-intel1 libdrm-nouveau2 libdrm-radeon1 libdrm2 libevent-2.0-5 libexpat1 libexpat1-dev libgc1c2 libgcc1 libgcrypt11 libgcrypt11-dev libgd3 libgl1-mesa-dev libgl1-mesa-dri libgl1-mesa-glx libglapi-mesa libgnutls-dev libgnutls-openssl27 libgnutls26 libgnutlsxx27 libgraphite2-3 libgraphviz-dev libgssapi-krb5-2 libgssrpc4 libgstreamer-plugins-base1.0-0 libgtk2.0-0 libgtk2.0-common libgvc6 libgvpr2 libicu-dev libicu52 libisc95 libisccc90 libisccfg90 libjasper-dev libjasper1 libk5crypto3 libkadm5clnt-mit9 libkadm5srv-mit9 libkdb5-7 libklibc libkrb5-3 libkrb5-dev libkrb5support0 liblcms2-2 liblcms2-dev liblwres90 libmagickcore-dev libmagickcore5 libmagickcore5-extra libmagickwand-dev libmagickwand5 libmount1 libmysqlclient-dev libmysqlclient18 libnettle4 libnl-3-200 libnl-genl-3-200 libnspr4 libnss3 libnss3-nssdb libnuma1 libpam-modules libpam-modules-bin libpam-runtime libpam-systemd libpam0g libpam0g-dev libpathplan4 libpci3 libpcre3 libpcre3-dev libpcrecpp0 libpcsclite1 libpixman-1-0 libpixman-1-dev libpng12-0 libpng12-dev libpolkit-agent-1-0 libpolkit-backend-1-0 libpolkit-gobject-1-0 libpython3.4 libpython3.4-dev libpython3.4-minimal libpython3.4-stdlib librtmp-dev librtmp0 libsndfile1 libspice-server1 libss2 libssl-dev libssl1.0.0 libsystemd-daemon0 libsystemd-journal0 libsystemd-login0 libtasn1-6 libtasn1-6-dev libtdb1 libtiff5 libtiff5-dev libtiffxx5 libuuid1 libxdot4 libxml2 libxml2-dev libxpm-dev libxpm4 linux-libc-dev login lsb-base lshw makedev mesa-common-dev mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools mount multiarch-support mysql-common ntpdate openssh-client openssh-server openssh-sftp-server oracle-java9-set-default os-prober overlayroot passwd pciutils perl perl-base perl-modules pgdg-keyring policykit-1 pollinate postgresql-client postgresql-client-common postgresql-common python-apt python-apt-common python-bzrlib  python-urllib3 python3-apport python3-apt python3-distupgrade python3-gdbm python3-problem-report python3-software-properties python3-update-manager python3.4 python3.4-dev python3.4-minimal rsync scons software-properties-common sudo systemd-services sysv-rc sysvinit-utils tar tcpdump tzdata tzdata-java ubuntu-release-upgrader-core unattended-upgrades unzip update-manager-core usbutils util-linux uuid-runtime w3m xserver-xorg-video-intel
+
+if ! apt-get dist-upgrade -y "${APT_OPTIONS[@]}"; then
+    echo "\`apt-get dist-upgrade\`: Failure occured while trying to perform distribution upgrade, Retrying..."
+    apt-get dist-upgrade -y "${APT_OPTIONS[@]}"
+fi
+
+# Disable existing rabbitmq node so we can change it
+service rabbitmq-server stop
+rm -rf /var/lib/rabbitmq/mnesia/
+
+# Install Zulip
+env TRAVIS=1 "$ZULIP_PATH"/scripts/setup/install --self-signed-cert --hostname 127.0.0.1 --email zulip-travis-admin@travis.example.com
+
+cat >>/etc/zulip/settings.py <<EOF
+# Travis CI override settings above
+AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
+NOREPLY_EMAIL_ADDRESS = 'noreply@travis.example.com'
+ALLOWED_HOSTS = []
+EOF
+
+echo; echo "Now testing that the supervisord jobs are running properly"; echo
+sleep 15 # Guaranteed to have a working supervisord process get an extra digit
+if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*uptime //' | grep -q 0:00:0; then
+    set +x
+    echo
+    echo "FAILURE: Supervisor output shows daemons are crashing:"
+    echo
+    supervisorctl status
+    echo
+    echo "DEBUG: printing Zulip server's error log:"
+    cat /var/log/zulip/errors.log
+    echo
+    echo "DEBUG: printing Zulip server's workers log:"
+    cat /var/log/zulip/workers.log
+    echo
+    echo "DEBUG: printing Zulip server's tornado log:"
+    cat /var/log/zulip/tornado.log
+    exit 1
+fi
+
+# TODO: Ideally this would test actually logging in, but this is a start.
+echo; echo "Now testing that the newly installed server's homepage loads"; echo
+
+wget https://localhost -O /tmp/index.html --no-check-certificate -S 2> /tmp/wget-output || true # || true so we see errors.log if this 500s
+grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output > /tmp/http-headers-processed
+
+# Simplify the diff by getting replacing 4-5 digit length numbers with <Length>.
+sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/http-headers-processed
+sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' ~/success-http-headers.txt
+if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
+    set +x
+    echo
+    echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
+    echo "Displaying the contents of the server's error log:"
+    echo
+    cat /var/log/zulip/errors.log
+    echo
+    echo "Displaying the contents of the main server log:"
+    echo
+    cat /var/log/zulip/server.log
+    exit 1
+fi
+
+# Start the RabbitMQ queue worker related section
+echo; echo "Now confirming all the RabbitMQ queue processors are correctly registered!"; echo
+# These hacky shell scripts just extract the sorted list of queue processors, running and expected
+supervisorctl status | cut -f1 -dR | cut -f2- -d: | grep events | cut -f1 -d" " | cut -f3- -d_ | cut -f1 -d- | sort -u > /tmp/running_queue_processors.txt
+su zulip -c /home/zulip/deployments/current/scripts/lib/queue_workers.py | grep -v ^test$ | sort -u > /tmp/expected_queue_processors.txt
+if ! diff /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt >/dev/null; then
+    set +x
+    echo "FAILURE: Runnable queue processors declared in zerver/worker/queue_processors.py "
+    echo "do not match those in puppet/manifests/zulip/base.pp"
+    echo "See https://zulip.readthedocs.io/en/latest/subsystems/queuing.html for details."
+    echo
+    diff -ur /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt
+    exit 1
+fi
+
+echo; echo "Now running RabbitMQ consumer Nagios tests"; echo
+# First run the check that usually runs in cron and populates the state files
+/home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers
+
+# Then, compute the list of all Django queue workers to run Nagios checks against
+consumer_list=$(/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue-type=consumer)
+for consumer in $consumer_list; do
+    if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_rabbitmq_consumers "$consumer"; then
+        set +x
+        echo
+        echo "FAILURE: Missing Nagios consumer for $consumer; displaying full consumer output:"
+        rabbitmqctl list_consumers
+        supervisorctl status
+        echo "EVENTS LOGS"
+        echo
+        cat /var/log/zulip/events*.log
+        echo
+        exit 1
+    fi
+done
+
+# Some of the Nagios tests have been temporarily disabled to work
+# around a Travis CI infrastructure issue.
+echo; echo "Now running additional Nagios tests"; echo
+if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors || \
+   ! su zulip -c /usr/lib/nagios/plugins/zulip_postgres_appdb/check_fts_update_log; then # || \
+#   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure" || \
+#   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --websocket --insecure"; then
+    set +x
+    echo
+    echo "FAILURE: Nagios checks don't pass:"
+    echo
+    echo "DEBUG: printing Zulip server's error log:"
+    cat /var/log/zulip/errors.log
+    exit 1
+fi
+echo "Production installation test successful!"
+exit 0

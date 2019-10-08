@@ -5,8 +5,7 @@ from tools.lib.capitalization import check_capitalization, is_capitalized, \
     get_safe_text
 
 class GetSafeTextTestCase(TestCase):
-    def test_get_safe_text(self):
-        # type: () -> None
+    def test_get_safe_text(self) -> None:
         string = ('Messages in __page_params.product_name__ go to a '
                   'stream and have a topic.')
         safe_text = get_safe_text(string)
@@ -71,8 +70,7 @@ class GetSafeTextTestCase(TestCase):
         self.assertEqual(safe_text, 'One two etc_ three. four')
 
 class IsCapitalizedTestCase(TestCase):
-    def test_process_text(self):
-        # type: () -> None
+    def test_process_text(self) -> None:
         string = "Zulip zulip. Zulip some text!"
         capitalized = is_capitalized(string)
         self.assertTrue(capitalized)
@@ -123,8 +121,7 @@ class IsCapitalizedTestCase(TestCase):
         self.assertTrue(capitalized)
 
 class CheckCapitalizationTestCase(TestCase):
-    def test_check_capitalization(self):
-        # type: () -> None
+    def test_check_capitalization(self) -> None:
         strings = ["Zulip Zulip. Zulip some text!",
                    "Zulip Zulip? Zulip some text!",
                    "Zulip Zulip! Zulip some text!",
@@ -132,12 +129,14 @@ class CheckCapitalizationTestCase(TestCase):
                    "Some number 25MiB",
                    "Not Ignored Phrase",
                    "Not ignored phrase",
+                   "Some text with realm in it",
+                   "Realm in capital case",
                    ('<p class="bot-settings-note padded-container"> Looking for our '
                     '<a href="/integrations" target="_blank">Integrations</a> or '
-                    '<a href="{{ server_uri }}/api" target="_blank">API</a> '
+                    '<a href="/api" target="_blank">API</a> '
                     'documentation? </p>'),
                    ]
-        errored, ignored = check_capitalization(strings)
+        errored, ignored, banned = check_capitalization(strings)
         self.assertEqual(errored, ['Not Ignored Phrase'])
         self.assertEqual(
             ignored,
@@ -148,6 +147,16 @@ class CheckCapitalizationTestCase(TestCase):
                     "Some number 25MiB",
                     ('<p class="bot-settings-note padded-container"> Looking '
                      'for our <a href="/integrations" target="_blank">'
-                     'Integrations</a> or <a href="{{ server_uri }}/api" '
+                     'Integrations</a> or <a href="/api" '
                      'target="_blank">API</a> documentation? </p>'),
                     ]))
+
+        self.assertEqual(banned,
+                         sorted(["realm found in 'Some text with realm in it'. "
+                                 "The term realm should not appear in user-facing "
+                                 "strings. Use organization instead.",
+
+                                 "realm found in 'Realm in capital case'. "
+                                 "The term realm should not appear in user-facing "
+                                 "strings. Use organization instead.",
+                                 ]))

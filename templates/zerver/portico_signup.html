@@ -4,5 +4,5 @@
 
 {% block customhead %}
 {{ super() }}
-{{ minified_js('signup')|safe }}
+{{ render_bundle('signup') }}
 {% endblock %}

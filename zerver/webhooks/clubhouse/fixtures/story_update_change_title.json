@@ -1,0 +1,23 @@
+{
+    "id":"5b295e00-4bff-401e-ac41-23408c878ec9",
+    "changed_at":"2018-06-19T19:48:16.817Z",
+    "primary_id":11,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":11,
+            "entity_type":"story",
+            "action":"update",
+            "name":"Add super cool feature!",
+            "story_type":"bug",
+            "app_url":"https://app.clubhouse.io/zulip/story/11",
+            "changes":{
+                "name":{
+                    "new":"Add super cool feature!",
+                    "old":"Add cool feature!"
+                }
+            }
+        }
+    ]
+}

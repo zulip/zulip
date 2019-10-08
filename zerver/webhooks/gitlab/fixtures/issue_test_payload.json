@@ -1,0 +1,68 @@
+{
+    "object_kind":"issue",
+    "user":{
+        "name":"Eeshan Garg",
+        "username":"eeshangarg",
+        "avatar_url":"https://secure.gravatar.com/avatar/cd181af88d928dab53c55600c9f7551d?s=80\u0026d=identicon"
+    },
+    "project":{
+        "name":"public-repo",
+        "description":null,
+        "web_url":"https://gitlab.com/eeshangarg/public-repo",
+        "avatar_url":null,
+        "git_ssh_url":"git@gitlab.com:eeshangarg/public-repo.git",
+        "git_http_url":"https://gitlab.com/eeshangarg/public-repo.git",
+        "namespace":"eeshangarg",
+        "visibility_level":0,
+        "path_with_namespace":"eeshangarg/public-repo",
+        "default_branch":"changes",
+        "ci_config_path":null,
+        "homepage":"https://gitlab.com/eeshangarg/public-repo",
+        "url":"git@gitlab.com:eeshangarg/public-repo.git",
+        "ssh_url":"git@gitlab.com:eeshangarg/public-repo.git",
+        "http_url":"https://gitlab.com/eeshangarg/public-repo.git"
+    },
+    "object_attributes":{
+        "id":7755253,
+        "title":"New issue that needs to be fixed",
+        "assignee_id":null,
+        "author_id":1129123,
+        "project_id":3319013,
+        "created_at":"2017-11-15T02:35:38.035Z",
+        "updated_at":"2017-11-15T02:46:32.196Z",
+        "branch_name":null,
+        "description":"",
+        "milestone_id":null,
+        "state":"opened",
+        "iid":1,
+        "updated_by_id":1129123,
+        "weight":null,
+        "confidential":false,
+        "moved_to_id":null,
+        "deleted_at":null,
+        "due_date":null,
+        "lock_version":null,
+        "time_estimate":0,
+        "relative_position":1073742323,
+        "service_desk_reply_to":null,
+        "closed_at":null,
+        "last_edited_at":null,
+        "last_edited_by_id":null,
+        "discussion_locked":null,
+        "total_time_spent":0,
+        "human_total_time_spent":null,
+        "human_time_estimate":null,
+        "assignee_ids":[
+
+        ]
+    },
+    "labels":[
+
+    ],
+    "repository":{
+        "name":"public-repo",
+        "url":"git@gitlab.com:eeshangarg/public-repo.git",
+        "description":null,
+        "homepage":"https://gitlab.com/eeshangarg/public-repo"
+    }
+}

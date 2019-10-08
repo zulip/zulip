@@ -4,49 +4,105 @@
 {# This is where we pitch the app and solicit signups. #}
 
 {% block portico_content %}
-<script type="text/javascript">
+<script>
 $(function () {
-    autofocus('#email');
+    common.autofocus('#email');
 });
 </script>
-<div class="app register-page">
-    <div class="app-main register-page-container">
-        <div class="center-container">
-            <div class="center-block">
-                <div class="register-form">
-                    <p class="lead">
-                        <div class="register-page-header">{{ _("Let's get started") }}…</div>
-                    </p>
-                    <form class="form-inline" id="send_confirm" name="email_form"
-                        action="{{ current_url() }}" method="post">
-                        {{ csrf_input }}
-                        <input type="text" class="email required" placeholder="{{ _("Enter your work email address") }}"
-                               id="email" name="email"/>
-                        <input type="submit" class="button btn btn-primary btn-large register-button" value="{{ _("Sign up") }}"/>
-                    </form>
-                    <div id="errors"></div>
-                    {% if form.email.errors %}
-                        {% for error in form.email.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
 
-                    <div class="alert alert-pitch" id="company-email">{% trans %}Please use your
-                        company email address to sign up. Otherwise, we won’t be able to
-                    connect you with your coworkers.{% endtrans %}</div>
-                    {% if google_auth_enabled %}
-                    <div class="register-google">
-                        <a href="{{ url('zerver.views.auth.start_google_oauth2') }}" class="zocial google register-google-button">{{ _("Sign up with Google") }}</a>
+<div class="app register-page split-view flex full-page new-style">
+    <div class="inline-block">
+        <div class="lead">
+            <h1 class="get-started">{{ _("Sign up for Zulip") }}</h1>
+        </div>
+        <div class="app-main register-page-container white-box {% if realm_invite_required and not from_multiuse_invite %}closed-realm{% endif %}">
+            <div class="register-form new-style">
+                {% if realm_name %}
+                <div class="left-side">
+                    <div class="org-header">
+                        <img class="avatar" src="{{ realm_icon }}" alt="" />
+                        <div class="info-box">
+                            <div class="organization-name">{{ realm_name }}</div>
+                            <div class="organization-path">{{ realm_uri }}</div>
+                        </div>
                     </div>
+                    <div class="description">
+                        {{ realm_description|safe }}
+                    </div>
+
+                    <div class="invite-required">
+                        <hr />
+                        <i class="fa fa-lock"></i>{{ _("You need an invitation to join this organization.") }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="right-side">
+                    {% if no_auth_enabled %}
+                        <div class="alert">
+                            <p>No authentication backends are enabled on this
+                            server yet, so it is impossible to register!</p>
+
+                            <p>
+                                See
+                                the <a href="https://zulip.readthedocs.io/en/latest/production/install.html#step-3-configure-zulip">Zulip
+                                authentication documentation</a> to learn how to
+                                configure authentication backends.
+                            </p>
+                        </div>
+                    {% else %}
+                        {% if password_auth_enabled %}
+                            <form class="form-inline" id="send_confirm" name="email_form"
+                              action="{{ current_url() }}" method="post">
+                                {{ csrf_input }}
+
+                                <div class="input-box no-validate">
+                                    <input type="email" id="email" class="email" name="email" value="" required />
+                                    <label for="email">Email</label>
+                                    <div class="alert alert-error email-frontend-error"></div>
+                                    {% if form.email.errors %}
+                                        {% for error in form.email.errors %}
+                                        <div class="email-backend-error alert alert-error">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+
+                                <button class="full-width" type="submit">{{ _('Sign up') }}</button>
+                            </form>
+
+                            {% if any_oauth_backend_enabled %}
+                            <div class="or"><span>{{ _('OR') }}</span></div>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if google_auth_enabled %}
+                        <div class="login-social">
+                            <form class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
+                                <input type='hidden' name='is_signup' value='1' />
+                                <button class="login-social-button login-google-button full-width">
+                                    {{ _('Sign up with %(identity_provider)s', identity_provider="Google") }}
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+
+                        {% if github_auth_enabled %}
+                        <div class="login-social">
+                            <form class="form-inline github-wrapper" action="{{ url('signup-social', args=('github',)) }}" method="get">
+                                <button class="login-social-button full-width">
+                                    {{ _('Sign up with %(identity_provider)s', identity_provider="GitHub") }}
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
-    <div class="footer-padder"></div>
 </div>
 
-<script type="text/javascript">
+<script>
 if (window.location.hash.substring(0, 1) === "#") {
     document.email_form.action += window.location.hash;
 }

@@ -11,7 +11,9 @@ EOF
 
 sh "$(dirname "$0")/../scripts/setup/flush-memcached"
 
+./manage.py purge_queue --all
 ./manage.py migrate --noinput
+./manage.py get_migration_status --settings=zproject.settings --output="migration_status_dev"
 ./manage.py createcachetable third_party_api_results
 ./manage.py populate_db -n100 --threads=1
 # Ensure that the local user's API key is synced from ~/.zuliprc

@@ -1,2 +1,0 @@
-#!/bin/sh
-env KRB5CCNAME=/tmp/krb5cc_1000.tmp kinit -k -t /home/zulip/tabbott.extra.keytab tabbott/extra@ATHENA.MIT.EDU; mv /tmp/krb5cc_1000.tmp /tmp/krb5cc_1000

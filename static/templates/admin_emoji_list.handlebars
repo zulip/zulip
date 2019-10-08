@@ -1,10 +1,14 @@
 {{#with emoji}}
 <tr class="emoji_row" id="emoji_{{name}}">
     <td>
-        <span class="emoji_name">{{name}}</span>
+        <span class="emoji_name">{{display_name}}</span>
     </td>
     <td>
-        <span class="emoji_image"><a href="{{source_url}}"><img src="{{display_url}}" alt="{{name}}" /></a></span>
+        <span class="emoji_image">
+            <a href="{{source_url}}" target="_blank">
+                <img src="{{source_url}}" alt="{{display_name}}" />
+            </a>
+        </span>
     </td>
     <td>
         {{#if author}}
@@ -13,12 +17,10 @@
         <span class="emoji_author">Unknown Author</span>
         {{/if}}
     </td>
-    {{#if is_admin}}
     <td>
-        <button class="button delete btn-danger" data-emoji-name="{{name}}">
-            {{t "Delete" }}
+        <button class="button rounded small delete btn-danger" {{#unless can_admin_emoji}}disabled="disabled"{{/unless}} data-emoji-name="{{name}}">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
     </td>
-    {{/if}}
 </tr>
 {{/with}}

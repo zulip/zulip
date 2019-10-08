@@ -1,17 +1,13 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
+import sys
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
-from optparse import make_option
-
-from django.core.management.base import BaseCommand
-from zerver.models import RealmFilter, all_realm_filters, get_realm
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
-import sys
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import all_realm_filters
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Create a link filter rule for the specified realm.
 
 NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
@@ -20,18 +16,13 @@ NOTE: Regexes must be simple enough that they can be easily translated to JavaSc
       * Named groups will be converted to numbered groups automatically
       * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
 
-Example: ./manage.py realm_filters --realm=zulip --op=add '#(?P<id>[0-9]{2,8})' 'https://trac.humbughq.com/ticket/%(id)s'
+Example: ./manage.py realm_filters --realm=zulip --op=add '#(?P<id>[0-9]{2,8})' \
+    'https://support.example.com/ticket/%(id)s'
 Example: ./manage.py realm_filters --realm=zulip --op=remove '#(?P<id>[0-9]{2,8})'
 Example: ./manage.py realm_filters --realm=zulip --op=show
 """
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
-        parser.add_argument('-r', '--realm',
-                            dest='string_id',
-                            type=str,
-                            required=True,
-                            help='The subdomain or string_id of the realm to adjust filters for.')
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--op',
                             dest='op',
                             type=str,
@@ -41,10 +32,11 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
                             help="regular expression to match")
         parser.add_argument('url_format_string', metavar='<url pattern>', type=str, nargs='?',
                             help="format string to substitute")
+        self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
-        realm = get_realm(options["string_id"])
+    def handle(self, *args: Any, **options: str) -> None:
+        realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
             print("%s: %s" % (realm.string_id, all_realm_filters().get(realm.id, [])))
             sys.exit(0)

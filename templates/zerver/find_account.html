@@ -1,0 +1,58 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<div class="app find-account-page flex full-page">
+    <div class="inline-block new-style">
+        <div class="lead">
+            <h1 class="get-started">{{ _("Find your Zulip accounts") }}…</h1>
+        </div>
+
+        <div class="app-main find-account-page-container white-box">
+            {% if emails %}
+            <div id="results">
+                <p>
+                    Emails sent! You will only receive emails at addresses associated
+                    with Zulip organizations. The addresses entered on the previous page
+                    are listed below:
+                </p>
+
+                <ul>
+                    {% for email in emails %}
+                    <li>{{ email }}</li>
+                    {% endfor %}
+                </ul>
+
+                {% include 'zerver/dev_env_email_access_details.html' %}
+
+            </div>
+            {% else %}
+            <div class="find-account-form">
+                <p>
+                    We will send you an email with the sign-in information for
+                    any Zulip organization(s) associated with the addresses you enter below.
+                </p>
+                <form class="form-inline" id="find_account" name="email_form"
+                  action="{{ current_url() }}" method="post">
+                    {{ csrf_input }}
+                    <div class="input-box moving-label horizontal">
+                        <div class="inline-block relative">
+                            <input type="text" autofocus id="emails" name="emails" required />
+                            <label for="id_username">{{ _('Email addresses') }}</label>
+                        </div>
+                        <button type="submit">{{ _('Find accounts') }}</button>
+                    </div>
+                    <div><i>{{ form.emails.help_text }}</i></div>
+                </form>
+                <div id="errors"></div>
+                {% if form.emails.errors %}
+                    {% for error in form.emails.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

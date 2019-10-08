@@ -1,0 +1,144 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ render_bundle('integrations') }}
+{% endblock %}
+
+{% block hello_page_container %} hello-main{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+{% include 'zerver/gradients.html' %}
+
+<div class="portico-landing integrations">
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+
+                <div id="integration-main-text">
+                    <header>
+                        <h1 class="portico-page-heading">
+                            {% trans %}Over {{integrations_count_display}} native integrations.{% endtrans %}
+                        </h1>
+                    </header>
+                    <h2 class="portico-page-subheading">
+                        {% trans %}
+                        And hundreds more through
+                        <a href="/integrations/doc/hubot">Hubot</a>,
+                        <a href="/integrations/doc/zapier">Zapier</a>,
+                        and
+                        <a href="/integrations/doc/ifttt">IFTTT</a>.
+                        {% endtrans %}
+                    </h2>
+                </div>
+
+                <div id="integration-search">
+                    <div class="searchbar">
+                        <div class="searchbar-reset">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                            <input type="text" placeholder="{{ _('Search integrations') }}"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="integration-categories-dropdown">
+                    <div class="dropdown-toggle">
+                        <h3 class="dropdown-category-label">{% trans %}Filter by category{% endtrans %}</h3>
+                        <i class="fa fa-angle-down" aria-hidden="true"></i>
+                    </div>
+                    <div class="dropdown-list">
+                        <a href="/integrations">
+                            <h4 class="integration-category selected" data-category="all">All</h4>
+                        </a>
+                        {% for category in categories_dict.keys() %}
+                        <a href="/integrations/{{ category }}">
+                            <h4 class="integration-category" data-category="{{ category }}">
+                                {{ categories_dict[category] }}
+                            </h4>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="catalog">
+                    <div class="integration-categories-sidebar">
+                        <h3>{% trans %}Categories{% endtrans %}</h3>
+                        <a href="/integrations">
+                            <h4 data-category="all" class="integration-category selected">{% trans %}All{% endtrans %}</h4>
+                        </a>
+                        {% for category in categories_dict.keys() %}
+                        <a href="/integrations/{{ category }}">
+                            <h4 data-category="{{ category }}" class="integration-category">
+                                {{ categories_dict[category] }}
+                            </h4>
+                        </a>
+                        {% endfor %}
+                    </div>
+
+                    <div class="integration-lozenges">
+                        {% for integration in integrations_dict.values() %}
+                            {% if integration.is_enabled() %}
+                            <a href="/integrations/doc/{{ integration.name }}">
+                                <div
+                                  {% if integration.legacy %}
+                                  class="integration-lozenge integration-{{ integration.name }} legacy"{% else %}
+                                  class="integration-lozenge integration-{{ integration.name }}"
+                                  {% endif %}
+                                  data-categories="{{ integration.categories }}"
+                                  data-name="{{ integration.name }}">
+                                    <img class="integration-logo" src="/{{ integration.logo }}"
+                                      alt="{{ integration.display_name }} logo"/>
+                                    {% if integration.secondary_line_text %}
+                                    <h3 class="integration-name with-secondary">{{ integration.display_name }}</h3>
+                                    <h4 class="integration-secondary-line-text">
+                                        {{ integration.secondary_line_text }}
+                                    </h4>
+                                    {% else %}
+                                    <h3 class="integration-name">{{ integration.display_name }}</h3>
+                                    {% endif %}
+                                    <h4 class="integration-category">{{ integration.categories[0] }}</h4>
+                                </div>
+                            </a>
+                            {% endif %}
+                        {% endfor %}
+                        <a href="https://zulipchat.com/api/integrations-overview">
+                            <div class="integration-lozenge integration-create-your-own">
+                                <div class="integration-logo">
+                                    <i class="fa fa-plus" aria-hidden="true"></i>
+                                </div>
+                                <h3 class="integration-name create-your-own">{% trans %}Create your own!{% endtrans %}</h3>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="integration-instructions-group">
+                    <div id="integration-instruction-block" class="integration-instruction-block">
+                        <a href="/integrations" id="integration-list-link" class="no-underline"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i><span>Back to list</span></a>
+                        <h3 class="name">Name</h3>
+                        <div class="categories"></div>
+                    </div>
+
+                    {% for integration in integrations_dict.values() %}
+                        {% if integration.is_enabled() %}
+                        <div id={{ integration.name }} class="integration-instructions">
+                            <div class="help-content"></div>
+                            <p style="font-size:11px; font-style:italic;">
+                                Logos are trademarks of their respective owners.
+                                None of the integrations on this page are created by,
+                                affiliated with, or supported by the companies
+                                represented by the logos.
+                            </p>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            </div> <!-- .inner-content -->
+        </div> <!-- .padded-content -->
+    </div> <!-- .main -->
+</div> <!-- .portico-landing -->
+
+{% endblock %}

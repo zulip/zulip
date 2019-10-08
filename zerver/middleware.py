@@ -1,37 +1,40 @@
-from __future__ import absolute_import
 
-from six import binary_type
-from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Text
-
-from django.conf import settings
-from django.core.exceptions import DisallowedHost
-from django.utils.translation import ugettext as _
-
-from zerver.lib.response import json_error
-from zerver.lib.request import JsonableError
-from django.db import connection
-from django.http import HttpRequest, HttpResponse
-from zerver.lib.utils import statsd, get_subdomain
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
-from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import flush_per_request_caches, get_realm
-from zerver.exceptions import RateLimited
-from django.contrib.sessions.middleware import SessionMiddleware
-from django.views.csrf import csrf_failure as html_csrf_failure
-from django.utils.cache import patch_vary_headers
-from django.utils.http import cookie_date
-from django.shortcuts import redirect, render
-
+import cProfile
 import logging
 import time
-import cProfile
 import traceback
+from typing import Any, AnyStr, Callable, Dict, \
+    Iterable, List, MutableMapping, Optional
+
+from bs4 import BeautifulSoup
+from django.conf import settings
+from django.contrib.sessions.backends.base import UpdateError
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.core.exceptions import DisallowedHost, SuspiciousOperation
+from django.db import connection
+from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
+from django.shortcuts import redirect, render
+from django.utils.cache import patch_vary_headers
+from django.utils.deprecation import MiddlewareMixin
+from django.utils.http import cookie_date
+from django.utils.translation import ugettext as _
+from django.views.csrf import csrf_failure as html_csrf_failure
+
+from zerver.lib.bugdown import get_bugdown_requests, get_bugdown_time
+from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
+from zerver.lib.debug import maybe_tracemalloc_listen
+from zerver.lib.db import reset_queries
+from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
+from zerver.lib.queue import queue_json_publish
+from zerver.lib.response import json_error, json_response_from_error
+from zerver.lib.subdomains import get_subdomain
+from zerver.lib.utils import statsd
+from zerver.lib.types import ViewFuncT
+from zerver.models import Realm, flush_per_request_caches, get_realm
 
 logger = logging.getLogger('zulip.requests')
 
-def record_request_stop_data(log_data):
-    # type: (MutableMapping[str, Any]) -> None
+def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['time_stopped'] = time.time()
     log_data['remote_cache_time_stopped'] = get_remote_cache_time()
     log_data['remote_cache_requests_stopped'] = get_remote_cache_requests()
@@ -40,12 +43,10 @@ def record_request_stop_data(log_data):
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
 
-def async_request_stop(request):
-    # type: (HttpRequest) -> None
+def async_request_timer_stop(request: HttpRequest) -> None:
     record_request_stop_data(request._log_data)
 
-def record_request_restart_data(log_data):
-    # type: (MutableMapping[str, Any]) -> None
+def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].enable()
     log_data['time_restarted'] = time.time()
@@ -54,42 +55,38 @@ def record_request_restart_data(log_data):
     log_data['bugdown_time_restarted'] = get_bugdown_time()
     log_data['bugdown_requests_restarted'] = get_bugdown_requests()
 
-def async_request_restart(request):
-    # type: (HttpRequest) -> None
+def async_request_timer_restart(request: HttpRequest) -> None:
     if "time_restarted" in request._log_data:
         # Don't destroy data when being called from
         # finish_current_handler
         return
     record_request_restart_data(request._log_data)
 
-def record_request_start_data(log_data):
-    # type: (MutableMapping[str, Any]) -> None
+def record_request_start_data(log_data: MutableMapping[str, Any]) -> None:
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"] = cProfile.Profile()
         log_data["prof"].enable()
 
+    reset_queries()
     log_data['time_started'] = time.time()
     log_data['remote_cache_time_start'] = get_remote_cache_time()
     log_data['remote_cache_requests_start'] = get_remote_cache_requests()
     log_data['bugdown_time_start'] = get_bugdown_time()
     log_data['bugdown_requests_start'] = get_bugdown_requests()
 
-def timedelta_ms(timedelta):
-    # type: (float) -> float
+def timedelta_ms(timedelta: float) -> float:
     return timedelta * 1000
 
-def format_timedelta(timedelta):
-    # type: (float) -> str
+def format_timedelta(timedelta: float) -> str:
     if (timedelta >= 1):
         return "%.1fs" % (timedelta)
     return "%.0fms" % (timedelta_ms(timedelta),)
 
-def is_slow_query(time_delta, path):
-    # type: (float, Text) -> bool
+def is_slow_query(time_delta: float, path: str) -> bool:
     if time_delta < 1.2:
         return False
     is_exempt = \
-        path in ["/activity", "/json/report_error",
+        path in ["/activity", "/json/report/error",
                  "/api/v1/deployments/report_error"] \
         or path.startswith("/realm_activity/") \
         or path.startswith("/user_activity/")
@@ -99,9 +96,9 @@ def is_slow_query(time_delta, path):
         return time_delta >= 10
     return True
 
-def write_log_line(log_data, path, method, remote_ip, email, client_name,
-                   status_code=200, error_content=None, error_content_iter=None):
-    # type: (MutableMapping[str, Any], Text, str, str, Text, Text, int, Optional[AnyStr], Optional[Iterable[AnyStr]]) -> None
+def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str, email: str,
+                   client_name: str, status_code: int=200, error_content: Optional[AnyStr]=None,
+                   error_content_iter: Optional[Iterable[AnyStr]]=None) -> None:
     assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
@@ -112,10 +109,10 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     else:
         statsd_path = u"webreq.%s" % (path[1:].replace('/', '.'),)
         # Remove non-ascii chars from path (there should be none, if there are it's
-        # because someone manually entered a nonexistant path), as UTF-8 chars make
+        # because someone manually entered a nonexistent path), as UTF-8 chars make
         # statsd sad when it sends the key name over the socket
         statsd_path = statsd_path.encode('ascii', errors='ignore').decode("ascii")
-    blacklisted_requests = ['do_confirm', 'send_confirm',
+    blacklisted_requests = ['do_confirm', 'signup_send_confirm', 'new_realm_send_confirm,'
                             'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
                             'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
                             'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',
@@ -207,7 +204,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         logger.info(logger_line)
 
     if (is_slow_query(time_delta, path)):
-        queue_json_publish("slow_queries", "%s (%s)" % (logger_line, email), lambda e: None)
+        queue_json_publish("slow_queries", "%s (%s)" % (logger_line, email))
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
@@ -220,27 +217,25 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         error_content_list = list(error_content_iter)
         if error_content_list:
             error_data = u''
-        elif isinstance(error_content_list[0], Text):
+        elif isinstance(error_content_list[0], str):
             error_data = u''.join(error_content_list)
-        elif isinstance(error_content_list[0], binary_type):
+        elif isinstance(error_content_list[0], bytes):
             error_data = repr(b''.join(error_content_list))
         if len(error_data) > 100:
             error_data = u"[content more than 100 characters]"
         logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, email))
 
-class LogRequests(object):
+class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
     # for some views, process_view isn't run, so we call the start
     # method here too
-    def process_request(self, request):
-        # type: (HttpRequest) -> None
+    def process_request(self, request: HttpRequest) -> None:
+        maybe_tracemalloc_listen()
         request._log_data = dict()
         record_request_start_data(request._log_data)
-        if connection.connection is not None:
-            connection.connection.queries = []
 
-    def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
+    def process_view(self, request: HttpRequest, view_func: ViewFuncT,
+                     args: List[str], kwargs: Dict[str, Any]) -> None:
         # process_request was already run; we save the initialization
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
@@ -249,11 +244,9 @@ class LogRequests(object):
         # And then completely reset our tracking to only cover work
         # done as part of this request
         record_request_start_data(request._log_data)
-        if connection.connection is not None:
-            connection.connection.queries = []
 
-    def process_response(self, request, response):
-        # type: (HttpRequest, HttpResponse) -> HttpResponse
+    def process_response(self, request: HttpRequest,
+                         response: StreamingHttpResponse) -> StreamingHttpResponse:
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
         if remote_ip is None:
@@ -281,75 +274,80 @@ class LogRequests(object):
                        error_content=content, error_content_iter=content_iter)
         return response
 
-class JsonErrorHandler(object):
-    def process_exception(self, request, exception):
-        # type: (HttpRequest, Any) -> Optional[HttpResponse]
-        if hasattr(exception, 'to_json_error_msg') and callable(exception.to_json_error_msg):
-            try:
-                status_code = exception.status_code
-            except Exception:
-                logging.warning("Jsonable exception %s missing status code!" % (exception,))
-                status_code = 400
-            return json_error(exception.to_json_error_msg(), status=status_code)
+class JsonErrorHandler(MiddlewareMixin):
+    def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
+        if isinstance(exception, JsonableError):
+            return json_response_from_error(exception)
         if request.error_format == "JSON":
-            logging.error(traceback.format_exc())
+            logging.error(traceback.format_exc(), extra=dict(request=request))
             return json_error(_("Internal server error"), status=500)
         return None
 
-class TagRequests(object):
-    def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
+class TagRequests(MiddlewareMixin):
+    def process_view(self, request: HttpRequest, view_func: ViewFuncT,
+                     args: List[str], kwargs: Dict[str, Any]) -> None:
         self.process_request(request)
 
-    def process_request(self, request):
-        # type: (HttpRequest) -> None
+    def process_request(self, request: HttpRequest) -> None:
         if request.path.startswith("/api/") or request.path.startswith("/json/"):
             request.error_format = "JSON"
         else:
             request.error_format = "HTML"
 
-def csrf_failure(request, reason=""):
-    # type: (HttpRequest, Optional[Text]) -> HttpResponse
+class CsrfFailureError(JsonableError):
+    http_status_code = 403
+    code = ErrorCode.CSRF_FAILED
+    data_fields = ['reason']
+
+    def __init__(self, reason: str) -> None:
+        self.reason = reason  # type: str
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("CSRF Error: {reason}")
+
+def csrf_failure(request: HttpRequest, reason: str="") -> HttpResponse:
     if request.error_format == "JSON":
-        return json_error(_("CSRF Error: %s") % (reason,), status=403)
+        return json_response_from_error(CsrfFailureError(reason))
     else:
         return html_csrf_failure(request, reason)
 
-class RateLimitMiddleware(object):
-    def process_response(self, request, response):
-        # type: (HttpRequest, HttpResponse) -> HttpResponse
+class RateLimitMiddleware(MiddlewareMixin):
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         if not settings.RATE_LIMITING:
             return response
 
-        from zerver.lib.rate_limiter import max_api_calls
+        from zerver.lib.rate_limiter import max_api_calls, RateLimitedUser
         # Add X-RateLimit-*** headers
         if hasattr(request, '_ratelimit_applied_limits'):
-            response['X-RateLimit-Limit'] = max_api_calls(request.user)
+            entity = RateLimitedUser(request.user)
+            response['X-RateLimit-Limit'] = str(max_api_calls(entity))
             if hasattr(request, '_ratelimit_secs_to_freedom'):
-                response['X-RateLimit-Reset'] = int(time.time() + request._ratelimit_secs_to_freedom)
+                response['X-RateLimit-Reset'] = str(int(time.time() + request._ratelimit_secs_to_freedom))
             if hasattr(request, '_ratelimit_remaining'):
-                response['X-RateLimit-Remaining'] = request._ratelimit_remaining
+                response['X-RateLimit-Remaining'] = str(request._ratelimit_remaining)
         return response
 
-    def process_exception(self, request, exception):
-        # type: (HttpRequest, Exception) -> HttpResponse
+    def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
         if isinstance(exception, RateLimited):
-            resp = json_error(_("API usage exceeded rate limit, try again in %s secs") % (
-                              request._ratelimit_secs_to_freedom,), status=429)
+            resp = json_error(
+                _("API usage exceeded rate limit"),
+                data={'retry-after': request._ratelimit_secs_to_freedom},
+                status=429
+            )
             resp['Retry-After'] = request._ratelimit_secs_to_freedom
             return resp
+        return None
 
-class FlushDisplayRecipientCache(object):
-    def process_response(self, request, response):
-        # type: (HttpRequest, HttpResponse) -> HttpResponse
+class FlushDisplayRecipientCache(MiddlewareMixin):
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         # We flush the per-request caches after every request, so they
         # are not shared at all between requests.
         flush_per_request_caches()
         return response
 
 class SessionHostDomainMiddleware(SessionMiddleware):
-    def process_response(self, request, response):
-        # type: (HttpRequest, HttpResponse) -> HttpResponse
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         try:
             request.get_host()
         except DisallowedHost:
@@ -360,55 +358,116 @@ class SessionHostDomainMiddleware(SessionMiddleware):
             # just return here.
             return response
 
-        if settings.REALMS_HAVE_SUBDOMAINS:
-            if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
-                    not request.path.startswith("/json/")):
-                subdomain = get_subdomain(request)
-                if (request.get_host() == "127.0.0.1:9991" or request.get_host() == "localhost:9991"):
-                    return redirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
-                                              settings.EXTERNAL_HOST))
-                if subdomain != "":
-                    realm = get_realm(subdomain)
-                    if (realm is None):
-                        return render(request, "zerver/invalid_realm.html")
+        if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
+                not request.path.startswith("/json/")):
+            subdomain = get_subdomain(request)
+            if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+                realm = get_realm(subdomain)
+                if (realm is None):
+                    return render(request, "zerver/invalid_realm.html")
         """
         If request.session was modified, or if the configuration is to save the
-        session every time, save the changes and set a session cookie.
+        session every time, save the changes and set a session cookie or delete
+        the session cookie if the session has been emptied.
         """
         try:
             accessed = request.session.accessed
             modified = request.session.modified
+            empty = request.session.is_empty()
         except AttributeError:
             pass
         else:
-            if accessed:
-                patch_vary_headers(response, ('Cookie',))
-            if modified or settings.SESSION_SAVE_EVERY_REQUEST:
-                if request.session.get_expire_at_browser_close():
-                    max_age = None
-                    expires = None
-                else:
-                    max_age = request.session.get_expiry_age()
-                    expires_time = time.time() + max_age
-                    expires = cookie_date(expires_time)
-                # Save the session data and refresh the client cookie.
-                # Skip session save for 500 responses, refs #3881.
-                if response.status_code != 500:
-                    request.session.save()
-                    host = request.get_host().split(':')[0]
+            # First check if we need to delete this cookie.
+            # The session should be deleted only if the session is entirely empty
+            if settings.SESSION_COOKIE_NAME in request.COOKIES and empty:
+                response.delete_cookie(
+                    settings.SESSION_COOKIE_NAME,
+                    path=settings.SESSION_COOKIE_PATH,
+                    domain=settings.SESSION_COOKIE_DOMAIN,
+                )
+            else:
+                if accessed:
+                    patch_vary_headers(response, ('Cookie',))
+                if (modified or settings.SESSION_SAVE_EVERY_REQUEST) and not empty:
+                    if request.session.get_expire_at_browser_close():
+                        max_age = None
+                        expires = None
+                    else:
+                        max_age = request.session.get_expiry_age()
+                        expires_time = time.time() + max_age
+                        expires = cookie_date(expires_time)
+                    # Save the session data and refresh the client cookie.
+                    # Skip session save for 500 responses, refs #3881.
+                    if response.status_code != 500:
+                        try:
+                            request.session.save()
+                        except UpdateError:
+                            raise SuspiciousOperation(
+                                "The request's session was deleted before the "
+                                "request completed. The user may have logged "
+                                "out in a concurrent request, for example."
+                            )
+                        host = request.get_host().split(':')[0]
 
-                    session_cookie_domain = settings.SESSION_COOKIE_DOMAIN
-                    # The subdomains feature overrides the
-                    # SESSION_COOKIE_DOMAIN setting, since the setting
-                    # is a fixed value and with subdomains enabled,
-                    # the session cookie domain has to vary with the
-                    # subdomain.
-                    if settings.REALMS_HAVE_SUBDOMAINS:
+                        # The subdomains feature overrides the
+                        # SESSION_COOKIE_DOMAIN setting, since the setting
+                        # is a fixed value and with subdomains enabled,
+                        # the session cookie domain has to vary with the
+                        # subdomain.
                         session_cookie_domain = host
-                    response.set_cookie(settings.SESSION_COOKIE_NAME,
-                                        request.session.session_key, max_age=max_age,
-                                        expires=expires, domain=session_cookie_domain,
-                                        path=settings.SESSION_COOKIE_PATH,
-                                        secure=settings.SESSION_COOKIE_SECURE or None,
-                                        httponly=settings.SESSION_COOKIE_HTTPONLY or None)
+                        response.set_cookie(
+                            settings.SESSION_COOKIE_NAME,
+                            request.session.session_key, max_age=max_age,
+                            expires=expires, domain=session_cookie_domain,
+                            path=settings.SESSION_COOKIE_PATH,
+                            secure=settings.SESSION_COOKIE_SECURE or None,
+                            httponly=settings.SESSION_COOKIE_HTTPONLY or None,
+                        )
+        return response
+
+class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
+    """
+    Middleware that sets REMOTE_ADDR based on the HTTP_X_FORWARDED_FOR.
+
+    This middleware replicates Django's former SetRemoteAddrFromForwardedFor middleware.
+    Because Zulip sits behind a NGINX reverse proxy, if the HTTP_X_FORWARDED_FOR
+    is set in the request, then it has properly been set by NGINX.
+    Therefore HTTP_X_FORWARDED_FOR's value is trusted.
+    """
+    def process_request(self, request: HttpRequest) -> None:
+        try:
+            real_ip = request.META['HTTP_X_FORWARDED_FOR']
+        except KeyError:
+            return None
+        else:
+            # HTTP_X_FORWARDED_FOR can be a comma-separated list of IPs.
+            # For NGINX reverse proxy servers, the client's IP will be the first one.
+            real_ip = real_ip.split(",")[0].strip()
+            request.META['REMOTE_ADDR'] = real_ip
+
+class FinalizeOpenGraphDescription(MiddlewareMixin):
+    def process_response(self, request: HttpRequest,
+                         response: StreamingHttpResponse) -> StreamingHttpResponse:
+        def alter_content(content: bytes) -> bytes:
+            str_content = content.decode("utf-8")
+            bs = BeautifulSoup(str_content, features='lxml')
+            # Skip any admonition (warning) blocks, since they're
+            # usually something about users needing to be an
+            # organization administrator, and not useful for
+            # describing the page.
+            for tag in bs.find_all('div', class_="admonition"):
+                tag.clear()
+
+            # Find the first paragraph after that, and convert it from HTML to text.
+            first_paragraph_text = bs.find('p').text.replace('\n', ' ')
+            return content.replace(request.placeholder_open_graph_description.encode("utf-8"),
+                                   first_paragraph_text.encode("utf-8"))
+
+        def wrap_streaming_content(content: Iterable[bytes]) -> Iterable[bytes]:
+            for chunk in content:
+                yield alter_content(chunk)
+
+        if getattr(request, "placeholder_open_graph_description", None) is not None:
+            assert not response.streaming
+            response.content = alter_content(response.content)
         return response

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+set -x
+
+tx push -s -r zulip.djangopo,zulip.translationsjson

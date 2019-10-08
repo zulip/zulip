@@ -1,0 +1,17 @@
+{{#each message_groups}}
+    {{#with this}}
+
+        {{#if show_date_separator}}
+        <div class="date_row no-select">{{{show_date}}}</div>
+        {{/if}}
+
+        <div class="recipient_row">
+            {{partial "archive_recipient_row" }}
+            {{#each message_containers}}
+            {{{ this }}}
+            {{/each}}
+        </div>
+
+
+    {{/with}}
+{{/each}}

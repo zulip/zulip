@@ -2,15 +2,17 @@
 
 {{#if bookend_content}}
 <div class="{{#if trailing}}trailing_bookend{{/if}} bookend sub-unsub-message">
-    <span>{{bookend_content}}</span>
-    <div class="sub_button_row">
-        <button class="btn stream_sub_unsub_button btn-default" type="button" name="subscription">
+    <span>{{{bookend_content}}}</span>
+    {{#if trailing}}
+    <div class="sub_button_row new-style">
+        <button class="button white rounded stream_sub_unsub_button {{#unless subscribed}}sea-green{{/unless}}" type="button" name="subscription">
             {{#if subscribed}}
-            Unsubscribe
+            {{t 'Unsubscribe' }}
             {{else}}
-            Subscribe
+            {{t 'Subscribe' }}
             {{/if}}
         </button>
     </div>
+    {{/if}}
 </div>
 {{/if}}

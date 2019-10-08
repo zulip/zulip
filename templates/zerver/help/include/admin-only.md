@@ -1,2 +1,2 @@
 !!! warn ""
-    **Note:** This feature can only be controlled by organization administrators.
+    This feature is only available to organization administrators.

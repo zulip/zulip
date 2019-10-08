@@ -1,0 +1,96 @@
+{% extends "zerver/portico.html" %}
+
+{# Login page. #}
+{% block portico_content %}
+
+<div class="app flex full-page">
+    <div id="devtools-page" class="markdown">
+        <h1>Useful development URLs</h1>
+        <p>
+            Below is a list of useful tools and data sets available only in the Zulip
+            development environment that are often useful when contributing to Zulip.
+            Most of these require you to run a command to build/generate the relevant
+            content. This table specifies which command to use to update the data served
+            by each page (since several of these, like test coverage, require a special
+            command to be run to generate the data). Make sure your development server is still running
+            when you visit these!
+        </p>
+        <table class="table table-striped table-rounded table-bordered">
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>Command</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a href="/coverage/index.html">/coverage/index.html</a></td>
+                    <td><code>./tools/test-backend --coverage</code></td>
+                    <td>View backend coverage report</td>
+                </tr>
+                <tr>
+                    <td><a href="/node-coverage/index.html">/node-coverage/index.html</a></td>
+                    <td><code>./tools/test-js-with-node --coverage</code></td>
+                    <td>View node coverage report</td>
+                </tr>
+                <tr>
+                    <td><a href="/docs/index.html">/docs/index.html</a></td>
+                    <td><code>./tools/build-docs</code></td>
+                    <td>View Zulip documentation</td>
+                </tr>
+                <tr>
+                    <td><a href="/emails">/emails</a></td>
+                    <td><code>./tools/inline-email-css</code><br/>
+                        Run the command if you made changes to source.html email templates.
+                    </td>
+                    <td>Preview all email templates.</td>
+                </tr>
+                <tr>
+                    <td><a href="/stats/realm/analytics/">/stats/realm/analytics/</a></td>
+                    <td><code>./manage.py populate_analytics_db</code><br/>
+                        Run the command after changing analytics data population logic.
+                    </td>
+                    <td>View the /stats page with some pre-populated data</td>
+                </tr>
+                <tr>
+                    <td><a href="/static/html/5xx.html">/static/html/5xx.html</a></td>
+                    <td><code>./manage.py collectstatic --noinput</code></td>
+                    <td>Error 5xx page served by nginx (used when Django is totally broken)</td>
+                </tr>
+                <tr>
+                    <td><a href="/errors/404">/errors/404</a></td>
+                    <td>None needed</td>
+                    <td>Error 404 page served by Django</td>
+                </tr>
+                <tr>
+                    <td><a href="/errors/5xx">/errors/5xx</a></td>
+                    <td>None needed</td>
+                    <td>Error 5xx page served by Django</td>
+                </tr>
+                <tr>
+                    <td><a href="/accounts/do_confirm/invalid">/accounts/do_confirm/invalid</a></td>
+                    <td>None needed</td>
+                    <td>Invalid confirmation link page</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>Development-specific management commands live in <code>zilencer/management/commands</code>.  Highlights include:
+            <ul>
+                <li><code>./manage.py populate_db</code>: Rebuilds database.  Has options to e.g. create 3K users for testing.</li>
+                <li><code>./manage.py mark_all_messages_unread</code>: Useful for testing reading messages.</li>
+                <li><code>./manage.py add_new_realm</code>: Add a new realm. Useful for testing onboarding.</li>
+                <li><code>./manage.py add_new_user</code>: Add a new user. Useful for testing onboarding.</li>
+                <li><code>./manage.py add_mock_conversation</code>: Add test messages, streams, images, emoji, etc.
+                    into the dev environment. First edit zilencer/management/commands/add_mock_conversation.py
+                    to add the data you're testing.
+                </li>
+            </ul>
+        </p>
+        <p>We also have
+            <a href="https://zulip.readthedocs.io/en/latest/subsystems/auth.html">documentation on testing LDAP, Google &amp; GitHub authentication</a> in the development environment.
+        </p>
+    </div>
+</div>
+
+{% endblock %}

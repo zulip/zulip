@@ -1,0 +1,38 @@
+<div class="message_row {% if include_sender %} include-sender {% endif %}">
+    <div class="messagebox">
+  <div class="messagebox-border">
+<div class="messagebox-content">
+    <div class="message_top_line">
+      <span class="message_sender{% if status_message %} sender_info_hover{% endif %} no-select">
+          {% if include_sender %}
+          <div class="inline_profile_picture">
+              <img src={{ avatar_url }} alt="" class="no-drag"/>
+          </div>
+              {% if status_message %}
+                  <span class="sender-status">
+                      <span class="sender_name-in-status">{{ sender_full_name }}</span>
+                      {% if sender_is_bot %}
+                      <i class="zulip-icon bot" aria-hidden="true"></i>
+                      {% endif %}
+                      <span class="status-message">
+                          {{ status_message }}
+                      </span>
+                  </span>
+              {% else %}
+                  <span class="sender_name auto-select">{{ sender_full_name }}</span>
+                  {% if sender_is_bot %}
+                  <i class="zulip-icon bot" aria-hidden="true"></i>
+                  {% endif %}
+              {% endif %}
+          {% endif %}
+      </span>
+        <span class="message_time{% if status_message %} status-time{% endif %}">{{ timestampstr }}</span>
+    </div>
+    {% if not status_message %}
+      <div class="message_content">{{ message_content|safe }}</div>
+    {% endif %}
+
+</div>
+</div>
+</div>
+</div>

@@ -1,37 +1,62 @@
 #!/usr/bin/env bash
 set -e
 
+color_message () {
+    local color_code="$1" message="$2"
+    printf '\e[%sm%s\e[0m\n' "$color_code" "$message" >&2
+}
+
+loglevel=()
 
 case $1 in
     -h|--help)
-    echo "--help, -h                   show this help message and exit"
-    echo "--loglevel=LEVEL, -L LEVEL   log level (default: ERROR)"
-    exit 0
-    ;;
+        echo "--help, -h                   show this help message and exit"
+        echo "--loglevel=LEVEL, -L LEVEL   log level (default: ERROR)"
+        echo "--skip-check-links           skip checking of links"
+        echo "--skip-external-links        skip checking of external links"
+        exit 0
+        ;;
     -L|--loglevel)
-    loglevel="$1 $2"
-    ;;
+        loglevel=("$1" "$2")
+        ;;
+    --skip-check-links)
+        skip_check_links=1
+        ;;
+    --skip-external-links)
+        skip_external_links=1
+        ;;
 esac
 
 cd "$(dirname "$0")"/../docs
-make html
+rm -rf _build
+
+# collapse_navigation is set to False in conf.py to improve sidebar navigation for users.
+# However, we must change its value to True before we begin testing links.
+# Otherwise, sphinx would generate a large number of links we don't need to test.
+# The crawler would take a very long time to finish and TravisCI would fail as a result.
+sphinx-build -j8 -b html -d _build/doctrees -D html_theme_options.collapse_navigation=True . _build/html
+
+if [ -n "$skip_check_links" ]; then
+    color_message 94 "Skipped testing links in documentation."
+    exit 0
+fi
+
 cd ../tools/documentation_crawler
-
-echo -en "\033[0;94m"
-echo "Testing links in documentation..."
-echo -en "\033[0m"
-
 set +e
-scrapy crawl_with_status documentation_crawler $loglevel
+if [ -n "$skip_external_links" ]; then
+    color_message 94 "Testing only internal links in documentation..."
+    scrapy crawl_with_status documentation_crawler -a skip_external=set "${loglevel[@]}"
+    # calling crawl directly as parameter needs to be passed
+else
+    color_message 94 "Testing links in documentation..."
+    scrapy crawl_with_status documentation_crawler "${loglevel[@]}"
+fi
+
 result=$?
 if [ "$result" = 1 ]; then
-    echo -en "\033[0;91m"
-    echo "Failed!"
-    echo -en "\033[0m"
+    color_message 91 "Failed!"
     exit 1
 else
-    echo -en "\033[0;92m"
-    echo "Passed!"
-    echo -en "\033[0m"
+    color_message 92 "Passed!"
     exit 0
 fi

@@ -22,5 +22,5 @@ SHELL=/bin/bash
 # For more information see the manual pages of crontab(5) and cron(8)
 #
 # m h  dom mon dow   command
-35 * * * * zulip /home/zulip/zulip/bots/zmirror-renew-kerberos
-*/2 * * * * zulip /home/zulip/zulip/bots/check-mirroring --sharded &> /var/lib/nagios_state/check-mirroring-results-tmp; mv /var/lib/nagios_state/check-mirroring-results-tmp /var/lib/nagios_state/check-mirroring-results
+35 * * * * zulip /home/zulip/python-zulip-api/zulip/integrations/zephyr/zmirror-renew-kerberos
+*/2 * * * * zulip /home/zulip/python-zulip-api/zulip/integrations/zephyr/check-mirroring --sharded &> /var/lib/nagios_state/check-mirroring-results-tmp; mv /var/lib/nagios_state/check-mirroring-results-tmp /var/lib/nagios_state/check-mirroring-results

@@ -2,40 +2,77 @@
 
 {# Login page. #}
 {% block portico_content %}
-<div class="app login-page">
-    <div class="app-main login-page-container">
-        <h4 class="login-page-header">{{ _('Click on a user to log in!') }}</h4>
-        <p class="devlogin_subheader">(Or visit the <a href="/login">normal login page</a>).</p>
-        <form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
-            action="{{ url('zerver.views.auth.dev_direct_login') }}">
-            {{ csrf_input }}
+<div class="app login-page flex full-page">
+    <div class="app-main login-page-container dev-login white-box">
+        {% if current_realm %}
+        <h4 class="login-page-header">Click on a user to log in to {{ current_realm.name }}!</h4>
+        {% else %}
+        <h4 class="login-page-header">Click on a user to log in!</h4>
+        {% endif %}
+        <p class="devlogin_subheader">(Or visit the <a href="/login/">normal login page</a>.)</p>
+        <form name="direct_login_form" id="direct_login_form" method="post" class="login-form">
             <div class="control-group">
                 <div class="controls">
-                    <p>{{ _('Administrators') }}</p>
-                    {% for user_email in direct_admins %}
-                    <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
-                    {% endfor %}
+                    <div class="group">
+                        <h2>{{ _('Administrators') }}</h2>
+                        {% if direct_admins %}
+                            {% for direct_admin in direct_admins %}
+                            <p><input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.email }}" /></p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No administrators found in this realm</p>
+                        {% endif %}
+                        <h2>{{ _('Guest users') }}</h2>
+                        {% if guest_users %}
+                            {% for guest_user in guest_users %}
+                            <p><input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ guest_user.email }}" /></p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No guest users found in this realm</p>
+                        {% endif %}
+                    </div>
 
-                    <p>{{ _('Normal users') }}</p>
-                    {% for user_email in direct_users %}
-                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
-                    {% endfor %}
-
-                    <p>{{ _('Community users') }}</p>
-                    {% for user_email in community_users %}
-                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
-                    {% endfor %}
+                    <div class="group">
+                        <h2>{{ _('Normal users') }}</h2>
+                        {% if direct_users %}
+                            {% for direct_user in direct_users %}
+                            <p><input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.email }}" /></p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No normal users found in this realm</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </form>
+        <form name="change_realm" action="{{ url('zerver.views.auth.login_page') }}" method="post">
+            {{ csrf_input }}
+            <h2>Realm</h2>
+            <select name="new_realm" onchange="this.form.submit()">
+                <option value="all_realms" {% if not current_realm %}selected="selected"{% endif %}>All Realms</option>
+                {% for realm in all_realms %}
+                <option value="{{realm.string_id}}" {% if current_realm == realm %}selected="selected"{% endif %}>{{realm.name}}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <div id="devtools-wrapper">
+            <a href="/devtools">Zulip developer tools</a>
+        </div>
     </div>
 </div>
 
-<div class="footer-padder"></div>
-
-<script type="text/javascript">
+<script>
 if (window.location.hash.substring(0, 1) === "#") {
-    document.login_form.action += window.location.hash;
+    /* We append the location.hash to the formaction so that URL can be
+    preserved after user is logged in. See this:
+    https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
+    $("input[name='direct_email']").each(function () {
+        var new_formaction = $(this).attr('formaction') + '/' + window.location.hash;
+        $(this).attr('formaction', new_formaction);
+    });
 }
 </script>
 {% endblock %}

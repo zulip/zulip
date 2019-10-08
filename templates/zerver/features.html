@@ -1,311 +1,269 @@
 {% extends "zerver/portico.html" %}
 
 {% block customhead %}
-
-{% stylesheet 'portico' %}
-{% stylesheet 'landing-page' %}
-{{ minified_js('landing-page')|safe }}
-
+{{ render_bundle('landing-page') }}
 {% endblock %}
 
 {% block portico_content %}
 
 {% include 'zerver/landing_nav.html' %}
+{% include 'zerver/gradients.html' %}
 
 <div class="portico-landing features-app">
-    <div class="main">
-        <div class="padded-content box-shadow">
-            <div class="feature-page-header">{% trans %}Zulip features{% endtrans %}</div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-random icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Threaded group conversations{% endtrans %}</h4>
-                        <p>{% trans %}Talk about multiple topics at once without getting lost or
-                        overwhelmed.{% endtrans %}</p>
-                    </div>
-                </div>
+    <section class="hero">
+        <div class="copy">
+            <h1>Powerful group chat</h1>
+            <h2>First class threading on top of everything you could want from real-time chat.</h2>
+        </div>
+    </section>
+
+    <section class="messages">
+        <div class="features">
+            <h2>Beautiful messaging</h2>
+
+            <div class="feature-block">
+                <h3>MARKDOWN OPTIMIZED FOR CHAT</h3>
+                <p>
+                    Express your ideas clearly with bulleted lists,
+                    bold, italics,
+                    and <a href="/help/format-your-message-using-markdown">much
+                    more</a>.  Zulip even supports discussing math
+                    with LaTeX.
+                </p>
             </div>
             <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-comments icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}One-on-one and group private conversations{% endtrans %}</h4>
-                        <p>{% trans %}Have private conversations with one or as many people as you need.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-home icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{{ _("Persistence") }}</h4>
-                        <p>{% trans %}We're always receiving messages for you, even when you're
-                        logged out.{% endtrans %}</p>
-                    </div>
-                </div>
+                <h3>EMOJI AND EMOJI REACTIONS</h3>
+                <p>Have fun expressing yourself with emoji!</p>
             </div>
             <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-road icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{{ _("History") }}</h4>
-                        <p>{% trans %}Join a stream and see its history, so even new team
-                        members are never out of the loop.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-search icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Full-history search{% endtrans %}</h4>
-                        <p>{% trans %}Search is both snappy and smart, helping you look for text,
-                            people, and threads of conversation, with advanced search
-                        operators for fine-grained control.{% endtrans %}</p>
-                    </div>
-                </div>
+                <h3>INLINE IMAGE, VIDEO, AND TWEET PREVIEWS</h3>
+                <p>Send a link and we'll automatically generate a
+                preview; click the preview to see it at full scale.</p>
             </div>
             <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-group icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Team presence{% endtrans %}</h4>
-                        <p>{% trans %}See who is online at a glance.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-picture icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Inline image, video, and tweet previews{% endtrans %}</h4>
-                        <p>{% trans %}Send a link and we'll automatically generate an inline
-                        preview.{% endtrans %}</p>
-                    </div>
-                </div>
+                <h3>DRAG-AND-DROP FILE UPLOADS</h3>
+                <p>
+                    Drag a file into the compose box and we'll upload
+                    and preview it for you. Sharing and discussing
+                    work with team mates has never been easier.
+                </p>
             </div>
             <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-paper-clip icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Drag-and-drop file uploads{% endtrans %}</h4>
-                        <p>{% trans %}Drag a file into the compose box and we'll upload and
-                            preview it for you. Sharing and discussing work with team
-                        mates has never been easier.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-user icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{{ _("@-notifications") }}</h4>
-                        <p>{% trans %}Want someone's attention in a conversation? @-notify them
-                        and they'll be right over.{% endtrans %}</p>
-                    </div>
-                </div>
+                <h3>CODE AND QUOTE BLOCKS</h3>
+                <p>
+                    Discuss code with ease using Markdown code blocks
+                    (and syntax highlighting).  And discuss blocks of
+                    text with ease with block quotes.
+                </p>
             </div>
             <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-bullhorn icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Stream-wide announcements{% endtrans %}</h4>
-                        <p>{% trans %}Use <code>@all</code> or <code>@everyone</code> to get the
-                        attention of everyone in a stream.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-envelope icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Emails for important missed messages{% endtrans %}</h4>
-                        <p>{% trans %}If you're missing important conversations when you're away from
-                            Zulip, we'll send you an email summary so you're always in the
-                        loop.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-info-sign icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Desktop notifications{% endtrans %}</h4>
-                        <p>{% trans %}Configurable for private and stream messages.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-bell icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Audible notifications{% endtrans %}</h4>
-                        <p>{% trans %}So you don't miss important messages even when your eyes
-                        are elsewhere.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-font icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{{ _("Hotkeys") }}</h4>
-                        <p>{% trans %}Communicate as efficiently as you use your favorite text editor.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-thumbs-up icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{{ _("Emoji") }}</h4>
-                        <p>{% trans %}Sometimes it's the simple things in life, like being able
-                        to give a <tt>:thumbsup:</tt> while chatting.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-edit icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{{ _("Code") }}</h4>
-                        <p>{% trans %}Discuss code with ease using Markdown code
-                        blocks with syntax highlighting.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-quote-left icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Lightweight markup{% endtrans %}</h4>
-                        <p>{% trans %}Get bulleted lists, clickable links, and nicely-formatted
-                        e-mail pastes automatically.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-eraser icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Message editing{% endtrans %}</h4>
-                        <p>{% trans %}Don't worry, you can always fix that typo.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-lock icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Invite-only streams{% endtrans %}</h4>
-                        <p>{% trans %}Enjoy the benefits of threaded conversations while
-                        controlling your audience and privacy.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-star-empty icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Starred messages{% endtrans %}</h4>
-                        <p>{% trans %}Keep a todo list or keep track of interesting
-                        conversations.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-github icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{{ _("Integrations") }}</h4>
-                        <p>{% trans %}Get alerts and updates from your favorite services with
-                            off-the-shelf <a href="{{ server_uri }}/integrations">integrations</a> for
-                        Trac, Nagios, GitHub, Jenkins, and more.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-sitemap icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{{ _("API") }}</h4>
-                        <p>{% trans %}Want to roll your own notifications? We've got a
-                            dead-simple RESTful <a href="{{ server_uri }}/api">API and Python bindings</a>
-                            that will make integrations&mdash;both sending and
-                        receiving&mdash;a snap!{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block left">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-mobile-phone icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Mobile apps{% endtrans %}</h4>
-                        <p>{% trans %}Check Zulip on the go with native <a href="/apps">iOS and
-                        Android apps</a>.{% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feature-block">
-                <div class="flex">
-                    <div class="icon-container">
-                        <i class="icon-vector-desktop icon-vector-3x feature-icon"></i>
-                    </div>
-                    <div class="block">
-                        <h4>{% trans %}Desktop apps{% endtrans %}</h4>
-                        <p>{% trans %}Prefer Zulip in its own window and rich, OS-level notifications?
-                          Enjoy <a href="/apps">Zulip on your desktop</a>.{% endtrans %}</p>
-                    </div>
-                </div>
+                <h3>CUSTOMIZABLE AUTOMATIC LINKIFICATION</h3>
+                <p>
+                    Customize Zulip’s markup to automatically link back
+                    to your issue tracker or GitHub when you type
+                    “#1235” or a commit ID.
+                </p>
             </div>
         </div>
-    </div>
+        <img class="image" src="/static/images/features/message-formatting.png" />
+    </section>
+
+    <section class="notifications">
+        <svg class="envelope" height="500" width="100" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <polygon points="0,0 100,0 50,50" style="fill: #fafafa;" />
+            Sorry, your browser does not support inline SVG.
+        </svg>
+        <h2>All the notifications you need!</h2>
+
+        <div class="center">
+            <div class="image-block"></div>
+            <div class="feature-list">
+                <h3>@-mentions</h3>
+                <h3>Stream-wide announcements</h3>
+                <h3>Desktop notifications</h3>
+                <h3>Audible notifications</h3>
+                <h3>Emails for important missed messages</h3>
+                <h3>Alert words</h3>
+                <h3>Optional weekly digest emails</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="keyboard-shortcuts">
+        <div class="feature-block">
+            <h3>Keyboard Shortcuts</h3>
+            <p>Communicate as efficiently as you use your favorite
+                text editor.  Anything you can do with a mouse, you
+                can do even faster from the keyboard.
+                <a class="cta" href="/help/keyboard-shortcuts">
+                Learn more about keyboard shortcuts.</a>
+            </p>
+        </div>
+        <img class="image" src="/static/images/landing-page/love-keyboard-shortcuts.svg" />
+    </section>
+
+    <section>
+        <h2>Apps, Integrations, and API</h2>
+
+        <div class="feature-block">
+            <h3>INTEGRATIONS</h3>
+            <p>
+                Get alerts and updates from your favorite services with
+                off-the-shelf integrations for Trac, Nagios, GitHub,
+                Jenkins, and more.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>API</h3>
+            <p>
+                Want to roll your own notifications? We've got a
+                dead-simple RESTful API and Python bindings that will make
+                integrations—both sending and receiving—a snap!
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>MOBILE APPS</h3>
+            <p>Keep up while on the go with our native quality iOS and
+            Android apps.</p>
+        </div>
+        <div class="feature-block">
+            <h3>DESKTOP APPS</h3>
+            <p>Prefer Zulip in its own window and rich, OS-level
+            notifications? Enjoy Zulip on your desktop.</p>
+        </div>
+        <!--Hack: These two pseudo elements are here to ensure the flex
+        arrangment uses the proper cell size with 4 elements in 2 rows.-->
+        <div class="feature-block"></div>
+        <div class="feature-block"></div>
+    </section>
+
+    <section>
+        <h2>And everything else you need...</h2>
+
+        <div class="feature-block">
+            <h3>ENTERPRISE-GRADE SECURITY</h3>
+            <p>
+                Zulip is used by some of the most security-conscious
+                organizations in the world.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>FULL-TEXT FULL-HISTORY SEARCH</h3>
+            <p>
+                Search is both snappy and smart, helping you look for
+                text, people, and threads of conversation, with advanced
+                search operators for fine-grained control.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>HISTORY</h3>
+            <p>Join a stream and see its history, so even new team
+            members are never out of the loop.</p>
+        </div>
+        <div class="feature-block">
+            <h3>STARRED MESSAGES</h3>
+            <p>Keep a todo list of messages to come back to, or keep
+            track of interesting conversations.</p>
+        </div>
+
+        <div class="feature-block">
+            <h3>STATISTICS</h3>
+            <p>Zulip has a powerful set of analytics available to
+            help you see how your organization communicates.</p>
+        </div>
+        <div class="feature-block">
+            <h3>ONE-ON-ONE AND GROUP PRIVATE CONVERSATIONS</h3>
+            <p>Lightweight private conversations with one or as many people as you need.</p>
+        </div>
+        <div class="feature-block">
+            <h3>TEAM PRESENCE</h3>
+            <p>See who is currently online at a glance.</p>
+        </div>
+        <div class="feature-block">
+            <h3>PRIVATE STREAMS</h3>
+            <p>Enjoy the benefits of threaded conversations while
+            controlling your audience and privacy.</p>
+        </div>
+        <div class="feature-block">
+            <h3>PERSISTENCE</h3>
+            <p>We're always receiving messages for you, even when
+            you're logged out or away from your computer.</p>
+        </div>
+        <div class="feature-block">
+            <h3>MESSAGE EDITING</h3>
+            <p>Don't worry, you can always fix that typo, either in
+            the body of message or its topic.</p>
+        </div>
+        <div class="feature-block">
+            <h3>TYPING NOTIFICATIONS</h3>
+            <p>Know when other users are composing messages to you.</p>
+        </div>
+        <div class="feature-block">
+            <h3>SAVED DRAFTS</h3>
+            <p>Zulip's drafts make it easy to write longer messages
+            without worrying about losing your work.</p>
+        </div>
+        <div class="feature-block">
+            <h3>ACCESSIBILITY</h3>
+            <p>
+                Zulip follows best practices for accessibility, and has
+                been validated using popular accessibility auditing
+                tools.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>CONVERSATIONS THREADED BY TOPIC</h3>
+            <p>Participate in several conversations with the same
+            group at once, without getting lost or overwhelmed.</p>
+        </div>
+        <div class="feature-block">
+            <h3>CATCH UP IN NO TIME</h3>
+            <p>With topics, hotkeys and snappy performance, usefully
+            reviewing hundreds of messages takes just minutes.</p>
+        </div>
+        <div class="feature-block">
+            <h3>FULLY INTERNATIONALIZED</h3>
+            <p>The Zulip UI is fully internationalized and has been
+            translated into over a dozen languages.</p>
+        </div>
+        <div class="feature-block">
+            <h3>CUSTOMIZABLE LOGIN AND REGISTRATION</h3>
+            <p>
+                Customize the available authentication methods and
+                customize the login and registration pages for your
+                organization using Markdown.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>VIDEO CALLS</h3>
+            <p>
+                Create and join video calls with a single click. Powered
+                by your choice of Jitsi or Google Hangouts.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>SLACK/HIPCHAT/GITTER IMPORT</h3>
+            <p>
+                Import an existing Slack, HipChat, or Gitter workspace into
+                Zulip.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>CUSTOM PROFILE FIELDS</h3>
+            <p>
+                Use Zulip to store directory information, links to social
+                media profiles, food preferences, or anything else.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>YOUR FEATURE HERE</h3>
+            <p>Zulip is open source, so if something important for
+            your use case is missing, you can make it happen!</p>
+        </div>
+        <!--Hack: These two pseudo elements are here to ensure the flex
+        arrangment uses the proper cell size with 4 elements in 2 rows.-->
+        <div class="feature-block"></div>
+        <div class="feature-block"></div>
+    </section>
 </div>
 {% endblock %}

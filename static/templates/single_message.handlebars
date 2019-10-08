@@ -1,74 +1,97 @@
 <div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
-  class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.local_id}}local{{/if}} selectable_row">
-  <div class="unread_marker"><div class="unread-marker-fill"></div></div>
-  <div class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^msg/is_stream}} private-message{{/msg/is_stream}} {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
-       style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">
-    <div class="messagebox-border">
-      <div class="messagebox-content">
-        <div class="message_top_line">
-          {{#include_sender}}
-          <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}}">
-            {{! See ../js/notifications.js for another user of avatar_url. }}
-            <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}"
-                 style="background-image: url('{{small_avatar_url}}');"/>
-            {{#if status_message}}
-            <span class="sender-status">
-              <span class="sender_name-in-status sender_info_hover">{{msg/sender_full_name}}</span>
-              {{#if sender_is_bot}}
-                  <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
-              {{/if}}
-              {{{ status_message }}}
-              {{#if_and last_edit_timestr include_sender}}
-                <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
-              {{/if_and}}
-            </span>
-            {{else}}
-            <span class="sender_name">{{msg/sender_full_name}}</span>
-            {{#if sender_is_bot}}
-                 <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
-            {{/if}}
-            {{/if}}
-          </span>
-          {{/include_sender}}
-          <span class="message_time{{#if msg.local_id}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
-          {{#if_and last_edit_timestr include_sender}}
-            {{#unless status_message}}
-                <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
-            {{/unless}}
-          {{/if_and}}
-          <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}}">
-            {{#if msg/sent_by_me}}
-            <div class="edit_content"></div>
-            {{else}}
-            <div class="reactions_hover">
-            <i class="icon-vector-smile reaction_button" data-msgid="{{msg/id}}" title="{{#tr this}}Add emoji reaction{{/tr}}"></i>
+  class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row"
+  role="listitem">
+    <div class="unread_marker"><div class="unread-marker-fill"></div></div>
+    <div class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^msg/is_stream}} private-message{{/msg/is_stream}} {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
+      style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">
+        <div class="messagebox-border">
+            <div class="messagebox-content">
+                <div class="message_top_line">
+                    <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}} no-select">
+                        {{#include_sender}}
+                            {{! See ../js/notifications.js for another user of avatar_url. }}
+                            <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}{{#sender_is_guest}} guest-avatar{{/sender_is_guest}}" aria-hidden="true">
+                                <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
+                            </div>
+                            {{#if status_message}}
+                                <span class="sender-status">
+                                    <span class="sender_name-in-status sender_info_hover auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+                                    {{#if sender_is_bot}}
+                                    <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
+                                    {{/if}}
+                                    <span class="status-message auto-select">
+                                        {{{ status_message }}}
+                                    </span>
+                                    {{#if_and last_edit_timestr include_sender}}
+                                    <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                                        ({{t "EDITED" }})
+                                    </div>
+                                    {{/if_and}}
+                                </span>
+                            {{else}}
+                                <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+                                {{#if sender_is_bot}}
+                                <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
+                                {{/if}}
+                            {{/if}}
+                        {{/include_sender}}
+                    </span>
+                    <span class="alert-msg pull-right"></span>
+                    <span class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">
+                        {{#unless include_sender}}
+                        <span class="copy-paste-text">&nbsp;</span>
+                        {{/unless}}
+                        {{timestr}}
+                    </span>
+                    {{#if_and last_edit_timestr include_sender}}
+                        {{#unless status_message}}
+                        <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                            ({{t "EDITED" }})
+                        </div>
+                        {{/unless}}
+                    {{/if_and}}
+                    <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
+                        {{#if msg/sent_by_me}}
+                        <div class="edit_content"></div>
+                        {{else}}
+                        <div class="reaction_button">
+                            <i class="fa fa-smile-o" title="{{#tr this}}Add emoji reaction{{/tr}} (:)" aria-label="{{#tr this}}Add emoji reaction{{/tr}} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
+                        </div>
+                        {{/if}}
+
+                        {{#unless msg/locally_echoed}}
+                        <div class="info actions_hover">
+                            <i class="fa fa-chevron-down" title="{{#tr this}}Message actions{{/tr}} (i)" title="{{#tr this}}Message actions{{/tr}}" role="button" aria-haspopup="true" tabindex="0" aria-label="{{#tr this}}Message actions{{/tr}}"></i>
+                        </div>
+                        {{/unless}}
+
+                        <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
+                            <i class="fa fa-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}" aria-label="{{t 'Retry' }}" role="button" tabindex="0"></i>
+                            <i class="fa fa-times-circle remove-failed-message" aria-hidden="true" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
+                        </div>
+
+                        {{#unless msg/locally_echoed}}
+                        <div class="star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)">
+                        </div>
+                        {{/unless}}
+
+                    </div>
+                </div>
+                <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
+                {{#if last_edit_timestr}}
+                    {{#unless include_sender}}
+                    <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                        ({{t "EDITED" }})
+                    </div>
+                    {{/unless}}
+                {{/if}}
+                <div class="message_edit">
+                    <div class="message_edit_form"></div>
+                </div>
+                <div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
+                <div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
+                <div class="message_reactions">{{ partial "message_reactions" }}</div>
             </div>
-            {{/if}}
-            <div class="info actions_hover">
-              <i class="icon-vector-chevron-down" title="{{#tr this}}Message actions{{/tr}}"></i>
-            </div>
-            <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
-              <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}"></i>
-              <i class="icon-vector-pencil edit-failed-message" data-toggle="tooltip" title="{{t 'Edit' }}"></i>
-              <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
-            </div>
-            <div class="star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this}}{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message{{/tr}}">
-            </div>
-          </div>
         </div>
-        <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
-        {{#if last_edit_timestr}}
-          {{#unless include_sender}}
-            <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
-          {{/unless}}
-        {{/if}}
-        <div class="message_edit">
-          <div class="message_edit_form" id="{{msg/id}}"></div>
-        </div>
-        <div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
-        <div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
-        <div class="message_reactions" data-message-id="{{msg/id}}">{{ partial "message_reactions" }}</div>
-      </div>
     </div>
-  </div>
 </div>

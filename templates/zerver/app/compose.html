@@ -1,0 +1,120 @@
+<div id="compose">
+    <div id="compose-notifications" class="notifications above-composebox">
+    </div>
+    <div id="compose-container">
+        <div id="compose_controls" class="compose-content new-style">
+            <div id="nonexistent_stream_reply_error" class="alert-error">
+                <span class="compose-send-status-close">&times;</span>
+                <span id="compose-reply-error-msg"></span>
+            </div>
+            <div id="compose_buttons">
+                <span class="new_message_button">
+                    <a class="drafts-link no-underline button small rounded compose_drafts_button" href="#drafts" title="{{ _('Drafts') }} (d)">
+                        {{ _('Drafts') }}
+                    </a>
+                    <span class="alert-draft pull-left">{{ _('Saved as draft') }}</span>
+                </span>
+                <span class="new_message_button">
+                    <button type="button" class="button small rounded compose_mobile_button"
+                      id="left_bar_compose_mobile_button_big"
+                      title="{{ _('New message') }} (c)">
+                        <span>+</span>
+                    </button>
+                </span>
+                <span class="new_message_button">
+                    <button type="button" class="button small rounded compose_stream_button"
+                      id="left_bar_compose_stream_button_big"
+                      title="{{ _('New topic') }} (c)">
+                        <span class="compose_stream_button_label">{{ _('New topic') }}</span>
+                    </button>
+                </span>
+                {% if not embedded %}
+                <span class="new_message_button">
+                    <button type="button" class="button small rounded compose_private_button"
+                      id="left_bar_compose_private_button_big"
+                      title="{{ _('New private message') }} (x)">
+                        <span class="compose_private_button_label">{{ _('New private message') }}</span>
+                    </button>
+                </span>
+                {% endif %}
+                <span class="new_message_button">
+                    <button type="button" class="button small rounded compose_reply_button"
+                      id="left_bar_compose_reply_button_big"
+                      title="{{ _('Reply') }} (r)">
+                        <span class="compose_reply_button_label">{{ _('Reply') }}</span>
+                    </button>
+                </span>
+            </div>
+        </div>
+        <div class="message_comp compose-content">
+            <div class="alert" id="compose-send-status">
+                <span class="compose-send-status-close">&times;</span>
+                <span id="compose-error-msg"></span>
+            </div>
+            <div id="compose_invite_users" class="alert home-error-bar"></div>
+            <div id="compose-all-everyone" class="alert home-error-bar"></div>
+            <div id="compose-announce" class="alert home-error-bar"></div>
+            <div id="compose_not_subscribed" class="alert home-error-bar"></div>
+            <div id="compose_private_stream_alert" class="alert home-error-bar"></div>
+            <div id="out-of-view-notification" class="notification-alert"></div>
+            <div class="composition-area">
+                <button type="button" class="close" id='compose_close' title="{{ _('Cancel compose') }} (Esc)">&times;</button>
+                <form id="send_message_form" action="/json/messages" method="post">
+                    {{ csrf_input }}
+                    <div class="compose_table">
+                        <div id="stream-message">
+                            <div class="message_header_colorblock message_header_stream left_part"></div>
+                            <div class="right_part">
+                                <span id="compose-lock-icon">
+                                    <i class="fa fa-lock" title="{{ _('This is a private stream') }}" aria-hidden="true"></i>
+                                </span>
+                                <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{ _('Stream') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Stream') }}" />
+                                <i class="fa fa-angle-right" aria-hidden="true"></i>
+                                <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{ _('Topic') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Topic') }}" />
+                            </div>
+                        </div>
+                        <div id="private-message">
+                            <div class="to_text">
+                                <span>{{ _('To') }}:</span>
+                            </div>
+                            <div class="right_part">
+                                <div class="pm_recipient">
+                                    <div class="pill-container" data-before="{{ _('You and') }}">
+                                        <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="messagebox">
+                                <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
+                                <div class="scrolling_list" id="preview_message_area" style="display:none;">
+                                    <div id="markdown_preview_spinner"></div>
+                                    <div id="preview_content"></div>
+                                </div>
+                                <div class="drag"></div>
+                                <div id="below-compose-content">
+                                    <input type="file" id="file_input" class="notvisible pull-left" multiple />
+                                    <a class="message-control-button fa fa-smile-o" aria-hidden="true" id="emoji_map" href="#" title="{{ _('Add emoji') }}"></a>
+                                    <a class="message-control-button fa fa-font" aria-hidden="true" title="{{ _('Formatting') }}" data-overlay-trigger="message-formatting"></a>
+                                    <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files" href="#" title="{{ _('Attach files') }}"></a> {% if jitsi_server_url %}
+                                    <a class="message-control-button fa fa-video-camera" aria-hidden="true" id="video_link" href="#" title="{{ _('Add video call') }}"></a> {% endif %}
+                                    <a id="undo_markdown_preview" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{ _('Write') }}"></a>
+                                    <a id="markdown_preview" class="message-control-button fa fa-eye" aria-hidden="true" title="{{ _('Preview') }}"></a>
+                                    <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
+                                    <span id="sending-indicator"></span>
+                                    <div id="send_controls" class="new-style">
+                                        <label id="enter-sends-label" class="compose_checkbox_label">
+                                            <input type="checkbox" id="enter_sends" />{{ _('Press Enter to send') }}
+                                        </label>
+                                        <button type="submit" id="compose-send-button" class="button small send_message" tabindex="150" title="{{ _('Send') }} (Ctrl + Enter)">{{ _('Send') }}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

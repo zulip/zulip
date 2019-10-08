@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 
 import requests
 import re
@@ -7,8 +6,8 @@ import argparse
 import sys
 import os
 
-from six.moves.configparser import ConfigParser
-from typing import Any, Dict, MutableMapping
+import ConfigParser
+from typing import Any, Dict, MutableMapping, Optional
 
 # Scans zulip repositary for issues that don't have any `area` labels.
 # GitHub API token is required as GitHub limits unauthenticated
@@ -41,7 +40,7 @@ def is_issue(item):
     return "issues" in item["html_url"]
 
 def get_next_page_url(link_header):
-    # type: (str) -> str
+    # type: (str) -> Optional[str]
     matches = re.findall(r'\<(\S+)\>; rel=\"next\"', link_header)
     try:
         return matches[0]
@@ -63,7 +62,7 @@ def check_issue_labels():
                   "your api token. If you want to continue without using a token use --force.")
             sys.exit(1)
 
-    next_page_url = 'https://api.github.com/repos/zulip/zulip/issues'
+    next_page_url = 'https://api.github.com/repos/zulip/zulip/issues'  # type: Optional[str]
     unlabeled_issue_urls = []
     while next_page_url:
         try:

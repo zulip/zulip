@@ -1,3 +1,14 @@
-six==1.10.0
-mypy==0.501
-typed-ast==1.0.1
+#
+# This file is GENERATED.  Don't edit directly.
+#
+# To update, edit the non-"lock" files in requirements/*.txt, then:
+#
+#    tools/update-locked-requirements
+#
+# For details, see requirements/README.md .
+#
+mypy-extensions==0.4.1    # via mypy
+mypy==0.650
+typed-ast==1.1.0          # via mypy
+typing==3.6.6
+typing_extensions==3.6.6

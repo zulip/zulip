@@ -29,13 +29,13 @@ that can help you compose your message, such as the **Emojis**, **Attach files**
 
 **Customization** is the process of modifying Zulip's settings to fit a user's
 set of personal preferences. Users can customize their Zulip settings by
-clicking the cog (<i class="icon-vector-cog"></i>) icon in the upper right
+clicking the cog (<i class="fa fa-cog"></i>) icon in the top right
 corner of the right sidebar and choose **Settings** from the dropdown menu.
 
 ### down chevron
 
 A **down chevron** is a small downward-facing arrow (<i
-class="icon-vector-chevron-down"></i>) icon next to a message’s
+class="fa fa-chevron-down"></i>) icon next to a message’s
 [timestamp](#timestamp) that appears upon hover, offering contextual options
 when clicked on, such as **View source**, **Reply**, **Collapse**,
 **Mute [this topic]**, and **Link to this conversation**.
@@ -46,7 +46,7 @@ An **emoji** is a small image used to express an idea or emotion in a
 conversation. Emojis can be included in Zulip messages by enclosing an emoji
 phrase (a complete list of emojis can be found
 [here](http://www.webpagefx.com/tools/emoji-cheat-sheet/)) in colons or clicking
-the **smiley face** (<i class="icon-vector-smile"></i>) icon below the
+the **smiley face** (<i class="fa fa-smile-o"></i>) icon below the
 [compose box](#compose-box).
 
 ### emoji reaction
@@ -56,12 +56,20 @@ Although they are generally used to show reactions to a message, they can be
 used for various other purposes, such as [voting](/static/images/help/emoji-react-vote.png)
 or [checking off items in a to-do list](/static/images/help/emoji-react-checklist.png).
 
+### draft
+
+Message **drafts** are created when unsent messages are discarded by exiting out
+of the compose box while content has been written in the **Compose your message here...**
+field. Zulip's [Drafts](/#drafts) feature allows users to
+[retrieve and edit](/help/view-and-edit-your-message-drafts) draft contents in
+order to send them as new messages.
+
 ### filter
 
 Also known as a [view](#view), a **filter** is one of the options for viewing
 different kinds of messages, listed in the upper left corner of the Zulip
-browser window, such as **Home**, **Private messages**, **Starred messages**,
-and **@-mentions**.
+browser window, such as **All messages**, **Private messages**, **Starred messages**,
+and **Mentions**.
 
 ### group PM
 
@@ -69,22 +77,24 @@ Shorthand for **group private message**, a **group PM** is a
 [private message](#private-message) sent directly to two or more other
 users rather than through a [stream](#stream).
 
-### home
+### all messages
 
-**Home** is a specific [view](#view) (or [filter](#filter)) that shows all
+**All messages** is a specific [view](#view) (or [filter](#filter)) that shows all
 messages to the user's [subscribed](#subscribing) [streams](#stream) and all of
-the user's private messages in chronological order. This view is accessible by
-clicking the **Home** link, Zulip logo in the upper left sidebar, home (<i
-class="icon-vector-home"></i>) icon to the left of the search bar, or pressing
+the user's private messages in chronological order, excluding messages to muted
+streams and topics. This view is accessible by
+clicking the **All messages** link, Zulip logo in the upper left sidebar, home (<i
+class="fa fa-home"></i>) icon to the left of the search bar, or pressing
 the escape key.
 
 ### integration
 
 An **integration** is a tool that combines Zulip with another service or
 application. Zulip offers a variety of integrations for version control, issue
-tracker, CI system, monitoring tools, and other tools used for development. The
-three types of integrations that Zulip supports are webhook integrations, Python
-script integrations, and plugin integrations.
+tracker, CI system, monitoring tools, and other tools used for
+development.  See Zulip's
+[integration documentation](/api/integrations-overview) for details on the
+various types of Zulip integrations.
 
 ### mention
 
@@ -92,7 +102,7 @@ To **mention** users in Zulip, you have to type `@` and their email addresses or
 usernames for auto-completions in your [compose box](#compose-box). The users
 will be mentioned in your message as `@**username**`, and they will be notified
 of your message. Users can see all messages they've been mentioned in through
-the **@-mentions** link in the left sidebar or by using **is:mentioned** as a
+the **Mentions** link in the left sidebar or by using **is:mentioned** as a
 [filter](#filter) or a search constraint.
 
 ### /me
@@ -107,7 +117,7 @@ as if a user is away from the keyboard or busy.
 If enabled by an administrator, users can utilize **message editing** for a few
 minutes after posting a message to edit the content of their recently-posted
 message by hovering to the right of their message's [timestamp](#timestamp) and
-clicking the pencil (<i class="icon-vector-pencil"></i>) icon that appears.
+clicking the pencil (<i class="fa fa-pencil"></i>) icon that appears.
 Zulip labels edited messages with **(EDITED)** next to the username of the
 message writer.
 
@@ -185,7 +195,7 @@ private message recipient list, at the top of a group of messages.
 
 Zulip allows users to mark any important messages they receive as **starred** by
 hovering over the area next to the message's [timestamp](#timestamp) and
-clicking the star (<i class="icon-vector-star-empty"></i>) icon that appears. A
+clicking the star (<i class="fa fa-star-o"></i>) icon that appears. A
 user can easily access messages they’ve starred through the **Starred messages**
 link in the left sidebar or use **is:starred** as a [filter](#filter) or a
 search constraint.
@@ -223,4 +233,4 @@ stop receiving all messages from the stream that they unsubscribed from.
 
 Also known as [filter](#filter), a **view** is an option for viewing different
 kinds of messages, listed in the upper left sidebar, including sections
-**Home**, **Private messages**, **Starred messages**, and **@-mentions**.
+**All messages**, **Private messages**, **Starred messages**, and **Mentions**.

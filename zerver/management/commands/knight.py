@@ -1,24 +1,19 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
-from typing import Any
 
 from argparse import ArgumentParser
-from django.core.management.base import BaseCommand, CommandError
-from django.core.exceptions import ValidationError
+from typing import Any
+
+from django.core.management.base import CommandError
 
 from zerver.lib.actions import do_change_is_admin
+from zerver.lib.management import ZulipBaseCommand
 
-from zerver.models import UserProfile
-
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Give an existing user administrative permissions over their (own) Realm.
 
 ONLY perform this on customer request from an authorized person.
 """
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-f', '--for-real',
                             dest='ack',
                             action="store_true",
@@ -33,17 +28,17 @@ ONLY perform this on customer request from an authorized person.
                             dest='permission',
                             action="store",
                             default='administer',
+                            choices=['administer', 'api_super_user', ],
                             help='Permission to grant/remove.')
         parser.add_argument('email', metavar='<email>', type=str,
                             help="email of user to knight")
+        self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         email = options['email']
-        try:
-            profile = UserProfile.objects.get(email=email)
-        except ValidationError:
-            raise CommandError("No such user.")
+        realm = self.get_realm(options)
+
+        profile = self.get_user(email, realm)
 
         if options['grant']:
             if profile.has_perm(options['permission'], profile.realm):

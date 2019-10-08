@@ -1,4 +1,0 @@
-six==1.10.0
-typing==3.5.3.0
-future==0.16.0
-modernize==0.5

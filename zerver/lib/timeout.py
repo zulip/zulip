@@ -1,27 +1,23 @@
-from __future__ import absolute_import
 from types import TracebackType
 from typing import Any, Callable, Optional, Tuple, Type, TypeVar
 
+import six
 import sys
 import time
 import ctypes
 import threading
-import six
-from six.moves import range
 
 # Based on http://code.activestate.com/recipes/483752/
 
 class TimeoutExpired(Exception):
     '''Exception raised when a function times out.'''
 
-    def __str__(self):
-        # type: () -> str
+    def __str__(self) -> str:
         return 'Function call timed out.'
 
 ResultT = TypeVar('ResultT')
 
-def timeout(timeout, func, *args, **kwargs):
-    # type: (float, Callable[..., ResultT], *Any, **Any) -> ResultT
+def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: Any) -> ResultT:
     '''Call the function in a separate thread.
        Return its return value, or raise an exception,
        within approximately 'timeout' seconds.
@@ -38,27 +34,25 @@ def timeout(timeout, func, *args, **kwargs):
        operation.'''
 
     class TimeoutThread(threading.Thread):
-        def __init__(self):
-            # type: () -> None
+        def __init__(self) -> None:
             threading.Thread.__init__(self)
-            self.result = None # type: Optional[ResultT]
-            self.exc_info = None # type: Optional[Tuple[Type[BaseException], BaseException, TracebackType]]
+            self.result = None  # type: Optional[ResultT]
+            self.exc_info = None  # type: Optional[Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]]
 
             # Don't block the whole program from exiting
             # if this is the only thread left.
             self.daemon = True
 
-        def run(self):
-            # type: () -> None
+        def run(self) -> None:
             try:
                 self.result = func(*args, **kwargs)
             except BaseException:
                 self.exc_info = sys.exc_info()
 
-        def raise_async_timeout(self):
-            # type: () -> None
+        def raise_async_timeout(self) -> None:
             # Called from another thread.
             # Attempt to raise a TimeoutExpired in the thread represented by 'self'.
+            assert self.ident is not None  # Thread should be running; c_long expects int
             tid = ctypes.c_long(self.ident)
             result = ctypes.pythonapi.PyThreadState_SetAsyncExc(
                 tid, ctypes.py_object(TimeoutExpired))
@@ -92,4 +86,5 @@ def timeout(timeout, func, *args, **kwargs):
         # Raise the original stack trace so our error messages are more useful.
         # from http://stackoverflow.com/a/4785766/90777
         six.reraise(thread.exc_info[0], thread.exc_info[1], thread.exc_info[2])
+    assert thread.result is not None  # assured if above did not reraise
     return thread.result

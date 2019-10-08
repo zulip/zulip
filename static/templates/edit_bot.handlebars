@@ -1,0 +1,36 @@
+<form class="edit_bot_form form-horizontal" data-target="edit-bot" data-title="{{t 'Edit bot' }}" data-user-id="{{bot.user_id}}"
+  data-email="{{bot.email}}" data-type="{{bot.bot_type}}">
+    <div class="bot_edit_errors alert alert-error hide"></div>
+    <div class="">
+        <label>{{t "Bot email" }}</label>
+        <div class="edit_bot_email">{{bot.email}}</div>
+    </div>
+    <div class="edit-bot-form-box">
+        <div class="">
+            <label for="edit_bot_name">{{t "Full name" }}</label>
+            <input id="edit_bot_name" type="text" name="bot_name" class="edit_bot_name required" value="{{bot.full_name}}" maxlength=50 />
+            <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
+        </div>
+        <div class="edit-bot-owner">
+            <label for="bot_owner_select">{{t "Owner" }}</label>
+            <div class="select-form">
+                {{partial "bot_owner_select" }}
+            </div>
+        </div>
+        <div id="service_data">
+        </div>
+        <div class="avatar-section">
+            <label for="bot_avatar_file_input">Avatar</label>
+            <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
+            <div class="edit_bot_avatar_file"></div>
+            <button type="button" class="btn btn-default edit_bot_avatar_upload_button">{{t "Choose avatar" }}</button>
+            <button type="button" class="btn btn-default edit_bot_avatar_clear_button display-none">{{t "Clear avatar" }}</button>
+            <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
+        </div>
+        <div class="buttons">
+            <input type="submit" class="btn btn-primary edit_bot_button" value="{{t 'Save' }}" />
+            <button type="button" class="btn btn-default reset_edit_bot" data-sidebar-form-close>{{t 'Cancel' }}</button>
+            <div class="edit_bot_spinner"></div>
+        </div>
+    </div>
+</form>

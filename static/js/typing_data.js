@@ -1,6 +1,8 @@
 var typing_data = (function () {
 var exports = {};
 
+// See docs/subsystems/typing-indicators.md for details on typing indicators.
+
 var typist_dct = new Dict();
 var inbound_timer_dict = new Dict();
 
@@ -8,20 +10,8 @@ function to_int(s) {
     return parseInt(s, 10);
 }
 
-function sorted(user_ids) {
-    // This mapping makes sure we are using ints, and
-    // it also makes sure we don't mutate the list.
-    var id_list = _.map(user_ids, to_int);
-    id_list.sort(function (a, b) {
-        return a - b;
-    });
-    id_list = _.uniq(id_list, true);
-
-    return id_list;
-}
-
 function get_key(group) {
-    var ids = sorted(group);
+    var ids = util.sorted_ids(group);
     return ids.join(',');
 }
 
@@ -32,7 +22,7 @@ exports.add_typist = function (group, typist) {
     if (!_.contains(current, typist)) {
         current.push(typist);
     }
-    typist_dct.set(key, sorted(current));
+    typist_dct.set(key, util.sorted_ids(current));
 };
 
 exports.remove_typist = function (group, typist) {
@@ -59,7 +49,7 @@ exports.get_group_typists = function (group) {
 
 exports.get_all_typists = function () {
     var typists = _.flatten(typist_dct.values(), true);
-    typists = sorted(typists);
+    typists = util.sorted_ids(typists);
     typists = _.uniq(typists, true);
     return typists;
 };
@@ -89,3 +79,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = typing_data;
 }
+window.typing_data = typing_data;

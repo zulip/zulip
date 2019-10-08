@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+# cd into $1 and then exec the rest of the args
+
+cd "$1"
+shift
+exec "$@"

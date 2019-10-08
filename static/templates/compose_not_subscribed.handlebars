@@ -1,0 +1,12 @@
+<div class="compose_not_subscribed">
+    <p>
+        {{#tr this}}
+        You're not subscribed to this stream. You will not be notified if other users reply to your message.
+        {{/tr}}
+    </p>
+    <div>
+        {{#if should_display_sub_button}}
+        <button id="error-message-sub-button" class="btn btn-warning subscribe-button sub_unsub_button">{{t "Subscribe" }}</button><button type="button" id="compose_not_subscribed_close" class="close">&times;</button>
+        {{/if}}
+    </div>
+</div>

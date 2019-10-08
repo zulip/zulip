@@ -1,18 +1,22 @@
-# Join Zulip chat badge
+# "Join Zulip" chat badge
 
-If you'd like to link to your Zulip organization in your project's
-documentation or GitHub homepage, you can do that with our
-[shields.io](https://shields.io) badge:
-[![](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
+You can link to your Zulip from the web with a Zulip
+[shields.io](https://github.com/badges/shields) badge:
 
-To embed this badge in a Markdown document, simply copy and paste the
-following Markdown, replacing `https://chat.zulip.org` with the URL of
-your Zulip server:
+[![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 
+Good places for the badge include your project's landing page, support
+pages, and/or GitHub homepage.
+
+To embed a Zulip badge, copy and paste the following, replacing
+`https://chat.zulip.org` with the URL of your Zulip organization:
+
+Markdown
 ```
-[![](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
+[![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 ```
 
-!!! tip ""
-    This badge is dynamically generated; visit
-    [shields.io](https://shields.io) for details about customizing it.
+HTML
+```
+<a href="https://chat.zulip.org"><img src="https://img.shields.io/badge/zulip-join_chat-brightgreen.svg"></a>
+```

@@ -11,9 +11,9 @@ exports.find_files_to_run = function () {
     var testsDifference = [];
     if (process.argv[2]) {
         oneFileFilter = process.argv
-          .slice(2)
-          .filter(function (filename) {return (/[.]js$/).test(filename);})
-          .map(function (filename) {return filename.replace(/\.js$/i, '');});
+            .slice(2)
+            .filter(function (filename) {return (/[.]js$/).test(filename);})
+            .map(function (filename) {return filename.replace(/\.js$/i, '');});
     }
 
     // tests_dir is where we find our specific unit tests (as opposed
@@ -21,9 +21,9 @@ exports.find_files_to_run = function () {
     var tests_dir = __dirname.replace(/zjsunit/, 'node_tests');
 
     var tests = fs.readdirSync(tests_dir)
-      .filter(function (filename) {return !(/^\./i).test(filename);})
-      .filter(function (filename) {return (/\.js$/i).test(filename);})
-      .map(function (filename) {return filename.replace(/\.js$/i, '');});
+        .filter(function (filename) {return !(/^\./i).test(filename);})
+        .filter(function (filename) {return (/\.js$/i).test(filename);})
+        .map(function (filename) {return filename.replace(/\.js$/i, '');});
 
     if (oneFileFilter.length > 0) {
         tests = tests.filter(function (filename) {
@@ -33,7 +33,7 @@ exports.find_files_to_run = function () {
     }
 
     testsDifference.forEach(function (filename) {
-        console.log(filename + " does not exist");
+        throw filename + ".js does not exist";
     });
 
     tests.sort();

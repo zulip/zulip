@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Zulip</title>
+    </head>
+    <body>
+        <span style="display:none !important;
+          visibility:hidden;
+          color:transparent;
+          mso-hide:all;
+          font-size:1px;
+          color:hsl(0, 0%, 100%);
+          line-height:1px;
+          max-height:0px;
+          height:0px;
+          max-width:0px;
+          width:0px;
+          opacity:0;
+          overflow:hidden;">
+            {% block preheader %}{% endblock %}
+        </span>
+        {% block content %}{% endblock %}
+        {% block manage_preferences %}{% endblock %}
+    </body>
+</html>

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -e
+
+usage() {
+    echo "usage: destroy-all -f" >&2
+    exit 1
+}
+
+args="$(getopt -o +f --long help,force -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --help) usage;;
+        -f|--force) FORCE=1; shift;;
+        --) shift; break;;
+        *) usage;;
+    esac
+done
+
+if [ -z "$FORCE" ] || [ "$#" -gt 0 ]; then
+    usage
+fi
+
+if [ "$EUID" -ne 0 ]; then
+    echo "error: this script must be run as root" >&2
+    exit 1
+fi
+
+lxc-ls -f \
+  | perl -lane '$_ = $F[0]; print if (/^zulip-install-/ && !/-base$/)' \
+  | while read -r c
+do
+    echo "$c"
+    lxc-stop -n "$c"
+    lxc-destroy -n "$c"
+done

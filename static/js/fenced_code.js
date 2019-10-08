@@ -9,13 +9,13 @@ var exports = {};
 // auto-completing code blocks missing a trailing close.
 
 // See backend fenced_code.py:71 for associated regexp
-var fencestr = "^(~{3,}|`{3,})"          + // Opening Fence
-               "[ ]*"                    + // Spaces
-               "("                       +
-                   "\\{?\\.?"            +
-                   "([a-zA-Z0-9_+-]*)"   + // Language
-                   "\\}?"                +
-               "[ ]*"                    + // Spaces
+var fencestr = "^(~{3,}|`{3,})"            + // Opening Fence
+               "[ ]*"                      + // Spaces
+               "("                         +
+                   "\\{?\\.?"              +
+                   "([a-zA-Z0-9_+-./#]*)"  + // Language
+                   "\\}?"                  +
+               "[ ]*"                      + // Spaces
                ")$";
 var fence_re = new RegExp(fencestr);
 
@@ -46,8 +46,8 @@ function wrap_quote(text) {
     _.each(paragraphs, function (paragraph) {
         var lines = paragraph.split('\n');
         quoted_paragraphs.push(_.map(
-                                    _.reject(lines, function (line) { return line === ''; }),
-                                    function (line) { return '> ' + line; }).join('\n'));
+            _.reject(lines, function (line) { return line === ''; }),
+            function (line) { return '> ' + line; }).join('\n'));
     });
     return quoted_paragraphs.join('\n\n');
 }
@@ -107,7 +107,7 @@ exports.process_fenced_code = function (content) {
                         if (line === fence) {
                             this.done();
                         } else {
-                            consume_line(lines, line);
+                            lines.push(line);
                         }
                     },
 
@@ -195,3 +195,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = fenced_code;
 }
+window.fenced_code = fenced_code;

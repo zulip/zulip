@@ -6,109 +6,22 @@
     hence the name.
 #}
 
-{% block customhead %}
-{% stylesheet 'portico' %}
+{% block porticocustomhead %}
+{{ render_bundle('translations') }}
+{{ render_bundle('portico') }}
 {% endblock %}
 
 {% block content %}
-<div class="header">
-    <div class="stripes"></div>
-    <div class="darker"></div>
-    <div class="header-main" id="top_navbar">
-        <div class="column-left">
-            <div>
-                {% if custom_logo_url %}
-                <a class="brand logo" href="{{ server_uri }}/"><img draggable="false" src="{{ custom_logo_url }}" class="portico-logo" alt="Zulip" content="Zulip" /></a>
-                {% else %}
-                <a class="brand logo" href="{{ server_uri }}">
-                    <svg class="brand-logo" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
-                        <g transform="translate(-297.14285,-466.64792)">
-                            <circle cx="317.14285" cy="486.64792" r="19.030317" style="fill:#fff;stroke-width:1.93936479;stroke:transparent"></circle>
-                            <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z" style="fill:#52c2af;stroke:#52c2af"></path>
-                        </g>
-                    </svg>
-                    <span>Zulip</span>
-                </a>
-                {% endif %}
+<div class="portico-container" data-platform="{{ platform }}">
+    <div class="portico-wrap">
+        {% include 'zerver/portico-header.html' %}
+        <div class="app portico-page {% block portico_class_name %}{% endblock %}">
+            <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
+                {% block portico_content %}
+                {% endblock %}
             </div>
         </div>
-
-        <div class="column-right top-links">
-            {% if login_link_disabled %}
-            {% elif not only_sso %}
-            <a href="{{login_url}}">{{ _('Log in') }}</a>
-            {% endif %}
-
-            {% if register_link_disabled %}
-            {% elif only_sso %}
-            <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
-            {% else %}
-            <a href="{{ url('register') }}">{{ _('Register') }}</a>
-            {% endif %}
-        </div>
     </div>
-</div>
-
-<div class="app portico-page">
-    <div class="portico-os-announcement">
-        {% block os_announcement %}
-        {% endblock %}
-    </div>
-    <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
-        {% block portico_content %}
-        {% endblock %}
-    </div>
-    <div class="footer-padder{% block hello_page_footer %}{% endblock %}"></div>
-</div>
-
-<div class="footer">
-    <div class="footer-main">
-        <ul class="footer-navigation">
-            {% if about_link_disabled %}
-            {% else %}
-            <li><a href="{{ server_uri }}/hello">{{ _('About') }}</a></li>
-            {% endif %}
-
-            {% if terms_of_service %}
-                {% if about_link_disabled %}
-                {% else %}
-                <li><span class="little-bullet">·</span></li>
-                {% endif %}
-
-                <li><a href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
-                <li><span class="little-bullet">·</span></li>
-                <li><a href="{{ server_uri }}/privacy">{{ _('Privacy') }}</a></li>
-            {% endif %}
-
-            <li><span class="little-bullet">·</span></li>
-            <li><a href="{{ server_uri }}/features">{{ _('Features') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
-            <li><a href="{{ server_uri }}/help">{{ _('User documentation') }}</a></li>
-
-            {% if login_link_disabled %}
-            {% else %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a href="{{login_url}}">{{ _('Log in') }}</a></li>
-            {% endif %}
-
-            {% if register_link_disabled %}
-            {% elif only_sso %}
-            {% else %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a href="{{ url('register') }}">{{ _('Register') }}</a></li>
-            {% endif %}
-
-            {% if open_realm_creation %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a href="{{ server_uri }}/create_realm">{{ _('Create new organization') }}</a></li>
-            {% endif %}
-
-            {% if find_team_link_disabled %}
-            {% else %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a href="{{ server_uri }}/find_my_team">{{ _('Find my team') }}</a></li>
-            {% endif %}
-        </ul>
-    </div>
+    {% include 'zerver/footer.html' %}
 </div>
 {% endblock %}

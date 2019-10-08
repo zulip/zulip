@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Lint all commit messages that are newer than upstream/master if running
+# locally or the commits in the push or PR if in Travis CI.
+
+# The rules can be found in /.gitlint
+
+if [ "$TRAVIS" ]; then
+    # Work around https://github.com/travis-ci/travis-ci/issues/4596
+    range="${TRAVIS_COMMIT_RANGE/.../..}"
+else
+    range="upstream/master..HEAD"
+fi
+
+commits=$(git log "$range" | wc -l)
+if [ "$commits" -gt 0 ]; then
+    # Only run gitlint with non-empty commit lists, to avoid a printed
+    # warning.
+    gitlint --commits "$range"
+fi

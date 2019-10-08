@@ -1,50 +1,70 @@
-$(function () {
-    $("#stream-filters-container").perfectScrollbar({
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 20,
-    });
-});
 
-function scrollbarWidth() {
-    $('body').prepend('<div id="outertest" style="width:200px; height:150px; position: absolute; top: 0; left: 0; overflow-x:hidden; overflow-y:scroll; background: #ff0000; visibility: hidden;"><div id="innertest" style="width:100%; height: 200px; overflow-y: visible;">&nbsp;</div></div>');
+var scroll_bar = (function () {
 
-    var scrollwidth = $("#outertest").outerWidth() - $("#innertest").outerWidth();
+var exports = {};
 
-    $("#outertest").remove();
+// From https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
+function getScrollbarWidth() {
+    var outer = document.createElement("div");
+    outer.style.visibility = "hidden";
+    outer.style.width = "100px";
+    outer.style.msOverflowStyle = "scrollbar"; // needed for WinJS apps
 
-    return scrollwidth;
+    document.body.appendChild(outer);
+
+    var widthNoScroll = outer.offsetWidth;
+    // force scrollbars
+    outer.style.overflow = "scroll";
+
+    // add innerdiv
+    var inner = document.createElement("div");
+    inner.style.width = "100%";
+    outer.appendChild(inner);
+
+    var widthWithScroll = inner.offsetWidth;
+
+    // remove divs
+    outer.parentNode.removeChild(outer);
+
+    return widthNoScroll - widthWithScroll;
 }
 
+exports.initialize = function () {
 // Workaround for browsers with fixed scrollbars
-$(function () {
+    var sbWidth = getScrollbarWidth();
 
+    if (sbWidth > 0) {
+        $(".header").css("left", "-" + sbWidth + "px");
+        $(".header-main").css("left", sbWidth + "px");
+        $(".header-main").css("max-width", 1400 + sbWidth + "px");
+        $(".header-main .column-middle").css("margin-right", 250 + sbWidth + "px");
 
-   var sbWidth = scrollbarWidth();
+        $(".fixed-app").css("left", "-" + sbWidth + "px");
+        $(".fixed-app .app-main").css("max-width", 1400 + sbWidth + "px");
+        $(".fixed-app .column-middle").css("margin-left", 250 + sbWidth + "px");
 
-   if (sbWidth > 0) {
+        $(".column-right").css("right", sbWidth + "px");
+        $(".app-main .right-sidebar").css({"margin-left": sbWidth + "px",
+                                           width: 250 - sbWidth + "px"});
 
-    $(".header").css("left", "-" + sbWidth + "px");
-    $(".header-main").css("left", sbWidth + "px");
-    $(".header-main").css("max-width", (1400 + sbWidth) + "px");
-    $(".header-main .column-middle").css("margin-right", (250 + sbWidth) + "px");
+        $("#compose").css("left", "-" + sbWidth + "px");
+        $(".compose-content").css({left: sbWidth + "px",
+                                   "margin-right": 250 + sbWidth + "px"});
+        $("#compose-container").css("max-width", 1400 + sbWidth + "px");
+        $('#keyboard-icon').css({right: sbWidth + 13 + "px"});
 
-    $(".fixed-app").css("left", "-" + sbWidth + "px");
-    $(".fixed-app .app-main").css("max-width", (1400 + sbWidth) + "px");
-    $(".fixed-app .column-middle").css("margin-left", (250 + sbWidth) + "px");
+        $("head").append("<style> @media (max-width: 1165px) { .compose-content, .header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +
+                         "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " + (7 + sbWidth) + "px !important; } } " +
+                         "</style>");
+    }
 
-    $(".column-right").css("right", sbWidth + "px");
-    $(".app-main .right-sidebar").css({"margin-left": (sbWidth) + "px",
-                                       width: (250 - sbWidth) + "px"});
+    ui.set_up_scrollbar($("#stream-filters-container"));
+};
 
-    $("#compose").css("left", "-" + sbWidth + "px");
-    $(".compose-content").css({left: sbWidth + "px",
-                               "margin-right": (250 + sbWidth) + "px"});
-    $("#compose-container").css("max-width", (1400 + sbWidth) + "px");
+return exports;
+}());
+if (typeof module !== 'undefined') {
+    module.exports = scroll_bar;
+}
 
-    $("head").append("<style> @media (max-width: 975px) { .compose-content, .header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +
-                     "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " + (7 + sbWidth) + "px !important; } } " +
-                     "</style>");
-   }
-
-});
+window.scroll_bar = scroll_bar;

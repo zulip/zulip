@@ -1,72 +1,126 @@
 <h2 style="text-align: center;">{{ num_active_sites }} active sites</h2>
 
+<p id="utctime" style="text-align: center;"></p>
+<p id="localtime" style="text-align: center;"></p>
+<script>
+    var now = moment('{{ now }}');
+    $('#utctime')[0].innerHTML = moment.utc(now).format('YYYY-MM-DD HH:mm') + 'Z';
+    $('#localtime')[0].innerHTML = '(' + now.format('YYYY-MM-DD HH:mm ZZ') + ')';
+    $(document).ready(function() {
+        $('a.envelope-link').click(function() {
+            var temp = $(document.createElement('input'));
+            $("body").append(temp);
+            temp.val($(this).data("value")).select();
+            document.execCommand("copy");
+            temp.remove();
+            $(this).fadeOut(250);
+            $(this).fadeIn(1000);
+        });
+    });
+</script>
+
+<ul>
+    <li><strong>active (site)</strong> - has ≥5 DAUs</li>
+    <li>sites are listed if ≥1 users active in last 2 weeks</li>
+    <li><strong>user</strong> - registered user, not deactivated, not a bot</li>
+    <li><strong>active (user)</strong> - sent a message, or advanced the pointer (reading messages doesn't count unless advances the pointer)</li>
+    <li><strong>ARR</strong> (Annual recurring revenue) - the number of users they are paying for * annual price/user.</li>
+    <li><strong><th><i class="fa fa-envelope"></i></th></strong> - copies realm admin emails to clipboard</li>
+    <li><strong>DAU</strong> (Daily Active Users) - users active in last 24hr</li>
+    <li><strong>WAU</strong> (Weekly Active Users) - users active in last 7 * 24hr</li>
+    <li><strong>DAT</strong> (Daily Active Time) - total user-activity time in last 24hr</li>
+    <li><strong>Human message</strong> - message sent by non-bot user, and not with known-bot client</li>
+    <li><a href="/stats/installation">Server total /stats style graphs</a></li>
+</ul>
+
 <table class="table summary-table sortable table-striped table-bordered">
 
     <thead class="activity_head">
-    <tr>
-        <th>Realm</th>
-        <th>Active users</th>
-        <th>At-risk users</th>
-        <th>Total users</th>
-        <th>Bots</th>
-        <th>Hours per user</th>
-        <th>Hours</th>
-        <th></th>
-        <th colspan=8>Messages sent</th>
-    </tr>
+        <tr>
+            <th>Realm</th>
+            <th>Created (green if ≤12wk)</th>
+            <th>Plan Type</th>
+            <th>ARR</th>
+            <th></th>
+            <th>DAU</th>
+            <th>WAU</th>
+            <th>Total users</th>
+            <th>Bots</th>
+            <th>DAT/DAU (hr)</th>
+            <th>DAT (hr)</th>
+            <th></th>
+            <th colspan=8>Human messages sent, last 8 UTC days (today-so-far first)</th>
+        </tr>
     </thead>
 
     <tbody>
-    {% for row in rows %}
+        {% for row in rows %}
         <tr>
 
-            {# Realm #}
             <td>
                 {{ row.string_id }}
             </td>
 
-            {# Active users #}
-            <td class="number">
-                {{ row.active_user_count }}
+            <td {% if row.is_new %}
+              class="good" {% else %}
+              class="neutral" {% endif %} >
+                {{ row.date_created_day }}
             </td>
 
-            {# At risk users #}
-            <td class="number">
-                {{ row.at_risk_count }}
+            <td>
+                {{ row.plan_type_string }}
             </td>
 
-            {# Total users #}
+            <td class="number">
+                {% if row.amount %}
+                {{ row.amount }}
+                {% endif %}
+            </td>
+
+            <td>
+                {% if not loop.last %}
+                <a class="envelope-link" data-value="{{ row.realm_admin_email }}">
+                    <i class="fa fa-envelope"></i>
+                </a>
+                {% endif %}
+                {{ row.stats_link }}
+            </td>
+
+            <td class="number">
+                {{ row.dau_count }}
+            </td>
+
+            <td class="number">
+                {{ row.wau_count }}
+            </td>
+
             <td class="number">
                 {{ row.user_profile_count }}
             </td>
 
-            {# Bots #}
             <td class="number">
                 {{ row.bot_count }}
             </td>
 
-            {# Hours per user #}
             <td class="number">
                 {% if row.hours_per_user %}
                 {{ row.hours_per_user }}
                 {% endif %}
             </td>
 
-            {# Hours #}
             <td class="number">
                 {{ row.hours }}
             </td>
 
             <td>&nbsp;</td>
 
-            {# Messages sent #}
             {% if row.history %}
-                {{ row.history|safe }}
+            {{ row.history|safe }}
             {% else %}
-                <td colspan=8></td>
+            <td colspan=8></td>
             {% endif %}
         </tr>
-    {% endfor %}
+        {% endfor %}
     </tbody>
 
 </table>

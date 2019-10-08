@@ -1,2 +1,0 @@
--r py2_common.txt
--r dev.txt

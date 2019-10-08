@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Processes updates to postgres Full Text Search for new/edited messages.
 #
 # Zulip manages its postgres full-text search as follows.  When the
@@ -6,8 +6,6 @@
 # message ID to the `fts_update_log` table.  In the background, this
 # program processes `fts_update_log`, updating the postgres full-text
 # search column search_tsvector in the main zerver_message.
-from __future__ import print_function
-
 import sys
 
 # We want to use a virtualenv in production, which will be in /home/zulip/deployments/current.
@@ -27,6 +25,7 @@ import psycopg2.extensions
 import select
 import time
 import logging
+import configparser
 import sys
 import os
 
@@ -35,10 +34,10 @@ def update_fts_columns(cursor):
     cursor.execute("SELECT id, message_id FROM fts_update_log;")
     ids = []
     for (id, message_id) in cursor.fetchall():
-        if settings.USING_PGROONGA:
+        if USING_PGROONGA:
             cursor.execute("UPDATE zerver_message SET "
                            "search_pgroonga = "
-                           "subject || ' ' || rendered_content "
+                           "escape_html(subject) || ' ' || rendered_content "
                            "WHERE id = %s", (message_id,))
         cursor.execute("UPDATE zerver_message SET "
                        "search_tsvector = to_tsvector('zulip.english_us_search', "
@@ -53,6 +52,7 @@ def am_master(cursor):
     cursor.execute("SELECT pg_is_in_recovery()")
     return not cursor.fetchall()[0][0]
 
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("process_fts_updates")
 logger.setLevel(logging.DEBUG)
@@ -67,10 +67,24 @@ try:
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
     from django.conf import settings
     remote_postgres_host = settings.REMOTE_POSTGRES_HOST
-except ImportError as e:
+    USING_PGROONGA = settings.USING_PGROONGA
+except ImportError:
     # process_fts_updates also supports running locally on a remote
     # postgres server; in that case, one can just connect to localhost
     remote_postgres_host = ''
+    USING_PGROONGA = False
+
+# Since we don't want a hard dependency on being able to access the
+# Zulip settings (as we may not be running on a server that has that
+# data), we determine whether we're using pgroonga using
+# /etc/zulip/zulip.conf.
+#
+# However, we still also check the `USING_PGROONGA` variable, since
+# that's all we have in development.
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+if config_file.has_option('machine', 'pgroonga'):
+    USING_PGROONGA = True
 
 if remote_postgres_host != '':
     postgres_password = ''

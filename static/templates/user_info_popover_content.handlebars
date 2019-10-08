@@ -1,32 +1,98 @@
 {{! Contents of the "message info" popup }}
-<ul class="nav nav-list actions_popover sender_info_popover" data-user-id="{{user_id}}">
+<ul class="nav nav-list actions_popover info_popover_actions" data-user-id="{{user_id}}">
     <div class="popover_info">
-        <li><b>{{user_full_name}}</b></li>
-        <li class='my_email'>{{user_email}}</li>
+        <li class="user_{{presence_status}}">
+            <b>{{user_full_name}}</b>
+            {{#if is_active }}
+                {{#if is_bot}}
+                <i class="zulip-icon bot" aria-hidden="true"></i>
+                {{else}}
+                <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+                {{/if}}
+            {{/if}}
+        </li>
 
-        {{#if historical}}
-        <li class="small">({{t "Message sent when you were not subscribed" }})</li>
+        {{#if is_active }}
+        <li class="user_popover_email">
+            <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
+            {{ user_email }}
+            <div class="tooltip_holder">
+                <span class="email_tooltip">{{ user_email }}</span>
+            </div>
+        </li>
+        {{else}}
+        <li class="user_popover_email half-opacity italic">{{#tr this}}(This user has been deactivated){{/tr}}</li>
         {{/if}}
+
+        {{#if user_time}}
+        <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
+        {{/if}}
+
+        <li>{{ user_type }}</li>
     </div>
     <hr />
+    {{#if show_user_profile}}
     <li>
-        <a href="#" class="{{ private_message_class }}">
-            <i class="icon-vector-edit"></i> {{#tr this}}Send private message{{/tr}}
+        <a href="#" class="view_user_profile">
+            {{#if is_me}}
+                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View your profile{{/tr}}
+            {{else}}
+                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View user profile{{/tr}}
+            {{/if}}
         </a>
     </li>
+    {{/if}}
+    {{#if is_active}}
+        {{#unless is_me}}
+        <li>
+            <a href="#" class="{{ private_message_class }}">
+                <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
+            </a>
+        </li>
+        {{/unless}}
+    {{/if}}
+    {{#if is_me}}
+    <li>
+        <a href="/#settings/your-account">
+            <i class="fa fa-edit" aria-hidden="true"></i> {{#tr this}}Edit your profile{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+    {{#unless is_me}}
+    <li>
+        <a href="#" class="mention_user">
+            <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
+        </a>
+    </li>
+    {{/unless}}
+    <hr />
     <li>
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
-            <i class="icon-vector-user"></i> {{#tr this}}Private messages with user{{/tr}}
+            <i class="fa fa-lock" aria-hidden="true"></i>
+            {{#if is_me}}
+                {{#tr this}}View private messages to myself{{/tr}}
+            {{else}}
+                {{#tr this}}View private messages{{/tr}}
+            {{/if}}
         </a>
     </li>
     <li>
         <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
-            <i class="icon-vector-bullhorn"></i> {{#tr this}}Messages sent by user{{/tr}}
+            <i class="fa fa-bullhorn" aria-hidden="true"></i> {{#tr this}}View messages sent{{/tr}}
         </a>
     </li>
+    {{#if can_set_away}}
     <li>
-        <a class="mention_user">
-            <i>@</i> {{#tr this}}Reply mentioning user{{/tr}}
+        <a href="#" class="set_away_status">
+            <i class="fa fa-circle-thin" aria-hidden="true"></i> {{#tr this}}Set status to away{{/tr}}
         </a>
     </li>
+    {{/if}}
+    {{#if can_revoke_away}}
+    <li>
+        <a href="#" class="revoke_away_status">
+            <i class="fa fa-circle-thin" aria-hidden="true"></i> {{#tr this}}Clear away status{{/tr}}
+        </a>
+    </li>
+    {{/if}}
 </ul>

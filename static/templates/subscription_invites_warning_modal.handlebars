@@ -1,0 +1,15 @@
+<div id='invites-warning-overlay' class='overlay new-style show' style='z-index:1000;'>
+    <div class="modal modal-bg" id="invites-warning-modal" tabindex="-1" role="dialog" aria-labelledby="invites-warning-label" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close close-invites-warning-modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+            <h3 id="invites-warning-label">{{t "Large number of subscribers" }}</h3>
+        </div>
+        <div class="modal-body">
+            <p>{{#tr this}}Are you sure you want to create stream '__stream_name__' and subscribe __count__ users to it?{{/tr}}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default close-invites-warning-modal">{{t "Go back" }}</button>
+            <button class="btn btn-warning confirm-invites-warning-modal">{{#tr this}}Yes, subscribe __count__ users!{{/tr}}</button>
+        </div>
+    </div>
+</div>

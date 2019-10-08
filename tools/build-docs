@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -eu
+
+cd "$(dirname "$0")"/../docs
+rm -rf _build
+make html

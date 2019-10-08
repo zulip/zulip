@@ -1,37 +1,31 @@
 {{! Alert word in the settings page that can be removed }}
 <li class="alert-word-item" data-word='{{word}}'>
     {{#if editing}}
-    <div class="alert-word-settings-form">
-        <div class="add-new-alert-word-box grey-bg">
-            <form id="create_alert_word_form" class="form-horizontal no-padding">
-                <h4 class="new-alert-word-section-title light no-margin">{{t "Add a new alert word"}}</h4>
+    <form id="create_alert_word_form" class="form-horizontal">
+        <div class="add-new-alert-word-box grey-box">
+            <div class="new-alert-word-form">
+                <h4 class="new-alert-word-section-title settings-section-title no-padding">{{t "Add a new alert word"}}</h4>
                 <div class="new-alert-word-form">
                     <div class="input-group">
                         <label for="create_alert_word_name">{{t "New alert word" }}</label>
                         <input type="text" name="alert_word_name" id="create_alert_word_name" class="required"
-                            maxlength=100 placeholder="{{t 'Alert word' }}" value="" />
+                          maxlength=100 placeholder="{{t 'Alert word' }}" value="" />
                     </div>
-                    <div class="alert alert-danger" id="empty_alert_word_error" role="alert">
-                        <button type="button" class="close close-empty-alert-word-error" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <span>{{t "Alert words can't be empty!"}}</span>
-                    </div>
-                    <button class="button sea-green add-alert-word" id="create_alert_word_button" type="button">
+                    <button class="button rounded sea-green add-alert-word" id="create_alert_word_button" type="button">
                         {{t 'Add alert word'}}
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
     {{else}}
-    <div class="alert-word-information-box grey-bg">
+    <div class="alert-word-information-box grey-box">
         <div class="alert_word_listing">
             <span class="value">{{word}}</span>
         </div>
         <div class="edit-alert-word-buttons">
-            <button type="submit" class="button small btn-small btn-danger remove-alert-word" title="{{t 'Delete alert word' }}" data-word="{{word}}">
-                <i class="icon-vector-trash"></i>
+            <button type="submit" class="button small btn-danger remove-alert-word" title="{{t 'Delete alert word' }}" data-word="{{word}}">
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
             </button>
         </div>
     </div>

@@ -1,10 +1,10 @@
-from __future__ import absolute_import
-from typing import Optional, Any, Text
+from typing import Optional, Dict, Any
 from pyoembed import oEmbed, PyOembedException
 
 
-def get_oembed_data(url, maxwidth=640, maxheight=480):
-    # type: (Text, Optional[int], Optional[int]) -> Any
+def get_oembed_data(url: str,
+                    maxwidth: Optional[int]=640,
+                    maxheight: Optional[int]=480) -> Optional[Dict[str, Any]]:
     try:
         data = oEmbed(url, maxwidth=maxwidth, maxheight=maxheight)
     except PyOembedException:

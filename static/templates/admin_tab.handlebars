@@ -1,10 +1,11 @@
-<div class="alert" id="administration-status"></div>
+<div class="alert" id="organization-status"></div>
+{{ partial "admin-settings-modals"}}
 
-{{ partial "deactivation-user-modal" }}
-{{ partial "deactivation-stream-modal" }}
-{{ partial "realm-domains-modal" }}
+{{ partial "organization-profile-admin" }}
 
 {{ partial "organization-settings-admin" }}
+
+{{ partial "organization-permissions-admin" }}
 
 {{ partial "emoji-settings-admin" }}
 
@@ -14,10 +15,14 @@
 
 {{ partial "bot-list-admin" }}
 
-{{ partial "streams-list-admin" }}
-
 {{ partial "default-streams-list-admin" }}
 
 {{ partial "auth-methods-settings-admin" }}
 
-{{ partial "realm-filter-settings-admin" }}
+{{ partial "linkifier-settings-admin" }}
+
+{{ partial "invites-list-admin" }}
+
+{{ partial "user-groups-admin" }}
+
+{{ partial "profile-field-settings-admin" }}

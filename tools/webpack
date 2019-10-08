@@ -1,10 +1,10 @@
-#!/usr/bin/env python
-from __future__ import absolute_import
+#!/usr/bin/env python3
 
 import argparse
 import os
 import subprocess
 import sys
+import json
 
 # check for the venv
 from lib import sanity_check
@@ -17,28 +17,104 @@ from django.conf import settings
 os.chdir(settings.DEPLOY_ROOT)
 STATIC_PATH = 'static/'
 
-def run():
-    # type: () -> None
-    """Builds for production, writing the output to disk"""
-    subprocess.check_call(['node', 'node_modules/.bin/webpack'] +
-                          ['--config', 'tools/webpack.production.config.js'])
 
-def run_watch(port):
-    # type: (str) -> None
+def build_for_prod_or_casper(quiet):
+    # type: (bool) -> None
+    """Builds for production, writing the output to disk"""
+
+    webpack_args = ['node', 'node_modules/.bin/webpack-cli',
+                    '--config', 'tools/webpack.config.ts', '-p',
+                    '--env', 'production']
+    if quiet:
+        webpack_args += ['--display', 'errors-only']
+        print('Starting webpack compilation')
+    subprocess.check_call(webpack_args)
+
+def build_for_dev_server(host, port, minify, disable_host_check):
+    # type: (str, str, bool, bool) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
-    subprocess.Popen(['node', 'node_modules/.bin/webpack-dev-server'] +
-                     ['--config', 'tools/webpack.config.js', '--watch-poll', '--port', port])
+
+    # This is our most dynamic configuration, which we use for our
+    # dev server.  The key piece here is that we identify changes to
+    # files as devs make edits and serve new assets on the fly.
+    webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
+    webpack_args += [
+        '--config',
+        'tools/webpack.config.ts',
+        '--allowed-hosts', ','.join([host, '.zulipdev.com', '.zulipdev.org']),
+        '--host', host,
+        '--port', port,
+        # We add the hot flag using the cli because it takes care
+        # of addition to entry points and adding the plugin
+        # automatically
+        '--hot'
+    ]
+    if minify:
+        webpack_args.append('--optimize-minimize')
+    if disable_host_check:
+        webpack_args.append('--disable-host-check')
+    subprocess.Popen(webpack_args)
+
+def build_for_most_tests():
+    # type: () -> None
+    """Generates a stub asset stat file for django so backend test can render a page"""
+
+    # Tests like test-backend, test-api, and test-home-documentation use
+    # our "test" configuration.  The one exception is Casper, which uses
+    # our production configuration.
+    #
+    # It's not completely clear why we don't also use the same
+    # configuration for ALL tests, but figuring out the full history here
+    # was out of the scope of the effort here to add some comments and
+    # clean up names.
+    entries = {}
+    with open('tools/webpack.assets.json') as json_data:
+        for entry in json.load(json_data).keys():
+            entries[entry] = [{
+                "name": "%s.js" % (entry,),
+                "publicPath": "http://localhost:3000/webpack-stub/%s-stubentry.js" % (entry,),
+                "path": "/stubfolder/%s-stubfile.js" % (entry,)
+            }]
+    stat_data = {
+        "status": "done",
+        "chunks": entries
+    }
+    directory = 'var'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    with open(os.path.join(directory, 'webpack-stats-test.json'), 'w') as outfile:
+        json.dump(stat_data, outfile)
+
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--test',
+                    action='store_true', dest='test', default=False,
+                    help='generate a stub webpack-stats.json file (for backend testing)')
+parser.add_argument('--quiet',
+                    action='store_true', dest='quiet', default=False,
+                    help='Minimizes webpack output while running')
 parser.add_argument('--watch',
                     action='store_true', dest='watch', default=False,
                     help='watch for changes to source files (for development)')
+parser.add_argument('--host',
+                    action='store', dest='host',
+                    default='127.0.0.1', help='set the host for the webpack server to run on')
 parser.add_argument('--port',
                     action='store', dest='port',
                     default='9994', help='set the port for the webpack server to run on')
-args = parser.parse_args()
+parser.add_argument('--minify',
+                    action='store_true', dest='minify', default=False,
+                    help='Minify and optimize the assets (for development)')
+parser.add_argument('--disable-host-check',
+                    action='store_true', dest='disable_host_check', default=None,
+                    help='Disable host check for webpack-dev-server')
 
-if args.watch:
-    run_watch(args.port)
+args = parser.parse_args()
+if "CASPER_TESTS" in os.environ:
+    build_for_prod_or_casper(args.quiet)
+elif args.test:
+    build_for_most_tests()
+elif args.watch:
+    build_for_dev_server(args.host, args.port, args.minify, args.disable_host_check)
 else:
-    run()
+    build_for_prod_or_casper(args.quiet)

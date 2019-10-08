@@ -1,32 +1,38 @@
-// Read https://zulip.readthedocs.io/en/latest/hashchange-system.html
+// Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
+// or locally: docs/subsystems/hashchange-system.md
 var hashchange = (function () {
 
 var exports = {};
 
-var expected_hash;
 var changing_hash = false;
 
-function set_hash(hash) {
+function get_full_url(hash) {
     var location = window.location;
 
+    if (hash === '' || hash.charAt(0) !== '#') {
+        hash = '#' + hash;
+    }
+
+    // IE returns pathname as undefined and missing the leading /
+    var pathname = location.pathname;
+    if (pathname === undefined) {
+        pathname = '/';
+    } else if (pathname === '' || pathname.charAt(0) !== '/') {
+        pathname = '/' + pathname;
+    }
+
+    // Build a full URL to not have same origin problems
+    var url =  location.protocol + '//' + location.host + pathname + hash;
+    return url;
+}
+
+function set_hash(hash) {
     if (history.pushState) {
-        if (hash === '' || hash.charAt(0) !== '#') {
-            hash = '#' + hash;
-        }
-
-        // IE returns pathname as undefined and missing the leading /
-        var pathname = location.pathname;
-        if (pathname === undefined) {
-            pathname = '/';
-        } else if (pathname === '' || pathname.charAt(0) !== '/') {
-            pathname = '/' + pathname;
-        }
-
-        // Build a full URL to not have same origin problems
-        var url =  location.protocol + '//' + location.host + pathname + hash;
+        var url = get_full_url(hash);
         history.pushState(null, null, url);
     } else {
-        location.hash = hash;
+        blueslip.warn('browser does not support pushState');
+        window.location.hash = hash;
     }
 }
 
@@ -34,61 +40,17 @@ exports.changehash = function (newhash) {
     if (changing_hash) {
         return;
     }
-    $(document).trigger($.Event('zuliphashchange.zulip'));
+    message_viewport.stop_auto_scrolling();
     set_hash(newhash);
     favicon.reset();
-};
-
-// Encodes an operator list into the
-// corresponding hash: the # component
-// of the narrow URL
-exports.operators_to_hash = function (operators) {
-    var hash = '#';
-
-    if (operators !== undefined) {
-        hash = '#narrow';
-        _.each(operators, function (elem) {
-            // Support legacy tuples.
-            var operator = elem.operator;
-            var operand = elem.operand;
-
-            var sign = elem.negated ? '-' : '';
-            hash += '/' + sign + hash_util.encodeHashComponent(operator)
-                  + '/' + hash_util.encode_operand(operator, operand);
-        });
-    }
-
-    return hash;
 };
 
 exports.save_narrow = function (operators) {
     if (changing_hash) {
         return;
     }
-    var new_hash = exports.operators_to_hash(operators);
+    var new_hash = hash_util.operators_to_hash(operators);
     exports.changehash(new_hash);
-};
-
-exports.parse_narrow = function (hash) {
-    var i;
-    var operators = [];
-    for (i=1; i<hash.length; i+=2) {
-        // We don't construct URLs with an odd number of components,
-        // but the user might write one.
-        try {
-            var operator = hash_util.decodeHashComponent(hash[i]);
-            var operand  = hash_util.decode_operand(operator, hash[i+1] || '');
-            var negated = false;
-            if (operator[0] === '-') {
-                negated = true;
-                operator = operator.slice(1);
-            }
-            operators.push({negated: negated, operator: operator, operand: operand});
-        } catch (err) {
-            return undefined;
-        }
-    }
-    return operators;
 };
 
 function activate_home_tab() {
@@ -97,23 +59,23 @@ function activate_home_tab() {
     floating_recipient_bar.update();
 }
 
-// Returns true if this function performed a narrow
-function do_hashchange(from_reload) {
-    // If window.location.hash changed because our app explicitly
-    // changed it, then we don't need to do anything.
-    // (This function only neds to jump into action if it changed
-    // because e.g. the back button was pressed by the user)
-    //
-    // The second case is for handling the fact that some browsers
-    // automatically convert '#' to '' when you change the hash to '#'.
-    if (window.location.hash === expected_hash ||
-        (expected_hash !== undefined &&
-         window.location.hash.replace(/^#/, '') === '' &&
-         expected_hash.replace(/^#/, '') === '')) {
-        return false;
-    }
+var state = {
+    is_internal_change: false,
+    hash_before_overlay: null,
+    old_hash: typeof window !== "undefined" ? window.location.hash : "#",
+};
 
-    $(document).trigger($.Event('zuliphashchange.zulip'));
+function is_overlay_hash(hash) {
+    // Hash changes within this list are overlays and should not unnarrow (etc.)
+    var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
+    var main_hash = hash_util.get_hash_category(hash);
+
+    return overlay_list.indexOf(main_hash) > -1;
+}
+
+// Returns true if this function performed a narrow
+function do_hashchange_normal(from_reload) {
+    message_viewport.stop_auto_scrolling();
 
     // NB: In Firefox, window.location.hash is URI-decoded.
     // Even if the URL bar says #%41%42%43%44, the value here will
@@ -122,7 +84,7 @@ function do_hashchange(from_reload) {
     switch (hash[0]) {
     case "#narrow":
         ui_util.change_tab_to("#home");
-        var operators = exports.parse_narrow(hash);
+        var operators = hash_util.parse_narrow(hash);
         if (operators === undefined) {
             // If the narrow URL didn't parse, clear
             // window.location.hash and send them to the home tab
@@ -131,13 +93,16 @@ function do_hashchange(from_reload) {
             return false;
         }
         var narrow_opts = {
-            select_first_unread: true,
-            change_hash:    false,  // already set
+            change_hash: false,  // already set
             trigger: 'hash change',
         };
-        if (from_reload !== undefined && page_params.initial_narrow_pointer !== undefined) {
-            narrow_opts.from_reload = true;
-            narrow_opts.first_unread_from_server = true;
+        if (from_reload) {
+            blueslip.debug('We are narrowing as part of a reload.');
+            if (page_params.initial_narrow_pointer !== undefined) {
+                home_msg_list.pre_narrow_offset = page_params.initial_offset;
+                narrow_opts.then_select_id = page_params.initial_narrow_pointer;
+                narrow_opts.then_select_offset = page_params.initial_narrow_offset;
+            }
         }
         narrow.activate(operators, narrow_opts);
         floating_recipient_bar.update();
@@ -146,140 +111,188 @@ function do_hashchange(from_reload) {
     case "#":
         activate_home_tab();
         break;
-    case "#streams":
-        ui_util.change_tab_to("#streams");
+    case "#keyboard-shortcuts":
+        info_overlay.show("keyboard-shortcuts");
+        break;
+    case "#message-formatting":
+        info_overlay.show("message-formatting");
+        break;
+    case "#search-operators":
+        info_overlay.show("search-operators");
         break;
     case "#drafts":
-        ui_util.change_tab_to("#drafts");
-        break;
-    case "#administration":
-        ui_util.change_tab_to("#administration");
-        break;
+    case "#invite":
+    case "#streams":
+    case "#organization":
     case "#settings":
-        ui_util.change_tab_to("#settings");
+        blueslip.error('overlay logic skipped for: ' + hash);
         break;
     }
     return false;
 }
 
-// -- -- -- -- -- -- READ THIS BEFORE TOUCHING ANYTHING BELOW -- -- -- -- -- -- //
-// HOW THE HASH CHANGE MECHANISM WORKS:
-// When going from a normal view (eg. `narrow/is/private`) to a settings panel
-// (eg. `settings/your-bots`) it should trigger the `should_ignore` function and
-// return `true` for the current state -- we want to ignore hash changes from
-// within the settings page. The previous hash however should return `false` as it
-// was outside of the scope of settings.
-// there is then an `exit_modal` function that allows the hash to change exactly
-// once without triggering any events. This allows the hash to reset back from
-// a settings page to the previous view available before the settings page
-// (eg. narrow/is/private). This saves the state, scroll position, and makes the
-// hash change functionally inert.
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
-var ignore = {
-    flag: false,
-    prev: null,
-    old_hash: typeof window !== "undefined" ? window.location.hash : "#",
-    group: null,
-};
+function do_hashchange_overlay(old_hash) {
+    var base = hash_util.get_hash_category(window.location.hash);
+    var old_base = hash_util.get_hash_category(old_hash);
+    var section = hash_util.get_hash_section(window.location.hash);
 
-function get_main_hash(hash) {
-    return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
-}
+    var coming_from_overlay = is_overlay_hash(old_hash || '#');
 
-function get_hash_components() {
-    var hash = window.location.hash.split(/\//);
-
-    return {
-        base: hash.shift(),
-        arguments: hash,
-    };
-}
-
-// different groups require different reloads. The grouped elements don't
-// require a reload or overlay change to run.
-var get_hash_group = (function () {
-    var groups = [
-        ["streams"],
-        ["settings", "administration"],
-        ["invite"],
-    ];
-
-    return function (value) {
-        var idx = null;
-
-        _.find(groups, function (o, i) {
-            if (o.indexOf(value) !== -1) {
-                idx = i;
-                return true;
+    // Start by handling the specific case of going
+    // from something like streams/all to streams_subscribed.
+    //
+    // In most situations we skip by this logic and load
+    // the new overlay.
+    if (coming_from_overlay) {
+        if (base === old_base) {
+            if (base === 'streams') {
+                subs.change_state(section);
+                return;
             }
-            return false;
-        });
 
-        return idx;
-    };
-}());
+            if (base === 'settings') {
+                if (!section) {
+                    // We may be on a really old browser or somebody
+                    // hand-typed a hash.
+                    blueslip.warn('missing section for settings');
+                    section = 'your-account';
+                }
+                settings_panel_menu.normal_settings.activate_section(section);
+                return;
+            }
 
-function should_ignore(hash) {
-    // Hash changes within this list are overlays and should not unnarrow (etc.)
-    var ignore_list = ["streams", "drafts", "settings", "administration", "invite"];
-    var main_hash = get_main_hash(hash);
+            if (base === 'organization') {
+                if (!section) {
+                    // We may be on a really old browser or somebody
+                    // hand-typed a hash.
+                    blueslip.warn('missing section for organization');
+                    section = 'organization-profile';
+                }
+                settings_panel_menu.org_settings.activate_section(section);
+                return;
+            }
 
-    return (ignore_list.indexOf(main_hash) > -1);
+            // TODO: handle other cases like internal settings
+            //       changes.
+            return;
+        }
+    }
+
+    // It's not super likely that an overlay is already open,
+    // but you can jump from /settings to /streams by using
+    // the browser's history menu or hand-editing the URL or
+    // whatever.  If so, just close the overlays.
+    if (base !== old_base) {
+        overlays.close_for_hash_change();
+    }
+
+    // NORMAL FLOW: basically, launch the overlay:
+
+    if (!coming_from_overlay) {
+        state.hash_before_overlay = old_hash;
+    }
+
+    if (base === "streams") {
+        subs.launch(section);
+        return;
+    }
+
+    if (base === "drafts") {
+        drafts.launch();
+        return;
+    }
+
+    if (base === 'settings') {
+        if (!section) {
+            section = settings_panel_menu.normal_settings.current_tab();
+            var settings_hash = '#settings/' + section;
+            exports.replace_hash(settings_hash);
+        }
+
+        settings.launch(section);
+        return;
+    }
+
+    if (base === 'organization') {
+        if (!section) {
+            section = settings_panel_menu.org_settings.current_tab();
+            var org_hash = '#organization/' + section;
+            exports.replace_hash(org_hash);
+        }
+
+        admin.launch(section);
+        return;
+    }
+
+    if (base === "invite") {
+        invite.launch();
+        return;
+    }
 }
 
 function hashchanged(from_reload, e) {
+    if (state.is_internal_change) {
+        state.is_internal_change = false;
+        return;
+    }
+
     var old_hash;
     if (e) {
-        old_hash = "#" + (e.oldURL || ignore.old_hash).split(/#/).slice(1).join("");
-        ignore.last = old_hash;
-        ignore.old_hash = window.location.hash;
+        old_hash = "#" + (e.oldURL || state.old_hash).split(/#/).slice(1).join("");
+        state.old_hash = window.location.hash;
     }
 
-    var base = get_main_hash(window.location.hash);
-
-    if (should_ignore(window.location.hash)) {
-        // if the old has was a standard non-ignore hash OR the ignore hash
-        // base has changed, something needs to run again.
-
-        if (!should_ignore(old_hash || "#") || ignore.group !== get_hash_group(base)) {
-            if (ignore.group !== get_hash_group(base)) {
-                exports.close_modals();
-            }
-
-            // now only if the previous one should not have been ignored.
-            if (!should_ignore(old_hash || "#")) {
-                ignore.prev = old_hash;
-            }
-
-            if (base === "streams") {
-                subs.launch(get_hash_components());
-            } else if (base === "drafts") {
-                drafts.launch();
-            } else if (/settings|administration/.test(base)) {
-                settings.setup_page();
-                admin.setup_page();
-            } else if (base === "invite") {
-                invite.initialize();
-            }
-
-            ignore.group = get_hash_group(base);
-        } else {
-            subs.change_state(get_hash_components());
-        }
-    } else if (!should_ignore(window.location.hash) && !ignore.flag) {
-        exports.close_modals();
-        changing_hash = true;
-        var ret = do_hashchange(from_reload);
-        changing_hash = false;
-        return ret;
-    // once we unignore the hash, we have to set the hash back to what it was
-    // originally (eg. '#narrow/stream/Denmark' instead of '#settings'). We
-    // therefore ignore the hash change once more while we change it back for
-    // no iterruptions.
-    } else if (ignore.flag) {
-        ignore.flag = false;
+    if (is_overlay_hash(window.location.hash)) {
+        do_hashchange_overlay(old_hash);
+        return;
     }
+
+    // We are changing to a "main screen" view.
+    overlays.close_for_hash_change();
+    changing_hash = true;
+    var ret = do_hashchange_normal(from_reload);
+    changing_hash = false;
+    return ret;
 }
+
+exports.update_browser_history = function (new_hash) {
+    var old_hash = window.location.hash;
+
+    if (!new_hash.startsWith('#')) {
+        blueslip.error('programming error: prefix hashes with #: ' + new_hash);
+        return;
+    }
+
+    if (old_hash === new_hash) {
+        // If somebody is calling us with the same hash we already have, it's
+        // probably harmless, and we just ignore it.  But it could be a symptom
+        // of disorganized code that's prone to an infinite loop of repeatedly
+        // assigning the same hash.
+        blueslip.info('ignoring probably-harmless call to update_browser_history: ' + new_hash);
+        return;
+    }
+
+    state.old_hash = old_hash;
+    state.is_internal_change = true;
+    window.location.hash = new_hash;
+};
+
+exports.replace_hash = function (hash) {
+    if (!window.history.replaceState) {
+        // We may have strange behavior with the back button.
+        blueslip.warn('browser does not support replaceState');
+        return;
+    }
+
+    var url = get_full_url(hash);
+    window.history.replaceState(null, null, url);
+};
+
+exports.go_to_location = function (hash) {
+    // Call this function when you WANT the hashchanged
+    // function to run.
+    window.location.hash = hash;
+};
 
 exports.initialize = function () {
     // jQuery doesn't have a hashchange event, so we manually wrap
@@ -290,18 +303,15 @@ exports.initialize = function () {
     hashchanged(true);
 };
 
-exports.close_modals = function () {
-    $(".overlay.show").removeClass("show");
-};
-
-exports.exit_modal = function (callback) {
-    if (should_ignore(window.location.hash)) {
+exports.exit_overlay = function (callback) {
+    if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
-        ignore.flag = true;
-        window.location.hash = ignore.prev || "#";
+        var new_hash = state.hash_before_overlay || "#";
+        exports.update_browser_history(new_hash);
         if (typeof callback === "function") {
             callback();
         }
+
     }
 };
 
@@ -311,3 +321,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = hashchange;
 }
+window.hashchange = hashchange;

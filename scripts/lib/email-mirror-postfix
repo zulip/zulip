@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+
+"""
+Forward messages sent to the configured email gateway to Zulip.
+
+For zulip.com, messages to that address go to the Inbox of emailgateway@zulip.com.
+Zulip voyager configurations will differ.
+
+Messages meant for Zulip have a special recipient form of
+
+    <stream name>+<regenerable stream token>@streams.zulip.com
+
+This pattern is configurable via the EMAIL_GATEWAY_PATTERN settings.py
+variable.
+
+Configure your MTA to execute this script on message
+receipt with the contents of the message piped to standard input. The
+script will queue the message for processing. In this mode of invocation,
+you should pass the destination email address in the ORIGINAL_RECIPIENT
+environment variable.
+
+In Postfix, you can express that via an /etc/aliases entry like this:
+ |/home/zulip/deployments/current/scripts/lib/email-mirror-postfix -r ${original_recipient}
+
+Also you can use optional keys to configure the script and change default values:
+
+-s SHARED_SECRET    For adding shared secret key if it is not contained in
+                    "/etc/zulip/zulip-secrets.conf".
+
+-d HOST             Destination Zulip host for email uploading. Address must contain type of
+                    HTTP protocol, i.e "https://example.com". Default value: "https://127.0.0.1".
+
+-u URL             Destination relative for email uploading. Default value: "/email_mirror_message".
+
+-n                  Disable checking ssl certificate. This option is used for
+                    self-signed certificates. Default value: False.
+
+-t                  Disable sending request to the Zulip server. Default value: False.
+"""
+
+import os
+import ssl
+import sys
+
+import argparse
+
+import posix
+import json
+
+from urllib.parse import urljoin, urlencode
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
+from configparser import RawConfigParser
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-r', '--recipient', dest="recipient", type=str, default='',
+                    help="Original recipient.")
+
+parser.add_argument('-s', '--shared-secret', dest="shared_secret", type=str, default='',
+                    help="Secret access key.")
+
+parser.add_argument('-d', '--dst-host', dest="host", type=str, default='https://127.0.0.1',
+                    help="Destination server address for uploading email from email mirror. "
+                         "Address must contain a HTTP protocol.")
+
+parser.add_argument('-u', '--dst-url', dest="url", type=str, default='/email_mirror_message',
+                    help="Destination relative url for uploading email from email mirror.")
+
+parser.add_argument('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false', default=True,
+                    help="Disable ssl certificate verifying for self-signed certificates")
+
+parser.add_argument('-t', '--test', dest="test", action='store_true', default=False,
+                    help="Test mode.")
+
+options = parser.parse_args()
+
+MAX_ALLOWED_PAYLOAD = 25 * 1024 * 1024
+
+
+def process_response_error(e):
+    # type: (HTTPError) -> None
+    if e.code == 400:
+        response_content = e.read()
+        response_data = json.loads(response_content.decode('utf8'))
+        print(response_data['msg'])
+        exit(posix.EX_NOUSER)  # type: ignore # There are no stubs for posix in python 3
+    else:
+        print("4.4.2 Connection dropped: Internal server error.")
+        exit(1)
+
+
+def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
+    # type: (str, str, str, str, bool, bool) -> None
+    if not rcpt_to:
+        print("5.1.1 Bad destination mailbox address: No missed message email address.")
+        exit(posix.EX_NOUSER)  # type: ignore # There are no stubs for posix in python 3
+    msg_text = sys.stdin.read(MAX_ALLOWED_PAYLOAD + 1)
+    if len(msg_text) > MAX_ALLOWED_PAYLOAD:
+        # We're not at EOF, reject large mail.
+        print("5.3.4 Message too big for system: Max size is 25MiB")
+        exit(posix.EX_DATAERR)  # type: ignore # There are no stubs for posix in python 3
+
+    secrets_file = RawConfigParser()
+    secrets_file.read("/etc/zulip/zulip-secrets.conf")
+    if not shared_secret:
+        shared_secret = secrets_file.get('secrets', 'shared_secret')
+
+    request_data = {
+        "recipient": rcpt_to,
+        "msg_text": msg_text
+    }
+    if test:
+        exit(0)
+
+    if host == 'https://127.0.0.1':
+        # Don't try to verify SSL when posting to 127.0.0.1; it won't
+        # work, and connections to 127.0.0.1 are secure without SSL.
+        verify_ssl = False
+
+    request_context = {}
+    if not verify_ssl and sys.version_info > (2, 7, 9):
+        # Python version below 2.7.9 doesn't support request context
+        # and doesn't check ssl certificates.
+        request_context['context'] = ssl.create_default_context()
+        request_context['context'].check_hostname = False
+        request_context['context'].verify_mode = ssl.CERT_NONE
+    data = {"data": json.dumps(request_data),
+            "secret": shared_secret}
+    req = Request(url=urljoin(host, url), data=urlencode(data).encode('utf8'))
+    try:
+        urlopen(req, **request_context)  # type: ignore # urllib.request
+    except HTTPError as err:
+        process_response_error(err)
+
+
+recipient = str(os.environ.get("ORIGINAL_RECIPIENT", options.recipient))
+send_email_mirror(recipient, options.shared_secret, options.host, options.url, options.test,
+                  options.verify_ssl)

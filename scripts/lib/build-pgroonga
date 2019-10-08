@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -x
+set -e
+
+PGROONGA_VERSION="2.1.6"
+
+# Currently only tested for Fedora systems.
+
+yum install -y groonga-devel msgpack-devel
+cd "$(mktemp -d)"
+
+wget https://packages.groonga.org/source/pgroonga/pgroonga-"$PGROONGA_VERSION".tar.gz
+tar xvf pgroonga-"$PGROONGA_VERSION".tar.gz
+cd pgroonga-"$PGROONGA_VERSION"
+
+make HAVE_MSGPACK=1
+make install

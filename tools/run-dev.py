@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-from __future__ import print_function
-from __future__ import absolute_import
+#!/usr/bin/env python3
 
-import optparse
+import argparse
 import os
 import pwd
 import signal
@@ -11,7 +9,7 @@ import sys
 import time
 import traceback
 
-from six.moves.urllib.parse import urlunparse
+from urllib.parse import urlunparse
 
 # check for the venv
 from lib import sanity_check
@@ -24,13 +22,12 @@ from tornado import web
 from tornado.ioloop import IOLoop
 from tornado.websocket import WebSocketHandler, websocket_connect
 
-if False:
-    from typing import Any, Callable, Generator, List, Optional
+from typing import Any, Callable, Generator, List, Optional
 
 if 'posix' in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
 
-parser = optparse.OptionParser(r"""
+parser = argparse.ArgumentParser(description=r"""
 
 Starts the app listening on localhost, for local development.
 
@@ -42,8 +39,8 @@ which serves to both of them.  After it's all up and running, browse to
 Note that, while runserver and runtornado have the usual auto-restarting
 behavior, the reverse proxy itself does *not* automatically restart on changes
 to this file.
-""")
-
+""",
+                                 formatter_class=argparse.RawTextHelpFormatter)
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -51,27 +48,25 @@ from tools.lib.test_script import (
     get_provisioning_status,
 )
 
-parser.add_option('--test',
-                  action='store_true', dest='test',
-                  help='Use the testing database and ports')
-
-parser.add_option('--interface',
-                  action='store', dest='interface',
-                  default=None, help='Set the IP or hostname for the proxy to listen on')
-
-parser.add_option('--no-clear-memcached',
-                  action='store_false', dest='clear_memcached',
-                  default=True, help='Do not clear memcached')
-
-parser.add_option('--force', dest='force',
-                  action="store_true",
-                  default=False, help='Run command despite possible problems.')
-
-parser.add_option('--enable-tornado-logging', dest='enable_tornado_logging',
-                  action="store_true",
-                  default=False, help='Enable access logs from tornado proxy server.')
-
-(options, arguments) = parser.parse_args()
+parser.add_argument('--test',
+                    action='store_true',
+                    help='Use the testing database and ports')
+parser.add_argument('--minify',
+                    action='store_true',
+                    help='Minifies assets for testing in dev')
+parser.add_argument('--interface',
+                    action='store',
+                    default=None, help='Set the IP or hostname for the proxy to listen on')
+parser.add_argument('--no-clear-memcached',
+                    action='store_false', dest='clear_memcached',
+                    default=True, help='Do not clear memcached')
+parser.add_argument('--force',
+                    action="store_true",
+                    default=False, help='Run command despite possible problems.')
+parser.add_argument('--enable-tornado-logging',
+                    action="store_true",
+                    default=False, help='Enable access logs from tornado proxy server.')
+options = parser.parse_args()
 
 if not options.force:
     ok, msg = get_provisioning_status()
@@ -96,7 +91,7 @@ if options.interface is None:
 elif options.interface == "":
     options.interface = None
 
-runserver_args = [] # type: List[str]
+runserver_args = []  # type: List[str]
 base_port = 9991
 if options.test:
     base_port = 9981
@@ -117,17 +112,12 @@ proxy_port = base_port
 django_port = base_port + 1
 tornado_port = base_port + 2
 webpack_port = base_port + 3
+thumbor_port = base_port + 4
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
 # Clean up stale .pyc files etc.
 subprocess.check_call('./tools/clean-repo')
-
-# HACK to fix up node_modules/.bin/handlebars deletion issue
-if not os.path.exists("node_modules/.bin/handlebars") and os.path.exists("node_modules/handlebars"):
-    print("Handlebars binary missing due to rebase past .gitignore fixup; fixing...")
-    subprocess.check_call(["rm", "-rf", "node_modules/handlebars"])
-    subprocess.check_call(["npm", "install"])
 
 if options.clear_memcached:
     print("Clearing memcached ...")
@@ -155,22 +145,38 @@ pid_file.close()
 
 # Pass --nostatic because we configure static serving ourselves in
 # zulip/urls.py.
-cmds = [['./tools/compile-handlebars-templates', 'forever'],
-        ['./manage.py', 'runserver'] +
+cmds = [['./manage.py', 'runserver'] +
         manage_args + runserver_args + ['127.0.0.1:%d' % (django_port,)],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
-         './puppet/zulip/files/postgresql/process_fts_updates']]
+         './puppet/zulip/files/postgresql/process_fts_updates'],
+        ['./manage.py', 'deliver_scheduled_messages'],
+        ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
+         '-p', '%s' % (thumbor_port,)]]
 if options.test:
-    # Webpack doesn't support 2 copies running on the same system, so
-    # in order to support running the Casper tests while a Zulip
-    # development server is running, we use webpack in production mode
-    # for the Casper tests.
-    subprocess.check_call('./tools/webpack')
+    # We just need to compile handlebars templates and webpack assets
+    # once at startup, not run a daemon, in test mode.  Additionally,
+    # webpack-dev-server doesn't support running 2 copies on the same
+    # system, so this model lets us run the casper tests with a running
+    # development server.
+    subprocess.check_call(['./tools/compile-handlebars-templates'])
+    subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
 else:
-    cmds += [['./tools/webpack', '--watch', '--port', str(webpack_port)]]
+    cmds.append(['./tools/compile-handlebars-templates', 'forever'])
+    webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
+    if options.minify:
+        webpack_cmd.append('--minify')
+    if options.interface is None:
+        # If interface is None and we're listening on all ports, we also need
+        # to disable the webpack host check so that webpack will serve assets.
+        webpack_cmd.append('--disable-host-check')
+    if options.interface:
+        webpack_cmd += ["--host", options.interface]
+    else:
+        webpack_cmd += ["--host", "0.0.0.0"]
+    cmds.append(webpack_cmd)
 for cmd in cmds:
     subprocess.Popen(cmd)
 
@@ -179,6 +185,10 @@ def transform_url(protocol, path, query, target_port, target_host):
     # type: (str, str, str, int, str) -> str
     # generate url with target host
     host = ":".join((target_host, str(target_port)))
+    # Here we are going to rewrite the path a bit so that it is in parity with
+    # what we will have for production
+    if path.startswith('/thumbor'):
+        path = path[len('/thumbor'):]
     newpath = urlunparse((protocol, host, path, '', query, ''))
     return newpath
 
@@ -202,14 +212,14 @@ class BaseWebsocketHandler(WebSocketHandler):
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        super(BaseWebsocketHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # define client for target websocket server
-        self.client = None # type: Any
+        self.client = None  # type: Any
 
     def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Callable
+        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
         # use get method from WebsocketHandler
-        return super(BaseWebsocketHandler, self).get(*args, **kwargs)
+        return super().get(*args, **kwargs)
 
     def open(self):
         # type: () -> None
@@ -239,7 +249,7 @@ class BaseWebsocketHandler(WebSocketHandler):
             self.write_message(message, False)
 
     def on_message(self, message, binary=False):
-        # type: (str, bool) -> Optional[Callable]
+        # type: (str, bool) -> Optional[Callable[..., Any]]
         if not self.client:
             # close websocket proxy connection if no connection with target websocket server
             return self.close()
@@ -263,9 +273,9 @@ class BaseWebsocketHandler(WebSocketHandler):
 class CombineHandler(BaseWebsocketHandler):
 
     def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[Callable]
+        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
-            return super(CombineHandler, self).get(*args, **kwargs)
+            return super().get(*args, **kwargs)
         return None
 
     def head(self):
@@ -317,7 +327,7 @@ class CombineHandler(BaseWebsocketHandler):
         if 'X-REAL-IP' not in self.request.headers:
             self.request.headers['X-REAL-IP'] = self.request.remote_ip
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
-            return super(CombineHandler, self).prepare()
+            return super().prepare()
         url = transform_url(
             self.request.protocol,
             self.request.path,
@@ -356,6 +366,10 @@ class TornadoHandler(CombineHandler):
     target_port = tornado_port
 
 
+class ThumborHandler(CombineHandler):
+    target_port = thumbor_port
+
+
 class Application(web.Application):
     def __init__(self, enable_logging=False):
         # type: (bool) -> None
@@ -364,15 +378,15 @@ class Application(web.Application):
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
             (r"/sockjs.*", TornadoHandler),
-            (r"/socket.io.*", WebPackHandler),
+            (r"/thumbor.*", ThumborHandler),
             (r"/.*", DjangoHandler)
         ]
-        super(Application, self).__init__(handlers, enable_logging=enable_logging)
+        super().__init__(handlers, enable_logging=enable_logging)
 
     def log_request(self, handler):
         # type: (BaseWebsocketHandler) -> None
         if self.settings['enable_logging']:
-            super(Application, self).log_request(handler)
+            super().log_request(handler)
 
 
 def on_shutdown():
@@ -384,13 +398,14 @@ def shutdown_handler(*args, **kwargs):
     # type: (*Any, **Any) -> None
     io_loop = IOLoop.instance()
     if io_loop._callbacks:
-        io_loop.add_timeout(time.time() + 1, shutdown_handler)
+        io_loop.call_later(1, shutdown_handler)
     else:
         io_loop.stop()
 
 # log which services/ports will be started
 print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
-      "Django: {}, Tornado: {}".format(django_port, tornado_port), end='')
+      "Django: {}, Tornado: {}, Thumbor: {}".format(django_port, tornado_port, thumbor_port),
+      end='')
 if options.test:
     print("")  # no webpack for --test
 else:

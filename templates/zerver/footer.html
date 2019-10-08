@@ -1,0 +1,54 @@
+<div class="footer">
+    <section>
+        <h3>{{ _("About Zulip") }}</h3>
+        <ul>
+            <li><a href="/">{{ _("Home") }}</a></li>
+            <li><a href="/why-zulip/">{{ _("Why Zulip") }}</a></li>
+            <li><a href="/features/">{{ _("Features") }}</a></li>
+            <li><a href="/plans/">{{ _("Plans &amp; pricing") }}</a></li>
+            <li><a href="/team/">{{ _("Team") }}</a> and <a href="/history/">{{ _("History") }}</a></li>
+        </ul>
+    </section>
+    <section>
+        <h3>{{ _("Help &amp; community") }}</h3>
+        <ul>
+            <li><a href="https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html">{{ _("Community chat") }}</a></li>
+            <li><a href="/help/">{{ _("Help center") }}</a></li>
+            <li><a href="https://zulip.readthedocs.io/en/latest/">{{ _("Documentation") }}</a></li>
+            <li><a href="https://twitter.com/zulip/">Twitter</a> and <a href="https://blog.zulip.org">Blog</a></li>
+            <li><a href="https://github.com/zulip/zulip/">GitHub</a></li>
+        </ul>
+    </section>
+    <section>
+        <h3>{{ _("Accounts") }}</h3>
+        <ul>
+            {% if find_team_link_disabled %}
+            {% else %}
+            <li><a href="{{ root_domain_uri }}/accounts/find">{{ _("Find account") }}</a></li>
+            {% endif %}
+            {% if open_realm_creation %}
+            <li><a href="{{ root_domain_uri }}/new/">{{ _("New organization") }}</a></li>
+            {% endif %}
+            {% if login_link_disabled %}
+            {% else %}
+            <li><a href="{{ login_url }}">{{ _("Login") }}</a></li>
+            {% endif %}
+            {% if register_link_disabled %}
+            {% elif only_sso %}
+            {% else %}
+            <li><a href="{{ url('register') }}">{{ _("Sign up") }}</a></li>
+            {% endif %}
+            <li><a href="{{ root_domain_uri }}/terms/">{{ _("Terms of Service") }}</a></li>
+            <li><a href="{{ root_domain_uri }}/privacy/">{{ _("Privacy policy") }}</a></li>
+        </ul>
+    </section>
+    <section>
+        <h3>{{ _("Apps &amp; integrations") }}</h3>
+        <ul>
+            <li><a href="/apps/">{{ _("Desktop &amp; mobile apps") }}</a></li>
+            <li><a href="/integrations/">{{ _("Integrations") }}</a></li>
+            {# Interactive bots would go here? #}
+            <li><a href="/api/">REST API</a></li>
+        </ul>
+    </section>
+</div>

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
-from django.db import models, migrations
-from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
-from django.db.migrations.state import StateApps
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import migrations, models
+from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.migrations.state import StateApps
 
-def set_subdomain_of_default_realm(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def set_subdomain_of_default_realm(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     if settings.DEVELOPMENT:
         Realm = apps.get_model('zerver', 'Realm')
         try:
@@ -23,7 +21,7 @@ def set_subdomain_of_default_realm(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0028_userprofile_tos_version'),
+        ('zerver', '0001_initial'),
     ]
 
     operations = [

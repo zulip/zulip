@@ -1,0 +1,16 @@
+<div class="modal hide modal-bg new-style" id="deprecation-notice-modal" role="dialog"
+  aria-labelledby="deprecation-notice-label" aria-hidden="true">
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="deprecation-notice-label">{{ _('Deprecation notice') }}</h3>
+    </div>
+
+    <div class="modal-body">
+        <p id="deprecation-notice-message"></p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="button rounded" id="close-deprecation-notice" data-dismiss="modal">{{ _("Got it") }}</button>
+    </div>
+</div>

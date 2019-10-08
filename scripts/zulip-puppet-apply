@@ -1,11 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import os
 import sys
 import subprocess
-import six.moves.configparser as configparser
+import configparser
 import re
+from lib.zulip_tools import parse_lsb_release, assert_running_as_root
+
+assert_running_as_root()
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 force = False
 extra_args = sys.argv[1:]
@@ -18,33 +21,40 @@ config = configparser.RawConfigParser()
 config.read("/etc/zulip/zulip.conf")
 
 if not os.path.exists("/etc/puppet/hiera.yaml"):
-    # Suppress warnings about hiera.yaml not existing.
-    subprocess.check_call(["touch", "/etc/puppet/hiera.yaml"])
+    codename = parse_lsb_release()['DISTRIB_CODENAME']
+    if codename in ["trusty", "stretch", "xenial"]:
+        # Suppress warnings in old puppet about hiera.yaml not existing.
+        open("/etc/puppet/hiera.yaml", "a").close()
 
 puppet_config = """
 Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
-include apt
 """
 
 for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
     puppet_config += "include %s\n" % (pclass,)
 
 # We use the puppet configuration from the same Zulip checkout as this script
-puppet_module_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "puppet")
+scripts_path = os.path.join(BASE_DIR, "scripts")
+puppet_module_path = os.path.join(BASE_DIR, "puppet")
 puppet_cmd = ["puppet", "apply", "--modulepath", puppet_module_path, "-e", puppet_config]
 puppet_cmd += extra_args
 
+# Set the scripts path to be a factor so it can be used by puppet code
+puppet_env = os.environ.copy()
+puppet_env["FACTER_zulip_scripts_path"] = scripts_path
+
 if not force:
-    subprocess.check_call(puppet_cmd + ['--noop', '--show_diff'])
+    subprocess.check_call(puppet_cmd + ['--noop', '--show_diff'], env=puppet_env)
 
     do_apply = None
     while do_apply != 'y':
         sys.stdout.write("Apply changes? [y/N] ")
+        sys.stdout.flush()
         do_apply = sys.stdin.readline().strip().lower()
         if do_apply == '' or do_apply == 'n':
             sys.exit(0)
 
-ret = subprocess.call(puppet_cmd + ['--detailed-exitcodes'])
+ret = subprocess.call(puppet_cmd + ['--detailed-exitcodes'], env=puppet_env)
 # ret = 0 => no changes, no errors
 # ret = 2 => changes, no errors
 # ret = 4 => no changes, yes errors

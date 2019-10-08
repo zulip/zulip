@@ -5,11 +5,15 @@
 set -e
 set -x
 
+RABBITMQ_FLAGS=()
+if [ -n "$RABBITMQ_NODE" ]; then
+    RABBITMQ_FLAGS=(-n "$RABBITMQ_NODE")
+fi
 RABBITMQ_USERNAME=$("$(dirname "$0")/../get-django-setting" RABBITMQ_USERNAME)
 RABBITMQ_PASSWORD=$("$(dirname "$0")/../get-django-setting" RABBITMQ_PASSWORD)
-sudo rabbitmqctl delete_user "$RABBITMQ_USERNAME" || true
-sudo rabbitmqctl delete_user zulip || true
-sudo rabbitmqctl delete_user guest || true
-sudo rabbitmqctl add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
-sudo rabbitmqctl set_user_tags "$RABBITMQ_USERNAME" administrator
-sudo rabbitmqctl set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'
+sudo rabbitmqctl "${RABBITMQ_FLAGS[@]}" delete_user "$RABBITMQ_USERNAME" || true
+sudo rabbitmqctl "${RABBITMQ_FLAGS[@]}" delete_user zulip || true
+sudo rabbitmqctl "${RABBITMQ_FLAGS[@]}" delete_user guest || true
+sudo rabbitmqctl "${RABBITMQ_FLAGS[@]}" add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
+sudo rabbitmqctl "${RABBITMQ_FLAGS[@]}" set_user_tags "$RABBITMQ_USERNAME" administrator
+sudo rabbitmqctl "${RABBITMQ_FLAGS[@]}" set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'

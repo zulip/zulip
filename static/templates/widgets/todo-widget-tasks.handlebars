@@ -1,0 +1,16 @@
+<br />
+{{#each pending_tasks}}
+<li>
+    <button class="task" data-key="{{ key }}">
+    </button>
+    <span class="task">{{ task }}</span>
+</li>
+{{/each}}
+{{#each completed_tasks}}
+<li>
+    <button class="task-completed task" data-key="{{ key }}">
+        <img class="task-completed" src="/static/images/checkbox-green.svg" data-key="{{ key }}"/>
+    </button>
+    <span class="task"><strike>{{ task }}</strike></span>
+</li>
+{{/each}}

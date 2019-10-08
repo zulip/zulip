@@ -2,7 +2,7 @@ var common = require('../casper_lib/common.js').common;
 
 function star_count() {
     return casper.evaluate(function () {
-        return $("#zhome .icon-vector-star:not(.empty-star)").length;
+        return $("#zhome .fa-star:not(.empty-star)").length;
     });
 }
 
@@ -19,12 +19,14 @@ casper.then(function () {
 });
 
 common.then_send_message('stream', {
-        stream:  'Verona',
-        subject: 'stars',
-        content: 'test star',
+    stream: 'Verona',
+    subject: 'stars',
+    content: 'test star',
 });
 
-casper.waitForText("test star");
+casper.then(function () {
+    casper.waitForSelectorText("#zhome .message_row", "test star");
+});
 
 casper.then(function () {
     casper.test.info("Checking star counts");
@@ -35,10 +37,15 @@ casper.then(function () {
 
     // Clicking on a message star stars it.
     toggle_last_star();
-    casper.test.assertEquals(star_count(), 1,
-                             "Got expected single star count.");
+});
 
-    casper.click('a[href^="#narrow/is/starred"]');
+casper.then(function () {
+    casper.waitUntilVisible('#zhome .fa-star', function () {
+        casper.test.assertEquals(star_count(), 1,
+                                 "Got expected single star count.");
+
+        casper.click('a[href^="#narrow/is/starred"]');
+    });
 });
 
 casper.waitUntilVisible('#zfilt', function () {

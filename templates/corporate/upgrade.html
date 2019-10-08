@@ -1,0 +1,197 @@
+{% extends "zerver/portico.html" %}
+
+{% block page_params %}
+{# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
+<script>
+    {% autoescape off %}
+    var page_params = {{ page_params }};
+    {% endautoescape %}
+</script>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ render_bundle('landing-page') }}
+{{ render_bundle('upgrade') }}
+<script src="https://checkout.stripe.com/checkout.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="app portico-page">
+
+    {% include 'zerver/billing_nav.html' %}
+
+    {{ render_bundle('translations') }}
+
+    <div class="portico-landing billing-upgrade-page">
+        <div class="hero small-hero"></div>
+
+        <div class="page-content">
+            <div class="main">
+                <h1>{% trans %}Upgrade to {{ plan }}{% endtrans %}</h1>
+                {% if error_message %}
+                <div class="alert alert-danger" id="upgrade-error-message-box">
+                    {{ error_message }}
+                </div>
+                {% endif %}
+
+                <ul class="nav nav-tabs" id="upgrade-tabs">
+                    <li class="active"><a data-toggle="tab" href="#autopay">Pay automatically</a></li>
+                    <li><a data-toggle="tab" href="#invoice">Pay by invoice</a></li>
+                </ul>
+
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <div class="tab-content">
+                    <div class="tab-pane active" id="autopay">
+                        <div id="autopay-input-section">
+                            <form id="autopay-form" data-key="{{ publishable_key }}" data-email="{{email}}" method="post">
+                                <input type="hidden" name="seat_count" value="{{ seat_count }}">
+                                <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
+                                <input type="hidden" name="salt" value="{{ salt }}">
+                                <input type="hidden" name="billing_modality" value="charge_automatically">
+                                <div class="payment-schedule">
+                                    <div id="autopay-error" class="alert alert-danger"></div>
+                                    <h3>{{ _("Payment schedule") }}</h3>
+                                    <label>
+                                        <input type="radio" name="schedule" value="annual" checked />
+                                        <div class="box">
+                                            <div class="schedule-time annually">{{ _("Pay annually") }}</div>
+                                            <div class="schedule-amount">
+                                                $<span id="autopay_annual_price_per_month"></span>/user/month
+                                                <div class="schedule-amount-2">
+                                                    ($<span id="autopay_annual_price"></span>/user/year)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="schedule" value="monthly" />
+                                        <div class="box">
+                                            <div class="schedule-time">{{ _("Pay monthly") }}</div>
+                                            <div class="schedule-amount">$<span id="autopay_monthly_price"></span>/user/month</div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div class="license-management">
+                                    <h3>{{ _("License management") }}</h3>
+                                    <label>
+                                        <input type="radio" name="license_management" value="automatic" checked />
+                                        <div class="box">
+                                            <div class="management-type">{{ _("Automatic") }}</div>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="license_management" value="manual" />
+                                        <div class="box">
+                                            <div class="management-type">{{ _("Manual") }}</div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div id="license-automatic-section">
+                                    <p>
+                                        You&rsquo;ll initially be charged
+                                        <b>$<span id="charged_amount"></span></b> for <b>{{ seat_count }}</b>
+                                        users.<br>
+                                        We'll automatically charge you for additional licenses as users
+                                        are added, and remove licenses not in use at the end of each billing
+                                        period.
+                                    </p>
+                                    <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}">
+                                </div>
+
+                                <div id="license-manual-section">
+                                    <p>
+                                        Enter the number of users you would like to pay for.<br>
+                                        You'll need to manually add licenses to add or invite
+                                        additional users.
+                                    </p>
+
+                                    <h4>Number of licenses (minimum {{ seat_count }})</h4>
+                                    <input type="number" name="licenses" min="{{ seat_count }}" autocomplete="off" id="manual_license_count" required/><br>
+                                </div>
+
+                                <button id="add-card-button" class="stripe-button-el">
+                                    <span id="add-card-button-span">Add card</span>
+                                </button>
+                            </form>
+                        </div>
+                        <div id="autopay-loading">
+                            <div class="zulip-loading-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+                                    <g transform="translate(-297.14285,-466.64792)">
+                                        <circle cx="317.14285" cy="486.64792" r="19.030317" style="stroke-width:1.93936479;"/>
+                                        <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div id="autopay_loading_indicator"></div>
+                        </div>
+                        <div id="autopay-success" class="alert alert-success">
+                            Upgrade complete! The page will now reload.
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="invoice">
+                        <div id="invoice-error" class="alert alert-danger"></div>
+                        <div id="invoice-input-section">
+                            <form id="invoice-form" method="post">
+                                <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
+                                <input type="hidden" name="salt" value="{{ salt }}">
+                                <input type="hidden" name="billing_modality" value="send_invoice">
+                                <div class="payment-schedule">
+                                    <h3>{{ _("Payment schedule") }}</h3>
+                                    <label>
+                                        <input type="radio" name="schedule" value="annual" checked />
+                                        <div class="box">
+                                            <div class="schedule-time annually">{{ _("Pay annually") }}</div>
+                                            <div class="schedule-amount">
+                                                $<span id="invoice_annual_price_per_month"></span>/user/month
+                                                <div class="schedule-amount-2">
+                                                    ($<span id="invoice_annual_price"></span>/user/year)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <p>
+                                    Enter the number of users you would like to pay for.<br>
+                                    We'll email you an invoice in 1-2 hours. Invoices can be paid by
+                                    ACH transfer or credit card.
+                                </p>
+                                <h4>Number of users (minimum {{ min_invoiced_licenses }})</h4>
+                                <input type="number" min="{{ min_invoiced_licenses }}" autocomplete="off"
+                                id="invoiced_licenses" name="licenses" required/><br>
+                                <button type="submit" id="invoice-button" class="stripe-button-el invoice-button">Buy Standard</button>
+                            </form>
+                        </div>
+                        <div id="invoice-loading">
+                            <div class="zulip-loading-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+                                    <g transform="translate(-297.14285,-466.64792)">
+                                        <circle cx="317.14285" cy="486.64792" r="19.030317" style="stroke-width:1.93936479;"/>
+                                        <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div id="invoice_loading_indicator"></div>
+                        </div>
+                        <div id="invoice-success" class="alert alert-success">
+                            Upgrade complete! The page will now reload.
+                        </div>
+                    </div>
+                </div>
+                <div class="support-link">
+                    <p>
+                        We're happy to help!
+                        Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a>
+                        for any billing-related questions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

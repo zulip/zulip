@@ -1,4 +1,4 @@
-// See http://zulip.readthedocs.io/en/latest/pointer.html for notes on
+// See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
 // how this system is designed.
 
 var pointer = (function () {
@@ -8,7 +8,7 @@ var exports = {};
 exports.recenter_pointer_on_display = false;
 
 // Toggles re-centering the pointer in the window
-// when Home is next clicked by the user
+// when All Messages is next clicked by the user
 exports.suppress_scroll_pointer_update = false;
 exports.furthest_read = -1;
 exports.server_furthest_read = -1;
@@ -19,9 +19,9 @@ function update_pointer() {
     if (!pointer_update_in_flight) {
         pointer_update_in_flight = true;
         return channel.post({
-            url:      '/json/users/me/pointer',
+            url: '/json/users/me/pointer',
             idempotent: true,
-            data:     {pointer: pointer.furthest_read},
+            data: {pointer: pointer.furthest_read},
             success: function () {
                 pointer.server_furthest_read = pointer.furthest_read;
                 pointer_update_in_flight = false;
@@ -75,7 +75,7 @@ exports.fast_forward_pointer = function () {
 };
 
 exports.initialize = function initialize() {
-    pointer.server_furthest_read = page_params.initial_pointer;
+    pointer.server_furthest_read = page_params.pointer;
     if (page_params.orig_initial_pointer !== undefined &&
         page_params.orig_initial_pointer > pointer.server_furthest_read) {
         pointer.server_furthest_read = page_params.orig_initial_pointer;
@@ -96,9 +96,11 @@ exports.initialize = function initialize() {
         // Additionally, don't advance the pointer server-side
         // if the selected message is local-only
         if (event.msg_list === home_msg_list && page_params.narrow_stream === undefined) {
-            if (event.id > pointer.furthest_read &&
-                home_msg_list.get(event.id).local_id === undefined) {
-                pointer.furthest_read = event.id;
+            if (event.id > pointer.furthest_read) {
+                var msg = home_msg_list.get(event.id);
+                if (!msg.locally_echoed) {
+                    pointer.furthest_read = event.id;
+                }
             }
         }
 
@@ -110,7 +112,7 @@ exports.initialize = function initialize() {
             } else {
                 messages = event.msg_list.message_range(event.previously_selected, event.id);
             }
-            unread_ops.mark_messages_as_read(messages, {from: 'pointer'});
+            unread_ops.notify_server_messages_read(messages, {from: 'pointer'});
         }
     });
 };
@@ -120,3 +122,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = pointer;
 }
+window.pointer = pointer;

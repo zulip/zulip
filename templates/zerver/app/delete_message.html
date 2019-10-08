@@ -1,0 +1,16 @@
+<div id="delete_message_modal" class="modal modal-bg hide new-style" tabindex="-1" role="dialog" aria-labelledby="delete_message_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="delete_message_modal_label">{{ _("Delete message") }} </h3>
+    </div>
+    <div class="modal-body">
+        <div class="content">
+            <p><strong>{{ _("Are you sure you want to delete this message?") }}</strong></p>
+        </div>
+        <div id="delete-message-error"></div>
+    </div>
+    <div class="modal-footer">
+        <button class="button rounded" data-dismiss="modal">{{ _("Cancel") }}</button>
+        <button class="button rounded btn-danger" id="do_delete_message_button">{{ _("Yes, delete this message") }}</button>
+    </div>
+</div>

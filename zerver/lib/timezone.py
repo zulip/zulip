@@ -1,9 +1,10 @@
-from __future__ import absolute_import
 
-from typing import Text, List
+from typing import List
 
 import pytz
 
-def get_all_timezones():
-    # type: () -> List[Text]
+def get_all_timezones() -> List[str]:
     return sorted(pytz.all_timezones)
+
+def get_timezone(tz: str) -> pytz.datetime.tzinfo:
+    return pytz.timezone(tz)

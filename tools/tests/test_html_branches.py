@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
 import unittest
 import os
@@ -19,8 +17,7 @@ TEST_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "t
 
 class TestHtmlBranches(unittest.TestCase):
 
-    def test_get_tag_info(self):
-        # type: () -> None
+    def test_get_tag_info(self) -> None:
         html = """
             <p id="test" class="test1 test2">foo</p>
         """
@@ -33,8 +30,7 @@ class TestHtmlBranches(unittest.TestCase):
         self.assertEqual(start_tag_info.text(), 'p.test1.test2#test')
         self.assertEqual(end_tag_info.text(), 'p')
 
-    def test_html_tag_tree(self):
-        # type: () -> None
+    def test_html_tag_tree(self) -> None:
         html = """
             <!-- test -->
             <!DOCTYPE html>
@@ -76,8 +72,7 @@ class TestHtmlBranches(unittest.TestCase):
         self.assertEqual(tree.children[0].children[1].children[1].token.kind, 'html_start')
         self.assertEqual(tree.children[0].children[1].children[1].token.tag, 'p')
 
-    def test_html_branches(self):
-        # type: () -> None
+    def test_html_branches(self) -> None:
         html = """
             <!-- test -->
             <!DOCTYPE html>
@@ -106,8 +101,7 @@ class TestHtmlBranches(unittest.TestCase):
         self.assertEqual(branches[1].staircase_text(), '\n    html\n        body\n            p\n                br\n')
         self.assertEqual(branches[2].staircase_text(), '\n    html\n        body\n            p\n')
 
-    def test_build_id_dict(self):
-        # type: () -> None
+    def test_build_id_dict(self) -> None:
         templates = ["test_template1.html", "test_template2.html"]
         templates = [os.path.join(TEST_TEMPLATES_DIR, fn) for fn in templates]
 
@@ -124,8 +118,7 @@ class TestHtmlBranches(unittest.TestCase):
         self.assertEqual(template_id_dict['below_navbar'], [
                          'Line 10:%s/tools/tests/test_template_data/test_template2.html' % (ZULIP_PATH)])
 
-    def test_split_for_id_and_class(self):
-        # type: () -> None
+    def test_split_for_id_and_class(self) -> None:
         id1 = "{{ red|blue }}"
         id2 = "search_box_{{ page }}"
 

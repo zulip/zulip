@@ -1,98 +1,112 @@
 <div id="display-settings" class="settings-section" data-name="display-settings">
-  <div class="settings-section-title">
-    <i class="icon-vector-time settings-section-icon"></i>
-    {{t 'Display settings' }}
-  </div>
-  <div class="alert" id="display-settings-status"></div>
-  <form class="display-settings-form">
+    <form class="display-settings-form">
+        <div id="user-lang-settings">
+            <!-- this is inline block so that the alert notification can sit beside
+            it. If there's not an alert, don't make it inline-block. -->
+            <h3 class="inline-block">{{t "Language settings" }}</h3>
+            <div class="alert-notification" id="language-settings-status"></div>
 
-    <p for="default_language" class="inline-block title">
-      {{t "Default language" }}: <span id='default_language_name'>{{page_params.default_language_name}}</span>
-      <a id="default_language" href="#default_language" title="{{t 'Change default language' }}">[Change]</a>
-    </p>
+            <div class="input-group user-name-section">
+                <label class="inline-block title">{{t "Default language" }}</label>
+                <a id="default_language" href="#default_language">
+                    <button type="button" class="button rounded small inline-block">
+                        <span id="default_language_name">{{page_params.default_language_name}}</span>
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                </a>
+            </div>
 
-    <div id="default_language_modal" class="modal hide" tabindex="-1" role="dialog"
-          aria-labelledby="default_language_modal_label" aria-hidden="true">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="default_language_modal_label">{{t "Select default language" }}</h3>
-      </div>
-      <div class="modal-body">
-        <p>
-        The following is a few of the languages we have started to
-        support or are hoping to support in the near future. We would
-        love help translating; if you're interested in helping, make an
-        account at <a href='https://www.transifex.com/zulip/zulip/'>
-        https://www.transifex.com/zulip/zulip/</a>, and sign up for a
-        language! You can also request any language we don't currently
-        have. It only takes a few hours to translate the most important
-        parts of the app.
-        </p>
-        <div>
-          <table>
-            {{#each page_params.language_list_dbl_col}}
-              <tr>
-                <td>
-                  <a class="language" data-code="{{this.first.code}}" data-name="{{this.first.name}}">
-                    {{#if this.first.selected}}
-                    <b>{{this.first.percent}}</b>
-                    {{else}}
-                    {{this.first.percent}}
-                    {{/if}}
-                  </a>
-                </td>
-                <td>
-                  <a class="language" data-code="{{this.second.code}}" data-name="{{this.second.name}}">
-                    {{#if this.second.selected}}
-                    <b>{{this.second.percent}}</b>
-                    {{else}}
-                    {{this.second.percent}}
-                    {{/if}}
-                  </a>
-                </td>
-              </tr>
-            {{/each}}
-          </table>
+            {{ partial "default_language_modal"}}
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">{{t "Close" }}</button>
-      </div>
-    </div>
 
-    <div class="input-group">
-      <label class="checkbox">
-        <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
-        {{#if page_params.left_side_userlist}}
-          checked="checked"
-        {{/if}} />
-        <span></span>
-      </label>
-        <label for="left_side_userlist" class="inline-block">{{t "Display user list on left side in narrow windows." }}</label>
-    </div>
+        <div id="user-display-settings">
+            <h3 class="inline-block">{{t "Display settings" }}</h3>
+            <div class="alert-notification" id="display-settings-status"></div>
 
-    <div class="input-group">
-      <label class="checkbox">
-        <input type="checkbox" name="emoji_alt_code" id="emoji_alt_code"
-        {{#if page_params.emoji_alt_code}}
-          checked="checked"
-        {{/if}} />
-        <span></span>
-      </label>
-        <label for="emoji_alt_code" class="inline-block">{{t 'Display emoji reactions as text (:heart: instead of <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title=":heart:"/>).' }}</label>
-    </div>
+            {{#if page_params.development_environment}}
+            {{partial "settings_checkbox"
+              "setting_name" "dense_mode"
+              "is_checked" page_params.dense_mode
+              "label" settings_label.dense_mode}}
+            {{/if}}
 
-    <div class="input-group">
-      <label class="checkbox">
-        <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
-        {{#if page_params.twenty_four_hour_time}}
-          checked="checked"
-        {{/if}} />
-        <span></span>
-      </label>
-      <label for="twenty_four_hour_time" class="inline-block">
-        {{t "Display time in 24-hour format (17:00 instead of 5:00 PM)" }}
-      </label>
-    </div>
-  </form>
+            {{partial "settings_checkbox"
+              "setting_name" "night_mode"
+              "is_checked" page_params.night_mode
+              "label" settings_label.night_mode}}
+
+            {{#if page_params.development_environment}}
+            {{partial "settings_checkbox"
+              "setting_name" "high_contrast_mode"
+              "is_checked" page_params.high_contrast_mode
+              "label" settings_label.high_contrast_mode}}
+            {{/if}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "left_side_userlist"
+              "is_checked" page_params.left_side_userlist
+              "label" settings_label.left_side_userlist}}
+
+            {{#if page_params.development_environment}}
+            {{partial "settings_checkbox"
+              "setting_name" "starred_message_counts"
+              "is_checked" page_params.starred_message_counts
+              "label" settings_label.starred_message_counts}}
+            {{/if}}
+        </div>
+
+        <div id="user-time-settings">
+            <h3 class="inline-block">{{t "Time settings" }}</h3>
+            <div class="alert-notification" id="time-settings-status"></div>
+
+            {{partial "settings_checkbox"
+              "setting_name" "twenty_four_hour_time"
+              "is_checked" page_params.twenty_four_hour_time
+              "label" settings_label.twenty_four_hour_time}}
+
+            <div class="input-group">
+                <label for="timezone" class="dropdown-title">{{t "Time zone" }}:</label>
+                <select name="timezone" id="user_timezone">
+                    {{#unless page_params.timezone}}
+                    <option></option>
+                    {{/unless}}
+
+                    {{#each timezones}}
+                    <option value="{{ this }}">{{ this }}</option>
+                    {{/each}}
+                </select>
+            </div>
+        </div>
+
+        <div id="user-emoji-settings">
+            <h3 class="inline-block light">Emoji settings</h3>
+            <div class="alert-notification" id="emoji-settings-status"></div>
+
+            <div class="input-group">
+                <div class="emojiset_choices grey-box">
+                    {{#each page_params.emojiset_choices }}
+                    <label>
+                        <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{@key}}" />
+                        <span>{{t this }}</span>
+                        <span class="right">
+                            {{#if @last}}
+                            <div class="emoji_alt_code">&nbsp;:relaxed:</div>
+                            {{else}}
+                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f642.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f44d.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f680.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f389.png" />
+                            {{/if}}
+                        </span>
+                    </label>
+                    {{/each}}
+                </div>
+            </div>
+
+            {{partial "settings_checkbox"
+              "setting_name" "translate_emoticons"
+              "is_checked" page_params.translate_emoticons
+              "label" settings_label.translate_emoticons}}
+        </div>
+    </form>
 </div>

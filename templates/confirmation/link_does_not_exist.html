@@ -1,0 +1,15 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+<div class="error_page">
+    <div class="container">
+        <img src="/static/images/400art.svg" alt=""/>
+        <div class="errorbox">
+            <div class="errorcontent">
+                <h1 class="lead">Whoops. We couldn't find your confirmation link in the system.</h1>
+                <p>Anyway, shoot us a line at <a href="mailto:{{ support_email }}">{{ support_email }}</a> and we'll get this resolved shortly.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

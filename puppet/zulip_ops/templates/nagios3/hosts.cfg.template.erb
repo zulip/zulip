@@ -1,0 +1,99 @@
+<% @hosts_loadbalancer.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,pageable_servers
+       }
+<% end -%>
+
+<% @hosts_app_prod.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,web,frontends,prod_frontends,singletornado_frontends,pageable_servers
+       }
+<% end -%>
+
+<% @hosts_fullstack.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>
+       hostgroups       all,web,frontends,staging_frontends,singletornado_frontends,not_pageable_servers,postgres,postgres_appdb_primary
+       }
+<% end -%>
+
+<% @hosts_app_staging.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,web,frontends,staging_frontends,singletornado_frontends,not_pageable_servers
+       }
+<% end -%>
+
+<% @hosts_zmirror.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,zmirror,zmirror_main
+       }
+<% end -%>
+
+<% @hosts_zmirrorp.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,zmirror,zmirrorp
+       }
+<% end -%>
+
+<% @hosts_postgres_primary.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,postgres,postgres_appdb_primary,pageable_servers
+       }
+<% end -%>
+
+<% @hosts_postgres_secondary.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,postgres_appdb,pageable_servers
+       }
+<% end -%>
+
+<% @hosts_stats.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,not_pageable_servers
+       }
+<% end -%>
+
+<% @hosts_redis.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @hosts_domain %>
+       hostgroups       all,not_pageable_servers, redis
+       }
+<% end -%>

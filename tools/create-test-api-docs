@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
-from __future__ import absolute_import
+#!/usr/bin/env python3
 
 # check for the venv
 from lib import sanity_check
@@ -62,7 +60,7 @@ def fix_test_name(s):
     return s.replace('zerver.tests.', '')
 
 def create_single_page(pattern, out_dir, href, calls):
-    # type: (str, str, str, List[Any]) -> None
+    # type: (str, str, str, List[Call]) -> None
     fn = out_dir + '/' + href
     with open(fn, 'w') as f:
         f.write('''
@@ -86,15 +84,11 @@ def create_single_page(pattern, out_dir, href, calls):
             f.write(call['method'] + '<br>\n')
             f.write('status code: %s<br>\n' % (call['status_code'],))
             f.write('<br>')
-            if call['info']:
-                f.write('info: %s<br>\n' % (encode_info(call['info']),))
-            if call['kwargs']:
-                f.write('kwargs: %s<br>\n' % (encode_info(call['kwargs']),))
             f.write('</div>')
 
 def create_user_docs():
     # type: () -> None
-    fn = 'var/url_coverage.txt' # TODO: make path more robust, maybe use json suffix
+    fn = 'var/url_coverage.txt'  # TODO: make path more robust, maybe use json suffix
 
     out_dir = 'var/api_docs'
     try:
@@ -121,7 +115,7 @@ def create_user_docs():
         for line in open(fn):
             calls.append(ujson.loads(line))
 
-        pattern_dict = defaultdict(list) # type: Dict[str, List[Call]]
+        pattern_dict = defaultdict(list)  # type: Dict[str, List[Call]]
         for call in calls:
             if 'pattern' in call:
                 pattern = clean_up_pattern(call['pattern'])
@@ -136,7 +130,7 @@ def create_user_docs():
             ('json', 'legacy'),
         ]
 
-        groups = dict() # type: Dict[str, Set[str]]
+        groups = dict()  # type: Dict[str, Set[str]]
         for prefix, name in tups:
             groups[name] = {p for p in patterns if p.startswith(prefix)}
             patterns -= groups[name]

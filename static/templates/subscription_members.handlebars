@@ -1,0 +1,28 @@
+{{#render_subscribers}}
+<div class="subscriber_list_settings_container" {{#unless can_access_subscribers}}style="display: none"{{/unless}}>
+    <div class="subscriber_list_settings">
+        <div class="sub_settings_title float-left">
+            {{t "Stream membership" }}
+            <div class="stream_subscription_info small"></div>
+        </div>
+        <div class="subscriber_list_add float-right">
+            <form class="form-inline">
+                <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
+                <div class="add_subscribers_container" {{#if invite_only}}{{#unless subscribed}}style="display: none"{{/unless}}{{/if}}>
+                    <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
+                    <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="-1">
+                        {{t 'Add' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="clear-float"></div>
+    </div>
+    <div class="subscriber-list-box">
+        <div class="subscriber_list_container">
+            <div class="subscriber_list_loading_indicator"></div>
+            <table class="subscriber-list"></table>
+        </div>
+    </div>
+</div>
+{{/render_subscribers}}

@@ -1,3 +1,4 @@
+/* eslint indent: "off" */
 var realm_icon = (function () {
 
     var exports = {};
@@ -48,3 +49,4 @@ var realm_icon = (function () {
 if (typeof module !== 'undefined') {
     module.exports = realm_icon;
 }
+window.realm_icon = realm_icon;

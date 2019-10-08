@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 from typing import Dict, List, Optional, Set
 
 import re
@@ -17,7 +14,7 @@ class HtmlBranchesException(Exception):
     pass
 
 
-class HtmlTreeBranch(object):
+class HtmlTreeBranch:
     """
     For <p><div id='yo'>bla<span class='bar'></span></div></p>, store a
     representation of the tags all the way down to the leaf, which would
@@ -25,7 +22,7 @@ class HtmlTreeBranch(object):
     """
 
     def __init__(self, tags, fn):
-        # type: (List[TagInfo], str) -> None
+        # type: (List['TagInfo'], Optional[str]) -> None
         self.tags = tags
         self.fn = fn
         self.line = tags[-1].token.line
@@ -62,15 +59,15 @@ class HtmlTreeBranch(object):
         return ' '.join(t.text() for t in self.tags)
 
 
-class Node(object):
-    def __init__(self, token, parent):
-        # type: (Token, Node) -> None
+class Node:
+    def __init__(self, token, parent):  # FIXME parent parameter is not used!
+        # type: (Token, Optional[Node]) -> None
         self.token = token
         self.children = []  # type: List[Node]
         self.parent = None  # type: Optional[Node]
 
 
-class TagInfo(object):
+class TagInfo:
     def __init__(self, tag, classes, ids, token):
         # type: (str, List[str], List[str], Token) -> None
         self.tag = tag
@@ -121,7 +118,7 @@ def split_for_id_and_class(element):
     # attributes from HTML tags. This also takes care of template variables
     # in string during splitting process. For eg. 'red black {{ a|b|c }}'
     # is split as ['red', 'black', '{{ a|b|c }}']
-    outside_braces = True # type: bool
+    outside_braces = True  # type: bool
     lst = []
     s = ''
 
@@ -143,7 +140,7 @@ def split_for_id_and_class(element):
 
 
 def html_branches(text, fn=None):
-    # type: (str, str) -> List[HtmlTreeBranch]
+    # type: (str, Optional[str]) -> List[HtmlTreeBranch]
     tree = html_tag_tree(text)
     branches = []  # type: List[HtmlTreeBranch]
 
@@ -192,8 +189,8 @@ def html_tag_tree(text):
 
 
 def build_id_dict(templates):
-    # type: (List[str]) -> (Dict[str,List[str]])
-    template_id_dict = defaultdict(list) # type: (Dict[str,List[str]])
+    # type: (List[str]) -> (Dict[str, List[str]])
+    template_id_dict = defaultdict(list)  # type: (Dict[str, List[str]])
 
     for fn in templates:
         text = open(fn).read()

@@ -1,15 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import sys
 import time
-import optparse
+import argparse
+import configparser
 from collections import defaultdict
 import os
 import subprocess
 
 if False:
-    from typing import Dict
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
+    from typing import Any, Dict, Optional, Union
 
 states = {
     0: "OK",
@@ -24,40 +25,54 @@ if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
 
 usage = """Usage: check-rabbitmq-consumers --queue=[queue-name] --min-threshold=[min-threshold]"""
 
-parser = optparse.OptionParser(usage=usage)
-parser.add_option('--min-threshold',
-                  dest='min_count',
-                  type="int",
-                  default=1,
-                  action='store')
+parser = argparse.ArgumentParser(usage=usage)
+parser.add_argument('--min-threshold',
+                    dest='min_count',
+                    type=int,
+                    default=1,
+                    action='store')
 
-(options, args) = parser.parse_args()
+options = parser.parse_args()
+
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+def get_config(section, key, default_value):
+    # type: (str, str, str) -> str
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', '1'))
 
 output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
                                  universal_newlines=True)
 
-consumers = defaultdict(int) # type: Dict[str, int]
+consumers = defaultdict(int)  # type: Dict[str, int]
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 from scripts.lib.zulip_tools import su_to_zulip
 queues = {
+    'deferred_work'
     'digest_emails',
     'email_mirror',
     'embed_links',
+    'embedded_bots',
     'error_reports',
     'feedback_messages',
     'invites',
     'message_sender',
     'missedmessage_emails',
     'missedmessage_email_senders',
+    'email_senders',
     'missedmessage_mobile_notifications',
-    'notify_tornado',
+    'outgoing_webhooks',
     'signups',
     'slow_queries',
-    'tornado_return',
     'user_activity'
     'user_activity_interval',
     'user_presence',
+    # These queues may not be present if settings.TORNADO_PROCESSES > 1
+    'notify_tornado',
+    'tornado_return',
 }
 
 for queue_name in queues:
@@ -67,7 +82,12 @@ for queue_name in queues:
 for line in output.split('\n'):
     parts = line.split('\t')
     if len(parts) >= 2:
-        consumers[parts[0]] += 1
+        queue_name = parts[0]
+        if queue_name.startswith("tornado_return_"):
+            queue_name = "tornado_return"
+        if queue_name.startswith("notify_tornado_"):
+            queue_name = "notify_tornado"
+        consumers[queue_name] += 1
 
 now = int(time.time())
 
@@ -75,12 +95,16 @@ for queue_name in consumers.keys():
     state_file_path = "/var/lib/nagios_state/check-rabbitmq-consumers-" + queue_name
     state_file_tmp = state_file_path + "-tmp"
 
-    if consumers[queue_name] < options.min_count:
+    target_count = options.min_count
+    if queue_name in ["tornado_return", "notify_tornado"]:
+        target_count = TORNADO_PROCESSES
+
+    if consumers[queue_name] < target_count:
         status = 2
     else:
         status = 0
     with open(state_file_tmp, "w") as f:
         f.write("%s|%s|%s|queue %s has %s consumers, needs %s\n" % (
             now, status, states[status], queue_name,
-            consumers[queue_name], options.min_count))
-    subprocess.check_call(["mv", state_file_tmp, state_file_path])
+            consumers[queue_name], target_count))
+    os.rename(state_file_tmp, state_file_path)

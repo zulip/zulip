@@ -2,11 +2,9 @@ var stream_list = (function () {
 
 var exports = {};
 
-var zoomed_stream = '';
-var previous_sort_order;
-var previous_unpinned_order;
+var has_scrolled = false;
 
-function update_count_in_dom(unread_count_elem, count) {
+exports.update_count_in_dom = function (unread_count_elem, count) {
     var count_span = unread_count_elem.find('.count');
     var value_span = count_span.find('.value');
 
@@ -25,33 +23,8 @@ function update_count_in_dom(unread_count_elem, count) {
         count_span.parent(".subscription_block").addClass("stream-with-count");
     }
     value_span.text(count);
-}
+};
 
-function filter_streams_by_search(streams) {
-    var search_box = $(".stream-list-filter");
-
-    var search_term = search_box.expectOne().val().trim();
-
-    if (search_term === '') {
-        return streams;
-    }
-
-    var search_terms = search_term.toLowerCase().split(",");
-    search_terms = _.map(search_terms, function (s) {
-        return s.trim();
-    });
-
-    var filtered_streams = _.filter(streams, function (stream) {
-        return _.any(search_terms, function (search_term) {
-            var lower_stream_name = stream.toLowerCase().split(" ");
-            return _.any(lower_stream_name, function (name) {
-                return name.indexOf(search_term) === 0;
-            });
-        });
-    });
-
-    return filtered_streams;
-}
 
 exports.stream_sidebar = (function () {
     var self = {};
@@ -71,23 +44,28 @@ exports.stream_sidebar = (function () {
     };
 
     self.remove_row = function (stream_id) {
-        var widget = self.rows.get(stream_id);
-        if (!widget) {
-            blueslip.warn('Cannot remove stream id ' + stream_id);
-            return;
-        }
-        widget.remove();
+        // This only removes the row from our data structure.
+        // Our caller should use build_stream_list() to re-draw
+        // the sidebar, so that we don't have to deal with edge
+        // cases like removing the last pinned stream (and removing
+        // the divider).
+
         self.rows.del(stream_id);
     };
 
     return self;
 }());
 
+function get_search_term() {
+    var search_box = $(".stream-list-filter");
+    var search_term = search_box.expectOne().val().trim();
+    return search_term;
+}
+
 exports.remove_sidebar_row = function (stream_id) {
     exports.stream_sidebar.remove_row(stream_id);
-    // We need to make sure we resort if the removed sub gets added again
-    previous_sort_order = undefined;
-    previous_unpinned_order = undefined;
+    exports.build_stream_list();
+    exports.stream_cursor.redraw();
 };
 
 exports.create_initial_sidebar_rows = function () {
@@ -111,134 +89,117 @@ exports.build_stream_list = function () {
         return;
     }
 
-    streams = filter_streams_by_search(streams);
+    // The main logic to build the list is in stream_sort.js, and
+    // we get three lists of streams (pinned/normal/dormant).
+    var stream_groups = stream_sort.sort_groups(get_search_term());
 
-    var sort_recent = (streams.length > 40);
-    var pinned_streams = [];
-    var unpinned_streams = [];
+    if (stream_groups.same_as_before) {
+        return;
+    }
+
     var parent = $('#stream_filters');
     var elems = [];
 
     function add_sidebar_li(stream) {
         var sub = stream_data.get_sub(stream);
         var sidebar_row = exports.stream_sidebar.get_row(sub.stream_id);
-        if (sort_recent) {
-            sidebar_row.update_whether_active();
-        }
-        elems.push(sidebar_row.get_li().get(0));
+        sidebar_row.update_whether_active();
+        elems.push(sidebar_row.get_li());
     }
 
-    _.each(streams, function (stream) {
-        var pinned = stream_data.get_sub(stream).pin_to_top;
-        if (pinned) {
-            pinned_streams.push(stream);
-        } else {
-            unpinned_streams.push(stream);
-        }
-    });
-
-    pinned_streams.sort(util.strcmp);
-
-    unpinned_streams.sort(function (a, b) {
-        if (sort_recent) {
-            if (stream_data.is_active(b) && ! stream_data.is_active(a)) {
-                return 1;
-            } else if (! stream_data.is_active(b) && stream_data.is_active(a)) {
-                return -1;
-            }
-        }
-        return util.strcmp(a, b);
-    });
-
-    streams = pinned_streams.concat(unpinned_streams);
-
-    if (previous_sort_order !== undefined &&
-        util.array_compare(previous_sort_order, streams) &&
-        util.array_compare(previous_unpinned_order, unpinned_streams)) {
-        return;
-    }
-    previous_sort_order = streams;
-    previous_unpinned_order = unpinned_streams;
     parent.empty();
 
-    if (pinned_streams.length > 0) {
-        _.each(pinned_streams, add_sidebar_li);
-        elems.push($('<hr class="pinned-stream-split">').get(0));
-    }
-    if (unpinned_streams.length > 0) {
-        _.each(unpinned_streams, add_sidebar_li);
+    _.each(stream_groups.pinned_streams, add_sidebar_li);
+
+    var any_pinned_streams = stream_groups.pinned_streams.length > 0;
+    var any_normal_streams = stream_groups.normal_streams.length > 0;
+    var any_dormant_streams = stream_groups.dormant_streams.length > 0;
+
+    if (any_pinned_streams && (any_normal_streams || any_dormant_streams)) {
+        elems.push('<hr class="stream-split">');
     }
 
-    $(elems).appendTo(parent);
+    _.each(stream_groups.normal_streams, add_sidebar_li);
+
+    if (any_dormant_streams && any_normal_streams) {
+        elems.push('<hr class="stream-split">');
+    }
+
+    _.each(stream_groups.dormant_streams, add_sidebar_li);
+
+    parent.append(elems);
 };
 
-function iterate_to_find(selector, name_to_find, context) {
-    var lowercase_name = name_to_find.toLowerCase();
-    var found = _.find($(selector, context), function (elem) {
-        return $(elem).attr('data-name').toLowerCase() === lowercase_name;
-    });
-    return found ? $(found) : $();
-}
-
-function get_filter_li(type, name) {
-    if (type === 'stream') {
-        var sub = stream_data.get_sub(name);
-        return $("#stream_sidebar_" + sub.stream_id);
+exports.get_stream_li = function (stream_id) {
+    var row = exports.stream_sidebar.get_row(stream_id);
+    if (!row) {
+        // Not all streams are in the sidebar, so we don't report
+        // an error here, and it's up for the caller to error if
+        // they expected otherwise.
+        return;
     }
-    return iterate_to_find("#" + type + "_filters > li", name);
-}
 
-function zoom_in() {
-    popovers.hide_all();
-    topic_list.zoom_in();
+    var li = row.get_li();
+    if (!li) {
+        blueslip.error('Cannot find li for id ' + stream_id);
+        return;
+    }
+
+    if (li.length > 1) {
+        blueslip.error('stream_li has too many elements for ' + stream_id);
+        return;
+    }
+
+    return li;
+};
+
+exports.zoom_in_topics = function (options) {
+    // This only does stream-related tasks related to zooming
+    // in to more topics, which is basically hiding all the
+    // other streams.
+
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
-    zoomed_stream = narrow.stream();
 
     // Hide stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).hide();
     });
-    $(".pinned-stream-split").each(function () {
+    $(".stream-split").each(function () {
         $(this).hide();
     });
 
     $("#stream_filters li.narrow-filter").each(function () {
         var elt = $(this);
+        var stream_id = options.stream_id.toString();
 
-        if (elt.attr('data-name') === zoomed_stream) {
+        if (elt.attr('data-stream-id') === stream_id) {
             elt.show();
         } else {
             elt.hide();
         }
     });
-}
+};
 
-function zoom_out(options) {
-    popovers.hide_all();
-    topic_list.zoom_out(options);
-
+exports.zoom_out_topics = function () {
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).show();
     });
-    $(".pinned-stream-split").each(function () {
+    $(".stream-split").each(function () {
         $(this).show();
     });
 
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
-}
+};
 
-function reset_to_unnarrowed(narrowed_within_same_stream) {
-    if (topic_list.is_zoomed() && narrowed_within_same_stream !== true) {
-        zoom_out({clear_topics: true});
-    } else {
-        topic_list.remove_expanded_topics();
+exports.set_in_home_view = function (stream_id, in_home) {
+    var li = exports.get_stream_li(stream_id);
+    if (!li) {
+        blueslip.error('passed in bad stream id ' + stream_id);
+        return;
     }
-}
 
-exports.set_in_home_view = function (stream, in_home) {
-    var li = get_filter_li('stream', stream);
     if (in_home) {
         li.removeClass("out_of_home_view");
     } else {
@@ -248,14 +209,15 @@ exports.set_in_home_view = function (stream, in_home) {
 
 function build_stream_sidebar_li(sub) {
     var name = sub.name;
-    var args = {name: name,
-                id: sub.stream_id,
-                uri: narrow.by_stream_uri(name),
-                not_in_home_view: (stream_data.in_home_view(name) === false),
-                invite_only: sub.invite_only,
-                color: stream_data.get_color(name),
-                pin_to_top: sub.pin_to_top,
-               };
+    var args = {
+        name: name,
+        id: sub.stream_id,
+        uri: hash_util.by_stream_uri(sub.stream_id),
+        not_in_home_view: stream_data.in_home_view(sub.stream_id) === false,
+        invite_only: sub.invite_only,
+        color: stream_data.get_color(name),
+        pin_to_top: sub.pin_to_top,
+    };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
     return list_item;
@@ -264,10 +226,9 @@ function build_stream_sidebar_li(sub) {
 function build_stream_sidebar_row(sub) {
     var self = {};
     var list_item = build_stream_sidebar_li(sub);
-    var stream_name = sub.name;
 
     self.update_whether_active = function () {
-        if (stream_data.is_active(stream_name)) {
+        if (stream_data.is_active(sub)) {
             list_item.removeClass('inactive_stream');
         } else {
             list_item.addClass('inactive_stream');
@@ -284,8 +245,8 @@ function build_stream_sidebar_row(sub) {
 
 
     self.update_unread_count = function () {
-        var count = unread.num_unread_for_stream(stream_name);
-        update_count_in_dom(list_item, count);
+        var count = unread.num_unread_for_stream(sub.stream_id);
+        exports.update_count_in_dom(list_item, count);
     };
 
     self.update_unread_count();
@@ -302,95 +263,69 @@ exports.create_sidebar_row = function (sub) {
     build_stream_sidebar_row(sub);
 };
 
-exports.redraw_stream_privacy = function (stream_name) {
-    var li = exports.get_stream_li(stream_name);
+exports.redraw_stream_privacy = function (sub) {
+    var li = exports.get_stream_li(sub.stream_id);
+    if (!li) {
+        // We don't want to raise error here, if we can't find stream in subscription
+        // stream list. Cause we allow org admin to update stream privacy
+        // even if they don't subscribe to public stream.
+        return;
+    }
+
     var div = li.find('.stream-privacy');
-    var swatch = li.find('.streamlist_swatch');
-    var sub = stream_data.get_sub(stream_name);
-    var color = stream_data.get_color(stream_name);
-    var dark_background = stream_color.get_color_class(color);
+    var dark_background = stream_color.get_color_class(sub.color);
 
     var args = {
         invite_only: sub.invite_only,
         dark_background: dark_background,
     };
 
-    if (sub.invite_only) {
-        swatch.addClass("private-stream-swatch");
-    } else {
-        swatch.removeClass("private-stream-swatch");
-    }
-
     var html = templates.render('stream_privacy', args);
     div.html(html);
 };
 
-exports.get_stream_li = function (stream_name) {
-    return get_filter_li('stream', stream_name);
-};
-
-function set_count(type, name, count) {
-    var unread_count_elem = get_filter_li(type, name);
-    update_count_in_dom(unread_count_elem, count);
-}
-
-function rebuild_recent_topics(stream) {
-    // TODO: Call rebuild_recent_topics less, not on every new
-    // message.
-    var stream_li = get_filter_li('stream', stream);
-    topic_list.rebuild(stream_li, stream);
+function set_stream_unread_count(stream_id, count) {
+    var unread_count_elem = exports.get_stream_li(stream_id);
+    if (!unread_count_elem) {
+        // This can happen for legitimate reasons, but we warn
+        // just in case.
+        blueslip.warn('stream id no longer in sidebar: ' + stream_id);
+        return;
+    }
+    exports.update_count_in_dom(unread_count_elem, count);
 }
 
 exports.update_streams_sidebar = function () {
     exports.build_stream_list();
+    exports.stream_cursor.redraw();
 
-    if (! narrow.active()) {
+    if (!narrow_state.active()) {
         return;
     }
 
-    var op_stream = narrow.filter().operands('stream');
-    if (op_stream.length !== 0) {
-        if (stream_data.is_subscribed(op_stream[0])) {
-            rebuild_recent_topics(op_stream[0]);
-        }
-    }
+    var filter = narrow_state.filter();
+
+    exports.update_stream_sidebar_for_narrow(filter);
 };
 
 exports.update_dom_with_unread_counts = function (counts) {
-    // We currently handle these message categories:
-    //    home, starred, mentioned, streams, and topics
-    //
-    // Note that similar methods elsewhere in the code update
-    // the "Private Message" section in the upper left corner
-    // and the buddy lists in the right sidebar.
-
     // counts.stream_count maps streams to counts
-    counts.stream_count.each(function (count, stream) {
-        set_count("stream", stream, count);
+    counts.stream_count.each(function (count, stream_id) {
+        set_stream_unread_count(stream_id, count);
     });
 
-    // counts.subject_count maps streams to hashes of topics to counts
-    counts.subject_count.each(function (subject_hash, stream) {
-        subject_hash.each(function (count, subject) {
-            topic_list.set_count(stream, subject, count);
+    // counts.topic_count maps streams to hashes of topics to counts
+    counts.topic_count.each(function (topic_hash, stream_id) {
+        topic_hash.each(function (count, topic) {
+            topic_list.set_count(stream_id, topic, count);
         });
     });
-
-    // integer counts
-    set_count("global", "mentioned", counts.mentioned_message_count);
-    set_count("global", "home", counts.home_unread_messages);
-
-    unread_ui.set_count_toggle_button($("#streamlist-toggle-unreadcount"),
-                                      counts.home_unread_messages);
-
-    unread_ui.animate_mention_changes(get_filter_li('global', 'mentioned'),
-                                      counts.mentioned_message_count);
 };
 
 exports.rename_stream = function (sub) {
     // The sub object is expected to already have the updated name
     build_stream_sidebar_row(sub);
-    exports.build_stream_list(); // big hammer
+    exports.update_streams_sidebar(); // big hammer
 };
 
 exports.refresh_pinned_or_unpinned_stream = function (sub) {
@@ -398,70 +333,143 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     // We use kind of brute force now, which is probably fine.
     build_stream_sidebar_row(sub);
     exports.update_streams_sidebar();
+
+    // Only scroll pinned topics into view.  If we're unpinning
+    // a topic, we may be literally trying to get it out of
+    // our sight.
+    if (sub.pin_to_top) {
+        var stream_li = exports.get_stream_li(sub.stream_id);
+        if (!stream_li) {
+            blueslip.error('passed in bad stream id ' + sub.stream_id);
+            return;
+        }
+        exports.scroll_stream_into_view(stream_li);
+    }
 };
 
-function deselect_top_left_corner_items() {
-    $("ul.filters li").removeClass('active-filter active-sub-filter');
+exports.get_sidebar_stream_topic_info  = function (filter) {
+    var result = {
+        stream_id: undefined,
+        topic_selected: false,
+    };
+
+    var op_stream = filter.operands('stream');
+    if (op_stream.length === 0) {
+        return result;
+    }
+
+    var stream_name = op_stream[0];
+    var stream_id = stream_data.get_stream_id(stream_name);
+
+    if (!stream_id) {
+        return result;
+    }
+
+    if (!stream_data.id_is_subscribed(stream_id)) {
+        return result;
+    }
+
+    result.stream_id = stream_id;
+
+    var op_topic = filter.operands('topic');
+    result.topic_selected = op_topic.length === 1;
+
+    return result;
+};
+
+function deselect_stream_items() {
+    $("ul#stream_filters li").removeClass('active-filter active-sub-filter');
 }
 
-$(function () {
-    // TODO, Eventually topic_list won't be a big singleton,
-    // and we can create more component-based click handlers for
-    // each stream.
-    topic_list.set_click_handlers({
-        zoom_in: zoom_in,
-        zoom_out: zoom_out,
-    });
+exports.update_stream_sidebar_for_narrow = function (filter) {
+    var info = exports.get_sidebar_stream_topic_info(filter);
 
-    pm_list.set_click_handlers();
+    deselect_stream_items();
 
-    $(document).on('narrow_activated.zulip', function (event) {
-        deselect_top_left_corner_items();
-        reset_to_unnarrowed(narrow.stream() === zoomed_stream);
+    var stream_id = info.stream_id;
 
-        // TODO: handle confused filters like "in:all stream:foo"
-        var op_in = event.filter.operands('in');
-        if (op_in.length !== 0) {
-            if (['all', 'home'].indexOf(op_in[0]) !== -1) {
-                $("#global_filters li[data-name='" + op_in[0] + "']").addClass('active-filter');
-            }
-        }
-        var op_is = event.filter.operands('is');
-        if (op_is.length !== 0) {
-            if (['starred', 'mentioned'].indexOf(op_is[0]) !== -1) {
-                $("#global_filters li[data-name='" + op_is[0] + "']").addClass('active-filter');
-            }
-        }
+    if (!stream_id) {
+        topic_zoom.clear_topics();
+        return;
+    }
 
-        var op_pm = event.filter.operands('pm-with');
-        if ((op_is.length !== 0 && _.contains(op_is, "private")) || op_pm.length !== 0) {
-            pm_list.expand(op_pm);
-        } else {
-            pm_list.close();
-        }
+    var stream_li = exports.get_stream_li(stream_id);
 
-        var op_stream = event.filter.operands('stream');
-        if (op_stream.length !== 0 && stream_data.is_subscribed(op_stream[0])) {
-            var stream_li = get_filter_li('stream', op_stream[0]);
-            var op_subject = event.filter.operands('topic');
-            if (op_subject.length === 0) {
-                stream_li.addClass('active-filter');
-            }
-            rebuild_recent_topics(op_stream[0]);
-            unread_ops.process_visible();
-        }
-    });
+    if (!stream_li) {
+        // It should be the case then when we have a subscribed
+        // stream, there will always be a stream list item
+        // corresponding to that stream in our sidebar.  We have
+        // evidence that this assumption breaks down for some users,
+        // but we are not clear why it happens.
+        blueslip.error('No stream_li for subscribed stream ' + stream_id);
+        topic_zoom.clear_topics();
+        return;
+    }
 
-    $(document).on('narrow_deactivated.zulip', function () {
-        deselect_top_left_corner_items();
-        reset_to_unnarrowed();
-        pm_list.close();
-        $("#global_filters li[data-name='home']").addClass('active-filter');
-    });
+    if (!info.topic_selected) {
+        stream_li.addClass('active-filter');
+    }
 
+    if (stream_id !== topic_list.active_stream_id()) {
+        topic_zoom.clear_topics();
+    }
+
+    topic_list.rebuild(stream_li, stream_id);
+
+    return stream_li;
+};
+
+exports.handle_narrow_activated = function (filter) {
+    var stream_li = exports.update_stream_sidebar_for_narrow(filter);
+    if (stream_li) {
+        exports.scroll_stream_into_view(stream_li);
+    }
+    // Update scrollbar size.
+    ui.update_scrollbar($("#stream-filters-container"));
+};
+
+exports.handle_narrow_deactivated = function () {
+    deselect_stream_items();
+    topic_zoom.clear_topics();
+};
+
+function focus_stream_filter(e) {
+    exports.stream_cursor.reset();
+    e.stopPropagation();
+}
+
+function keydown_enter_key() {
+    var stream_id = exports.stream_cursor.get_key();
+
+    if (stream_id === undefined) {
+        // This can happen for empty searches, no need to warn.
+        return;
+    }
+
+    var sub = stream_data.get_sub_by_id(stream_id);
+
+    if (sub === undefined) {
+        blueslip.error('Unknown stream_id for search/enter: ' + stream_id);
+        return;
+    }
+
+    exports.clear_and_hide_search();
+    narrow.by('stream', sub.name, {trigger: 'sidebar enter key'});
+}
+
+function actually_update_streams_for_search() {
+    exports.update_streams_sidebar();
+    resize.resize_page_components();
+    exports.stream_cursor.reset();
+}
+
+var update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
+
+exports.initialize = function () {
     $(document).on('subscription_add_done.zulip', function (event) {
         exports.create_sidebar_row(event.sub);
         exports.build_stream_list();
+        exports.stream_cursor.redraw();
     });
 
     $(document).on('subscription_remove_done.zulip', function (event) {
@@ -473,25 +481,69 @@ $(function () {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
-        if (ui_state.home_tab_obscured()) {
-            ui_util.change_tab_to('#home');
-        }
-        var stream = $(e.target).parents('li').attr('data-name');
+        var stream_id = $(e.target).parents('li').attr('data-stream-id');
+        var sub = stream_data.get_sub_by_id(stream_id);
         popovers.hide_all();
-        narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar'});
+        narrow.by('stream', sub.name, {trigger: 'sidebar'});
+
+        exports.clear_and_hide_search();
 
         e.preventDefault();
         e.stopPropagation();
     });
 
-});
+    $('#clear_search_stream_button').on('click', exports.clear_search);
 
-function actually_update_streams_for_search() {
-    exports.update_streams_sidebar();
-    resize.resize_page_components();
-}
+    $("#streams_header").expectOne().click(function (e) {
+        exports.toggle_filter_displayed(e);
+    });
 
-var update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
+    // check for user scrolls on streams list for first time
+    $('#stream-filters-container').on('scroll', function () {
+        has_scrolled = true;
+        // remove listener once user has scrolled
+        $(this).off('scroll');
+    });
+
+    exports.stream_cursor = list_cursor({
+        list: {
+            scroll_container_sel: '#stream-filters-container',
+            find_li: function (opts) {
+                var stream_id = opts.key;
+                var li = exports.get_stream_li(stream_id);
+                return li;
+            },
+            first_key: stream_sort.first_stream_id,
+            prev_key: stream_sort.prev_stream_id,
+            next_key: stream_sort.next_stream_id,
+        },
+        highlight_class: 'highlighted_stream',
+    });
+
+    var $search_input = $('.stream-list-filter').expectOne();
+
+    keydown_util.handle({
+        elem: $search_input,
+        handlers: {
+            enter_key: function () {
+                keydown_enter_key();
+                return true;
+            },
+            up_arrow: function () {
+                exports.stream_cursor.prev();
+                return true;
+            },
+            down_arrow: function () {
+                exports.stream_cursor.next();
+                return true;
+            },
+        },
+    });
+
+    $search_input.on('click', focus_stream_filter);
+    $search_input.on('focusout', exports.stream_cursor.clear);
+    $search_input.on('input', update_streams_for_search);
+};
 
 exports.searching = function () {
     return $('.stream-list-filter').expectOne().is(':focus');
@@ -507,10 +559,27 @@ exports.escape_search = function () {
     update_streams_for_search();
 };
 
+exports.clear_search = function () {
+    var filter = $('.stream-list-filter').expectOne();
+    if (filter.val() === '') {
+        exports.clear_and_hide_search();
+        return;
+    }
+    filter.val('');
+    filter.blur();
+    update_streams_for_search();
+};
+
 exports.initiate_search = function () {
     var filter = $('.stream-list-filter').expectOne();
-    filter.removeClass('notdisplayed');
+    filter.parent().removeClass('notdisplayed');
+    if (!$(".app-main .column-left").hasClass("expanded")) {
+        popovers.hide_all();
+        stream_popover.show_streamlist_sidebar();
+    }
     filter.focus();
+
+    exports.stream_cursor.reset();
 };
 
 exports.clear_and_hide_search = function () {
@@ -519,58 +588,65 @@ exports.clear_and_hide_search = function () {
         filter.val('');
         update_streams_for_search();
     }
+    exports.stream_cursor.clear();
     filter.blur();
-    filter.addClass('notdisplayed');
+    filter.parent().addClass('notdisplayed');
 };
 
-function focus_stream_filter(e) {
-    e.stopPropagation();
-}
-
-function maybe_select_stream(e) {
-    if (e.keyCode === 13) {
-        // Enter key was pressed
-
-        var topStream = $('#stream_filters li.narrow-filter').first().data('name');
-        if (topStream !== undefined) {
-            // undefined if there are no results
-            if (ui_state.home_tab_obscured()) {
-                ui_util.change_tab_to('#home');
-            }
-            exports.clear_and_hide_search();
-            narrow.by('stream', topStream, {select_first_unread: true, trigger: 'sidebar enter key'});
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    }
-}
-
-function toggle_filter_displayed(e) {
-    if (e.target.id === 'streams_inline_cog') {
-        return;
-    }
-    if ($('.stream-list-filter.notdisplayed').length === 0) {
+exports.toggle_filter_displayed = function (e) {
+    if ($('#stream-filters-container .input-append.notdisplayed').length === 0) {
         exports.clear_and_hide_search();
     } else {
         exports.initiate_search();
     }
     e.preventDefault();
-}
+};
 
-$(function () {
-    $(".stream-list-filter").expectOne()
-        .on('click', focus_stream_filter)
-        .on('input', update_streams_for_search)
-        .on('keydown', maybe_select_stream);
-});
+exports.scroll_stream_into_view = function (stream_li) {
+    var container = $('#stream-filters-container');
 
-$(function () {
-    $("#streams_header").expectOne()
-        .on('click', toggle_filter_displayed);
-});
+    if (stream_li.length !== 1) {
+        blueslip.error('Invalid stream_li was passed in');
+        return;
+    }
+
+    scroll_util.scroll_element_into_container(stream_li, container);
+};
+
+exports.maybe_scroll_narrow_into_view = function () {
+    // we don't want to interfere with user scrolling once the page loads
+    if (has_scrolled) {
+        return;
+    }
+
+    var stream_li = stream_list.get_current_stream_li();
+    if (stream_li) {
+        stream_list.scroll_stream_into_view(stream_li);
+    }
+};
+
+exports.get_current_stream_li = function () {
+    var stream_id = topic_list.active_stream_id();
+
+    if (!stream_id) {
+        // stream_id is undefined in non-stream narrows
+        return;
+    }
+
+    var stream_li = stream_list.get_stream_li(stream_id);
+
+    if (!stream_li) {
+        // This code path shouldn't ever be reached.
+        blueslip.warn('No active stream_li found for defined id ' + stream_id);
+        return;
+    }
+
+    return stream_li;
+};
 
 return exports;
 }());
 if (typeof module !== 'undefined') {
     module.exports = stream_list;
 }
+window.stream_list = stream_list;

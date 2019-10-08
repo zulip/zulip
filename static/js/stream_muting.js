@@ -11,7 +11,7 @@ exports.update_in_home_view = function (sub, value) {
         var msg_offset;
         var saved_ypos;
         // Save our current scroll position
-        if (ui_state.home_tab_obscured()) {
+        if (overlays.is_active()) {
             saved_ypos = message_viewport.scrollTop();
         } else if (home_msg_list === current_msg_list &&
                    current_msg_list.selected_row().offset() !== null) {
@@ -24,7 +24,7 @@ exports.update_in_home_view = function (sub, value) {
         message_util.add_messages(message_list.all.all_messages(), home_msg_list);
 
         // Ensure we're still at the same scroll position
-        if (ui_state.home_tab_obscured()) {
+        if (overlays.is_active()) {
             message_viewport.scrollTop(saved_ypos);
         } else if (home_msg_list === current_msg_list) {
             // We pass use_closest to handle the case where the
@@ -33,7 +33,7 @@ exports.update_in_home_view = function (sub, value) {
             home_msg_list.select_id(home_msg_list.selected_id(),
                                     {use_closest: true, empty_ok: true});
             if (current_msg_list.selected_id() !== -1) {
-                message_viewport.set_message_offset(msg_offset);
+                current_msg_list.view.set_message_offset(msg_offset);
             }
         }
 
@@ -43,12 +43,12 @@ exports.update_in_home_view = function (sub, value) {
         pointer.recenter_pointer_on_display = true;
         pointer.suppress_scroll_pointer_update = true;
 
-        if (! home_msg_list.empty()) {
+        if (!home_msg_list.empty()) {
             message_util.do_unread_count_updates(home_msg_list.all_messages());
         }
     }, 0);
 
-    stream_list.set_in_home_view(sub.name, sub.in_home_view);
+    stream_list.set_in_home_view(sub.stream_id, sub.in_home_view);
 
     var not_in_home_view_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_setting_not_in_home_view .sub_setting_control");
     not_in_home_view_checkbox.prop('checked', !value);
@@ -61,3 +61,4 @@ if (typeof module !== 'undefined') {
     module.exports = stream_muting;
 }
 
+window.stream_muting = stream_muting;

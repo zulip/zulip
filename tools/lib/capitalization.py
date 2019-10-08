@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from typing import List, Tuple, Set, Pattern, Match
 import re
@@ -12,25 +11,41 @@ from bs4 import BeautifulSoup
 # this list without any modification.
 IGNORED_PHRASES = [
     # Proper nouns and acronyms
+    r"Android",
     r"API",
+    r"APNS",
+    r"App Store",
+    r"Botserver",
     r"Cookie Bot",
     r"Dropbox",
     r"GitHub",
+    r"G Suite",
     r"Google",
+    r"Gravatar",
+    r"Hamlet",
+    r"Help Center",
     r"HTTP",
     r"ID",
     r"IDs",
+    r"IP",
     r"JIRA",
     r"JSON",
     r"Kerberos",
+    r"LDAP",
     r"Mac",
+    r"macOS",
     r"MiB",
+    r"OTP",
     r"Pivotal",
+    r"Play Store",
     r'REMOTE_USER',
+    r'Slack',
     r"SSO",
     r'Terms of Service',
+    r'Tuesday',
     r"URL",
     r"Ubuntu",
+    r"Updown",
     r"V5",
     r"Webathena",
     r"Windows",
@@ -38,7 +53,14 @@ IGNORED_PHRASES = [
     r"XML",
     r"Zephyr",
     r"Zulip",
+    r"Zulip Account Security",
+    r"Zulip Security",
+    r"Zulip Team",
     r"iPhone",
+    r"iOS",
+    r"Emoji One",
+    r"mailinator.com",
+    r"HQ",
     # Code things
     r".zuliprc",
     r"__\w+\.\w+__",
@@ -52,22 +74,32 @@ IGNORED_PHRASES = [
     r"e.g.",
     r"etc.",
     r"images",
-
+    r"enabled",
+    r"disabled",
+    r"zulip_org_id",
+    r"admins",
+    r"members",
+    # Placeholders
+    r"keyword",
+    r"streamname",
+    r"user@example.com",
     # Fragments of larger strings
+    (r'your subscriptions on your Streams page'),
     (r'Change notification settings for individual streams on your '
      '<a href="/#streams">Streams page</a>.'),
-    (r'<p class="bot-settings-note padded-container"> Looking for our '
+    (r'Looking for our '
      '<a href="/integrations" target="_blank">Integrations</a> or '
-     '<a href="{{ server_uri }}/api" target="_blank">API</a> '
-     'documentation? </p>'),
+     '<a href="/api" target="_blank">API</a> documentation?'),
     r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
     r"one or more people...",
     r"confirmation email",
     r"invites remaining",
-    r"^left$",
     r"was too large; the maximum file size is 25MiB.",
-    r"^right$",
     r"selected message",
+    r"a-z",
+    r"organization administrator",
+    r"user",
+    r"an unknown operating system",
 
     # SPECIAL CASES
     # Enter is usually capitalized
@@ -76,8 +108,24 @@ IGNORED_PHRASES = [
     r"more topics",
     # For consistency with "more topics"
     r"more conversations",
+    # Capital 'i' looks weird in reminders popover
+    r"in 1 hour",
+    r"in 20 minutes",
+    r"in 3 hours",
     # We should probably just delete this string from translations
     r'activation key',
+    # this is used as a topic
+    r'^hello$',
+    # These are used as example short names (e.g. an uncapitalized context):
+    r"^marketing$",
+    r"^cookie$",
+    r"^new_emoji$",
+    # Used to refer custom time limits
+    r"\bN\b",
+
+    r"group private messages with __recipient__",
+    r"private messages with __recipient__",
+    r"private messages with yourself",
 
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
@@ -86,6 +134,11 @@ IGNORED_PHRASES = [
     r"argument ",
     # I can't find this one
     r"text",
+    r"GIF",
+    # Emoji name placeholder
+    r"leafy green vegetable",
+    # Subdomain placeholder
+    r"your-organization-url",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
@@ -109,6 +162,11 @@ DISALLOWED_REGEXES = [re.compile(regex) for regex in [
     r'^[A-Z][a-z]+[\sa-z0-9]+[A-Z]',  # Checks if an upper case character exists
     # after a lower case character when the first character is in upper case.
 ]]
+
+BANNED_WORDS = {
+    'realm': ('The term realm should not appear in user-facing strings. '
+              'Use organization instead.'),
+}
 
 def get_safe_phrase(phrase):
     # type: (str) -> str
@@ -174,10 +232,26 @@ def is_capitalized(safe_text):
 
     return True
 
+def check_banned_words(text: str) -> List[str]:
+    lower_cased_text = text.lower()
+    errors = []
+    for word, reason in BANNED_WORDS.items():
+        if word in lower_cased_text:
+            # Hack: Should move this into BANNED_WORDS framework; for
+            # now, just hand-code the skips:
+            if 'realm_name' in lower_cased_text:
+                continue
+            kwargs = dict(word=word, text=text, reason=reason)
+            msg = "{word} found in '{text}'. {reason}".format(**kwargs)
+            errors.append(msg)
+
+    return errors
+
 def check_capitalization(strings):
-    # type: (List[str]) -> Tuple[List[str], List[str]]
+    # type: (List[str]) -> Tuple[List[str], List[str], List[str]]
     errors = []
     ignored = []
+    banned_word_errors = []
     for text in strings:
         text = ' '.join(text.split())  # Remove extra whitespaces.
         safe_text = get_safe_text(text)
@@ -188,4 +262,6 @@ def check_capitalization(strings):
         elif capitalized and has_ignored_phrase:
             ignored.append(text)
 
-    return sorted(errors), sorted(ignored)
+        banned_word_errors.extend(check_banned_words(text))
+
+    return sorted(errors), sorted(ignored), sorted(banned_word_errors)

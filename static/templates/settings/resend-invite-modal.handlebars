@@ -1,0 +1,13 @@
+<div id="resend_invite_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="resend_invite_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="resend_invite_modal_label">{{#tr this}}Resend invitation to <span class="email"></span>{{/tr}}</h3>
+    </div>
+    <div class="modal-body">
+        <p>{{#tr this}}Are you sure you want to resend the invitation to <strong><span class="email"></span></strong>?{{/tr}}</p>
+    </div>
+    <div class="modal-footer">
+        <button class="button rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+        <button class="button rounded btn-danger" id="do_resend_invite_button" data-invite-id="{{invite_id}}">{{t "Resend now" }}</button>
+    </div>
+</div>

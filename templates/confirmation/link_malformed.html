@@ -1,0 +1,16 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+<div class="error_page">
+    <div class="container">
+        <img src="/static/images/500art.svg" alt=""/>
+        <div class="errorbox">
+            <div class="errorcontent">
+                <h1 class="lead">Whoops. The confirmation link is malformed.</h1>
+                <p>Make sure you copied the link correctly in to your browser. If you're still encountering this page, it's probably our fault. We're sorry.</p>
+                <p>Anyway, shoot us a line at <a href="mailto:{{ support_email }}">{{ support_email }}</a> and we'll get this resolved shortly.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

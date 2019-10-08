@@ -1,0 +1,144 @@
+/* general alert styling changes */
+.alert {
+    display: none;
+}
+
+.alert.show {
+    display: block;
+}
+
+.alert#organization-status {
+    margin: 20px;
+}
+
+.alert.stream_create_info {
+    margin: 10px 10px 0px 10px;
+}
+
+/* alert box component changes */
+.alert-box {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 900px;
+    margin-left: calc(50% - 450px);
+    z-index: 220;
+
+    -webkit-font-smoothing: antialiased;
+}
+
+.alert-box .alert.show {
+    animation-name: fadeIn;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+}
+
+.alert-box .alert.fade-out {
+    animation-name: fadeOut;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+}
+
+.alert-box .alert {
+    font-size: 1rem;
+    border-radius: 4px;
+    background-color: hsl(0, 0%, 100%);
+}
+
+.alert-box .alert .faded {
+    opacity: 0.7;
+}
+
+.alert-box .alert::before {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+
+    font-family: "FontAwesome";
+    font-size: 1.3em;
+    content: "\f071";
+
+    color: hsl(16, 60%, 55%);
+}
+
+.alert-box .alert.alert-error::before {
+    color: hsl(0, 80%, 40%);
+}
+
+.alert-box .alert {
+    position: relative;
+
+    /* gives room for the error icon. */
+    padding-left: 50px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    text-shadow: none;
+
+    color: hsl(16, 60%, 45%);
+    border: 1px solid hsl(16, 60%, 45%);
+    box-shadow: 0 0 2px hsl(16, 60%, 45%);
+}
+
+.alert-box .alert.alert-error {
+    color: hsl(0, 80%, 40%);
+    border: 1px solid hsl(0, 80%, 40%);
+    box-shadow: 0 0 2px hsl(0, 80%, 40%);
+}
+
+.alert-box .alert .exit {
+    position: absolute;
+    top: 10px;
+    right: 0px;
+
+    font-size: 2.5em;
+    font-weight: 300;
+
+    cursor: pointer;
+}
+
+.alert-box .alert .exit::after {
+    padding: 10px;
+    content: "\d7";
+}
+
+.alert-box .browser-alert .error::before {
+    content: "Browser Error: ";
+    font-weight: 600;
+}
+
+/* animation section */
+@keyframes fadeIn {
+    0% {
+        display: block;
+        opacity: 0;
+        transform: translateY(-100px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+
+    100% {
+        display: none;
+        opacity: 0;
+        transform: translateY(-100px);
+    }
+}
+
+/* @media queries */
+@media (max-width: 900px) {
+    .alert-box {
+        width: 80%;
+        left: 10%;
+        margin-left: 0px;
+    }
+}

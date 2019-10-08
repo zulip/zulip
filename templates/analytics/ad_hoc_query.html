@@ -5,18 +5,18 @@
 
     <thead class="activity_head">
         <tr>
-        {% for col in data.cols %}
+            {% for col in data.cols %}
             <th>{{ col }}</th>
-        {% endfor %}
+            {% endfor %}
         </tr>
     </thead>
     <tbody>
         {% for row in data.rows %}
-            <tr {% if row.row_class %}class="{{ row.row_class }}"{% endif %}>
-                {% for field in row.cells %}
-                    <td sortable>{{ field }}</td>
-                {% endfor %}
-            </tr>
+        <tr {% if row.row_class %}class="{{ row.row_class }}"{% endif %}>
+            {% for field in row.cells %}
+            <td sortable>{{ field }}</td>
+            {% endfor %}
+        </tr>
         {% endfor %}
     </tbody>
 </table>
