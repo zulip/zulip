@@ -2579,14 +2579,10 @@ class RealmAuditLog(models.Model):
     ROLE_COUNT = '10'
     ROLE_COUNT_HUMANS = '11'
     ROLE_COUNT_BOTS = '12'
+
     extra_data = models.TextField(null=True)  # type: Optional[str]
 
-    # USER_* event_types between 100 and 119 are synced from on-prem installations
-    # to zulipchat.com when billing for mobile push notifications is enabled.
-    # Every billing event_type must have ROLE_COUNT populated in extra_data.
-    MIN_BILLING_EVENT_TYPE = 100
-    MAX_BILLING_EVENT_TYPE = 119
-
+    # Event types
     USER_CREATED = 101
     USER_ACTIVATED = 102
     USER_DEACTIVATED = 103
@@ -2623,6 +2619,13 @@ class RealmAuditLog(models.Model):
     CUSTOMER_PLAN_CREATED = 502
 
     event_type = models.PositiveSmallIntegerField()  # type: int
+
+    # event_types synced from on-prem installations to zulipchat.com when
+    # billing for mobile push notifications is enabled.  Every billing
+    # event_type should have ROLE_COUNT populated in extra_data.
+    SYNCED_BILLING_EVENTS = [
+        USER_CREATED, USER_ACTIVATED, USER_DEACTIVATED, USER_REACTIVATED, USER_ROLE_CHANGED,
+        REALM_DEACTIVATED, REALM_REACTIVATED]
 
     def __str__(self) -> str:
         if self.modified_user is not None:

@@ -5,7 +5,7 @@ from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_change_user_delivery_email, do_change_avatar_fields, do_change_bot_owner, \
     do_regenerate_api_key, do_change_tos_version, \
     bulk_add_subscriptions, bulk_remove_subscriptions, get_streams_traffic, \
-    do_change_is_admin, do_change_is_guest
+    do_change_is_admin, do_change_is_guest, do_deactivate_realm, do_reactivate_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmAuditLog, get_client, get_realm, UserProfile
 from analytics.models import StreamCount
@@ -173,3 +173,15 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(subscription_deactivation_logs.count(), 1)
         self.assertEqual(subscription_deactivation_logs[0].modified_stream.id, stream[0].id)
         self.assertEqual(subscription_deactivation_logs[0].modified_user, user[0])
+
+    def test_realm_activation(self) -> None:
+        realm = get_realm('zulip')
+        do_deactivate_realm(realm)
+        log_entry = RealmAuditLog.objects.get(realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED)
+        extra_data = ujson.loads(log_entry.extra_data)
+        self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
+
+        do_reactivate_realm(realm)
+        log_entry = RealmAuditLog.objects.get(realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED)
+        extra_data = ujson.loads(log_entry.extra_data)
+        self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
