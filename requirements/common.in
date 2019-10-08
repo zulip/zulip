@@ -109,7 +109,7 @@ https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab
 django-webpack-loader
 
 # Needed for iOS push notifications
-apns2==0.5.*  # https://github.com/Pr0Ger/PyAPNs2/issues/88
+apns2
 
 python-twitter
 
