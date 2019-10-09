@@ -148,7 +148,11 @@ def generate_curl_example(endpoint: str, method: str,
                           api_url: str,
                           auth_email: str=DEFAULT_AUTH_EMAIL,
                           auth_api_key: str=DEFAULT_AUTH_API_KEY,
-                          exclude: List[str]=[]) -> List[str]:
+                          exclude: Optional[List[str]]=None,
+                          include: Optional[List[str]]=None) -> List[str]:
+    if exclude is not None and include is not None:
+        raise AssertionError("exclude and include cannot be set at the same time.")
+
     lines = ["```curl"]
     openapi_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
     openapi_params = openapi_entry.get("parameters", [])
@@ -170,8 +174,16 @@ def generate_curl_example(endpoint: str, method: str,
         lines.append("    -u %s:%s" % (auth_email, auth_api_key))
 
     for param in openapi_params:
-        if param["in"] == "path" or param["name"] in exclude:
+        if param["in"] == "path":
             continue
+        param_name = param["name"]
+
+        if include is not None and param_name not in include:
+            continue
+
+        if exclude is not None and param_name in exclude:
+            continue
+
         example_value = get_openapi_param_example_value_as_string(endpoint, method, param,
                                                                   curl_argument=True)
         lines.append(example_value)
@@ -184,7 +196,8 @@ def generate_curl_example(endpoint: str, method: str,
     return lines
 
 def render_curl_example(function: str, api_url: str,
-                        exclude: List[str]=[]) -> List[str]:
+                        exclude: Optional[List[str]]=None,
+                        include: Optional[List[str]]=None) -> List[str]:
     """ A simple wrapper around generate_curl_example. """
     parts = function.split(":")
     endpoint = parts[0]
@@ -196,6 +209,7 @@ def render_curl_example(function: str, api_url: str,
         kwargs["auth_api_key"] = parts[3]
     kwargs["api_url"] = api_url
     kwargs["exclude"] = exclude
+    kwargs["include"] = include
     return generate_curl_example(endpoint, method, **kwargs)
 
 SUPPORTED_LANGUAGES = {
