@@ -857,15 +857,17 @@ paths:
       - name: emoji_name
         in: query
         description: |
-                     Name of the emoji you want to add as as a reaction.
+                     Name of the emoji you want to add as a reaction.
 
                      To find an emoji's name, hover over a message to
-                     reveal three icons on the right, then click the smiley face icon.
-                     Images of available reaction emojis appear. Hover over the emoji
-                     you want, and note that emoji's text name.
+                     reveal three icons on the right, then click the smiley face icon. Images of available reaction emojis appear.
+
+                     Hover over the emoji you want, and note that emoji's text name.
+                     If the emoji's name has more than one word in it, replace each
+                     space with an underscore (_) character.
         schema:
           type: string
-        example: '**:slight smile:**'
+        example: slight_smile
         required: true
       - name: emoji_code
         in: query
