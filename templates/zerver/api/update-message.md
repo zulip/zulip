@@ -38,11 +38,7 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-``` curl
-curl -X "PATCH" {{ api_url }}/v1/messages/{msg_id} \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d $"content=New content"
-```
+{generate_code_example(curl)|/messages/{message_id}:patch|example}
 
 {end_tabs}
 
