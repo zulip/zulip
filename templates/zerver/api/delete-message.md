@@ -19,10 +19,7 @@ the Zulip Help Center.
 
 {tab|curl}
 
-``` curl
-curl -X DELETE {{ api_url }}/v1/messages/{message_id} \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-```
+{generate_code_example(curl)|/messages/{message_id}:delete|example}
 
 {end_tabs}
 

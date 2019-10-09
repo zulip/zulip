@@ -22,6 +22,7 @@ exclude_list = [
     # state of the DB. This results in the curl request to fail.
     'get-raw-message.md',
     'update-message.md',
+    'delete-message.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
