@@ -21,6 +21,7 @@ exclude_list = [
     # We currently get the example values from openapi specs and they don't refelect the
     # state of the DB. This results in the curl request to fail.
     'get-raw-message.md',
+    'update-message.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
