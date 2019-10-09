@@ -1,15 +1,17 @@
 from enum import Enum
-from typing import Any, Dict, List, Type, Optional
+from typing import Any, Dict, List, Type, TypeVar, Optional
 from typing_extensions import NoReturn
 
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 
 
+T = TypeVar("T", bound="AbstractEnum")
+
 class AbstractEnum(Enum):
     '''An enumeration whose members are used strictly for their names.'''
 
-    def __new__(cls: Type['AbstractEnum']) -> 'AbstractEnum':
+    def __new__(cls: Type[T]) -> T:
         obj = object.__new__(cls)
         obj._value_ = len(cls.__members__) + 1
         return obj
