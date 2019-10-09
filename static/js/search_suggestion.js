@@ -400,7 +400,7 @@ function get_streams_filter_suggestions(last, operators) {
     var suggestions = [
         {
             search_string: 'streams:public',
-            description: 'Public streams with all history',
+            description: 'All public streams in organization',
             invalid: [
                 {operator: 'is', operand: 'private'},
                 {operator: 'stream'},
