@@ -23,6 +23,7 @@ exclude_list = [
     'get-raw-message.md',
     'update-message.md',
     'delete-message.md',
+    'get-message-history.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
