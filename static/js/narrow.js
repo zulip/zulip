@@ -275,8 +275,7 @@ exports.activate = function (raw_operators, opts) {
         });
     }
 
-    if (filter.has_operator("is") && filter.operands("is")[0] === "private"
-        || filter.has_operator("pm-with") || filter.has_operator("group-pm-with")) {
+    if (filter.contains_only_private_messages()) {
         compose.update_closed_compose_buttons_for_private();
     } else {
         compose.update_closed_compose_buttons_for_stream();

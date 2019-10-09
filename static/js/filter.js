@@ -384,9 +384,16 @@ Filter.prototype = {
     can_mark_messages_read: function () {
         return !this.has_operator('search');
     },
+
     allow_use_first_unread_when_narrowing: function () {
         return this.can_mark_messages_read() || this.has_operator('is');
     },
+
+    contains_only_private_messages: function () {
+        return this.has_operator("is") && this.operands("is")[0] === "private" ||
+            this.has_operator("pm-with") || this.has_operator("group-pm-with");
+    },
+
     can_apply_locally: function () {
         if (this.is_search()) {
             // The semantics for matching keywords are implemented
