@@ -4,7 +4,7 @@ from functools import wraps
 import logging
 import math
 import os
-from typing import Any, Callable, Dict, Optional, TypeVar, Tuple, cast
+from typing import Any, Callable, Dict, Optional, TypeVar, Tuple, Union, cast
 import ujson
 
 from django.conf import settings
@@ -20,7 +20,8 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import Realm, UserProfile, RealmAuditLog, AbstractRealmAuditLog
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_current_plan
+    get_current_plan, CustomerAuditLog
+from zilencer.models import RemoteZulipServer, RemoteRealmAuditLog
 from zproject.settings import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -40,9 +41,15 @@ MIN_INVOICED_LICENSES = 30
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 
 class BillingOrg(object):
-    def __init__(self, realm: Realm) -> None:
-        self.realm = realm
-        self.customer_args = {'realm': self.realm}
+    def __init__(self, org: Union[Realm, RemoteZulipServer]) -> None:
+        if type(org) == Realm:
+            self.realm = cast(Realm, org)  # type: Optional[Realm]
+            self.server = None
+            self.customer_args = {'realm': self.realm}
+        else:
+            self.realm = None
+            self.server = cast(RemoteZulipServer, org)
+            self.customer_args = {'server': self.server}
 
     def get_customer_if_exists(self) -> Optional[Customer]:
         return Customer.objects.filter(**self.customer_args).first()
@@ -51,7 +58,9 @@ class BillingOrg(object):
         return Customer.objects.get(**self.customer_args)
 
     def get_audit_log_filter(self) -> QuerySet:
-        return RealmAuditLog.objects.filter(realm=self.realm)
+        if self.realm is not None:
+            return RealmAuditLog.objects.filter(**self.customer_args)
+        return RemoteRealmAuditLog.objects.filter(**self.customer_args)
 
     def get_latest_seat_count(self) -> int:
         log_entry = self.get_audit_log_filter().filter(
@@ -61,40 +70,68 @@ class BillingOrg(object):
                 '{}: get_latest_seat_count called with no log entries'.format(self))
         return get_seat_count(log_entry)
 
+    # TODO: write for self.server
     def change_plan_type(self, value: int) -> None:
-        from zerver.lib.actions import do_change_plan_type
-        do_change_plan_type(self.realm, value)
+        if self.realm is not None:
+            from zerver.lib.actions import do_change_plan_type
+            do_change_plan_type(self.realm, value)
 
     def stripe_description(self) -> str:
-        return '{} ({})'.format(self.realm.string_id, self.realm.name)
+        if self.realm is not None:
+            return 'Realm: {} ({})'.format(self.realm.string_id, self.realm.name)
+        assert self.server is not None
+        return 'RemoteZulipServer: {} ({})'.format(self.server.hostname, self.server.contact_email)
 
     def stripe_metadata(self) -> Dict[str, Any]:
-        return {'realm_id': self.realm.id, 'realm_str': self.realm.string_id}
+        if self.realm is not None:
+            return {'realm_id': self.realm.id, 'realm_str': self.realm.string_id}
+        assert self.server is not None
+        return {'server_id': self.server.id, 'hostname': self.server.hostname}
 
     def __str__(self) -> str:
-        return 'BillingOrg: {}'.format(self.realm)
+        if self.realm is not None:
+            return '<BillingOrg {}>'.format(self.realm)
+        assert self.server is not None
+        return '<BillingOrg {}>'.format(self.server)
+
+def init_billing_org_from_customer(customer: Customer) -> BillingOrg:
+    if customer.realm is not None:
+        return BillingOrg(customer.realm)
+    assert customer.server is not None
+    return BillingOrg(customer.server)
 
 # Note that BillingUser subclasses BillingOrg
 class BillingUser(BillingOrg):
-    def __init__(self, user: UserProfile) -> None:
-        self.user = user
-        super().__init__(realm=user.realm)
+    def __init__(self, billing_user: Union[UserProfile, RemoteZulipServer]) -> None:
+        self.user = None
+        if type(billing_user) == RemoteZulipServer:
+            super().__init__(billing_user)
+        else:
+            self.user = cast(UserProfile, billing_user)
+            super().__init__(billing_user.realm)
 
     def get_email(self) -> str:
-        return self.user.email
+        if self.user is not None:
+            return self.user.email
+        assert self.server is not None
+        return self.server.contact_email
 
     def has_billing_access(self) -> bool:
-        return self.user.is_realm_admin or self.user.is_billing_admin
+        if self.user is not None:
+            return self.user.is_realm_admin or self.user.is_billing_admin
+        return True
 
     def do_change_is_billing_admin(self, value: bool) -> None:
-        self.user.is_billing_admin = value
-        self.user.save(update_fields=['is_billing_admin'])
+        if self.user is not None:
+            self.user.is_billing_admin = value
+            self.user.save(update_fields=['is_billing_admin'])
 
     def create_log_entry(self, event_type: int, event_time: datetime=timezone_now(),
                          extra_data: Optional[str]=None) -> None:
-        RealmAuditLog.objects.create(
-            realm=self.user.realm, acting_user=self.user, event_type=event_type,
-            event_time=event_time, extra_data=extra_data)
+        common_args = {'event_type': event_type, 'event_time': event_time, 'extra_data': extra_data}
+        if self.user is not None:
+            RealmAuditLog.objects.create(realm=self.user.realm, acting_user=self.user, **common_args)
+        CustomerAuditLog.objects.create(customer=self.get_customer(), **common_args)
 
 def get_seat_count(log_entry: AbstractRealmAuditLog) -> int:
     assert log_entry.extra_data is not None  # for mypy
@@ -241,12 +278,12 @@ def do_create_stripe_customer(billing_user: BillingUser, stripe_token: Optional[
         source=stripe_token)
     event_time = timestamp_to_datetime(stripe_customer.created)
     with transaction.atomic():
-        billing_user.create_log_entry(RealmAuditLog.STRIPE_CUSTOMER_CREATED, event_time=event_time)
-        if stripe_token is not None:
-            billing_user.create_log_entry(RealmAuditLog.STRIPE_CARD_CHANGED, event_time=event_time)
         customer, created = Customer.objects.update_or_create(
             defaults={'stripe_customer_id': stripe_customer.id},
             **billing_user.customer_args)
+        billing_user.create_log_entry(RealmAuditLog.STRIPE_CUSTOMER_CREATED, event_time=event_time)
+        if stripe_token is not None:
+            billing_user.create_log_entry(RealmAuditLog.STRIPE_CARD_CHANGED, event_time=event_time)
         billing_user.do_change_is_billing_admin(True)
     return customer
 
@@ -529,8 +566,8 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
         plan.customer.id, plan.id, status))
 
 def process_downgrade(plan: CustomerPlan) -> None:
-    from zerver.lib.actions import do_change_plan_type
-    do_change_plan_type(plan.customer.realm, Realm.LIMITED)
+    billing_org = init_billing_org_from_customer(plan.customer)
+    billing_org.change_plan_type(Realm.LIMITED)
     plan.status = CustomerPlan.ENDED
     plan.save(update_fields=['status'])
 

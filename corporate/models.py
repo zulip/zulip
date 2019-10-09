@@ -5,10 +5,16 @@ from typing import Optional
 from django.db import models
 from django.db.models import CASCADE
 
-from zerver.models import Realm
+from zerver.models import Realm, AbstractRealmAuditLog
+from zilencer.models import RemoteZulipServer
 
 class Customer(models.Model):
-    realm = models.OneToOneField(Realm, on_delete=CASCADE)  # type: Realm
+    # Exactly one of realm and server should be set. We can enforce that constraint with model
+    # constraints once we upgrade to Django 2.2.
+    realm = models.OneToOneField(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
+    server = models.OneToOneField(RemoteZulipServer, null=True,
+                                  on_delete=CASCADE)  # type: Optional[RemoteZulipServer]
+
     stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)  # type: str
     # A percentage, like 85.
     default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)  # type: Optional[Decimal]
@@ -71,3 +77,6 @@ class LicenseLedger(models.Model):
     # None means the plan does not automatically renew.
     # This cannot be None if plan.automanage_licenses.
     licenses_at_next_renewal = models.IntegerField(null=True)  # type: Optional[int]
+
+class CustomerAuditLog(AbstractRealmAuditLog):
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)  # type: Customer
