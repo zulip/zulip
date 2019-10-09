@@ -30,7 +30,7 @@ from zerver.lib.upload import random_name, sanitize_name, \
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.lib.parallel import run_parallel
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
-    UserMessage, Subscription, Message, RealmEmoji, \
+    UserAPIKey, UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
@@ -829,7 +829,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
                         related_table="message", id_field=True)
     for user_profile_dict in data['zerver_userprofile']:
         user_profile_dict['password'] = None
-        user_profile_dict['api_key'] = generate_api_key()
         # Since Zulip doesn't use these permissions, drop them
         del user_profile_dict['user_permissions']
         del user_profile_dict['groups']
@@ -838,6 +837,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     for user_profile in user_profiles:
         user_profile.set_unusable_password()
     UserProfile.objects.bulk_create(user_profiles)
+    UserAPIKey.objects.bulk_create([UserAPIKey(user_profile=profile,
+                                               description=UserAPIKey.LEGACY_API_KEY_DESCRIPTION)
+                                    for profile in user_profiles])
 
     re_map_foreign_keys(data, 'zerver_defaultstream', 'stream', related_table="stream")
     re_map_foreign_keys(data, 'zerver_realmemoji', 'author', related_table="user_profile")

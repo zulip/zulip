@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from zerver.lib.initial_password import initial_password
-from zerver.models import Realm, Stream, UserProfile, \
+from zerver.models import Realm, Stream, UserAPIKey, UserProfile, \
     Subscription, Recipient, RealmAuditLog
 from zerver.lib.create_user import create_user_profile
 
@@ -32,7 +32,12 @@ def bulk_create_users(realm: Realm,
                                       timezone, tutorial_status=UserProfile.TUTORIAL_FINISHED,
                                       enter_sends=True)
         profiles_to_create.append(profile)
-    UserProfile.objects.bulk_create(profiles_to_create)
+    created_profiles = UserProfile.objects.bulk_create(profiles_to_create)
+
+    # Generate the default API key for every new user we just created
+    UserAPIKey.objects.bulk_create([UserAPIKey(user_profile=profile,
+                                               description=UserAPIKey.LEGACY_API_KEY_DESCRIPTION)
+                                    for profile in created_profiles])
 
     RealmAuditLog.objects.bulk_create(
         [RealmAuditLog(realm=realm, modified_user=profile_,

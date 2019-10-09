@@ -243,7 +243,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(result["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache"})
 
-        self.assert_length(queries, 45)
+        self.assert_length(queries, 46)
         self.assert_length(cache_mock.call_args_list, 7)
 
         html = result.content.decode('utf-8')
@@ -309,7 +309,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 42)
+            self.assert_length(queries, 43)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:

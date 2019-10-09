@@ -24,16 +24,18 @@ from zerver.context_processors import zulip_default_context, get_realm_from_requ
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR, DEACTIVATED_ACCOUNT_ERROR, ZulipPasswordResetForm, \
     AuthenticationTokenForm
+from zerver.lib.cache import delete_user_profile_caches
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
-from zerver.lib.request import REQ, has_request_variables, JsonableError
+from zerver.lib.request import REQ, has_request_variables, JsonableError, \
+    RequestVariableMissingError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_api_key
-from zerver.lib.validator import validate_login_email
-from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
-    get_realm
+from zerver.lib.validator import check_int, validate_login_email
+from zerver.models import PreregistrationUser, UserAPIKey, UserProfile, \
+    remote_user_to_email, Realm, get_realm
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
@@ -199,7 +201,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
     if mobile_flow_otp is not None:
         # For the mobile Oauth flow, we send the API key and other
         # necessary details in a redirect to a zulip:// URI scheme.
-        api_key = get_api_key(user_profile)
+        api_key = create_user_api_key(user_profile, request.client.name).api_key
         params = {
             'otp_encrypted_api_key': otp_encrypt_api_key(api_key, mobile_flow_otp),
             'email': email,
@@ -666,7 +668,8 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 @csrf_exempt
 @require_post
 @has_request_variables
-def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResponse:
+def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ(),
+                          description: Optional[str]=REQ(default=None)) -> HttpResponse:
     """This function allows logging in without a password on the Zulip
     mobile apps when connecting to a Zulip development environment.  It
     requires DevAuthBackend to be included in settings.AUTHENTICATION_BACKENDS.
@@ -697,8 +700,38 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
         return json_error(_("This user is not registered."),
                           data={"reason": "unregistered"}, status=403)
     do_login(request, user_profile)
-    api_key = get_api_key(user_profile)
+
+    # Return a brand new API key
+    api_key = create_user_api_key(user_profile, request.client.name).api_key
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+
+@csrf_exempt
+@has_request_variables
+def get_user_api_keys(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    """This is for listing all the API keys associated to a user. The keys
+    themselves aren't displayed, just the basic information to identify each
+    one.
+    """
+    api_key_list = (UserAPIKey.objects.filter(user_profile=user_profile)
+                    .values('id', 'description', 'date_created'))
+    return json_success({"api_keys": api_key_list, "email": user_profile.delivery_email})
+
+@has_request_variables
+def revoke_user_api_key(request: HttpRequest, user_profile: UserProfile,
+                        api_key_id: int=REQ(validator=check_int)) -> HttpResponse:
+    api_keys = UserAPIKey.objects.filter(user_profile=user_profile)
+    user_api_key = api_keys.filter(id=api_key_id).first()
+
+    if user_api_key is None:
+        return json_error(_('There are no API keys with such ID in your account.'), status=404)
+
+    user_api_key.delete()
+
+    # TODO: The is overkill; we only need to flush the old API key
+    # from the api_key -> user_profile cache; not all other caches
+    # containing the user object.
+    delete_user_profile_caches([user_api_key.user_profile])
+    return json_success()
 
 @csrf_exempt
 def api_dev_list_users(request: HttpRequest) -> HttpResponse:
@@ -713,7 +746,8 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 @require_post
 @has_request_variables
-def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=REQ()) -> HttpResponse:
+def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=REQ(),
+                      description: Optional[str]=REQ(default=None)) -> HttpResponse:
     return_data = {}  # type: Dict[str, bool]
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
@@ -749,7 +783,8 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
     process_client(request, user_profile)
     request._email = user_profile.email
 
-    api_key = get_api_key(user_profile)
+    # Return a brand new API key
+    api_key = create_user_api_key(user_profile, request.client.name).api_key
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})
 
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
@@ -827,7 +862,8 @@ def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
                             realm=realm):
             return json_error(_("Your username or password is incorrect."))
 
-    api_key = get_api_key(user_profile)
+    # Return a brand new API key
+    api_key = create_user_api_key(user_profile, request.client.name).api_key
     return json_success({"api_key": api_key})
 
 @csrf_exempt

@@ -30,6 +30,7 @@ from zerver.lib.actions import (
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
     check_bool, check_dict_only, check_string, Validator
@@ -43,7 +44,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.models import \
     get_realm, email_to_username, CustomProfileField, CustomProfileFieldValue, \
-    UserProfile, PreregistrationUser, Realm, RealmDomain, get_user, MultiuseInvite, \
+    UserAPIKey, UserProfile, PreregistrationUser, Realm, RealmDomain, get_user, MultiuseInvite, \
     clear_supported_auth_backends_cache
 from zerver.signals import JUST_CREATED_THRESHOLD
 
@@ -1432,6 +1433,79 @@ class GoogleAuthBackendTest(SocialAuthBase):
             mock_warning.assert_called_with("Login attempt on invalid subdomain")
         self.assertEqual(result.status_code, 400)
 
+class ListAPIKeysTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        user_api_key = create_user_api_key(self.user_profile, 'Test API key')
+
+        result = self.api_get(self.email, '/api/v1/users/me/api_keys')
+        self.assert_json_success(result)
+        json = result.json()
+        # Users should have at least one API key
+        self.assertTrue(len(json['api_keys']) >= 1)
+        # Make sure that the API keys themselves are never shown
+        self.assertNotIn('api_key', json['api_keys'][0].keys())
+        # Check that the API key we created is in the list
+        self.assertTrue(any(item['id'] == user_api_key.id for item in json['api_keys']))
+
+    def test_not_loggedin(self) -> None:
+        result = self.client_get('/api/v1/users/me/api_keys')
+        self.assert_json_error(result,
+                               "Not logged in: API authentication or user session required", 401)
+
+class CreateAPIKeyTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        prev_count = len(get_all_api_keys(self.user_profile))
+        result = self.client_post('/api/v1/create_api_key',
+                                  dict(username=self.email,
+                                       password=initial_password(self.email),
+                                       description='Test API key'))
+        self.assert_json_success(result)
+        json = result.json()
+        new_api_keys = get_all_api_keys(self.user_profile)
+        self.assertIn(json['api_key'], new_api_keys)
+        self.assertEqual(len(new_api_keys), prev_count + 1)
+
+    def test_missing_description(self) -> None:
+        result = self.client_post('/api/v1/create_api_key',
+                                  dict(username=self.email,
+                                       password=initial_password(self.email)))
+        self.assert_json_error(result, "Missing 'description' argument", 400)
+
+class RevokeAPIKeysTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        user_api_key = create_user_api_key(self.user_profile, 'Test API key')
+
+        result = self.api_delete(self.email, '/api/v1/users/me/api_keys/%d' % (user_api_key.id,))
+        self.assert_json_success(result)
+        self.assertNotIn(user_api_key.api_key, get_all_api_keys(self.user_profile))
+
+    def test_non_existing_key(self) -> None:
+        # Get an API key id that we know for sure doesn't exist
+        user_api_key = create_user_api_key(self.user_profile, 'Test API key')
+        deleted_id = user_api_key.id
+        user_api_key.delete()
+
+        result = self.api_delete(self.email, '/api/v1/users/me/api_keys/%d' % (deleted_id,))
+        self.assert_json_error(result, 'There are no API keys with such ID in your account.', 404)
+
+    def test_other_users_key(self) -> None:
+        othello_api_key = UserAPIKey.objects.filter(user_profile=self.example_user('othello')).first()
+
+        result = self.api_delete(self.email, '/api/v1/users/me/api_keys/%d' % (othello_api_key.id,))
+        self.assert_json_error(result, 'There are no API keys with such ID in your account.', 404)
+
 class JSONFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
@@ -1525,6 +1599,34 @@ class FetchAPIKeyTest(ZulipTestCase):
                                   dict(username=self.email,
                                        password=initial_password(self.email)))
         self.assert_json_error_contains(result, "This organization has been deactivated", 403)
+
+class DevCreateAPIKeyTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        prev_count = len(get_all_api_keys(self.user_profile))
+        result = self.client_post('/api/v1/dev_create_api_key',
+                                  dict(username=self.email,
+                                       password=initial_password(self.email),
+                                       description='Test API key'))
+        self.assert_json_success(result)
+        json = result.json()
+        new_api_keys = get_all_api_keys(self.user_profile)
+        self.assertIn(json['api_key'], new_api_keys)
+        self.assertEqual(len(new_api_keys), prev_count + 1)
+
+    def test_with_no_description(self) -> None:
+        prev_count = len(get_all_api_keys(self.user_profile))
+        result = self.client_post('/api/v1/dev_create_api_key',
+                                  dict(username=self.email,
+                                       password=initial_password(self.email)))
+        self.assert_json_success(result)
+        json = result.json()
+        new_api_keys = get_all_api_keys(self.user_profile)
+        self.assertIn(json['api_key'], new_api_keys)
+        self.assertEqual(len(new_api_keys), prev_count + 1)
 
 class DevFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
