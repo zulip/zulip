@@ -2,6 +2,7 @@ set_global('page_params', {
     search_pills_enabled: true,
 });
 zrequire('util');
+set_global('i18n', global.stub_i18n);
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
@@ -467,15 +468,15 @@ run_test('empty_query_suggestions', () => {
     function describe(q) {
         return suggestions.lookup_table[q].description;
     }
-    assert.equal(describe('is:private'), 'Private messages');
-    assert.equal(describe('is:starred'), 'Starred messages');
-    assert.equal(describe('is:mentioned'), '@-mentions');
-    assert.equal(describe('is:alerted'), 'Alerted messages');
-    assert.equal(describe('is:unread'), 'Unread messages');
-    assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
-    assert.equal(describe('has:link'), 'Messages with one or more link');
-    assert.equal(describe('has:image'), 'Messages with one or more image');
-    assert.equal(describe('has:attachment'), 'Messages with one or more attachment');
+    assert.equal(describe('is:private'), 'Translated: private messages');
+    assert.equal(describe('is:starred'), 'Translated: starred messages');
+    assert.equal(describe('is:mentioned'), 'Translated: @-mentions');
+    assert.equal(describe('is:alerted'), 'Translated: alerted messages');
+    assert.equal(describe('is:unread'), 'Translated: unread messages');
+    assert.equal(describe('sender:bob@zulip.com'), 'Translated: sent by me');
+    assert.equal(describe('has:link'), 'Translated: messages with one or more link');
+    assert.equal(describe('has:image'), 'Translated: messages with one or more image');
+    assert.equal(describe('has:attachment'), 'Translated: messages with one or more attachment');
 });
 
 run_test('has_suggestions', () => {
@@ -502,9 +503,9 @@ run_test('has_suggestions', () => {
         return suggestions.lookup_table[q].description;
     }
 
-    assert.equal(describe('has:link'), 'Messages with one or more link');
-    assert.equal(describe('has:image'), 'Messages with one or more image');
-    assert.equal(describe('has:attachment'), 'Messages with one or more attachment');
+    assert.equal(describe('has:link'), 'Translated: messages with one or more link');
+    assert.equal(describe('has:image'), 'Translated: messages with one or more image');
+    assert.equal(describe('has:attachment'), 'Translated: messages with one or more attachment');
 
     query = '-h';
     suggestions = search.get_suggestions('', query);
@@ -515,9 +516,9 @@ run_test('has_suggestions', () => {
         '-has:attachment',
     ];
     assert.deepEqual(suggestions.strings, expected);
-    assert.equal(describe('-has:link'), 'Exclude messages with one or more link');
-    assert.equal(describe('-has:image'), 'Exclude messages with one or more image');
-    assert.equal(describe('-has:attachment'), 'Exclude messages with one or more attachment');
+    assert.equal(describe('-has:link'), 'Translated: exclude messages with one or more link');
+    assert.equal(describe('-has:image'), 'Translated: exclude messages with one or more image');
+    assert.equal(describe('-has:attachment'), 'Translated: exclude messages with one or more attachment');
 
     // operand suggestions follow.
 
