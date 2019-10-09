@@ -70,7 +70,7 @@ markdown-include
 mock
 
 # Needed to access rabbitmq
-pika==0.13.*  # https://github.com/zulip/zulip/issues/12899
+pika
 
 # Needed to access our database
 psycopg2 --no-binary psycopg2

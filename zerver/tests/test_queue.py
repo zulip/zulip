@@ -14,7 +14,7 @@ class TestTornadoQueueClient(ZulipTestCase):
     def test_on_open_closed(self, mock_cxn: mock.MagicMock,
                             mock_get_logger: mock.MagicMock) -> None:
         connection = TornadoQueueClient()
-        connection.connection.channel.side_effect = ConnectionClosed
+        connection.connection.channel.side_effect = ConnectionClosed('500', 'test')
         connection._on_open(mock.MagicMock())
 
 
