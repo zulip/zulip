@@ -52,21 +52,12 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-``` curl
-curl -X POST {{ api_url }}/v1/users/me/subscriptions \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'subscriptions=[{"name": "Verona"}]'
-```
+{generate_code_example(curl, include=["subscriptions"])|/users/me/subscriptions:post|example}
 
 To subscribe another user to a stream, you may pass in
 the `principals` argument, like so:
 
-``` curl
-curl -X POST {{ api_url }}/v1/users/me/subscriptions \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'subscriptions=[{"name": "Verona"}]' \
-    -d 'principals=["ZOE@zulip.com"]'
-```
+{generate_code_example(curl, include=["subscriptions", "principals"])|/users/me/subscriptions:post|example}
 
 {end_tabs}
 
