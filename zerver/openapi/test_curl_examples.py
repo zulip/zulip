@@ -9,13 +9,6 @@ from zulip import Client
 from zerver.lib.bugdown import api_code_examples
 from zerver.models import get_realm
 
-# whitelisted_files is a list of endpoints which have been
-# migrated to the example generation system and can thus be
-# tested.
-whitelisted_files = [
-    "get-messages.md",
-]
-
 exclude_list = [
     # The endpoint in these docs expect one or more param values that reflects the DB state.
     # We currently get the example values from openapi specs and they don't refelect the
