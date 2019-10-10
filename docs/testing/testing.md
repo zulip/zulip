@@ -207,10 +207,11 @@ and then run `tools/do-destroy-rebuild-test-database`
 
 ### Recreating the postgres cluster
 
-> **warning**
->
-> **This is irreversible, so do it with care, and never do this anywhere
-> in production.**
+```eval_rst
+.. warning::
+    This is irreversible! Do it with care and never do this anywhere
+    in production.
+```
 
 If your postgres cluster (collection of databases) gets totally trashed
 permissions-wise, and you can't otherwise repair it, you can recreate
