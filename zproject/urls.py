@@ -213,18 +213,13 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.submessage.process_submessage'}),
 
     # New endpoint for handling reactions.
+    # reactions -> zerver.view.reactions
+    # POST adds a reaction to a message
+    # DELETE removes a reaction from a message
     url(r'^messages/(?P<message_id>[0-9]+)/reactions$',
         rest_dispatch,
         {'POST': 'zerver.views.reactions.add_reaction',
          'DELETE': 'zerver.views.reactions.remove_reaction'}),
-
-    # reactions -> zerver.view.reactions
-    # PUT adds a reaction to a message
-    # DELETE removes a reaction from a message
-    url(r'^messages/(?P<message_id>[0-9]+)/emoji_reactions/(?P<emoji_name>.*)$',
-        rest_dispatch,
-        {'PUT': 'zerver.views.reactions.add_reaction_legacy',
-         'DELETE': 'zerver.views.reactions.remove_reaction_legacy'}),
 
     # attachments -> zerver.views.attachments
     url(r'^attachments$', rest_dispatch,

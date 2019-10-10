@@ -218,7 +218,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/invites/{prereg_id}/resend',
         '/invites/multiuse/{invite_id}',
         '/users/me/subscriptions/{stream_id}',
-        '/messages/{message_id}/emoji_reactions/{emoji_name}',
         '/attachments/{attachment_id}',
         '/user_groups/{user_group_id}/members',
         '/streams/{stream_id}/members',

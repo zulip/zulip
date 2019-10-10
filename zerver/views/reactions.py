@@ -3,10 +3,8 @@ from django.utils.translation import ugettext as _
 
 from zerver.decorator import \
     has_request_variables, REQ
-from zerver.lib.actions import do_add_reaction, do_add_reaction_legacy, \
-    do_remove_reaction, do_remove_reaction_legacy
-from zerver.lib.emoji import check_emoji_request, check_valid_emoji, \
-    emoji_name_to_emoji_code
+from zerver.lib.actions import do_add_reaction, do_remove_reaction
+from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
@@ -116,48 +114,5 @@ def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id:
     # valid in legitimate situations (e.g. if a realm emoji was
     # deactivated by an administrator in the meantime).
     do_remove_reaction(user_profile, message, emoji_code, reaction_type)
-
-    return json_success()
-
-@has_request_variables
-def add_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
-                        message_id: int, emoji_name: str) -> HttpResponse:
-
-    # access_message will throw a JsonableError exception if the user
-    # cannot see the message (e.g. for messages to private streams).
-    message, user_message = access_message(user_profile, message_id)
-
-    check_valid_emoji(message.sender.realm, emoji_name)
-
-    # We could probably just make this check be a try/except for the
-    # IntegrityError from it already existing, but this is a bit cleaner.
-    if Reaction.objects.filter(user_profile=user_profile,
-                               message=message,
-                               emoji_name=emoji_name).exists():
-        raise JsonableError(_("Reaction already exists"))
-
-    if user_message is None:
-        create_historical_message(user_profile, message)
-
-    do_add_reaction_legacy(user_profile, message, emoji_name)
-
-    return json_success()
-
-@has_request_variables
-def remove_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
-                           message_id: int, emoji_name: str) -> HttpResponse:
-
-    # access_message will throw a JsonableError exception if the user
-    # cannot see the message (e.g. for messages to private streams).
-    message = access_message(user_profile, message_id)[0]
-
-    # We could probably just make this check be a try/except for the
-    # IntegrityError from it already existing, but this is a bit cleaner.
-    if not Reaction.objects.filter(user_profile=user_profile,
-                                   message=message,
-                                   emoji_name=emoji_name).exists():
-        raise JsonableError(_("Reaction does not exist"))
-
-    do_remove_reaction_legacy(user_profile, message, emoji_name)
 
     return json_success()

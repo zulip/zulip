@@ -51,9 +51,6 @@ def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
         return name_to_codepoint[emoji_name], Reaction.UNICODE_EMOJI
     raise JsonableError(_("Emoji '%s' does not exist") % (emoji_name,))
 
-def check_valid_emoji(realm: Realm, emoji_name: str) -> None:
-    emoji_name_to_emoji_code(realm, emoji_name)
-
 def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
                         emoji_type: str) -> None:
     # For a given realm and emoji type, checks whether an emoji
