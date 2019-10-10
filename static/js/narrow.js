@@ -282,8 +282,12 @@ exports.activate = function (raw_operators, opts) {
     }
 
     // Toggle the notice that lets users know that not all messages were searched.
+    // One could imagine including `filter.is_search()` in these conditions, but
+    // there's a very legitimate use case for moderation of searching for all
+    // messages sent by a potential spammer user.
     if (!filter.contains_only_private_messages() &&
-        !filter.includes_full_stream_history()) {
+        !filter.includes_full_stream_history() &&
+        !filter.has_operand("is", "starred")) {
         $(".all-messages-search-caution").show();
     } else {
         $(".all-messages-search-caution").hide();
