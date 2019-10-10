@@ -26,6 +26,7 @@ exclude_list = [
     'get-message-history.md',
     'update-message-flags.md',
     'mark-as-read-bulk.md',
+    'update-subscription-properties.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
