@@ -1003,7 +1003,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         parsed_url = urllib.parse.urlparse(result.url)
         relay_state = urllib.parse.parse_qs(parsed_url.query)['RelayState'][0]
         # Make sure params are getting encoded into RelayState:
-        data = signing.loads(relay_state)
+        data = SAMLAuthBackend.get_data_from_redis(relay_state)
         if next:
             self.assertEqual(data['next'], next)
         if is_signup:
@@ -1074,7 +1074,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                     mock.patch('zproject.backends.logging.info') as m:
                 # This mock causes AuthFailed to be raised.
                 saml_response = self.generate_saml_response(self.email, self.name)
-                relay_state = signing.dumps({"idp": "test_idp"})
+                relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp"})
                 post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
@@ -1087,7 +1087,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                             side_effect=AuthStateForbidden('State forbidden')), \
                     mock.patch('zproject.backends.logging.warning') as m:
                 saml_response = self.generate_saml_response(self.email, self.name)
-                relay_state = signing.dumps({"idp": "test_idp"})
+                relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp"})
                 post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
@@ -1107,7 +1107,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         # Check that POSTing the RelayState, but with missing SAMLResponse,
         # doesn't cause errors either:
         with mock.patch('zproject.backends.logging.info') as m:
-            relay_state = signing.dumps({"idp": "test_idp"})
+            relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp"})
             post_params = {"RelayState": relay_state}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1117,23 +1117,14 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 "SAML Response not found, Only supported HTTP_POST Binding"
             )
 
-        with mock.patch('zproject.backends.logging.warning') as m:
-            relay_state = signing.dumps({"idp": "test_idp"})
-            relay_state = relay_state[:-1]  # Break the signature by removing the last character
+        with mock.patch('zproject.backends.logging.info') as m:
+            relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp"})
+            relay_state = relay_state[:-1]  # Break the token by removing the last character
             post_params = {"RelayState": relay_state}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
-            m.assert_called_with("SAML authentication failed: bad RelayState signature.")
-
-        with mock.patch('zproject.backends.logging.warning') as m:
-            relay_state = signing.dumps({"idp": "test_idp"})
-            post_params = {"RelayState": relay_state}
-            with mock.patch("zproject.backends.signing.loads", side_effect=signing.SignatureExpired):
-                result = self.client_post('/complete/saml/',  post_params)
-            self.assertEqual(result.status_code, 302)
-            self.assertIn('login', result.url)
-            m.assert_called_with("SAML authentication failed: RelayState signature expired.")
+            m.assert_called_with("SAML authentication failed: bad RelayState token.")
 
     def test_social_auth_saml_bad_idp_param_on_login_page(self) -> None:
         with mock.patch('zproject.backends.logging.info') as m:
@@ -1147,6 +1138,19 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
             m.assert_called_with("/login/saml/ : Bad idp param.")
+
+    def test_social_auth_invalid_email(self) -> None:
+        """
+        This test needs an override from the original class. For security reasons,
+        the 'next' and 'mobile_flow_otp' params don't get passed on in the session
+        if the authentication attempt failed. See SAMLAuthBackend.auth_complete for details.
+        """
+        account_data_dict = self.get_account_data_dict(email="invalid", name=self.name)
+        result = self.social_auth_test(account_data_dict,
+                                       expect_choose_email_screen=True,
+                                       subdomain='zulip', next='/user_uploads/image')
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/login/")
 
     def test_social_auth_saml_multiple_idps_configured(self) -> None:
         """

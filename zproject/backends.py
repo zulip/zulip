@@ -15,13 +15,13 @@
 import copy
 import logging
 import magic
+import ujson
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from django.contrib.auth import get_backends
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
-from django.core import signing
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.dispatch import receiver, Signal
@@ -47,10 +47,14 @@ from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
+from zerver.lib.utils import generate_random_token
+from zerver.lib.redis_utils import get_redis_client
 from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
     email_allowed_for_realm, get_default_stream_groups, get_user_profile_by_id, remote_user_to_email, \
     email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
+
+redis_client = get_redis_client()
 
 # This first batch of methods is used by other code in Zulip to check
 # whether a given authentication backend is enabled for a given realm.
@@ -1036,9 +1040,32 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         data_to_relay = {
             key: request_data[key] for key in params_to_relay if key in request_data
         }
+        relay_state = self.put_data_in_redis(data_to_relay)
 
-        relay_state = signing.dumps(data_to_relay)
         return auth.login(return_to=relay_state)
+
+    @classmethod
+    def put_data_in_redis(cls, data_to_relay: Dict[str, Any]) -> str:
+        with redis_client.pipeline() as pipeline:
+            token = generate_random_token(64)
+            key = "saml_{}".format(token)
+            pipeline.set(key, ujson.dumps(data_to_relay))
+            pipeline.expire(key, 60 * 5)  # keep for 5 minutes
+            pipeline.execute()
+
+        return key
+
+    @classmethod
+    def get_data_from_redis(cls, key: str) -> Optional[Dict[str, Any]]:
+        redis_data = None
+        if key.startswith('saml_'):
+            # Safety if statement, to not allow someone to poke around arbitrary redis keys here.
+            redis_data = redis_client.get(key)
+        if redis_data is None:
+            logging.info("SAML authentication failed: bad RelayState token.")
+            return None
+
+        return ujson.loads(redis_data)
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """
@@ -1059,31 +1086,38 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             return None
 
         # Set the relevant params that we transported in the RelayState:
-        try:
-            relay_state = signing.loads(self.strategy.request_data()['RelayState'])
-        except signing.SignatureExpired:
-            logging.warning('SAML authentication failed: RelayState signature expired.')
-            return None
-        except signing.BadSignature:
-            logging.warning('SAML authentication failed: bad RelayState signature.')
+        redis_key = self.strategy.request_data()['RelayState']
+        relayed_params = self.get_data_from_redis(redis_key)
+        if relayed_params is None:
             return None
 
-        for param, value in relay_state.items():
+        for param, value in relayed_params.items():
             if param in ["subdomain", "multiuse_object_key", "mobile_flow_otp", "next", "is_signup"]:
                 self.strategy.session_set(param, value)
 
         # super().auth_complete expects to have RelayState set to the idp_name,
         # so we need to replace this param.
         post_params = self.strategy.request.POST.copy()
-        post_params['RelayState'] = relay_state["idp"]
+        post_params['RelayState'] = relayed_params["idp"]
         self.strategy.request.POST = post_params
+
+        result = None
         try:
             # Call the auth_complete method of SocialAuthMixIn
-            return super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
+            result = super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
         except OneLogin_Saml2_Error as e:
             # This will be raised if SAMLResponse is missing.
             logging.info(str(e))
-            return None
+        finally:
+            if result is None:
+                for param in ["mobile_flow_otp", "next"]:
+                    # If an attacker managed to eavesdrop on the RelayState token,
+                    # they may pass it here to the endpoint with an invalid SAMLResponse.
+                    # We remove these potentially sensitive parameters that we have set in the session
+                    # ealier, to avoid leaking their values.
+                    self.strategy.session_set(param, None)
+
+        return result
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
