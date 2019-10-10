@@ -284,8 +284,8 @@ ecdsa==0.13.2 \
 fakeldap==0.6.1 \
     --hash=sha256:3f7262b41def43b85be886ca6d64d1c310d2db48a434fddae86efc34a09a7a81 \
     --hash=sha256:43000061ca8e6d56fe0ce89256a1a2afc46e6443762bb96631542a1af8e70354
-# future==0.17.1 \
-    --hash=sha256:67045236dcfd6816dc439556d009594abf643e5eb48992e36beac09c2ca659b8 \
+# future==0.18.0 \
+    --hash=sha256:6142ef79e2416e432931d527452a1cab3aa4a754a0a53d25b2589f79e1106f34 \
     # via aws-xray-sdk, commonmark, python-jose, python-twitter
 gitlint==0.12.0 \
     --hash=sha256:93d6319ec1d34591a9efd563ba5899c1e28f8f768b130b8f6ff65ca880a2a607 \
