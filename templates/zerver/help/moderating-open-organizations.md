@@ -26,6 +26,8 @@ Moderation is a big part of making an open community work.
 
 * [Ban (deactivate) users](/help/deactivate-or-reactivate-a-user) acting in
   bad faith. You can reactivate them later if they repent.
+* Use the `streams:public sender:user@example.com`
+  [search operators](/help/search-for-messages) to find all messages sent by a user.
 * Delete messages, [delete streams](/help/delete-a-stream), and
   [unsubscribe users from streams](/help/add-or-remove-users-from-a-stream).
 * [Rename topics](/help/rename-a-topic).
