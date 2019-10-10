@@ -24,9 +24,12 @@ If you are using a [remote server](../development/remote.md), see
 the
 [section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
 
-**Warning**: there is no supported uninstallation process with this
-method.  If you want that, use the Vagrant environment, where you can
-just do `vagrant destroy` to clean up the development environment.
+```eval_rst
+.. warning::
+    there is no supported uninstallation process with this
+    method.  If you want that, use the Vagrant environment, where you can
+    just do `vagrant destroy` to clean up the development environment.
+```
 
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
