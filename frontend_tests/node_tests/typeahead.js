@@ -147,3 +147,34 @@ run_test('sort_emojis sm', () => {
     );
 });
 
+run_test('sort_emojis exact_matches', () => {
+    let emoji_list = [
+        { emoji_name: '+1' },
+        { emoji_name: 'thumbs_up' },
+        { emoji_name: 'pig' },
+        { emoji_name: 'thumbs_down' },
+    ];
+    assert.deepEqual(typeahead.sort_emojis(emoji_list, 'thumbs'), [
+        { emoji_name: 'thumbs_up' },
+        { emoji_name: 'thumbs_down' },
+        { emoji_name: '+1' },
+        { emoji_name: 'pig' },
+    ]);
+
+    emoji_list = [
+        { emoji_name: 'random' },
+        { emoji_name: 'github' },
+        { emoji_name: 'git' },
+    ];
+    assert.deepEqual(typeahead.sort_emojis(emoji_list, 'Git'), [
+        { emoji_name: 'git' },
+        { emoji_name: 'github' },
+        { emoji_name: 'random' },
+    ]);
+    assert.deepEqual(typeahead.sort_emojis(emoji_list, 'gi'), [
+        { emoji_name: 'github' },
+        { emoji_name: 'git' },
+        { emoji_name: 'random' },
+    ]);
+});
+

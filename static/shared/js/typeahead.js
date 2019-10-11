@@ -170,9 +170,11 @@ export function sort_emojis(objs, query) {
         (x) => x.emoji_name
     );
 
-    return [
-        ...popular_emoji_matches,
-        ...triage_results.matches,
-        ...triage_results.rest,
-    ];
+    const matches = [...popular_emoji_matches, ...triage_results.matches];
+    // Push exact match to top.
+    const match_index = matches.findIndex((match) => match.emoji_name === query.toLowerCase());
+    if (match_index > -1) {
+        matches.unshift(matches.splice(match_index, 1)[0]);
+    }
+    return [...matches, ...triage_results.rest];
 }
