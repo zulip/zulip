@@ -38,12 +38,7 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-``` curl
-curl -X POST {{ api_url }}/v1/typing \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "op=start" \
-    -d 'to="iago@zulip.com","polonius@zulip.com"'
-```
+{generate_code_example(curl)|/typing:post|example}
 
 {end_tabs}
 
