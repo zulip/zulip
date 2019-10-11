@@ -23,6 +23,8 @@ exclude_list = [
     'remove-subscriptions.md',
     'get-stream-topics.md',
     'delete-stream.md',
+    # Endpoint can be called only by administrators.
+    'create-user.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:

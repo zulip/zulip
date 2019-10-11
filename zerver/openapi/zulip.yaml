@@ -1079,28 +1079,28 @@ paths:
         description: The email address of the new user.
         schema:
           type: string
-        example: newbie@zulip.com
+        example: username@example.com
         required: true
       - name: password
         in: query
         description: The password of the new user.
         schema:
           type: string
-        example: abdec@7982
+        example: abcd1234
         required: true
       - name: full_name
         in: query
         description: The full name of the new user.
         schema:
           type: string
-        example: John Smith
+        example: New User
         required: true
       - name: short_name
         in: query
-        description: The short name of the new user.
+        description: The short name of the new user.  Not user-visible.
         schema:
           type: string
-        example: jsmith
+        example: newuser
         required: true
       security:
       - basicAuth: []
