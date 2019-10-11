@@ -38,7 +38,6 @@ from zerver.lib.email_mirror import process_message as mirror_email, rate_limit_
     is_missed_message_address, extract_and_validate
 from zerver.lib.streams import access_stream_by_id
 from zerver.tornado.socket import req_redis_key, respond_send_message
-from confirmation.models import Confirmation, confirmation_url
 from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
 from zerver.context_processors import common_context
