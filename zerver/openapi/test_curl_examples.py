@@ -21,6 +21,7 @@ exclude_list = [
     'mark-as-read-bulk.md',
     'update-subscription-properties.md',
     'remove-subscriptions.md',
+    'get-stream-topics.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
