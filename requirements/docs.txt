@@ -32,7 +32,7 @@ docutils==0.15.2 \
     --hash=sha256:9e4d7ecfc600058e07ba661411a2b7de2fd0fafa17d1a7f7361cd47b1175c827 \
     --hash=sha256:a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99 \
     # via recommonmark, sphinx
-# future==0.18.0 \
+future==0.18.0 \
     --hash=sha256:6142ef79e2416e432931d527452a1cab3aa4a754a0a53d25b2589f79e1106f34 \
     # via commonmark
 idna==2.8 \

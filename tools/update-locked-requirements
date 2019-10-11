@@ -16,13 +16,6 @@ compile_requirements () {
         /srv/zulip-thumbor-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
     else
         /srv/zulip-py3-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
-
-        # Remove an unnecessary future requirement declared by commonmark,
-        # python-jose, and python-twitter.
-        # https://github.com/readthedocs/commonmark.py/pull/188
-        # https://github.com/mpdavis/python-jose/pull/134
-        # https://github.com/bear/python-twitter/pull/614
-        sed -i 's/^future==/# &/' "$output"
     fi
 
     cat - "$output" <<EOF | sponge "$output"
