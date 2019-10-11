@@ -22,6 +22,7 @@ exclude_list = [
     'update-subscription-properties.md',
     'remove-subscriptions.md',
     'get-stream-topics.md',
+    'delete-stream.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
