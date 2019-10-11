@@ -13,10 +13,7 @@
 
 {tab|curl}
 
-``` curl
-curl -X DELETE {{ api_url }}/v1/streams/{stream_id} \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
-```
+{generate_code_example(curl)|/streams/{stream_id}:delete|example}
 
 {end_tabs}
 
