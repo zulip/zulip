@@ -2618,6 +2618,8 @@ class AbstractRealmAuditLog(models.Model):
     CUSTOMER_CREATED = 501
     CUSTOMER_PLAN_CREATED = 502
 
+    BILLING_ROLE_COUNT_RECORDED = 601
+
     event_type = models.PositiveSmallIntegerField()  # type: int
 
     # event_types synced from on-prem installations to zulipchat.com when
@@ -2625,7 +2627,7 @@ class AbstractRealmAuditLog(models.Model):
     # event_type should have ROLE_COUNT populated in extra_data.
     SYNCED_BILLING_EVENTS = [
         USER_CREATED, USER_ACTIVATED, USER_DEACTIVATED, USER_REACTIVATED, USER_ROLE_CHANGED,
-        REALM_DEACTIVATED, REALM_REACTIVATED]
+        REALM_DEACTIVATED, REALM_REACTIVATED, BILLING_ROLE_COUNT_RECORDED]
 
     class Meta:
         abstract = True

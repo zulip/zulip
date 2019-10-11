@@ -253,6 +253,13 @@ def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
         RealmAuditLog.ROLE_COUNT_BOTS: bot_count,
     }
 
+def do_record_role_counts(realm: Realm) -> None:
+    RealmAuditLog.objects.create(
+        realm=realm, event_type=RealmAuditLog.BILLING_ROLE_COUNT_RECORDED,
+        event_time=timezone_now(), extra_data=ujson.dumps({
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm)
+        }))
+
 def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_stream: str,
                         user_profile: UserProfile, internal: bool=False,
                         realm: Optional[Realm]=None) -> None:

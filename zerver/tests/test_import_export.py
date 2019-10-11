@@ -803,7 +803,8 @@ class ImportExportTest(ZulipTestCase):
         # test realmauditlog
         def get_realm_audit_log_event_type(r: Realm) -> Set[str]:
             realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
-                event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
+                event_type__in=[RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                                RealmAuditLog.BILLING_ROLE_COUNT_RECORDED])
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
             return realmauditlog_event_type
 
