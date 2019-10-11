@@ -184,7 +184,7 @@ django-webpack-loader==0.6.0 \
 django==1.11.24 \
     --hash=sha256:215c27453f775b6b1add83a185f76c2e2ab711d17786a6704bd62eabd93f89e3 \
     --hash=sha256:ffd89b89a2ee860ee521f054225044f52676825be4b61168d2842d44fcf457d3
-# future==0.18.0 \
+future==0.18.0 \
     --hash=sha256:6142ef79e2416e432931d527452a1cab3aa4a754a0a53d25b2589f79e1106f34 \
     # via python-twitter
 h2==2.6.2 \
