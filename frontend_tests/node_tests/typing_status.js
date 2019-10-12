@@ -1,7 +1,7 @@
 zrequire('typing');
 zrequire('people');
 zrequire('compose_pm_pill');
-zrequire('typing_status');
+const typing_status = zrequire('typing_status');
 
 function return_false() { return false; }
 function return_true() { return true; }
@@ -296,9 +296,9 @@ run_test('basics', () => {
     // stub functions to see how may time they are called
     for (const method in call_count) {
         if (!call_count.hasOwnProperty(method)) { continue; }
-        typing_status[method] = function () {
+        typing_status.__Rewire__(method, function () {
             call_count[method] += 1;
-        };
+        });
     }
 
     // User ids of poeple in compose narrow doesn't change and is same as stat.current_recipent

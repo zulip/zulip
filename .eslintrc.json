@@ -193,7 +193,6 @@
         "typing": false,
         "typing_data": false,
         "typing_events": false,
-        "typing_status": false,
         "ui": false,
         "ui_init": false,
         "ui_report": false,

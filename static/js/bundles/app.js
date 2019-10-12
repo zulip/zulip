@@ -189,7 +189,6 @@ import "../emoji.js";
 import "../bot_data.js";
 import "../reactions.js";
 import "../typing.js";
-import "../typing_status.js";
 import "../typing_data.js";
 import "../typing_events.js";
 import "../ui_init.js";

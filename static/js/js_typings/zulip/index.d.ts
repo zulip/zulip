@@ -159,7 +159,6 @@ declare var typeahead_helper: any;
 declare var typing_data: any;
 declare var typing_events: any;
 declare var typing: any;
-declare var typing_status: any;
 declare var ui_init: any;
 declare var ui: any;
 declare var ui_report: any;

@@ -1,3 +1,5 @@
+const typing_status = require("./typing_status");
+
 var typing = (function () {
 var exports = {};
 
