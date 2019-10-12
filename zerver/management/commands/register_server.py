@@ -38,6 +38,8 @@ class Command(ZulipBaseCommand):
             raise CommandError("Missing zulip_org_id; run scripts/setup/generate_secrets.py to generate.")
         if not settings.ZULIP_ORG_KEY:
             raise CommandError("Missing zulip_org_key; run scripts/setup/generate_secrets.py to generate.")
+        if not settings.ZULIP_URL_KEY:
+            raise CommandError("Missing zulip_url_key; run scripts/setup/generate_secrets.py to generate.")
         if settings.PUSH_NOTIFICATION_BOUNCER_URL is None:
             if settings.DEVELOPMENT:
                 settings.PUSH_NOTIFICATION_BOUNCER_URL = (settings.EXTERNAL_URI_SCHEME +
@@ -49,6 +51,7 @@ class Command(ZulipBaseCommand):
         request = {
             "zulip_org_id": settings.ZULIP_ORG_ID,
             "zulip_org_key": settings.ZULIP_ORG_KEY,
+            "zulip_url_key": settings.ZULIP_URL_KEY,
             "hostname": settings.EXTERNAL_HOST,
             "contact_email": settings.ZULIP_ADMINISTRATOR}
         if options["rotate_key"]:

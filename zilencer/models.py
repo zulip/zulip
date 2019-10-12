@@ -11,10 +11,13 @@ def get_remote_server_by_uuid(uuid: str) -> 'RemoteZulipServer':
 class RemoteZulipServer(models.Model):
     UUID_LENGTH = 36
     API_KEY_LENGTH = 64
+    # If changed, also change in corporate/urls.py and generate_secrets.py
+    URL_KEY_LENGTH = 16
     HOSTNAME_MAX_LENGTH = 128
 
     uuid = models.CharField(max_length=UUID_LENGTH, unique=True)  # type: str
     api_key = models.CharField(max_length=API_KEY_LENGTH)  # type: str
+    url_key = models.CharField(max_length=URL_KEY_LENGTH, unique=True, null=True)  # type: str
 
     hostname = models.CharField(max_length=HOSTNAME_MAX_LENGTH)  # type: str
     contact_email = models.EmailField(blank=True, null=False)  # type: str

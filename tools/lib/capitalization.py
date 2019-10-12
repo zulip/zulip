@@ -131,6 +131,8 @@ IGNORED_PHRASES = [
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
+    # The tool sometimes thinks 'com.' is a sentence
+    r"support@zulipchat.com",
 
     r"group private messages with __recipient__",
     r"private messages with __recipient__",

@@ -15,6 +15,8 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null) {
     $(form_loading).show();
 
     const data = {};
+    data.url_key = page_params.url_key;
+
     if (stripe_token) {
         data.stripe_token = JSON.stringify(stripe_token.id);
     }

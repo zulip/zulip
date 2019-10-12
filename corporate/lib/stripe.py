@@ -70,6 +70,11 @@ class BillingOrg(object):
                 '{}: get_latest_seat_count called with no log entries'.format(self))
         return get_seat_count(log_entry)
 
+    def get_url_key(self) -> Optional[str]:
+        if self.server is not None:
+            return self.server.url_key
+        return None
+
     # TODO: write for self.server
     def change_plan_type(self, value: int) -> None:
         if self.realm is not None:

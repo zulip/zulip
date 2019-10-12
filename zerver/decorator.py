@@ -12,7 +12,7 @@ from django.http import QueryDict, HttpResponseNotAllowed, HttpRequest
 from django.http.multipartparser import MultiPartParser
 from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 from zerver.lib.response import json_error, json_unauthorized, json_success
-from django.shortcuts import resolve_url
+from django.shortcuts import resolve_url, render
 from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
@@ -30,7 +30,7 @@ from zerver.lib.validator import to_non_negative_int
 from zerver.lib.rate_limiter import rate_limit_request_by_entity, RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 
-from functools import wraps
+from functools import wraps, partial
 import base64
 import datetime
 import ujson
@@ -49,6 +49,14 @@ else:  # nocoverage # Hack here basically to make impossible code paths compile
     from mock import Mock
     get_remote_server_by_uuid = Mock()
     RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+
+# This is a hack to ensure that BillingUser always exists even
+# if Corporate isn't enabled.
+if settings.CORPORATE_ENABLED:
+    from corporate.lib.stripe import BillingUser
+else:  # nocoverage # Hack to make impossible code paths compile
+    from mock import Mock
+    BillingUser = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
 ReturnT = TypeVar('ReturnT')
 
@@ -140,13 +148,50 @@ def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
         return func(request, user_profile, *args, **kwargs)
     return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def require_billing_access(func: ViewFuncT) -> ViewFuncT:
+# For standalone billing pages like /billing and /upgrade
+def billing_user_required(view_func: ViewFuncT) -> Callable[..., Any]:
+    @wraps(view_func)
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        if 'url_key' in kwargs:
+            # Self-hosted server user
+            url_key = kwargs['url_key']
+            del kwargs['url_key']
+            # The URL patterns should not let this through, but putting an extra check here
+            # since a None url_key would successfully match against existing RemoteZulipServers
+            assert url_key is not None
+            server = RemoteZulipServer.objects.filter(url_key=url_key).first()
+            if server is None:
+                # Could eventually have a nicer error page here
+                return render(request, "404.html")
+            return view_func(request, BillingUser(server), *args[1:], **kwargs)
+        # zulipchat.com user
+        @zulip_login_required
+        def _extra_wrapper(request: HttpRequest) -> HttpResponse:
+            return view_func(request, BillingUser(request.user), *args, **kwargs)
+        return _extra_wrapper(request)
+    return _wrapped_view_func
+
+# For billing json endpoints using rest_dispatch with allow_anonymous_user_web
+def _require_billing_access(func: ViewFuncT, allow_all_realm_users: bool) -> ViewFuncT:
     @wraps(func)
     def wrapper(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
-        if not user_profile.is_realm_admin and not user_profile.is_billing_admin:
+        if user_profile.is_authenticated():
+            # zulipchat.com user
+            if allow_all_realm_users or user_profile.is_realm_admin or user_profile.is_billing_admin:
+                return func(request, BillingUser(user_profile), *args, **kwargs)
             raise JsonableError(_("Must be a billing administrator or an organization administrator"))
-        return func(request, user_profile, *args, **kwargs)
+        # Self-hosted server user
+        url_key = request.POST.get('url_key', None)
+        if url_key is None:
+            raise JsonableError(_("Unknown url_key. Contact support@zulipchat.com."))
+        server = RemoteZulipServer.objects.filter(url_key=ujson.loads(url_key)).first()
+        if server is None:
+            raise JsonableError(_("Unknown url_key. Contact support@zulipchat.com."))
+        return func(request, BillingUser(server), *args, **kwargs)
     return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
+
+require_billing_user = partial(_require_billing_access, allow_all_realm_users=True)
+require_billing_access = partial(_require_billing_access, allow_all_realm_users=False)
 
 from zerver.lib.user_agent import parse_user_agent
 

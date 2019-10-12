@@ -50,6 +50,8 @@ def register_remote_server(
         contact_email: str=REQ(str_validator=check_string),
         new_org_key: Optional[str]=REQ(str_validator=check_string_fixed_length(
             RemoteZulipServer.API_KEY_LENGTH), default=None),
+        zulip_url_key: Optional[str]=REQ(str_validator=check_string_fixed_length(
+            RemoteZulipServer.URL_KEY_LENGTH), default=None),
 ) -> HttpResponse:
     # REQ validated the the field lengths, but we still need to
     # validate the format of these fields.
@@ -68,7 +70,7 @@ def register_remote_server(
     remote_server, created = RemoteZulipServer.objects.get_or_create(
         uuid=zulip_org_id,
         defaults={'hostname': hostname, 'contact_email': contact_email,
-                  'api_key': zulip_org_key})
+                  'api_key': zulip_org_key, 'url_key': zulip_url_key})
 
     if not created:
         if remote_server.api_key != zulip_org_key:

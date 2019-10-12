@@ -11,11 +11,11 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.conf import settings
 
-from zerver.decorator import zulip_login_required, require_billing_access
+from zerver.decorator import billing_user_required, require_billing_user, \
+    require_billing_access
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string, check_int
-from zerver.models import UserProfile
 from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, \
     process_initial_upgrade, sign_string, \
@@ -70,8 +70,9 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     # the Stripe dashboard.
     return _("Unknown payment method. Please contact %s.") % (settings.ZULIP_ADMINISTRATOR,)  # nocoverage
 
+@require_billing_user
 @has_request_variables
-def upgrade(request: HttpRequest, user: UserProfile,
+def upgrade(request: HttpRequest, billing_user: BillingUser,
             billing_modality: str=REQ(validator=check_string),
             schedule: str=REQ(validator=check_string),
             license_management: str=REQ(validator=check_string, default=None),
@@ -79,7 +80,6 @@ def upgrade(request: HttpRequest, user: UserProfile,
             stripe_token: str=REQ(validator=check_string, default=None),
             signed_seat_count: str=REQ(validator=check_string),
             salt: str=REQ(validator=check_string)) -> HttpResponse:
-    billing_user = get_billing_user_from_request(request)
     try:
         seat_count = unsign_seat_count(signed_seat_count, salt)
         if billing_modality == 'charge_automatically' and license_management == 'automatic':
@@ -98,9 +98,9 @@ def upgrade(request: HttpRequest, user: UserProfile,
     except BillingError as e:
         if not settings.TEST_SUITE:  # nocoverage
             billing_logger.warning(
-                ("BillingError during upgrade: %s. user=%s, realm=%s (%s), billing_modality=%s, "
+                ("BillingError during upgrade: %s. billing_user=%s, billing_modality=%s, "
                  "schedule=%s, license_management=%s, licenses=%s, has stripe_token: %s")
-                % (e.description, user.id, user.realm.id, user.realm.string_id, billing_modality,
+                % (e.description, billing_user, billing_modality,
                    schedule, license_management, licenses, stripe_token is not None))
         return json_error(e.message, data={'error_description': e.description})
     except Exception as e:
@@ -111,18 +111,18 @@ def upgrade(request: HttpRequest, user: UserProfile,
     else:
         return json_success()
 
-def get_billing_user_from_request(request: HttpRequest) -> BillingUser:
-    return BillingUser(request.user)
-
-@zulip_login_required
-def initial_upgrade(request: HttpRequest) -> HttpResponse:
+@billing_user_required
+def initial_upgrade(request: HttpRequest, billing_user: BillingUser) -> HttpResponse:
     if not settings.BILLING_ENABLED:
         return render(request, "404.html")
 
-    billing_user = get_billing_user_from_request(request)
     customer = billing_user.get_customer_if_exists()
     if customer is not None and CustomerPlan.objects.filter(customer=customer).exists():
-        return HttpResponseRedirect(reverse('corporate.views.billing_home'))
+        if billing_user.realm is not None:
+            return HttpResponseRedirect(reverse('corporate.views.billing_home'))
+        assert billing_user.server is not None
+        return HttpResponseRedirect(reverse('corporate.views.billing_home__server',
+                                            kwargs={'url_key': billing_user.server.url_key}))
 
     percent_off = Decimal(0)
     if customer is not None and customer.default_discount is not None:
@@ -144,19 +144,26 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             'annual_price': 8000,
             'monthly_price': 800,
             'percent_off': float(percent_off),
+            'url_key': billing_user.get_url_key(),
         },
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
 
-@zulip_login_required
-def billing_home(request: HttpRequest) -> HttpResponse:
-    billing_user = get_billing_user_from_request(request)
+def redirect_to_upgrade_page(billing_user: BillingUser) -> HttpResponse:
+    if billing_user.realm is not None:
+        return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
+    assert billing_user.server is not None
+    return HttpResponseRedirect(reverse('corporate.views.initial_upgrade__server',
+                                        kwargs={'url_key': billing_user.server.url_key}))
+
+@billing_user_required
+def billing_home(request: HttpRequest, billing_user: BillingUser) -> HttpResponse:
     customer = billing_user.get_customer_if_exists()
     if customer is None:
-        return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
+        return redirect_to_upgrade_page(billing_user)
     if not CustomerPlan.objects.filter(customer=customer).exists():
-        return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
+        return redirect_to_upgrade_page(billing_user)
 
     if not billing_user.has_billing_access():
         context = {'admin_access': False}  # type: Dict[str, Any]
@@ -201,14 +208,16 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         'charge_automatically': charge_automatically,
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
         'stripe_email': stripe_customer.email,
+        'page_params': {
+            'url_key': billing_user.get_url_key(),
+        },
     })
     return render(request, 'corporate/billing.html', context=context)
 
 @require_billing_access
 @has_request_variables
-def change_plan_at_end_of_cycle(request: HttpRequest, user: UserProfile,
+def change_plan_at_end_of_cycle(request: HttpRequest, billing_user: BillingUser,
                                 status: int=REQ("status", validator=check_int)) -> HttpResponse:
-    billing_user = get_billing_user_from_request(request)
     assert(status in [CustomerPlan.ACTIVE, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE])
     plan = get_current_plan(billing_user.get_customer())
     assert(plan is not None)  # for mypy
@@ -217,9 +226,8 @@ def change_plan_at_end_of_cycle(request: HttpRequest, user: UserProfile,
 
 @require_billing_access
 @has_request_variables
-def replace_payment_source(request: HttpRequest, user: UserProfile,
+def replace_payment_source(request: HttpRequest, billing_user: BillingUser,
                            stripe_token: str=REQ("stripe_token", validator=check_string)) -> HttpResponse:
-    billing_user = get_billing_user_from_request(request)
     try:
         do_replace_payment_source(billing_user, stripe_token, pay_invoices=True)
     except BillingError as e:
