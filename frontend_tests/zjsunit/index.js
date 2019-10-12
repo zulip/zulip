@@ -1,19 +1,16 @@
-require('ts-node').register({
-    project: 'static/js/tsconfig.json',
-    compilerOptions: {
-        typeRoots: ["node_modules/@types", "./js_typings"],
-        // We don't have webpack to handle es6 modules here so directly
-        // transpile to CommonJS format.
-        module: "commonjs",
-    },
-});
-
 var path = require('path');
 var fs = require('fs');
+var escapeRegExp = require("lodash/escapeRegExp");
+
+require("@babel/register")({
+    extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
+    only: [
+        new RegExp("^" + escapeRegExp(path.resolve(__dirname, "../../static/js")) + path.sep),
+    ],
+    plugins: ["rewire-ts"],
+});
 
 global.assert = require('assert');
-require('core-js/features/string/code-point-at');
-
 global._ = require('underscore/underscore.js');
 var _ = global._;
 const windowObj = {
