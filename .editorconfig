@@ -14,7 +14,7 @@ indent_size = 4
 max_line_length = 110
 
 [*.{js,ts}]
-max_line_length = 120
+max_line_length = 100
 
 [*.{svg,rb,pp,pl}]
 indent_style = space
