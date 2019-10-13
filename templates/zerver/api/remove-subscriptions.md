@@ -69,7 +69,7 @@ administrative privileges.
 * `removed`: A list of the names of streams which were unsubscribed from as
   a result of the query.
 
-* `not_subscribed`: A list of the names of streams that the user is already
+* `not_removed`: A list of the names of streams that the user is already
   unsubscribed from, and hence doesn't need to be unsubscribed.
 
 #### Example response

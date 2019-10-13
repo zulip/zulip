@@ -257,7 +257,7 @@ def remove_subscriptions_backend(
     else:
         people_to_unsub = set([user_profile])
 
-    result = dict(removed=[], not_subscribed=[])  # type: Dict[str, List[str]]
+    result = dict(removed=[], not_removed=[])  # type: Dict[str, List[str]]
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
                                                           request.client,
                                                           acting_user=user_profile)
@@ -265,7 +265,7 @@ def remove_subscriptions_backend(
     for (subscriber, removed_stream) in removed:
         result["removed"].append(removed_stream.name)
     for (subscriber, not_subscribed_stream) in not_subscribed:
-        result["not_subscribed"].append(not_subscribed_stream.name)
+        result["not_removed"].append(not_subscribed_stream.name)
 
     return json_success(result)
 

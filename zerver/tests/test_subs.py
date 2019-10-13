@@ -991,7 +991,7 @@ class StreamAdminTest(ZulipTestCase):
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
-        self.assertEqual(len(json["not_subscribed"]), 0)
+        self.assertEqual(len(json["not_removed"]), 0)
 
     def test_admin_remove_others_from_subbed_private_stream(self) -> None:
         """
@@ -1003,7 +1003,7 @@ class StreamAdminTest(ZulipTestCase):
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
-        self.assertEqual(len(json["not_subscribed"]), 0)
+        self.assertEqual(len(json["not_removed"]), 0)
 
     def test_admin_remove_others_from_unsubbed_private_stream(self) -> None:
         """
@@ -1015,7 +1015,7 @@ class StreamAdminTest(ZulipTestCase):
             other_user_subbed=True, other_sub_users=[self.example_user("othello")])
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
-        self.assertEqual(len(json["not_subscribed"]), 0)
+        self.assertEqual(len(json["not_removed"]), 0)
 
     def test_create_stream_policy_setting(self) -> None:
         """
@@ -1155,7 +1155,7 @@ class StreamAdminTest(ZulipTestCase):
             other_user_subbed=False)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 0)
-        self.assertEqual(len(json["not_subscribed"]), 1)
+        self.assertEqual(len(json["not_removed"]), 1)
 
     def test_remove_invalid_user(self) -> None:
         """
@@ -2839,7 +2839,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         {"msg": "",
          "removed": ["Denmark", "Scotland", "Verona"],
-         "not_subscribed": ["Rome"], "result": "success"}
+         "not_removed": ["Rome"], "result": "success"}
         """
         result = self.client_delete("/json/users/me/subscriptions",
                                     {"subscriptions": ujson.dumps(subscriptions)})
@@ -2868,7 +2868,7 @@ class SubscriptionAPITest(ZulipTestCase):
         try_to_remove = not_subbed[:3]  # attempt to remove up to 3 streams not already subbed to
         streams_to_remove.extend(try_to_remove)
         self.helper_check_subs_before_and_after_remove(streams_to_remove,
-                                                       {"removed": self.streams[1:], "not_subscribed": try_to_remove},
+                                                       {"removed": self.streams[1:], "not_removed": try_to_remove},
                                                        self.test_email, [self.streams[0]], self.test_realm)
 
     def test_subscriptions_remove_fake_stream(self) -> None:
