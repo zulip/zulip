@@ -1156,19 +1156,14 @@ paths:
                             "website": {
                                 "timestamp": 1532697622,
                                 "status": "active",
-                                "pushable": false,
-                                "client": "website"
                             },
                             "ZulipMobile": {
                                 "timestamp": 1522687421,
                                 "status": "active",
-                                "pushable": false,
-                                "client": "ZulipMobile"
                             },
                             "aggregated": {
                                 "timestamp": 1532697622,
                                 "status": "active",
-                                "client": "website"
                             }
                         },
                         "result": "success",
