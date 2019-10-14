@@ -170,7 +170,7 @@ root domain. Replace the last line above with the following, after replacing
 
 {!import-login.md!}
 
-[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository
 
 ## Caveats
 
@@ -188,4 +188,4 @@ messages with a specific Mattermost team.  For that reason, the import
 tool will only import private messages for data export archives
 containing a single Mattermost team.
 
-[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository

@@ -43,7 +43,7 @@ in bursts.
   readable style.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production.  We're now interested in beta testers for this feature.
-- Added [new documentation](../production/modifying-zulip.md) on
+- Added [new documentation](../production/upgrade-or-modify.html#modifying-zulip) on
   maintaining a fork of Zulip.
 - Added new `streams:public` search operator that searches the public
   history of all streams in the organization (even before you joined).
@@ -440,7 +440,7 @@ Zulip installations; it has minimal changes for existing servers.
   phase of the upgrade closely, we recommend
   [running them first manually](../production/expensive-migrations.md)
   and as well as the usual trick of
-  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
+  [doing an apt upgrade first](../production/upgrade-or-modify.html#applying-system-updates).
 
 **Full feature changelog:**
 - Added an organization setting for message deletion time limits.
@@ -818,7 +818,7 @@ Backend and scaling
   phase of the upgrade closely, we recommend
   [running them first manually](../production/expensive-migrations.md) and as well
   as the usual trick of
-  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
+  [doing an apt upgrade first](../production/upgrade-or-modify.html#applying-system-updates).
 
 * We've removed support for an uncommon legacy deployment model where
   a Zulip server served multiple organizations on the same domain.

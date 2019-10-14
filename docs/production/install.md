@@ -109,7 +109,9 @@ for server administrators.  This extremely low-traffic list is for
 important announcements, including new releases and security issues.
 * Follow [Zulip on Twitter](https://twitter.com/zulip).
 * Learn how to [configure your Zulip server settings](settings.md).
-* Learn about [maintaining a production Zulip server](maintain-secure-upgrade.md).
+* Learn about [maintaining](../production/maintain-secure-upgrade.md)
+and [upgrading](../production/upgrade-or-modify.md) a production Zulip
+server.
 
 [realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
 

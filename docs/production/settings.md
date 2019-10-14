@@ -116,5 +116,5 @@ request; we love even small contributions, and we'd love to make the
 Zulip documentation cover everything anyone might want to know about
 running Zulip in production.
 
-Next: [Maintaining and upgrading Zulip in
-production](../production/maintain-secure-upgrade.md).
+Next: [Maintaining](../production/maintain-secure-upgrade.md) and
+[upgrading](../production/upgrade-or-modify.md) Zulip in production.
