@@ -26,6 +26,7 @@ exclude_list = [
     'get-presence.md',
     'create-user-group.md',
     'update-user-group.md',
+    'delete-user-group.md',
     # Endpoint can be called only by administrators.
     'create-user.md',
     # Endpoint does not accept bot requests
