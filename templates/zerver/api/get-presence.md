@@ -52,9 +52,6 @@ for details on the data model for presence in Zulip.
           UI; orange/idle means we don't know whether the user is
           actually at their computer or just left the Zulip app open
           on their desktop).
-        * `pushable`: whether the client accepts push notifications or not.
-        * `client`: the name of the client this presence information refers to.
-          Matches the object's key if this isn't the `aggregated` object.
 
 #### Example response
 
