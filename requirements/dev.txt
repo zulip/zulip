@@ -281,9 +281,8 @@ ecdsa==0.13.2 \
     --hash=sha256:20c17e527e75acad8f402290e158a6ac178b91b881f941fc6ea305bfdfb9657c \
     --hash=sha256:5c034ffa23413ac923541ceb3ac14ec15a0d2530690413bff58c12b80e56d884 \
     # via python-jose, sshpubkeys
-fakeldap==0.6.1 \
-    --hash=sha256:3f7262b41def43b85be886ca6d64d1c310d2db48a434fddae86efc34a09a7a81 \
-    --hash=sha256:43000061ca8e6d56fe0ce89256a1a2afc46e6443762bb96631542a1af8e70354
+https://github.com/zulip/fakeldap/archive/ff32deaad34b91d5ba5735f314362c0456c92607.zip#egg=fakeldap==0.6.1zulip \
+    --hash=sha256:fa793865813b3a09a8110deccf95af72557f558cb5c7eeaebd953c1fb8f82521
 future==0.18.0 \
     --hash=sha256:6142ef79e2416e432931d527452a1cab3aa4a754a0a53d25b2589f79e1106f34 \
     # via aws-xray-sdk, commonmark, python-jose, python-twitter
@@ -592,9 +591,6 @@ pyinotify==0.9.6 \
 pyjwt==1.7.1 \
     --hash=sha256:5c6eca3c2940464d106b99ba83b00c6add741c9becaec087fb7ccdefea71350e \
     --hash=sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96
-pyldap==3.0.0.post1 \
-    --hash=sha256:9ea6ae79b48f3178561a6bc105bcbc77231d5994e67ffb81b7699b8f19dd92c3 \
-    # via fakeldap
 pylibmc==1.6.1 \
     --hash=sha256:01a7e2e3fa9fcd7a791c7818a80a07e7a381aee988a5d810a1c1e6f7a9a288fd \
     --hash=sha256:6fff384e3c30af029bbac87f88b3fab14ae87b50103d389341d9b3e633349a3f \
@@ -631,8 +627,7 @@ python-jose==3.0.1 \
     --hash=sha256:ed7387f0f9af2ea0ddc441d83a6eb47a5909bd0c8a72ac3250e75afec2cc1371 \
     # via moto
 python-ldap==3.2.0 \
-    --hash=sha256:7d1c4b15375a533564aad3d3deade789221e450052b21ebb9720fb822eccdb8e \
-    # via pyldap
+    --hash=sha256:7d1c4b15375a533564aad3d3deade789221e450052b21ebb9720fb822eccdb8e
 python-magic==0.4.15 \
     --hash=sha256:f2674dcfad52ae6c49d4803fa027809540b130db1dec928cfbb9240316831375 \
     --hash=sha256:f3765c0f582d2dfc72c15f3b5a82aecfae9498bd29ca840d72f37d7bd38bfcd5

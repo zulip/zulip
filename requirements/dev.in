@@ -17,7 +17,7 @@ Scrapy
 coverage
 
 # fake for LDAP testing
-fakeldap
+https://github.com/zulip/fakeldap/archive/ff32deaad34b91d5ba5735f314362c0456c92607.zip#egg=fakeldap==0.6.1zulip
 
 # For testing mock http requests
 httpretty
