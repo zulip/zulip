@@ -14,14 +14,14 @@ WARN_THRESHOLD = {
     # The user_activity worker has high throughput and uses a
     # LoopQueueProcessingWorker, so it's normal to have a moderate
     # backlog.
-    'user_activity': 100,
+    'user_activity': 1000,
 }
 CRIT_THRESHOLD_DEFAULT = 50
 CRIT_THRESHOLD = {
     'missedmessage_emails': CRIT_THRESHOLD_DEFAULT,
     # A backlog of hundreds of events for user_activity likely
     # indicates an outage of the processor.
-    'user_activity': 500,
+    'user_activity': 5000,
 }
 
 states = {
