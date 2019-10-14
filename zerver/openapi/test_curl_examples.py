@@ -29,6 +29,7 @@ exclude_list = [
     'delete-user-group.md',
     'add-linkifiers.md',
     'get-events-from-queue.md',
+    'delete-queue.md',
     # Endpoint can be called only by administrators.
     'create-user.md',
     'remove-linkifiers.md',

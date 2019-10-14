@@ -41,11 +41,7 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-``` curl
-curl -X "DELETE" {{ api_url }}/v1/events \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
-    -d 'queue_id=1515096410:1'
-```
+{generate_code_example(curl)|/events:delete|example}
 
 {end_tabs}
 
