@@ -13,12 +13,7 @@ Update the name or description of a [user group](/help/user-groups).
 
 {tab|curl}
 
-``` curl
-curl -X PATCH {{ api_url }}/v1/user_groups/42 \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'name="marketing"' \
-    -d 'description="The marketing team."'
-```
+{generate_code_example(curl)|/user_groups/{group_id}:patch|example}
 
 {end_tabs}
 
