@@ -27,8 +27,10 @@ exclude_list = [
     'create-user-group.md',
     'update-user-group.md',
     'delete-user-group.md',
+    'add-linkifiers.md',
     # Endpoint can be called only by administrators.
     'create-user.md',
+    'remove-linkifiers.md',
     # Endpoint does not accept bot requests
     'get-user-groups.md',
 ]
