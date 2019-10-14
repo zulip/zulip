@@ -37,6 +37,8 @@ Fetch global settings for a Zulip server.
   indicates whether the authentication method is enabled on this server.
 * `zulip_version`: the version of Zulip running in the server.
 * `push_notifications_enabled`: whether mobile/push notifications are enabled.
+* `is_incompatible`: whether the Zulip client that has sent a request to
+  this endpoint is deemed incompatible with the server.
 * `email_auth_enabled`: setting for allowing users authenticate with an
   email-password combination.
 * `require_email_format_usernames`: whether usernames should have an
