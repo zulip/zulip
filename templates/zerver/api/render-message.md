@@ -34,12 +34,7 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-``` curl
-curl -X POST {{ api_url }}/v1/messages/render \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d $"content=**foo**"
-
-```
+{generate_code_example(curl)|/messages/render:post|example}
 
 {end_tabs}
 
