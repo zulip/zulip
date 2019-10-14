@@ -75,11 +75,7 @@ zulip(config).then((client) => {
 
 {tab|curl}
 
-``` curl
-curl -X POST {{ api_url }}/v1/register \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
-    -d 'event_types=["message"]'
-```
+{generate_code_example(curl, include=["event_types"])|/register:post|example}
 
 {end_tabs}
 
