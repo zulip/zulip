@@ -13,13 +13,7 @@ Create a new [user group](/help/user-groups).
 
 {tab|curl}
 
-``` curl
-curl -X POST {{ api_url }}/v1/user_groups/create \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'name="marketing"' \
-    -d 'description="The marketing team"' \
-    -d 'members=[1,2,3,4]'
-```
+{generate_code_example(curl)|/user_groups/create:post|example}
 
 {end_tabs}
 

@@ -24,6 +24,7 @@ exclude_list = [
     'get-stream-topics.md',
     'delete-stream.md',
     'get-presence.md',
+    'create-user-group.md',
     # Endpoint can be called only by administrators.
     'create-user.md',
     # Endpoint does not accept bot requests
