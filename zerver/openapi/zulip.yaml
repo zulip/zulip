@@ -2015,7 +2015,7 @@ paths:
           type: array
           items:
             type: string
-        example: event_types=['message']
+        example: ['message']
       - name: narrow
         in: query
         description: A JSON-encoded array of length 2 indicating the narrow
