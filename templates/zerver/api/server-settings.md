@@ -21,10 +21,7 @@ Fetch global settings for a Zulip server.
 
 {tab|curl}
 
-``` curl
-curl -X GET {{ api_url }}/v1/server_settings \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
-```
+{generate_code_example(curl)|/server_settings:get|example}
 
 {end_tabs}
 
