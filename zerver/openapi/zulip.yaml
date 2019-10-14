@@ -2121,14 +2121,6 @@ paths:
                       type: string
                       description: The URI of the organization's mobile icon (usually
                         a square version of the logo).
-                    realm_logo:
-                      type: string
-                      description: The URI of the organization's top-left navbar logo
-                        (usually a wide rectangular version of the logo).
-                    realm_night_logo:
-                      type: string
-                      description: The URI of the organization's top-left navbar logo in night_mode
-                        (usually a wide rectangular version of the logo).
                     realm_description:
                       type: string
                       description: HTML description of the organization, as
