@@ -26,6 +26,8 @@ exclude_list = [
     'get-presence.md',
     # Endpoint can be called only by administrators.
     'create-user.md',
+    # Endpoint does not accept bot requests
+    'get-user-groups.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:

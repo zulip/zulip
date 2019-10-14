@@ -15,10 +15,7 @@ Fetches all of the user groups in the organization.
 
 {tab|curl}
 
-``` curl
-curl -X GET {{ api_url }}/v1/user_groups \
-    -u USER_EMAIL_ADDRESS:USER_API_KEY
-```
+{generate_code_example(curl)|/user_groups:get|example}
 
 {end_tabs}
 
