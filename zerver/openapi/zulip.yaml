@@ -1988,7 +1988,7 @@ paths:
           type: array
           items:
             type: string
-        example: event_types=['message']
+        example: ['message']
       - name: all_public_streams
         in: query
         description: Set to `True` if you would like to receive events that
