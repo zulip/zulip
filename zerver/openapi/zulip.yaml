@@ -2030,7 +2030,7 @@ paths:
             - type: string
             - type: integer
           default: narrow=[]
-        example: narrow=['stream', 'Denmark']
+        example: ['stream', 'Denmark']
       security:
       - basicAuth: []
       responses:
