@@ -13,10 +13,7 @@ Delete a [user group](/help/user-groups).
 
 {tab|curl}
 
-``` curl
-curl -X DELETE {{ api_url }}/v1/user_groups/42 \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
-```
+{generate_code_example(curl)|/user_groups/{group_id}:delete|example}
 
 {end_tabs}
 
