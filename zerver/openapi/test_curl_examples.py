@@ -23,6 +23,7 @@ exclude_list = [
     'remove-subscriptions.md',
     'get-stream-topics.md',
     'delete-stream.md',
+    'get-presence.md',
     # Endpoint can be called only by administrators.
     'create-user.md',
 ]
