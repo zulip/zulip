@@ -50,12 +50,6 @@ Fetch global settings for a Zulip server.
 * `realm_icon`: the URI of the organization's logo as a square image,
   used for identifying the organization in small locations in the
   mobile and desktop apps.
-* `realm_logo`: the URI of the organization's logo as a horizontal
-  format image (displayed in the top-left corner of the logged-in
-  webapp).
-* `realm_night_logo`: the URI of the organization's logo in the night mode as a
-  horizontal format image (dispalyed in the top-left corner of the logged-in
-  webapp).
 * `realm_description`: HTML description of the organization, as configured by
   the [organization profile](/help/create-your-organization-profile).
 
