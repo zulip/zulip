@@ -21,7 +21,7 @@ follows:
 1. Uncomment the `PUSH_NOTIFICATION_BOUNCER_URL =
    'https://push.zulipchat.com'` line in your `/etc/zulip/settings.py`
    file (i.e. remove the `#` at the start of the line), and
-   [restart your Zulip server](../production/maintain-secure-upgrade.html#updating-settings).
+   [restart your Zulip server](../production/upgrade-or-modify.html#updating-settings).
    If you installed your Zulip server with a version older than 1.6,
    you'll need to add the line (it won't be there to uncomment).
 

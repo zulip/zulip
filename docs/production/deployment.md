@@ -19,7 +19,7 @@ git clone https://github.com/zulip/zulip.git zulip-server-git
 
 and then
 [continue the normal installation instructions](../production/install.html#step-2-install-zulip).
-You can also [upgrade Zulip from Git](../production/maintain-secure-upgrade.html#upgrading-from-a-git-repository).
+You can also [upgrade Zulip from Git](../production/upgrade-or-modify.html#upgrading-from-a-git-repository).
 
 ## Zulip in Docker
 

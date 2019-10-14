@@ -130,7 +130,7 @@ root domain. Replace the last line above with the following, after replacing
 
 {!import-login.md!}
 
-[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository
 
 ## Caveats
 
@@ -152,5 +152,5 @@ rooms.  You can pick one of the following options for handling this:
   access token via `--token=abcd1234` in `manage.py convert_hipchat_data`
   (or include it in your request, if importing into Zulip Cloud).
 
-[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository
 [hipchat-api-tokens]: https://developer.atlassian.com/server/hipchat/hipchat-rest-api-access-tokens/
