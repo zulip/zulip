@@ -5,6 +5,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.slack import (
     get_slack_api_data,
     get_admin,
+    get_guest,
     get_user_timezone,
     fetch_shared_channel_users,
     users_to_zerver_userprofile,
@@ -766,3 +767,15 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(uploads_list[0]['s3_path'], image_path)
         self.assertEqual(uploads_list[0]['realm_id'], realm_id)
         self.assertEqual(uploads_list[0]['user_profile_email'], 'alice@example.com')
+
+        def test_get_guest(self) -> None:
+            user_data = [{'is_restricted' : True, 'is_ultra_restricted' : True},
+                        {'is_restricted' : True, 'is_ultra_restricted' : False},
+                        {'is_restricted' : False, 'is_ultra_restricted' : True},
+                        {'is_restricted' : False, 'is_ultra_restricted' : False}
+                     ]
+        
+        self.assertEqual(get_guest(user_data[0]), True)
+        self.assertEqual(get_guest(user_data[1]), True)
+        self.assertEqual(get_guest(user_data[2]), True)
+        self.assertEqual(get_guest(user_data[3]), False)
