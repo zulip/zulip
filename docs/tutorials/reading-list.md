@@ -134,7 +134,7 @@ Some titles have been shortened for organizational purposes.
 
 *Course* - [React native and redux course][]  (*Not free!*)
 
-[React native and redux course]: https://www.udemy.com/the-complete-react-native-and-redux-course/
+[React native and redux course]: https://www.udemy.com/course/the-complete-react-native-and-redux-course/
 
 *Slides* - [TypeScript vs. CoffeeScript vs. ES6][]
 
