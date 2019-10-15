@@ -485,6 +485,9 @@ strong {
 .tooltip .tooltip-inner {
     background-color: hsla(0, 0%, 7%, 0.8);
     padding: 3px 5px;
+    font-size: 13px;
+    width: -webkit-max-content;
+    max-width: 110px;
 }
 
 #message_edit_tooltip {
