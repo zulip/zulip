@@ -315,10 +315,8 @@ def get_guest(user: ZerverFieldsT) -> bool:
     restricted_user = user.get('is_restricted', False)
     ultra_restricted_user = user.get('is_ultra_restricted', False)
 
-    if restricted_user or ultra_restricted_user:
-        return True
-    else:
-        return False
+    return restricted_user or ultra_restricted_user
+
 
 def get_user_timezone(user: ZerverFieldsT) -> str:
     _default_timezone = "America/New_York"
