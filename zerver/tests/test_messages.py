@@ -1282,58 +1282,38 @@ class MessageDictTest(ZulipTestCase):
     def test_topic_links_use_stream_realm(self) -> None:
         # Set up a realm filter on 'zulip' and assert that messages
         # sent to a stream on 'zulip' have the topic linkified from
-        # senders in both the 'zulip' and 'lear' realms.  This test is
-        # a bit artificial; we really should be sending the message
-        # from `notification_bot`, no the lear realm, since that's the
-        # actual use case.
+        # senders in both the 'zulip' and 'lear' realms as well as
+        # the notification bot.
         zulip_realm = get_realm('zulip')
-        lear_realm = get_realm('lear')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
         url = 'https://trac.zulip.net/ticket/123'
-        othello = self.example_user('othello')
-        cordelia = self.lear_user('cordelia')
-        stream = get_stream('Denmark', zulip_realm)
         topic_name = 'test #123'
-        recipient = get_stream_recipient(stream.id)
-        sending_client = make_client(name="test suite")
 
         realm_filter = RealmFilter(realm=zulip_realm,
                                    pattern=r"#(?P<id>[0-9]{2,8})",
                                    url_format_string=url_format_string)
-        realm_filter.save()
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
 
-        message_from_zulip = Message(
-            sender=othello,
-            recipient=recipient,
-            content='hello world',
-            date_sent=timezone_now(),
-            sending_client=sending_client,
-            last_edit_time=timezone_now(),
-            edit_history='[]'
-        )
-        message_from_zulip.set_topic_name(topic_name)
-        message_from_zulip.save()
-        message_from_lear = Message(
-            sender=cordelia,
-            recipient=recipient,
-            content='hello world',
-            date_sent=timezone_now(),
-            sending_client=sending_client,
-            last_edit_time=timezone_now(),
-            edit_history='[]'
-        )
-        message_from_lear.set_topic_name(topic_name)
-        message_from_lear.save()
+        def get_message(sender: UserProfile) -> Message:
+            msg_id = self.send_stream_message(sender.email, 'Denmark', 'hello world', topic_name,
+                                              sender.realm.string_id, zulip_realm)
+            return Message.objects.get(id=msg_id)
 
-        dct = MessageDict.to_dict_uncached_helper(message_from_zulip)
-        self.assertEqual(dct[TOPIC_LINKS], [url])
-        dct = MessageDict.to_dict_uncached_helper(message_from_lear)
-        self.assertEqual(dct[TOPIC_LINKS], [url])
-        self.assertNotEqual(lear_realm, zulip_realm)
+        def assert_topic_links(links: List[str], msg: Message) -> None:
+            dct = MessageDict.to_dict_uncached_helper(msg)
+            self.assertEqual(dct[TOPIC_LINKS], links)
+
+        # Send messages before and after saving the realm filter from each user.
+        assert_topic_links([], get_message(self.example_user('othello')))
+        assert_topic_links([], get_message(self.lear_user('cordelia')))
+        assert_topic_links([], get_message(self.notification_bot()))
+        realm_filter.save()
+        assert_topic_links([url], get_message(self.example_user('othello')))
+        assert_topic_links([url], get_message(self.lear_user('cordelia')))
+        assert_topic_links([url], get_message(self.notification_bot()))
 
     def test_reaction(self) -> None:
         sender = self.example_user('othello')
