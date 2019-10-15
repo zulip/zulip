@@ -125,10 +125,6 @@ li.show-more-topics a {
     width: 100%;
 }
 
-#stream-filters-container .simplebar-content {
-    margin-bottom: 18px;
-}
-
 #private-container {
     max-height: 200px;
 }
@@ -147,6 +143,7 @@ li.show-more-topics a {
 #add-stream-link {
     text-decoration: none;
     margin-left: 10px;
+    margin-bottom: 18px;
 }
 
 #add-stream-link i {
