@@ -2046,9 +2046,9 @@ def extract_emails(emails: Iterable[str]) -> List[str]:
     return recipients
 
 def check_send_stream_message(sender: UserProfile, client: Client, stream_name: str,
-                              topic: str, body: str) -> int:
+                              topic: str, body: str, realm: Optional[Realm]=None) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic)
-    message = check_message(sender, client, addressee, body)
+    message = check_message(sender, client, addressee, body, realm)
 
     return do_send_messages([message])[0]
 
