@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from email.utils import parseaddr
+from fakeldap import MockLDAP
 from typing import (cast, Any, Dict, Iterable, Iterator, List, Optional,
                     Tuple, Union, Set)
 
@@ -106,6 +107,12 @@ class ZulipTestCase(TestCase):
         clear_supported_auth_backends_cache()
         flush_per_request_caches()
         translation.activate(settings.LANGUAGE_CODE)
+
+        # Clean up after using fakeldap in ldap tests:
+        if hasattr(self, 'mock_ldap') and hasattr(self, 'mock_initialize'):
+            if self.mock_ldap is not None:
+                self.mock_ldap.reset()
+            self.mock_initialize.stop()
 
     '''
     WRAPPER_COMMENT:
@@ -724,6 +731,53 @@ class ZulipTestCase(TestCase):
         return [
             r for r in data
             if r['id'] == db_id][0]
+
+    def init_default_ldap_database(self) -> None:
+        """
+        Takes care of the mock_ldap setup, loads
+        a directory from zerver/tests/fixtures/ldap/directory.json with various entries
+        to be used by tests.
+        If a test wants to specify its own directory, it can just replace
+        self.mock_ldap.directory with its own content, but in most cases it should be
+        enough to use change_user_attr to make simple modifications to the pre-loaded
+        directory. If new user entries are needed to test for some additional unusual
+        scenario, it's most likely best to add that to directory.json.
+        """
+        directory = ujson.loads(self.fixture_data("directory.json", type="ldap"))
+
+        # Load binary attributes. If in "directory", an attribute as its value
+        # has a string starting with "file:", the rest of the string is assumed
+        # to be a path to the file from which binary data should be loaded,
+        # as the actual value of the attribute in ldap.
+        for dn, attrs in directory.items():
+            for attr, value in attrs.items():
+                if isinstance(value, str) and value.startswith("file:"):
+                    with open(value[5:], 'rb') as f:
+                        attrs[attr] = [f.read(), ]
+
+        ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+        self.mock_initialize = ldap_patcher.start()
+        self.mock_ldap = MockLDAP(directory)
+        self.mock_initialize.return_value = self.mock_ldap
+
+    def change_ldap_user_attr(self, username: str, attr_name: str, attr_value: Union[str, bytes],
+                              binary: bool=False) -> None:
+        """
+        Method for changing the value of an attribute of a user entry in the mock
+        directory. Use option binary=True if you want binary data to be loaded
+        into the attribute from a file specified at attr_value. This changes
+        the attribute only for the specific test function that calls this method,
+        and is isolated from other tests.
+        """
+        dn = "uid={username},ou=users,dc=zulip,dc=com".format(username=username)
+        if binary:
+            with open(attr_value, "rb") as f:
+                # attr_value should be a path to the file with the binary data
+                data = f.read()  # type: Union[str, bytes]
+        else:
+            data = attr_value
+
+        self.mock_ldap.directory[dn][attr_name] = [data, ]
 
 class WebhookTestCase(ZulipTestCase):
     """

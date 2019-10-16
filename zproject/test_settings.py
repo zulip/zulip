@@ -69,6 +69,8 @@ GOOGLE_OAUTH2_CLIENT_ID = "test_client_id"
 
 # Makes testing LDAP backend require less mocking
 AUTH_LDAP_ALWAYS_UPDATE_USER = False
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                   ldap.SCOPE_ONELEVEL, "(uid=%(user)s)")
 
 TEST_SUITE = True
 RATE_LIMITING = False

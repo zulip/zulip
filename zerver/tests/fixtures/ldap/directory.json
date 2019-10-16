@@ -1,0 +1,90 @@
+
+{
+    "ou=users,dc=zulip,dc=com": {
+        "ou": "users"
+    },
+
+    "uid=hamlet,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["King Hamlet"],
+        "uid": ["hamlet"],
+        "mail": ["hamlet@zulip.com"],
+        "userPassword": ["testing"],
+        "userAccountControl": ["512"],
+        "sn": ["Hamlet"],
+        "homePhone": ["123456789"],
+        "birthDate": ["1900-09-08"],
+        "jpegPhoto": "file:static/images/team/tim.png"
+    },
+
+    "uid=cordelia,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["Cordelia Lear"],
+        "uid": ["cordelia"],
+        "mail": ["cordelia@zulip.com"],
+        "userPassword": ["testing"],
+        "sn": ["Cordelia"]
+    },
+
+    "uid=letham,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["aaron"],
+        "uid": ["letham"],
+        "mail": ["aaron@zulip.com"],
+        "userPassword": ["testing"],
+        "sn": ["aaron"]
+    },
+
+    "uid=newuser,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["newuser"],
+        "userPassword": ["testing"],
+        "sn": ["shortname"],
+        "homePhone": ["a-new-number"],
+        "jpegPhoto": "file:static/images/team/tim.png"
+    },
+
+    "uid=newuser_splitname,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["Last"],
+        "uid": ["newuser_splitname"],
+        "userPassword": ["testing"],
+        "sn": ["First"]
+    },
+
+    "uid=newuser_with_email,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["newuser_with_email"],
+        "userPassword": ["testing"],
+        "sn": ["shortname"],
+        "mail": ["newuser_email@zulip.com"]
+    },
+
+    "uid=newuser_email_as_uid@zulip.com,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["newuser_email_as_uid@zulip.com"],
+        "userPassword": ["testing"],
+        "sn": ["shortname"]
+    },
+
+    "uid=user1_with_shared_email,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["user1_with_shared_email"],
+        "userPassword": ["testing"],
+        "sn": ["shortname"],
+        "mail": ["shared_email@zulip.com"]
+    },
+
+    "uid=user2_with_shared_email,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["user2_with_shared_email"],
+        "userPassword": ["testing"],
+        "sn": ["shortname"],
+        "mail": ["shared_email@zulip.com"]
+    }
+}
