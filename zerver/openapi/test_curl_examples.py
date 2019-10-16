@@ -37,6 +37,7 @@ exclude_list = [
     'get-user-groups.md',
     # Example files do not exist
     'upload-custom-emoji.md',
+    'upload-file.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:

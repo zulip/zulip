@@ -7,8 +7,15 @@ Upload a single file and get the corresponding URI.
 ## Usage examples
 
 {start_tabs}
+
 {tab|python}
+
 {generate_code_example(python)|/user_uploads:post|example}
+
+{tab|curl}
+
+{generate_code_example(curl)|/user_uploads:post|example}
+
 {end_tabs}
 
 ## Arguments

@@ -980,6 +980,7 @@ paths:
                 filename:
                   type: string
                   format: binary
+                  example: /path/to/file
       security:
       - basicAuth: []
       responses:
