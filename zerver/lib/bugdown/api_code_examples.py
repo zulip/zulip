@@ -188,6 +188,11 @@ def generate_curl_example(endpoint: str, method: str,
                                                                   curl_argument=True)
         lines.append(example_value)
 
+    if "requestBody" in openapi_entry:
+        properties = openapi_entry["requestBody"]["content"]["multipart/form-data"]["schema"]["properties"]
+        for key, property in properties.items():
+            lines.append('    -F "{}=@{}"'.format(key, property["example"]))
+
     for i in range(1, len(lines)-1):
         lines[i] = lines[i] + " \\"
 

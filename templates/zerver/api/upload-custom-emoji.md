@@ -16,11 +16,7 @@ organization.  Access to this endpoint depends on the
 
 {tab|curl}
 
-``` curl
-curl -X POST {{ api_url }}/v1/realm/emoji/{emoji_name} \
-    -F "data=@/path/to/img.png" \
-    -u USER_EMAIL:API_KEY
-```
+{generate_code_example(curl)|/realm/emoji/{emoji_name}:post|example}
 
 {end_tabs}
 

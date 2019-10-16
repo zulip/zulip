@@ -35,6 +35,8 @@ exclude_list = [
     'remove-linkifiers.md',
     # Endpoint does not accept bot requests
     'get-user-groups.md',
+    # Example files do not exist
+    'upload-custom-emoji.md',
 ]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
