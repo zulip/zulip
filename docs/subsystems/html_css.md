@@ -6,26 +6,10 @@ The Zulip application's CSS can be found in the `static/styles/`
 directory.  Zulip uses [Bootstrap](http://getbootstrap.com/) as its
 main third-party CSS library.
 
-Zulip currently does not use any CSS preprocessors, and is organized
-into several files.  For most pages, the CSS is combined into a single
-CSS file by the [static asset pipeline](../subsystems/front-end-build-process.md).
-
-The CSS files are:
-
-* `portico.css` - Main CSS for logged-out pages
-* `pygments.css` - CSS for Python syntax highlighting
-* `activity.css` - CSS for the `activity` app
-* `fonts.css` - Fonts for text in the Zulip app
-
-The CSS for the Zulip web application UI is primarily here:
-
-* `settings.css` - CSS for the Zulip settings (including organization settings) pages
-* `zulip.css` - CSS for the rest of the Zulip logged-in app
-* `media.css` - CSS for media queries (particularly related to screen width)
-
-We are in the process of [splitting zulip.css into several more
-files](https://github.com/zulip/zulip/issues/731); help with that
-project is very welcome!
+Zulip uses SCSS for its CSS files.  There are two high-level sections
+of CSS: the "portico" (logged-out pages like /help/, /login/, etc.),
+and the app.  The portico CSS lives under the `static/styles/portico`
+subdirectory.
 
 ## Editing Zulip CSS
 
@@ -37,6 +21,11 @@ CSS](https://developer.chrome.com/devtools/docs/dom-and-styles#styles)
 to learn about all the great tools that you can use to modify and test
 changes to CSS interactively in-browser (without even having the
 reload the page!).
+
+Zulip's development environment has hot code reloading configured, so
+changes made in source files will immediately take effect in open
+browser windows, either by live-updating the CSS or reloading the
+browser window (following backend changes).
 
 ## CSS Style guidelines
 

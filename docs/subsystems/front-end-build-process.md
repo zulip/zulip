@@ -29,6 +29,10 @@ and `tools/upgrade-zulip-from-git`) is responsible for orchestrating the
 webpack build, JS minification and a host of other steps for getting the assets
 ready for deployment.
 
+You can trace which source files are included in which HTML templates
+by comparing the `render_bundle` calls in the HTML templates under
+`templates/` with the bundles declared in `tools/webpack.assets.json`.
+
 ## Adding static files
 
 To add a static file to the app (JavaScript, TypeScript, CSS/Sass, images, etc),
