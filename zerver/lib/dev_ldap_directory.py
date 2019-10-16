@@ -49,7 +49,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
 
     return ldap_dir
 
-def init_fakeldap(directory: Optional[Dict[str, Dict[str, List[str]]]]=None) -> None:
+def init_fakeldap(directory: Optional[Dict[str, Dict[str, List[str]]]]=None) -> None:  # nocoverage
     # We only use this in development.  Importing mock inside
     # this function is an import time optimization, which
     # avoids the expensive import of the mock module (slow

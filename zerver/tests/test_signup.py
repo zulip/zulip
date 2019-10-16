@@ -18,7 +18,6 @@ from confirmation.models import Confirmation, create_confirmation_link, Multiuse
 from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR, check_subdomain_available
-from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.decorator import do_two_factor_login
 from zerver.views.auth import \
     redirect_and_log_into_subdomain, start_two_factor_auth
@@ -2493,14 +2492,8 @@ class UserSignUpTest(InviteUserBase):
         password = "testing"
         email = "newuser@zulip.com"
         subdomain = "zulip"
-        ldap_user_attr_map = {'full_name': 'fn'}
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ],
-                'fn': ['New LDAP fullname']
-            }
-        }
-        init_fakeldap(mock_directory)
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -2524,9 +2517,8 @@ class UserSignUpTest(InviteUserBase):
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+        ):
             result = self.client_get(confirmation_url)
             self.assertEqual(result.status_code, 200)
 
@@ -2551,18 +2543,12 @@ class UserSignUpTest(InviteUserBase):
             self.assert_not_in_success_response(['id_password'], result)
 
             # Test the TypeError exception handler
-            mock_directory = {
-                'uid=newuser,ou=users,dc=zulip,dc=com': {
-                    'userPassword': ['testing', ],
-                    'fn': None  # This will raise TypeError
-                }
-            }
-            init_fakeldap(mock_directory)
-            result = self.submit_reg_form_for_user(email,
-                                                   password,
-                                                   from_confirmation='1',
-                                                   # Pass HTTP_HOST for the target subdomain
-                                                   HTTP_HOST=subdomain + ".testserver")
+            with patch("zproject.backends.ZulipLDAPAuthBackendBase.get_mapped_name", side_effect=TypeError):
+                result = self.submit_reg_form_for_user(email,
+                                                       password,
+                                                       from_confirmation='1',
+                                                       # Pass HTTP_HOST for the target subdomain
+                                                       HTTP_HOST=subdomain + ".testserver")
             self.assert_in_success_response(["We just need you to do one last thing.",
                                              "newuser@zulip.com"],
                                             result)
@@ -2574,14 +2560,8 @@ class UserSignUpTest(InviteUserBase):
         password = "testing"
         email = "newuser@zulip.com"
         subdomain = "zulip"
-        ldap_user_attr_map = {'full_name': 'fn'}
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ],
-                'fn': ['New LDAP fullname']
-            }
-        }
-        init_fakeldap(mock_directory)
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -2635,23 +2615,6 @@ class UserSignUpTest(InviteUserBase):
             # EmailAuthBackend, there should be password field here.
             self.assert_in_success_response(['id_password'], result)
 
-            # Test the TypeError exception handler
-            mock_directory = {
-                'uid=newuser,ou=users,dc=zulip,dc=com': {
-                    'userPassword': ['testing', ],
-                    'fn': None  # This will raise TypeError
-                }
-            }
-            init_fakeldap(mock_directory)
-            result = self.submit_reg_form_for_user(email,
-                                                   password,
-                                                   from_confirmation='1',
-                                                   # Pass HTTP_HOST for the target subdomain
-                                                   HTTP_HOST=subdomain + ".testserver")
-            self.assert_in_success_response(["We just need you to do one last thing.",
-                                             "newuser@zulip.com"],
-                                            result)
-
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_end_to_end(self) -> None:
@@ -2659,16 +2622,9 @@ class UserSignUpTest(InviteUserBase):
         email = "newuser@zulip.com"
         subdomain = "zulip"
 
-        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
         full_name = 'New LDAP fullname'
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ],
-                'fn': [full_name],
-                'sn': ['shortname'],
-            }
-        }
-        init_fakeldap(mock_directory)
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -2682,10 +2638,8 @@ class UserSignUpTest(InviteUserBase):
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-
+        ):
             # Click confirmation link
             result = self.submit_reg_form_for_user(email,
                                                    password,
@@ -2727,18 +2681,11 @@ class UserSignUpTest(InviteUserBase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_split_full_name_mapping(self) -> None:
-        ldap_user_attr_map = {'first_name': 'fn', 'last_name': 'ln'}
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ],
-                'fn': ['First'],
-                'ln': ['Last'],
-            }
-        }
-        init_fakeldap(mock_directory)
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {'first_name': 'sn', 'last_name': 'cn'}
 
         subdomain = 'zulip'
-        email = 'newuser@zulip.com'
+        email = 'newuser_splitname@zulip.com'
         password = 'testing'
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -2752,10 +2699,8 @@ class UserSignUpTest(InviteUserBase):
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-
+        ):
             # Click confirmation link
             result = self.submit_reg_form_for_user(email,
                                                    password,
@@ -2791,31 +2736,19 @@ class UserSignUpTest(InviteUserBase):
         email = "newuser@zulip.com"
         subdomain = "zulip"
 
+        self.init_default_ldap_database()
         ldap_user_attr_map = {
-            'full_name': 'fn',
+            'full_name': 'cn',
             'short_name': 'sn',
-            'custom_profile_field__phone_number': 'phoneNumber',
-            'custom_profile_field__birthday': 'birthDate',
+            'custom_profile_field__phone_number': 'homePhone',
         }
         full_name = 'New LDAP fullname'
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ],
-                'fn': [full_name],
-                'sn': ['shortname'],
-                'phoneNumber': ['a-new-number', ],
-                'birthDate': ['1990-12-19', ],
-            }
-        }
-        init_fakeldap(mock_directory)
 
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-
+        ):
             self.login_with_return(email, password,
                                    HTTP_HOST=subdomain + ".testserver")
 
@@ -2825,13 +2758,9 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(user_profile.short_name, 'shortname')
 
             # Test custom profile fields are properly synced.
-            birthday_field = CustomProfileField.objects.get(realm=user_profile.realm, name='Birthday')
             phone_number_field = CustomProfileField.objects.get(realm=user_profile.realm, name='Phone number')
-            birthday_field_value = CustomProfileFieldValue.objects.get(user_profile=user_profile,
-                                                                       field=birthday_field)
             phone_number_field_value = CustomProfileFieldValue.objects.get(user_profile=user_profile,
                                                                            field=phone_number_field)
-            self.assertEqual(birthday_field_value.value, '1990-12-19')
             self.assertEqual(phone_number_field_value.value, 'a-new-number')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -2839,28 +2768,18 @@ class UserSignUpTest(InviteUserBase):
         password = "testing"
         email = "newuser@zulip.com"
 
+        self.init_default_ldap_database()
         ldap_user_attr_map = {
-            'full_name': 'fn',
+            'full_name': 'cn',
             'short_name': 'sn',
         }
-        full_name = 'New LDAP fullname'
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ],
-                'fn': [full_name],
-                'sn': ['shortname'],
-            }
-        }
-        init_fakeldap(mock_directory)
         do_create_realm('test', 'test', False)
 
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-
+        ):
             subdomain = "zulip"
             self.login_with_return(email, password,
                                    HTTP_HOST=subdomain + ".testserver")
@@ -2884,15 +2803,8 @@ class UserSignUpTest(InviteUserBase):
         email = "newuser@zulip.com"
         subdomain = "zulip"
 
-        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ],
-                'fn': ['New LDAP fullname'],
-                'sn': ['New LDAP shortname'],
-            }
-        }
-        init_fakeldap(mock_directory)
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -2906,10 +2818,8 @@ class UserSignUpTest(InviteUserBase):
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-
+        ):
             # Click confirmation link. This will 'authenticated_full_name'
             # session variable which will be used to set the fullname of
             # the user.
@@ -2933,19 +2843,12 @@ class UserSignUpTest(InviteUserBase):
                                                 'zproject.backends.EmailAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_signup_with_ldap_and_email_enabled_using_email(self) -> None:
-        password = "mynewpassword"
+        password = "nonldappassword"
         email = "newuser@zulip.com"
         subdomain = "zulip"
 
-        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ],
-                'fn': ['New LDAP fullname'],
-                'sn': ['New LDAP shortname'],
-            }
-        }
-        init_fakeldap(mock_directory)
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -2960,12 +2863,9 @@ class UserSignUpTest(InviteUserBase):
         # have a wrong password, then we refuse to create an account
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
-                # Important: This doesn't match the new user
                 LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-
+        ):
             result = self.submit_reg_form_for_user(
                 email,
                 password,
@@ -2989,12 +2889,9 @@ class UserSignUpTest(InviteUserBase):
         # database.
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
-                # Important: This doesn't match the new user
                 LDAP_APPEND_DOMAIN='example.com',
-                AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-
+        ):
             with patch('zerver.views.registration.logging.warning') as mock_warning:
                 result = self.submit_reg_form_for_user(
                     email,
@@ -3017,33 +2914,25 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(user_profile.full_name, 'Non-LDAP Full Name')
 
     def ldap_invite_and_signup_as(self, invite_as: int, streams: List[str]=['Denmark']) -> None:
-        ldap_user_attr_map = {'full_name': 'fn'}
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing'],
-                'fn': ['LDAP Name'],
-            }
-        }
-        init_fakeldap(mock_directory)
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         subdomain = 'zulip'
-        email = self.nonreg_email('newuser')
+        email = 'newuser@zulip.com'
         password = 'testing'
-
-        # Invite user.
-        self.login(self.example_email('iago'))
-        response = self.invite(invitee_emails=self.nonreg_email('newuser'),
-                               stream_names=streams,
-                               invite_as=invite_as)
-        self.assert_json_success(response)
-        self.logout()
 
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+        ):
+            # Invite user.
+            self.login(self.example_email('iago'))
+            response = self.invite(invitee_emails='newuser@zulip.com',
+                                   stream_names=streams,
+                                   invite_as=invite_as)
+            self.assert_json_success(response)
+            self.logout()
 
             result = self.submit_reg_form_for_user(email,
                                                    password,
@@ -3124,14 +3013,9 @@ class UserSignUpTest(InviteUserBase):
         email = "newuser@zulip.com"
         subdomain = "zulip"
         realm_name = "Zulip"
-        ldap_user_attr_map = {'full_name': 'fn'}
-        mock_directory = {
-            'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ],
-                'fn': ['New User Name']
-            }
-        }
-        init_fakeldap(mock_directory)
+
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {'full_name': 'cn'}
 
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
@@ -3155,10 +3039,8 @@ class UserSignUpTest(InviteUserBase):
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
             LDAP_APPEND_DOMAIN='zulip.com',
-            AUTH_LDAP_BIND_PASSWORD='',
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
             AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
-            AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
             TERMS_OF_SERVICE=False,
         ):
             result = self.client_get(confirmation_url)
