@@ -113,7 +113,7 @@ feed.
 
 For more details on the frontend, see our documentation on
 [translation](../translating/translating.md),
-[templates](../subsystems/html-templates.md),
+[templates](../subsystems/html-css.html#html-templates),
 [directory structure](../overview/directory-structure.md), and
 [the static asset pipeline](../subsystems/front-end-build-process.md).
 
