@@ -34,7 +34,7 @@ from zerver.views.auth import create_preregistration_user, redirect_and_log_into
     redirect_to_deactivation_notice, get_safe_redirect_to
 
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, \
-    ZulipLDAPExceptionOutsideDomain, email_auth_enabled
+    ZulipLDAPExceptionOutsideDomain, email_auth_enabled, ZulipLDAPAuthBackend
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     validate_key, create_confirmation_link, get_object_from_key, \
@@ -155,7 +155,13 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                         # go through this interstitial.
                         form = RegistrationForm({'full_name': ldap_full_name},
                                                 realm_creation=realm_creation)
-                        require_ldap_password = True
+
+                        # Check whether this is ZulipLDAPAuthBackend,
+                        # which is responsible for authentication and
+                        # requires that LDAP accounts enter their LDAP
+                        # password to register, or ZulipLDAPUserPopulator,
+                        # which just populates UserProfile fields (no auth).
+                        require_ldap_password = isinstance(backend, ZulipLDAPAuthBackend)
                         break
                     except TypeError:
                         # Let the user fill out a name and/or try another backend

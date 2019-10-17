@@ -2567,6 +2567,91 @@ class UserSignUpTest(InviteUserBase):
                                              "newuser@zulip.com"],
                                             result)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
+                                                'zproject.backends.ZulipLDAPUserPopulator',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_ldap_populate_only_registration_from_confirmation(self) -> None:
+        password = "testing"
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+        ldap_user_attr_map = {'full_name': 'fn'}
+        mock_directory = {
+            'uid=newuser,ou=users,dc=zulip,dc=com': {
+                'userPassword': ['testing', ],
+                'fn': ['New LDAP fullname']
+            }
+        }
+        init_fakeldap(mock_directory)
+
+        with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
+            result = self.client_post('/register/', {'email': email})
+
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+        # Visit the confirmation link.
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email in message.to:
+                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + r"(\S+)>")
+                confirmation_url = confirmation_link_pattern.search(
+                    message.body).groups()[0]
+                break
+        else:
+            raise AssertionError("Couldn't find a confirmation email.")
+
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            result = self.client_get(confirmation_url)
+            self.assertEqual(result.status_code, 200)
+
+            # Full name should be set from LDAP
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   full_name="Ignore",
+                                                   from_confirmation="1",
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+
+            self.assert_in_success_response(["We just need you to do one last thing.",
+                                             "New LDAP fullname",
+                                             "newuser@zulip.com"],
+                                            result)
+
+            # Verify that the user is asked for name
+            self.assert_in_success_response(['id_full_name'], result)
+            # Verify that user is NOT asked for its LDAP/Active Directory password.
+            # LDAP is not configured for authentication in this test.
+            self.assert_not_in_success_response(['Enter your LDAP/Active Directory password.',
+                                                 'ldap-password'], result)
+            # If we were using e.g. the SAML auth backend, there
+            # shouldn't be a password prompt, but since it uses the
+            # EmailAuthBackend, there should be password field here.
+            self.assert_in_success_response(['id_password'], result)
+
+            # Test the TypeError exception handler
+            mock_directory = {
+                'uid=newuser,ou=users,dc=zulip,dc=com': {
+                    'userPassword': ['testing', ],
+                    'fn': None  # This will raise TypeError
+                }
+            }
+            init_fakeldap(mock_directory)
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   from_confirmation='1',
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            self.assert_in_success_response(["We just need you to do one last thing.",
+                                             "newuser@zulip.com"],
+                                            result)
+
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_end_to_end(self) -> None:
