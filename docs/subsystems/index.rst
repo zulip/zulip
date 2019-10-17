@@ -7,6 +7,7 @@ Subsystems Documentation
 
    dependencies
    settings
+   html-css
    events-system
    sending-messages
    queuing
@@ -19,7 +20,6 @@ Subsystems Documentation
    front-end-build-process
    schema-migrations
    migration-renumbering
-   html_css
    hashchange-system
    emoji
    hotspots
@@ -27,7 +27,6 @@ Subsystems Documentation
    auth
    email
    analytics
-   html-templates
    client
    logging
    typing-indicators

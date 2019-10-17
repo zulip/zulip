@@ -463,7 +463,8 @@ class ZulipTestCase(TestCase):
         )
 
     def send_stream_message(self, sender_email: str, stream_name: str, content: str="test content",
-                            topic_name: str="test", sender_realm: str="zulip") -> int:
+                            topic_name: str="test", sender_realm: str="zulip",
+                            recipient_realm: Optional[Realm]=None) -> int:
         sender = get_user(sender_email, get_realm(sender_realm))
 
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
@@ -474,6 +475,7 @@ class ZulipTestCase(TestCase):
             stream_name=stream_name,
             topic=topic_name,
             body=content,
+            realm=recipient_realm,
         )
 
     def get_messages_response(self, anchor: int=1, num_before: int=100, num_after: int=100,
