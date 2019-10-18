@@ -51,6 +51,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
     def tearDown(self) -> None:
         settings.LOGGING_ENABLED = True
+        super().tearDown()
 
     def get_admin_zulip_handler(self) -> AdminNotifyHandler:
         return [

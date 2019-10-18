@@ -110,3 +110,4 @@ class TestQueueImplementation(ZulipTestCase):
     def tearDown(self) -> None:
         queue_client = get_queue_client()
         queue_client.drain_queue("test_suite")
+        super().tearDown()
