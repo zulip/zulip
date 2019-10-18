@@ -20,13 +20,7 @@ including:
 
 {tab|curl}
 
-``` curl
-curl -X PATCH {{ api_url }}/v1/streams/{stream_id} \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'new_name="Manchester United"' \
-    -d 'description="Biggest club in the world"' \
-    -d 'is_private=false'
-```
+{generate_code_example(curl, include=["new_name", "description", "is_private"])|/streams/{stream_id}:patch|example}
 
 {end_tabs}
 

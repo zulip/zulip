@@ -140,6 +140,8 @@ cURL example.""".format(endpoint, method, param_name)
         example_value = param.get("example", DEFAULT_EXAMPLE[param["schema"]["type"]])
         if type(example_value) == bool:
             example_value = str(example_value).lower()
+        if param["schema"].get("format", "") == "json":
+            example_value = json.dumps(example_value)
         if curl_argument:
             return "    -d '{}={}'".format(param_name, example_value)
         return example_value

@@ -2502,6 +2502,7 @@ paths:
         description: The new description for the stream.
         schema:
           type: string
+          format: json
         example: "This stream is related to football dicsussions."
         required: false
       - name: new_name
@@ -2509,6 +2510,7 @@ paths:
         description: The new name for the stream.
         schema:
           type: string
+          format: json
         example: "Italy"
         required: false
       - name: is_private
