@@ -126,6 +126,16 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_admin(user_data[2]), True)
         self.assertEqual(get_admin(user_data[3]), False)
 
+    def test_get_guest(self) -> None:
+        data = [{'is_restricted': True, 'is_ultra_restricted': True},
+                {'is_restricted': True, 'is_ultra_restricted': False},
+                {'is_restricted': False, 'is_ultra_restricted': True},
+                {'is_restricted': False, 'is_ultra_restricted': False}]
+        self.assertEqual(get_guest(data[0]), True)
+        self.assertEqual(get_guest(data[1]), True)
+        self.assertEqual(get_guest(data[2]), True)
+        self.assertEqual(get_guest(data[3]), False)
+
     def test_get_timezone(self) -> None:
         user_chicago_timezone = {"tz": "America/Chicago"}
         user_timezone_none = {"tz": None}
@@ -767,15 +777,3 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(uploads_list[0]['s3_path'], image_path)
         self.assertEqual(uploads_list[0]['realm_id'], realm_id)
         self.assertEqual(uploads_list[0]['user_profile_email'], 'alice@example.com')
-
-        def test_get_guest(self) -> None:
-            user_data = [{'is_restricted' : True, 'is_ultra_restricted' : True},
-                        {'is_restricted' : True, 'is_ultra_restricted' : False},
-                        {'is_restricted' : False, 'is_ultra_restricted' : True},
-                        {'is_restricted' : False, 'is_ultra_restricted' : False}
-                     ]
-        
-        self.assertEqual(get_guest(user_data[0]), True)
-        self.assertEqual(get_guest(user_data[1]), True)
-        self.assertEqual(get_guest(user_data[2]), True)
-        self.assertEqual(get_guest(user_data[3]), False)
