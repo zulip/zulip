@@ -2185,6 +2185,7 @@ paths:
         description: Notification sound name.
         schema:
           type: string
+          format: json
         example: ding
       - name: enable_desktop_notifications
         in: query

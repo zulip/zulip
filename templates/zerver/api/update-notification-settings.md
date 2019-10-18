@@ -14,21 +14,8 @@ per-stream notification settings.
 {generate_code_example(python)|/settings/notifications:patch|example}
 
 {tab|curl}
-``` curl
-curl -X PATCH {{ api_url }}/v1/settings/notifications \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "enable_stream_desktop_notifications=true" \
-    -d "enable_stream_email_notifications=true" \
-    -d "enable_stream_push_notifications=true" \
-    -d "enable_stream_sounds=true" \
-    -d "enable_desktop_notifications=true" \
-    -d "enable_sounds=true" \
-    -d "enable_offline_email_notifications=true" \
-    -d "enable_offline_push_notifications=true" \
-    -d "enable_online_push_notifications=true" \
-    -d "enable_digest_emails=true" \
-    -d "message_content_in_email_notifications=true"
-```
+
+{generate_code_example(curl, include=["enable_offline_push_notifications", "enable_online_push_notifications"])|/settings/notifications:patch|example}
 
 {end_tabs}
 

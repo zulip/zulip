@@ -782,6 +782,7 @@ markdown_docs_length_exclude = {
     "templates/zerver/api/incoming-webhooks-walkthrough.md",
     # This macro has a long indented URL
     "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
+    "templates/zerver/api/update-notification-settings.md",
     # These two are the same file and have some too-long lines for GitHub badges
     "README.md",
     "docs/overview/readme.md",

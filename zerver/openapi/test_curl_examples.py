@@ -36,6 +36,7 @@ exclude_list = [
     'remove-linkifiers.md',
     # Endpoint does not accept bot requests
     'get-user-groups.md',
+    'update-notification-settings.md',
     # Example files do not exist
     'upload-custom-emoji.md',
     'upload-file.md',
