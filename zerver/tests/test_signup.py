@@ -2480,7 +2480,7 @@ class UserSignUpTest(InviteUserBase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_from_confirmation(self) -> None:
-        password = "testing"
+        password = self.ldap_password()
         email = "newuser@zulip.com"
         subdomain = "zulip"
         self.init_default_ldap_database()
@@ -2548,7 +2548,7 @@ class UserSignUpTest(InviteUserBase):
                                                 'zproject.backends.ZulipLDAPUserPopulator',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_populate_only_registration_from_confirmation(self) -> None:
-        password = "testing"
+        password = self.ldap_password()
         email = "newuser@zulip.com"
         subdomain = "zulip"
         self.init_default_ldap_database()
@@ -2609,7 +2609,7 @@ class UserSignUpTest(InviteUserBase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_end_to_end(self) -> None:
-        password = "testing"
+        password = self.ldap_password()
         email = "newuser@zulip.com"
         subdomain = "zulip"
 
@@ -2677,7 +2677,7 @@ class UserSignUpTest(InviteUserBase):
 
         subdomain = 'zulip'
         email = 'newuser_splitname@zulip.com'
-        password = 'testing'
+        password = self.ldap_password()
         with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
 
@@ -2723,7 +2723,7 @@ class UserSignUpTest(InviteUserBase):
 
         This test verifies that flow.
         """
-        password = "testing"
+        password = self.ldap_password()
         email = "newuser@zulip.com"
         subdomain = "zulip"
 
@@ -2756,7 +2756,7 @@ class UserSignUpTest(InviteUserBase):
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_ldap_registration_multiple_realms(self) -> None:
-        password = "testing"
+        password = self.ldap_password()
         email = "newuser@zulip.com"
 
         self.init_default_ldap_database()
@@ -2790,7 +2790,7 @@ class UserSignUpTest(InviteUserBase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_when_names_changes_are_disabled(self) -> None:
-        password = "testing"
+        password = self.ldap_password()
         email = "newuser@zulip.com"
         subdomain = "zulip"
 
@@ -2910,7 +2910,7 @@ class UserSignUpTest(InviteUserBase):
 
         subdomain = 'zulip'
         email = 'newuser@zulip.com'
-        password = 'testing'
+        password = self.ldap_password()
 
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
@@ -2976,7 +2976,7 @@ class UserSignUpTest(InviteUserBase):
         """
         Test `name_changes_disabled` when we are not running under LDAP.
         """
-        password = "testing"
+        password = self.ldap_password()
         email = "newuser@zulip.com"
         subdomain = "zulip"
 
@@ -3000,7 +3000,7 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(user_profile.full_name, 'New Name')
 
     def test_realm_creation_through_ldap(self) -> None:
-        password = "testing"
+        password = self.ldap_password()
         email = "newuser@zulip.com"
         subdomain = "zulip"
         realm_name = "Zulip"
@@ -3415,7 +3415,7 @@ class TwoFactorAuthTest(ZulipTestCase):
         # type: (MagicMock) -> None
         token = 123456
         email = self.example_email('hamlet')
-        password = 'testing'
+        password = self.ldap_password()
 
         user_profile = self.example_user('hamlet')
         user_profile.set_password(password)
