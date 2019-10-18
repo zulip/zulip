@@ -721,6 +721,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def tearDown(self) -> None:
         destroy_uploads()
+        super().tearDown()
 
 
 class AvatarTest(UploadSerializeMixin, ZulipTestCase):
@@ -1073,6 +1074,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def tearDown(self) -> None:
         destroy_uploads()
+        super().tearDown()
 
 class EmojiTest(UploadSerializeMixin, ZulipTestCase):
     # While testing GIF resizing, we can't test if the final GIF has the same
@@ -1113,6 +1115,7 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
 
     def tearDown(self) -> None:
         destroy_uploads()
+        super().tearDown()
 
 class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
@@ -1244,6 +1247,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
     def tearDown(self) -> None:
         destroy_uploads()
+        super().tearDown()
 
 class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     night = False
@@ -1386,6 +1390,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def tearDown(self) -> None:
         destroy_uploads()
+        super().tearDown()
 
 class RealmNightLogoTest(RealmLogoTest):
     # Run the same tests as for RealmLogoTest, just with night mode enabled
@@ -1480,6 +1485,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def tearDown(self) -> None:
         destroy_uploads()
+        super().tearDown()
 
 
 class S3Test(ZulipTestCase):

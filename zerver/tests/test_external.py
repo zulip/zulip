@@ -55,6 +55,8 @@ class RateLimitTests(ZulipTestCase):
         settings.RATE_LIMITING = False
         remove_ratelimit_rule(1, 5)
 
+        super().tearDown()
+
     def send_api_message(self, email: str, content: str) -> HttpResponse:
         return self.api_post(email, "/api/v1/messages", {"type": "stream",
                                                          "to": "Verona",

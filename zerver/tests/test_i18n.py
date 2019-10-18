@@ -62,6 +62,7 @@ class TranslationTestCase(ZulipTestCase):
 
     def tearDown(self) -> None:
         translation.activate(settings.LANGUAGE_CODE)
+        super().tearDown()
 
     # e.g. self.client_post(url) if method is "post"
     def fetch(self, method: str, url: str, expected_status: int, **kwargs: Any) -> HttpResponse:
@@ -113,6 +114,7 @@ class TranslationTestCase(ZulipTestCase):
 class JsonTranslationTestCase(ZulipTestCase):
     def tearDown(self) -> None:
         translation.activate(settings.LANGUAGE_CODE)
+        super().tearDown()
 
     @mock.patch('zerver.lib.request._')
     def test_json_error(self, mock_gettext: Any) -> None:
