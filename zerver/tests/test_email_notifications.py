@@ -59,7 +59,7 @@ class TestFollowupEmails(ZulipTestCase):
         ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
-            self.login_with_return("newuser_email_as_uid@zulip.com", "testing")
+            self.login_with_return("newuser_email_as_uid@zulip.com", self.ldap_password())
             user = UserProfile.objects.get(email="newuser_email_as_uid@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
@@ -78,7 +78,7 @@ class TestFollowupEmails(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            self.login_with_return("newuser@zulip.com", "testing")
+            self.login_with_return("newuser@zulip.com", self.ldap_password())
 
             user = UserProfile.objects.get(email="newuser@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
@@ -98,7 +98,7 @@ class TestFollowupEmails(ZulipTestCase):
                 LDAP_EMAIL_ATTR='mail',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            self.login_with_return("newuser_with_email", "testing")
+            self.login_with_return("newuser_with_email", self.ldap_password())
             user = UserProfile.objects.get(email="newuser_email@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 

@@ -259,6 +259,13 @@ class ZulipTestCase(TestCase):
         me='me@zulip.com',
     )
 
+    example_user_ldap_username_map = dict(
+        hamlet='hamlet',
+        cordelia='cordelia',
+        # aaron's uid in our test directory is "letham".
+        aaron='letham',
+    )
+
     def nonreg_user(self, name: str) -> UserProfile:
         email = self.nonreg_user_map[name]
         return get_user(email, get_realm("zulip"))
@@ -778,6 +785,18 @@ class ZulipTestCase(TestCase):
             data = attr_value
 
         self.mock_ldap.directory[dn][attr_name] = [data, ]
+
+    def ldap_username(self, username: str) -> str:
+        """
+        Maps zulip username to the name of the corresponding ldap user
+        in our test directory at zerver/tests/fixtures/ldap/directory.json,
+        if the ldap user exists.
+        """
+        return self.example_user_ldap_username_map[username]
+
+    def ldap_password(self) -> str:
+        # Currently all ldap users have password "testing"
+        return "testing"
 
 class WebhookTestCase(ZulipTestCase):
     """

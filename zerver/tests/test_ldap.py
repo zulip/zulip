@@ -36,13 +36,15 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
 
     def test_django_to_ldap_username_with_email_search(self) -> None:
         with self.settings():
-            self.assertEqual(self.backend.django_to_ldap_username("hamlet"), "hamlet")
-            self.assertEqual(self.backend.django_to_ldap_username("hamlet@zulip.com"), "hamlet")
+            self.assertEqual(self.backend.django_to_ldap_username("hamlet"),
+                             self.ldap_username("hamlet"))
+            self.assertEqual(self.backend.django_to_ldap_username("hamlet@zulip.com"),
+                             self.ldap_username("hamlet"))
             # If there are no matches through the email search, return the email unchanged:
             self.assertEqual(self.backend.django_to_ldap_username("no_such_email@example.com"),
                              "no_such_email@example.com")
-            # aaron has uid=letham in our test directory:
-            self.assertEqual(self.backend.django_to_ldap_username("aaron@zulip.com"), "letham")
+            self.assertEqual(self.backend.django_to_ldap_username("aaron@zulip.com"),
+                             self.ldap_username("aaron"))
 
             with mock.patch("zproject.backends.logging.warning") as mock_warn:
                 self.assertEqual(
@@ -75,20 +77,25 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
         # Without email search, can't login via ldap:
         with self.settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=None, LDAP_EMAIL_ATTR='mail'):
             # Using hamlet's ldap password fails without email search:
-            self.assertEqual(authenticate(username=user_profile.email, password="testing", realm=realm),
-                             None)
+            self.assertEqual(
+                authenticate(username=user_profile.email, password=self.ldap_password(), realm=realm),
+                None)
             # Need hamlet's zulip password to login (via email backend)
-            self.assertEqual(authenticate(username=user_profile.email, password="testpassword", realm=realm),
-                             user_profile)
+            self.assertEqual(
+                authenticate(username=user_profile.email, password="testpassword", realm=realm),
+                user_profile)
             # To login via ldap, username needs to be the ldap username, not email:
-            self.assertEqual(authenticate(username="hamlet", password="testing", realm=realm),
-                             user_profile)
+            self.assertEqual(
+                authenticate(username=self.ldap_username("hamlet"), password=self.ldap_password(),
+                             realm=realm),
+                user_profile)
 
         # With email search:
         with self.settings(LDAP_EMAIL_ATTR='mail'):
             # Ldap password works now:
-            self.assertEqual(authenticate(username=user_profile.email, password="testing", realm=realm),
-                             user_profile)
+            self.assertEqual(
+                authenticate(username=user_profile.email, password=self.ldap_password(), realm=realm),
+                user_profile)
 
     @override_settings(LDAP_EMAIL_ATTR='mail', LDAP_DEACTIVATE_NON_MATCHING_USERS=True)
     def test_sync_user_from_ldap_with_email_attr(self) -> None:
