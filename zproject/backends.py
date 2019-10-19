@@ -1105,6 +1105,10 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     standard_relay_params = ["subdomain", "multiuse_object_key", "mobile_flow_otp",
                              "next", "is_signup"]
     REDIS_EXPIRATION_SECONDS = 60 * 15
+    # Organization which go through the trouble of setting up SAML are most likely
+    # to have it as their main authentication method, so it seems appropriate to have
+    # SAML buttons at the top.
+    sort_order = 9999
 
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to
