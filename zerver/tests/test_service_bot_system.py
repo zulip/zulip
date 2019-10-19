@@ -170,6 +170,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
 class TestServiceBotStateHandler(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user("othello")
         self.bot_profile = do_create_user(email="embedded-bot-1@zulip.com",
                                           password="test",
@@ -350,6 +351,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
 class TestServiceBotConfigHandler(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user("othello")
         self.bot_profile = self.create_test_bot('embedded', self.user_profile,
                                                 full_name='Embedded bot',
@@ -406,6 +408,7 @@ class TestServiceBotConfigHandler(ZulipTestCase):
 class TestServiceBotEventTriggers(ZulipTestCase):
 
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user("othello")
         self.bot_profile = do_create_user(email="foo-bot@zulip.com",
                                           password="test",

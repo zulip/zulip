@@ -48,6 +48,7 @@ class MITNameTest(ZulipTestCase):
 class RateLimitTests(ZulipTestCase):
 
     def setUp(self) -> None:
+        super().setUp()
         settings.RATE_LIMITING = True
         add_ratelimit_rule(1, 5)
 

@@ -1264,6 +1264,7 @@ class InactiveUserTest(ZulipTestCase):
 
 class TestIncomingWebhookBot(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         zulip_realm = get_realm('zulip')
         self.webhook_bot = get_user('webhook-bot@zulip.com', zulip_realm)
 
@@ -1281,6 +1282,7 @@ class TestIncomingWebhookBot(ZulipTestCase):
 
 class TestValidateApiKey(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         zulip_realm = get_realm('zulip')
         self.webhook_bot = get_user('webhook-bot@zulip.com', zulip_realm)
         self.default_bot = get_user('default-bot@zulip.com', zulip_realm)

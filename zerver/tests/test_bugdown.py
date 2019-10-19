@@ -250,6 +250,7 @@ class BugdownMiscTest(ZulipTestCase):
 
 class BugdownTest(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         bugdown.clear_state_for_testing()
 
     def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:

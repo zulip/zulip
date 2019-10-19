@@ -1809,6 +1809,7 @@ class SanitizeNameTests(TestCase):
 
 class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.realm = get_realm("zulip")
         self.user_profile = self.example_user('hamlet')
 
@@ -1878,6 +1879,7 @@ class ExifRotateTests(TestCase):
 
 class DecompressionBombTests(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.test_urls = {
             "/json/users/me/avatar": "Image size exceeds limit.",
             "/json/realm/logo": "Image size exceeds limit.",

@@ -797,6 +797,7 @@ class WebhookTestCase(ZulipTestCase):
         return get_user(self.TEST_USER_EMAIL, get_realm("zulip"))
 
     def setUp(self) -> None:
+        super().setUp()
         self.url = self.build_webhook_url()
 
     def api_stream_message(self, email: str, *args: Any, **kwargs: Any) -> HttpResponse:

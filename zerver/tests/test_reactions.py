@@ -383,6 +383,7 @@ class EmojiReactionBase(ZulipTestCase):
 
 class DefaultEmojiReactionTests(EmojiReactionBase):
     def setUp(self) -> None:
+        super().setUp()
         self.reaction_type = 'unicode_emoji'
         reaction_info = {
             'emoji_name': 'hamburger',
@@ -620,6 +621,7 @@ class ZulipExtraEmojiReactionTest(EmojiReactionBase):
 
 class RealmEmojiReactionTests(EmojiReactionBase):
     def setUp(self) -> None:
+        super().setUp()
         green_tick_emoji = RealmEmoji.objects.get(name="green_tick")
         self.default_reaction_info = {
             'emoji_name': 'green_tick',

@@ -72,6 +72,7 @@ class RetentionTestingBase(ZulipTestCase):
 
 class ArchiveMessagesTestingBase(RetentionTestingBase):
     def setUp(self) -> None:
+        super().setUp()
         self.zulip_realm = get_realm('zulip')
         self.mit_realm = get_realm('zephyr')
         self._set_realm_message_retention_value(self.zulip_realm, ZULIP_REALM_DAYS)
@@ -471,6 +472,7 @@ class TestArchivingReactions(ArchiveMessagesTestingBase, EmojiReactionBase):
 
 class MoveMessageToArchiveBase(RetentionTestingBase):
     def setUp(self) -> None:
+        super().setUp()
         self.sender = 'hamlet@zulip.com'
         self.recipient = 'cordelia@zulip.com'
 

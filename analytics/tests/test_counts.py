@@ -37,6 +37,7 @@ class AnalyticsTestCase(TestCase):
     TIME_LAST_HOUR = TIME_ZERO - HOUR
 
     def setUp(self) -> None:
+        super().setUp()
         self.default_realm = Realm.objects.create(
             string_id='realmtest', name='Realm Test', date_created=self.TIME_ZERO - 2*self.DAY)
         # used to generate unique names in self.create_*

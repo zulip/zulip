@@ -333,6 +333,7 @@ class AboutPageTest(ZulipTestCase):
         would not have the `static/generated/github-contributors.json` fixture
         file.
         """
+        super().setUp()
         # This block has unreliable test coverage due to the implicit
         # caching here, so we exclude it from coverage.
         if not os.path.exists(static_path('generated/github-contributors.json')):

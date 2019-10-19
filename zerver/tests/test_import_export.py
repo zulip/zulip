@@ -220,6 +220,7 @@ class QueryUtilTest(ZulipTestCase):
 class ImportExportTest(ZulipTestCase):
 
     def setUp(self) -> None:
+        super().setUp()
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
     def _make_output_dir(self) -> str:

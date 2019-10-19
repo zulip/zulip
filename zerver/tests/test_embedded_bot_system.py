@@ -13,6 +13,7 @@ import ujson
 
 class TestEmbeddedBotMessaging(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user("othello")
         self.bot_profile = self.create_test_bot('embedded', self.user_profile,
                                                 full_name='Embedded bot',

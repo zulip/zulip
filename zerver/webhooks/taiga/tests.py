@@ -8,6 +8,7 @@ class TaigaHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'taiga'
 
     def setUp(self) -> None:
+        super().setUp()
         self.url = self.build_webhook_url(topic=self.TOPIC)
 
     def test_taiga_userstory_deleted(self) -> None:

@@ -39,6 +39,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
     logger = logging.getLogger('django')
 
     def setUp(self) -> None:
+        super().setUp()
         self.handler = AdminNotifyHandler()
         # Prevent the exceptions we're going to raise from being printed
         # You may want to disable this when debugging tests

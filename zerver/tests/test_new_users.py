@@ -111,6 +111,7 @@ class SendLoginEmailTest(ZulipTestCase):
 class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
 
     def setUp(self) -> None:
+        super().setUp()
         self.user_agents = [
             ('mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
                 'Chrome/54.0.2840.59 Safari/537.36', 'Chrome', 'Linux',),

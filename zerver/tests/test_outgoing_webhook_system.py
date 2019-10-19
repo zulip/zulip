@@ -38,6 +38,7 @@ service_handler = GenericOutgoingWebhookService(None, None, None)
 
 class DoRestCallTests(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         realm = get_realm("zulip")
         user_profile = get_user("outgoing-webhook@zulip.com", realm)
         self.mock_event = {
@@ -139,6 +140,7 @@ I'm a generic exception :(
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user("othello")
         self.bot_profile = self.create_test_bot('outgoing-webhook', self.user_profile,
                                                 full_name='Outgoing Webhook bot',

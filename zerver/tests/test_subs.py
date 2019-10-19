@@ -1985,6 +1985,7 @@ class SubscriptionAPITest(ZulipTestCase):
         All tests will be logged in as hamlet. Also save various useful values
         as attributes that tests can access.
         """
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.test_email = self.user_profile.email
         self.test_user = self.user_profile
@@ -3298,6 +3299,7 @@ class GetPublicStreamsTest(ZulipTestCase):
 
 class StreamIdTest(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
         self.login(self.email)
@@ -3406,6 +3408,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
 class GetSubscribersTest(ZulipTestCase):
 
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
         self.login(self.email)

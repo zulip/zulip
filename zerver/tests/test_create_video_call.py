@@ -5,6 +5,7 @@ from typing import Dict
 
 class TestFeedbackBot(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email, realm=user_profile.realm)
 
