@@ -11,6 +11,7 @@ import ujson
 # complicated hotspots logic.
 class TestGetNextHotspots(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user = do_create_user(
             'user@zulip.com', 'password', get_realm('zulip'), 'user', 'user')
 

@@ -11,6 +11,7 @@ from zerver.models import Attachment
 
 class AttachmentsTests(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         user_profile = self.example_user('cordelia')
         self.attachment = Attachment.objects.create(
             file_name='test.txt', path_id='foo/bar/test.txt', owner=user_profile)

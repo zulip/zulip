@@ -85,6 +85,7 @@ def first_visible_id_as(message_id: int) -> Any:
 
 class NarrowBuilderTest(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.realm = get_realm('zulip')
         self.user_profile = self.example_user('hamlet')
         self.builder = NarrowBuilder(self.user_profile, column('id'))

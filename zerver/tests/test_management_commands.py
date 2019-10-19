@@ -39,6 +39,7 @@ class TestCheckConfig(ZulipTestCase):
 
 class TestZulipBaseCommand(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.zulip_realm = get_realm("zulip")
         self.command = ZulipBaseCommand()
 
@@ -162,6 +163,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 class TestCommandsCanStart(TestCase):
 
     def setUp(self) -> None:
+        super().setUp()
         self.commands = filter(
             lambda filename: filename != '__init__',
             map(
@@ -185,6 +187,7 @@ class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
 
     def setUp(self) -> None:
+        super().setUp()
         self.fixture_path = os.path.join('some', 'fake', 'path.json')
         self.url = '/some/url/with/hook'
 

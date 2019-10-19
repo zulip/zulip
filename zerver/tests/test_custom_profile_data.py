@@ -16,6 +16,7 @@ import mock
 
 class CustomProfileFieldTestCase(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.realm = get_realm("zulip")
         self.original_count = len(custom_profile_fields_for_realm(self.realm.id))
 

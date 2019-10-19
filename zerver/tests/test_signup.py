@@ -1451,6 +1451,7 @@ class InvitationsTestCase(InviteUserBase):
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.email1 = "email1@zulip.com"
         self.email2 = "email2@zulip.com"
         self.email3 = "email3@zulip.com"
@@ -1477,6 +1478,7 @@ class InviteeEmailsParserTests(TestCase):
 
 class MultiuseInviteTest(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.realm = get_realm('zulip')
         self.realm.invite_required = True
         self.realm.save()

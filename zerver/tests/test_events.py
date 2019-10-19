@@ -3512,6 +3512,7 @@ class FetchQueriesTest(ZulipTestCase):
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
 
@@ -3553,6 +3554,7 @@ class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
 
 class TestEventsRegisterNarrowDefaults(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
         self.stream = get_stream('Verona', self.user_profile.realm)

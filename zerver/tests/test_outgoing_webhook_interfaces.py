@@ -16,6 +16,7 @@ from zerver.models import get_realm, get_user, SLACK_INTERFACE
 class TestGenericOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self) -> None:
+        super().setUp()
         self.event = {
             u'command': '@**test**',
             u'message': {
@@ -98,6 +99,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self) -> None:
+        super().setUp()
         self.stream_message_event = {
             u'command': '@**test**',
             u'user_profile_id': 12,

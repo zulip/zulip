@@ -542,6 +542,7 @@ class RealmTest(ZulipTestCase):
 class RealmAPITest(ZulipTestCase):
 
     def setUp(self) -> None:
+        super().setUp()
         user_profile = self.example_user('cordelia')
         email = user_profile.email
         self.login(email)

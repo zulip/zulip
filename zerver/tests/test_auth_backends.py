@@ -475,6 +475,7 @@ class SocialAuthBase(ZulipTestCase):
     __unittest_skip__ = True
 
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
         self.name = self.user_profile.full_name
@@ -1647,6 +1648,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
 
@@ -1673,6 +1675,7 @@ class JSONFetchAPIKeyTest(ZulipTestCase):
 
 class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
 
@@ -1726,6 +1729,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
 class DevFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
 

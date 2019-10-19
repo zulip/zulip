@@ -10,6 +10,7 @@ import ujson
 
 class TutorialTests(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         # This emulates the welcome message sent by the welcome bot to hamlet@zulip.com
         # This is only a quick fix - ideally, we would have this message sent by the initialization
         # code in populate_db.py

@@ -69,6 +69,7 @@ class TestStatsEndpoint(ZulipTestCase):
 
 class TestGetChartData(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.realm = get_realm('zulip')
         self.user = self.example_user('hamlet')
         self.login(self.user.email)

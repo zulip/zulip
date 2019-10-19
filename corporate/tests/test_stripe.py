@@ -213,6 +213,7 @@ class Kandra(object):  # nocoverage: TODO
 
 class StripeTestCase(ZulipTestCase):
     def setUp(self, *mocks: Mock) -> None:
+        super().setUp()
         # This test suite is not robust to users being added in populate_db. The following
         # hack ensures get_seat_count is fixed, even as populate_db changes.
         realm = get_realm('zulip')
@@ -963,6 +964,7 @@ class StripeTest(StripeTestCase):
 
 class RequiresBillingAccessTest(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         hamlet = self.example_user("hamlet")
         hamlet.is_billing_admin = True
         hamlet.save(update_fields=["is_billing_admin"])

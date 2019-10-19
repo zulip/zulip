@@ -1720,6 +1720,7 @@ class TestClearOnRead(ZulipTestCase):
 
 class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self) -> None:
+        super().setUp()
         self.user = self.example_user('cordelia')
 
     def test_receivers_online_notifications_when_user_is_a_bot(self) -> None:
