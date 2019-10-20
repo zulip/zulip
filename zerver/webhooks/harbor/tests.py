@@ -28,11 +28,11 @@ class HarborHookTests(WebhookTestCase):
         expected_message = """
 Image scan completed for `example/test:latest`. Vulnerabilities by severity:
 
-* High: 12
-* Medium: 16
-* Low: 7
-* Unknown: 2
-* None: 131
+* High: **12**
+* Medium: **16**
+* Low: **7**
+* Unknown: **2**
+* None: **131**
         """.strip()
 
         self.send_and_test_stream_message(
