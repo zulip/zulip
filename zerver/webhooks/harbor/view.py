@@ -73,7 +73,7 @@ def handle_scanning_completed_event(payload: Dict[str, Any],
     summaries_sorted = sorted(
         scan_summaries, key=lambda x: x["severity"], reverse=True)
     for scan_summary in summaries_sorted:
-        scan_results += u"* {}: {}\n".format(
+        scan_results += u"* {}: **{}**\n".format(
             VULNERABILITY_SEVERITY_NAME_MAP[scan_summary["severity"]], scan_summary["count"])
 
     return SCANNING_COMPLETED_TEMPLATE.format(
