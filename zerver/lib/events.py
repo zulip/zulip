@@ -56,13 +56,10 @@ from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 
-def get_raw_user_data(realm: Realm, user_profile: UserProfile,
-                      client_gravatar: bool) -> Dict[int, Dict[str, str]]:
-    user_dicts = get_realm_user_dicts(realm.id)
-
+def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
     # TODO: Consider optimizing this query away with caching.
     custom_profile_field_values = CustomProfileFieldValue.objects.select_related(
-        "field").filter(user_profile__realm_id=realm.id)
+        "field").filter(user_profile__realm_id=realm_id)
     profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
     for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
@@ -75,6 +72,15 @@ def get_raw_user_data(realm: Realm, user_profile: UserProfile,
             profiles_by_user_id[user_id][profile_field.field_id] = {
                 "value": profile_field.value
             }
+    return profiles_by_user_id
+
+
+def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: bool,
+                      include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
+    user_dicts = get_realm_user_dicts(realm.id)
+
+    if include_custom_profile_fields:
+        profiles_by_user_id = get_custom_profile_field_values(realm.id)
 
     def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
         avatar_url = get_avatar_field(
@@ -114,7 +120,8 @@ def get_raw_user_data(realm: Realm, user_profile: UserProfile,
             elif row['bot_owner_id'] is not None:
                 result['bot_owner_id'] = row['bot_owner_id']
         else:
-            result['profile_data'] = profiles_by_user_id.get(row['id'], {})
+            if include_custom_profile_fields:
+                result['profile_data'] = profiles_by_user_id.get(row['id'], {})
         return result
 
     return {
