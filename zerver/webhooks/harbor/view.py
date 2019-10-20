@@ -1,7 +1,5 @@
 # Webhooks for external integrations.
-import re
-import string
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Dict, Optional, Callable
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
@@ -11,7 +9,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
-from zerver.models import Realm, UserProfile, get_user_by_delivery_email
+from zerver.models import Realm, UserProfile
 
 IGNORED_EVENTS = [
     "downloadChart",
@@ -110,7 +108,7 @@ def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
 
     operator_username = u"**{}**".format(payload["operator"])
 
-    if operator_username is not "auto":
+    if operator_username != "auto":
         operator_profile = guess_zulip_user_from_harbor(
             operator_username, user_profile.realm)
 

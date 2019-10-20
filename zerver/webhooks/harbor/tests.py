@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from urllib.parse import quote, unquote
-
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.lib.users import get_api_key
-
 
 class HarborHookTests(WebhookTestCase):
     STREAM_NAME = "harbor"
