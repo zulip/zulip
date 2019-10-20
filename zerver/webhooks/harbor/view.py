@@ -47,7 +47,9 @@ def get_event_topic(payload: Dict[str, Any]) -> Optional[str]:
     return topic
 
 
-def handle_push_image_event(payload: Dict[str, Any], user_profile: UserProfile, operator_username: str) -> str:
+def handle_push_image_event(payload: Dict[str, Any],
+                            user_profile: UserProfile,
+                            operator_username: str) -> str:
     image_name = payload["event_data"]["repository"]["repo_full_name"]
     image_tag = payload["event_data"]["resources"][0]["tag"]
 
@@ -73,10 +75,13 @@ Image scan completed for `{image_name}:{image_tag}`. Vulnerabilities by severity
 """.strip()
 
 
-def handle_scanning_completed_event(payload: Dict[str, Any], user_profile: UserProfile, operator_username: str) -> str:
+def handle_scanning_completed_event(payload: Dict[str, Any],
+                                    user_profile: UserProfile,
+                                    operator_username: str) -> str:
     scan_results = u""
     scan_summaries = payload["event_data"]["resources"][0]["scan_overview"]["components"]["summary"]
-    summaries_sorted = sorted(scan_summaries, key=lambda x: x["severity"], reverse=True)
+    summaries_sorted = sorted(
+        scan_summaries, key=lambda x: x["severity"], reverse=True)
     for scan_summary in summaries_sorted:
         scan_results += u"* {}: {}\n".format(
             VULNERABILITY_SEVERITY_NAME_MAP[scan_summary["severity"]], scan_summary["count"])
@@ -117,6 +122,9 @@ def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
 
     event = get_event_type(payload)
     topic = get_event_topic(payload)
+
+    if not topic:
+        topic = "harbor"
 
     if event in IGNORED_EVENTS:
         return json_success()
