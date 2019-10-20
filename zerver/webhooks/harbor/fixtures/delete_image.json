@@ -1,0 +1,20 @@
+{
+    "type": "deleteImage",
+    "occur_at": 1571334977,
+    "event_data": {
+        "resources": [
+            {
+                "tag": "latest",
+                "resource_url": "harbor.example.com/example/test:latest"
+            }
+        ],
+        "repository": {
+            "date_created": 1571333978,
+            "name": "test",
+            "namespace": "example",
+            "repo_full_name": "example/test",
+            "repo_type": "private"
+        }
+    },
+    "operator": "admin"
+}

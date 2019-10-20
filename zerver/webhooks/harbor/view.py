@@ -1,5 +1,5 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Optional, Callable
+from typing import Any, Dict, Optional
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
@@ -32,19 +32,9 @@ def guess_zulip_user_from_harbor(harbor_username: str, realm: Realm) -> Optional
             Q(email__istartswith=harbor_username),
             is_active=True,
             realm=realm).order_by("id")[0]
-        return user
+        return user  # nocoverage
     except IndexError:
         return None
-
-
-def get_event_type(payload: Dict[str, Any]) -> Optional[str]:
-    event = payload["type"]
-    return event
-
-
-def get_event_topic(payload: Dict[str, Any]) -> Optional[str]:
-    topic = payload["event_data"]["repository"]["repo_full_name"]
-    return topic
 
 
 def handle_push_image_event(payload: Dict[str, Any],
@@ -99,13 +89,6 @@ EVENT_FUNCTION_MAPPER = {
 }
 
 
-def get_event_handler(event: Optional[str]) -> Optional[Callable[..., str]]:
-    if event is None:
-        return None
-
-    return EVENT_FUNCTION_MAPPER.get(event)
-
-
 @api_key_only_webhook_view("Harbor")
 @has_request_variables
 def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -118,18 +101,15 @@ def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
             operator_username, user_profile.realm)
 
     if operator_profile:
-        operator_username = u"@**{}**".format(operator_profile.full_name)
+        operator_username = u"@**{}**".format(operator_profile.full_name)  # nocoverage
 
-    event = get_event_type(payload)
-    topic = get_event_topic(payload)
-
-    if not topic:
-        topic = "harbor"
+    event = payload["type"]
+    topic = payload["event_data"]["repository"]["repo_full_name"]
 
     if event in IGNORED_EVENTS:
         return json_success()
 
-    content_func = get_event_handler(event)
+    content_func = EVENT_FUNCTION_MAPPER.get(event)
 
     if content_func is None:
         raise UnexpectedWebhookEventType('Harbor', event)
