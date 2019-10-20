@@ -638,6 +638,53 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertListEqual(content["custom_fields"],
                              sorted(content["custom_fields"], key=lambda x: -x["id"]))
 
+    def test_get_custom_profile_fields_from_api(self) -> None:
+        iago = self.example_user("iago")
+        test_bot = self.create_test_bot("foo-bot", iago)
+        assert(test_bot)
+
+        url = "/json/users?client_gravatar=false&include_custom_profile_fields=true"
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        raw_users_data = response.json()["members"]
+
+        iago_raw_data = None
+        test_bot_raw_data = None
+
+        for user_dict in raw_users_data:
+            if user_dict["user_id"] == iago.id:
+                iago_raw_data = user_dict
+                continue
+            if user_dict["user_id"] == test_bot.id:
+                test_bot_raw_data = user_dict
+                continue
+
+        if (not iago_raw_data) or (not test_bot_raw_data):
+            raise AssertionError("Could not find required data from the response.")
+
+        expected_keys_for_iago = {
+            "email", "user_id", "avatar_url", "is_admin", "is_guest", "is_bot",
+            "full_name", "timezone", "is_active", "date_joined", "bot_type", "profile_data"}
+        self.assertEqual(set(iago_raw_data.keys()), expected_keys_for_iago)
+        self.assertIsNone(iago_raw_data["bot_type"])  # the key should exist though
+        self.assertNotEqual(iago_raw_data["profile_data"], {})
+
+        expected_keys_for_test_bot = {
+            "email", "user_id", "avatar_url", "is_admin", "is_guest", "is_bot", "full_name",
+            "timezone", "is_active", "date_joined", "bot_type", "bot_owner_id"}
+        self.assertEqual(set(test_bot_raw_data.keys()), expected_keys_for_test_bot)
+        self.assertEqual(test_bot_raw_data["bot_type"], 1)
+        self.assertEqual(test_bot_raw_data["bot_owner_id"], iago_raw_data["user_id"])
+
+        url = "/json/users?client_gravatar=false"
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        raw_users_data = response.json()["members"]
+        for user_dict in raw_users_data:
+            with self.assertRaises(KeyError):
+                user_dict["profile_data"]
+
+
 class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_reorder(self) -> None:
         self.login(self.example_email("iago"))

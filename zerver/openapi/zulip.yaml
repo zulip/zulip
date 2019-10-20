@@ -1013,6 +1013,14 @@ paths:
           type: boolean
           default: false
         example: true
+      - name: include_custom_profile_fields
+        in: query
+        description: Set to `true` if the client wants custom profile field
+          data to be included in the response.
+        schema:
+          type: boolean
+          default: false
+        example: true
       security:
       - basicAuth: []
       responses:

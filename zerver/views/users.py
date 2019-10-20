@@ -9,6 +9,7 @@ from django.conf import settings
 
 from zerver.decorator import require_realm_admin, require_member_or_admin
 from zerver.forms import CreateUserForm
+from zerver.lib.events import get_raw_user_data
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
@@ -16,7 +17,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
     do_update_bot_config_data, check_change_bot_full_name, do_change_is_guest, \
     do_update_user_custom_profile_data_if_changed, check_remove_custom_profile_field_value
-from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
+from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
@@ -398,82 +399,27 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 
 @has_request_variables
 def get_members_backend(request: HttpRequest, user_profile: UserProfile,
-                        client_gravatar: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:
+                        include_custom_profile_fields: bool=REQ(validator=check_bool,
+                                                                default=False),
+                        client_gravatar: bool=REQ(validator=check_bool, default=False)
+                        ) -> HttpResponse:
     '''
     The client_gravatar field here is set to True if clients can compute
     their own gravatars, which saves us bandwidth.  We want to eventually
     make this the default behavior, but we have old clients that expect
     the server to compute this for us.
     '''
-
     realm = user_profile.realm
-
-    fields = [
-        'id',
-        'email',
-        'realm_id',
-        'full_name',
-        'is_bot',
-        'is_active',
-        'bot_type',
-        'role',
-        'avatar_source',
-        'avatar_version',
-        'bot_owner__email',
-        'timezone',
-    ]
     if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
-    include_delivery_email = user_profile.is_realm_admin
-    if include_delivery_email:
-        fields.append("delivery_email")
-        fields.append("bot_owner__delivery_email")
-
-    query = UserProfile.objects.filter(
-        realm_id=realm.id
-    ).values(*fields)
-
-    def get_member(row: Dict[str, Any]) -> Dict[str, Any]:
-        email = row['email']
-        user_id = row['id']
-
-        result = dict(
-            user_id=user_id,
-            email=email,
-            full_name=row['full_name'],
-            is_bot=row['is_bot'],
-            is_active=row['is_active'],
-            bot_type=row['bot_type'],
-            is_admin=row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR,
-            is_guest=row['role'] == UserProfile.ROLE_GUEST,
-            timezone=row['timezone'],
-        )
-
-        result['avatar_url'] = get_avatar_field(
-            user_id=user_id,
-            email=email,
-            avatar_source=row['avatar_source'],
-            avatar_version=row['avatar_version'],
-            realm_id=row['realm_id'],
-            medium=False,
-            client_gravatar=client_gravatar,
-        )
-
-        if row['bot_owner__email']:
-            result['bot_owner'] = row['bot_owner__email']
-
-        if include_delivery_email:
-            result['delivery_email'] = row['delivery_email']
-            if row['bot_owner__delivery_email']:
-                result['bot_owner_delivery_email'] = row['bot_owner__delivery_email']
-
-        return result
-
-    members = [get_member(row) for row in query]
-
-    return json_success({'members': members})
+    members = get_raw_user_data(realm,
+                                user_profile=user_profile,
+                                client_gravatar=client_gravatar,
+                                for_api=True,
+                                include_custom_profile_fields=include_custom_profile_fields)
+    return json_success({'members': members.values()})
 
 @require_realm_admin
 @has_request_variables

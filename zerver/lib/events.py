@@ -75,7 +75,8 @@ def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
     return profiles_by_user_id
 
 
-def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: bool,
+def get_raw_user_data(realm: Realm, user_profile: UserProfile,
+                      client_gravatar: bool, for_api: bool=False,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     user_dicts = get_realm_user_dicts(realm.id)
 
@@ -114,14 +115,18 @@ def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: 
                 user_profile.is_realm_admin):
             result['delivery_email'] = row['delivery_email']
 
+        if for_api:
+            # The API currently has a quirk that it expects to include
+            # a bot_type field even for human users; this field is
+            # invalid so we plan to eventually remove this.
+            result['bot_type'] = row['bot_type']
         if is_bot:
             if row['email'] in settings.CROSS_REALM_BOT_EMAILS:
                 result['is_cross_realm_bot'] = True
             elif row['bot_owner_id'] is not None:
                 result['bot_owner_id'] = row['bot_owner_id']
-        else:
-            if include_custom_profile_fields:
-                result['profile_data'] = profiles_by_user_id.get(row['id'], {})
+        elif include_custom_profile_fields:
+            result['profile_data'] = profiles_by_user_id.get(row['id'], {})
         return result
 
     return {
