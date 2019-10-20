@@ -1,4 +1,4 @@
-Get Zulip notifications for your Harbor projects!
+Get Zulip notifications for your [Harbor](https://goharbor.io/) projects!
 
 These instructions apply to Harbor version 1.9 or later.
 
