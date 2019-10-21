@@ -1,5 +1,5 @@
 import time
-from typing import Iterable, List, Optional, Sequence, Union
+from typing import Iterable, Optional, Sequence, Union
 
 import ujson
 from django.core.handlers.base import BaseHandler
@@ -50,16 +50,29 @@ def get_events(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler: BaseHandler,
-                       user_client: Optional[Client]=REQ(converter=get_client, default=None),
+                       # user_client is intended only for internal Django=>Tornado requests
+                       # and thus shouldn't be documented for external use.
+                       user_client: Optional[Client]=REQ(converter=get_client, default=None,
+                                                         intentionally_undocumented=True),
                        last_event_id: Optional[int]=REQ(converter=int, default=None),
-                       queue_id: Optional[List[str]]=REQ(default=None),
-                       apply_markdown: bool=REQ(default=False, validator=check_bool),
-                       client_gravatar: bool=REQ(default=False, validator=check_bool),
-                       all_public_streams: bool=REQ(default=False, validator=check_bool),
-                       event_types: Optional[str]=REQ(default=None, validator=check_list(check_string)),
+                       queue_id: Optional[str]=REQ(default=None),
+                       # apply_markdown, client_gravatar, all_public_streams, and various
+                       # other parameters are only used when registering a new queue via this
+                       # endpoint.  This is a feature used primarily by get_events_internal
+                       # and not expected to be used by third-party clients.
+                       apply_markdown: bool=REQ(default=False, validator=check_bool,
+                                                intentionally_undocumented=True),
+                       client_gravatar: bool=REQ(default=False, validator=check_bool,
+                                                 intentionally_undocumented=True),
+                       all_public_streams: bool=REQ(default=False, validator=check_bool,
+                                                    intentionally_undocumented=True),
+                       event_types: Optional[str]=REQ(default=None, validator=check_list(check_string),
+                                                      intentionally_undocumented=True),
                        dont_block: bool=REQ(default=False, validator=check_bool),
-                       narrow: Iterable[Sequence[str]]=REQ(default=[], validator=check_list(None)),
-                       lifespan_secs: int=REQ(default=0, converter=to_non_negative_int)
+                       narrow: Iterable[Sequence[str]]=REQ(default=[], validator=check_list(None),
+                                                           intentionally_undocumented=True),
+                       lifespan_secs: int=REQ(default=0, converter=to_non_negative_int,
+                                              intentionally_undocumented=True)
                        ) -> Union[HttpResponse, _RespondAsynchronously]:
     if user_client is None:
         valid_user_client = request.client

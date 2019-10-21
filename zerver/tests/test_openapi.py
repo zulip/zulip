@@ -232,11 +232,11 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/user_groups/{group_id}',  # Equivalent of what's in urls.py
         '/user_groups/{user_group_id}',  # What's in the OpenAPI docs
     ])
-    # TODO: These endpoints have a mismatch between the
-    # documentation and the actual API and need to be fixed:
+
+    # Endpoints where the documentation is currently failing our
+    # consistency tests.  We aim to keep this list empty.
     buggy_documentation_endpoints = set([
-        '/events',
-    ])
+    ])  # type: Set[str]
 
     def convert_regex_to_url_pattern(self, regex_pattern: str) -> str:
         """ Convert regular expressions style URL patterns to their
@@ -481,6 +481,16 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 else:
                     function_name, tags = value
 
+                if function_name == 'zerver.tornado.views.get_events':
+                    # Work around the fact that the registered
+                    # get_events view function isn't where we do
+                    # @has_request_variables.
+                    #
+                    # TODO: Make this configurable via an optional argument
+                    # to has_request_variables, e.g.
+                    # @has_request_variables(view_func_name="zerver.tornado.views.get_events")
+                    function_name = 'zerver.tornado.views.get_events_backend'
+
                 lookup_parts = function_name.split('.')
                 module = __import__('.'.join(lookup_parts[:-1]), {}, {}, [''])
                 function = getattr(module, lookup_parts[-1])
@@ -540,7 +550,7 @@ so maybe we shouldn't include it in pending_endpoints.
                     [parameter['name'] for parameter in openapi_parameters]
                 )
 
-                if len(accepted_arguments - openapi_parameter_names) > 0:
+                if len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
                     print("Undocumented parameters for",
                           url_pattern, method, function_name)
                     print(" +", openapi_parameter_names)
