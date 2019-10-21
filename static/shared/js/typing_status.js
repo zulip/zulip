@@ -85,7 +85,7 @@ export function maybe_ping_server(worker, recipient) {
     }
 }
 
-export function handle_text_input(worker, new_recipient, conversation_is_valid) {
+export function handle_text_input(worker, new_recipient) {
     var current_recipient = state.current_recipient;
     if (current_recipient) {
         // We need to use _.isEqual for comparisons; === doesn't work
@@ -107,7 +107,7 @@ export function handle_text_input(worker, new_recipient, conversation_is_valid) 
         stop_last_notification(worker);
     }
 
-    if (!conversation_is_valid) {
+    if (!new_recipient) {
         // If we are not talking to somebody we care about,
         // then there is no more action to take.
         return;

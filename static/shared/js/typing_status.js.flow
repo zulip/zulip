@@ -15,7 +15,6 @@ type Worker = {|
 declare export function handle_text_input(
   worker: Worker,
   new_recipient: RecipientUserIds | void,
-  conversation_is_valid: boolean
 ): void;
 
 declare export function stop(worker: Worker): void;

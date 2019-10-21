@@ -32,13 +32,7 @@ function get_user_ids_array() {
     return people.user_ids_string_to_ids_array(user_ids_string);
 }
 
-function is_valid_conversation(user_ids_array) {
-    // TODO: Check to make sure we're in a PM conversation
-    //       with valid emails.
-    if (!user_ids_array) {
-        return false;
-    }
-
+function is_valid_conversation() {
     var compose_empty = !compose_state.has_message_content();
     if (compose_empty) {
         return false;
@@ -70,9 +64,9 @@ exports.initialize = function () {
     $(document).on('input', '#compose-textarea', function () {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
-        var new_recipient = exports.get_recipient();
-        typing_status.handle_text_input(
-            worker, new_recipient, is_valid_conversation(new_recipient));
+        var new_recipient =
+          is_valid_conversation() ? exports.get_recipient() : undefined;
+        typing_status.handle_text_input(worker, new_recipient);
     });
 
     // We send a stop-typing notification immediately when compose is
