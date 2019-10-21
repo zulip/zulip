@@ -47,3 +47,9 @@ def iago_message_id() -> Dict[str, int]:
     return {
         "message_id": helpers.send_stream_message(helpers.example_email("iago"), "Denmark")
     }
+
+@openapi_param_value_generator(["/messages/{message_id}:patch"])
+def default_bot_message_id() -> Dict[str, int]:
+    return {
+        "message_id": helpers.send_stream_message("default-bot@zulip.com", "Denmark")
+    }
