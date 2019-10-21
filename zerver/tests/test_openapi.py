@@ -540,13 +540,13 @@ so maybe we shouldn't include it in pending_endpoints.
                     [parameter['name'] for parameter in openapi_parameters]
                 )
 
-                if len(openapi_parameter_names - accepted_arguments) > 0:
+                if len(accepted_arguments - openapi_parameter_names) > 0:
                     print("Undocumented parameters for",
                           url_pattern, method, function_name)
                     print(" +", openapi_parameter_names)
                     print(" -", accepted_arguments)
                     assert(url_pattern in self.buggy_documentation_endpoints)
-                elif len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
+                elif len(openapi_parameter_names - accepted_arguments) > 0:  # nocoverage
                     print("Documented invalid parameters for",
                           url_pattern, method, function_name)
                     print(" -", openapi_parameter_names)
