@@ -2099,6 +2099,11 @@ paths:
                       description: Each key-value pair in the object indicates
                         whether the authentication method is enabled on this
                         server.
+                    social_backends:
+                      type: array
+                      description: List of "social backend" objects, describing which
+                        social backends are enabled and their parameters - most importantly
+                        the login url, display_name and display_logo.
                     zulip_version:
                       type: string
                       description: The version of Zulip running in the server.
