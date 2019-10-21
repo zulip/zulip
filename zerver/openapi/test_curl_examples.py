@@ -8,12 +8,12 @@ import os
 from zulip import Client
 from zerver.lib.bugdown import api_code_examples
 from zerver.models import get_realm
+from zerver.openapi.curl_param_value_generators import REGISTERED_GENERATOR_FUNCTIONS, CALLED_GENERATOR_FUNCTIONS
 
 exclude_list = [
     # The endpoint in these docs expect one or more param values that reflects the DB state.
     # We currently get the example values from openapi specs and they don't refelect the
     # state of the DB. This results in the curl request to fail.
-    'get-raw-message.md',
     'update-message.md',
     'delete-message.md',
     'get-message-history.md',
@@ -111,3 +111,7 @@ To learn more about the test itself, see zerver/openapi/test_curl_examples.py.
                     curl_command=generated_curl_command,
                     response=json.dumps(response, indent=4)))
                 raise
+
+    if REGISTERED_GENERATOR_FUNCTIONS != CALLED_GENERATOR_FUNCTIONS:
+        raise Exception("Some registered generator functions were not called:\n"
+                        " " + str(REGISTERED_GENERATOR_FUNCTIONS - CALLED_GENERATOR_FUNCTIONS))

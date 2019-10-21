@@ -3,6 +3,8 @@ import argparse
 import os
 import sys
 
+os.environ["RUNNING_OPENAPI_CURL_TEST"] = "1"
+
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)

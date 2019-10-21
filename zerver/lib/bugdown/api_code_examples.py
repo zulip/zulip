@@ -2,6 +2,8 @@ import re
 import json
 import inspect
 
+from django.conf import settings
+
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing import Any, Dict, Optional, List, Tuple
@@ -9,6 +11,11 @@ import markdown
 
 import zerver.openapi.python_examples
 from zerver.lib.openapi import get_openapi_fixture, openapi_spec
+
+if settings.RUNNING_OPENAPI_CURL_TEST:  # nocoverage
+    from zerver.openapi.curl_param_value_generators import patch_openapi_params
+
+from django.conf import settings
 
 MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
 CODE_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
@@ -158,6 +165,9 @@ def generate_curl_example(endpoint: str, method: str,
     lines = ["```curl"]
     openapi_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
     openapi_params = openapi_entry.get("parameters", [])
+
+    if settings.RUNNING_OPENAPI_CURL_TEST:  # nocoverage
+        openapi_params = patch_openapi_params(endpoint + ":" + method.lower(), openapi_params)
 
     format_dict = {}
     for param in openapi_params:
