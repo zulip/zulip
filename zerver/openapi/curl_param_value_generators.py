@@ -2,6 +2,7 @@ from typing import Dict, Any, Callable, Set, List
 
 from functools import wraps
 
+from zerver.models import get_realm, get_user
 from zerver.lib.test_classes import ZulipTestCase
 
 GENERATOR_FUNCTIONS = dict()  # type: Dict[str, Callable[..., Dict[Any, Any]]]
@@ -52,4 +53,16 @@ def iago_message_id() -> Dict[str, int]:
 def default_bot_message_id() -> Dict[str, int]:
     return {
         "message_id": helpers.send_stream_message("default-bot@zulip.com", "Denmark")
+    }
+
+@openapi_param_value_generator(["/messages/flags:post"])
+def update_flags_message_ids() -> Dict[str, List[int]]:
+    stream_name = "Venice"
+    helpers.subscribe(get_user("default-bot@zulip.com", get_realm("zulip")), stream_name)
+
+    messages = []
+    for _ in range(3):
+        messages.append(helpers.send_stream_message(helpers.example_email("iago"), stream_name))
+    return {
+        "messages": messages,
     }

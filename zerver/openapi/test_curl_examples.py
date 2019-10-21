@@ -15,7 +15,6 @@ exclude_list = [
     # We currently get the example values from openapi specs and they don't refelect the
     # state of the DB. This results in the curl request to fail.
     'delete-message.md',
-    'update-message-flags.md',
     'mark-as-read-bulk.md',
     'update-subscription-properties.md',
     'remove-subscriptions.md',
