@@ -89,8 +89,9 @@ export function maybe_ping_server(worker, recipient) {
 
 export function handle_text_input(worker) {
     var new_recipient = worker.get_recipient();
-    var current_recipient = state.current_recipient;
+    var conversation_is_valid = worker.is_valid_conversation(new_recipient);
 
+    var current_recipient = state.current_recipient;
     if (current_recipient) {
         // We need to use _.isEqual for comparisons; === doesn't work
         // on arrays.
@@ -111,7 +112,7 @@ export function handle_text_input(worker) {
         stop_last_notification(worker);
     }
 
-    if (!worker.is_valid_conversation(new_recipient)) {
+    if (!conversation_is_valid) {
         // If we are not talking to somebody we care about,
         // then there is no more action to take.
         return;
