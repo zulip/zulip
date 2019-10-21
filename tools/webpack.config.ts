@@ -178,6 +178,36 @@ export default (env?: string): webpack.Configuration[] => {
                 }),
             ],
         },
+        plugins: [
+            new BundleTracker({
+                filename: production
+                    ? 'webpack-stats-production.json'
+                    : 'var/webpack-stats-dev.json',
+            }),
+            ...production
+                ? []
+                : [
+                    // Better logging from console for hot reload
+                    new webpack.NamedModulesPlugin(),
+                    // script-loader should load sourceURL in dev
+                    new webpack.LoaderOptionsPlugin({debug: true}),
+                ],
+            // Extract CSS from files
+            new MiniCssExtractPlugin({
+                filename: production
+                    ? (data) => {
+                        // This is a special case in order to produce
+                        // a static CSS file to be consumed by
+                        // static/html/5xx.html
+                        if (data.chunk.name === 'error-styles') {
+                            return 'error-styles.css';
+                        }
+                        return '[name].[contenthash].css';
+                    }
+                    : "[name].css",
+                chunkFilename: "[chunkhash].css",
+            }),
+        ],
     };
 
     // Expose Global variables for third party libraries to webpack modules
@@ -203,39 +233,9 @@ export default (env?: string): webpack.Configuration[] => {
     ];
     config.module.rules.unshift(...getExposeLoaders(exposeOptions));
 
-    if (production) {
-        config.plugins = [
-            new BundleTracker({filename: 'webpack-stats-production.json'}),
-            // Extract CSS from files
-            new MiniCssExtractPlugin({
-                filename: (data) => {
-                    // This is a special case in order to produce
-                    // a static CSS file to be consumed by
-                    // static/html/5xx.html
-                    if (data.chunk.name === 'error-styles') {
-                        return 'error-styles.css';
-                    }
-                    return '[name].[contenthash].css';
-                },
-                chunkFilename: "[chunkhash].css",
-            }),
-        ];
-    } else {
+    if (!production) {
         // Out JS debugging tools
         config.entry['common'].push('./static/js/debug.js');  // eslint-disable-line dot-notation
-
-        config.plugins = [
-            new BundleTracker({filename: 'var/webpack-stats-dev.json'}),
-            // Better logging from console for hot reload
-            new webpack.NamedModulesPlugin(),
-            // script-loader should load sourceURL in dev
-            new webpack.LoaderOptionsPlugin({debug: true}),
-            // Extract CSS from files
-            new MiniCssExtractPlugin({
-                filename: "[name].css",
-                chunkFilename: "[chunkhash].css",
-            }),
-        ];
         config.devServer = {
             clientLogLevel: "error",
             stats: "errors-only",
