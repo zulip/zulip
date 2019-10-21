@@ -188,6 +188,12 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
     post_params = []
 
     view_func_full_name = '.'.join([view_func.__module__, view_func.__name__])
+    if view_func_full_name == 'zerver.tornado.views.get_events_backend':
+        # Hack to help test_openapi find the has_request_variables
+        # data for get_events.  This is complex because of how
+        # get_events_backend, which parses the parameters, is wrapped
+        # by multiple callers that don't parse the parameters.
+        view_func_full_name = 'zerver.tornado.views.get_events'
 
     for (name, value) in zip(default_param_names, default_param_values):
         if isinstance(value, _REQ):
