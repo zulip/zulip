@@ -1,4 +1,4 @@
-# Restrict visibility of email addresses (beta)
+# Restrict visibility of email addresses
 
 {!admin-only.md!}
 
