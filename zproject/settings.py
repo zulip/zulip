@@ -100,6 +100,8 @@ TEST_SUITE = False
 TUTORIAL_ENABLED = True
 # This is overridden in test_settings.py for the test suites
 CASPER_TESTS = False
+# This is overridden in test_settings.py for the test suites
+RUNNING_OPENAPI_CURL_TEST = False
 
 # Google Compute Engine has an /etc/boto.cfg that is "nicely
 # configured" to work with GCE's storage service.  However, their

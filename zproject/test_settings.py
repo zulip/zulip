@@ -51,6 +51,9 @@ if "CASPER_TESTS" in os.environ:
     # Disable search pills prototype for production use
     SEARCH_PILLS_ENABLED = False
 
+if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
+    RUNNING_OPENAPI_CURL_TEST = True
+
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
 POLL_TIMEOUT = 1000

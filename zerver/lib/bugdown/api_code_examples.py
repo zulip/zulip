@@ -2,6 +2,8 @@ import re
 import json
 import inspect
 
+from django.conf import settings
+
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing import Any, Dict, Optional, List, Tuple
@@ -158,6 +160,10 @@ def generate_curl_example(endpoint: str, method: str,
     lines = ["```curl"]
     openapi_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
     openapi_params = openapi_entry.get("parameters", [])
+
+    if settings.RUNNING_OPENAPI_CURL_TEST:  # nocoverage
+        from zerver.openapi.curl_param_value_generators import patch_openapi_params
+        openapi_params = patch_openapi_params(endpoint + ":" + method.lower(), openapi_params)
 
     format_dict = {}
     for param in openapi_params:
