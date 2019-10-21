@@ -652,7 +652,7 @@ button.login-social-button:active {
     transform: translateX(15px) translateY(13px);
 }
 
-.azuread-wrapper::before {
+.azuread-oauth2-wrapper::before {
     content: "\f17a";
     position: absolute;
 
