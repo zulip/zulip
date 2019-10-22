@@ -1253,11 +1253,29 @@ def create_standard_social_backend_dict(social_backend: SocialAuthMixin) -> Soci
         sort_order=social_backend.sort_order
     )
 
+def list_saml_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
+    result = []  # type: List[SocialBackendDictT]
+    for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+        saml_dict = dict(
+            name='saml:{}'.format(idp_name),
+            display_name=idp_dict.get('display_name', SAMLAuthBackend.auth_backend_name),
+            display_logo=idp_dict.get('display_logo', SAMLAuthBackend.display_logo),
+            login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
+            signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
+            sort_order=SAMLAuthBackend.sort_order - len(result)
+        )  # type: SocialBackendDictT
+        result.append(saml_dict)
+
+    return result
+
 def get_social_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
     result = []
     for backend in SOCIAL_AUTH_BACKENDS:
         if auth_enabled_helper([backend.auth_backend_name], realm):
-            result.append(create_standard_social_backend_dict(backend))
+            if backend != SAMLAuthBackend:
+                result.append(create_standard_social_backend_dict(backend))
+            else:
+                result += list_saml_backend_dicts(realm)
 
     return sorted(result, key=lambda x: x['sort_order'], reverse=True)
 

@@ -350,7 +350,8 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
 
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
-def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
+def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
+                       ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params = {}  # type: Dict[str, str]
     if backend == "saml":
@@ -366,16 +367,11 @@ def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
 
         # This backend requires the name of the IdP (from the list of configured ones)
         # to be passed as the parameter.
-        # Currently we support configuring only one IdP.
-        # TODO: Support multiple IdPs. python-social-auth SAML (which we use here)
-        # already supports that, so essentially only the UI for it on the login pages
-        # needs to be figured out.
-        if len(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS) != 1:
-            logging.error(
-                "SAML misconfigured - you have specified multiple IdPs. Only one IdP is supported."
-            )
+        if not extra_arg or extra_arg not in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
+            logging.info("Attempted to initiate SAML authentication with wrong idp argument: {}"
+                         .format(extra_arg))
             return redirect_to_config_error("saml")
-        extra_url_params = {'idp': list(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys())[0]}
+        extra_url_params = {'idp': extra_arg}
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and
                                       settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
@@ -386,12 +382,16 @@ def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
 
     return oauth_redirect_to_root(request, backend_url, 'social', extra_url_params=extra_url_params)
 
-def start_social_signup(request: HttpRequest, backend: str) -> HttpResponse:
+def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
+                        ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params = {}  # type: Dict[str, str]
     if backend == "saml":
-        assert len(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS) == 1
-        extra_url_params = {'idp': list(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys())[0]}
+        if not extra_arg or extra_arg not in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
+            logging.info("Attempted to initiate SAML authentication with wrong idp argument: {}"
+                         .format(extra_arg))
+            return redirect_to_config_error("saml")
+        extra_url_params = {'idp': extra_arg}
     return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True,
                                   extra_url_params=extra_url_params)
 
