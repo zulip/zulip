@@ -9,6 +9,7 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import CleanCss from 'clean-css';
 import TerserPlugin from 'terser-webpack-plugin';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 const assets = require('./webpack.assets.json');
 
@@ -194,18 +195,13 @@ export default (env?: string): webpack.Configuration[] => {
                 ],
             // Extract CSS from files
             new MiniCssExtractPlugin({
-                filename: production
-                    ? (data) => {
-                        // This is a special case in order to produce
-                        // a static CSS file to be consumed by
-                        // static/html/5xx.html
-                        if (data.chunk.name === 'error-styles') {
-                            return 'error-styles.css';
-                        }
-                        return '[name].[contenthash].css';
-                    }
-                    : "[name].css",
+                filename: production ? "[name].[contenthash].css" : "[name].css",
                 chunkFilename: "[chunkhash].css",
+            }),
+            new HtmlWebpackPlugin({
+                filename: "5xx.html",
+                template: "static/html/5xx.html",
+                chunks: ["error-styles"],
             }),
         ],
     };

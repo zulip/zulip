@@ -8,7 +8,7 @@ add_header Strict-Transport-Security max-age=15768000 always;
 add_header X-Frame-Options DENY always;
 
 # Serve a custom error page when the app is down
-error_page 502 503 504 /static/html/5xx.html;
+error_page 502 503 504 /static/webpack-bundles/5xx.html;
 
 # Serve static files directly
 location /static/ {

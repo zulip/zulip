@@ -36,6 +36,8 @@
         "./static/styles/portico/portico-styles.scss"
     ],
     "error-styles": [
+        "./static/third/bootstrap/css/bootstrap.css",
+        "./static/third/bootstrap/css/bootstrap-responsive.css",
         "./static/styles/portico/portico-styles.scss"
     ],
     "common": [
