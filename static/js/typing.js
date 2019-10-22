@@ -66,7 +66,7 @@ exports.initialize = function () {
         // start-typing notice immediately.
         var new_recipient =
           is_valid_conversation() ? exports.get_recipient() : undefined;
-        typing_status.handle_text_input(worker, new_recipient);
+        typing_status.update(worker, new_recipient);
     });
 
     // We send a stop-typing notification immediately when compose is

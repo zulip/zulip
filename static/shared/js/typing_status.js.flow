@@ -12,7 +12,7 @@ type Worker = {|
   notify_server_stop: RecipientUserIds => void
 |};
 
-declare export function handle_text_input(
+declare export function update(
   worker: Worker,
   new_recipient: RecipientUserIds | void,
 ): void;

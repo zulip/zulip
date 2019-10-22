@@ -1,7 +1,5 @@
 import _ from "underscore";
 
-// See docs/subsystems/typing-indicators.md for details on typing indicators.
-
 // The following constants are tuned to work with
 // TYPING_STARTED_EXPIRY_PERIOD, which is what the other
 // users will use to time out our messages.  (Or us,
@@ -13,20 +11,6 @@ var TYPING_STARTED_WAIT_PERIOD = 10000; // 10s
 // How long after someone stops editing in the compose box
 // do we send a 'stopped typing' notification
 var TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
-
-/*
-
-    Our parent should pass in a worker object with the following
-    callbacks:
-
-        notify_server_start
-        notify_server_stop
-        get_current_time
-
-    See typing.js for the implementations of the above. (Our
-    node tests also act as workers and will stub those functions
-    appropriately.)
-*/
 
 /** Exported only for tests. */
 export const state = {};
@@ -85,7 +69,33 @@ export function maybe_ping_server(worker, recipient) {
     }
 }
 
-export function handle_text_input(worker, new_recipient) {
+/**
+ * Update our state machine, and the server as needed, on the user's typing status.
+ *
+ * This can and should be called frequently, on each keystroke.  The
+ * implementation sends "still typing" notices at an appropriate throttled
+ * rate, and keeps a timer to send a "stopped typing" notice when the user
+ * hasn't typed for a few seconds.
+ *
+ * Zulip supports typing notifications only for PMs (both 1:1 and group); so
+ * composing a stream message should be treated like composing no message at
+ * all.
+ *
+ * Call with `new_recipient` of `undefined` when the user actively stops
+ * composing a message.  If the user switches from one set of recipients to
+ * another, there's no need to call with `undefined` in between; the
+ * implementation tracks the change and behaves appropriately.
+ *
+ * See docs/subsystems/typing-indicators.md for detailed background on the
+ * typing indicators system.
+ *
+ * @param {*} worker Callbacks for reaching the real world.  See typing.js
+ *   for implementations.
+ * @param {*} new_recipient The users the PM being composed is addressed to,
+ *   as a sorted array of user IDs; or `undefined` if no PM is being
+ *   composed anymore.
+ */
+export function update(worker, new_recipient) {
     var current_recipient = state.current_recipient;
     if (current_recipient) {
         // We need to use _.isEqual for comparisons; === doesn't work
