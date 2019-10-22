@@ -211,5 +211,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         "attr_last_name": "last_name",
         "attr_username": "email",
         "attr_email": "email",
+        "display_name": "Test IdP",
+        "display_logo": "/static/images/landing-page/logos/saml-icon.png",
     }
 }

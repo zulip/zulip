@@ -70,6 +70,7 @@ from social_django.strategy import DjangoStrategy
 from social_django.storage import BaseDjangoStorage
 
 import base64
+import copy
 import json
 import urllib
 import ujson
@@ -958,8 +959,8 @@ class SAMLAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
 
     BACKEND_CLASS = SAMLAuthBackend
-    LOGIN_URL = "/accounts/login/social/saml"
-    SIGNUP_URL = "/accounts/register/social/saml"
+    LOGIN_URL = "/accounts/login/social/saml/test_idp"
+    SIGNUP_URL = "/accounts/register/social/saml/test_idp"
     AUTHORIZATION_URL = "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO"
     AUTH_FINISH_URL = "/complete/saml/"
     CONFIG_ERROR_URL = "/config-error/saml"
@@ -1153,16 +1154,60 @@ class SAMLAuthBackendTest(SocialAuthBase):
         should lead to misconfiguration page.
         """
 
-        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS={"test_idp1": {}, "test_idp2": {}}):
-            # We don't need to put full idp configurations in the mock settings above
-            # to trigger the error.
-            with mock.patch("zerver.views.auth.logging.error") as mock_error:
-                result = self.client_get("/accounts/login/social/saml")
-                self.assertEqual(result.status_code, 302)
-                self.assertEqual(result.url, '/config-error/saml')
-                mock_error.assert_called_once_with(
-                    "SAML misconfigured - you have specified multiple IdPs. Only one IdP is supported."
-                )
+        # Setup a new SOCIAL_AUTH_SAML_ENABLED_IDPS dict with two idps.
+        # We deepcopy() dictionaries around for the sake of brevity,
+        # to avoid having to spell them out explicitly here.
+        # The second idp's configuration is a copy of the first one,
+        # with name test_idp2 and altered url.
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict['test_idp2'] = copy.deepcopy(idps_dict['test_idp'])
+        idps_dict['test_idp2']['url'] = 'https://idp2.example.com/idp/profile/SAML2/Redirect/SSO'
+        idps_dict['test_idp2']['display_name'] = 'Second Test IdP'
+
+        # Run tests with multiple idps configured:
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
+            # Go to the login page and check that buttons to log in show up for both IdPs:
+            result = self.client_get('/accounts/login/')
+            self.assert_in_success_response(["Log in with Test IdP"], result)
+            self.assert_in_success_response(["/accounts/login/social/saml/test_idp"], result)
+            self.assert_in_success_response(["Log in with Second Test IdP"], result)
+            self.assert_in_success_response(["/accounts/login/social/saml/test_idp2"], result)
+
+            # Try succesful authentication with the regular idp from all previous tests:
+            self.test_social_auth_success()
+
+            # Now test with the second idp:
+            try:
+                original_LOGIN_URL = self.LOGIN_URL
+                original_SIGNUP_URL = self.SIGNUP_URL
+                original_AUTHORIZATION_URL = self.AUTHORIZATION_URL
+                self.LOGIN_URL = "/accounts/login/social/saml/test_idp2"
+                self.SIGNUP_URL = "/accounts/register/social/saml/test_idp2"
+                self.AUTHORIZATION_URL = idps_dict['test_idp2']['url']
+                self.test_social_auth_success()
+            finally:
+                # Restore original values at the end, regardless of what happens
+                # in the block above, to avoid affecting other tests in unpredictable
+                # ways.
+                self.LOGIN_URL = original_LOGIN_URL
+                self.SIGNUP_URL = original_SIGNUP_URL
+                self.AUTHORIZATION_URL = original_AUTHORIZATION_URL
+
+    def test_social_auth_saml_login_bad_idp_arg(self) -> None:
+        for action in ['login', 'register']:
+            result = self.client_get('/accounts/{}/social/saml'.format(action))
+            # Missing idp argument.
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/config-error/saml')
+
+            result = self.client_get('/accounts/{}/social/saml/nonexistent_idp'.format(action))
+            # No such IdP is configured.
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/config-error/saml')
+
+            result = self.client_get('/accounts/{}/social/saml/'.format(action))
+            # No matching url pattern.
+            self.assertEqual(result.status_code, 404)
 
 class GitHubAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False

@@ -223,6 +223,11 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         "attr_email": "email",
         # The "x509cert" attribute is automatically read from
         # /etc/zulip/saml/idps/{idp_name}.crt; don't specify it here.
+
+        # Optionally, you can edit display_name and display_logo settings below
+        # to change the name and icon that will show on the login button.
+        "display_name": "SAML",
+        "display_logo": "/static/images/landing-page/logos/saml-icon.png"
     }
 }
 
