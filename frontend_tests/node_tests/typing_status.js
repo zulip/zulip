@@ -266,6 +266,7 @@ run_test('basics', () => {
 
     const call_count = {
         maybe_ping_server: 0,
+        actually_ping_server: 0,
         start_or_extend_idle_timer: 0,
         stop_last_notification: 0,
     };
@@ -280,12 +281,12 @@ run_test('basics', () => {
 
     // User ids of poeple in compose narrow doesn't change and is same as stat.current_recipent
     // so counts of function should increase except stop_last_notification
-    typing_status.handle_text_input(worker, typing.get_recipient(), false);
+    typing_status.handle_text_input(worker, typing.get_recipient(), true);
     assert.deepEqual(call_count.maybe_ping_server, 1);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 1);
     assert.deepEqual(call_count.stop_last_notification, 0);
 
-    typing_status.handle_text_input(worker, typing.get_recipient(), false);
+    typing_status.handle_text_input(worker, typing.get_recipient(), true);
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 2);
     assert.deepEqual(call_count.stop_last_notification, 0);
@@ -293,8 +294,8 @@ run_test('basics', () => {
     // change in recipient and new_recipient should make us
     // call typing_status.stop_last_notification
     compose_pm_pill.get_user_ids_string = () => '2,3,4';
-    typing_status.handle_text_input(worker, typing.get_recipient(), false);
+    typing_status.handle_text_input(worker, typing.get_recipient(), true);
     assert.deepEqual(call_count.maybe_ping_server, 2);
-    assert.deepEqual(call_count.start_or_extend_idle_timer, 2);
+    assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
     assert.deepEqual(call_count.stop_last_notification, 1);
 });
