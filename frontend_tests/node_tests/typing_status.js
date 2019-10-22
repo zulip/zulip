@@ -16,7 +16,7 @@ run_test('basics', () => {
 
     // invalid conversation basically does nothing
     var worker = {};
-    typing_status.update(worker, undefined);
+    typing_status.update(worker, null);
 
     // Start setting up more testing state.
     typing_status.initialize_state();
@@ -128,7 +128,7 @@ run_test('basics', () => {
     });
 
     // Call stop with nothing going on.
-    call_handler(undefined);
+    call_handler(null);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,
@@ -158,7 +158,7 @@ run_test('basics', () => {
     assert(events.idle_callback);
 
     // Explicitly stop alice.
-    call_handler(undefined);
+    call_handler(null);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,
@@ -188,7 +188,7 @@ run_test('basics', () => {
     assert(events.idle_callback);
 
     // Switch to an invalid conversation.
-    call_handler(undefined);
+    call_handler(null);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,
@@ -202,7 +202,7 @@ run_test('basics', () => {
     });
 
     // Switch to another invalid conversation.
-    call_handler(undefined);
+    call_handler(null);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,

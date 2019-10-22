@@ -26,7 +26,7 @@ function send_typing_notification_ajax(user_ids_array, operation) {
 function get_user_ids_array() {
     var user_ids_string = compose_pm_pill.get_user_ids_string();
     if (user_ids_string === "") {
-        return;
+        return null;
     }
 
     return people.user_ids_string_to_ids_array(user_ids_string);
@@ -65,14 +65,14 @@ exports.initialize = function () {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
         var new_recipient =
-          is_valid_conversation() ? exports.get_recipient() : undefined;
+          is_valid_conversation() ? exports.get_recipient() : null;
         typing_status.update(worker, new_recipient);
     });
 
     // We send a stop-typing notification immediately when compose is
     // closed/cancelled
     $(document).on('compose_canceled.zulip compose_finished.zulip', function () {
-        typing_status.update(worker, undefined);
+        typing_status.update(worker, null);
     });
 };
 

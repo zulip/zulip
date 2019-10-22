@@ -14,5 +14,5 @@ type Worker = {|
 
 declare export function update(
   worker: Worker,
-  new_recipient: RecipientUserIds | void,
+  new_recipient: RecipientUserIds | null
 ): void;

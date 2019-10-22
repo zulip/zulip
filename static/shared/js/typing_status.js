@@ -17,8 +17,8 @@ export const state = {};
 
 /** Exported only for tests. */
 export function initialize_state() {
-    state.current_recipient =  undefined;
-    state.next_send_start_time =  undefined;
+    state.current_recipient = null;
+    state.next_send_start_time = undefined;
     state.idle_timer = undefined;
 }
 
@@ -81,9 +81,9 @@ export function maybe_ping_server(worker, recipient) {
  * composing a stream message should be treated like composing no message at
  * all.
  *
- * Call with `new_recipient` of `undefined` when the user actively stops
+ * Call with `new_recipient` of `null` when the user actively stops
  * composing a message.  If the user switches from one set of recipients to
- * another, there's no need to call with `undefined` in between; the
+ * another, there's no need to call with `null` in between; the
  * implementation tracks the change and behaves appropriately.
  *
  * See docs/subsystems/typing-indicators.md for detailed background on the
@@ -92,12 +92,12 @@ export function maybe_ping_server(worker, recipient) {
  * @param {*} worker Callbacks for reaching the real world.  See typing.js
  *   for implementations.
  * @param {*} new_recipient The users the PM being composed is addressed to,
- *   as a sorted array of user IDs; or `undefined` if no PM is being
- *   composed anymore.
+ *   as a sorted array of user IDs; or `null` if no PM is being composed
+ *   anymore.
  */
 export function update(worker, new_recipient) {
     var current_recipient = state.current_recipient;
-    if (current_recipient) {
+    if (current_recipient !== null) {
         // We need to use _.isEqual for comparisons; === doesn't work
         // on arrays.
         if (_.isEqual(new_recipient, current_recipient)) {
@@ -117,7 +117,7 @@ export function update(worker, new_recipient) {
         stop_last_notification(worker);
     }
 
-    if (!new_recipient) {
+    if (new_recipient === null) {
         // If we are not talking to somebody we care about,
         // then there is no more action to take.
         return;
