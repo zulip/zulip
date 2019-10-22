@@ -106,7 +106,7 @@ tornado==4.*  # https://github.com/zulip/zulip/issues/8913
 https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab8a8.zip#egg=ujson==1.35+git
 
 # Django extension for serving webpack modules
-django-webpack-loader
+django-webpack4-loader
 
 # Needed for iOS push notifications
 apns2

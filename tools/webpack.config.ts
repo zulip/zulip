@@ -1,5 +1,5 @@
 import { basename, resolve } from 'path';
-import BundleTracker from 'webpack-bundle-tracker';
+import BundleTracker from 'webpack4-bundle-tracker';
 import webpack from 'webpack';
 // The devServer member of webpack.Configuration is managed by the
 // webpack-dev-server package. We are only importing the type here.

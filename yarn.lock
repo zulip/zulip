@@ -2573,7 +2573,7 @@ combined-stream@^1.0.6, combined-stream@~1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@2, commander@2.x.x, commander@^2.10.0, commander@^2.12.2, commander@^2.15.1, commander@^2.19.0, commander@^2.20.0, commander@^2.7.1, commander@~2.20.0, commander@~2.20.3:
+commander@2, commander@2.x.x, commander@^2.10.0, commander@^2.12.2, commander@^2.15.1, commander@^2.19.0, commander@^2.20.0, commander@^2.7.1, commander@~2.20.3:
   version "2.20.3"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
   integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
@@ -12036,15 +12036,6 @@ webidl-conversions@^4.0.0, webidl-conversions@^4.0.2:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-4.0.2.tgz#a855980b1f0b6b359ba1d5d9fb39ae941faa63ad"
   integrity sha512-YQ+BmxuTgd6UXZW3+ICGfyqRyHXVlD5GtQr5+qjiNW7bF0cqrzX500HVXPBOvgXb5YnzDd+h0zqyv61KUD7+Sg==
 
-webpack-bundle-tracker@^0.4.2-beta:
-  version "0.4.2-beta"
-  resolved "https://registry.yarnpkg.com/webpack-bundle-tracker/-/webpack-bundle-tracker-0.4.2-beta.tgz#263c3a3db8722aaab0083763154e5f025e47825d"
-  integrity sha512-CCyJbCQnRtjR1sk97u/H5DtJibrIcJ79MnntMyjOpc9HCmfIQYgt7ze7i/Z+DStBZ4NC4HxqGDsB///2Na1DTA==
-  dependencies:
-    deep-extend "^0.6.0"
-    mkdirp "^0.5.1"
-    strip-ansi "^2.0.1"
-
 webpack-cli@^3.3.2:
   version "3.3.9"
   resolved "https://registry.yarnpkg.com/webpack-cli/-/webpack-cli-3.3.9.tgz#79c27e71f94b7fe324d594ab64a8e396b9daa91a"
@@ -12127,6 +12118,15 @@ webpack-sources@^1.1.0, webpack-sources@^1.4.0, webpack-sources@^1.4.1, webpack-
   dependencies:
     source-list-map "^2.0.0"
     source-map "~0.6.1"
+
+webpack4-bundle-tracker@^0.0.1-beta:
+  version "0.0.1-beta"
+  resolved "https://registry.yarnpkg.com/webpack4-bundle-tracker/-/webpack4-bundle-tracker-0.0.1-beta.tgz#f576821ffbce584206e8dd41ba10cf9a7738731a"
+  integrity sha512-UcCqw8LT2IqqZhZDKPw9FAtWvHarS5iGYmw/aaWupSI1q55qdj7fjGsbiK/O/PxOuaAjfVxMVLq2CBvCbdp+XA==
+  dependencies:
+    deep-extend "^0.6.0"
+    mkdirp "^0.5.1"
+    strip-ansi "^2.0.1"
 
 webpack@^4.33.0:
   version "4.40.2"

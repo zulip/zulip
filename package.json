@@ -66,8 +66,8 @@
     "underscore": "^1.9.1",
     "webfonts-loader": "^5.0.0",
     "webpack": "^4.33.0",
-    "webpack-bundle-tracker": "^0.4.2-beta",
     "webpack-cli": "^3.3.2",
+    "webpack4-bundle-tracker": "^0.0.1-beta",
     "winchan": "^0.2.1",
     "xdate": "^0.8.2",
     "zxcvbn": "^4.4.2"
