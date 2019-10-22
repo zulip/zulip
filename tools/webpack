@@ -108,7 +108,8 @@ def build_for_most_tests():
             }]
     stat_data = {
         "status": "done",
-        "chunks": entries
+        "chunks": entries,
+        "entryPoints": {name: [chunk] for name, chunk in entries.items()},
     }
     directory = 'var'
     if not os.path.exists(directory):

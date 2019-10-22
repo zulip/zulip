@@ -130,7 +130,8 @@ export default (env?: string): webpack.Configuration[] => {
         output: {
             path: resolve(__dirname, '../static/webpack-bundles'),
             publicPath,
-            filename: production ? '[name].[chunkhash].js' : '[name].js',
+            filename: production ? '[name].[contenthash].js' : '[name].js',
+            chunkFilename: production ? '[contenthash].js' : '[id].js',
         },
         resolve: {
             extensions: [".ts", ".js"],
@@ -178,6 +179,12 @@ export default (env?: string): webpack.Configuration[] => {
                     sourceMap: true,
                 }),
             ],
+            splitChunks: {
+                chunks: "all",
+                // webpack/examples/many-pages suggests 20 requests for HTTP/2
+                maxAsyncRequests: 20,
+                maxInitialRequests: 20,
+            },
         },
         plugins: [
             new BundleTracker({
@@ -196,7 +203,7 @@ export default (env?: string): webpack.Configuration[] => {
             // Extract CSS from files
             new MiniCssExtractPlugin({
                 filename: production ? "[name].[contenthash].css" : "[name].css",
-                chunkFilename: "[chunkhash].css",
+                chunkFilename: production ? "[contenthash].css" : "[id].css",
             }),
             new HtmlWebpackPlugin({
                 filename: "5xx.html",
