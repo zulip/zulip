@@ -626,6 +626,7 @@ class ZulipTestCase(TestCase):
         return stream
 
     INVALID_STREAM_ID = 999999
+
     def get_stream_id(self, name: str, realm: Optional[Realm]=None) -> int:
         if not realm:
             realm = get_realm('zulip')
