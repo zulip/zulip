@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
-from django_auth_ldap.backend import LDAPBackend, LDAPSearch, _LDAPUser
+from django_auth_ldap.backend import LDAPSearch, _LDAPUser
 from django.test.client import RequestFactory
 from django.utils.timezone import now as timezone_now
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
@@ -2992,17 +2992,6 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.assertEqual(actual_value, expected_value)
 
 class TestQueryLDAP(ZulipLDAPTestCase):
-    class _LDAPUser:
-        attrs = {
-            'cn': ['King Hamlet', ],
-            'sn': ['Hamlet', ],
-            'thumbnailPhoto': [open(static_path("images/team/tim.png"), "rb").read()],
-            'birthDate': ['1990-01-01', ],
-            'twitter': ['@handle', ],
-        }
-
-        def __init__(self, backend: LDAPBackend, username: str) -> None:
-            super().__init__()
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',))
     def test_ldap_not_configured(self) -> None:
@@ -3019,36 +3008,30 @@ class TestQueryLDAP(ZulipLDAPTestCase):
     def test_normal_query(self) -> None:
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
                                                     'short_name': 'sn',
-                                                    'avatar': 'thumbnailPhoto',
+                                                    'avatar': 'jpegPhoto',
                                                     'custom_profile_field__birthday': 'birthDate',
-                                                    'custom_profile_field__phone_number': 'phoneNumber',
-                                                    'custom_profile_field__twitter': 'twitter'}), \
-                mock.patch('zproject.backends._LDAPUser', self._LDAPUser, create=True):
+                                                    'custom_profile_field__phone_number': 'nonExistentAttr'
+                                                    }):
             values = query_ldap(self.example_email('hamlet'))
-        self.assertEqual(len(values), 6)
+        self.assertEqual(len(values), 5)
         self.assertIn('full_name: King Hamlet', values)
         self.assertIn('short_name: Hamlet', values)
         self.assertIn('avatar: (An avatar image file)', values)
-        self.assertIn('custom_profile_field__birthday: 1990-01-01', values)
+        self.assertIn('custom_profile_field__birthday: 1900-09-08', values)
         self.assertIn('custom_profile_field__phone_number: LDAP field not present', values)
-        self.assertIn('custom_profile_field__twitter: @handle', values)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_query_email_attr(self) -> None:
-        attrs = {
-            'cn': ['King Hamlet', ],
-            'sn': ['Hamlet', ],
-            'email_attr': ['separate_email@zulip.com', ],
-        }
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
                                                     'short_name': 'sn'},
-                           LDAP_EMAIL_ATTR='email_attr'), \
-                mock.patch('zproject.backends._LDAPUser.attrs', attrs):
+                           LDAP_EMAIL_ATTR='mail'):
+            # This will look up the user by email in our test dictionary,
+            # should successfully find hamlet's ldap entry.
             values = query_ldap(self.example_email('hamlet'))
         self.assertEqual(len(values), 3)
         self.assertIn('full_name: King Hamlet', values)
         self.assertIn('short_name: Hamlet', values)
-        self.assertIn('email: separate_email@zulip.com', values)
+        self.assertIn('email: hamlet@zulip.com', values)
 
 class TestZulipAuthMixin(ZulipTestCase):
     def test_get_user(self) -> None:
