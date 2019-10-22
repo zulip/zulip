@@ -72,7 +72,7 @@ exports.initialize = function () {
     // We send a stop-typing notification immediately when compose is
     // closed/cancelled
     $(document).on('compose_canceled.zulip compose_finished.zulip', function () {
-        typing_status.stop(worker);
+        typing_status.update(worker, undefined);
     });
 };
 

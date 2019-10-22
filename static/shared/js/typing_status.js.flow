@@ -16,5 +16,3 @@ declare export function update(
   worker: Worker,
   new_recipient: RecipientUserIds | void,
 ): void;
-
-declare export function stop(worker: Worker): void;

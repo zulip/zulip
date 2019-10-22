@@ -58,11 +58,6 @@ run_test('basics', () => {
         typing_status.update(worker, new_recipient);
     }
 
-    function call_stop() {
-        clear_events();
-        typing_status.stop(worker);
-    }
-
     worker = {
         get_current_time: returns_time(5),
         notify_server_start: notify_server_start,
@@ -133,7 +128,7 @@ run_test('basics', () => {
     });
 
     // Call stop with nothing going on.
-    call_stop();
+    call_handler(undefined);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,
@@ -163,7 +158,7 @@ run_test('basics', () => {
     assert(events.idle_callback);
 
     // Explicitly stop alice.
-    call_stop();
+    call_handler(undefined);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,

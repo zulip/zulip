@@ -130,12 +130,3 @@ export function update(worker, new_recipient) {
     actually_ping_server(worker, new_recipient, current_time);
     start_or_extend_idle_timer(worker);
 }
-
-export function stop(worker) {
-    // We get this if somebody closes the compose box, but
-    // it doesn't necessarily mean we had typing indicators
-    // active before this.
-    if (state.current_recipient) {
-        stop_last_notification(worker);
-    }
-}
