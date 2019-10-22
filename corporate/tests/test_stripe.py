@@ -237,13 +237,15 @@ class StripeTestCase(ZulipTestCase):
         self.seat_count = 6
         self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
 
-    def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
+    def get_signed_seat_count_from_response(self, response: HttpResponse) -> str:
         match = re.search(r'name=\"signed_seat_count\" value=\"(.+)\"', response.content.decode("utf-8"))
-        return match.group(1) if match else None
+        assert match is not None  # for mypy
+        return match.group(1)
 
-    def get_salt_from_response(self, response: HttpResponse) -> Optional[str]:
+    def get_salt_from_response(self, response: HttpResponse) -> str:
         match = re.search(r'name=\"salt\" value=\"(\w+)\"', response.content.decode("utf-8"))
-        return match.group(1) if match else None
+        assert match is not None  # for mypy
+        return match.group(1)
 
     def upgrade(self, invoice: bool=False, talk_to_stripe: bool=True,
                 realm: Optional[Realm]=None, del_args: List[str]=[],
