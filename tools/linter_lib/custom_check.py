@@ -676,6 +676,10 @@ html_rules = whitespace_rules + prose_style_rules + [
          'templates/zerver/email.html',
          'templates/zerver/email_log.html',
 
+         # Social backend logos are dynamically loaded
+         'templates/zerver/accounts_home.html',
+         'templates/zerver/login.html',
+
          # Probably just needs to be changed to display: none so the exclude works
          'templates/zerver/app/navbar.html',
 
