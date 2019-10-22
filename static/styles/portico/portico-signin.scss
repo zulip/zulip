@@ -632,36 +632,6 @@ button.login-social-button:active {
     box-shadow: 0px 1px 1px hsla(0, 0%, 0%, 0.3);
 }
 
-.saml-wrapper button.login-social-button {
-    background-image: url('/static/images/landing-page/logos/saml-icon.png');
-    width: 100%;
-}
-
-.google-wrapper button.login-social-button {
-    background-image: url('/static/images/landing-page/logos/googl_e-icon.png');
-    width: 100%;
-}
-
-.github-wrapper::before {
-    content: "\f09b";
-    position: absolute;
-
-    font-family: "FontAwesome";
-    font-size: 2rem;
-    color: hsl(0, 0%, 20%);
-    transform: translateX(15px) translateY(13px);
-}
-
-.azuread-oauth2-wrapper::before {
-    content: "\f17a";
-    position: absolute;
-
-    font-family: "FontAwesome";
-    font-size: 2rem;
-    color: hsl(0, 0%, 20%);
-    transform: translateX(15px) translateY(13px);
-}
-
 .login-page-container .right-side .actions,
 .forgot-password-container .actions {
     margin: 20px 0px 0px;

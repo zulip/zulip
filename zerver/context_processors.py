@@ -3,16 +3,15 @@ from urllib.parse import urljoin
 from typing import Any, Dict, Optional
 from django.http import HttpRequest
 from django.conf import settings
-from django.urls import reverse
 
 from zerver.models import UserProfile, get_realm, Realm
 from zproject.backends import (
     any_social_backend_enabled,
+    get_social_backend_dicts,
     password_auth_enabled,
     require_email_format_usernames,
     auth_enabled_helper,
     AUTH_BACKEND_NAME_MAP,
-    SOCIAL_AUTH_BACKENDS,
 )
 from zerver.decorator import get_client_name
 from zerver.lib.send_email import FromAddress
@@ -168,7 +167,6 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
 
     # Add the keys for our standard authentication backends.
     no_auth_enabled = True
-    social_backends = []
     for auth_backend_name in AUTH_BACKEND_NAME_MAP:
         name_lower = auth_backend_name.lower()
         key = "%s_auth_enabled" % (name_lower,)
@@ -177,19 +175,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         if is_enabled:
             no_auth_enabled = False
 
-        # Now add the enabled social backends to the social_backends
-        # list used to generate buttons for login/register pages.
-        backend = AUTH_BACKEND_NAME_MAP[auth_backend_name]
-        if not is_enabled or backend not in SOCIAL_AUTH_BACKENDS:
-            continue
-        social_backends.append({
-            'name': backend.name,
-            'display_name': backend.auth_backend_name,
-            'login_url': reverse('login-social', args=(backend.name,)),
-            'signup_url': reverse('signup-social', args=(backend.name,)),
-            'sort_order': backend.sort_order,
-        })
-    context['social_backends'] = sorted(social_backends, key=lambda x: x['sort_order'], reverse=True)
+    context['social_backends'] = get_social_backend_dicts(realm)
     context['no_auth_enabled'] = no_auth_enabled
 
     return context
