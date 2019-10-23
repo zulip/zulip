@@ -2825,7 +2825,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertNotIn(api_key, str(result))
 
     # Admin users have access to all bots in the realm_bots field
-    def test_realm_bots_e(self) -> None:
+    def test_realm_bots_admin(self) -> None:
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
         self.assertTrue(user_profile.is_realm_admin)
