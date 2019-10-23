@@ -115,10 +115,10 @@ configure it as follows:
 5. Enable the `zproject.backends.SAMLAuthBackend` auth backend, in
 `AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.
 
-6. [Restart the Zulip server](settings.html) to ensure your settings
-changes take effect.  The Zulip login page should now have a button
-for SAML authentication that you can use to login or create an account
-(including when creating a new organization).
+6. [Restart the Zulip server](../production/settings.md) to ensure
+your settings changes take effect.  The Zulip login page should now
+have a button for SAML authentication that you can use to login or
+create an account (including when creating a new organization).
 
 7. If the configuration was successful, the server's metadata can be
 found at `https://yourzulipdomain.example.com/saml/metadata.xml`. You
