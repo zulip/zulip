@@ -2,9 +2,12 @@ from typing import Dict, Any, Callable, Set, List
 
 from functools import wraps
 
-from zerver.models import get_realm, get_user, Client
+from django.utils.timezone import now as timezone_now
+
+from zerver.models import get_realm, get_user, Client, UserPresence
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.events import do_events_register
+from zerver.lib.actions import update_user_presence
 
 GENERATOR_FUNCTIONS = dict()  # type: Dict[str, Callable[..., Dict[Any, Any]]]
 REGISTERED_GENERATOR_FUNCTIONS = set()  # type: Set[str]
@@ -119,3 +122,10 @@ def delete_event_queue() -> Dict[str, Any]:
         "queue_id": response["queue_id"],
         "last_event_id": response["last_event_id"],
     }
+
+@openapi_param_value_generator(["/users/{email}/presence:get"])
+def get_user_presence() -> Dict[None, None]:
+    iago = helpers.example_user("iago")
+    client = Client.objects.create(name="curl-test-client-3")
+    update_user_presence(iago, client, timezone_now(), UserPresence.ACTIVE, False)
+    return {}

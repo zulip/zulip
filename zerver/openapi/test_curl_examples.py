@@ -17,7 +17,6 @@ exclude_list = [
     'delete-message.md',
     'remove-subscriptions.md',
     'delete-stream.md',
-    'get-presence.md',
     'create-user-group.md',
     'update-user-group.md',
     'delete-user-group.md',
