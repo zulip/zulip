@@ -115,7 +115,7 @@ For more details on the frontend, see our documentation on
 [translation](../translating/translating.md),
 [templates](../subsystems/html-css.html#html-templates),
 [directory structure](../overview/directory-structure.md), and
-[the static asset pipeline](../subsystems/front-end-build-process.md).
+[the static asset pipeline](../subsystems/html-css.html#static-asset-pipeline).
 
 [Jinja2]: http://jinja.pocoo.org/
 [Handlebars]: http://handlebarsjs.com/

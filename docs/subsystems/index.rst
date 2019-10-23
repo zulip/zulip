@@ -17,7 +17,6 @@ Subsystems Documentation
    caching
    realms
    management-commands
-   front-end-build-process
    schema-migrations
    migration-renumbering
    hashchange-system
