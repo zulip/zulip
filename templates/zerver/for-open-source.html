@@ -1,4 +1,5 @@
 {% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
 
 {% set OPEN_GRAPH_TITLE = 'Modern chat for open source' %}
 {% set OPEN_GRAPH_DESCRIPTION = 'No message limits, rich moderation features, markdown support, and a conversation model that scales to thousands of users.' %}
@@ -9,7 +10,6 @@
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{{ bundle('landing-page') }}
 {% endblock %}
 
 {% block portico_content %}

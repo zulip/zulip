@@ -1,9 +1,5 @@
 {% extends "zerver/base.html" %}
-
-{% block customhead %}
-{{ super() }}
-{{ bundle('confirm-preregistrationuser') }}
-{% endblock %}
+{% set entrypoint = "confirm-preregistrationuser" %}
 
 {% block content %}
 

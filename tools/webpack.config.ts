@@ -238,7 +238,9 @@ export default (env?: string): webpack.Configuration[] => {
 
     if (!production) {
         // Out JS debugging tools
-        config.entry['common'].push('./static/js/debug.js');  // eslint-disable-line dot-notation
+        for (const name of Object.keys(config.entry)) {
+            config.entry[name].push('./static/js/debug.js');
+        }
         config.devServer = {
             clientLogLevel: "error",
             stats: "errors-only",

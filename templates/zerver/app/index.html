@@ -1,14 +1,10 @@
 {% extends "zerver/base.html" %}
+{% set entrypoint = "app" %}
 {# The app itself. #}
 {# Includes some other templates as tabs. #}
 
 {% block meta_viewport %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-{% endblock %}
-
-{% block commonjs %}
-{{ bundle('app') }}
-{{ bundle('katex') }}
 {% endblock %}
 
 {% block customhead %}

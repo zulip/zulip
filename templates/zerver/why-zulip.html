@@ -1,4 +1,5 @@
 {% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
 
 {% set OPEN_GRAPH_TITLE = 'Team chat with first-class threading' %}
 {% set OPEN_GRAPH_DESCRIPTION = 'Most team chats are overwhelming to keep up with. Zulip takes a different approach.' %}
@@ -9,8 +10,6 @@
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{{ bundle('landing-page') }}
-
 {% endblock %}
 
 {% block portico_content %}
