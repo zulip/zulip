@@ -66,3 +66,22 @@ def update_flags_message_ids() -> Dict[str, List[int]]:
     return {
         "messages": messages,
     }
+
+@openapi_param_value_generator(["/mark_stream_as_read:post"])
+def get_venice_stream_id() -> Dict[str, int]:
+    return {
+        "stream_id": helpers.get_stream_id("Venice"),
+    }
+
+@openapi_param_value_generator(["/mark_topic_as_read:post"])
+def get_denmark_stream_id_and_topic() -> Dict[str, Any]:
+    stream_name = "Denmark"
+    topic_name = "Tivoli Gardens"
+
+    helpers.subscribe(get_user("default-bot@zulip.com", get_realm("zulip")), stream_name)
+    helpers.send_stream_message(helpers.example_email("hamlet"), stream_name, topic_name=topic_name)
+
+    return {
+        "stream_id": helpers.get_stream_id(stream_name),
+        "topic_name": topic_name,
+    }
