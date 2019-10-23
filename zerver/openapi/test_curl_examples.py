@@ -16,7 +16,6 @@ exclude_list = [
     # state of the DB. This results in the curl request to fail.
     'delete-message.md',
     'remove-subscriptions.md',
-    'get-stream-topics.md',
     'delete-stream.md',
     'get-presence.md',
     'create-user-group.md',
