@@ -2,8 +2,9 @@ from typing import Dict, Any, Callable, Set, List
 
 from functools import wraps
 
-from zerver.models import get_realm, get_user
+from zerver.models import get_realm, get_user, Client
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.events import do_events_register
 
 GENERATOR_FUNCTIONS = dict()  # type: Dict[str, Callable[..., Dict[Any, Any]]]
 REGISTERED_GENERATOR_FUNCTIONS = set()  # type: Set[str]
@@ -95,4 +96,16 @@ def update_subscription_data() -> Dict[str, List[Dict[str, Any]]]:
             {"stream_id": helpers.get_stream_id("Verona"), "property": "pin_to_top", "value": True},
             {"stream_id": helpers.get_stream_id("social"), "property": "color", "value": "#f00f00"}
         ]
+    }
+
+@openapi_param_value_generator(["/events:get"])
+def get_events() -> Dict[str, Any]:
+    bot_profile = get_user("default-bot@zulip.com", get_realm("zulip"))
+    helpers.subscribe(bot_profile, "Verona")
+    client = Client.objects.create(name="curl-test-client-1")
+    response = do_events_register(bot_profile, client, event_types=['message', 'realm_emoji'])
+    helpers.send_stream_message(helpers.example_email("hamlet"), "Verona")
+    return {
+        "queue_id": response["queue_id"],
+        "last_event_id": response["last_event_id"],
     }
