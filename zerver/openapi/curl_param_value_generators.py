@@ -109,3 +109,13 @@ def get_events() -> Dict[str, Any]:
         "queue_id": response["queue_id"],
         "last_event_id": response["last_event_id"],
     }
+
+@openapi_param_value_generator(["/events:delete"])
+def delete_event_queue() -> Dict[str, Any]:
+    bot_profile = get_user("default-bot@zulip.com", get_realm("zulip"))
+    client = Client.objects.create(name="curl-test-client-2")
+    response = do_events_register(bot_profile, client, event_types=['message'])
+    return {
+        "queue_id": response["queue_id"],
+        "last_event_id": response["last_event_id"],
+    }

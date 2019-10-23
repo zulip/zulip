@@ -21,7 +21,6 @@ exclude_list = [
     'create-user-group.md',
     'update-user-group.md',
     'delete-user-group.md',
-    'delete-queue.md',
     'update-stream.md',
     # Endpoint can be called only by administrators.
     'create-user.md',
