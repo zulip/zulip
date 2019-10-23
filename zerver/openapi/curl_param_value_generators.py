@@ -85,3 +85,14 @@ def get_denmark_stream_id_and_topic() -> Dict[str, Any]:
         "stream_id": helpers.get_stream_id(stream_name),
         "topic_name": topic_name,
     }
+
+@openapi_param_value_generator(["/users/me/subscriptions/properties:post"])
+def update_subscription_data() -> Dict[str, List[Dict[str, Any]]]:
+    helpers.subscribe(get_user("default-bot@zulip.com", get_realm("zulip")), "Verona")
+    helpers.subscribe(get_user("default-bot@zulip.com", get_realm("zulip")), "social")
+    return {
+        "subscription_data": [
+            {"stream_id": helpers.get_stream_id("Verona"), "property": "pin_to_top", "value": True},
+            {"stream_id": helpers.get_stream_id("social"), "property": "color", "value": "#f00f00"}
+        ]
+    }
