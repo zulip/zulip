@@ -471,7 +471,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
 
         return result
 
-    members = [get_member(row) for row in query]
+    members = [get_member(row) for row in query if row['bot_type'] != UserProfile.SYSTEM_BOT]
 
     return json_success({'members': members})
 
