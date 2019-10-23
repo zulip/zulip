@@ -22,28 +22,33 @@ The Zulip plugin is now registered with Redmine!
 
 ### Global settings
 
-On your {{ settings_html|safe }}, create a new Redmine bot.
+1. On your {{ settings_html|safe }}, create a new Redmine bot.
 
-To configure Zulip notification global settings, in Redmine click the
-**Administration** link in the top left, then click the **Plugins** link on the
-Administration page, and click the **Configure** link to the right of
-the Zulip plugin description. Fill out the settings:
+2. Log into your Redmine instance, click on **Administration** in the top-left
+corner, then click on **Plugins**.
 
-* Zulip URL (`{{ zulip_url }}`)
-* Bot's email address
-* Bot's API key
+3. Find the **Redmine Zulip** plugin, and click **Configure**. You must now set the
+following:
+
+    * Zulip URL (e.g `https://yourZulipDomain.zulipchat.com/`)
+    * Zulip Bot E-mail
+    * Zulip Bot API key
+    * Stream name __*__
+    * Issue updates subject __*__
+    * Version updates subject __*__
+
+_* You may set dynamic values by using the following self-explanatory
+variables:_
+
+* ${issue_id}
+* ${issue_subject}
+* ${project_name}
+* ${version_name}
 
 ### Project settings
 
-Create the stream you'd like to use for the project's notifications.
-
-Visit the project's **Settings** page in Redmine, and fill out the
-**Zulip** tab:
-
-* Stream name
-* Get notified on assignments (enable/disable)
-* Get notified on issue updates (enable/disable)
-* Get notified on milestone progress (enable/disable)
+To override global settings project wise, go to your project's **Settings**
+page, and select the **Zulip** tab.
 
 {!congrats.md!}
 
