@@ -1,18 +1,5 @@
-.screen-medium-show,
-.screen-narrow-show {
-    display: none !important;
-}
-
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 1165px) {
-    .screen-full-show {
-        display: none !important;
-    }
-
-    .screen-medium-show {
-        display: block !important;
-    }
-
     .app-main,
     .header-main {
         min-width: 750px;
@@ -99,10 +86,6 @@
     #user_search_section .user-list-filter {
         /* input should be 100% - 6px padding x2 - 1px border x2. */
         width: calc(100% - 12px - 2px);
-    }
-
-    .screen-narrow-show {
-        display: inline-block !important;
     }
 
     .column-left {
