@@ -1,10 +1,6 @@
 {% extends "zerver/portico.html" %}
+{% set entrypoint = "signup" %}
 {# Login page. #}
-
-{% block customhead %}
-{{ super() }}
-{{ bundle('signup') }}
-{% endblock %}
 
 {% block portico_content %}
 

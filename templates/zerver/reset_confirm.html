@@ -1,8 +1,5 @@
 {% extends "zerver/portico_signup.html" %}
-{% block customhead %}
-{{ super() }}
-{{ bundle('zxcvbn') }}
-{% endblock %}
+{% set entrypoint = "register" %}
 
 {% block portico_content %}
 

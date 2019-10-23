@@ -20,24 +20,12 @@
         {% include 'zerver/meta_tags.html' %}
         {% endif %}
 
-        {% macro bundle(name) %}
-        {{ render_entrypoint(name, 'css', attrs='nonce="%s"' % (csp_nonce,) if csp_nonce else '') }}
-        {{ render_entrypoint(name, 'js', attrs='defer nonce="%s"' % (csp_nonce,) if csp_nonce else 'defer') }}
-        {% endmacro %}
-
-        <!-- This is a temporary block to enable webpack transition
-        This allows pages requiring common files via webpack to override
-        this block -->
-        {% block commonjs %}
-        {{ bundle('common') }}
+        {% block webpack %}
+        {{ render_entrypoint(entrypoint, 'css', attrs='nonce="%s"' % (csp_nonce,) if csp_nonce else '') }}
+        {{ render_entrypoint(entrypoint, 'js', attrs='defer nonce="%s"' % (csp_nonce,) if csp_nonce else 'defer') }}
         {% endblock %}
+
         {% block customhead %}
-        {% endblock %}
-
-        {# this is required because we want to put a custom head in
-        `zerver/portico.html` that isn't overwritten like the
-        `customhead` #}
-        {% block porticocustomhead %}
         {% endblock %}
     </head>
 
@@ -49,3 +37,5 @@
     </body>
 
 </html>
+
+{% set entrypoint = entrypoint|default("common") %}

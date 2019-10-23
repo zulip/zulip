@@ -1,4 +1,5 @@
 {% extends "zerver/base.html" %}
+{% set entrypoint = "support" %}
 
 {# User Activity. #}
 
@@ -6,12 +7,6 @@
 <title>Info</title>
 {% endblock %}
 
-
-{% block customhead %}
-{{ super() }}
-{{ bundle('activity') }}
-{{ bundle('support') }}
-{% endblock %}
 
 {% block content %}
 <div class="container">

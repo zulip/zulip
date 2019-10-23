@@ -1,11 +1,8 @@
 {% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
 
 {% set OPEN_GRAPH_TITLE = 'Zulip Features' %}
 {% set OPEN_GRAPH_DESCRIPTION = 'First class threading on top of everything you could want from real-time chat.' %}
-
-{% block customhead %}
-{{ bundle('landing-page') }}
-{% endblock %}
 
 {% block portico_content %}
 

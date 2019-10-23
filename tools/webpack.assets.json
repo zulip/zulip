@@ -1,10 +1,16 @@
 {
     "activity": [
+        "./static/js/bundles/common.js",
         "sorttable/sorttable.js",
         "./static/js/analytics/activity.js",
         "./static/styles/portico/activity.scss"
     ],
     "archive": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "katex/dist/katex.min.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
         "xdate/src/xdate.js",
         "handlebars/dist/cjs/handlebars.runtime.js",
         "./static/js/archive.js",
@@ -13,9 +19,19 @@
         "./static/js/timerender.js",
         "./static/js/templates.js",
         "./static/js/stream_color.js",
-        "./static/js/scroll_bar.js"
+        "./static/js/scroll_bar.js",
+        "katex/dist/katex.css",
+        "./static/styles/rendered_markdown.scss",
+        "./static/styles/zulip.scss",
+        "./static/styles/portico/archive.scss"
     ],
     "billing": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
+        "./static/js/portico/landing-page.js",
+        "./static/styles/portico/landing-page.scss",
         "./static/js/billing/helpers.js",
         "./static/js/billing/billing.js",
         "handlebars/dist/cjs/handlebars.runtime.js",
@@ -24,6 +40,12 @@
         "./static/styles/portico/billing.scss"
     ],
     "upgrade": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
+        "./static/js/portico/landing-page.js",
+        "./static/styles/portico/landing-page.scss",
         "./static/js/billing/helpers.js",
         "./static/js/billing/upgrade.js",
         "handlebars/dist/cjs/handlebars.runtime.js",
@@ -32,6 +54,8 @@
         "./static/styles/portico/billing.scss"
     ],
     "portico": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
         "./static/js/portico/header.js",
         "./static/styles/portico/portico-styles.scss"
     ],
@@ -44,54 +68,98 @@
         "./static/js/bundles/common.js"
     ],
     "help": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
         "simplebar/dist/simplebar.css",
         "simplebar/dist/simplebar.js",
         "./static/js/portico/help.js",
         "./static/js/portico/tabbed-instructions.js"
     ],
-    "katex": "katex/dist/katex.min.js",
     "landing-page": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
         "./static/js/portico/landing-page.js",
         "./static/styles/portico/landing-page.scss"
     ],
     "integrations": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
         "./static/js/portico/integrations.js",
         "./static/styles/portico/landing-page.scss",
         "./static/styles/portico/integrations.scss"
     ],
     "signup": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
         "jquery-validation/dist/jquery.validate.min.js",
         "./static/js/portico/signup.js"
     ],
+    "register": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
+        "jquery-validation/dist/jquery.validate.min.js",
+        "./static/js/portico/signup.js",
+        "zxcvbn/dist/zxcvbn.js"
+    ],
     "confirm-preregistrationuser": [
+        "./static/js/bundles/common.js",
         "./static/js/portico/confirm-preregistrationuser.js"
     ],
     "support": [
+        "./static/js/bundles/common.js",
+        "sorttable/sorttable.js",
+        "./static/js/analytics/activity.js",
+        "./static/styles/portico/activity.scss",
         "./static/js/analytics/support.js",
         "./static/styles/app_components.scss"
     ],
-    "dev-login": "./static/js/portico/dev-login.js",
+    "dev-login": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
+        "./static/js/portico/dev-login.js"
+    ],
     "integrations-dev-panel": [
+        "./static/js/bundles/common.js",
+        "./static/js/translations.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
         "./static/js/portico/integrations_dev_panel.js",
         "./static/styles/portico/integrations_dev_panel.css",
         "./static/js/channel.js"
     ],
     "email-log": [
+        "./static/js/bundles/common.js",
         "./static/js/portico/email_log.js",
         "./static/js/channel.js"
     ],
     "stats": [
+        "./static/js/bundles/common.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss",
+        "./static/js/translations.js",
         "./static/styles/portico/stats.scss",
         "./static/js/stats/stats.js",
         "plotly.js/dist/plotly-basic.min.js"
     ],
-    "translations": "./static/js/translations.js",
-    "zxcvbn": "zxcvbn/dist/zxcvbn.js",
-    "app": "./static/js/bundles/app.js",
-    "archive-styles": [
-        "katex/dist/katex.css",
-        "./static/styles/rendered_markdown.scss",
-        "./static/styles/zulip.scss",
-        "./static/styles/portico/archive.scss"
+    "app": [
+        "./static/js/bundles/app.js",
+        "katex/dist/katex.min.js"
+    ],
+    "digest": [
+        "./static/js/bundles/common.js",
+        "./static/js/portico/header.js",
+        "./static/styles/portico/portico-styles.scss"
     ]
 }

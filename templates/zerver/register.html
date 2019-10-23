@@ -1,16 +1,11 @@
 {% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "register" %}
 {#
 Gather other user information, after having confirmed
 their email address.
 
 Form is validated both client-side using jquery-validate (see signup.js) and server-side.
 #}
-
-{% block customhead %}
-{{ super() }}
-{{ bundle('zxcvbn') }}
-{{ bundle('translations') }}
-{% endblock %}
 
 {% block portico_content %}
 <div class="register-account flex full-page">
