@@ -617,7 +617,7 @@ html_rules = whitespace_rules + prose_style_rules + [
      'good_lines': ['<button type="button" class="close close-alert-word-status" aria-label="{{t \'Close\' }}">'],
      'bad_lines': ['<button aria-label="foo"></button>']},
     {'pattern': 'script src="http',
-     'description': "Don't directly load dependencies from CDNs.  See docs/subsystems/front-end-build-process.md",
+     'description': "Don't directly load dependencies from CDNs.  See docs/subsystems/html-css.md",
      'exclude': set(["templates/corporate/billing.html", "templates/zerver/hello.html",
                      "templates/corporate/upgrade.html"]),
      'good_lines': ["{{ render_bundle('landing-page') }}"],

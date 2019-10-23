@@ -1,4 +1,5 @@
-# Useful reading is https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
+# Useful reading is:
+# https://zulip.readthedocs.io/en/latest/subsystems/html-css.html#front-end-build-process
 
 import os
 from typing import Optional
