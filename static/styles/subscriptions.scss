@@ -1104,3 +1104,9 @@ ul.grey-box {
 #stream-creation #invites-warning-modal .modal-footer {
     position: static;
 }
+
+@media (max-width: 350px) {
+    .stream_row .description {
+        display: none;
+    }
+}

@@ -9,3 +9,17 @@
     list-style: none;
     margin: 0;
 }
+
+/* This max-width must be synced with message_viewport.is_narrow */
+@media (max-width: 1165px) {
+    #typing_notifications {
+        margin-right: 7px;
+    }
+}
+
+@media (max-width: 775px) {
+    #typing_notifications {
+        margin-right: 7px;
+        margin-left: 7px;
+    }
+}

@@ -513,3 +513,42 @@ a#undo_markdown_preview {
 .compose_mobile_private_button i {
     margin-right: 4px;
 }
+
+/* This max-width must be synced with message_viewport.is_narrow */
+@media (max-width: 1165px) {
+    .compose-content {
+        margin-right: 7px;
+    }
+}
+
+@media (max-width: 775px) {
+    .compose-content {
+        margin-right: 7px;
+        margin-left: 7px;
+    }
+}
+
+@media (max-width: 500px) {
+    .compose_stream_button,
+    .compose_private_button,
+    .compose_reply_button {
+        padding: 5px 10px 5px 10px;
+    }
+
+    textarea.new_message_textarea {
+        height: 30px !important;
+        min-height: 30px !important;
+    }
+}
+
+@media (max-width: 370px) {
+    #stream_message_recipient_topic.recipient_box {
+        width: calc(100% - 175px);
+        min-width: 95px;
+    }
+
+    .compose-content {
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+}
