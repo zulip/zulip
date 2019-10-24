@@ -86,7 +86,8 @@
             </tr>
         </table>
 
-        <p>{% trans %}You can use any combination of these search operators in a single query. Consider the following example:{% endtrans %}</p>
+        <p>{% trans %}You can use any combination of these search
+        operators in a single query. For example:{% endtrans %}</p>
 
         {% set placeholder_stream = _("streamname") %}
         {% set placeholder_email = _("user@example.com") %}
@@ -95,7 +96,7 @@
         <p>
             &nbsp;
             <span class="operator">
-                stream:<span class="operator_value">{{ placeholder_email }}</span>
+                stream:<span class="operator_value">{{ placeholder_stream }}</span>
                 sender:<span class="operator_value">{{ placeholder_email }}</span>
                 <span class="operator_value">{{ placeholder_keyword }}</span>
             </span>
