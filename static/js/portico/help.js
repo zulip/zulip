@@ -1,4 +1,3 @@
-/* eslint indent: "off" */
 import SimpleBar from 'simplebar';
 import {activate_correct_tab} from './tabbed-instructions.js';
 
@@ -65,107 +64,107 @@ function scrollToHash(simplebar) {
 }
 
 (function () {
-    var html_map = {};
-    var loading = {
-        name: null,
-    };
+var html_map = {};
+var loading = {
+    name: null,
+};
 
-    var markdownSB = new SimpleBar($(".markdown")[0]);
+var markdownSB = new SimpleBar($(".markdown")[0]);
 
-    var fetch_page = function (path, callback) {
-        $.get(path, function (res) {
-            var $html = $(res).find(".markdown .content");
+var fetch_page = function (path, callback) {
+    $.get(path, function (res) {
+        var $html = $(res).find(".markdown .content");
 
-            callback($html.html().trim());
-            render_code_sections();
-        });
-    };
-
-    var update_page = function (html_map, path) {
-        if (html_map[path]) {
-            $(".markdown .content").html(html_map[path]);
-            render_code_sections();
-            scrollToHash(markdownSB);
-        } else {
-            loading.name = path;
-            fetch_page(path, function (res) {
-                html_map[path] = res;
-                $(".markdown .content").html(html_map[path]);
-                loading.name = null;
-                scrollToHash(markdownSB);
-            });
-        }
-    };
-
-    new SimpleBar($(".sidebar")[0]);
-
-    $(".sidebar.slide h2").click(function (e) {
-        var $next = $(e.target).next();
-
-        if ($next.is("ul")) {
-            // Close other article's headings first
-            $('.sidebar ul').not($next).hide();
-            // Toggle the heading
-            $next.slideToggle("fast", "swing");
-        }
+        callback($html.html().trim());
+        render_code_sections();
     });
+};
 
-    $(".sidebar a").click(function (e) {
-        var path = $(this).attr("href");
-        var path_dir = path.split('/')[1];
-        var current_dir = window.location.pathname.split('/')[1];
-
-        // Do not block redirecting to external URLs
-        if (path_dir !== current_dir) {
-            return;
-        }
-
-        if (loading.name === path) {
-            return;
-        }
-
-        history.pushState({}, "", path);
-
-        update_page(html_map, path);
-
-        $(".sidebar").removeClass("show");
-
-        e.preventDefault();
-    });
-
-    if (window.location.pathname === '/help/') {
-        // Expand the Guides user docs section in sidebar in the /help/ homepage.
-        $('.help .sidebar h2#guides + ul').show();
-    }
-    // Remove ID attributes from sidebar links so they don't conflict with index page anchor links
-    $('.help .sidebar h1, .help .sidebar h2, .help .sidebar h3').removeAttr('id');
-
-    // Scroll to anchor link when clicked
-    $(document).on('click', '.markdown .content h1, .markdown .content h2, .markdown .content h3', function () {
-        window.location.hash = $(this).attr("id");
+var update_page = function (html_map, path) {
+    if (html_map[path]) {
+        $(".markdown .content").html(html_map[path]);
+        render_code_sections();
         scrollToHash(markdownSB);
-    });
+    } else {
+        loading.name = path;
+        fetch_page(path, function (res) {
+            html_map[path] = res;
+            $(".markdown .content").html(html_map[path]);
+            loading.name = null;
+            scrollToHash(markdownSB);
+        });
+    }
+};
 
-    $(".hamburger").click(function () {
-        $(".sidebar").toggleClass("show");
-    });
+new SimpleBar($(".sidebar")[0]);
 
-    $(".markdown").click(function () {
-        if ($(".sidebar.show").length) {
-            $(".sidebar.show").toggleClass("show");
-        }
-    });
+$(".sidebar.slide h2").click(function (e) {
+    var $next = $(e.target).next();
 
-    render_code_sections();
+    if ($next.is("ul")) {
+        // Close other article's headings first
+        $('.sidebar ul').not($next).hide();
+        // Toggle the heading
+        $next.slideToggle("fast", "swing");
+    }
+});
 
-    // Finally, make sure if we loaded a window with a hash, we scroll
-    // to the right place.
+$(".sidebar a").click(function (e) {
+    var path = $(this).attr("href");
+    var path_dir = path.split('/')[1];
+    var current_dir = window.location.pathname.split('/')[1];
+
+    // Do not block redirecting to external URLs
+    if (path_dir !== current_dir) {
+        return;
+    }
+
+    if (loading.name === path) {
+        return;
+    }
+
+    history.pushState({}, "", path);
+
+    update_page(html_map, path);
+
+    $(".sidebar").removeClass("show");
+
+    e.preventDefault();
+});
+
+if (window.location.pathname === '/help/') {
+    // Expand the Guides user docs section in sidebar in the /help/ homepage.
+    $('.help .sidebar h2#guides + ul').show();
+}
+// Remove ID attributes from sidebar links so they don't conflict with index page anchor links
+$('.help .sidebar h1, .help .sidebar h2, .help .sidebar h3').removeAttr('id');
+
+// Scroll to anchor link when clicked
+$(document).on('click', '.markdown .content h1, .markdown .content h2, .markdown .content h3', function () {
+    window.location.hash = $(this).attr("id");
     scrollToHash(markdownSB);
+});
 
-    window.addEventListener("popstate", function () {
-        var path = window.location.pathname;
-        update_page(html_map, path);
-    });
+$(".hamburger").click(function () {
+    $(".sidebar").toggleClass("show");
+});
 
-    $('body').addClass('noscroll');
+$(".markdown").click(function () {
+    if ($(".sidebar.show").length) {
+        $(".sidebar.show").toggleClass("show");
+    }
+});
+
+render_code_sections();
+
+// Finally, make sure if we loaded a window with a hash, we scroll
+// to the right place.
+scrollToHash(markdownSB);
+
+window.addEventListener("popstate", function () {
+    var path = window.location.pathname;
+    update_page(html_map, path);
+});
+
+$('body').addClass('noscroll');
 }());
