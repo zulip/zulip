@@ -1232,6 +1232,13 @@ paths:
                       type: integer
                       description: The user's ID.
                       example: 1
+                    profile_data:
+                      type: object
+                      description: A dictionary containing custom profile field data for the user.
+                        Each entry maps the integer ID of a custom profile field in the organization
+                        to a dictionary containing the user's data for that field.  Generally the
+                        data includes just a single `value` key; for those custom profile fields
+                        supporting markdown, a `rendered_value` key will also be present.
                 - example:
                     {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
@@ -1245,7 +1252,36 @@ paths:
                         "pointer": -1,
                         "result": "success",
                         "short_name": "iago",
-                        "user_id": 5
+                        "user_id": 5,
+                        "profile_data": {
+                            "5": {
+                               "value": "2000-1-1"
+                            },
+                            "4": {
+                               "value": "emacs"
+                            },
+                            "7": {
+                               "value": "[10]"
+                            },
+                            "1": {
+                               "value": "+1-234-567-8901",
+                               "rendered_value": "<p>+1-234-567-8901</p>"
+                            },
+                            "2": {
+                               "rendered_value": "<p>Betrayer of Othello.</p>",
+                               "value": "Betrayer of Othello."
+                            },
+                            "8": {
+                               "value": "zulip"
+                            },
+                            "3": {
+                               "value": "Apples",
+                               "rendered_value": "<p>Apples</p>"
+                            },
+                            "6": {
+                               "value": "https://zulip.readthedocs.io/en/latest/"
+                            }
+                         }
                     }
     delete:
       description: Delete the requesting user from the realm.

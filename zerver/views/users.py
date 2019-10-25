@@ -469,6 +469,21 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
                   is_admin       = user_profile.is_realm_admin,
                   short_name     = user_profile.short_name)
 
+    if not user_profile.is_bot:
+        custom_profile_field_values = user_profile.customprofilefieldvalue_set.all()
+        profile_data = dict()  # type: Dict[int, Dict[str, Any]]
+        for profile_field in custom_profile_field_values:
+            if profile_field.field.is_renderable():
+                profile_data[profile_field.field_id] = {
+                    "value": profile_field.value,
+                    "rendered_value": profile_field.rendered_value
+                }
+            else:
+                profile_data[profile_field.field_id] = {
+                    "value": profile_field.value
+                }
+        result["profile_data"] = profile_data
+
     messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
     if messages:
         result['max_message_id'] = messages[0].id
