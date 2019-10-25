@@ -203,7 +203,7 @@ function filter_emojis() {
     if (query !== "") {
         var categories = exports.complete_emoji_catalog;
         var search_terms = query.split(" ");
-        search_results = [];
+        search_results.length = 0;
         _.each(categories, function (category) {
             if (category.name === "Popular") {
                 return;
