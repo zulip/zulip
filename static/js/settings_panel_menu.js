@@ -1,7 +1,3 @@
-var settings_panel_menu = (function () {
-
-var exports = {};
-
 exports.make_menu = function (opts) {
     var main_elem = opts.main_elem;
     var hash_prefix = opts.hash_prefix;
@@ -133,12 +129,4 @@ exports.set_key_handlers = function (toggler) {
     exports.org_settings.set_key_handlers(toggler);
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_panel_menu;
-}
-
-window.settings_panel_menu = settings_panel_menu;
+window.settings_panel_menu = exports;

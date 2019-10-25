@@ -3,10 +3,6 @@ var render_edit_bot = require('../templates/edit_bot.hbs');
 var render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");
 var render_settings_edit_outgoing_webhook_service = require("../templates/settings/edit_outgoing_webhook_service.hbs");
 
-var settings_bots = (function () {
-
-var exports = {};
-
 exports.hide_errors = function () {
     $('#bot_table_error').hide();
     $('.bot_error').hide();
@@ -95,7 +91,7 @@ exports.render_bots = function () {
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
     });
 
-    if (settings_bots.can_create_new_bots()) {
+    if (exports.can_create_new_bots()) {
         if (!user_owns_an_active_bot) {
             focus_tab.add_a_new_bot_tab();
             return;
@@ -524,10 +520,4 @@ exports.set_up = function () {
 
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_bots;
-}
-window.settings_bots = settings_bots;
+window.settings_bots = exports;

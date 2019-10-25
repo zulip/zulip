@@ -12,10 +12,6 @@ This library implements two related, similar concepts:
 
 var Dict = require('./dict').Dict;
 
-var condense = (function () {
-
-var exports = {};
-
 var _message_content_height_cache = new Dict();
 
 function show_more_link(row) {
@@ -134,7 +130,7 @@ exports.toggle_collapse = function (message) {
             exports.show_message_expander(row);
             row.find(".message_condenser").hide();
         }
-        condense.uncollapse(row);
+        exports.uncollapse(row);
     } else {
         if (is_condensed) {
             message.condensed = false;
@@ -142,7 +138,7 @@ exports.toggle_collapse = function (message) {
             exports.hide_message_expander(row);
             row.find(".message_condenser").show();
         } else {
-            condense.collapse(row);
+            exports.collapse(row);
         }
     }
 };
@@ -246,10 +242,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = condense;
-}
-window.condense = condense;
+window.condense = exports;

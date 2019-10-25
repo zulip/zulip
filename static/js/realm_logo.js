@@ -1,6 +1,3 @@
-var realm_logo = (function () {
-var exports = {};
-
 exports.build_realm_logo_widget = function (upload_function, is_night) {
     var logo_section_id = '#day-logo-section';
     if (is_night) {
@@ -83,10 +80,4 @@ exports.rerender = function () {
                               night_file_input);
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = realm_logo;
-}
-window.realm_logo = realm_logo;
+window.realm_logo = exports;

@@ -1,7 +1,3 @@
-var message_events = (function () {
-
-var exports = {};
-
 function maybe_add_narrowed_messages(messages, msg_list) {
     var ids = [];
     _.each(messages, function (elem) {
@@ -282,10 +278,4 @@ exports.update_messages = function update_messages(events) {
 };
 
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = message_events;
-}
-window.message_events = message_events;
+window.message_events = exports;

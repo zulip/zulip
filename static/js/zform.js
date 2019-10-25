@@ -1,9 +1,5 @@
 var render_widgets_zform_choices = require('../templates/widgets/zform_choices.hbs');
 
-var zform = (function () {
-
-var exports = {};
-
 exports.validate_extra_data = function (data) {
     function check(data) {
         function check_choice_data(data) {
@@ -109,11 +105,4 @@ exports.activate = function (opts) {
     return self;
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = zform;
-}
-
-window.zform = zform;
+window.zform = exports;

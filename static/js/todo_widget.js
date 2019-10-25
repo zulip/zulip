@@ -1,10 +1,6 @@
 var render_widgets_todo_widget = require('../templates/widgets/todo_widget.hbs');
 var render_widgets_todo_widget_tasks = require('../templates/widgets/todo_widget_tasks.hbs');
 
-var todo_widget = (function () {
-
-var exports = {};
-
 exports.task_data_holder = function () {
     var self = {};
 
@@ -176,11 +172,4 @@ exports.activate = function (opts) {
     render_results();
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = todo_widget;
-}
-
-window.todo_widget = todo_widget;
+window.todo_widget = exports;

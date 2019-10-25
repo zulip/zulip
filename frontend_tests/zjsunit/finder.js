@@ -1,7 +1,3 @@
-var finder = (function () {
-
-var exports = {};
-
 var _ = require('underscore/underscore.js');
 var fs = require('fs');
 var path = require('path');
@@ -47,8 +43,3 @@ exports.find_files_to_run = function () {
 
     return files;
 };
-
-
-return exports;
-}());
-module.exports = finder;

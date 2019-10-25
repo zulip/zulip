@@ -1,10 +1,6 @@
 var render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
 var Dict = require('./dict').Dict;
 
-var typeahead_helper = (function () {
-
-var exports = {};
-
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
 exports.get_cleaned_pm_recipients = function (query_string) {
@@ -126,10 +122,10 @@ exports.render_user_group = function (user_group) {
 
 exports.render_person_or_user_group = function (item) {
     if (user_groups.is_user_group(item)) {
-        return typeahead_helper.render_user_group(item);
+        return exports.render_user_group(item);
     }
 
-    return typeahead_helper.render_person(item);
+    return exports.render_person(item);
 };
 
 exports.clear_rendered_stream = function (stream_id) {
@@ -434,7 +430,7 @@ exports.sort_people_and_user_groups = function (query, matches) {
         }
     });
 
-    var recipients = typeahead_helper.sort_recipients(
+    var recipients = exports.sort_recipients(
         users,
         query,
         compose_state.stream_name(),
@@ -443,10 +439,4 @@ exports.sort_people_and_user_groups = function (query, matches) {
     return recipients;
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = typeahead_helper;
-}
-window.typeahead_helper = typeahead_helper;
+window.typeahead_helper = exports;

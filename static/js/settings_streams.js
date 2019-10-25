@@ -1,10 +1,6 @@
 var render_admin_default_streams_list = require("../templates/admin_default_streams_list.hbs");
 var Dict = require('./dict').Dict;
 
-var settings_streams = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -165,10 +161,4 @@ exports.build_page = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_streams;
-}
-window.settings_streams = settings_streams;
+window.settings_streams = exports;

@@ -1,8 +1,3 @@
-var navigate = (function () {
-
-var exports = {};
-
-
 function go_to_row(msg_id) {
     current_msg_list.select_id(msg_id,
                                {then_scroll: true,
@@ -146,10 +141,4 @@ exports.maybe_scroll_to_selected = function () {
 
 
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = navigate;
-}
-window.navigate = navigate;
+window.navigate = exports;

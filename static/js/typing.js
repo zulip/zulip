@@ -1,8 +1,5 @@
 const typing_status = require("../shared/js/typing_status");
 
-var typing = (function () {
-var exports = {};
-
 // This module handles the outbound side of typing indicators.
 // We detect changes in the compose box and notify the server
 // when we are typing.  For the inbound side see typing_events.js.
@@ -76,10 +73,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = typing;
-}
-window.typing = typing;
+window.typing = exports;

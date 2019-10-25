@@ -1,7 +1,3 @@
-var narrow = (function () {
-
-var exports = {};
-
 var unnarrow_times;
 
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
@@ -953,10 +949,4 @@ exports.hide_empty_narrow_message = function () {
     $("#left_bar_compose_reply_button_big").removeAttr("disabled");
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = narrow;
-}
-window.narrow = narrow;
+window.narrow = exports;

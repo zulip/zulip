@@ -1,9 +1,5 @@
 var render_sidebar_private_message_list = require('../templates/sidebar_private_message_list.hbs');
 
-var pm_list = (function () {
-
-var exports = {};
-
 var private_messages_open = false;
 
 // This module manages the "Private Messages" section in the upper
@@ -45,7 +41,7 @@ exports.get_li_for_user_ids_string = function (user_ids_string) {
 };
 
 function set_pm_conversation_count(user_ids_string, count) {
-    var pm_li = pm_list.get_li_for_user_ids_string(user_ids_string);
+    var pm_li = exports.get_li_for_user_ids_string(user_ids_string);
     var count_span = pm_li.find('.private_message_count');
     var value_span = count_span.find('.value');
 
@@ -196,10 +192,4 @@ exports.update_dom_with_unread_counts = function (counts) {
 exports.initialize = function () {
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = pm_list;
-}
-
-window.pm_list = pm_list;
+window.pm_list = exports;

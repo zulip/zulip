@@ -1,6 +1,3 @@
-var lightbox = (function () {
-var exports = {};
-
 var is_open = false;
 // the asset map is a map of all retrieved images and YouTube videos that are
 // memoized instead of being looked up multiple times.
@@ -276,9 +273,9 @@ exports.initialize = function () {
         var direction = $(this).attr("data-direction");
 
         if (direction === 'next') {
-            lightbox.next();
+            exports.next();
         } else if (direction === 'prev') {
-            lightbox.prev();
+            exports.prev();
         }
     });
 
@@ -316,10 +313,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = lightbox;
-}
-window.lightbox = lightbox;
+window.lightbox = exports;

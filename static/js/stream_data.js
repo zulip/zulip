@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var stream_data = (function () {
-
-var exports = {};
-
 
 // The stream_info variable maps stream names to stream properties objects
 // Call clear_subscriptions() to initialize it.
@@ -231,10 +227,10 @@ exports.get_invite_stream_data = function () {
             name: sub.name,
             stream_id: sub.stream_id,
             invite_only: sub.invite_only,
-            default_stream: stream_data.get_default_status(sub.name),
+            default_stream: exports.get_default_status(sub.name),
         };
     };
-    var invite_stream_data = _.map(stream_data.subscribed_subs(), filter_stream_data);
+    var invite_stream_data = _.map(exports.subscribed_subs(), filter_stream_data);
     var default_stream_data = _.map(page_params.realm_default_streams, filter_stream_data);
 
     // Since, union doesn't work on array of objects we are using filter
@@ -654,7 +650,7 @@ exports.sort_for_stream_settings = function (stream_ids) {
     //       which uses Intl.Collator() when possible.
 
     function name(stream_id) {
-        var sub = stream_data.get_sub_by_id(stream_id);
+        var sub = exports.get_sub_by_id(stream_id);
         if (!sub) {
             return '';
         }
@@ -736,10 +732,4 @@ exports.remove_default_stream = function (stream_id) {
     default_stream_ids.del(stream_id);
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = stream_data;
-}
-window.stream_data = stream_data;
+window.stream_data = exports;

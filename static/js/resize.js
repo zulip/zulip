@@ -1,9 +1,5 @@
 var autosize = require('autosize');
 
-var resize = (function () {
-
-var exports = {};
-
 var narrow_window = false;
 
 function confine_to_range(lo, val, hi) {
@@ -281,10 +277,4 @@ exports.handler = function () {
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = resize;
-}
-window.resize = resize;
+window.resize = exports;

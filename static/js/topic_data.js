@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var topic_data = (function () {
-
-var exports = {};
-
 var stream_dict = new Dict(); // stream_id -> array of objects
 
 exports.stream_has_topics = function (stream_id) {
@@ -200,10 +196,4 @@ exports.reset = function () {
     stream_dict = new Dict();
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = topic_data;
-}
-window.topic_data = topic_data;
+window.topic_data = exports;

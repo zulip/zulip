@@ -1,7 +1,3 @@
-var unread_ops = (function () {
-
-var exports = {};
-
 exports.mark_all_as_read = function (cont) {
     unread.declare_bankruptcy();
     unread_ui.update_unread_counts();
@@ -119,9 +115,4 @@ exports.mark_topic_as_read = function (stream_id, topic, cont) {
 };
 
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = unread_ops;
-}
-window.unread_ops = unread_ops;
+window.unread_ops = exports;

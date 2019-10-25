@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var recent_senders = (function () {
-
-var exports = {};
-
 var topic_senders = new Dict(); // key is stream-id, value is Dict
 var stream_senders = new Dict(); // key is stream-id, value is Dict
 
@@ -67,10 +63,4 @@ exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
     return 0;
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = recent_senders;
-}
-window.recent_senders = recent_senders;
+window.recent_senders = exports;

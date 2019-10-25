@@ -1,7 +1,3 @@
-var gear_menu = (function () {
-
-var exports = {};
-
 /*
 For various historical reasons there isn't one
 single chunk of code that really makes our gear
@@ -140,10 +136,4 @@ exports.close = function () {
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = gear_menu;
-}
-window.gear_menu = gear_menu;
+window.gear_menu = exports;

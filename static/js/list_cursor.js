@@ -139,7 +139,5 @@ var list_cursor = function (opts) {
 
     return self;
 };
-if (typeof module !== 'undefined') {
-    module.exports = list_cursor;
-}
+module.exports = list_cursor;
 window.list_cursor = list_cursor;

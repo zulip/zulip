@@ -1,7 +1,3 @@
-var message_scroll = (function () {
-
-var exports = {};
-
 var actively_scrolling = false;
 
 var loading_more_messages_indicator_showing = false;
@@ -80,10 +76,4 @@ exports.initialize = function () {
 };
 
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = message_scroll;
-}
-window.message_scroll = message_scroll;
+window.message_scroll = exports;

@@ -1,7 +1,3 @@
-var upload_widget = (function () {
-
-var exports = {};
-
 var default_max_file_size = 5;
 
 var supported_types = [
@@ -172,11 +168,4 @@ exports.build_direct_upload_widget = function (
     });
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = upload_widget;
-}
-window.upload_widget = upload_widget;
+window.upload_widget = exports;

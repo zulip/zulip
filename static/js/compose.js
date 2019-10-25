@@ -4,10 +4,7 @@ var render_compose_invite_users = require("../templates/compose_invite_users.hbs
 var render_compose_not_subscribed = require("../templates/compose_not_subscribed.hbs");
 var render_compose_private_stream_alert = require("../templates/compose_private_stream_alert.hbs");
 
-var compose = (function () {
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
-
-var exports = {};
 
 /* Track the state of the @all warning. The user must acknowledge that they are spamming the entire
    stream before the warning will go away. If they try to send before explicitly dismissing the
@@ -162,7 +159,7 @@ function create_message_object() {
     // Topics are optional, and we provide a placeholder if one isn't given.
     var topic = compose_state.topic();
     if (topic === "") {
-        topic = compose.empty_topic_placeholder();
+        topic = exports.empty_topic_placeholder();
     }
 
     var content = make_uploads_relative(compose_state.message_content());
@@ -354,7 +351,7 @@ exports.finish = function () {
         return;
     }
 
-    if (!compose.validate()) {
+    if (!exports.validate()) {
         return false;
     }
 
@@ -434,7 +431,7 @@ function validate_stream_message_mentions(stream_name) {
 
     // check if @all or @everyone is in the message
     if (util.is_all_or_everyone_mentioned(compose_state.message_content()) &&
-        stream_count > compose.all_everyone_warn_threshold) {
+        stream_count > exports.all_everyone_warn_threshold) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
@@ -458,7 +455,7 @@ function validate_stream_message_announce(stream_name) {
     var stream_count = stream_data.get_subscriber_count(stream_name) || 0;
 
     if (stream_name === "announce" &&
-        stream_count > compose.announce_warn_threshold) {
+        stream_count > exports.announce_warn_threshold) {
         if (user_acknowledged_announce === undefined ||
             user_acknowledged_announce === false) {
             // user has not seen a warning message yet if undefined
@@ -797,7 +794,7 @@ exports.initialize = function () {
 
     $("#compose form").on("submit", function (e) {
         e.preventDefault();
-        compose.finish();
+        exports.finish();
     });
 
     resize.watch_manual_resize("#compose-textarea");
@@ -861,7 +858,7 @@ exports.initialize = function () {
         $(event.target).parents('.compose-all-everyone').remove();
         user_acknowledged_all_everyone = true;
         exports.clear_all_everyone_warnings();
-        compose.finish();
+        exports.finish();
     });
 
     $("#compose-announce").on('click', '.compose-announce-confirm', function (event) {
@@ -870,7 +867,7 @@ exports.initialize = function () {
         $(event.target).parents('.compose-announce').remove();
         user_acknowledged_announce = true;
         exports.clear_announce_warnings();
-        compose.finish();
+        exports.finish();
     });
 
     $("#compose-send-status").on('click', '.sub_unsub_button', function (event) {
@@ -1093,10 +1090,4 @@ exports.initialize = function () {
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = compose;
-}
-window.compose = compose;
+window.compose = exports;

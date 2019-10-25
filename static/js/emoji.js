@@ -1,7 +1,3 @@
-var emoji = (function () {
-
-var exports = {};
-
 // `emojis_by_name` is the central data source that is supposed to be
 // used by every widget in the webapp for gathering data for displaying
 // emojis. Emoji picker uses this data to derive data for its own use.
@@ -111,7 +107,7 @@ exports.build_emoji_data = function (realm_emojis) {
                     emoji_dict = {
                         name: emoji_name,
                         display_name: emoji_name,
-                        aliases: emoji.default_emoji_aliases[codepoint],
+                        aliases: exports.default_emoji_aliases[codepoint],
                         is_realm_emoji: false,
                         emoji_code: codepoint,
                         has_reacted: false,
@@ -194,9 +190,4 @@ exports.translate_emoticons_to_names = function translate_emoticons_to_names(tex
     return translated;
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = emoji;
-}
-window.emoji = emoji;
+window.emoji = exports;

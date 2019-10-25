@@ -1,7 +1,3 @@
-var transmit = (function () {
-
-var exports = {};
-
 var socket;
 exports.initialize =  function () {
     // We initialize the socket inside a function so that this code
@@ -114,7 +110,7 @@ exports.reply_message = function (opts) {
         reply.content = content;
         util.set_message_topic(reply, util.get_message_topic(message));
 
-        transmit.send_message(reply, success, error);
+        exports.send_message(reply, success, error);
         return;
     }
 
@@ -125,17 +121,11 @@ exports.reply_message = function (opts) {
         reply.to = JSON.stringify(pm_recipient.split(','));
         reply.content = content;
 
-        transmit.send_message(reply, success, error);
+        exports.send_message(reply, success, error);
         return;
     }
 
     blueslip.error('unknown message type: ' + message.type);
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = transmit;
-}
-window.transmit = transmit;
+window.transmit = exports;

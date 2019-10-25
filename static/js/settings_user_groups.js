@@ -1,10 +1,6 @@
 var render_admin_user_group_list = require('../templates/admin_user_group_list.hbs');
 var render_confirm_delete_user = require('../templates/confirm_delete_user.hbs');
 
-var settings_user_groups = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -212,7 +208,7 @@ exports.populate_user_groups = function () {
             }
             if ($(event.relatedTarget).closest('#user-groups #' + data.id) &&
                 $(event.relatedTarget).closest('.save-status.btn-danger').length) {
-                settings_user_groups.reload();
+                exports.reload();
                 return;
             }
             save_name_desc();
@@ -311,7 +307,7 @@ exports.set_up = function () {
                 },
                 success: function () {
                     user_groups.remove(user_group);
-                    settings_user_groups.reload();
+                    exports.reload();
                 },
                 error: function () {
                     btn.text(i18n.t("Failed!"));
@@ -342,10 +338,4 @@ exports.set_up = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_user_groups;
-}
-window.settings_user_groups = settings_user_groups;
+window.settings_user_groups = exports;

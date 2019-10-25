@@ -1,9 +1,5 @@
 var autosize = require('autosize');
 
-var compose_ui = (function () {
-
-var exports = {};
-
 exports.autosize_textarea = function () {
     autosize.update($("#compose-textarea"));
 };
@@ -116,10 +112,4 @@ exports.compute_placeholder_text = function (opts) {
     return i18n.t("Compose your message here");
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = compose_ui;
-}
-window.compose_ui = compose_ui;
+window.compose_ui = exports;

@@ -1,10 +1,6 @@
 var render_compose_notification = require('../templates/compose_notification.hbs');
 var render_notification = require('../templates/notification.hbs');
 
-var notifications = (function () {
-
-var exports = {};
-
 var notice_memory = {};
 
 // When you start Zulip, window_has_focus should be true, but it might not be the
@@ -192,9 +188,9 @@ exports.hide_or_show_history_limit_message = function (msg_list) {
     }
 
     if (msg_list.fetch_status.history_limited()) {
-        notifications.show_history_limit_message();
+        exports.show_history_limit_message();
     } else {
-        notifications.hide_history_limit_message();
+        exports.hide_history_limit_message();
     }
 };
 
@@ -747,11 +743,4 @@ exports.handle_global_notification_updates = function (notification_name, settin
     }
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = notifications;
-}
-window.notifications = notifications;
+window.notifications = exports;

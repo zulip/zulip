@@ -1,5 +1,3 @@
-var Filter = (function () {
-
 function zephyr_stream_name_match(message, operand) {
     // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
@@ -715,11 +713,6 @@ Filter.describe = function (operators) {
     return Handlebars.Utils.escapeExpression(describe_unescaped(operators));
 };
 
-return Filter;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = Filter;
-}
+module.exports = Filter;
 
 window.Filter = Filter;

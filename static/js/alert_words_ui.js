@@ -1,9 +1,5 @@
 var render_alert_word_settings_item = require('../templates/alert_word_settings_item.hbs');
 
-var alert_words_ui = (function () {
-
-var exports = {};
-
 exports.render_alert_words_ui = function () {
     var words = alert_words.words;
     var word_list = $('#alert_words_list');
@@ -109,10 +105,4 @@ exports.set_up_alert_words = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = alert_words_ui;
-}
-window.alert_words_ui = alert_words_ui;
+window.alert_words_ui = exports;

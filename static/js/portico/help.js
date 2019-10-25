@@ -63,7 +63,6 @@ function scrollToHash(simplebar) {
     }
 }
 
-(function () {
 var html_map = {};
 var loading = {
     name: null,
@@ -167,4 +166,3 @@ window.addEventListener("popstate", function () {
 });
 
 $('body').addClass('noscroll');
-}());

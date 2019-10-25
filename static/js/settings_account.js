@@ -2,10 +2,6 @@ var render_settings_custom_user_profile_field = require("../templates/settings/c
 var render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
 var render_settings_api_key_modal = require('../templates/settings/api_key_modal.hbs');
 
-var settings_account = (function () {
-
-var exports = {};
-
 exports.update_email = function (new_email) {
     var email_input = $('#email_value');
 
@@ -601,10 +597,4 @@ exports.set_up = function () {
 };
 
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_account;
-}
-window.settings_account = settings_account;
+window.settings_account = exports;

@@ -1,7 +1,3 @@
-var components = (function () {
-
-var exports = {};
-
 /* USAGE:
     Toggle x = components.toggle({
         selected: Integer selected_index,
@@ -137,10 +133,4 @@ exports.toggle = function (opts) {
     return prototype;
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = components;
-}
-window.components = components;
+window.components = exports;

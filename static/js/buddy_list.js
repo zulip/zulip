@@ -1,8 +1,6 @@
 var render_user_presence_row = require('../templates/user_presence_row.hbs');
 var render_user_presence_rows = require('../templates/user_presence_rows.hbs');
 
-var buddy_list = (function () {
-
 function buddy_list_conf() {
     var conf = {};
 
@@ -339,13 +337,8 @@ function buddy_list_create() {
     return self;
 }
 
-var exports = buddy_list_create();
+var buddy_list = buddy_list_create();
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = buddy_list;
-}
+module.exports = buddy_list;
 
 window.buddy_list = buddy_list;

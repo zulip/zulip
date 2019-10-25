@@ -1,7 +1,3 @@
-var rtl = (function () {
-
-var exports = {};
-
 // How to determine the direction of a paragraph (P1-P3): http://www.unicode.org/reports/tr9/tr9-35.html#The_Paragraph_Level
 // Embedding level: http://www.unicode.org/reports/tr9/tr9-35.html#BD2
 // How to find the matching PDI for an isolation initiator: http://www.unicode.org/reports/tr9/tr9-35.html#BD9
@@ -146,10 +142,4 @@ exports.set_rtl_class_for_textarea = function (textarea) {
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = rtl;
-}
-window.rtl = rtl;
+window.rtl = exports;

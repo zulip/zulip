@@ -1,7 +1,3 @@
-var fenced_code = (function () {
-
-var exports = {};
-
 // Parsing routine that can be dropped in to message parsing
 // and formats code blocks
 //
@@ -189,10 +185,4 @@ exports.process_fenced_code = function (content) {
     return output.join('\n');
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = fenced_code;
-}
-window.fenced_code = fenced_code;
+window.fenced_code = exports;

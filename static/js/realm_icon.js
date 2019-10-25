@@ -1,7 +1,3 @@
-var realm_icon = (function () {
-
-var exports = {};
-
 exports.build_realm_icon_widget = function (upload_function) {
     var get_file_input = function () {
         return $('#realm_icon_file_input').expectOne();
@@ -42,10 +38,4 @@ exports.rerender = function () {
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = realm_icon;
-}
-window.realm_icon = realm_icon;
+window.realm_icon = exports;

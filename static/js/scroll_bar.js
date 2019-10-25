@@ -1,7 +1,3 @@
-var scroll_bar = (function () {
-
-var exports = {};
-
 // A few of our width properties in zulip depend on the width of the
 // browser scrollbar that is generated at the far right side of the
 // page, which unfortunately varies depending on the browser and
@@ -82,10 +78,4 @@ exports.set_layout_width = function () {
     }
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = scroll_bar;
-}
-
-window.scroll_bar = scroll_bar;
+window.scroll_bar = exports;

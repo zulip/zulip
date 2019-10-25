@@ -1,6 +1,4 @@
-var i18n = {};
-
-i18n.t = function (str, context) {
+exports.t = function (str, context) {
     // We are currently assuming that we will receive context in form of a Dict
     // of key value pairs and string will be having substitution for keywords
     // like these "__keyword__".
@@ -28,5 +26,3 @@ i18n.t = function (str, context) {
     });
     return 'translated: ' + str;
 };
-
-module.exports = i18n;

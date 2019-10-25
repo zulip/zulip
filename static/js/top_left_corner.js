@@ -1,7 +1,3 @@
-var top_left_corner = (function () {
-
-var exports = {};
-
 exports.update_count_in_dom = function (unread_count_elem, count) {
     var count_span = unread_count_elem.find('.count');
     var value_span = count_span.find('.value');
@@ -111,9 +107,4 @@ exports.handle_narrow_deactivated = function () {
     filter_li.addClass('active-filter');
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = top_left_corner;
-}
-window.top_left_corner = top_left_corner;
+window.top_left_corner = exports;

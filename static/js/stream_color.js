@@ -1,7 +1,3 @@
-var stream_color = (function () {
-
-var exports = {};
-
 exports.default_color = "#c2c2c2";
 
 // Classes which could be returned by get_color_class.
@@ -163,10 +159,4 @@ exports.get_color_class = _.memoize(function (color) {
     return lightness < lightness_threshold ? 'dark_background' : '';
 });
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = stream_color;
-}
-window.stream_color = stream_color;
+window.stream_color = exports;

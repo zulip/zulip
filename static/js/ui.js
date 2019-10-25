@@ -1,8 +1,4 @@
-var ui = (function () {
-
 var SimpleBar = require("simplebar").default;
-
-var exports = {};
 
 // What, if anything, obscures the home tab?
 
@@ -202,10 +198,4 @@ exports.initialize = function () {
     exports.show_error_for_unsupported_platform();
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = ui;
-}
-window.ui = ui;
+window.ui = exports;

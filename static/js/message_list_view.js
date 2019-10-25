@@ -19,8 +19,6 @@ function MessageListView(list, table_name, collapse_messages) {
     this._render_win_end = 0;
 }
 
-(function () {
-
 function get_user_id_for_mention_button(elem) {
     var user_id = $(elem).attr('data-user-id');
     // Handle legacy markdown that was rendered before we cut
@@ -1357,9 +1355,5 @@ MessageListView.prototype = {
     },
 };
 
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = MessageListView;
-}
+module.exports = MessageListView;
 window.MessageListView = MessageListView;

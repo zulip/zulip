@@ -1,7 +1,3 @@
-var reminder = (function () {
-
-var exports = {};
-
 var deferred_message_types = {
     scheduled: {
         delivery_type: 'send_later',
@@ -151,12 +147,4 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
     transmit.send_message(reminder_message, success, error);
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = reminder;
-}
-
-window.reminder = reminder;
+window.reminder = exports;

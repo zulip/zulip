@@ -1,5 +1,3 @@
-var localstorage = (function () {
-
 var ls = {
     // parse JSON without throwing an error.
     parseJSON: function (str) {
@@ -89,7 +87,7 @@ var ls = {
 };
 
 // return a new function instance that has instance-scoped variables.
-var exports = function () {
+var localstorage = function () {
     var _data = {
         VERSION: 1,
         expires: Infinity,
@@ -164,7 +162,7 @@ var exports = function () {
 
 var warned_of_localstorage = false;
 
-exports.supported = function supports_localstorage() {
+localstorage.supported = function supports_localstorage() {
     try {
         return window.hasOwnProperty('localStorage') && window.localStorage !== null;
     } catch (e) {
@@ -176,10 +174,5 @@ exports.supported = function supports_localstorage() {
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = localstorage;
-}
+module.exports = localstorage;
 window.localstorage = localstorage;

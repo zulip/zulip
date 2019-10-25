@@ -3,10 +3,6 @@ var render_settings_admin_realm_domains_list = require("../templates/settings/ad
 var render_settings_admin_realm_dropdown_stream_list = require("../templates/settings/admin_realm_dropdown_stream_list.hbs");
 var render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
 
-var settings_org = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -1210,10 +1206,4 @@ exports.build_page = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_org;
-}
-window.settings_org = settings_org;
+window.settings_org = exports;

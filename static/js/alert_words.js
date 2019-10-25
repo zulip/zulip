@@ -1,7 +1,3 @@
-var alert_words = (function () {
-
-var exports = {};
-
 exports.words = page_params.alert_words;
 exports.set_words = function (value) {
     exports.words = value;
@@ -59,10 +55,4 @@ exports.notifies = function (message) {
     return !people.is_current_user(message.sender_email) && message.alerted;
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = alert_words;
-}
-window.alert_words = alert_words;
+window.alert_words = exports;

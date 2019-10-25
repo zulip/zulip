@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var color_data = (function () {
-
-var exports = {};
-
 // These colors are used now for streams.
 var stream_colors = [
     "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
@@ -60,10 +56,4 @@ exports.pick_color = function () {
     return color;
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = color_data;
-}
-window.color_data = color_data;
+window.color_data = exports;

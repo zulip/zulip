@@ -1,6 +1,3 @@
-var message_viewport = (function () {
-var exports = {};
-
 var jwindow;
 var dimensions = {};
 var in_stoppable_autoscroll = false;
@@ -226,7 +223,7 @@ exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
     }
     var ret = exports.message_pane.scrollTop(target_scrollTop);
     var new_scrollTop = exports.message_pane.scrollTop();
-    var space_to_scroll = $("#bottom_whitespace").offset().top - message_viewport.height();
+    var space_to_scroll = $("#bottom_whitespace").offset().top - exports.height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
     if (space_to_scroll > 0 && target_scrollTop > 0 &&
@@ -359,12 +356,12 @@ exports.keep_pointer_in_view = function () {
         return;
     }
 
-    var info = message_viewport.message_viewport_info();
+    var info = exports.message_viewport_info();
     var top_threshold = info.visible_top + 1 / 10 * info.visible_height;
     var bottom_threshold = info.visible_top + 9 / 10 * info.visible_height;
 
     function message_is_far_enough_down() {
-        if (message_viewport.at_top()) {
+        if (exports.at_top()) {
             return true;
         }
 
@@ -390,7 +387,7 @@ exports.keep_pointer_in_view = function () {
     }
 
     function message_is_far_enough_up() {
-        return message_viewport.at_bottom() ||
+        return exports.at_bottom() ||
             next_row.offset().top <= bottom_threshold;
     }
 
@@ -433,10 +430,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = message_viewport;
-}
-window.message_viewport = message_viewport;
+window.message_viewport = exports;

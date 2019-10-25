@@ -1,5 +1,3 @@
-var exports = {};
-
 exports.make_zblueslip = function (opts) {
 
     var lib = {};
@@ -83,5 +81,3 @@ exports.make_zblueslip = function (opts) {
 
     return lib;
 };
-
-module.exports = exports;

@@ -3,10 +3,6 @@ var render_subscription_settings = require('../templates/subscription_settings.h
 var render_subscription_table_body = require('../templates/subscription_table_body.hbs');
 var render_subscriptions = require('../templates/subscriptions.hbs');
 
-var subs = (function () {
-
-var exports = {};
-
 exports.show_subs_pane = {
     nothing_selected: function () {
         $(".nothing-selected, #stream_settings_title").show();
@@ -681,7 +677,7 @@ exports.keyboard_sub = function () {
     var active_data = exports.get_active_data();
     var row_data = get_row_data(active_data.row);
     if (row_data) {
-        subs.sub_or_unsub(row_data.object);
+        exports.sub_or_unsub(row_data.object);
         if (row_data.object.subscribed && active_data.tab.text() === 'Subscribed') {
             active_data.row.addClass('notdisplayed');
             active_data.row.removeClass('active');
@@ -846,10 +842,4 @@ exports.initialize = function () {
 
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = subs;
-}
-window.subs = subs;
+window.subs = exports;

@@ -2,10 +2,6 @@ var render_admin_user_list = require("../templates/admin_user_list.hbs");
 var render_bot_owner_select = require("../templates/bot_owner_select.hbs");
 var render_user_info_form_modal = require('../templates/user_info_form_modal.hbs');
 
-var settings_users = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -501,10 +497,4 @@ exports.on_load_success = function (realm_people_data) {
 
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_users;
-}
-window.settings_users = settings_users;
+window.settings_users = exports;

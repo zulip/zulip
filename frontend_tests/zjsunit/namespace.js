@@ -1,7 +1,4 @@
-var namespace = (function () {
-
 var _ = require('underscore/underscore.js');
-var exports = {};
 
 var dependencies = [];
 var requires = [];
@@ -91,9 +88,3 @@ exports.with_overrides = function (test_function) {
         f();
     });
 };
-
-
-
-return exports;
-}());
-module.exports = namespace;

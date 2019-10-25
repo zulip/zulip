@@ -46,7 +46,5 @@ var FetchStatus = function () {
     return self;
 
 };
-if (typeof module !== 'undefined') {
-    module.exports = FetchStatus;
-}
+module.exports = FetchStatus;
 window.FetchStatus = FetchStatus;

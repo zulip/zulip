@@ -1,4 +1,4 @@
-var common = require('../casper_lib/common.js').common;
+var common = require('../casper_lib/common.js');
 
 var email = 'alice@test.example.com';
 var subdomain = 'testsubdomain';

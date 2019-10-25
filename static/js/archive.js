@@ -1,9 +1,5 @@
 var render_archive_message_group = require('../templates/archive_message_group.hbs');
 
-var archive = (function () {
-
-var exports = {};
-
 function should_separate_into_groups(current_msg_time, next_msg_time) {
     var current_time = new XDate(current_msg_time * 1000);
     var next_time = new XDate(next_msg_time * 1000);
@@ -98,16 +94,12 @@ exports.initialize = function () {
     all_message_timestamps_to_human_readable();
 };
 
-return exports;
-
-}());
-
-var current_msg_list = {
+exports.current_msg_list = {
     selected_row: function () {
         return $('.message_row').last();
     },
 };
-var rows = {
+exports.rows = {
     get_message_recipient_row: function (message_row) {
         return $(message_row).parent('.recipient_row');
     },
@@ -118,12 +110,6 @@ var rows = {
         return parseFloat(message_row.attr('zid'));
     },
 };
-
-if (typeof module !== 'undefined') {
-    module.exports.current_msg_list = current_msg_list;
-    module.exports.rows = rows;
-    module.exports = archive;
-}
 
 var scroll_timer;
 function scroll_finish() {
@@ -141,5 +127,5 @@ $(function () {
     $('.app').scroll(_.throttle(function () {
         scroll_finish();
     }, 50));
-    archive.initialize();
+    exports.initialize();
 });

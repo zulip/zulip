@@ -2,10 +2,6 @@ var render_announce_stream_docs = require('../templates/announce_stream_docs.hbs
 var render_new_stream_users = require('../templates/new_stream_users.hbs');
 var render_subscription_invites_warning_modal = require('../templates/subscription_invites_warning_modal.hbs');
 
-var stream_create = (function () {
-
-var exports = {};
-
 var created_stream;
 
 exports.reset_created_stream = function () {
@@ -461,10 +457,4 @@ exports.set_up_handlers = function () {
 
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = stream_create;
-}
-window.stream_create = stream_create;
+window.stream_create = exports;

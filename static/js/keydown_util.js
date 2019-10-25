@@ -1,7 +1,3 @@
-var keydown_util = (function () {
-
-var exports = {};
-
 /*
     See hotkey.js for handlers that are more app-wide.
 */
@@ -41,10 +37,4 @@ exports.handle = function (opts) {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = keydown_util;
-}
-window.keydown_util = keydown_util;
+window.keydown_util = exports;

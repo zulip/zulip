@@ -1,7 +1,3 @@
-var rows = (function () {
-
-var exports = {};
-
 // We don't need an andSelf() here because we already know
 // that our next element is *not* a message_row, so this
 // isn't going to end up empty unless we're at the bottom or top.
@@ -107,11 +103,4 @@ exports.id_for_recipient_row = function (recipient_row) {
     return exports.id(msg_row);
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = rows;
-}
-window.rows = rows;
+window.rows = exports;

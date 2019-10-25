@@ -1,9 +1,5 @@
 var render_admin_filter_list = require("../templates/admin_filter_list.hbs");
 
-var settings_linkifiers = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -161,10 +157,4 @@ exports.build_page = function () {
 
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_linkifiers;
-}
-window.settings_linkifiers = settings_linkifiers;
+window.settings_linkifiers = exports;

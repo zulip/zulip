@@ -1,7 +1,3 @@
-var integration_bot_widget = (function () {
-
-var exports = {};
-
 // This function subscribes the newly created bot to the stream specified by the user.
 function subscribe_to_stream(bot_email, stream_name) {
     var bot_user_id = people.get_user_id(bot_email);
@@ -74,11 +70,4 @@ exports.set_integration_bot_url = function (
                stream_name, api_url, integration_url, on_create_bot_success);
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = integration_bot_widget;
-}
-window.integration_bot_widget = integration_bot_widget;
+window.integration_bot_widget = exports;

@@ -114,7 +114,5 @@ var user_search = function (opts) {
     return self;
 };
 
-if (typeof module !== 'undefined') {
-    module.exports = user_search;
-}
+module.exports = user_search;
 window.user_search = user_search;

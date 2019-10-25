@@ -1,9 +1,5 @@
 var render_admin_tab = require('../templates/admin_tab.hbs');
 
-var admin = (function () {
-
-var exports = {};
-
 var admin_settings_label = {
     // Organization settings
     realm_allow_community_topic_editing: i18n.t("Users can edit the topic of any message"),
@@ -112,11 +108,4 @@ exports.launch = function (section) {
     settings_toggle.highlight_toggle('organization');
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = admin;
-}
-window.admin = admin;
+window.admin = exports;

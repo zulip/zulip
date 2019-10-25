@@ -1,9 +1,5 @@
 var render_feedback_container = require('../templates/feedback_container.hbs');
 
-var feedback_widget = (function () {
-
-var exports = {};
-
 /*
 
 This code lets you show something like this:
@@ -140,10 +136,4 @@ exports.show = function (opts) {
     animate.fadeIn();
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = feedback_widget;
-}
-window.feedback_widget = feedback_widget;
+window.feedback_widget = exports;

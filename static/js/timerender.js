@@ -1,7 +1,3 @@
-var timerender = (function () {
-
-var exports = {};
-
 var next_timerender_id = 0;
 
 var set_to_start_of_day = function (time) {
@@ -288,10 +284,4 @@ exports.set_full_datetime = function timerender_set_full_datetime(message, time_
     time_elem.attr('title', message.full_date_str + ' ' + message.full_time_str);
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = timerender;
-}
-window.timerender = timerender;
+window.timerender = exports;

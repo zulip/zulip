@@ -1,7 +1,3 @@
-var user_pill = (function () {
-
-var exports = {};
-
 // This will be used for pills for things like composing PMs
 // or adding users to a stream/group.
 
@@ -150,10 +146,4 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = user_pill;
-}
-window.user_pill = user_pill;
+window.user_pill = exports;

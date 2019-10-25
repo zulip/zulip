@@ -1,9 +1,5 @@
 var render_loader = require("../templates/loader.hbs");
 
-var loading = (function () {
-
-var exports = {};
-
 exports.make_indicator = function (outer_container, opts) {
     opts = opts || {};
     var container = outer_container;
@@ -69,9 +65,4 @@ exports.destroy_indicator = function (container) {
 };
 
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = loading;
-}
-window.loading = loading;
+window.loading = exports;

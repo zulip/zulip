@@ -2,8 +2,6 @@ var render_message_edit_form = require('../templates/message_edit_form.hbs');
 var render_message_edit_history = require('../templates/message_edit_history.hbs');
 var render_topic_edit_form = require('../templates/topic_edit_form.hbs');
 
-var message_edit = (function () {
-var exports = {};
 var currently_editing_messages = {};
 var currently_deleting_messages = [];
 
@@ -157,7 +155,7 @@ exports.save = function (row, from_topic_edited_only) {
             echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
             row = current_msg_list.get_row(message_id);
         }
-        message_edit.end(row);
+        exports.end(row);
         return;
     }
 
@@ -177,7 +175,7 @@ exports.save = function (row, from_topic_edited_only) {
     }
     if (!changed) {
         // If they didn't change anything, just cancel it.
-        message_edit.end(row);
+        exports.end(row);
         return;
     }
     channel.patch({
@@ -245,7 +243,7 @@ function handle_edit_keydown(from_topic_edited_only, e) {
     }
     e.stopPropagation();
     e.preventDefault();
-    message_edit.save(row, from_topic_edited_only);
+    exports.save(row, from_topic_edited_only);
 }
 
 function timer_text(seconds_left) {
@@ -277,8 +275,8 @@ function edit_message(row, raw_content) {
     // zerver.views.messages.update_message_backend
     var seconds_left_buffer = 5;
     var editability = get_editability(message, seconds_left_buffer);
-    var is_editable = editability === message_edit.editability_types.TOPIC_ONLY ||
-                       editability === message_edit.editability_types.FULL;
+    var is_editable = editability === exports.editability_types.TOPIC_ONLY ||
+                       editability === exports.editability_types.FULL;
     var max_file_upload_size = page_params.max_file_upload_size;
     var file_upload_enabled = false;
 
@@ -290,7 +288,7 @@ function edit_message(row, raw_content) {
         is_stream: message.type === 'stream',
         message_id: message.id,
         is_editable: is_editable,
-        is_content_editable: editability === message_edit.editability_types.FULL,
+        is_content_editable: editability === exports.editability_types.FULL,
         has_been_editable: editability !== editability_types.NO,
         topic: util.get_message_topic(message),
         content: raw_content,
@@ -560,7 +558,7 @@ exports.edit_last_sent_message = function () {
 
     // Finally do the real work!
     compose_actions.cancel();
-    message_edit.start(msg_row, function () {
+    exports.start(msg_row, function () {
         $('#message_edit_content').focus();
     });
 };
@@ -693,10 +691,4 @@ exports.handle_narrow_deactivated = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = message_edit;
-}
-window.message_edit = message_edit;
+window.message_edit = exports;

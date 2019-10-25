@@ -1,10 +1,6 @@
 var render_widgets_poll_widget = require('../templates/widgets/poll_widget.hbs');
 var render_widgets_poll_widget_results = require('../templates/widgets/poll_widget_results.hbs');
 
-var poll_widget = (function () {
-
-var exports = {};
-
 exports.poll_data_holder = function (is_my_poll, question, options) {
     // This object just holds data for a poll, although it
     // works closely with the widget's concept of how data
@@ -372,11 +368,4 @@ exports.activate = function (opts) {
     render_results();
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = poll_widget;
-}
-
-window.poll_widget = poll_widget;
+window.poll_widget = exports;

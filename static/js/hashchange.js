@@ -1,9 +1,5 @@
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
-var hashchange = (function () {
-
-var exports = {};
-
 var changing_hash = false;
 
 function get_full_url(hash) {
@@ -313,10 +309,4 @@ exports.exit_overlay = function (callback) {
     }
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = hashchange;
-}
-window.hashchange = hashchange;
+window.hashchange = exports;

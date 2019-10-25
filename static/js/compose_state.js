@@ -1,7 +1,3 @@
-var compose_state = (function () {
-
-var exports = {};
-
 var message_type = false; // 'stream', 'private', or false-y
 
 exports.set_message_type = function (msg_type) {
@@ -57,10 +53,4 @@ exports.has_message_content = function () {
     return exports.message_content() !== "";
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = compose_state;
-}
-window.compose_state = compose_state;
+window.compose_state = exports;

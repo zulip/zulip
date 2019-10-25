@@ -1,7 +1,3 @@
-var settings_toggle = (function () {
-
-var exports = {};
-
 var toggler;
 
 exports.highlight_toggle = function (tab_name) {
@@ -65,11 +61,4 @@ exports.toggle_org_setting_collapse = function () {
     }
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_toggle;
-}
-window.settings_toggle = settings_toggle;
+window.settings_toggle = exports;

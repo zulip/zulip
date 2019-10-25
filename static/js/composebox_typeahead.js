@@ -1,7 +1,5 @@
 var autosize = require('autosize');
 
-var composebox_typeahead = (function () {
-
 //************************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
 //************************************
@@ -12,8 +10,6 @@ var composebox_typeahead = (function () {
 // So if you are not using trusted input, you MUST use the a
 // highlighter that escapes (i.e. one that calls
 // typeahead_helper.highlight_with_escaping).
-
-var exports = {};
 
 exports.emoji_collection = [];
 
@@ -917,10 +913,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = composebox_typeahead;
-}
-window.composebox_typeahead = composebox_typeahead;
+window.composebox_typeahead = exports;

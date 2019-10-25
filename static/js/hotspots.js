@@ -1,10 +1,6 @@
 var render_hotspot_overlay = require('../templates/hotspot_overlay.hbs');
 var render_intro_reply_hotspot = require('../templates/intro_reply_hotspot.hbs');
 
-var hotspots = (function () {
-
-var exports = {};
-
 // popover orientations
 var TOP = 'top';
 var LEFT = 'left';
@@ -257,9 +253,4 @@ exports.initialize = function () {
     exports.load_new(page_params.hotspots);
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = hotspots;
-}
-window.hotspots = hotspots;
+window.hotspots = exports;

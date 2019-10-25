@@ -1,7 +1,3 @@
-var schema = (function () {
-
-var exports = {};
-
 /*
 
 These runtime schema validators are defensive and
@@ -57,11 +53,4 @@ exports.check_array = function (var_name, val, checker) {
     }
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = schema;
-}
-
-window.schema = schema;
+window.schema = exports;

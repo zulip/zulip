@@ -1,7 +1,4 @@
-var server_events = (function () {
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
-
-var exports = {};
 
 var waiting_on_homeview_load = true;
 
@@ -333,10 +330,4 @@ window.addEventListener("beforeunload", function () {
 // For unit testing
 exports._get_events_success = get_events_success;
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = server_events;
-}
-window.server_events = server_events;
+window.server_events = exports;

@@ -1,7 +1,5 @@
 var noop = function () {};
 
-var exports = {};
-
 exports.make_event_store = (selector) => {
     /*
 
@@ -550,5 +548,3 @@ exports.make_zjquery = function (opts) {
 
     return zjquery;
 };
-
-module.exports = exports;

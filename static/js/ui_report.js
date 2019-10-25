@@ -1,7 +1,3 @@
-var ui_report = (function () {
-
-var exports = {};
-
 /* Arguments used in the report_* functions are,
    response- response that we want to display
    status_box- element being used to display the response
@@ -81,10 +77,4 @@ exports.show_error = function ($target) {
     $target.addClass("show");
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = ui_report;
-}
-window.ui_report = ui_report;
+window.ui_report = exports;

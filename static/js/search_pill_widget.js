@@ -1,7 +1,3 @@
-var search_pill_widget = (function () {
-
-var exports = {};
-
 exports.initialize = function () {
     if (!page_params.search_pills_enabled) {
         return;
@@ -16,11 +12,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = search_pill_widget;
-}
-
-window.search_pill_widget = search_pill_widget;
+window.search_pill_widget = exports;

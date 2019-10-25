@@ -1,9 +1,5 @@
 var autosize = require('autosize');
 
-var compose_actions = (function () {
-
-var exports = {};
-
 function update_lock_icon_for_stream(stream_name) {
     var icon = $("#compose-lock-icon");
     var streamfield = $("#stream_message_recipient_stream");
@@ -109,7 +105,7 @@ function clear_box() {
 exports.autosize_message_content = function () {
     autosize($("#compose-textarea"), {
         callback: function () {
-            compose_actions.maybe_scroll_up_selected_message();
+            exports.maybe_scroll_up_selected_message();
         },
     });
 };
@@ -491,10 +487,4 @@ exports.on_narrow = function (opts) {
     exports.cancel();
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = compose_actions;
-}
-window.compose_actions = compose_actions;
+window.compose_actions = exports;

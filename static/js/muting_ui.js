@@ -1,10 +1,6 @@
 var render_muted_topic_ui_row = require('../templates/muted_topic_ui_row.hbs');
 var render_topic_muted = require('../templates/topic_muted.hbs');
 
-var muting_ui = (function () {
-
-var exports = {};
-
 function timestamp_ms() {
     return (new Date()).getTime();
 }
@@ -144,10 +140,4 @@ exports.toggle_mute = function (message) {
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = muting_ui;
-}
-window.muting_ui = muting_ui;
+window.muting_ui = exports;

@@ -1,9 +1,5 @@
 var render_bankruptcy_modal = require('../templates/bankruptcy_modal.hbs');
 
-var unread_ui = (function () {
-
-var exports = {};
-
 var last_mention_count = 0;
 
 function do_new_messages_animation(li) {
@@ -96,7 +92,7 @@ function consider_bankruptcy() {
 exports.initialize = function () {
     // No matter how the bankruptcy modal is closed, show unread counts after.
     $("#bankruptcy").on("hide", function () {
-        unread_ui.enable();
+        exports.enable();
     });
 
     $('#yes-bankrupt').click(function () {
@@ -111,9 +107,4 @@ exports.initialize = function () {
     consider_bankruptcy();
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = unread_ui;
-}
-window.unread_ui = unread_ui;
+window.unread_ui = exports;

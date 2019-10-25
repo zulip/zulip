@@ -1,9 +1,5 @@
 var render_confirm_dialog = require("../templates/confirm_dialog.hbs");
 
-var confirm_dialog = (function () {
-
-var exports = {};
-
 /*
     Look for confirm_dialog in settings_user_groups
     to see an example of how to use this widget.  It's
@@ -79,10 +75,4 @@ exports.launch = function (conf) {
     overlays.open_modal('confirm_dialog_modal');
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = confirm_dialog;
-}
-window.confirm_dialog = confirm_dialog;
+window.confirm_dialog = exports;

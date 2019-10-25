@@ -1,7 +1,3 @@
-var widgetize = (function () {
-
-var exports = {};
-
 var widgets = {};
 
 widgets.poll = poll_widget;
@@ -97,11 +93,4 @@ exports.handle_event = function (widget_event) {
     widget_elem.handle_events(events);
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = widgetize;
-}
-
-window.widgetize = widgetize;
+window.widgetize = exports;

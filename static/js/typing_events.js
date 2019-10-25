@@ -1,8 +1,5 @@
 var render_typing_notifications = require('../templates/typing_notifications.hbs');
 
-var typing_events = (function () {
-var exports = {};
-
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
 // This code handles the inbound side of typing notifications.
@@ -90,10 +87,4 @@ exports.display_notification = function (event) {
         }
     );
 };
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = typing_events;
-}
-window.typing_events = typing_events;
+window.typing_events = exports;

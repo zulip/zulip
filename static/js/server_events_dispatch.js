@@ -1,7 +1,3 @@
-var server_events_dispatch = (function () {
-
-var exports = {};
-
 exports.dispatch_normal_event = function dispatch_normal_event(event) {
     var noop = function () {};
     switch (event.type) {
@@ -518,10 +514,4 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = server_events_dispatch;
-}
-window.server_events_dispatch = server_events_dispatch;
+window.server_events_dispatch = exports;

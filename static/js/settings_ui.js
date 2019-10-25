@@ -1,7 +1,3 @@
-var settings_ui = (function () {
-
-var exports = {};
-
 exports.display_checkmark = function ($elem) {
     var check_mark = document.createElement("img");
     check_mark.src = "/static/images/checkbox-green.svg";
@@ -46,7 +42,7 @@ exports.do_settings_change = function (request_method, url, data, status_element
         success: function (reponse_data) {
             setTimeout(function () {
                 ui_report.success(success_msg, spinner, remove_after);
-                settings_ui.display_checkmark(spinner);
+                exports.display_checkmark(spinner);
             }, appear_after);
             if (success_continuation !== undefined) {
                 if (opts !== undefined && opts.success_continuation_arg) {
@@ -87,10 +83,4 @@ exports.disable_sub_setting_onchange = function (is_checked, sub_setting_id, dis
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_ui;
-}
-window.settings_ui = settings_ui;
+window.settings_ui = exports;

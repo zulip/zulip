@@ -1,10 +1,6 @@
 var render_admin_profile_field_list = require("../templates/admin_profile_field_list.hbs");
 var render_settings_profile_field_choice = require("../templates/settings/profile_field_choice.hbs");
 
-var settings_profile_fields = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -467,10 +463,4 @@ exports.build_page = function () {
     clear_form_data();
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_profile_fields;
-}
-window.settings_profile_fields = settings_profile_fields;
+window.settings_profile_fields = exports;

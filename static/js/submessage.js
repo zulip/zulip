@@ -1,7 +1,3 @@
-var submessage = (function () {
-
-var exports = {};
-
 exports.get_message_events = function (message) {
     if (message.locally_echoed) {
         return;
@@ -153,11 +149,4 @@ exports.make_server_callback = function (message_id) {
     };
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = submessage;
-}
-
-window.submessage = submessage;
+window.submessage = exports;

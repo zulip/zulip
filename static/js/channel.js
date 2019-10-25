@@ -1,6 +1,3 @@
-var channel = (function () {
-
-var exports = {};
 var pending_requests = [];
 
 function add_pending_request(jqXHR) {
@@ -112,11 +109,4 @@ exports.xhr_error_message = function (message, xhr) {
     return message;
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = channel;
-}
-window.channel = channel;
+window.channel = exports;

@@ -1,7 +1,3 @@
-var search = (function () {
-
-var exports = {};
-
 // Exported for unit testing
 exports.is_using_input_method = false;
 
@@ -218,10 +214,4 @@ exports.clear_search_form = function () {
     $('.search_button').prop('disabled', true);
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = search;
-}
-window.search = search;
+window.search = exports;

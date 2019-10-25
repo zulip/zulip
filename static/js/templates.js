@@ -1,7 +1,3 @@
-var templates = (function () {
-
-var exports = {};
-
 // Below, we register Zulip-specific extensions to the handlebars API.
 //
 // IMPORTANT: When adding a new handlebars helper, update the
@@ -77,9 +73,4 @@ Handlebars.registerHelper('tr', function (context, options) {
     return new Handlebars.SafeString(result);
 });
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = templates;
-}
-window.templates = templates;
+window.templates = exports;

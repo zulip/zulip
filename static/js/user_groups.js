@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var user_groups = (function () {
-
-var exports = {};
-
 var user_group_name_dict;
 var user_group_by_id_dict;
 
@@ -98,10 +94,4 @@ exports.is_user_group = function (item) {
     return item.hasOwnProperty('members');
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = user_groups;
-}
-window.user_groups = user_groups;
+window.user_groups = exports;

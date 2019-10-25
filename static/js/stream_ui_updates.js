@@ -2,10 +2,6 @@ var render_subscription_count = require("../templates/subscription_count.hbs");
 var render_subscription_setting_icon = require('../templates/subscription_setting_icon.hbs');
 var render_subscription_type = require('../templates/subscription_type.hbs');
 
-var stream_ui_updates = (function () {
-
-var exports = {};
-
 exports.update_check_button_for_sub = function (sub) {
     var button = subs.check_button_for_sub(sub);
     if (sub.subscribed) {
@@ -212,10 +208,4 @@ exports.update_add_subscriptions_elements = function (sub) {
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = stream_ui_updates;
-}
-window.stream_ui_updates = stream_ui_updates;
+window.stream_ui_updates = exports;

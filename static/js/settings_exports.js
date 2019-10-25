@@ -1,9 +1,5 @@
 var render_admin_export_list = require('../templates/admin_export_list.hbs');
 
-var settings_exports = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -116,9 +112,4 @@ exports.set_up = function () {
     });
 };
 
-return exports;
-}());
-if (typeof modules !== 'undefined') {
-    module.exports = settings_exports;
-}
-window.settings_exports = settings_exports;
+window.settings_exports = exports;

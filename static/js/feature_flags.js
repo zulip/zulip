@@ -1,18 +1,7 @@
-var feature_flags = (function () {
-
-var exports = {};
-
 // The features below have all settled into their final states and can
 // be removed when we get a chance
 exports.propagate_topic_edits = true;
 exports.clicking_notification_causes_narrow = true;
 exports.reminders_in_message_action_menu = false;
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = feature_flags;
-}
-window.feature_flags = feature_flags;
+window.feature_flags = exports;

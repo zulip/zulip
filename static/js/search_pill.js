@@ -1,6 +1,3 @@
-var search_pill = (function () {
-var exports = {};
-
 exports.create_item_from_search_string = function (search_string) {
     var operator = Filter.parse(search_string);
     var description = Filter.describe(operator);
@@ -36,11 +33,4 @@ exports.get_search_string_for_current_filter = function (pill_widget) {
     return search_strings.join(' ');
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = search_pill;
-}
-
-window.search_pill = search_pill;
+window.search_pill = exports;

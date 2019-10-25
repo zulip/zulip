@@ -1,7 +1,3 @@
-var message_fetch = (function () {
-
-var exports = {};
-
 var consts = {
     backfill_idle_time: 10 * 1000,
     error_retry_time: 5000,
@@ -220,7 +216,7 @@ exports.load_messages = function (opts) {
 exports.load_messages_for_narrow = function (opts) {
     var msg_list = message_list.narrowed;
 
-    message_fetch.load_messages({
+    exports.load_messages({
         anchor: opts.then_select_id.toFixed(),
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
@@ -381,10 +377,4 @@ exports.initialize = function () {
     }
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = message_fetch;
-}
-window.message_fetch = message_fetch;
+window.message_fetch = exports;

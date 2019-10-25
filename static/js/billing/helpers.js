@@ -1,6 +1,3 @@
-var helpers = (function () {
-var exports = {};
-
 exports.create_ajax_request = function (url, form_name, stripe_token = null) {
     var form = $("#" + form_name + "-form");
     var form_loading_indicator = "#" + form_name + "_loading_indicator";
@@ -107,11 +104,4 @@ exports.is_valid_input = function (elem) {
     return elem[0].checkValidity();
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = helpers;
-}
-
-window.helpers = helpers;
+window.helpers = exports;

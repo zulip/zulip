@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var people = (function () {
-
-var exports = {};
-
 var people_dict;
 var people_by_name_dict;
 var people_by_user_id_dict;
@@ -93,7 +89,7 @@ exports.update_email = function (user_id, new_email) {
 };
 
 exports.get_user_id = function (email) {
-    var person = people.get_by_email(email);
+    var person = exports.get_by_email(email);
     if (person === undefined) {
         var error_msg = 'Unknown email for get_user_id: ' + email;
         blueslip.error(error_msg);
@@ -205,7 +201,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
     var emails = emails_string.split(',');
 
     var user_ids = _.map(emails, function (email) {
-        var person = people.get_by_email(email);
+        var person = exports.get_by_email(email);
         if (person) {
             return person.user_id;
         }
@@ -221,7 +217,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
 };
 
 exports.get_user_time_preferences = function (user_id) {
-    var user_timezone = people.get_person_from_user_id(user_id).timezone;
+    var user_timezone = exports.get_person_from_user_id(user_id).timezone;
     if (user_timezone) {
         if (page_params.twenty_four_hour_time) {
             return {
@@ -237,7 +233,7 @@ exports.get_user_time_preferences = function (user_id) {
 };
 
 exports.get_user_time = function (user_id) {
-    var user_pref = people.get_user_time_preferences(user_id);
+    var user_pref = exports.get_user_time_preferences(user_id);
     if (user_pref) {
         return moment().tz(user_pref.timezone).format(user_pref.format);
     }
@@ -263,7 +259,7 @@ exports.emails_strings_to_user_ids_string = function (emails_string) {
 
 exports.email_list_to_user_ids_string = function (emails) {
     var user_ids = _.map(emails, function (email) {
-        var person = people.get_by_email(email);
+        var person = exports.get_by_email(email);
         if (person) {
             return person.user_id;
         }
@@ -312,7 +308,7 @@ exports.get_recipients = function (user_ids_string) {
 };
 
 exports.pm_reply_user_string = function (message) {
-    var user_ids = people.pm_with_user_ids(message);
+    var user_ids = exports.pm_with_user_ids(message);
 
     if (!user_ids) {
         return;
@@ -322,7 +318,7 @@ exports.pm_reply_user_string = function (message) {
 };
 
 exports.pm_reply_to = function (message) {
-    var user_ids = people.pm_with_user_ids(message);
+    var user_ids = exports.pm_with_user_ids(message);
 
     if (!user_ids) {
         return;
@@ -349,7 +345,7 @@ function sorted_other_user_ids(user_ids) {
     // (i.e. you sent a message to yourself).
 
     var other_user_ids = _.filter(user_ids, function (user_id) {
-        return !people.is_my_user_id(user_id);
+        return !exports.is_my_user_id(user_id);
     });
 
     if (other_user_ids.length >= 1) {
@@ -422,7 +418,7 @@ exports.group_pm_with_user_ids = function (message) {
         return elem.user_id || elem.id;
     });
     var is_user_present = _.some(user_ids, function (user_id) {
-        return people.is_my_user_id(user_id);
+        return exports.is_my_user_id(user_id);
     });
     if (is_user_present) {
         user_ids.sort();
@@ -661,11 +657,11 @@ exports.small_avatar_url = function (message) {
 };
 
 exports.is_valid_email_for_compose = function (email) {
-    if (people.is_cross_realm_email(email)) {
+    if (exports.is_cross_realm_email(email)) {
         return true;
     }
 
-    var person = people.get_by_email(email);
+    var person = exports.get_by_email(email);
     if (!person) {
         return false;
     }
@@ -675,7 +671,7 @@ exports.is_valid_email_for_compose = function (email) {
 exports.is_valid_bulk_emails_for_compose = function (emails) {
     // Returns false if at least one of the emails is invalid.
     return _.every(emails, function (email) {
-        if (!people.is_valid_email_for_compose(email)) {
+        if (!exports.is_valid_email_for_compose(email)) {
             return false;
         }
         return true;
@@ -683,7 +679,7 @@ exports.is_valid_bulk_emails_for_compose = function (emails) {
 };
 
 exports.get_active_user_for_email = function (email) {
-    var person = people.get_by_email(email);
+    var person = exports.get_by_email(email);
     if (!person) {
         return;
     }
@@ -731,7 +727,7 @@ exports.get_active_user_ids = function () {
 };
 
 exports.is_cross_realm_email = function (email) {
-    var person = people.get_by_email(email);
+    var person = exports.get_by_email(email);
     if (!person) {
         return;
     }
@@ -892,7 +888,7 @@ exports.get_mention_syntax = function (full_name, user_id, silent) {
     if (!user_id) {
         blueslip.warn('get_mention_syntax called without user_id.');
     }
-    if (people.is_duplicate_full_name(full_name) && user_id) {
+    if (exports.is_duplicate_full_name(full_name) && user_id) {
         mention += '|' + user_id;
     }
     mention += '**';
@@ -1094,10 +1090,4 @@ exports.initialize = function () {
     delete page_params.cross_realm_bots;
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = people;
-}
-window.people = people;
+window.people = exports;

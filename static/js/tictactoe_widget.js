@@ -1,9 +1,5 @@
 var render_widgets_tictactoe_widget = require('../templates/widgets/tictactoe_widget.hbs');
 
-var tictactoe_widget = (function () {
-
-var exports = {};
-
 var tictactoe_data_holder = function () {
     var self = {};
 
@@ -151,11 +147,4 @@ exports.activate = function (opts) {
     render();
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = tictactoe_widget;
-}
-
-window.tictactoe_widget = tictactoe_widget;
+window.tictactoe_widget = exports;

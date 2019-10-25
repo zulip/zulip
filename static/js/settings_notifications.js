@@ -1,7 +1,3 @@
-var settings_notifications = (function () {
-
-var exports = {};
-
 var stream_notification_settings = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
@@ -156,10 +152,4 @@ exports.update_page = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_notifications;
-}
-window.settings_notifications = settings_notifications;
+window.settings_notifications = exports;

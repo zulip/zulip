@@ -1,9 +1,5 @@
 var render_settings_tab = require('../templates/settings_tab.hbs');
 
-var settings = (function () {
-
-var exports = {};
-
 $("body").ready(function () {
     var $sidebar = $(".form-sidebar");
     var $targets = $sidebar.find("[data-target]");
@@ -111,7 +107,7 @@ exports.build_page = function () {
         botserverrc: 'botserverrc',
         timezones: moment.tz.names(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
-        settings_label: settings.settings_label,
+        settings_label: exports.settings_label,
         demote_inactive_streams_values: settings_display.demote_inactive_streams_values,
         notification_settings: settings_notifications.all_notifications.settings,
         desktop_icon_count_display_values: settings_notifications.desktop_icon_count_display_values,
@@ -145,10 +141,4 @@ exports.set_settings_header = function (key) {
     }
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings;
-}
-window.settings = settings;
+window.settings = exports;
