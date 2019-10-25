@@ -649,7 +649,6 @@ MessageListView.prototype = {
         var table_name = self.table_name;
         var table = rows.get_table(table_name);
         var orig_scrolltop_offset;
-        var message_containers;
 
         // If we start with the message feed scrolled up (i.e.
         // the bottom message is not visible), then we will respect
@@ -661,7 +660,7 @@ MessageListView.prototype = {
         // all messages lists. To prevent having both list views overwriting
         // each others data we will make a new message object to add data to
         // for rendering.
-        message_containers = _.map(messages, function (message) {
+        const message_containers = _.map(messages, function (message) {
             if (message.starred) {
                 message.starred_status = i18n.t("Unstar");
             } else {

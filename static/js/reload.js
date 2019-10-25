@@ -252,7 +252,6 @@ exports.initiate = function (options) {
     var unconditional_timeout = 1000 * 60 * 30 + util.random_int(0, 1000 * 60 * 5);
     var composing_timeout     = 1000 * 60 * 5  + util.random_int(0, 1000 * 60);
     var home_timeout          = 1000 * 60    + util.random_int(0, 1000 * 60);
-    var compose_done_handler;
     var compose_started_handler;
 
     function reload_from_idle() {
@@ -266,7 +265,7 @@ exports.initiate = function (options) {
     // Make sure we always do a reload eventually
     setTimeout(reload_from_idle, unconditional_timeout);
 
-    compose_done_handler = function () {
+    const compose_done_handler = function () {
         idle_control.cancel();
         idle_control = $(document).idle({idle: home_timeout,
                                          onIdle: reload_from_idle});

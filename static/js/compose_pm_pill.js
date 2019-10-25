@@ -1,8 +1,7 @@
 exports.initialize_pill = function () {
-    var pill;
     var container = $("#private_message_recipient").parent();
 
-    pill = input_pill.create({
+    const pill = input_pill.create({
         container: container,
         create_item_from_text: user_pill.create_item_from_email,
         get_text_from_item: user_pill.get_email_from_item,

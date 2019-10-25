@@ -201,7 +201,6 @@ exports.resize_stream_filters_container = function (h) {
 };
 
 exports.resize_page_components = function () {
-    var h;
     var sidebar;
 
     if (page_params.left_side_userlist) {
@@ -232,7 +231,7 @@ exports.resize_page_components = function () {
         }
     }
 
-    h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
+    const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     exports.resize_bottom_whitespace(h);
     $("#buddy_list_wrapper").css('max-height', h.buddy_list_wrapper_max_height);

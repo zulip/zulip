@@ -77,11 +77,8 @@ run_test('operators_round_trip', () => {
 });
 
 run_test('operators_trailing_slash', () => {
-    var hash;
-    var narrow;
-
-    hash = '#narrow/stream/devel/topic/algol/';
-    narrow = hash_util.parse_narrow(hash.split('/'));
+    const hash = '#narrow/stream/devel/topic/algol/';
+    const narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'devel', negated: false},
         {operator: 'topic', operand: 'algol', negated: false},
@@ -91,7 +88,6 @@ run_test('operators_trailing_slash', () => {
 run_test('people_slugs', () => {
     var operators;
     var hash;
-    var narrow;
 
     var alice = {
         email: 'alice@example.com',
@@ -105,7 +101,7 @@ run_test('people_slugs', () => {
     ];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/sender/42-alice');
-    narrow = hash_util.parse_narrow(hash.split('/'));
+    const narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'sender', operand: 'alice@example.com', negated: false},
     ]);

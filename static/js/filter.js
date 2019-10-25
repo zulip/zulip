@@ -261,9 +261,8 @@ Filter.parse = function (str) {
         return operators;
     }
     _.each(matches, function (token) {
-        var parts;
         var operator;
-        parts = token.split(':');
+        const parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.
             search_term.push(token);
@@ -607,15 +606,13 @@ Filter.sorted_term_types = function (term_types) {
 };
 
 Filter.operator_to_prefix = function (operator, negated) {
-    var verb;
-
     operator = Filter.canonicalize_operator(operator);
 
     if (operator === 'search') {
         return negated ? 'exclude' : 'search for';
     }
 
-    verb = negated ? 'exclude ' : '';
+    const verb = negated ? 'exclude ' : '';
 
     switch (operator) {
     case 'stream':
