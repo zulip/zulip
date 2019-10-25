@@ -1,7 +1,3 @@
-var padded_widget = (function () {
-
-var exports = {};
-
 exports.update_padding = function (opts) {
     var content = $(opts.content_sel);
     var padding = $(opts.padding_sel);
@@ -24,10 +20,4 @@ exports.update_padding = function (opts) {
 };
 
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = padded_widget;
-}
-window.padded_widget = padded_widget;
+window.padded_widget = exports;

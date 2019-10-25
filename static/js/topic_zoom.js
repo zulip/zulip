@@ -1,7 +1,3 @@
-var topic_zoom = (function () {
-
-var exports = {};
-
 var zoomed_in = false;
 
 exports.is_zoomed_in = function () {
@@ -66,9 +62,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = topic_zoom;
-}
-window.topic_zoom = topic_zoom;
+window.topic_zoom = exports;

@@ -1,6 +1,3 @@
-var bot_data = (function () {
-var exports = {};
-
 var bots = {};
 var bot_fields = ['api_key', 'avatar_url', 'default_all_public_streams',
                   'default_events_register_stream', 'default_sending_stream',
@@ -90,9 +87,4 @@ exports.initialize = function () {
     delete page_params.realm_bots;
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = bot_data;
-}
-window.bot_data = bot_data;
+window.bot_data = exports;

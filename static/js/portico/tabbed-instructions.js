@@ -56,8 +56,6 @@ export function activate_correct_tab($codeSection) {
     }
 }
 
-(function () {
 $(".code-section").each(function () {
     activate_correct_tab($(this));
 });
-}());

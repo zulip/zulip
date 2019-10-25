@@ -1,8 +1,3 @@
-var click_handlers = (function () {
-
-// We don't actually export anything yet; this is just for consistency.
-var exports = {};
-
 // You won't find every click handler here, but it's a good place to start!
 
 exports.initialize = function () {
@@ -889,11 +884,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = click_handlers;
-}
-window.click_handlers = click_handlers;
+window.click_handlers = exports;

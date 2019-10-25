@@ -1,7 +1,4 @@
-var stub = (function () {
-
 var _ = require('underscore/underscore.js');
-var exports = {};
 
 // Stubs don't do any magical modifications to your namespace.  They
 // just provide you a function that records what arguments get passed
@@ -46,7 +43,3 @@ exports.with_stub = function (f) {
         assert.equal(args.n, 42);
     });
 }());
-
-return exports;
-}());
-module.exports = stub;

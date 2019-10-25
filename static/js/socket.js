@@ -1,5 +1,3 @@
-var Socket = (function () {
-
 var CLOSE_REASONS = {
     none_given: {code: 4000, msg: "No reason provided"},
     no_heartbeat: {code: 4001, msg: "Missed too many heartbeats"},
@@ -401,10 +399,5 @@ Socket.prototype = {
     },
 };
 
-return Socket;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = Socket;
-}
+module.exports = Socket;
 window.Socket = Socket;

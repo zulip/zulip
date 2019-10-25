@@ -1,7 +1,3 @@
-var tutorial = (function () {
-
-var exports = {};
-
 function set_tutorial_status(status, callback) {
     return channel.post({
         url: '/json/users/me/tutorial_status',
@@ -17,9 +13,4 @@ exports.initialize = function () {
     }
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = tutorial;
-}
-window.tutorial = tutorial;
+window.tutorial = exports;

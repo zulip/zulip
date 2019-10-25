@@ -1,9 +1,6 @@
 var render_message_reaction = require('../templates/message_reaction.hbs');
 var Dict = require('./dict').Dict;
 
-var reactions = (function () {
-var exports = {};
-
 exports.view = {}; // function namespace
 
 exports.get_local_reaction_id = function (reaction_info) {
@@ -443,10 +440,4 @@ exports.get_message_reactions = function (message) {
     return reactions;
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = reactions;
-}
-window.reactions = reactions;
+window.reactions = exports;

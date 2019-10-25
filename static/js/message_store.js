@@ -1,6 +1,3 @@
-var message_store = (function () {
-
-var exports = {};
 var stored_messages = {};
 
 exports.get = function get(message_id) {
@@ -194,10 +191,4 @@ exports.reify_message_id = function (opts) {
     });
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = message_store;
-}
-window.message_store = message_store;
+window.message_store = exports;

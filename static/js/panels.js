@@ -1,7 +1,3 @@
-var panels = (function () {
-
-var exports = {};
-
 var resize_app = function () {
     var panels_height = $("#panels").height();
     $("body > .app").height("calc(100% - " + panels_height + "px)");
@@ -24,9 +20,9 @@ exports.initialize = function () {
     // if email has not been set up and the user is the admin, display a warning
     // to tell them to set up an email server.
     if (page_params.warn_no_email === true && page_params.is_admin) {
-        panels.open($("[data-process='email-server']"));
+        exports.open($("[data-process='email-server']"));
     } else {
-        panels.open($("[data-process='notifications']"));
+        exports.open($("[data-process='notifications']"));
     }
 };
 
@@ -88,11 +84,4 @@ exports.open = function ($process) {
     });
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = panels;
-}
-window.panels = panels;
+window.panels = exports;

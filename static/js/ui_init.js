@@ -1,5 +1,3 @@
-(function () {
-
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
 //       functions to other modules.
@@ -361,6 +359,3 @@ exports.initialize_everything = function () {
 $(function () {
     exports.initialize_everything();
 });
-
-
-}());

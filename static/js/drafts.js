@@ -1,9 +1,5 @@
 var render_draft_table_body = require('../templates/draft_table_body.hbs');
 
-var drafts = (function () {
-
-var exports = {};
-
 var draft_model = (function () {
     var exports = {};
 
@@ -120,7 +116,7 @@ function draft_notify() {
 }
 
 exports.update_draft = function () {
-    var draft = drafts.snapshot_message();
+    var draft = exports.snapshot_message();
     var draft_id = $("#compose-textarea").data("draft-id");
 
     if (draft_id !== undefined) {
@@ -288,7 +284,7 @@ function remove_draft(draft_row) {
     // Deletes the draft and removes it from the list
     var draft_id = draft_row.data("draft-id");
 
-    drafts.draft_model.deleteDraft(draft_id);
+    exports.draft_model.deleteDraft(draft_id);
 
     draft_row.remove();
 
@@ -508,10 +504,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = drafts;
-}
-window.drafts = drafts;
+window.drafts = exports;

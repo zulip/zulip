@@ -1,7 +1,4 @@
-var echo = (function () {
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
-
-var exports = {};
 
 var waiting_for_id = {};
 var waiting_for_ack = {};
@@ -290,10 +287,4 @@ exports.initialize = function () {
     on_failed_action('refresh', resend_message);
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = echo;
-}
-window.echo = echo;
+window.echo = exports;

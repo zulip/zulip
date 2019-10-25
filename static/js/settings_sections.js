@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var settings_sections = (function () {
-
-var exports = {};
-
 var load_func_dict = new Dict(); // group -> function
 var is_loaded = new Dict(); // group -> bool
 
@@ -83,10 +79,4 @@ exports.reset_sections = function () {
     settings_users.reset();
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_sections;
-}
-window.settings_sections = settings_sections;
+window.settings_sections = exports;

@@ -1,10 +1,6 @@
 var render_input_pill = require('../templates/input_pill.hbs');
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
-var input_pill = (function () {
-
-var exports = {};
-
 exports.random_id = function () {
     return Math.random().toString(16);
 };
@@ -389,11 +385,4 @@ exports.create = function (opts) {
     return prototype;
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = input_pill;
-}
-window.input_pill = input_pill;
+window.input_pill = exports;

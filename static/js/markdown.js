@@ -4,10 +4,7 @@
 // static/third/marked/lib/marked.js, which we have significantly
 // modified from the original implementation.
 
-var markdown = (function () {
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
-
-var exports = {};
 
 var realm_filter_map = {};
 var realm_filter_list = [];
@@ -442,10 +439,4 @@ exports.initialize = function () {
 
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = markdown;
-}
-window.markdown = markdown;
+window.markdown = exports;

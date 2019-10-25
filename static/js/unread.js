@@ -3,10 +3,6 @@ var Dict = require('./dict').Dict;
 // See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
 // how this system is designed.
 
-var unread = (function () {
-
-var exports = {};
-
 exports.suppress_unread_counts = true;
 exports.set_suppress_unread_counts = function (value) {
     exports.suppress_unread_counts = value;
@@ -651,9 +647,4 @@ exports.initialize = function () {
     unread_messages.add_many(unread_msgs.mentions);
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = unread;
-}
-window.unread = unread;
+window.unread = exports;

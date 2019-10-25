@@ -1,7 +1,3 @@
-var hash_util = (function () {
-
-var exports = {};
-
 exports.get_hash_category = function (hash) {
     // given "#streams/subscribed", returns "streams"
     return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
@@ -181,10 +177,4 @@ exports.parse_narrow = function (hash) {
     return operators;
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = hash_util;
-}
-window.hash_util = hash_util;
+window.hash_util = exports;

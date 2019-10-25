@@ -1,7 +1,3 @@
-var stream_sort = (function () {
-
-var exports = {};
-
 var previous_pinned;
 var previous_normal;
 var previous_dormant;
@@ -137,9 +133,4 @@ exports.next_stream_id = function (stream_id) {
     return maybe_get_stream_id(i + 1);
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = stream_sort;
-}
-window.stream_sort = stream_sort;
+window.stream_sort = exports;

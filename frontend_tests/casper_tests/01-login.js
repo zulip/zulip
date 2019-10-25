@@ -1,4 +1,4 @@
-var common = require('../casper_lib/common.js').common;
+var common = require('../casper_lib/common.js');
 var realm_url = "http://zulip.zulipdev.com:9981/";
 
 // Start of test script.

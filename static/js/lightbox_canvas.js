@@ -1,4 +1,3 @@
-var LightboxCanvas = (function () {
 var events = {
     documentMouseup: [],
     windowResize: [],
@@ -259,7 +258,7 @@ var funcs = {
 };
 
 // a class w/ prototype to create a new `LightboxCanvas` instance.
-var __LightboxCanvas = function (el) {
+var LightboxCanvas = function (el) {
     var self = this;
 
     this.meta = {
@@ -302,7 +301,7 @@ var __LightboxCanvas = function (el) {
     funcs.attachEvents(this.canvas, this.context, self.meta);
 };
 
-__LightboxCanvas.prototype = {
+LightboxCanvas.prototype = {
     // set the speed at which scrolling zooms in on a photo.
     speed: function (speed) {
         this.meta.speed = speed;
@@ -327,10 +326,5 @@ __LightboxCanvas.prototype = {
     },
 };
 
-return __LightboxCanvas;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = LightboxCanvas;
-}
+module.exports = LightboxCanvas;
 window.LightboxCanvas = LightboxCanvas;

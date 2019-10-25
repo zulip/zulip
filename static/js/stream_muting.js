@@ -1,7 +1,3 @@
-var stream_muting = (function () {
-
-var exports = {};
-
 exports.update_is_muted = function (sub, value) {
     sub.is_muted = value;
 
@@ -52,11 +48,4 @@ exports.update_is_muted = function (sub, value) {
     is_muted_checkbox.prop('checked', value);
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = stream_muting;
-}
-
-window.stream_muting = stream_muting;
+window.stream_muting = exports;

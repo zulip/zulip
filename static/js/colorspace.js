@@ -1,7 +1,3 @@
-var colorspace = (function () {
-
-var exports = {};
-
 // Convert an sRGB value in [0, 255] to a linear intensity
 // value in [0, 1].
 //
@@ -53,10 +49,4 @@ exports.getHexColor = function (rgb) {
                  parseInt(rgb.b, 10).toString(16);
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = colorspace;
-}
-window.colorspace = colorspace;
+window.colorspace = exports;

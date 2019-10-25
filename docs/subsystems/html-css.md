@@ -146,16 +146,14 @@ relevant background as well.
 
 ### Primary build process
 
-Most of the existing JS in Zulip is written in
-[IIFE](https://www.google.com/#q=iife)-wrapped modules, one per file
-in the `static/js` directory. We will over time migrate these to
-Typescript modules.  Stylesheets are written in the Sass extension of
-CSS (with the scss syntax), they are converted from plain CSS and we
-have yet to take full advantage of the features Sass offers.  We use
-Webpack to transpile and build JS and CSS bundles that the browser can
-understand, one for each entry points specifed in
-`tools/webpack.assets.json`; source maps are generated in the process
-for better debugging experience.
+Zulip's frontend is primarily JavaScript in the `static/js` directory;
+we are working on migrating these to Typescript modules.  Stylesheets
+are written in the Sass extension of CSS (with the scss syntax), they
+are converted from plain CSS and we have yet to take full advantage of
+the features Sass offers.  We use Webpack to transpile and build JS
+and CSS bundles that the browser can understand, one for each entry
+points specifed in `tools/webpack.assets.json`; source maps are
+generated in the process for better debugging experience.
 
 In development mode, bundles are built and served on the fly using
 webpack-dev-server with live reloading. In production mode (and when creating a

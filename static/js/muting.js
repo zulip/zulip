@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var muting = (function () {
-
-var exports = {};
-
 var muted_topics = new Dict();
 
 exports.add_muted_topic = function (stream_id, topic) {
@@ -62,9 +58,4 @@ exports.initialize = function () {
     exports.set_muted_topics(page_params.muted_topics);
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = muting;
-}
-window.muting = muting;
+window.muting = exports;

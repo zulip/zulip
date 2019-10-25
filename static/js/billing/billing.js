@@ -1,6 +1,3 @@
-var billing = (function () {
-var exports = {};
-
 exports.initialize = function () {
     helpers.set_tab("billing");
 
@@ -29,15 +26,8 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = billing;
-}
-
-window.billing = billing;
+window.billing = exports;
 
 $(function () {
-    billing.initialize();
+    exports.initialize();
 });

@@ -3,10 +3,6 @@ if (module.hot) {
     module.hot.accept();
 }
 
-var common = (function () {
-
-var exports = {};
-
 exports.status_classes = 'alert-error alert-success alert-info alert-warning';
 
 exports.autofocus = function (selector) {
@@ -135,11 +131,4 @@ exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
     });
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = common;
-}
-window.common = common;
+window.common = exports;

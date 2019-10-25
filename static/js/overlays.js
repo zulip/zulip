@@ -1,7 +1,3 @@
-var overlays = (function () {
-
-var exports = {};
-
 var active_overlay;
 var close_handler;
 var open_overlay_name;
@@ -186,7 +182,7 @@ exports.close_for_hash_change = function () {
 };
 
 exports.open_settings = function () {
-    overlays.open_overlay({
+    exports.open_overlay({
         name: 'settings',
         overlay: $("#settings_overlay_container"),
         on_close: function () {
@@ -217,11 +213,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = overlays;
-}
-window.overlays = overlays;
+window.overlays = exports;

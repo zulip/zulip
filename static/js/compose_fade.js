@@ -1,7 +1,3 @@
-var compose_fade = (function () {
-
-var exports = {};
-
 var focused_recipient;
 var normal_display = false;
 
@@ -254,11 +250,4 @@ exports.initialize = function () {
 };
 
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = compose_fade;
-}
-window.compose_fade = compose_fade;
+window.compose_fade = exports;

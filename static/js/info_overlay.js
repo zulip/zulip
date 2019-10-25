@@ -1,7 +1,3 @@
-var info_overlay = (function () {
-
-var exports = {};
-
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 exports.toggler = undefined;
@@ -80,10 +76,4 @@ exports.maybe_show_keyboard_shortcuts = function () {
     exports.show("keyboard-shortcuts");
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = info_overlay;
-}
-window.info_overlay = info_overlay;
+window.info_overlay = exports;

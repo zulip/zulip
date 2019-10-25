@@ -1,7 +1,3 @@
-var compose_pm_pill = (function () {
-
-var exports = {};
-
 exports.initialize_pill = function () {
     var pill;
     var container = $("#private_message_recipient").parent();
@@ -65,10 +61,4 @@ exports.get_typeahead_items = function () {
     return user_pill.typeahead_source(exports.widget);
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = compose_pm_pill;
-}
-window.compose_pm_pill = compose_pm_pill;
+window.compose_pm_pill = exports;

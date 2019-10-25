@@ -1,7 +1,3 @@
-var buddy_data = (function () {
-
-var exports = {};
-
 /*
 
    This is the main model code for building the buddy list.
@@ -307,10 +303,4 @@ exports.huddle_fraction_present = function (huddle) {
     return false;
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = buddy_data;
-}
-window.buddy_data = buddy_data;
+window.buddy_data = exports;

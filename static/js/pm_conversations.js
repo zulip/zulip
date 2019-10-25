@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var pm_conversations = (function () {
-
-var exports = {};
-
 var partners = new Dict();
 
 exports.set_partner = function (user_id) {
@@ -62,10 +58,4 @@ exports.recent = (function () {
     return self;
 }());
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = pm_conversations;
-}
-window.pm_conversations = pm_conversations;
+window.pm_conversations = exports;

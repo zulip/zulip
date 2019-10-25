@@ -1,9 +1,5 @@
 var autosize = require('autosize');
 
-var message_list = (function () {
-
-var exports = {};
-
 exports.narrowed = undefined;
 exports.set_narrowed = function (value) {
     exports.narrowed = value;
@@ -449,10 +445,4 @@ $(document).on('message_selected.zulip wheel', function () {
     message_viewport.stop_auto_scrolling();
 });
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = message_list;
-}
-window.message_list = message_list;
+window.message_list = exports;

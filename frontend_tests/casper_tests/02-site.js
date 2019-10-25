@@ -8,7 +8,7 @@
 // Provides a few utility functions.
 // See http://casperjs.org/api.html#utils
 // For example, utils.dump() prints an Object with nice formatting.
-var common = require('../casper_lib/common.js').common;
+var common = require('../casper_lib/common.js');
 
 common.start_and_log_in();
 

@@ -1,10 +1,6 @@
 var render_settings_upload_space_stats = require("../templates/settings/upload_space_stats.hbs");
 var render_uploaded_files_list = require("../templates/uploaded_files_list.hbs");
 
-var attachments_ui = (function () {
-
-var exports = {};
-
 var attachments;
 var upload_space_used;
 
@@ -39,7 +35,7 @@ function set_upload_space_stats() {
     var args = {
         show_upgrade_message: page_params.realm_plan_type === 2,
         percent_used: exports.percentage_used_space(upload_space_used),
-        upload_quota: attachments_ui.bytes_to_size(page_params.realm_upload_quota, true),
+        upload_quota: exports.bytes_to_size(page_params.realm_upload_quota, true),
     };
     var rendered_upload_stats_html = render_settings_upload_space_stats(args);
     $("#attachment-stats-holder").html(rendered_upload_stats_html);
@@ -158,10 +154,4 @@ exports.set_up_attachments = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = attachments_ui;
-}
-window.attachments_ui = attachments_ui;
+window.attachments_ui = exports;

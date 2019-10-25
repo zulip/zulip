@@ -1,7 +1,3 @@
-var search_suggestion = (function () {
-
-var exports = {};
-
 function stream_matches_query(stream_name, q) {
     return common.phrase_match(q, stream_name);
 }
@@ -828,9 +824,4 @@ exports.get_suggestions_legacy = function (query) {
     };
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = search_suggestion;
-}
-window.search_suggestion = search_suggestion;
+window.search_suggestion = exports;

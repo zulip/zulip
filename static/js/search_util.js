@@ -1,7 +1,3 @@
-var search_util = (function () {
-
-var exports = {};
-
 exports.get_search_terms = function (input) {
     var search_terms = input.toLowerCase().split(",").map(function (s) {
         return s.trim();
@@ -28,10 +24,4 @@ exports.vanilla_match = function (opts) {
     });
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = search_util;
-}
-window.search_util = search_util;
+window.search_util = exports;

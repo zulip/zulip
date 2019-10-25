@@ -1,6 +1,3 @@
-var presence = (function () {
-var exports = {};
-
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
 
@@ -172,10 +169,4 @@ exports.last_active_date = function (user_id) {
     return date;
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = presence;
-}
-window.presence = presence;
+window.presence = exports;

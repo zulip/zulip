@@ -1,7 +1,3 @@
-var zcommand = (function () {
-
-var exports = {};
-
 /*
 
 What in the heck is a zcommand?
@@ -135,11 +131,4 @@ exports.process = function (message_content) {
     return false;
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = zcommand;
-}
-
-window.zcommand = zcommand;
+window.zcommand = exports;

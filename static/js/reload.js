@@ -1,8 +1,4 @@
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
-var reload = (function () {
-
-var exports = {};
-
 function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
     if (!localstorage.supported()) {
         // If local storage is not supported by the browser, we can't
@@ -310,10 +306,4 @@ window.addEventListener('beforeunload', function () {
 });
 
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = reload;
-}
-window.reload = reload;
+window.reload = exports;

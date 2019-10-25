@@ -3,10 +3,6 @@ var render_stream_member_list_entry = require('../templates/stream_member_list_e
 var render_subscription_settings = require('../templates/subscription_settings.hbs');
 var render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
 
-var stream_edit = (function () {
-
-var exports = {};
-
 function setup_subscriptions_stream_hash(sub) {
     var hash = hash_util.stream_edit_uri(sub);
     hashchange.update_browser_history(hash);
@@ -83,7 +79,7 @@ exports.open_edit_panel_for_row = function (stream_row) {
     subs.show_subs_pane.settings();
     $(stream_row).addClass("active");
     setup_subscriptions_stream_hash(sub);
-    stream_edit.show_settings_for(stream_row);
+    exports.show_settings_for(stream_row);
 };
 
 exports.open_edit_panel_empty = function () {
@@ -666,10 +662,4 @@ exports.initialize = function () {
 
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = stream_edit;
-}
-window.stream_edit = stream_edit;
+window.stream_edit = exports;

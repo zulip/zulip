@@ -4,10 +4,6 @@
 // in order to be able to report exceptions that occur during their
 // execution.
 
-var blueslip = (function () {
-
-var exports = {};
-
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
@@ -305,10 +301,4 @@ exports.preview_node = function (node) {
       return node_preview;
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = blueslip;
-}
-window.blueslip = blueslip;
+window.blueslip = exports;

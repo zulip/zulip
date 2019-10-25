@@ -1,7 +1,3 @@
-var list_util = (function () {
-
-var exports = {};
-
 var list_selectors = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"];
 
 exports.inside_list = function (e) {
@@ -20,11 +16,4 @@ exports.go_up = function (e) {
     $target.closest("li").prev().find("a").focus();
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = list_util;
-}
-window.list_util = list_util;
+window.list_util = exports;

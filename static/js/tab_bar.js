@@ -1,9 +1,5 @@
 var render_tab_bar = require('../templates/tab_bar.hbs');
 
-var tab_bar = (function () {
-
-var exports = {};
-
 function make_tab(title, hash, data, extra_class, home) {
     return {active: "inactive",
             cls: extra_class || "",
@@ -173,11 +169,4 @@ exports.initialize = function () {
     build_tab_bar();
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = tab_bar;
-}
-window.tab_bar = tab_bar;
+window.tab_bar = exports;

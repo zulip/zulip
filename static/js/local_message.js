@@ -1,7 +1,3 @@
-var local_message = (function () {
-
-var exports = {};
-
 function truncate_precision(float) {
     return parseFloat(float.toFixed(3));
 }
@@ -57,11 +53,4 @@ exports.get_next_id = (function () {
     };
 }());
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = local_message;
-}
-
-window.local_message = local_message;
+window.local_message = exports;

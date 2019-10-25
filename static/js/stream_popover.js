@@ -5,10 +5,6 @@ var render_stream_sidebar_actions = require('../templates/stream_sidebar_actions
 var render_topic_sidebar_actions = require('../templates/topic_sidebar_actions.hbs');
 var render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
 
-var stream_popover = (function () {
-
-var exports = {};
-
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
 var current_stream_sidebar_elem;
@@ -497,10 +493,4 @@ exports.register_topic_handlers = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = stream_popover;
-}
-window.stream_popover = stream_popover;
+window.stream_popover = exports;

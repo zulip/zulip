@@ -1,7 +1,3 @@
-var topic_generator = (function () {
-
-var exports = {};
-
 exports.sub_list_generator = function (lst, lower, upper) {
     // lower/upper has Python range semantics so if you pass
     // in lower=5 and upper=8, you get elements 5/6/7
@@ -267,10 +263,4 @@ exports.get_prev_stream = function (curr_stream) {
     return stream_gen.next();
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = topic_generator;
-}
-window.topic_generator = topic_generator;
+window.topic_generator = exports;

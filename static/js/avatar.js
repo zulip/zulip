@@ -1,7 +1,3 @@
-var avatar = (function () {
-
-var exports = {};
-
 exports.build_bot_create_widget = function () {
 
     // We have to do strange gyrations with the file input to clear it,
@@ -81,11 +77,4 @@ exports.build_user_avatar_widget = function (upload_function) {
     );
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = avatar;
-}
-window.avatar = avatar;
+window.avatar = exports;

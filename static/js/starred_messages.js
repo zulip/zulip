@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var starred_messages = (function () {
-
-var exports = {};
-
 exports.ids = new Dict();
 
 exports.initialize = function () {
@@ -49,12 +45,4 @@ exports.rerender_ui = function () {
     top_left_corner.update_starred_count(count);
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = starred_messages;
-}
-
-window.starred_messages = starred_messages;
+window.starred_messages = exports;

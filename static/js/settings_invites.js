@@ -1,10 +1,6 @@
 var render_admin_invites_list = require("../templates/admin_invites_list.hbs");
 var render_settings_revoke_invite_modal = require("../templates/settings/revoke_invite_modal.hbs");
 
-var settings_invites = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -203,10 +199,4 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_invites;
-}
-window.settings_invites = settings_invites;
+window.settings_invites = exports;

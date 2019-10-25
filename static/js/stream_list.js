@@ -2,10 +2,6 @@ var render_stream_privacy = require('../templates/stream_privacy.hbs');
 var render_stream_sidebar_row = require('../templates/stream_sidebar_row.hbs');
 var Dict = require('./dict').Dict;
 
-var stream_list = (function () {
-
-var exports = {};
-
 var has_scrolled = false;
 
 exports.update_count_in_dom = function (unread_count_elem, count) {
@@ -469,11 +465,11 @@ function actually_update_streams_for_search() {
 var update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
 exports.initialize = function () {
-    stream_list.create_initial_sidebar_rows();
+    exports.create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
-    stream_list.build_stream_list();
+    exports.build_stream_list();
     exports.set_event_handlers();
 };
 
@@ -645,9 +641,9 @@ exports.maybe_scroll_narrow_into_view = function () {
         return;
     }
 
-    var stream_li = stream_list.get_current_stream_li();
+    var stream_li = exports.get_current_stream_li();
     if (stream_li) {
-        stream_list.scroll_stream_into_view(stream_li);
+        exports.scroll_stream_into_view(stream_li);
     }
 };
 
@@ -659,7 +655,7 @@ exports.get_current_stream_li = function () {
         return;
     }
 
-    var stream_li = stream_list.get_stream_li(stream_id);
+    var stream_li = exports.get_stream_li(stream_id);
 
     if (!stream_li) {
         // This code path shouldn't ever be reached.
@@ -670,9 +666,4 @@ exports.get_current_stream_li = function () {
     return stream_li;
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = stream_list;
-}
-window.stream_list = stream_list;
+window.stream_list = exports;

@@ -4,7 +4,7 @@ const path = require("path");
 const templates_path = path.resolve(__dirname, "../../static/templates");
 let render;
 
-module.exports.make_handlebars = () => {
+exports.make_handlebars = () => {
     // Create a new Handlebars instance.
     const Handlebars = require("handlebars/dist/cjs/handlebars.js");
     const hb = Handlebars.create();
@@ -40,7 +40,7 @@ module.exports.make_handlebars = () => {
     return hb;
 };
 
-module.exports.stub_templates = stub => {
+exports.stub_templates = stub => {
     render = (filename, ...args) => {
         const name = path.relative(templates_path, filename).slice(0, -".hbs".length);
         return stub(name, ...args);

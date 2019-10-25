@@ -1,7 +1,3 @@
-var settings_display = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -192,10 +188,4 @@ exports.update_page = function () {
     // Longer term, we'll want to automate this function
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_display;
-}
-window.settings_display = settings_display;
+window.settings_display = exports;

@@ -1,10 +1,6 @@
 var render_admin_emoji_list = require('../templates/admin_emoji_list.hbs');
 var render_settings_emoji_settings_tip = require("../templates/settings/emoji_settings_tip.hbs");
 
-var settings_emoji = (function () {
-
-var exports = {};
-
 var meta = {
     loaded: false,
 };
@@ -169,10 +165,4 @@ exports.set_up = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = settings_emoji;
-}
-window.settings_emoji = settings_emoji;
+window.settings_emoji = exports;

@@ -1,5 +1,3 @@
-var message_flags = (function () {
-var exports = {};
 function send_flag_update(message, flag, op) {
     channel.post({
         url: '/json/messages/flags',
@@ -30,7 +28,7 @@ exports.send_read = (function () {
             return;
         }
 
-        var real_msg_ids_batch = real_msg_ids.slice(0, message_flags._unread_batch_size);
+        var real_msg_ids_batch = real_msg_ids.slice(0, exports._unread_batch_size);
 
         // We have some real IDs.  If there are any left in the queue when this
         // call finishes, they will be handled in the success callback.
@@ -130,10 +128,4 @@ exports.unstar_all_messages = function () {
     });
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = message_flags;
-}
-window.message_flags = message_flags;
+window.message_flags = exports;

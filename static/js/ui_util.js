@@ -1,7 +1,3 @@
-var ui_util = (function () {
-
-var exports = {};
-
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
 
@@ -34,10 +30,4 @@ exports.blur_active_element = function () {
     document.activeElement.blur();
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = ui_util;
-}
-window.ui_util = ui_util;
+window.ui_util = exports;

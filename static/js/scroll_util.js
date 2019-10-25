@@ -1,7 +1,3 @@
-var scroll_util = (function () {
-
-var exports = {};
-
 exports.scroll_delta = function (opts) {
     var elem_top = opts.elem_top;
     var container_height = opts.container_height;
@@ -53,9 +49,4 @@ exports.scroll_element_into_container = function (elem, container) {
     container.scrollTop(container.scrollTop() + delta);
 };
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = scroll_util;
-}
-window.scroll_util = scroll_util;
+window.scroll_util = exports;

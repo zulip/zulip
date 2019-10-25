@@ -1,7 +1,3 @@
-var hotkeys = (function () {
-
-var exports = {};
-
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: 'hotkey'});
     return true;
@@ -819,11 +815,4 @@ $(document).keypress(function (e) {
     }
 });
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = hotkeys;
-}
-window.hotkey = hotkeys;
+window.hotkey = exports;

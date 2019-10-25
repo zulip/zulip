@@ -1,6 +1,5 @@
 // Main JavaScript file for the Integrations development panel at
 // /devtools/integrations.
-(function () {
 
 // Data Segment: We lazy load the requested fixtures from the backend
 // as and when required and then cache them here.
@@ -342,5 +341,3 @@ $(function () {
     $("#topic_name").change(update_url);
 
 });
-
-}());

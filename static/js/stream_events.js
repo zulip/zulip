@@ -1,7 +1,3 @@
-var stream_events = (function () {
-
-var exports = {};
-
 // In theory, this group of functions should apply the account-level
 // defaults, however, they are only called after a manual override, so
 // doing so is unnecessary with the current code.  Ideally, we'd do a
@@ -143,10 +139,4 @@ exports.remove_deactivated_user_from_all_streams = function (user_id) {
 };
 
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = stream_events;
-}
-window.stream_events = stream_events;
+window.stream_events = exports;

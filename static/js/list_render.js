@@ -1,7 +1,3 @@
-var list_render = (function () {
-
-var exports = {};
-
 var DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
     LOAD_COUNT: 20,
@@ -361,7 +357,7 @@ exports.handle_sort = function () {
     var prop_name = $this.data("sort-prop");
     var list_name = $this.closest(".progressive-table-wrapper").data("list-render");
 
-    var list = list_render.get(list_name);
+    var list = exports.get(list_name);
 
     if (!list) {
         blueslip.error("Error. This `.progressive-table-wrapper` has no `data-list-render` attribute.");
@@ -388,11 +384,4 @@ exports.handle_sort = function () {
     $this.addClass("active");
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = list_render;
-}
-
-window.list_render = list_render;
+window.list_render = exports;

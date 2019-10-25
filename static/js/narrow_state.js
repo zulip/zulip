@@ -1,9 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var narrow_state = (function () {
-
-var exports = {};
-
 var current_filter;
 
 exports.reset_current_filter = function () {
@@ -361,10 +357,4 @@ exports.is_for_stream_id = function (stream_id) {
     return stream_id === narrow_stream_id;
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = narrow_state;
-}
-window.narrow_state = narrow_state;
+window.narrow_state = exports;

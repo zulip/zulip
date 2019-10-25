@@ -1,8 +1,3 @@
-var floating_recipient_bar = (function () {
-
-var exports = {};
-
-
 var is_floating_recipient_bar_showing = false;
 
 function top_offset(elem) {
@@ -332,10 +327,4 @@ exports.update = function () {
 };
 
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = floating_recipient_bar;
-}
-window.floating_recipient_bar = floating_recipient_bar;
+window.floating_recipient_bar = exports;

@@ -1,8 +1,5 @@
 var Dict = require('./dict').Dict;
 
-var typing_data = (function () {
-var exports = {};
-
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
 var typist_dct = new Dict();
@@ -75,10 +72,4 @@ exports.kickstart_inbound_timer = function (group, delay, callback) {
 };
 
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = typing_data;
-}
-window.typing_data = typing_data;
+window.typing_data = exports;

@@ -1,7 +1,3 @@
-var user_status_ui = (function () {
-
-var exports = {};
-
 exports.input_field = function () {
     return $('.user_status_overlay input.user_status');
 };
@@ -97,10 +93,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = user_status_ui;
-}
-window.user_status_ui = user_status_ui;
+window.user_status_ui = exports;

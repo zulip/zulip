@@ -1,7 +1,3 @@
-var copy_and_paste = (function () {
-
-var exports = {};
-
 function find_boundary_tr(initial_tr, iterate_row) {
     var j;
     var skip_same_td_check = false;
@@ -349,10 +345,4 @@ exports.initialize = function () {
     $('body').on('paste', '#message_edit_form', exports.paste_handler);
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = copy_and_paste;
-}
-window.copy_and_paste = copy_and_paste;
+window.copy_and_paste = exports;

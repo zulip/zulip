@@ -1,9 +1,6 @@
 var render_group_pms = require('../templates/group_pms.hbs');
 var Dict = require('./dict').Dict;
 
-var activity = (function () {
-var exports = {};
-
 /*
     Helpers for detecting user activity and managing user idle states
 */
@@ -495,10 +492,4 @@ exports.get_filter_text = function () {
     return exports.user_filter.text();
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = activity;
-}
-window.activity = activity;
+window.activity = exports;

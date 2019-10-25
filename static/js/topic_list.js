@@ -2,10 +2,6 @@ var render_more_topics = require('../templates/more_topics.hbs');
 var render_topic_list_item = require('../templates/topic_list_item.hbs');
 var Dict = require('./dict').Dict;
 
-var topic_list = (function () {
-
-var exports = {};
-
 /*
     Track all active widgets with a Dict.
 
@@ -337,9 +333,4 @@ exports.initialize = function () {
 };
 
 
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = topic_list;
-}
-window.topic_list = topic_list;
+window.topic_list = exports;

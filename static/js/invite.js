@@ -4,10 +4,6 @@ var render_settings_dev_env_email_access = require('../templates/settings/dev_en
 
 var autosize = require('autosize');
 
-var invite = (function () {
-
-var exports = {};
-
 function reset_error_messages() {
     $('#invite_status').hide().text('').removeClass(common.status_classes);
     $('#multiuse_invite_status').hide().text('').removeClass(common.status_classes);
@@ -197,11 +193,4 @@ exports.initialize = function () {
     });
 };
 
-return exports;
-
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = invite;
-}
-window.invite = invite;
+window.invite = exports;

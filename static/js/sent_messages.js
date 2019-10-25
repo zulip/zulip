@@ -1,7 +1,3 @@
-var sent_messages = (function () {
-
-var exports = {};
-
 exports.messages = {};
 
 exports.reset_id_state = function () {
@@ -176,10 +172,4 @@ exports.initialize = function () {
     exports.reset_id_state();
 };
 
-return exports;
-
-}());
-if (typeof module !== 'undefined') {
-    module.exports = sent_messages;
-}
-window.sent_messages = sent_messages;
+window.sent_messages = exports;

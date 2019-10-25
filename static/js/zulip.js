@@ -7,11 +7,6 @@ var home_msg_list = new message_list.MessageList({
     filter: new Filter([{operator: "in", operand: "home"}]),
     muting_enabled: true,
 });
-var current_msg_list = home_msg_list;
-
-if (typeof module !== 'undefined') {
-    module.exports.current_msg_list = current_msg_list;
-}
 
 window.home_msg_list = home_msg_list;
-window.current_msg_list = current_msg_list;
+window.current_msg_list = home_msg_list;

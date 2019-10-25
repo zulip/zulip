@@ -1,6 +1,3 @@
-var upgrade = (function () {
-var exports = {};
-
 exports.initialize = () => {
     helpers.set_tab("upgrade");
 
@@ -61,15 +58,8 @@ exports.initialize = () => {
     helpers.update_charged_amount(prices, $('input[type=radio][name=schedule]:checked').val());
 };
 
-return exports;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = upgrade;
-}
-
-window.upgrade = upgrade;
+window.upgrade = exports;
 
 $(function () {
-    upgrade.initialize();
+    exports.initialize();
 });
