@@ -38,7 +38,8 @@ from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
-    AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled
+    AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled, SAMLAuthBackend, \
+    redirect_to_config_error
 from version import ZULIP_VERSION
 
 import jwt
@@ -161,9 +162,6 @@ def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
     redirect_url = login_url + '?subdomain=1'
     return HttpResponseRedirect(redirect_url)
-
-def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
-    return HttpResponseRedirect("/config-error/%s" % (error_type,))
 
 def login_or_register_remote_user(request: HttpRequest, remote_username: str,
                                   user_profile: Optional[UserProfile], full_name: str='',
@@ -355,15 +353,9 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params = {}  # type: Dict[str, str]
     if backend == "saml":
-        obligatory_saml_settings_list = [
-            settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID,
-            settings.SOCIAL_AUTH_SAML_ORG_INFO,
-            settings.SOCIAL_AUTH_SAML_TECHNICAL_CONTACT,
-            settings.SOCIAL_AUTH_SAML_SUPPORT_CONTACT,
-            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS
-        ]
-        if any(not setting for setting in obligatory_saml_settings_list):
-            return redirect_to_config_error("saml")
+        result = SAMLAuthBackend.check_config()
+        if result is not None:
+            return result
 
         # This backend requires the name of the IdP (from the list of configured ones)
         # to be passed as the parameter.
@@ -387,6 +379,10 @@ def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params = {}  # type: Dict[str, str]
     if backend == "saml":
+        result = SAMLAuthBackend.check_config()
+        if result is not None:
+            return result
+
         if not extra_arg or extra_arg not in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
             logging.info("Attempted to initiate SAML authentication with wrong idp argument: {}"
                          .format(extra_arg))

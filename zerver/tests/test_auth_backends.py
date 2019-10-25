@@ -1053,6 +1053,12 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, self.CONFIG_ERROR_URL)
 
+            # Test the signup path too:
+            result = self.social_auth_test(account_data_dict, is_signup='1',
+                                           subdomain='zulip', next='/user_uploads/image')
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, self.CONFIG_ERROR_URL)
+
     def test_saml_auth_works_without_private_public_keys(self) -> None:
         with self.settings(SOCIAL_AUTH_SAML_SP_PUBLIC_CERT='', SOCIAL_AUTH_SAML_SP_PRIVATE_KEY=''):
             self.test_social_auth_success()
