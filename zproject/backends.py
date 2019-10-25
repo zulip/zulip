@@ -115,6 +115,9 @@ def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
                             for social_auth_subclass in SOCIAL_AUTH_BACKENDS]
     return auth_enabled_helper(social_backend_names, realm)
 
+def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
+    return HttpResponseRedirect("/config-error/%s" % (error_type,))
+
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
         if settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN:
@@ -1232,6 +1235,20 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                     self.strategy.session_set(param, None)
 
         return result
+
+    @classmethod
+    def check_config(cls) -> Optional[HttpResponse]:
+        obligatory_saml_settings_list = [
+            settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID,
+            settings.SOCIAL_AUTH_SAML_ORG_INFO,
+            settings.SOCIAL_AUTH_SAML_TECHNICAL_CONTACT,
+            settings.SOCIAL_AUTH_SAML_SUPPORT_CONTACT,
+            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS
+        ]
+        if any(not setting for setting in obligatory_saml_settings_list):
+            return redirect_to_config_error("saml")
+
+        return None
 
 SocialBackendDictT = TypedDict('SocialBackendDictT', {
     'name': str,
