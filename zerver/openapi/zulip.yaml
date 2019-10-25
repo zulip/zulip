@@ -1039,46 +1039,80 @@ paths:
                         avatar, user type...).
                 - example:
                     {
-                        "members": [
-                            {
-                                "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
-                                "bot_type": null,
-                                "email": "AARON@zulip.com",
-                                "full_name": "aaron",
-                                "is_active": true,
-                                "is_admin": false,
-                                "is_bot": false,
-                                "is_guest": false,
-                                "user_id": 1,
-                                "timezone" : "Africa/Bujumbura"
-                            },
-                            {
-                                "avatar_url": "https://secure.gravatar.com/avatar/77c3871a68c8d70356156029fd0a4999?d=identicon&version=1",
-                                "bot_type": null,
-                                "email": "cordelia@zulip.com",
-                                "full_name": "Cordelia Lear",
-                                "is_active": true,
-                                "is_admin": false,
-                                "is_bot": false,
-                                "is_guest": false,
-                                "user_id": 3,
-                                "timezone" : "Asia/Calcutta"
-                            },
-                            {
-                                "avatar_url": "https://secure.gravatar.com/avatar/0cbf08f3a355995fa2ec542246e35123?d=identicon&version=1",
-                                "bot_type": null,
-                                "email": "newbie@zulip.com",
-                                "full_name": "New User",
-                                "is_active": true,
-                                "is_admin": false,
-                                "is_bot": false,
-                                "is_guest": true,
-                                "user_id": 24,
-                                "timezone" : "Asia/Calcutta"
-                            }
-                        ],
-                        "msg": "",
-                        "result": "success"
+                       "msg": "",
+                       "result": "success",
+                       "members": [
+                          {
+                             "is_active": true,
+                             "email": "AARON@zulip.com",
+                             "is_admin": false,
+                             "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
+                             "bot_type": null,
+                             "timezone": "",
+                             "is_bot": false,
+                             "user_id": 7,
+                             "profile_data": {},
+                             "is_guest": false,
+                             "date_joined": "2019-10-20T07:50:53.728864+00:00",
+                             "full_name": "aaron"
+                          },
+                          {
+                             "date_joined": "2019-10-20T07:50:53.729659+00:00",
+                             "full_name": "King Hamlet",
+                             "is_guest": false,
+                             "profile_data": {
+                                "4": {
+                                   "value": "vim"
+                                },
+                                "2": {
+                                   "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
+                                   "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>"
+                                },
+                                "5": {
+                                   "value": "1900-1-1"
+                                },
+                                "7": {
+                                   "value": "[11]"
+                                },
+                                "6": {
+                                   "value": "https://blog.zulig.org"
+                                },
+                                "1": {
+                                   "value": "+0-11-23-456-7890",
+                                   "rendered_value": "<p>+0-11-23-456-7890</p>"
+                                },
+                                "8": {
+                                   "value": "zulipbot"
+                                },
+                                "3": {
+                                   "rendered_value": "<p>Dark chocolate</p>",
+                                   "value": "Dark chocolate"
+                                }
+                             },
+                             "user_id": 10,
+                             "is_bot": false,
+                             "bot_type": null,
+                             "timezone": "",
+                             "is_admin": false,
+                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                             "is_active": true,
+                             "email": "hamlet@zulip.com"
+                          },
+                          {
+                             "bot_owner_id": 11,
+                             "is_guest": false,
+                             "date_joined": "2019-10-20T12:52:17.862053+00:00",
+                             "full_name": "Iago's Bot",
+                             "email": "iago-bot@zulipdev.com",
+                             "is_active": true,
+                             "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
+                             "is_admin": false,
+                             "user_id": 23,
+                             "bot_type": 1,
+                             "timezone": "",
+                             "is_bot": true
+                          }
+                       ]
                     }
     post:
       description: Create a new user in a realm.
