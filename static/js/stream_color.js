@@ -127,7 +127,6 @@ exports.initialize = function () {
 exports.get_color_class = _.memoize(function (color) {
     var match;
     var i;
-    var lightness;
     var channel = [0, 0, 0];
     var mult = 1;
 
@@ -151,7 +150,7 @@ exports.get_color_class = _.memoize(function (color) {
     }
 
     // Compute perceived lightness as CIE L*.
-    lightness = colorspace.luminance_to_lightness(
+    const lightness = colorspace.luminance_to_lightness(
         colorspace.rgb_luminance(channel));
 
     // Determine if we're past the midpoint between the

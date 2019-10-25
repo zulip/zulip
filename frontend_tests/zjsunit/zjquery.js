@@ -74,7 +74,6 @@ exports.make_event_store = (selector) => {
             //    (event_name, handler) or
             //    (event_name, sel, handler)
             var event_name = arguments[0];
-            var sel;
             var handler;
 
             if (arguments.length === 2) {
@@ -93,7 +92,7 @@ exports.make_event_store = (selector) => {
                 throw Error('wrong number of arguments passed in');
             }
 
-            sel = arguments[1];
+            const sel = arguments[1];
             handler = arguments[2];
             assert.equal(typeof sel, 'string', 'String selectors expected here.');
             assert.equal(typeof handler, 'function', 'An handler function expected here.');

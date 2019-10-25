@@ -16,8 +16,6 @@ function message_unhover() {
 }
 
 function message_hover(message_row) {
-    var message;
-
     var id = parseInt(message_row.attr("zid"), 10);
     if (current_message_hover && message_row && current_message_hover.attr("zid") === message_row.attr("zid")) {
         return;
@@ -26,7 +24,7 @@ function message_hover(message_row) {
     if (message_row.hasClass('local')) {
         return;
     }
-    message = current_msg_list.get(rows.id(message_row));
+    const message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     current_message_hover = message_row;
 

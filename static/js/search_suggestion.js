@@ -121,8 +121,6 @@ function get_group_suggestions(all_persons, last, operators) {
     //
     // We only generate group suggestions when there's more than one part, and
     // we only use the last part to generate suggestions.
-    var all_but_last_part;
-    var last_part;
 
     var last_comma_index = operand.lastIndexOf(',');
     if (last_comma_index < 0) {
@@ -130,8 +128,8 @@ function get_group_suggestions(all_persons, last, operators) {
     }
 
     // Neither all_but_last_part nor last_part include the final comma.
-    all_but_last_part = operand.slice(0, last_comma_index);
-    last_part = operand.slice(last_comma_index + 1);
+    const all_but_last_part = operand.slice(0, last_comma_index);
+    const last_part = operand.slice(last_comma_index + 1);
 
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
@@ -565,7 +563,6 @@ exports.get_suggestions = function (base_query, query) {
     // with information for subsequent callbacks.
     var result = [];
     var suggestion;
-    var base; //base, default suggestion
     var suggestions;
 
     // base_query_operators correspond to the existing pills. query_operators correspond
@@ -632,7 +629,7 @@ exports.get_suggestions = function (base_query, query) {
         base_operators = operators.slice(0, -1);
     }
 
-    base = get_default_suggestion(query_operators.slice(0, -1));
+    const base = get_default_suggestion(query_operators.slice(0, -1));
 
     // Get all individual suggestions, and then attach_suggestions
     // mutates the list 'result' to add a properly-formatted suggestion
@@ -708,7 +705,6 @@ exports.get_suggestions_legacy = function (query) {
     // with information for subsequent callbacks.
     var result = [];
     var suggestion;
-    var base; //base, default suggestion
     var suggestions;
 
     // Add an entry for narrow by operators.
@@ -755,7 +751,7 @@ exports.get_suggestions_legacy = function (query) {
     if (operators.length > 1) {
         base_operators = operators.slice(0, -1);
     }
-    base = get_default_suggestion_legacy(base_operators);
+    const base = get_default_suggestion_legacy(base_operators);
 
     // Get all individual suggestions, and then attach_suggestions
     // mutates the list 'result' to add a properly-formatted suggestion

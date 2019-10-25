@@ -273,13 +273,12 @@ exports.cancel = function () {
 };
 
 exports.respond_to_message = function (opts) {
-    var message;
     var msg_type;
     // Before initiating a reply to a message, if there's an
     // in-progress composition, snapshot it.
     drafts.update_draft();
 
-    message = current_msg_list.selected_message();
+    const message = current_msg_list.selected_message();
 
     if (message === undefined) { // empty narrow implementation
         if (!narrow_state.narrowed_by_pm_reply() &&
