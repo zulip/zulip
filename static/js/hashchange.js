@@ -78,7 +78,7 @@ function do_hashchange_normal(from_reload) {
     // be #ABCD.
     var hash = window.location.hash.split("/");
     switch (hash[0]) {
-    case "#narrow":
+    case "#narrow": {
         ui_util.change_tab_to("#home");
         var operators = hash_util.parse_narrow(hash);
         if (operators === undefined) {
@@ -103,6 +103,7 @@ function do_hashchange_normal(from_reload) {
         narrow.activate(operators, narrow_opts);
         floating_recipient_bar.update();
         return true;
+    }
     case "":
     case "#":
         activate_home_tab();

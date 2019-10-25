@@ -74,7 +74,7 @@ function message_matches_search_term(message, operator, operand) {
     case 'id':
         return message.id.toString() === operand;
 
-    case 'stream':
+    case 'stream': {
         if (message.type !== 'stream') {
             return false;
         }
@@ -95,6 +95,7 @@ function message_matches_search_term(message, operator, operand) {
         // loaded for a stream that we are no longer
         // subscribed to (or that was deleted).
         return message.stream.toLowerCase() === operand;
+    }
 
     case 'topic':
         if (message.type !== 'stream') {
@@ -111,7 +112,7 @@ function message_matches_search_term(message, operator, operand) {
     case 'sender':
         return people.id_matches_email_operand(message.sender_id, operand);
 
-    case 'group-pm-with':
+    case 'group-pm-with': {
         var operand_ids = people.pm_with_operand_ids(operand);
         if (!operand_ids) {
             return false;
@@ -123,22 +124,24 @@ function message_matches_search_term(message, operator, operand) {
         return user_ids.indexOf(operand_ids[0]) !== -1;
         // We should also check if the current user is in the recipient list (user_ids) of the
         // message, but it is implicit by the fact that the current user has access to the message.
+    }
 
-    case 'pm-with':
+    case 'pm-with': {
         // TODO: use user_ids, not emails here
         if (message.type !== 'private') {
             return false;
         }
-        operand_ids = people.pm_with_operand_ids(operand);
+        const operand_ids = people.pm_with_operand_ids(operand);
         if (!operand_ids) {
             return false;
         }
-        user_ids = people.pm_with_user_ids(message);
+        const user_ids = people.pm_with_user_ids(message);
         if (!user_ids) {
             return false;
         }
 
         return _.isEqual(operand_ids, user_ids);
+    }
     }
 
     return true; // unknown operators return true (effectively ignored)

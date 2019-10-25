@@ -499,12 +499,13 @@ exports.validation_error = function (error_type, stream_name) {
         compose_error(i18n.t("Error checking subscription"),
                       $("#stream_message_recipient_stream"));
         return false;
-    case "not-subscribed":
+    case "not-subscribed": {
         var sub = stream_data.get_sub(stream_name);
         var new_row = render_compose_not_subscribed({
             should_display_sub_button: sub.should_display_subscription_button});
         compose_not_subscribed_error(new_row, $('#stream_message_recipient_stream'));
         return false;
+    }
     }
     return true;
 };

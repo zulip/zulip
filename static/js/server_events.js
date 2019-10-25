@@ -53,7 +53,7 @@ function get_events_success(events) {
     // rarely modified logic for non-normal events.
     var dispatch_event = function dispatch_event(event) {
         switch (event.type) {
-        case 'message':
+        case 'message': {
             var msg = event.message;
             msg.flags = event.flags;
             if (event.local_message_id) {
@@ -62,6 +62,7 @@ function get_events_success(events) {
             }
             messages.push(msg);
             break;
+        }
 
         case 'pointer':
             new_pointer = event.pointer;

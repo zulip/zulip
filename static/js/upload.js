@@ -113,10 +113,11 @@ exports.options = function (config) {
         case 413: // HTTP status "Request Entity Too Large"
             msg = i18n.t("Sorry, the file was too large.");
             break;
-        case 400:
+        case 400: {
             var server_message = server_response && server_response.msg;
             msg = server_message || i18n.t("An unknown error occurred.");
             break;
+        }
         default:
             msg = i18n.t("An unknown error occurred.");
             break;
