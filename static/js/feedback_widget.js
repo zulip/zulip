@@ -26,7 +26,7 @@ var meta = {
     opened: false,
 };
 
-var animate = {
+const animate = {
     maybe_close: function () {
         if (!meta.opened) {
             return;

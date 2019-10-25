@@ -44,7 +44,7 @@ exports.create = function (opts) {
     // a dictionary of internal functions. Some of these are exposed as well,
     // and nothing in here should be assumed to be private (due to the passing)
     // of the `this` arg in the `Function.prototype.bind` use in the prototype.
-    var funcs = {
+    const funcs = {
         // return the value of the contenteditable input form.
         value: function (input_elem) {
             return input_elem.innerText.trim();

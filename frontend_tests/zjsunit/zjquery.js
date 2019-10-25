@@ -140,7 +140,7 @@ exports.make_new_elem = function (selector, opts) {
     var classes = new Dict();
     var event_store = exports.make_event_store(selector);
 
-    var self = {
+    const self = {
         addClass: function (class_name) {
             classes.set(class_name, true);
             return self;

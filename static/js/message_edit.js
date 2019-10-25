@@ -375,7 +375,7 @@ function edit_message(row, raw_content) {
         // Do this right away, rather than waiting for the timer to do its first update,
         // since otherwise there is a noticeable lag
         message_edit_countdown_timer.text(timer_text(seconds_left));
-        var countdown_timer = setInterval(function () {
+        const countdown_timer = setInterval(function () {
             seconds_left -= 1;
             if (seconds_left <= 0) {
                 clearInterval(countdown_timer);

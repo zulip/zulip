@@ -1,4 +1,4 @@
-var ls = {
+const ls = {
     // parse JSON without throwing an error.
     parseJSON: function (str) {
         try {

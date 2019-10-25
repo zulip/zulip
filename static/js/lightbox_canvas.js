@@ -29,7 +29,7 @@ window.onload = function () {
     });
 };
 
-var funcs = {
+const funcs = {
     setZoom: function (meta, zoom) {
         // condition to handle zooming event by zoom hotkeys
         if (zoom === '+') {
