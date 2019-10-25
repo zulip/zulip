@@ -56,7 +56,7 @@ exports.create = function ($container, list, opts) {
         opts.filter = {};
     }
 
-    var prototype = {
+    const prototype = {
         // Reads the provided list (in the scope directly above)
         // and renders the next block of messages automatically
         // into the specified contianer.
