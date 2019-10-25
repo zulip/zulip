@@ -124,7 +124,7 @@ run_test('basics', () => {
 
     var callback_value;
 
-    var widget;
+    let widget = null;
     widget = components.toggle({
         selected: 0,
         values: [
