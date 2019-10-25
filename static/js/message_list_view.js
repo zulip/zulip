@@ -1013,7 +1013,8 @@ MessageListView.prototype = {
             // compose box.
             var compose_textarea_default_height = 42;
             var compose_textarea_current_height = $("#compose-textarea").height();
-            var expected_change = compose_textarea_current_height - compose_textarea_default_height;
+            var expected_change =
+                compose_textarea_current_height - compose_textarea_default_height;
             var expected_offset = offset - expected_change;
             need_user_to_scroll = expected_offset > scroll_amount;
         }

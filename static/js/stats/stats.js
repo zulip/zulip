@@ -529,7 +529,11 @@ function populate_messages_sent_by_message_type(data) {
     };
 
     function make_plot_data(time_series_data, num_steps) {
-        var plot_data = compute_summary_chart_data(time_series_data, num_steps, data.display_order);
+        var plot_data = compute_summary_chart_data(
+            time_series_data,
+            num_steps,
+            data.display_order
+        );
         var labels = [];
         for (var i = 0; i < plot_data.labels.length; i += 1) {
             labels.push(plot_data.labels[i] + ' (' + plot_data.percentages[i] + ')');
