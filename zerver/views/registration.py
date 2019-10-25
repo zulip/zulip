@@ -34,7 +34,7 @@ from zerver.views.auth import create_preregistration_user, redirect_and_log_into
     redirect_to_deactivation_notice, get_safe_redirect_to
 
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, \
-    ZulipLDAPExceptionOutsideDomain, email_auth_enabled, ZulipLDAPAuthBackend
+    ZulipLDAPExceptionNoMatchingLDAPUser, email_auth_enabled, ZulipLDAPAuthBackend
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     validate_key, create_confirmation_link, get_object_from_key, \
@@ -137,7 +137,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 if isinstance(backend, LDAPBackend):
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
-                    except ZulipLDAPExceptionOutsideDomain:
+                    except ZulipLDAPExceptionNoMatchingLDAPUser:
                         logging.warning("New account email %s could not be found in LDAP" % (email,))
                         form = RegistrationForm(realm_creation=realm_creation)
                         break
@@ -248,10 +248,10 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 # Since we'll have created a user, we now just log them in.
                 return login_and_go_to_home(request, auth_result)
 
-            if return_data.get("outside_ldap_domain") and email_auth_enabled(realm):
+            if return_data.get("no_matching_ldap_user") and email_auth_enabled(realm):
                 # If both the LDAP and Email auth backends are
-                # enabled, and the user's email is outside the LDAP
-                # domain, then the intent is to create a user in the
+                # enabled, and there's no matching user in the LDAP
+                # directory then the intent is to create a user in the
                 # realm with their email outside the LDAP organization
                 # (with e.g. a password stored in the Zulip database,
                 # not LDAP).  So we fall through and create the new
