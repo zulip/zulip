@@ -684,6 +684,19 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             with self.assertRaises(KeyError):
                 user_dict["profile_data"]
 
+    def test_get_custom_profile_fields_from_api_for_single_user(self) -> None:
+        self.login(self.example_email("iago"))
+        expected_keys = {
+            "result", "msg", "pointer", "client_id", "max_message_id", "user_id",
+            "avatar_url", "full_name", "email", "is_bot", "is_admin", "short_name",
+            "profile_data"}
+
+        url = "/json/users/me"
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        raw_user_data = response.json()
+        self.assertEqual(set(raw_user_data.keys()), expected_keys)
+
 
 class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_reorder(self) -> None:
