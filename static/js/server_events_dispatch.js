@@ -21,7 +21,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         settings_streams.update_default_streams_table();
         break;
 
-    case 'delete_message':
+    case 'delete_message': {
         var msg_id = event.message_id;
         // message is passed to unread.get_unread_messages,
         // which returns all the unread messages out of a given list.
@@ -36,6 +36,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         ui.remove_message(msg_id);
         break;
+    }
 
     case 'hotspots':
         hotspots.load_new(event.hotspots);
@@ -58,7 +59,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         activity.update_presence_info(event.email, event.presence, event.server_timestamp);
         break;
 
-    case 'restart':
+    case 'restart': {
         var reload_options = {
             save_pointer: true,
             save_narrow: true,
@@ -70,6 +71,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         reload.initiate(reload_options);
         break;
+    }
 
     case 'reaction':
         if (event.op === 'add') {
@@ -79,7 +81,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         break;
 
-    case 'realm':
+    case 'realm': {
         var realm_settings = {
             add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
             allow_edit_history: noop,
@@ -184,6 +186,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
 
         break;
+    }
 
     case 'realm_bot':
         if (event.op === 'add') {
@@ -221,7 +224,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         settings_linkifiers.populate_filters(page_params.realm_filters);
         break;
 
-    case 'realm_domains':
+    case 'realm_domains': {
         var i;
         if (event.op === 'add') {
             page_params.realm_domains.push(event.realm_domain);
@@ -243,6 +246,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         settings_org.populate_realm_domains(page_params.realm_domains);
         break;
+    }
 
     case 'realm_user':
         if (event.op === 'add') {
@@ -300,7 +304,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         break;
 
-    case 'submessage':
+    case 'submessage': {
         // The fields in the event don't quite exactly
         // match the layout of a submessage, since there's
         // an event id.  We also want to be explicit here.
@@ -313,6 +317,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         };
         submessage.handle_event(submsg);
         break;
+    }
 
     case 'subscription':
         if (event.op === 'add') {
@@ -369,7 +374,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         break;
 
-    case 'update_display_settings':
+    case 'update_display_settings': {
         var user_display_settings = [
             'default_language',
             'demote_inactive_streams',
@@ -446,6 +451,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         settings_display.update_page();
         break;
+    }
 
     case 'update_global_notifications':
         notifications.handle_global_notification_updates(event.notification_name,
@@ -457,7 +463,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         // (E.g. update_stream_push_notifications).
         break;
 
-    case 'update_message_flags':
+    case 'update_message_flags': {
         var new_value = event.operation === "add";
         switch (event.flag) {
         case 'starred':
@@ -475,6 +481,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             break;
         }
         break;
+    }
 
     case 'user_group':
         if (event.op === 'add') {

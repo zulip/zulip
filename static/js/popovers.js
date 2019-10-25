@@ -122,10 +122,11 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
         profile_field.is_user_field = true;
         profile_field.value = field_value.value;
         break;
-    case field_types.CHOICE.id:
+    case field_types.CHOICE.id: {
         var field_choice_dict = JSON.parse(field.field_data);
         profile_field.value = field_choice_dict[field_value.value].text;
         break;
+    }
     case field_types.SHORT_TEXT.id:
     case field_types.LONG_TEXT.id:
         profile_field.value = field_value.value;
