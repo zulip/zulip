@@ -4,7 +4,8 @@ from django.test.utils import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm
-from zproject.backends import ZulipLDAPAuthBackend, ZulipLDAPExceptionOutsideDomain, sync_user_from_ldap
+from zproject.backends import ZulipLDAPAuthBackend, ZulipLDAPExceptionOutsideDomain, \
+    ZulipLDAPExceptionNoMatchingLDAPUser, sync_user_from_ldap
 
 from django_auth_ldap.config import LDAPSearch
 
@@ -31,27 +32,39 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
     def test_django_to_ldap_username_without_email_search(self) -> None:
         with self.settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=None):
             self.assertEqual(self.backend.django_to_ldap_username("hamlet"), "hamlet")
-            self.assertEqual(self.backend.django_to_ldap_username("hamlet@zulip.com"), "hamlet@zulip.com")
-            self.assertEqual(self.backend.django_to_ldap_username("hamlet@example.com"), "hamlet@example.com")
+            self.assertEqual(self.backend.django_to_ldap_username("newuser_email_as_uid@zulip.com"),
+                             "newuser_email_as_uid@zulip.com")
+            with self.assertRaises(ZulipLDAPExceptionNoMatchingLDAPUser):
+                self.backend.django_to_ldap_username("hamlet@example.com")
 
     def test_django_to_ldap_username_with_email_search(self) -> None:
-        with self.settings():
-            self.assertEqual(self.backend.django_to_ldap_username("hamlet"),
-                             self.ldap_username("hamlet"))
-            self.assertEqual(self.backend.django_to_ldap_username("hamlet@zulip.com"),
-                             self.ldap_username("hamlet"))
-            # If there are no matches through the email search, return the email unchanged:
-            self.assertEqual(self.backend.django_to_ldap_username("no_such_email@example.com"),
-                             "no_such_email@example.com")
-            self.assertEqual(self.backend.django_to_ldap_username("aaron@zulip.com"),
-                             self.ldap_username("aaron"))
+        self.assertEqual(self.backend.django_to_ldap_username("hamlet"),
+                         self.ldap_username("hamlet"))
+        self.assertEqual(self.backend.django_to_ldap_username("hamlet@zulip.com"),
+                         self.ldap_username("hamlet"))
+        # If there are no matches through the email search, raise exception:
+        with self.assertRaises(ZulipLDAPExceptionNoMatchingLDAPUser):
+            self.backend.django_to_ldap_username("no_such_email@example.com")
 
-            with mock.patch("zproject.backends.logging.warning") as mock_warn:
-                self.assertEqual(
-                    self.backend.django_to_ldap_username("shared_email@zulip.com"),
-                    "shared_email@zulip.com"
-                )
-                mock_warn.assert_called_with("Multiple users with email shared_email@zulip.com found in LDAP.")
+        self.assertEqual(self.backend.django_to_ldap_username("aaron@zulip.com"),
+                         self.ldap_username("aaron"))
+
+        with mock.patch("zproject.backends.logging.warning") as mock_warn:
+            with self.assertRaises(ZulipLDAPExceptionNoMatchingLDAPUser):
+                self.backend.django_to_ldap_username("shared_email@zulip.com")
+            mock_warn.assert_called_with("Multiple users with email shared_email@zulip.com found in LDAP.")
+
+        # Test on a weird case of a user whose uid is an email and his actual "mail"
+        # attribute is a different email address:
+        self.mock_ldap.directory['uid=some_user@organization_a.com,ou=users,dc=zulip,dc=com'] = {
+            "cn": ["Some User"],
+            "uid": ['some_user@organization_a.com'],
+            "mail": ["some_user@contactaddress.com"]
+        }
+        self.assertEqual(self.backend.django_to_ldap_username("some_user@contactaddress.com"),
+                         "some_user@organization_a.com")
+        self.assertEqual(self.backend.django_to_ldap_username("some_user@organization_a.com"),
+                         "some_user@organization_a.com")
 
         # Configure email search for emails in the uid attribute:
         with self.settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=LDAPSearch("ou=users,dc=zulip,dc=com",

@@ -282,7 +282,10 @@ class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     be caught and logged at debug level inside django-auth-ldap's authenticate()"""
     pass
 
-class ZulipLDAPExceptionOutsideDomain(ZulipLDAPException):
+class ZulipLDAPExceptionNoMatchingLDAPUser(ZulipLDAPException):
+    pass
+
+class ZulipLDAPExceptionOutsideDomain(ZulipLDAPExceptionNoMatchingLDAPUser):
     pass
 
 class ZulipLDAPConfigurationError(Exception):
@@ -322,31 +325,41 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return set()
 
     def django_to_ldap_username(self, username: str) -> str:
+        """
+        Translates django username (user_profile.email or whatever the user typed in the login
+        field when authenticating via the ldap backend) into ldap username.
+        Guarantees that the username it returns actually has an entry in the ldap directory.
+        Raises ZulipLDAPExceptionNoMatchingLDAPUser if that's not possible.
+        """
+        result = username
         if settings.LDAP_APPEND_DOMAIN:
             if is_valid_email(username):
                 if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
                     raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
                         username, settings.LDAP_APPEND_DOMAIN))
-                return email_to_username(username)
-            else:
-                return username
+                result = email_to_username(username)
 
-        if settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH:
+        elif settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH:
             # We can use find_ldap_users_by_email
             if is_valid_email(username):
-                result = find_ldap_users_by_email(username)
-                if result is None:
-                    return username
-                if len(result) == 1:
-                    return result[0]._username
-                if len(result) > 1:
+                email_search_result = find_ldap_users_by_email(username)
+                if email_search_result is None:
+                    result = username
+                elif len(email_search_result) == 1:
+                    return email_search_result[0]._username
+                elif len(email_search_result) > 1:
                     # This is possible, but strange, so worth logging a warning about.
                     # We can't translate the email to a unique username,
                     # so we don't do anything else here.
                     logging.warning("Multiple users with email {} found in LDAP.".format(username))
-                    return username
+                    result = username
 
-        return username
+        if _LDAPUser(self, result).attrs is None:
+            # Check that there actually is an ldap entry matching the result username
+            # we want to return. Otherwise, raise an exception.
+            raise ZulipLDAPExceptionNoMatchingLDAPUser()
+
+        return result
 
     def user_email_from_ldapuser(self, username: str, ldap_user: _LDAPUser) -> str:
         if hasattr(ldap_user, '_username'):
@@ -549,9 +562,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # to the user's LDAP username before calling the
             # django-auth-ldap authenticate().
             username = self.django_to_ldap_username(username)
-        except ZulipLDAPExceptionOutsideDomain:
+        except ZulipLDAPExceptionNoMatchingLDAPUser:
             if return_data is not None:
-                return_data['outside_ldap_domain'] = True
+                return_data['no_matching_ldap_user'] = True
             return None
 
         # Call into (ultimately) the django-auth-ldap authenticate
@@ -674,36 +687,45 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
 
 def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
     backend = ZulipLDAPUserPopulator()
-    updated_user = backend.populate_user(backend.django_to_ldap_username(user_profile.email))
+    try:
+        ldap_username = backend.django_to_ldap_username(user_profile.email)
+    except ZulipLDAPExceptionNoMatchingLDAPUser:
+        if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
+            do_deactivate_user(user_profile)
+            logger.info("Deactivated non-matching user: %s" % (user_profile.email,))
+            return True
+        elif user_profile.is_active:
+            logger.warning("Did not find %s in LDAP." % (user_profile.email,))
+        return False
+
+    updated_user = backend.populate_user(ldap_username)
     if updated_user:
         logger.info("Updated %s." % (user_profile.email,))
         return True
 
-    if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
-        do_deactivate_user(user_profile)
-        logger.info("Deactivated non-matching user: %s" % (user_profile.email,))
-        return True
-    elif user_profile.is_active:
-        logger.warning("Did not find %s in LDAP." % (user_profile.email,))
-    return False
+    raise PopulateUserLDAPError("populate_user unexpectedly returned {}".format(updated_user))
 
 # Quick tool to test whether you're correctly authenticating to LDAP
 def query_ldap(email: str) -> List[str]:
     values = []
     backend = next((backend for backend in get_backends() if isinstance(backend, LDAPBackend)), None)
     if backend is not None:
-        ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
-        if ldap_attrs is None:
+        try:
+            ldap_username = backend.django_to_ldap_username(email)
+        except ZulipLDAPExceptionNoMatchingLDAPUser:
             values.append("No such user found")
-        else:
-            for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
-                value = ldap_attrs.get(ldap_field, ["LDAP field not present", ])[0]
-                if django_field == "avatar":
-                    if isinstance(value, bytes):
-                        value = "(An avatar image file)"
-                values.append("%s: %s" % (django_field, value))
-            if settings.LDAP_EMAIL_ATTR is not None:
-                values.append("%s: %s" % ('email', ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
+            return values
+
+        ldap_attrs = _LDAPUser(backend, ldap_username).attrs
+
+        for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
+            value = ldap_attrs.get(ldap_field, ["LDAP field not present", ])[0]
+            if django_field == "avatar":
+                if isinstance(value, bytes):
+                    value = "(An avatar image file)"
+            values.append("%s: %s" % (django_field, value))
+        if settings.LDAP_EMAIL_ATTR is not None:
+            values.append("%s: %s" % ('email', ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
     else:
         values.append("LDAP backend not configured on this server.")
     return values

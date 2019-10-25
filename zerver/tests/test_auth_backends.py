@@ -2525,16 +2525,39 @@ class TestLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_django_to_ldap_username_without_append_domain(self) -> None:
         backend = self.backend
-        username = backend.django_to_ldap_username('"hamlet@test"@zulip.com')
-        self.assertEqual(username, '"hamlet@test"@zulip.com')
+        with self.settings(
+            AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                                        ldap.SCOPE_ONELEVEL,
+                                                        "(uid=%(email)s)")
+        ):
+            self.mock_ldap.directory = {
+                'uid="hamlet@test"@zulip.com",ou=users,dc=zulip,dc=com': {
+                    "cn": ["King Hamlet"],
+                    "uid": ['"hamlet@test"@zulip.com'],
+                }
+            }
+            username = backend.django_to_ldap_username('"hamlet@test"@zulip.com')
+            self.assertEqual(username, '"hamlet@test"@zulip.com')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_django_to_ldap_username_with_append_domain(self) -> None:
         backend = self.backend
         with self.settings(LDAP_APPEND_DOMAIN='zulip.com'):
+            self.mock_ldap.directory = {
+                'uid="hamlet@test",ou=users,dc=zulip,dc=com': {
+                    "cn": ["King Hamlet"],
+                    "uid": ['"hamlet@test"'],
+                }
+            }
             username = backend.django_to_ldap_username('"hamlet@test"@zulip.com')
             self.assertEqual(username, '"hamlet@test"')
 
+            self.mock_ldap.directory = {
+                'uid="hamlet@test"@zulip,ou=users,dc=zulip,dc=com': {
+                    "cn": ["King Hamlet"],
+                    "uid": ['"hamlet@test"@zulip'],
+                }
+            }
             username = backend.django_to_ldap_username('"hamlet@test"@zulip')
             self.assertEqual(username, '"hamlet@test"@zulip')
 
@@ -2752,7 +2775,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.assertTrue(result)
 
     @mock.patch("zproject.backends.do_deactivate_user")
-    def test_ldap_auth_error_doesnt_deactivate_user(self, mock_deactivate: mock.MagicMock) -> None:
+    def test_ldaperror_doesnt_deactivate_user(self, mock_deactivate: mock.MagicMock) -> None:
         """
         This is a test for a bug where failure to connect to LDAP in sync_user_from_ldap
         (e.g. due to invalid credentials) would cause the user to be deactivated if
@@ -2763,9 +2786,20 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 LDAP_DEACTIVATE_NON_MATCHING_USERS=True,
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='wrongpass'):
+            with self.assertRaises(ldap.INVALID_CREDENTIALS):
+                sync_user_from_ldap(self.example_user('hamlet'), mock.Mock())
+            mock_deactivate.assert_not_called()
+
+        # Make sure other types of LDAPError won't cause deactivation either:
+        with mock.patch.object(_LDAPUser, '_get_or_create_user', side_effect=ldap.LDAPError):
             with self.assertRaises(PopulateUserLDAPError):
                 sync_user_from_ldap(self.example_user('hamlet'), mock.Mock())
             mock_deactivate.assert_not_called()
+
+    def test_populate_user_returns_none(self) -> None:
+        with mock.patch.object(ZulipLDAPUserPopulator, 'populate_user', return_value=None):
+            with self.assertRaises(PopulateUserLDAPError):
+                sync_user_from_ldap(self.example_user('hamlet'), mock.Mock())
 
     def test_update_full_name(self) -> None:
         self.change_ldap_user_attr('hamlet', 'cn', 'New Name')
