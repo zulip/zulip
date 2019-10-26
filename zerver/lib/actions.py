@@ -447,8 +447,10 @@ def notify_created_user(user_profile: UserProfile) -> None:
                   date_joined=user_profile.date_joined.isoformat(),
                   is_guest=user_profile.is_guest,
                   is_bot=user_profile.is_bot)  # type: Dict[str, Any]
-    if user_profile.is_bot and user_profile.bot_owner_id is not None:
-        person["bot_owner_id"] = user_profile.bot_owner_id
+    if user_profile.is_bot:
+        person["bot_type"] = user_profile.bot_type
+        if user_profile.bot_owner_id is not None:
+            person["bot_owner_id"] = user_profile.bot_owner_id
     event = dict(type="realm_user", op="add", person=person)  # type: Dict[str, Any]
     if not user_profile.is_bot:
         event["person"]["profile_data"] = {}
