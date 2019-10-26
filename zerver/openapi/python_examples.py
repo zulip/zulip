@@ -204,6 +204,18 @@ def get_members(client):
     validate_against_openapi_schema(result, '/users', 'get', '200')
     assert result['members'][0]['avatar_url'] is None
 
+    # {code_example|start}
+    # You may pass the `include_custom_profile_fields` query parameter as follows:
+    result = client.get_members({'include_custom_profile_fields': True})
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/users', 'get', '200')
+    for member in result['members']:
+        if member["is_bot"]:
+            assert member.get('profile_data', None) is None
+        else:
+            assert member.get('profile_data', None) is not None
+
 @openapi_test_function("/realm/filters:get")
 def get_realm_filters(client):
     # type: (Client) -> None
