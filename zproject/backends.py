@@ -515,38 +515,6 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             })
         do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
 
-    def get_or_build_user(self, username: str,
-                          ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
-        """This is used only in non-authentication contexts such as:
-             ./manage.py sync_ldap_user_data
-           In authentication contexts, this is overriden in ZulipLDAPAuthBackend.
-        """
-        # Obtain the django username from the ldap_user object:
-        username = self.user_email_from_ldapuser(username, ldap_user)
-
-        # Call the library get_or_build_user for building the UserProfile
-        # with the username we obtained:
-        (user, built) = super().get_or_build_user(username, ldap_user)
-        # Synchronise the UserProfile with its LDAP attributes:
-        if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:
-            user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
-            if user_disabled_in_ldap:
-                if user.is_active:
-                    logging.info("Deactivating user %s because they are disabled in LDAP." %
-                                 (user.email,))
-                    do_deactivate_user(user)
-                # Do an early return to avoid trying to sync additional data.
-                return (user, built)
-            elif not user.is_active:
-                logging.info("Reactivating user %s because they are not disabled in LDAP." %
-                             (user.email,))
-                do_reactivate_user(user)
-
-        self.sync_avatar_from_ldap(user, ldap_user)
-        self.sync_full_name_from_ldap(user, ldap_user)
-        self.sync_custom_profile_fields_from_ldap(user, ldap_user)
-        return (user, built)
-
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
@@ -670,6 +638,37 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     def authenticate(self, *, username: str, password: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         return None
+
+    def get_or_build_user(self, username: str,
+                          ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
+        """This is used only in non-authentication contexts such as:
+             ./manage.py sync_ldap_user_data
+        """
+        # Obtain the django username from the ldap_user object:
+        username = self.user_email_from_ldapuser(username, ldap_user)
+
+        # Call the library get_or_build_user for building the UserProfile
+        # with the username we obtained:
+        (user, built) = super().get_or_build_user(username, ldap_user)
+        # Synchronise the UserProfile with its LDAP attributes:
+        if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:
+            user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
+            if user_disabled_in_ldap:
+                if user.is_active:
+                    logging.info("Deactivating user %s because they are disabled in LDAP." %
+                                 (user.email,))
+                    do_deactivate_user(user)
+                # Do an early return to avoid trying to sync additional data.
+                return (user, built)
+            elif not user.is_active:
+                logging.info("Reactivating user %s because they are not disabled in LDAP." %
+                             (user.email,))
+                do_reactivate_user(user)
+
+        self.sync_avatar_from_ldap(user, ldap_user)
+        self.sync_full_name_from_ldap(user, ldap_user)
+        self.sync_custom_profile_fields_from_ldap(user, ldap_user)
+        return (user, built)
 
 class PopulateUserLDAPError(ZulipLDAPException):
     pass
