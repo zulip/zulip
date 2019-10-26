@@ -664,9 +664,8 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         expected_keys_for_iago = {
             "email", "user_id", "avatar_url", "is_admin", "is_guest", "is_bot",
-            "full_name", "timezone", "is_active", "date_joined", "bot_type", "profile_data"}
+            "full_name", "timezone", "is_active", "date_joined", "profile_data"}
         self.assertEqual(set(iago_raw_data.keys()), expected_keys_for_iago)
-        self.assertIsNone(iago_raw_data["bot_type"])  # the key should exist though
         self.assertNotEqual(iago_raw_data["profile_data"], {})
 
         expected_keys_for_test_bot = {

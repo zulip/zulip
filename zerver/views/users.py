@@ -417,7 +417,6 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
     members = get_raw_user_data(realm,
                                 user_profile=user_profile,
                                 client_gravatar=client_gravatar,
-                                for_api=True,
                                 include_custom_profile_fields=include_custom_profile_fields)
     return json_success({'members': members.values()})
 
