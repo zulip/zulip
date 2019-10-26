@@ -134,7 +134,7 @@ page can be easily identified in it's respective JavaScript file. -->
                         <div class="login-social">
                             <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
                                 <input type="hidden" name="next" value="{{ next }}">
-                                <button class="login-social-button" style="background-image:url({{ backend.display_logo }})">
+                                <button class="login-social-button" {% if backend.display_logo %} style="background-image:url({{ backend.display_logo }})"  {% endif %}>
                                     {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
                                 </button>
                             </form>

@@ -1122,7 +1122,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     # to have it as their main authentication method, so it seems appropriate to have
     # SAML buttons at the top.
     sort_order = 9999
-    display_logo = "/static/images/landing-page/logos/saml-icon.png"
+    display_logo = ""  # no logo by default
 
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to
