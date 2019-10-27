@@ -124,6 +124,9 @@ templates = {
         'commented': u'{user} commented on issue **{subject}**.',
         'delete': u'{user} deleted issue **{subject}**.'
     },
+    'webhook_test': {
+        'test': u'{user} triggered a test of the Taiga integration.'
+    },
 }
 
 
@@ -242,6 +245,16 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
     evt.update({"type": message["type"], "event": event_type, "values": values})
     return evt
 
+def parse_webhook_test(message: Mapping[str, Any]) -> Dict[str, Any]:
+    return {
+        "type": "webhook_test",
+        "event": "test",
+        "values": {
+            "user": get_owner_name(message),
+            "end_type": "test"
+        }
+    }
+
 
 def parse_message(message: Mapping[str, Any]) -> List[Dict[str, Any]]:
     """ Parses the payload by delegating to specialized functions. """
@@ -256,6 +269,8 @@ def parse_message(message: Mapping[str, Any]) -> List[Dict[str, Any]]:
                     events.append(parsed_event)
         if message["change"]["comment"]:
             events.append(parse_comment(message))
+    elif message["action"] == "test":
+        events.append(parse_webhook_test(message))
 
     return events
 
@@ -263,7 +278,7 @@ def generate_content(data: Mapping[str, Any]) -> str:
     """ Gets the template string and formats it with parsed data. """
     template = templates[data['type']][data['event']]
     content = template.format(**data['values'])
-    end_type = ''
+    end_type = 'end_type'
     if template.endswith('{subject}**.'):
         end_type = 'subject'
     elif template.endswith('{epic_subject}**.'):

@@ -234,3 +234,7 @@ class TaigaHookTests(WebhookTestCase):
     def test_taiga_relateduserstory_deleted(self) -> None:
         message = u'Eeshan Garg removed a related user story **A related user story, which is epic** from the epic **This is Epic!**'
         self.send_and_test_stream_message("relateduserstory_deleted", self.TOPIC, message)
+
+    def test_taiga_webhook_test(self) -> None:
+        message = u'Jan triggered a test of the Taiga integration.'
+        self.send_and_test_stream_message("webhook_test", self.TOPIC, message)
