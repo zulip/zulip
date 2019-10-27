@@ -108,6 +108,7 @@ HTML/CSS in your documentation as needed.
 documentation.
 * You can create special highlight warning blocks using
 [tips and warnings](#tips-and-warnings).
+* You can create tabs using [markdown tab switcher](#tab-switcher).
 
 ### Images
 
@@ -128,8 +129,8 @@ Zulip browser window in a screenshot; instead, it should only show
 relevant parts of the app.  In addition, the screenshot should always
 come *after* the text that describes it, never before.
 
-Images are often a part of a numbered step and must be indented four spaces
-to be formatted correctly.
+Images are often a part of a numbered step and must be indented four
+spaces to be formatted correctly.
 
 ### Icons
 
@@ -225,6 +226,33 @@ Tips are more common than warnings.
     message will appear.
 ```
 
-All tips/warnings should appear inside tip/warning blocks. There should be
-only one tip/warning inside each block.They usually be formatted as a
-continuation of a numbered step.
+All tips/warnings should appear inside tip/warning blocks. There
+should be only one tip/warning inside each block, and they usually
+should be formatted as a continuation of a numbered step.
+
+###  Tab Switcher
+
+Our markdown processor supports easily creating a tab switcher widget
+design to easily show the instructions for different
+[platforms](https://zulipchat.com/help/logging-out) in user docs,
+languages in API docs, etc.  To create a tab switcher, write:
+
+    {start_tabs}
+    {tab|desktop-web}
+    # First Tab's content
+    {tab|ios}
+    # Second Tab's content
+    {tab|android}
+    # Third tab's content
+    {end_tabs}
+
+The tab identifiers (e.g. `desktop-web` above) and their mappings to
+the tabs' labels are declared in
+[zerver/lib/bugdown/tabbed_sections.py][tabbed-sections-code].
+
+[tabbed-sections-code]: https://github.com/zulip/zulip/blob/master/zerver/lib/bugdown/tabbed_sections.py#L37
+
+This widget can also be used just to create a nice box around a set of
+instructions
+([example](https://zulipchat.com/help/deactivate-your-account)) by
+only declaring a single tab.
