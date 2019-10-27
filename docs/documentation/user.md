@@ -108,6 +108,7 @@ HTML/CSS in your documentation as needed.
 documentation.
 * You can create special highlight warning blocks using
 [tips and warnings](#tips-and-warnings).
+* You can create tabs using [markdown tab switcher](#tab-switcher).
 
 ### Images
 
@@ -227,4 +228,78 @@ Tips are more common than warnings.
 
 All tips/warnings should appear inside tip/warning blocks. There should be
 only one tip/warning inside each block.They usually be formatted as a
-continuation of a numbered step.
+continuation of a numbered step.  
+
+###  Tab Switcher  
+
+Our markdown processor supports easily creating a tab switcher widget which
+can be used for showing similar instructions for different apps/platforms,
+and API call examples, among other uses.
+
+A nice example of this would be the **logging-out** feature which has
+different instructions for multiple platforms(including desktop/web and mobile).
+See https://zulipchat.com/help/logging-out for details.
+
+To create the above, write:
+
+    {start_tabs}
+    {tab|desktop-web}
+    # First Tab's content
+    {tab|ios}
+    # Second Tab's content
+    {tab|android}
+    # Third tab's content
+    {end_tabs}
+
+We support the following headers as of now:
+
+ - 'desktop-web': 'Desktop/Web',
+ - 'ios': 'iOS',
+ - 'android': 'Android',
+ -  'mac': 'macOS',
+ -  'windows': 'Windows',
+ -  'linux': 'Linux',
+ - 'python': 'Python',
+ - 'js': 'JavaScript',  
+ - 'curl': 'curl',
+ - 'zulip-send': 'zulip-send',
+ - 'web': 'Web',  
+ - 'desktop': 'Desktop',  
+ - 'mobile': 'Mobile',
+  -  'cloud': 'HipChat Cloud',  
+  - 'server': 'HipChat Server or Data Center',
+  - 'stride': 'Stride',
+  -   'mm-default': 'Default installation',
+  -   'mm-docker': 'Docker',  
+  -  'mm-gitlab-omnibus': 'Gitlab Omnibus',
+  - 'send-email-invitations': 'Send email invitations',  
+  - 'share-an-invite-link': 'Share an invite link',  
+  - 'allow-anyone-to-join': 'Allow anyone to join',
+  - 'restrict-by-email-domain': 'Restrict by email domain',
+  -   'google-hangouts': 'Google Hangouts',  
+  - 'zoom': 'Zoom (experimental)',  
+  - 'jitsi-on-premise': 'Jitsi on-premise',
+  - 'chrome': 'Chrome',  
+  - 'firefox': 'Firefox',  
+  - 'desktop-app': 'Desktop app',
+  -  'system-proxy-settings': 'System proxy settings',  
+  -  'custom-proxy-settings': 'Custom proxy settings',
+
+To add new headers, you may need to update tabbed_sections.py and tabbed-instructions.js
+
+The tab switcher box can also be used to list instructions that
+only apply to one platform (without any tabs)
+e.g. [https://zulipchat.com/help/deactivate-your-account]
+(https://zulipchat.com/help/deactivate-your-account)  
+
+To create the above, write:
+
+    {start_tabs}
+
+    {settings_tab|your-account}
+
+    1. Under **Deactivate account**, click **Deactivate account**.
+
+    2. Confirm by clicking **Deactivate now**.
+
+    {end_tabs}
