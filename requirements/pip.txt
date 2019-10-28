@@ -12,9 +12,9 @@ wheel==0.33.6 \
     --hash=sha256:f4da1763d3becf2e2cd92a14a7c920f0f00eca30fdde9ea992c836685b9faf28
 
 # The following packages are considered to be unsafe in a requirements file:
-pip==19.2.3 \
-    --hash=sha256:340a0ba40fdeb16413914c0fcd8e0b4ebb0bf39a900ec80e11c05d836c05103f \
-    --hash=sha256:e7a31f147974362e6c82d84b91c7f2bdf57e4d3163d3d454e6c3e71944d67135
-setuptools==41.2.0 \
-    --hash=sha256:4380abcf2a4ffd1a5ba22d687c6d690dce83b2b51c70e9c6d09f7e8c7e8040dc \
-    --hash=sha256:66b86bbae7cc7ac2e867f52dc08a6bd064d938bac59dfec71b9b565dd36d6012
+pip==19.3.1 \
+    --hash=sha256:21207d76c1031e517668898a6b46a9fb1501c7a4710ef5dfd6a40ad9e6757ea7 \
+    --hash=sha256:6917c65fc3769ecdc61405d3dfd97afdedd75808d200b2838d7d961cebc0c2c7
+setuptools==41.5.1 \
+    --hash=sha256:998a90a43ad3c696e1ffad1b23783e1bd2e6a92e6066959de7c6f0669c154458 \
+    --hash=sha256:9f1b3c6a6b862cf994c47c5b5a212a75cf0a11912d1cd11abfdfe03a4f49f5b2
