@@ -18,8 +18,8 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ["CASPER_TESTS"] = "1"
 os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(ZULIP_PATH, "node_modules/.bin/phantomjs")
-os.environ["http_proxy"] = ""
-os.environ["https_proxy"] = ""
+os.environ.pop("http_proxy", "")
+os.environ.pop("https_proxy", "")
 
 usage = """test-js-with-casper [options]
     test-js-with-casper # Run all test files

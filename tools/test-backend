@@ -189,8 +189,8 @@ def main() -> None:
     default_parallel = os.cpu_count()
 
     # Remove proxy settings for running backend tests
-    os.environ["http_proxy"] = ""
-    os.environ["https_proxy"] = ""
+    os.environ.pop("http_proxy", "")
+    os.environ.pop("https_proxy", "")
 
     from zerver.lib.test_fixtures import update_test_databases_if_required, \
         remove_test_run_directories
