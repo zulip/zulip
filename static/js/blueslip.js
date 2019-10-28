@@ -36,11 +36,10 @@ Logger.prototype = (function () {
                 pad(now.getUTCMilliseconds(), 3) + ' UTC';
 
             var str_args = _.map(arguments, function (x) {
-                if (typeof(x) === 'object') {
+                if (typeof x === 'object') {
                     return JSON.stringify(x);
-                } else {
-                    return x;
                 }
+                return x;
             });
 
             var log_entry = date_str + " " + name.toUpperCase() +
@@ -62,12 +61,12 @@ Logger.prototype = (function () {
     var proto = {
         get_log: function Logger_get_log() {
             return this._memory_log;
-        }
+        },
     };
 
     var methods = ['debug', 'log', 'info', 'warn', 'error'];
     var i;
-    for (i = 0; i < methods.length; i++) {
+    for (i = 0; i < methods.length; i += 1) {
         proto[methods[i]] = make_logger_func(methods[i]);
     }
 
@@ -98,10 +97,9 @@ function report_error(msg, stack, opts) {
 
     var key = ':' + msg + stack;
     if (reported_errors.hasOwnProperty(key)
-        || (last_report_attempt.hasOwnProperty(key)
+        || last_report_attempt.hasOwnProperty(key)
             // Only try to report a given error once every 5 minutes
-            && (Date.now() - last_report_attempt[key] <= 60 * 5 * 1000)))
-    {
+            && Date.now() - last_report_attempt[key] <= 60 * 5 * 1000) {
         return;
     }
 
@@ -112,18 +110,20 @@ function report_error(msg, stack, opts) {
     // elegant thing to do in that case is to either wait until that
     // setup is done or do it ourselves and then retry.
     $.ajax({
-        type:     'POST',
-        url:      '/json/report/error',
+        type: 'POST',
+        url: '/json/report/error',
         dataType: 'json',
-        data:     { message: msg,
-                    stacktrace: stack,
-                    ui_message: opts.show_ui_msg,
-                    more_info: JSON.stringify(opts.more_info),
-                    href: window.location.href,
-                    user_agent: window.navigator.userAgent,
-                    log: logger.get_log().join("\n")},
-        timeout:  3*1000,
-        success:  function () {
+        data: {
+            message: msg,
+            stacktrace: stack,
+            ui_message: opts.show_ui_msg,
+            more_info: JSON.stringify(opts.more_info),
+            href: window.location.href,
+            user_agent: window.navigator.userAgent,
+            log: logger.get_log().join("\n"),
+        },
+        timeout: 3 * 1000,
+        success: function () {
             reported_errors[key] = true;
             if (opts.show_ui_msg && ui_report !== undefined) {
                 // There are a few races here (and below in the error
@@ -158,7 +158,7 @@ function report_error(msg, stack, opts) {
                                   "Please try reloading the page.",
                                   $("#home-error"), "alert-error");
             }
-        }
+        },
     });
 
     if (page_params.save_stacktraces) {
@@ -217,22 +217,22 @@ function build_arg_list(msg, more_info) {
     return args;
 }
 
-exports.debug = function blueslip_debug (msg, more_info) {
+exports.debug = function blueslip_debug(msg, more_info) {
     var args = build_arg_list(msg, more_info);
     logger.debug.apply(logger, args);
 };
 
-exports.log = function blueslip_log (msg, more_info) {
+exports.log = function blueslip_log(msg, more_info) {
     var args = build_arg_list(msg, more_info);
     logger.log.apply(logger, args);
 };
 
-exports.info = function blueslip_info (msg, more_info) {
+exports.info = function blueslip_info(msg, more_info) {
     var args = build_arg_list(msg, more_info);
     logger.info.apply(logger, args);
 };
 
-exports.warn = function blueslip_warn (msg, more_info) {
+exports.warn = function blueslip_warn(msg, more_info) {
     var args = build_arg_list(msg, more_info);
     logger.warn.apply(logger, args);
     if (page_params.debug_mode) {
@@ -240,7 +240,7 @@ exports.warn = function blueslip_warn (msg, more_info) {
     }
 };
 
-exports.error = function blueslip_error (msg, more_info, stack) {
+exports.error = function blueslip_error(msg, more_info, stack) {
     if (stack === undefined) {
         stack = Error().stack;
     }
@@ -253,7 +253,7 @@ exports.error = function blueslip_error (msg, more_info, stack) {
     }
 };
 
-exports.fatal = function blueslip_fatal (msg, more_info) {
+exports.fatal = function blueslip_fatal(msg, more_info) {
     report_error(msg, Error().stack, {more_info: more_info});
     throw new BlueslipError(msg, more_info);
 };
@@ -276,7 +276,7 @@ exports.preview_node = function (node) {
        (className ? " class='" + className + "'" : "") +
        "></" + tag + ">";
 
-      return node_preview;
+    return node_preview;
 };
 
 window.blueslip = exports;
