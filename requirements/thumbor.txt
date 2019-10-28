@@ -15,9 +15,9 @@ backports-abc==0.5 \
     --hash=sha256:033be54514a03e255df75c5aee8f9e672f663f93abb723444caec8fe43437bde \
     --hash=sha256:52089f97fe7a9aa0d3277b220c1d730a85aefd64e1b2664696fe35317c5470a7 \
     # via tornado
-botocore==1.12.233 \
-    --hash=sha256:9b0bf5614a0e6a29838dc1bc3d38405c57ec6dc3e25709776f9d2d7f7e84b0e0 \
-    --hash=sha256:9b93ca5743e9209daaece3e682626d8370f04c9693760c7c1e7fd95b746e45ff \
+botocore==1.13.3 \
+    --hash=sha256:181ffa38dd5ca68bc118f36702266949ff80af9f7482d9e9d53556b7bd1c9da1 \
+    --hash=sha256:c66c2f8c3578ca2ea0dca6b5891d8071135baf28c9f754d31ff0ca0e7970d239 \
     # via tornado-botocore
 derpconf==0.8.3 \
     --hash=sha256:1bb152d8a1cf5c2a6d629bf29acd4af0c00811339642fc0a56172b0a83b31a15 \
@@ -25,9 +25,9 @@ derpconf==0.8.3 \
 django-auth-ldap==1.7.0 \
     --hash=sha256:72848b3b036d299114be3c6ef38b12f83f6cf1cf1696c5f92e06fe45a1b8e27b \
     --hash=sha256:f96398ce957bb8aaaee2e9d93e3eaf9955ab95a6d342303b5519350eb834f5d1
-django==1.11.24 \
-    --hash=sha256:215c27453f775b6b1add83a185f76c2e2ab711d17786a6704bd62eabd93f89e3 \
-    --hash=sha256:ffd89b89a2ee860ee521f054225044f52676825be4b61168d2842d44fcf457d3
+django==1.11.25 \
+    --hash=sha256:2f31cdaaeffdb1728614c4ede5f7101c5770aa90b471c1299d4a203bf00f3b05 \
+    --hash=sha256:5314e8586285d532b7aa5c6d763b0248d9a977a37efec86d30f0212b82e8ef66
 docutils==0.15.2 \
     --hash=sha256:6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0 \
     --hash=sha256:9e4d7ecfc600058e07ba661411a2b7de2fd0fafa17d1a7f7361cd47b1175c827 \
@@ -80,9 +80,9 @@ pillow==5.4.1 \
     --hash=sha256:f227d7e574d050ff3996049e086e1f18c7bd2d067ef24131e50a1d3fe5831fbc \
     --hash=sha256:fc9a12aad714af36cf3ad0275a96a733526571e52710319855628f476dcb144e \
     # via thumbor
-pyasn1-modules==0.2.6 \
-    --hash=sha256:43c17a83c155229839cc5c6b868e8d0c6041dba149789b6d6e28801c64821722 \
-    --hash=sha256:e30199a9d221f1b26c885ff3d87fd08694dbbe18ed0e8e405a2a7126d30ce4c0 \
+pyasn1-modules==0.2.7 \
+    --hash=sha256:0c35a52e00b672f832e5846826f1fb7507907f7d52fba6faa9e3c4cbe874fe4b \
+    --hash=sha256:b6ada4f840fe51abf5a6bd545b45bf537bea62221fa0dde2e8a553ed9f06a4e3 \
     # via python-ldap
 pyasn1==0.4.7 \
     --hash=sha256:62cdade8b5530f0b185e09855dd422bc05c0bbff6b72ff61381c09dac7befd8c \
@@ -128,9 +128,9 @@ python-dateutil==2.8.0 \
 python-ldap==3.2.0 \
     --hash=sha256:7d1c4b15375a533564aad3d3deade789221e450052b21ebb9720fb822eccdb8e \
     # via django-auth-ldap
-pytz==2019.2 \
-    --hash=sha256:26c0b32e437e54a18161324a2fca3c4b9846b74a8dccddd843113109e1116b32 \
-    --hash=sha256:c894d57500a4cd2d5c71114aaab77dbab5eabd9022308ce5ac9bb93a60a6f0c7 \
+pytz==2019.3 \
+    --hash=sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d \
+    --hash=sha256:b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be \
     # via django, thumbor
 singledispatch==3.4.0.3 \
     --hash=sha256:5b06af87df13818d14f08a028e42f566640aef80805c3b50c5056b086e3c2b9c \
@@ -165,9 +165,9 @@ typing==3.7.4.1 \
     --hash=sha256:91dfe6f3f706ee8cc32d38edbbf304e9b7583fb37108fef38229617f8b3eba23 \
     --hash=sha256:c8cabb5ab8945cd2f54917be357d134db9cc1eb039e59d1606dc1e60cb1d9d36 \
     --hash=sha256:f38d83c5a7a7086543a0f649564d661859c5146a85775ab90c0d2f93ffaa9714
-urllib3==1.25.5 \
-    --hash=sha256:2f3eadfea5d92bc7899e75b5968410b749a054b492d5a6379c1344a1481bc2cb \
-    --hash=sha256:9c6c593cb28f52075016307fc26b0a0f8e82bc7d1ff19aaaa959b91710a56c47 \
+urllib3==1.25.6 \
+    --hash=sha256:3de946ffbed6e6746608990594d08faac602528ac7015ac28d33cee6a45b7398 \
+    --hash=sha256:9a107b99a5393caf59c7aa3c1249c16e6879447533d0887f4336dde834c7be86 \
     # via botocore
 virtualenv-clone==0.5.3 \
     --hash=sha256:532f789a5c88adf339506e3ca03326f20ee82fd08ee5586b44dc859b5b4468c5 \
