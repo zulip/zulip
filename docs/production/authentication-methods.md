@@ -57,11 +57,11 @@ configure it as follows:
    `/home/zulip/deployments/current/scripts/setup/get-django-setting
    SOCIAL_AUTH_SAML_SP_ENTITY_ID` to get the computed value.
 
-2. Tell Zulip how to connect to your SAML provider server by filling
+2. Tell Zulip how to connect to your SAML provider(s) by filling
    out the section of `/etc/zulip/settings.py` on your Zulip server
    with the heading "SAML Authentication".
    * You will need to update `SOCIAL_AUTH_SAML_ORG_INFO` with your
-     organization name (`displayname` may appear in the SAML
+     organization name (`displayname` may appear in the IdP's
      authentication flow; `name` won't be displayed to humans).
    * Fill out `SOCIAL_AUTH_SAML_ENABLED_IDPS` with data provided by
      your identity provider.  You may find [the python-social-auth
@@ -71,8 +71,8 @@ configure it as follows:
      metadata and enter them on the right-hand side of this
      Python dictionary:
      1. Set the outer `idp_name` key to be an identifier for your IdP,
-        e.g. `testshib` or `okta`.  This field may be used later if
-        Zulip adds support for declaring multiple IdPs here.
+        e.g. `testshib` or `okta`.  This field appears in URLs for
+        parts of your Zulip server's SAML authentication flow.
      2. The IdP should provide the `url` and `entity_id` values.
      3. Save the `x509cert` value to a file; you'll use it in the
         instructions below.
@@ -82,6 +82,8 @@ configure it as follows:
         "Attribute Mapping" with GSuite).  You'll want to connect
         these so that Zulip gets the email address (used as a unique
         user ID) and name for the user.
+     5. The `display_name` and `display_logo` fields are used to
+        display the login/registration buttons for the IdP.
 
 3. Install the certificate(s) required for SAML authentication.  You
     will definitely need the public certificate of your IdP.  Some IdP

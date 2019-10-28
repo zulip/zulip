@@ -198,8 +198,8 @@ AUTHENTICATION_BACKENDS = (
 # You will need to modify these SAML settings:
 SOCIAL_AUTH_SAML_ORG_INFO = {
     "en-US": {
-        "displayname": "Example Inc.",
-        "name": "example",
+        "displayname": "Example, Inc. Zulip",
+        "name": "zulip",
         "url": "%s%s" % ('https://', EXTERNAL_HOST),
     }
 }
