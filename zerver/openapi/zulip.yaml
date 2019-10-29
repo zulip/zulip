@@ -2213,27 +2213,54 @@ paths:
                         [organization profile](/help/create-your-organization-profile).
                 - example:
                     {
-                        "realm_uri": "http://localhost:9991",
+                        "authentication_methods": {
+                          "password": true,
+                          "dev": true,
+                          "email": true,
+                          "ldap": false,
+                          "remoteuser": false,
+                          "github": true,
+                          "azuread": false,
+                          "google": true,
+                          "saml": true
+                        },
+                        "zulip_version": "2.0.6+git",
                         "push_notifications_enabled": false,
                         "msg": "",
-                        "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
-                        "realm_logo": "/static/images/logo/zulip-org-logo.png",
-                        "realm_night_logo": "static/images/logo/zulip-org-logo.png",
-                        "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",
+                        "is_incompatible": false,
                         "email_auth_enabled": true,
-                        "zulip_version": "1.9.0-rc1+git",
+                        "require_email_format_usernames": true,
+                        "realm_uri": "http://localhost:9991",
                         "realm_name": "Zulip Dev",
-                        "authentication_methods": {
-                            "github": true,
-                            "ldap": false,
-                            "password": true,
-                            "remoteuser": false,
-                            "email": true,
-                            "google": true,
-                            "dev": true
-                        },
+                        "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
+                        "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",
                         "result": "success",
-                        "require_email_format_usernames": true
+                        "social_backends": [
+                          {
+                            "name": "saml:idp_name",
+                            "display_name": "SAML",
+                            "display_logo": "",
+                            "login_url": "/accounts/login/social/saml/idp_name",
+                            "signup_url": "/accounts/register/social/saml/idp_name",
+                            "sort_order": 9999
+                          },
+                          {
+                            "name": "google",
+                            "display_name": "Google",
+                            "display_logo": "/static/images/landing-page/logos/googl_e-icon.png",
+                            "login_url": "/accounts/login/google/",
+                            "signup_url": "/accounts/register/social/google",
+                            "sort_order": 150
+                          },
+                          {
+                            "name": "github",
+                            "display_name": "GitHub",
+                            "display_logo": "/static/images/landing-page/logos/github-icon.png",
+                            "login_url": "/accounts/login/social/github",
+                            "signup_url": "/accounts/register/social/github",
+                            "sort_order": 100
+                          }
+                        ]
                     }
   /settings/notifications:
     patch:
