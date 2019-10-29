@@ -38,9 +38,7 @@ prefilled with that value.
 
 `AUTHENTICATION_BACKENDS`: Zulip supports a wide range of popular
 options for authenticating users to your server, including Google
-Auth, GitHub Auth, LDAP, REMOTE_USER, and more.  Note, however, that
-the default (email) backend must be used when creating a new
-organization.
+Auth, GitHub Auth, LDAP, SAML, REMOTE_USER, and more.
 
 If you want an additional or different authentication backend, you
 will need to uncomment one or more and then do any additional

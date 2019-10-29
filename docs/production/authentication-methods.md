@@ -36,9 +36,9 @@ are documented in your `settings.py`.
 
 ## SAML
 
-Zulip 2.1 and later has beta support for SAML authentication, used by
-Okta, OneLogin, and many other IdPs (identity providers).  You can
-configure it as follows:
+Zulip 2.1 and later supports SAML authentication, used by Okta,
+OneLogin, and many other IdPs (identity providers).  You can configure
+it as follows:
 
 1. These instructions assume you have an installed Zulip server.  You
    can have created an organization already using EmailAuthBackend, or

@@ -4,8 +4,8 @@ By default, Zulip allows you to log with an email/password pair, a Google accoun
 a GitHub account.
 
 Organization administrators can
-[add other authentication methods](configure-authentication-methods),
-including SSO or LDAP integration, or disable any of the methods above.
+[add other authentication methods](/help/configure-authentication-methods),
+including the SAML and LDAP integrations, or disable any of the methods above.
 
 You can log in with any method allowed by your organization, regardless of
 how you signed up. E.g. if you originally signed up using your Google

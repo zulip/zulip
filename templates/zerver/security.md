@@ -63,13 +63,13 @@ priority.
 
 ## Authentication
 
-- Zulip supports integrated single sign-on with Google, GitHub, and Active
-  Directory/LDAP. SAML and Okta authentication are coming soon. With Zulip
-  on-premise, we can support any of the 100+ authentication tools supported
-  by
+- Zulip supports integrated single sign-on with Google, GitHub, SAML
+  (including Okta), AzureAD, and Active Directory/LDAP.  With Zulip
+  on-premise, we can support any of the 100+ authentication tools
+  supported by
   [python-social-auth](https://python-social-auth-docs.readthedocs.io/en/latest/backends/index.html#social-backends)
-  as well as
-  [any SSO service that has a plugin for Apache][apache-sso].
+  as well as [any SSO service that has a plugin for
+  Apache][apache-sso].
 - Zulip uses the zxcvbn password strength checker by default, and supports
   customizing users’ password strength requirements. See our documentation
   on
