@@ -32,20 +32,20 @@ not just how Zulip works, but why Zulip works the way that it does.
 
 ### Our history with Google Open Source Programs
 
-Zulip has been a GSoC mentoring organization since 2016, and we
-generally have 10-15 GSoC students each summer.  We have some of the highest
+Zulip has been a GSoC mentoring organization since 2016, and we aim
+for 10-20 GSoC students each summer.  We have some of the highest
 standards of any GSoC organization; successful applications generally
 have dozens of commits integrated into Zulip or other open source
-projects by the time we review their application.  See
-[our contributing guide](../overview/contributing.md) for details on
+projects by the time we review their application.  See [our
+contributing guide](../overview/contributing.md) for details on
 getting involved with GSoC.
 
 Zulip participated in GSoC 2016 and mentored three successful students
 officially (plus 4 more who did their proposed projects unofficially).
-We had 14 (+3) students in 2017 and we had 10 (+3) students in 2018.
-We've also mentored five Outreachy interns and hundreds of Google
-Code-In participants (several of who are major contributors to the
-project today).
+We had 14 (+3) students in 2017, 10 (+3) students in 2018, and 17 (+1)
+in 2019.  We've also mentored five Outreachy interns and hundreds of
+Google Code-In participants (several of who are major contributors to
+the project today).
 
 ### Expectations for technical writers
 
@@ -196,10 +196,10 @@ feedback from whoever is online.
 
 ## Project ideas
 
-These are the seeds of ideas; you will likely need to play with the product
-and talk with developers to put
-together a complete project proposal.  It's also fine for you to come
-up with your own project ideas.
+These are the seeds of ideas; you will likely need to play with the
+product and talk with developers to put together a complete project
+proposal.  It's also fine for you to come up with your own project
+ideas.
 
 For many of our projects, an important skill to develop is a good
 command of Git; read [our Git Guide](../git/overview.md) in full to

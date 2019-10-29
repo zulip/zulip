@@ -4,21 +4,11 @@
 
 # Google Summer of Code
 
-Zulip has been a GSoC mentoring organization since 2016, and we
-generally have 10-15 GSoC students each summer, depending on how many
-high-quality applications we receive.  We have some of the highest
-standards of any GSoC organization; successful applications generally
-have dozens of commits integrated into Zulip or other open source
-projects by the time we review their application.  See
-[our contributing guide](../overview/contributing.md) for details on
-getting involved.
-
 ## About us
 
 [Zulip](https://zulipchat.com) is a powerful, open source team chat
-application. The core web app is written in Python and uses the Django
-framework. We also make a cross-platform mobile app for iOS and
-Android, a cross-platform desktop app, and over 100 native
+application. Zulip has a web app, a cross-platform mobile app for iOS
+and Android, a cross-platform desktop app, and over 100 native
 integrations, all open source.
 
 Zulip has gained a considerable amount of traction since it was
@@ -26,28 +16,38 @@ Zulip has gained a considerable amount of traction since it was
 code contributions from [over 500 people](https://zulipchat.com/team)
 from all around the world.  Thousands of people use Zulip every single
 day, and your work on Zulip will have impact on the daily experiences
-of a huge and rapidly growing number of people.
+of a large and rapidly growing number of people.
 
 [oss-release]: https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/
 
-As an organization, we value high-quality mentorship and making sure
-our product quality is extremely high -- you can expect to learn a lot
-from disciplined code reviews by highly experienced engineers. Since
-Zulip is a team chat product, your GSoC experience with the Zulip
-project will be highly interactive, with a real focus on teaching you
-the concepts and reasoning behind how Zulip is engineered and how to
-make it better.
+As an organization, we value high-quality, responsive mentorship and
+making sure our product quality is extremely high -- you can expect to
+experience disciplined code reviews by highly experienced
+engineers.  Since Zulip is a team chat product, your GSoD experience
+with the Zulip project will be highly interactive.
 
-As part of that commitment, Zulip has over 130,000 words of
-[documentation for developers](../index.html#welcome-to-the-zulip-documentation), much of it designed to explain
-not just how Zulip works, but why Zulip works the way that it does.
+As part of that commitment, Zulip has over 150,000 words of
+[documentation for
+developers](../index.html#welcome-to-the-zulip-documentation), much of
+it designed to explain not just how Zulip works, but why Zulip works
+the way that it does.
+
+### Our history with Google Open Source Programs
+
+Zulip has been a GSoC mentoring organization since 2016, and we aim
+for 10-20 GSoC students each summer.  We have some of the highest
+standards of any GSoC organization; successful applications generally
+have dozens of commits integrated into Zulip or other open source
+projects by the time we review their application.  See [our
+contributing guide](../overview/contributing.md) for details on
+getting involved with GSoC.
 
 Zulip participated in GSoC 2016 and mentored three successful students
 officially (plus 4 more who did their proposed projects unofficially).
-We had 14 (+3) students in 2017 and we had 10 (+3) students in 2018.
-We've also mentored five Outreachy interns and hundreds of Google
-Code-In participants (several of who are major contributors to the
-project today).
+We had 14 (+3) students in 2017, 10 (+3) students in 2018, and 17 (+1)
+in 2019.  We've also mentored five Outreachy interns and hundreds of
+Google Code-In participants (several of who are major contributors to
+the project today).
 
 ### Expectations for GSoC students
 
@@ -197,6 +197,11 @@ chat.zulip.org, so it's easy to get quick feedback from whoever is
 online.
 
 ## Project ideas
+
+**Note**: This project ideas list has not been updated for the 2020
+season, so many of the specific projects discussed here may have been
+completed.  They still provide a useful sense of the range of areas
+where active work on Zulip is happening.
 
 These are the seeds of ideas; you will need to do research on the
 Zulip codebase, read issues on GitHub, and talk with developers to put
