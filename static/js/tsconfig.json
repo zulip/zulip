@@ -10,11 +10,15 @@
         "noEmit": true,
         "target": "es5",
         "module": "es6",
+        "esModuleInterop": true,
+        "moduleResolution": "node",
         "sourceMap": true,
 
         /* Strict type-checking */
         "strict": true,
         "strictNullChecks": false,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
 
         /* Additional checks */
         "noUnusedLocals": true,
