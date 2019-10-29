@@ -10,16 +10,11 @@
         "noEmit": true,
         "target": "es5",
         "module": "es6",
-        "jsx": "preserve",
         "sourceMap": true,
-        "removeComments": false,
 
         /* Strict type-checking */
         "strict": true,
-        "noImplicitAny": true,
         "strictNullChecks": false,
-        "noImplicitThis": true,
-        "alwaysStrict": true,
 
         /* Additional checks */
         "noUnusedLocals": true,
