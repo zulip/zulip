@@ -137,13 +137,12 @@ optionally using LDAP as an authentication mechanism.
 
 In either configuration, you will need to do the following:
 
-1. Create your organization and first administrator account using
-   another authentication backend (usually `EmailAuthBackend`).  LDAP
-   authentication does not support organization creation at this time;
-   but you can disable `EmailAuthBackend` once you have created the
-   organization.
+1. These instructions assume you have an installed Zulip server and
+   are logged into a shell there.  You can have created an
+   organization already using EmailAuthBackend, or plan to create the
+   organization using LDAP authentication.
 
-2. Tell Zulip how to connect to your LDAP server:
+1. Tell Zulip how to connect to your LDAP server:
    * Fill out the section of your `/etc/zulip/settings.py` headed "LDAP
      integration, part 1: Connecting to the LDAP server".
    * If a password is required, put it in
@@ -151,7 +150,7 @@ In either configuration, you will need to do the following:
      `auth_ldap_bind_password`.  For example: `auth_ldap_bind_password
      = abcd1234`.
 
-3. Decide how you want to map the information in your LDAP database to
+1. Decide how you want to map the information in your LDAP database to
    users' account data in Zulip.  For each Zulip user, two closely
    related concepts are:
    * their **email address**.  Zulip needs this in order to send, for
@@ -166,7 +165,7 @@ In either configuration, you will need to do the following:
    Either or both of these might be an attribute of the user records
    in your LDAP database.
 
-4. Tell Zulip how to map the user information in your LDAP database to
+1. Tell Zulip how to map the user information in your LDAP database to
    the form it needs for authentication.  There are three supported
    ways to set up the username and/or email mapping:
 
@@ -184,7 +183,7 @@ In either configuration, you will need to do the following:
       To do this, set `AUTH_LDAP_USER_SEARCH` to query by LDAP
       username, and `LDAP_EMAIL_ATTR = "email"`.
 
-5. In configurations (A) and (C), you need to tell Zulip how to look
+1. In configurations (A) and (C), you need to tell Zulip how to look
    up a user's LDAP data given their user's email address:
 
    * Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find an
