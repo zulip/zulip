@@ -179,3 +179,6 @@ decorator
 
 # Needed for SAML authentication.
 python3-saml
+
+# Use SameSite cookies in legacy Django (remove with Django 2.1)
+django-cookies-samesite

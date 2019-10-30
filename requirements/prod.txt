@@ -161,6 +161,8 @@ https://github.com/zulip/django-auth-ldap/archive/e26d0ef2a7ff77ab3fdd7b6578a760
 django-bitfield==1.9.6 \
     --hash=sha256:d32fc6610f80b0b17a832a487ae18860a563d9a9842259d0d37ae1e62a1854ab \
     --hash=sha256:e8d4dc8727d4d655f1f740771beb6566d1928f7270c1c020cf5af278784f2843
+django-cookies-samesite==0.2.0 \
+    --hash=sha256:b393f8e2e1c758af952ea10afe44fe837a68a182119fdfbab2fa00f67deded0e
 django-formtools==2.1 \
     --hash=sha256:7703793f1675aa6e871f9fed147e8563816d7a5b9affdc5e3459899596217f7c \
     --hash=sha256:cb2bd7c29c2104278e5a0e76f7ff256b9570acf11485d547ee0c1b35347359fb \
