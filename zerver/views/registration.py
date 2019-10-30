@@ -185,8 +185,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             except KeyError:
                 pass
         form = RegistrationForm(postdata, realm_creation=realm_creation)
-        if not (password_auth_enabled(realm) and password_required):
-            form['password'].field.required = False
+
+    if not (password_auth_enabled(realm) and password_required):
+        form['password'].field.required = False
 
     if form.is_valid():
         if password_auth_enabled(realm):
