@@ -23,7 +23,7 @@ of a large and rapidly growing number of people.
 As an organization, we value high-quality, responsive mentorship and
 making sure our product quality is extremely high -- you can expect to
 experience disciplined code reviews by highly experienced
-engineers.  Since Zulip is a team chat product, your GSoD experience
+engineers.  Since Zulip is a team chat product, your GSoC experience
 with the Zulip project will be highly interactive.
 
 As part of that commitment, Zulip has over 150,000 words of
