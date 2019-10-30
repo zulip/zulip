@@ -390,6 +390,7 @@
         "radix": "error",
         "semi": "error",
         "semi-spacing": ["error", {"before": false, "after": true}],
+        "sort-imports": "error",
         "space-before-blocks": "error",
         "space-before-function-paren": [ "error",
             {

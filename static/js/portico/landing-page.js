@@ -3,8 +3,8 @@ const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-desktop/releases/
 const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
 const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
 
+import { detect_user_os } from './tabbed-instructions.js';
 import render_tabs from './team.js';
-import {detect_user_os}  from './tabbed-instructions.js';
 
 export function path_parts() {
     return window.location.pathname.split('/').filter(function (chunk) {

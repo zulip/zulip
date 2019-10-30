@@ -1,15 +1,15 @@
 import { basename, resolve } from 'path';
+import { cacheLoader, getExposeLoaders } from './webpack-helpers';
 import BundleTracker from 'webpack4-bundle-tracker';
-import webpack from 'webpack';
+import CleanCss from 'clean-css';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
+import TerserPlugin from 'terser-webpack-plugin';
 // The devServer member of webpack.Configuration is managed by the
 // webpack-dev-server package. We are only importing the type here.
 import _webpackDevServer from 'webpack-dev-server';
-import { getExposeLoaders, cacheLoader } from './webpack-helpers';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
-import CleanCss from 'clean-css';
-import TerserPlugin from 'terser-webpack-plugin';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
+import webpack from 'webpack';
 
 const assets = require('./webpack.assets.json');
 
