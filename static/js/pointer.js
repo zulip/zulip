@@ -29,7 +29,7 @@ function update_pointer() {
         return channel.post({
             url: '/json/users/me/pointer',
             idempotent: true,
-            data: {exports: exports.furthest_read},
+            data: {pointer: exports.furthest_read},
             success: function () {
                 exports.server_furthest_read = exports.furthest_read;
                 pointer_update_in_flight = false;
