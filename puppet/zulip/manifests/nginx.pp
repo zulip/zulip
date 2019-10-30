@@ -65,7 +65,7 @@ class zulip::nginx {
     group   => 'root',
     mode    => '0644',
     notify  => Service['nginx'],
-    source  => 'puppet:///modules/zulip/nginx/nginx.conf',
+    content => template('zulip/nginx.conf.template.erb'),
   }
 
   file { '/etc/nginx/uwsgi_params':
