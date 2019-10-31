@@ -164,6 +164,8 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         role = UserProfile.ROLE_MEMBER
         if get_admin(user):
             role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        if get_guest(user):
+            role = UserProfile.ROLE_GUEST
         timezone = get_user_timezone(user)
 
         if slack_user_id in slack_user_id_to_custom_profile_fields:
@@ -307,6 +309,16 @@ def get_admin(user: ZerverFieldsT) -> bool:
     if admin or owner or primary_owner:
         return True
     return False
+
+def get_guest(user: ZerverFieldsT) -> bool:
+    restricted_user = user.get('is_restricted', False)
+    ultra_restricted_user = user.get('is_ultra_restricted', False)
+
+    # Slack's Single channel and multi channel guests both have
+    # is_restricted set to True.  So assuming Slack doesn't change their
+    # data model, it would also be correct to just check whether
+    # is_restricted is set to True.
+    return restricted_user or ultra_restricted_user
 
 def get_user_timezone(user: ZerverFieldsT) -> str:
     _default_timezone = "America/New_York"

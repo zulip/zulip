@@ -5,6 +5,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.slack import (
     get_slack_api_data,
     get_admin,
+    get_guest,
     get_user_timezone,
     fetch_shared_channel_users,
     users_to_zerver_userprofile,
@@ -125,6 +126,16 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_admin(user_data[2]), True)
         self.assertEqual(get_admin(user_data[3]), False)
 
+    def test_get_guest(self) -> None:
+        user_data = [{'is_restricted': False, 'is_ultra_restricted': False},
+                     {'is_restricted': True, 'is_ultra_restricted': False},
+                     {'is_restricted': False, 'is_ultra_restricted': True},
+                     {'is_restricted': True, 'is_ultra_restricted': True}]
+        self.assertEqual(get_guest(user_data[0]), False)
+        self.assertEqual(get_guest(user_data[1]), True)
+        self.assertEqual(get_guest(user_data[2]), True)
+        self.assertEqual(get_guest(user_data[3]), True)
+
     def test_get_timezone(self) -> None:
         user_chicago_timezone = {"tz": "America/Chicago"}
         user_timezone_none = {"tz": None}
@@ -233,12 +244,38 @@ class SlackImporter(ZulipTestCase):
                       "team_domain": "foreignteam",
                       "profile": {"image_32": "https://secure.gravatar.com/avatar/random6.png",
                                   "avatar_hash": "hash", "first_name": "Matt", "last_name": "Perry",
-                                  "real_name": "Matt Perry", "display_name": "matt.perry", "team": "T6LARQE2Z"}}]
+                                  "real_name": "Matt Perry", "display_name": "matt.perry", "team": "T6LARQE2Z"}},
+                     {"id": "U8VAHEVUY",
+                      "team_id": "T5YFFM2QY",
+                      "name": "steviejacob34",
+                      "real_name": "Steve Jacob",
+                      "is_admin": False,
+                      "is_owner": False,
+                      "is_primary_owner": False,
+                      "is_restricted": True,
+                      "is_ultra_restricted": False,
+                      "is_bot": False,
+                      "is_mirror_dummy": False,
+                      "profile": {"email": "steviejacob34@yahoo.com", "avatar_hash": "hash",
+                                  "image_32": "https://secure.gravatar.com/avatar/random6.png"}},
+                     {"id": "U8X25EBAB",
+                      "team_id": "T5YFFM2QY",
+                      "name": "pratikweb_0",
+                      "real_name": "Pratik",
+                      "is_admin": False,
+                      "is_owner": False,
+                      "is_primary_owner": False,
+                      "is_restricted": True,
+                      "is_ultra_restricted": True,
+                      "is_bot": False,
+                      "is_mirror_dummy": False,
+                      "profile": {"email": "pratik@mit.edu", "avatar_hash": "hash",
+                                  "image_32": "https://secure.gravatar.com/avatar/random.png"}}]
 
         mock_get_data_file.return_value = user_data
         # As user with slack_id 'U0CBK5KAT' is the primary owner, that user should be imported first
         # and hence has zulip_id = 1
-        test_slack_user_id_to_zulip_user_id = {'U08RGD1RD': 1, 'U0CBK5KAT': 0, 'U09TYF5Sk': 2, 'UHSG7OPQN': 3}
+        test_slack_user_id_to_zulip_user_id = {'U08RGD1RD': 1, 'U0CBK5KAT': 0, 'U09TYF5Sk': 2, 'UHSG7OPQN': 3, 'U8VAHEVUY': 4, 'U8X25EBAB': 5}
         slack_data_dir = './random_path'
         timestamp = int(timezone_now().timestamp())
         mock_get_data_file.return_value = user_data
@@ -265,9 +302,9 @@ class SlackImporter(ZulipTestCase):
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
-        self.assertEqual(len(avatar_list), 4)
+        self.assertEqual(len(avatar_list), 6)
 
-        self.assertEqual(len(zerver_userprofile), 4)
+        self.assertEqual(len(zerver_userprofile), 6)
 
         self.assertEqual(zerver_userprofile[0]['is_staff'], False)
         self.assertEqual(zerver_userprofile[0]['is_bot'], False)
@@ -302,6 +339,18 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[3]['short_name'], 'matt.perry')
         self.assertEqual(zerver_userprofile[3]['is_mirror_dummy'], True)
         self.assertEqual(zerver_userprofile[3]['is_api_super_user'], False)
+
+        self.assertEqual(zerver_userprofile[4]['id'], test_slack_user_id_to_zulip_user_id['U8VAHEVUY'])
+        self.assertEqual(zerver_userprofile[4]['role'], UserProfile.ROLE_GUEST)
+        self.assertEqual(zerver_userprofile[4]['is_staff'], False)
+        self.assertEqual(zerver_userprofile[4]['is_active'], True)
+        self.assertEqual(zerver_userprofile[4]['is_mirror_dummy'], False)
+
+        self.assertEqual(zerver_userprofile[5]['id'], test_slack_user_id_to_zulip_user_id['U8X25EBAB'])
+        self.assertEqual(zerver_userprofile[5]['role'], UserProfile.ROLE_GUEST)
+        self.assertEqual(zerver_userprofile[5]['is_staff'], False)
+        self.assertEqual(zerver_userprofile[5]['is_active'], True)
+        self.assertEqual(zerver_userprofile[5]['is_mirror_dummy'], False)
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1

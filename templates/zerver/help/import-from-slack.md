@@ -90,10 +90,14 @@ root domain. Replace the last line above with the following, after replacing
 - Slack doesn't export user settings or organization settings, so
   you'll need to configure these manually.
 
-- Permission hierarchy:
-    Slack's `Primary owner`, `owner`, and `admin` are mapped to Zulip's `Organization admin`.
-    Slack's `Member`, `restricted`, and `ultra restricted` are mapped to regular Zulip users.
-    `Channel creators` have no special permissions in Zulip.
+- Import of [user roles](/help/roles-and-permissions):
+    - Slack's `Workspace Primary Owner`, `Workspace Owner`, and
+      `Workspace Admin` users are mapped to Zulip's `Organization
+      administrator` users.
+    - Slack's `Member` users is mapped to Zulip `Member` users.
+    - Slack's `Single Channel Guest` and `Multi Channel Guest` users
+    are mapped to Zulip `Guest` users.
+    - Slack's `Channel creators` have no special permissions in Zulip.
 
 - The "joined #channel_name" messages are not imported.
 
