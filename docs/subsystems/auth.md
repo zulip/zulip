@@ -58,8 +58,10 @@ Here are the full procedures for dev:
 
 ### SAML
 
-* Register a SAML authentication with Okta at
-  https://zulipchat-admin.okta.com/admin/apps/saml-wizard/create.  Specify:
+* Sign up for a [developer Okta account](https://developer.okta.com/).
+* Set up SAML authentication by following
+  [Okta's documentation](https://developer.okta.com/docs/guides/saml-application-setup/overview/).
+  Specify:
     * `http://localhost:9991/complete/saml/` for the "Single sign on URL"`.
     * `http://localhost:9991` for the "Audience URI (SP Entity ID)".
     * Skip "Default RelayState".
@@ -67,10 +69,8 @@ Here are the full procedures for dev:
     * Set 'Email` for "Application username format".
     * Provide "Attribute statements" of `email` to `user.email`,
       `first_name` to `user.firstName`, and `last_name` to `user.lastName`.
-* Assign at least one account to the in the "Assignments" tab.  Uou'll
-  be logging in using this email address in the development
-  environment (so make sure that email has an account and can login
-  to the target realm).
+* Assign at least one account in the "Assignments" tab. You'll use it for
+  signing up / logging in to Zulip.
 * Visit the big "Setup instructions" button on the "Sign on" tab.
 * Edit `zproject/dev-secrets.conf` to add the two values provided:
     * Set `saml_url = http...` from "Identity Provider Single Sign-On
@@ -78,6 +78,11 @@ Here are the full procedures for dev:
     * Set `saml_entity_id = http://...` from "Identity Provider Issuer".
     * Download the certificate and put it at the path `zproject/dev_saml.cert`.
 * Now you should have working SAML authentication!
+* You can sign up to the target realm with the account that you've "assigned"
+  in the previous steps (if the account's email address is allowed in the realm,
+  so you may have to change the realm settings to allow the appropriate email domain)
+  and then you'll be able to log in freely. Alternatively, you can create an account
+  with the email in any other way, and then just use SAML to log in.
 
 ### When SSL is required
 
