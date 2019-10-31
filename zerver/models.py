@@ -1168,6 +1168,11 @@ class PreregistrationUser(models.Model):
     #   form.
 
     email = models.EmailField()  # type: str
+
+    # If the pre-registration process provides a suggested full name for this user,
+    # store it here to use it to prepopulate the Full Name field in the registration form:
+    full_name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)  # type: Optional[str]
+    full_name_validated = models.BooleanField(default=False)
     referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
     streams = models.ManyToManyField('Stream')  # type: Manager
     invited_at = models.DateTimeField(auto_now=True)  # type: datetime.datetime

@@ -79,6 +79,7 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
         data = load_subdomain_token(response)
         self.assertDictEqual(data, {'name': name, 'next': '',
                                     'email': email,
+                                    'full_name_validated': False,
                                     'subdomain': realm.subdomain,
                                     'is_signup': False,
                                     'multiuse_object_key': ''})
@@ -89,6 +90,20 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
         data = load_subdomain_token(response)
         self.assertDictEqual(data, {'name': name, 'next': '',
                                     'email': email,
+                                    'full_name_validated': False,
+                                    'subdomain': realm.subdomain,
+                                    'is_signup': True,
+                                    'multiuse_object_key': 'key'
+                                    })
+
+        response = redirect_and_log_into_subdomain(realm, name, email,
+                                                   is_signup=True,
+                                                   full_name_validated=True,
+                                                   multiuse_object_key='key')
+        data = load_subdomain_token(response)
+        self.assertDictEqual(data, {'name': name, 'next': '',
+                                    'email': email,
+                                    'full_name_validated': True,
                                     'subdomain': realm.subdomain,
                                     'is_signup': True,
                                     'multiuse_object_key': 'key'

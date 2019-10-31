@@ -166,6 +166,15 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     except TypeError:
                         # Let the user fill out a name and/or try another backend
                         form = RegistrationForm(realm_creation=realm_creation)
+        elif prereg_user.full_name:
+            if prereg_user.full_name_validated:
+                request.session['authenticated_full_name'] = prereg_user.full_name
+                name_validated = True
+                form = RegistrationForm({'full_name': prereg_user.full_name},
+                                        realm_creation=realm_creation)
+            else:
+                form = RegistrationForm(initial={'full_name': prereg_user.full_name},
+                                        realm_creation=realm_creation)
         elif 'full_name' in request.POST:
             form = RegistrationForm(
                 initial={'full_name': request.POST.get('full_name')},

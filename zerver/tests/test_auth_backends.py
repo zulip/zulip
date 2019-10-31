@@ -766,6 +766,7 @@ class SocialAuthBase(ZulipTestCase):
         # Name wasn't changed at all
         self.assertEqual(hamlet.full_name, "King Hamlet")
 
+    @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration(self) -> None:
         """If the user doesn't exist yet, social auth can be used to register an account"""
         email = "newuser@zulip.com"
@@ -795,26 +796,30 @@ class SocialAuthBase(ZulipTestCase):
         result = self.client_get(result.url)
         self.assert_in_response('action="/accounts/register/"', result)
         data = {"from_confirmation": "1",
-                "full_name": name,
                 "key": confirmation_key}
         result = self.client_post('/accounts/register/', data)
-        self.assert_in_response("We just need you to do one last thing", result)
+        if not self.BACKEND_CLASS.full_name_validated:
+            self.assert_in_response("We just need you to do one last thing", result)
 
-        # Verify that the user is asked for name but not password
-        self.assert_not_in_success_response(['id_password'], result)
-        self.assert_in_success_response(['id_full_name'], result)
+            # Verify that the user is asked for name but not password
+            self.assert_not_in_success_response(['id_password'], result)
+            self.assert_in_success_response(['id_full_name'], result)
+            # Verify the name field gets correctly pre-populated:
+            self.assert_in_success_response([name], result)
 
-        # Click confirm registration button.
-        result = self.client_post(
-            '/accounts/register/',
-            {'full_name': name,
-             'key': confirmation_key,
-             'terms': True})
+            # Click confirm registration button.
+            result = self.client_post(
+                '/accounts/register/',
+                {'full_name': name,
+                 'key': confirmation_key,
+                 'terms': True})
 
         self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
+        self.assertEqual(user_profile.full_name, name)
 
+    @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration_using_multiuse_invite(self) -> None:
         """If the user doesn't exist yet, social auth can be used to register an account"""
         email = "newuser@zulip.com"
@@ -870,25 +875,28 @@ class SocialAuthBase(ZulipTestCase):
         result = self.client_get(result.url)
         self.assert_in_response('action="/accounts/register/"', result)
         data = {"from_confirmation": "1",
-                "full_name": name,
                 "key": confirmation_key}
         result = self.client_post('/accounts/register/', data)
-        self.assert_in_response("We just need you to do one last thing", result)
+        if not self.BACKEND_CLASS.full_name_validated:
+            self.assert_in_response("We just need you to do one last thing", result)
 
-        # Verify that the user is asked for name but not password
-        self.assert_not_in_success_response(['id_password'], result)
-        self.assert_in_success_response(['id_full_name'], result)
+            # Verify that the user is asked for name but not password
+            self.assert_not_in_success_response(['id_password'], result)
+            self.assert_in_success_response(['id_full_name'], result)
+            # Verify the name field gets correctly pre-populated:
+            self.assert_in_success_response([name], result)
 
-        # Click confirm registration button.
-        result = self.client_post(
-            '/accounts/register/',
-            {'full_name': name,
-             'key': confirmation_key,
-             'terms': True})
+            # Click confirm registration button.
+            result = self.client_post(
+                '/accounts/register/',
+                {'full_name': name,
+                 'key': confirmation_key,
+                 'terms': True})
 
         self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
+        self.assertEqual(user_profile.full_name, name)
 
     def test_social_auth_registration_without_is_signup(self) -> None:
         """If `is_signup` is not set then a new account isn't created"""
