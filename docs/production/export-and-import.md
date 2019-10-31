@@ -19,8 +19,8 @@ service (or back):
     users/messages/etc.).
 
   We highly recommend this tool in situations where it is applicable,
-  because it is highly optimized and highly stable, since the hard wor
-  k is done by the built-in backup feature of `postgres`.  We also
+  because it is highly optimized and highly stable, since the hard
+  work is done by the built-in backup feature of `postgres`.  We also
   document [backup details](#backup-details) for users managing
   backups manually.
 
@@ -29,7 +29,7 @@ service (or back):
   as various auditing purposes.  The logical export tool produces a
   `.tar.gz` archive with most of the Zulip database data encoded in
   JSON files–a format shared by our [data
-  import]((#import-into-a-new-zulip-server) ) tools for third-party
+  import](#import-into-a-new-zulip-server) tools for third-party
   services like
   [Slack](https://zulipchat.com/help/import-from-slack).
 
