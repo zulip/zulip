@@ -92,7 +92,8 @@ root domain. Replace the last line above with the following, after replacing
 
 - Permission hierarchy:
     Slack's `Primary owner`, `owner`, and `admin` are mapped to Zulip's `Organization admin`.
-    Slack's `Member`, `restricted`, and `ultra restricted` are mapped to regular Zulip users.
+    Slack's `Member` is mapped to regular Zulip users.
+    Slack's `restricted`, and `ultra restricted` are mapped to Zulip guests.
     `Channel creators` have no special permissions in Zulip.
 
 - The "joined #channel_name" messages are not imported.
