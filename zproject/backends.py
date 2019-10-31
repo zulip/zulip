@@ -948,6 +948,7 @@ def social_auth_finish(backend: Any,
     assert return_data.get('valid_attestation') is True
 
     strategy = backend.strategy
+    full_name_validated = backend.full_name_validated
     email_address = return_data['validated_email']
     full_name = return_data['full_name']
     is_signup = strategy.session_get('is_signup') == '1'
@@ -970,11 +971,14 @@ def social_auth_finish(backend: Any,
         # redirect directly from here, saving a round trip over what
         # we need to do to create session cookies on the right domain
         # in the web login flow (below).
-        return login_or_register_remote_user(strategy.request, email_address,
-                                             user_profile, full_name,
-                                             mobile_flow_otp=mobile_flow_otp,
-                                             is_signup=is_signup,
-                                             redirect_to=redirect_to)
+        return login_or_register_remote_user(
+            strategy.request, email_address,
+            user_profile, full_name,
+            mobile_flow_otp=mobile_flow_otp,
+            is_signup=is_signup,
+            redirect_to=redirect_to,
+            full_name_validated=full_name_validated
+        )
 
     # If this authentication code were executing on
     # subdomain.zulip.example.com, we would just call
@@ -989,10 +993,13 @@ def social_auth_finish(backend: Any,
     # cryptographically signed token) to a route on
     # subdomain.zulip.example.com that will verify the signature and
     # then call login_or_register_remote_user.
-    return redirect_and_log_into_subdomain(realm, full_name, email_address,
-                                           is_signup=is_signup,
-                                           redirect_to=redirect_to,
-                                           multiuse_object_key=multiuse_object_key)
+    return redirect_and_log_into_subdomain(
+        realm, full_name, email_address,
+        is_signup=is_signup,
+        redirect_to=redirect_to,
+        multiuse_object_key=multiuse_object_key,
+        full_name_validated=full_name_validated
+    )
 
 class SocialAuthMixin(ZulipAuthMixin):
     auth_backend_name = "undeclared"
@@ -1002,6 +1009,18 @@ class SocialAuthMixin(ZulipAuthMixin):
     # Used to determine how to order buttons on login form, backend with
     # higher sort order are displayed first.
     sort_order = 0
+
+    # Whether we expect that the full_name value obtained by the
+    # social backend is definitely how the user should be referred to
+    # in Zulip, which in turn determines whether we should always show
+    # a registration form in the event with a default value of the
+    # user's name when using this social backend so they can change
+    # it.  For social backends like SAML that are expected to be a
+    # central database, this should be True; for backends like GitHub
+    # where the user might not have a name set or have it set to
+    # something other than the name they will prefer to use in Zulip,
+    # it should be False.
+    full_name_validated = False
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """This is a small wrapper around the core `auth_complete` method of
@@ -1124,6 +1143,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     sort_order = 9999
     # There's no common default logo for SAML authentication.
     display_icon = ""
+
+    # The full_name provided by the IdP is very likely the standard
+    # employee directory name for the user, and thus what they and
+    # their organization want to use in Zulip.  So don't unnecessarily
+    # provide a registration flow prompt for them to set their name.
+    full_name_validated = True
 
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to
