@@ -6,7 +6,7 @@ from django.test import override_settings
 from django_auth_ldap.backend import LDAPSearch, _LDAPUser
 from django.test.client import RequestFactory
 from django.utils.timezone import now as timezone_now
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from django.core import signing
 from django.urls import reverse
 
@@ -24,7 +24,6 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_reactivate_realm,
     do_reactivate_user,
-    do_set_realm_authentication_methods,
     ensure_stream,
     validate_email,
 )
@@ -62,7 +61,6 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
-from version import ZULIP_VERSION
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -1878,78 +1876,16 @@ class FetchAuthBackends(ZulipTestCase):
             ('realm_icon', check_string),
         ])
 
-    def test_fetch_auth_backend_format(self) -> None:
-        expected_keys = {'msg', 'password', 'zulip_version', 'result'}
-        for backend_name_with_case in AUTH_BACKEND_NAME_MAP:
-            expected_keys.add(backend_name_with_case.lower())
+        # Verify invalid subdomain
+        result = self.client_get("/api/v1/server_settings",
+                                 subdomain="invalid")
+        self.assert_json_error_contains(result, "Invalid subdomain", 400)
 
-        result = self.client_get("/api/v1/get_auth_backends")
-        self.assert_json_success(result)
-        data = result.json()
-
-        self.assertEqual(set(data.keys()), expected_keys)
-        for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
-            self.assertTrue(isinstance(data[backend], bool))
-
-    def test_fetch_auth_backend(self) -> None:
-        def get_expected_result(expected_backends: Set[str], password_auth_enabled: bool=False) -> Dict[str, Any]:
-            result = {
-                'msg': '',
-                'result': 'success',
-                'password': password_auth_enabled,
-                'zulip_version': ZULIP_VERSION,
-            }
-            for backend_name_raw in AUTH_BACKEND_NAME_MAP:
-                backend_name = backend_name_raw.lower()
-                result[backend_name] = backend_name in expected_backends
-            return result
-
-        backends = [GoogleAuthBackend(), DevAuthBackend()]
-        with mock.patch('django.contrib.auth.get_backends', return_value=backends):
-            result = self.client_get("/api/v1/get_auth_backends")
-            self.assert_json_success(result)
-            data = result.json()
-            # Check that a few keys are present, to guard against
-            # AUTH_BACKEND_NAME_MAP being broken
-            self.assertIn("email", data)
-            self.assertIn("github", data)
-            self.assertIn("google", data)
-            self.assertEqual(data, get_expected_result({"google", "dev"}))
-
-            # Test subdomains cases
-            with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
-                result = self.client_get("/api/v1/get_auth_backends")
-                self.assert_json_success(result)
-                data = result.json()
-                self.assertEqual(data, get_expected_result({"google", "dev"}))
-
-                # Verify invalid subdomain
-                result = self.client_get("/api/v1/get_auth_backends",
-                                         subdomain="invalid")
-                self.assert_json_error_contains(result, "Invalid subdomain", 400)
-
-                # Verify correct behavior with a valid subdomain with
-                # some backends disabled for the realm
-                realm = get_realm("zulip")
-                do_set_realm_authentication_methods(realm, dict(Google=False, Email=False, Dev=True))
-                result = self.client_get("/api/v1/get_auth_backends",
-                                         subdomain="zulip")
-                self.assert_json_success(result)
-                data = result.json()
-                self.assertEqual(data, get_expected_result({"dev"}))
-
-            with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-                # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
-                result = self.client_get("/api/v1/get_auth_backends",
-                                         subdomain="")
-                self.assert_json_error_contains(result, "Subdomain required", 400)
-
-                # With ROOT_DOMAIN_LANDING_PAGE, subdomain pages succeed
-                result = self.client_get("/api/v1/get_auth_backends",
-                                         subdomain="zulip")
-                self.assert_json_success(result)
-                data = result.json()
-                self.assertEqual(data, get_expected_result({"dev"}))
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
+            result = self.client_get("/api/v1/server_settings",
+                                     subdomain="")
+            self.assert_json_error_contains(result, "Subdomain required", 400)
 
 class TestTwoFactor(ZulipTestCase):
     def test_direct_dev_login_with_2fa(self) -> None:

@@ -669,9 +669,6 @@ v1_api_mobile_patterns = [
     # like the requested subdomains'd realm icon (if known) and
     # server-specific compatibility.
     url(r'^server_settings$', zerver.views.auth.api_get_server_settings),
-    # This is a deprecated old version of api/v1/server_settings that only returns auth backends.
-    url(r'^get_auth_backends$', zerver.views.auth.api_get_auth_backends,
-        name='zerver.views.auth.api_get_auth_backends'),
 
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
