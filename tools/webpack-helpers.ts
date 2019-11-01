@@ -27,7 +27,7 @@ interface ExportLoaderOptions {
 }
 function getExposeLoaders(optionsArr: ExportLoaderOptions[]): RuleSetRule[] {
     const exposeLoaders = [];
-    for (var loaderEntry of optionsArr) {
+    for (const loaderEntry of optionsArr) {
         const path = loaderEntry.path;
         let name = "";
         const useArr = [cacheLoader];
@@ -38,7 +38,7 @@ function getExposeLoaders(optionsArr: ExportLoaderOptions[]): RuleSetRule[] {
         } else {
             // If name is an array
             if (Array.isArray(loaderEntry.name)) {
-                for (var exposeName of loaderEntry.name) {
+                for (const exposeName of loaderEntry.name) {
                     useArr.push({loader: 'expose-loader', options: exposeName});
                 }
             // If name is a string

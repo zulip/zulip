@@ -1,8 +1,8 @@
-var render_announce_stream_docs = require('../templates/announce_stream_docs.hbs');
-var render_new_stream_users = require('../templates/new_stream_users.hbs');
-var render_subscription_invites_warning_modal = require('../templates/subscription_invites_warning_modal.hbs');
+const render_announce_stream_docs = require('../templates/announce_stream_docs.hbs');
+const render_new_stream_users = require('../templates/new_stream_users.hbs');
+const render_subscription_invites_warning_modal = require('../templates/subscription_invites_warning_modal.hbs');
 
-var created_stream;
+let created_stream;
 
 exports.reset_created_stream = function () {
     created_stream = undefined;
@@ -16,8 +16,8 @@ exports.get_name = function () {
     return created_stream;
 };
 
-var stream_subscription_error = (function () {
-    var self = {};
+const stream_subscription_error = (function () {
+    const self = {};
 
     self.report_no_subs_to_stream = function () {
         $("#stream_subscription_error").text(i18n.t("You cannot create a stream with no subscribers!"));
@@ -37,8 +37,8 @@ var stream_subscription_error = (function () {
 
 }());
 
-var stream_name_error = (function () {
-    var self = {};
+const stream_name_error = (function () {
+    const self = {};
 
     self.report_already_exists = function () {
         $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
@@ -118,7 +118,7 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
-            var msg = JSON.parse(xhr.responseText).msg;
+            const msg = JSON.parse(xhr.responseText).msg;
             if (msg.indexOf('access') >= 0) {
                 // If we can't access the stream, we can safely assume it's
                 // a duplicate stream that we are not invited to.
@@ -143,11 +143,11 @@ function update_announce_stream_state() {
 
     // If the stream is invite only, disable the "Announce stream" option.
     // Otherwise enable it.
-    var announce_stream_checkbox = $('#announce-new-stream input');
-    var announce_stream_label = $('#announce-new-stream');
-    var disable_it = false;
-    var privacy_type = $('input:radio[name=privacy]:checked').val();
-    var is_invite_only = privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
+    const announce_stream_checkbox = $('#announce-new-stream input');
+    const announce_stream_label = $('#announce-new-stream');
+    let disable_it = false;
+    const privacy_type = $('input:radio[name=privacy]:checked').val();
+    const is_invite_only = privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
     announce_stream_label.removeClass("control-label-disabled");
 
     if (is_invite_only) {
@@ -170,14 +170,14 @@ function get_principals() {
 }
 
 function create_stream() {
-    var stream_name = $.trim($("#create_stream_name").val());
-    var description = $.trim($("#create_stream_description").val());
-    var privacy_setting = $('#stream_creation_form input[name=privacy]:checked').val();
-    var is_announcement_only = $('#stream_creation_form input[name=is-announcement-only]').prop('checked');
-    var principals = get_principals();
+    const stream_name = $.trim($("#create_stream_name").val());
+    const description = $.trim($("#create_stream_description").val());
+    const privacy_setting = $('#stream_creation_form input[name=privacy]:checked').val();
+    const is_announcement_only = $('#stream_creation_form input[name=is-announcement-only]').prop('checked');
+    const principals = get_principals();
 
-    var invite_only;
-    var history_public_to_subscribers;
+    let invite_only;
+    let history_public_to_subscribers;
 
     if (privacy_setting === 'invite-only') {
         invite_only = true;
@@ -192,7 +192,7 @@ function create_stream() {
 
     created_stream = stream_name;
 
-    var announce = !!page_params.notifications_stream &&
+    const announce = !!page_params.notifications_stream &&
         $('#announce-new-stream input').prop('checked');
 
     // Even though we already check to make sure that while typing the user cannot enter
@@ -254,16 +254,16 @@ exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
 
-    var all_users = people.get_rest_of_realm();
+    const all_users = people.get_rest_of_realm();
     // Add current user on top of list
     all_users.unshift(people.get_person_from_user_id(page_params.user_id));
-    var html = render_new_stream_users({
+    const html = render_new_stream_users({
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
         is_admin: page_params.is_admin,
     });
 
-    var container = $('#people_to_add');
+    const container = $('#people_to_add');
     container.html(html);
     exports.create_handlers_for_users(container);
 
@@ -281,14 +281,14 @@ exports.show_new_stream_modal = function () {
     clear_error_display();
 
     $("#stream-checkboxes label.checkbox").on('change', function (e) {
-        var elem = $(this);
-        var stream_id = elem.attr('data-stream-id');
-        var checked = elem.find('input').prop('checked');
-        var subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
+        const elem = $(this);
+        const stream_id = elem.attr('data-stream-id');
+        const checked = elem.find('input').prop('checked');
+        const subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
 
         $('#user-checkboxes label.checkbox').each(function () {
-            var user_elem = $(this);
-            var user_id = user_elem.attr('data-user-id');
+            const user_elem = $(this);
+            const user_id = user_elem.attr('data-user-id');
 
             if (subscriber_ids.has(user_id)) {
                 user_elem.find('input').prop('checked', checked);
@@ -337,23 +337,23 @@ exports.create_handlers_for_users = function (container) {
 
     // Search People or Streams
     container.on('input', '.add-user-list-filter', function (e) {
-        var user_list = $(".add-user-list-filter");
+        const user_list = $(".add-user-list-filter");
         if (user_list === 0) {
             return;
         }
-        var search_term = user_list.expectOne().val().trim();
-        var search_terms = search_term.toLowerCase().split(",");
+        const search_term = user_list.expectOne().val().trim();
+        const search_terms = search_term.toLowerCase().split(",");
 
         (function filter_user_checkboxes() {
-            var user_labels = $("#user-checkboxes label.add-user-label");
+            const user_labels = $("#user-checkboxes label.add-user-label");
 
             if (search_term === '') {
                 user_labels.css({display: 'block'});
                 return;
             }
 
-            var users = people.get_rest_of_realm();
-            var filtered_users = people.filter_people_by_search_terms(users, search_terms);
+            const users = people.get_rest_of_realm();
+            const filtered_users = people.filter_people_by_search_terms(users, search_terms);
 
             // Be careful about modifying the follow code.  A naive implementation
             // will work very poorly with a large user population (~1000 users).
@@ -363,10 +363,10 @@ exports.create_handlers_for_users = function (container) {
             // This would break the previous implementation, whereas the new
             // implementation is merely sluggish.
             user_labels.each(function () {
-                var elem = $(this);
-                var user_id = elem.attr('data-user-id');
-                var user_checked = filtered_users.has(user_id);
-                var display = user_checked ? "block" : "none";
+                const elem = $(this);
+                const user_id = elem.attr('data-user-id');
+                const user_checked = filtered_users.has(user_id);
+                const display = user_checked ? "block" : "none";
                 elem.css({display: display});
             });
         }());
@@ -377,7 +377,7 @@ exports.create_handlers_for_users = function (container) {
 
 
 exports.set_up_handlers = function () {
-    var container = $('#stream-creation').expectOne();
+    const container = $('#stream-creation').expectOne();
 
     container.on('change', '#make-invite-only input', update_announce_stream_state);
 
@@ -385,14 +385,14 @@ exports.set_up_handlers = function () {
         e.preventDefault();
         clear_error_display();
 
-        var stream_name = $.trim($("#create_stream_name").val());
-        var name_ok = stream_name_error.validate_for_submit(stream_name);
+        const stream_name = $.trim($("#create_stream_name").val());
+        const name_ok = stream_name_error.validate_for_submit(stream_name);
 
         if (!name_ok) {
             return;
         }
 
-        var principals = get_principals();
+        const principals = get_principals();
         if (principals.length === 0) {
             stream_subscription_error.report_no_subs_to_stream();
             return;
@@ -403,7 +403,7 @@ exports.set_up_handlers = function () {
         }
 
         if (principals.length >= 50) {
-            var invites_warning_modal = render_subscription_invites_warning_modal({
+            const invites_warning_modal = render_subscription_invites_warning_modal({
                 stream_name: stream_name,
                 count: principals.length,
             });
@@ -423,14 +423,14 @@ exports.set_up_handlers = function () {
     });
 
     container.on("input", "#create_stream_name", function () {
-        var stream_name = $.trim($("#create_stream_name").val());
+        const stream_name = $.trim($("#create_stream_name").val());
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);
     });
 
     container.on("mouseover", "#announce-stream-docs", function (e) {
-        var announce_stream_docs = $("#announce-stream-docs");
+        const announce_stream_docs = $("#announce-stream-docs");
         announce_stream_docs.popover({
             placement: "right",
             content: render_announce_stream_docs({

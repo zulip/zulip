@@ -216,7 +216,7 @@ export default (env?: string): webpack.Configuration[] => {
     // Expose Global variables for third party libraries to webpack modules
     // Use the unminified versions of jquery and underscore so that
     // Good error messages show up in production and development in the source maps
-    var exposeOptions = [
+    const exposeOptions = [
         { path: "blueimp-md5/js/md5.js" },
         { path: "clipboard/dist/clipboard.js", name: "ClipboardJS" },
         { path: "xdate/src/xdate.js", name: "XDate" },

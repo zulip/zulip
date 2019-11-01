@@ -216,7 +216,7 @@ function set_invite_to_stream_policy_dropdown() {
 }
 
 function set_user_group_edit_policy_dropdown() {
-    var value = get_property_value("realm_user_group_edit_policy");
+    const value = get_property_value("realm_user_group_edit_policy");
     $("#id_realm_user_group_edit_policy").val(value);
 }
 
@@ -839,7 +839,7 @@ exports.build_page = function () {
             data = {};
             data.authentication_methods = JSON.stringify(get_auth_method_table_data());
         } else if (subsection === 'user_defaults') {
-            var realm_default_twenty_four_hour_time = $('#id_realm_default_twenty_four_hour_time').val();
+            const realm_default_twenty_four_hour_time = $('#id_realm_default_twenty_four_hour_time').val();
             data.default_twenty_four_hour_time = realm_default_twenty_four_hour_time;
         }
         return data;

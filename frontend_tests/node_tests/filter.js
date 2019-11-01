@@ -9,19 +9,19 @@ set_global('message_store', {});
 set_global('page_params', {});
 set_global('feature_flags', {});
 
-var me = {
+const me = {
     email: 'me@example.com',
     user_id: 30,
     full_name: 'Me Myself',
 };
 
-var joe = {
+const joe = {
     email: 'joe@example.com',
     user_id: 31,
     full_name: 'joe',
 };
 
-var steve = {
+const steve = {
     email: 'STEVE@foo.com',
     user_id: 32,
     full_name: 'steve',
@@ -36,7 +36,7 @@ function assert_same_operators(result, terms) {
     terms = _.map(terms, function (term) {
         // If negated flag is undefined, we explicitly
         // set it to false.
-        var negated = term.negated;
+        let negated = term.negated;
         if (!negated) {
             negated = false;
         }
@@ -50,12 +50,12 @@ function assert_same_operators(result, terms) {
 }
 
 run_test('basics', () => {
-    var operators = [
+    let operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'stream', operand: 'exclude_stream', negated: true},
         {operator: 'topic', operand: 'bar'},
     ];
-    var filter = new Filter(operators);
+    let filter = new Filter(operators);
 
     assert_same_operators(filter.operators(), operators);
     assert.deepEqual(filter.operands('stream'), ['foo']);
@@ -162,10 +162,10 @@ run_test('basics', () => {
     assert(filter.can_apply_locally());
 });
 run_test('show_first_unread', () => {
-    var operators = [
+    let operators = [
         {operator: 'is', operand: 'any'},
     ];
-    var filter = new Filter(operators);
+    let filter = new Filter(operators);
     assert(filter.allow_use_first_unread_when_narrowing());
 
     operators = [
@@ -188,42 +188,42 @@ run_test('show_first_unread', () => {
 
 });
 run_test('topic_stuff', () => {
-    var operators = [
+    const operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'topic', operand: 'old topic'},
     ];
-    var filter = new Filter(operators);
+    const filter = new Filter(operators);
 
     assert(filter.has_topic('foo', 'old topic'));
     assert(!filter.has_topic('wrong', 'old topic'));
     assert(!filter.has_topic('foo', 'wrong'));
 
-    var new_filter = filter.filter_with_new_topic('new topic');
+    const new_filter = filter.filter_with_new_topic('new topic');
 
     assert.deepEqual(new_filter.operands('stream'), ['foo']);
     assert.deepEqual(new_filter.operands('topic'), ['new topic']);
 });
 
 run_test('new_style_operators', () => {
-    var term = {
+    const term = {
         operator: 'stream',
         operand: 'foo',
     };
-    var operators = [term];
-    var filter = new Filter(operators);
+    const operators = [term];
+    const filter = new Filter(operators);
 
     assert.deepEqual(filter.operands('stream'), ['foo']);
     assert(filter.is_exactly('stream'));
 });
 
 run_test('public_operators', () => {
-    var operators = [
+    let operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'in', operand: 'all'},
         {operator: 'topic', operand: 'bar'},
     ];
 
-    var filter = new Filter(operators);
+    let filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), operators);
     assert(!filter.is_exactly('stream'));
 
@@ -241,7 +241,7 @@ run_test('canonicalizations', () => {
     assert.equal(Filter.canonicalize_operator('Subject'), 'topic');
     assert.equal(Filter.canonicalize_operator('FROM'), 'sender');
 
-    var term;
+    let term;
     term = Filter.canonicalize_term({operator: 'Stream', operand: 'Denmark'});
     assert.equal(term.operator, 'stream');
     assert.equal(term.operand, 'Denmark');
@@ -292,7 +292,7 @@ function get_predicate(operators) {
 }
 
 function make_sub(name, stream_id) {
-    var sub = {
+    const sub = {
         name: name,
         stream_id: stream_id,
     };
@@ -308,9 +308,9 @@ run_test('predicate_basics', () => {
     // To keep these tests simple, we only pass objects with a few relevant attributes
     // rather than full-fledged message objects.
 
-    var stream_id = 42;
+    const stream_id = 42;
     make_sub('Foo', stream_id);
-    var predicate = get_predicate([['stream', 'Foo'], ['topic', 'Bar']]);
+    let predicate = get_predicate([['stream', 'Foo'], ['topic', 'Bar']]);
 
     assert(predicate({type: 'stream', stream_id: stream_id, topic: 'bar'}));
     assert(!predicate({type: 'stream', stream_id: stream_id, topic: 'whatever'}));
@@ -356,7 +356,7 @@ run_test('predicate_basics', () => {
     predicate = get_predicate([['in', 'all']]);
     assert(predicate({}));
 
-    var unknown_stream_id = 999;
+    const unknown_stream_id = 999;
     predicate = get_predicate([['in', 'home']]);
     assert(!predicate({stream_id: unknown_stream_id, stream: 'unknown'}));
     assert(predicate({type: 'private'}));
@@ -435,10 +435,10 @@ run_test('predicate_basics', () => {
 });
 
 run_test('negated_predicates', () => {
-    var predicate;
-    var narrow;
+    let predicate;
+    let narrow;
 
-    var social_stream_id = 555;
+    const social_stream_id = 555;
     make_sub('social', social_stream_id);
 
     narrow = [
@@ -459,7 +459,7 @@ run_test('negated_predicates', () => {
 run_test('mit_exceptions', () => {
     global.page_params.realm_is_zephyr_mirror_realm = true;
 
-    var predicate = get_predicate([['stream', 'Foo'], ['topic', 'personal']]);
+    let predicate = get_predicate([['stream', 'Foo'], ['topic', 'personal']]);
     assert(predicate({type: 'stream', stream: 'foo', topic: 'personal'}));
     assert(predicate({type: 'stream', stream: 'foo.d', topic: 'personal'}));
     assert(predicate({type: 'stream', stream: 'foo.d', topic: ''}));
@@ -471,7 +471,7 @@ run_test('mit_exceptions', () => {
     assert(predicate({type: 'stream', stream: 'foo', topic: 'bar.d'}));
 
     // Try to get the MIT regex to explode for an empty stream.
-    var terms = [
+    let terms = [
         {operator: 'stream', operand: ''},
         {operator: 'topic', operand: 'bar'},
     ];
@@ -488,7 +488,7 @@ run_test('mit_exceptions', () => {
 });
 
 run_test('predicate_edge_cases', () => {
-    var predicate;
+    let predicate;
     // The code supports undefined as an operator to Filter, which results
     // in a predicate that accepts any message.
     predicate = new Filter().predicate();
@@ -507,11 +507,11 @@ run_test('predicate_edge_cases', () => {
     assert(predicate({}));
 
     // Exercise caching feature.
-    var terms = [
+    const terms = [
         {operator: 'stream', operand: 'Foo'},
         {operator: 'topic', operand: 'bar'},
     ];
-    var filter = new Filter(terms);
+    const filter = new Filter(terms);
     filter.predicate();
     predicate = filter.predicate(); // get cached version
     assert(predicate({type: 'stream', stream: 'foo', topic: 'bar'}));
@@ -519,11 +519,11 @@ run_test('predicate_edge_cases', () => {
 });
 
 run_test('parse', () => {
-    var string;
-    var operators;
+    let string;
+    let operators;
 
     function _test() {
-        var result = Filter.parse(string);
+        const result = Filter.parse(string);
         assert_same_operators(result, operators);
     }
 
@@ -646,8 +646,8 @@ run_test('parse', () => {
 });
 
 run_test('unparse', () => {
-    var string;
-    var operators;
+    let string;
+    let operators;
 
     operators = [
         {operator: 'stream', operand: 'Foo'},
@@ -697,8 +697,8 @@ run_test('unparse', () => {
 });
 
 run_test('describe', () => {
-    var narrow;
-    var string;
+    let narrow;
+    let string;
 
     narrow = [
         {operator: 'streams', operand: 'public'},
@@ -825,10 +825,10 @@ run_test('describe', () => {
 });
 
 run_test('is_functions', () => {
-    var terms = [
+    let terms = [
         {operator: 'stream', operand: 'My Stream'},
     ];
-    var filter = new Filter(terms);
+    let filter = new Filter(terms);
     assert.equal(filter.is_exactly('stream'), true);
     assert.equal(filter.is_exactly('stream', 'topic'), false);
     assert.equal(filter.is_exactly('pm-with'), false);
@@ -995,12 +995,12 @@ run_test('first_valid_id_from', () => {
 });
 
 run_test('update_email', () => {
-    var terms = [
+    const terms = [
         {operator: 'pm-with', operand: 'steve@foo.com'},
         {operator: 'sender', operand: 'steve@foo.com'},
         {operator: 'stream', operand: 'steve@foo.com'}, // try to be tricky
     ];
-    var filter = new Filter(terms);
+    const filter = new Filter(terms);
     filter.update_email(steve.user_id, 'showell@foo.com');
     assert.deepEqual(filter.operands('pm-with'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
@@ -1013,6 +1013,6 @@ run_test('error_cases', () => {
     // should not be reached unless we break other code.
     people.pm_with_user_ids = function () {};
 
-    var predicate = get_predicate([['pm-with', 'Joe@example.com']]);
+    const predicate = get_predicate([['pm-with', 'Joe@example.com']]);
     assert(!predicate({type: 'private'}));
 });

@@ -1,7 +1,7 @@
-var render_subscription = require('../templates/subscription.hbs');
-var render_subscription_settings = require('../templates/subscription_settings.hbs');
-var render_subscription_table_body = require('../templates/subscription_table_body.hbs');
-var render_subscriptions = require('../templates/subscriptions.hbs');
+const render_subscription = require('../templates/subscription.hbs');
+const render_subscription_settings = require('../templates/subscription_settings.hbs');
+const render_subscription_table_body = require('../templates/subscription_table_body.hbs');
+const render_subscriptions = require('../templates/subscriptions.hbs');
 
 exports.show_subs_pane = {
     nothing_selected: function () {
@@ -15,7 +15,7 @@ exports.show_subs_pane = {
 };
 
 exports.check_button_for_sub = function (sub) {
-    var id = parseInt(sub.stream_id, 10);
+    const id = parseInt(sub.stream_id, 10);
     return $(".stream-row[data-stream-id='" + id + "'] .check");
 };
 
@@ -26,14 +26,14 @@ exports.row_for_stream_id = function (stream_id) {
 exports.settings_button_for_sub = function (sub) {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
-    var id = parseInt(sub.stream_id, 10);
+    const id = parseInt(sub.stream_id, 10);
     return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
 };
 
 function get_row_data(row) {
-    var row_id = row.attr('data-stream-id');
+    const row_id = row.attr('data-stream-id');
     if (row_id) {
-        var row_object = stream_data.get_sub_by_id(row_id);
+        const row_object = stream_data.get_sub_by_id(row_id);
         return {
             id: row_id,
             object: row_object,
@@ -42,9 +42,9 @@ function get_row_data(row) {
 }
 
 exports.get_active_data = function () {
-    var active_row = $('div.stream-row.active');
-    var valid_active_id = active_row.attr('data-stream-id');
-    var active_tab = $('.subscriptions-container').find('div.ind-tab.selected');
+    const active_row = $('div.stream-row.active');
+    const valid_active_id = active_row.attr('data-stream-id');
+    const active_tab = $('.subscriptions-container').find('div.ind-tab.selected');
     return {
         row: active_row,
         id: valid_active_id,
@@ -61,8 +61,8 @@ function get_hash_safe() {
 }
 
 function selectText(element) {
-    var range;
-    var sel;
+    let range;
+    let sel;
     if (window.getSelection) {
         sel = window.getSelection();
         range = document.createRange();
@@ -84,7 +84,7 @@ function should_list_all_streams() {
 // this finds the stream that is actively open in the settings and focused in
 // the left side.
 exports.active_stream = function () {
-    var hash_components = window.location.hash.substr(1).split(/\//);
+    const hash_components = window.location.hash.substr(1).split(/\//);
 
     // if the string casted to a number is valid, and another component
     // after exists then it's a stream name/id pair.
@@ -106,7 +106,7 @@ exports.toggle_pin_to_top_stream = function (sub) {
 };
 
 exports.maybe_update_realm_default_stream_name  = function (stream_id, new_name) {
-    var idx = _.findIndex(page_params.realm_default_streams, function (stream) {
+    const idx = _.findIndex(page_params.realm_default_streams, function (stream) {
         return stream.stream_id === stream_id;
     });
     if (idx === -1) {
@@ -125,11 +125,11 @@ exports.is_subscribed_stream_tab_active = function () {
 };
 
 exports.update_stream_name = function (sub, new_name) {
-    var old_name = sub.name;
+    const old_name = sub.name;
 
     // Rename the stream internally.
     stream_data.rename_sub(sub, new_name);
-    var stream_id = sub.stream_id;
+    const stream_id = sub.stream_id;
 
     // Update the left sidebar.
     stream_list.rename_stream(sub, new_name);
@@ -141,7 +141,7 @@ exports.update_stream_name = function (sub, new_name) {
     stream_edit.update_stream_name(sub, new_name);
 
     // Update the subscriptions page
-    var sub_row = exports.row_for_stream_id(stream_id);
+    const sub_row = exports.row_for_stream_id(stream_id);
     sub_row.find(".stream-name").text(new_name);
 
     // Update the message feed.
@@ -161,7 +161,7 @@ exports.update_stream_description = function (sub, description, rendered_descrip
     sub.rendered_description = rendered_description.replace('<p>', '').replace('</p>', '');
 
     // Update stream row
-    var sub_row = exports.row_for_stream_id(sub.stream_id);
+    const sub_row = exports.row_for_stream_id(sub.stream_id);
     sub_row.find(".description").html(sub.rendered_description);
 
     // Update stream settings
@@ -190,7 +190,7 @@ exports.update_stream_announcement_only = function (sub, new_value) {
 };
 
 exports.set_color = function (stream_id, color) {
-    var sub = stream_data.get_sub_by_id(stream_id);
+    const sub = stream_data.get_sub_by_id(stream_id);
     stream_edit.set_stream_property(sub, 'color', color);
 };
 
@@ -218,8 +218,8 @@ exports.add_sub_to_table = function (sub) {
         return;
     }
 
-    var html = render_subscription(sub);
-    var settings_html = render_subscription_settings(sub);
+    const html = render_subscription(sub);
+    const settings_html = render_subscription_settings(sub);
     if (stream_create.get_name() === sub.name) {
         ui.get_content_element($(".streams-list")).prepend(html);
         ui.reset_scrollbar($(".streams-list"));
@@ -243,7 +243,7 @@ exports.add_sub_to_table = function (sub) {
 exports.is_sub_already_present = function (sub) {
     // This checks if a stream is already listed the "Manage streams"
     // UI, by checking for its subscribe/unsubscribe checkmark button.
-    var button = exports.check_button_for_sub(sub);
+    const button = exports.check_button_for_sub(sub);
     if (button.length !== 0) {
         return true;
     }
@@ -253,9 +253,9 @@ exports.is_sub_already_present = function (sub) {
 exports.remove_stream = function (stream_id) {
     // It is possible that row is empty when we deactivate a
     // stream, but we let jQuery silently handle that.
-    var row = exports.row_for_stream_id(stream_id);
+    const row = exports.row_for_stream_id(stream_id);
     row.remove();
-    var sub = stream_data.get_sub_by_id(stream_id);
+    const sub = stream_data.get_sub_by_id(stream_id);
     if (stream_edit.is_sub_settings_active(sub)) {
         exports.show_subs_pane.nothing_selected();
     }
@@ -283,10 +283,10 @@ exports.update_settings_for_subscribed = function (sub) {
 };
 
 exports.show_active_stream_in_left_panel = function () {
-    var selected_row = get_hash_safe().split(/\//)[1];
+    const selected_row = get_hash_safe().split(/\//)[1];
 
     if (parseFloat(selected_row)) {
-        var sub_row = exports.row_for_stream_id(selected_row);
+        const sub_row = exports.row_for_stream_id(selected_row);
         sub_row.addClass("active");
     }
 };
@@ -328,10 +328,10 @@ function triage_stream(query, sub) {
         }
     }
 
-    var search_terms = search_util.get_search_terms(query.input);
+    const search_terms = search_util.get_search_terms(query.input);
 
     function match(attr) {
-        var val = sub[attr];
+        const val = sub[attr];
 
         return search_util.vanilla_match({
             val: val,
@@ -354,15 +354,15 @@ function get_stream_id_buckets(stream_ids, query) {
     // When we simplify the settings UI, we can get
     // rid of the "others" bucket.
 
-    var buckets = {
+    const buckets = {
         name: [],
         desc: [],
         other: [],
     };
 
     _.each(stream_ids, function (stream_id) {
-        var sub = stream_data.get_sub_by_id(stream_id);
-        var match_status = triage_stream(query, sub);
+        const sub = stream_data.get_sub_by_id(stream_id);
+        const match_status = triage_stream(query, sub);
 
         if (match_status === 'name_match') {
             buckets.name.push(stream_id);
@@ -380,11 +380,11 @@ function get_stream_id_buckets(stream_ids, query) {
 }
 
 exports.populate_stream_settings_left_panel = function () {
-    var sub_rows = stream_data.get_updated_unsorted_subs();
-    var template_data = {
+    const sub_rows = stream_data.get_updated_unsorted_subs();
+    const template_data = {
         subscriptions: sub_rows,
     };
-    var html = render_subscriptions(template_data);
+    const html = render_subscriptions(template_data);
     ui.get_content_element($('#subscriptions_table .streams-list')).html(html);
 };
 
@@ -393,26 +393,26 @@ exports.populate_stream_settings_left_panel = function () {
 exports.filter_table = function (query) {
     exports.show_active_stream_in_left_panel();
 
-    var widgets = {};
-    var streams_list_scrolltop = ui.get_scroll_element($(".streams-list")).scrollTop();
+    const widgets = {};
+    const streams_list_scrolltop = ui.get_scroll_element($(".streams-list")).scrollTop();
 
-    var stream_ids = [];
+    const stream_ids = [];
     _.each($("#subscriptions_table .stream-row"), function (row) {
-        var stream_id = $(row).attr('data-stream-id');
+        const stream_id = $(row).attr('data-stream-id');
         stream_ids.push(stream_id);
     });
 
-    var buckets = get_stream_id_buckets(stream_ids, query);
+    const buckets = get_stream_id_buckets(stream_ids, query);
 
     // If we just re-built the DOM from scratch we wouldn't need
     // all this hidden/notdisplayed logic.
-    var hidden_ids = {};
+    const hidden_ids = {};
     _.each(buckets.other, function (stream_id) {
         hidden_ids[stream_id] = true;
     });
 
     _.each($("#subscriptions_table .stream-row"), function (row) {
-        var stream_id = $(row).attr('data-stream-id');
+        const stream_id = $(row).attr('data-stream-id');
 
         // Below code goes away if we don't do sort-DOM-in-place.
         if (hidden_ids[stream_id]) {
@@ -428,7 +428,7 @@ exports.filter_table = function (query) {
 
     ui.reset_scrollbar($("#subscription_overlay .streams-list"));
 
-    var all_stream_ids = [].concat(
+    const all_stream_ids = [].concat(
         buckets.name,
         buckets.desc,
         buckets.other
@@ -444,12 +444,12 @@ exports.filter_table = function (query) {
     ui.get_scroll_element($(".streams-list")).scrollTop(streams_list_scrolltop);
 };
 
-var subscribed_only = true;
+let subscribed_only = true;
 
 exports.get_search_params = function () {
-    var search_box = $("#add_new_subscription input[type='text']");
-    var input = search_box.expectOne().val().trim();
-    var params = {
+    const search_box = $("#add_new_subscription input[type='text']");
+    const input = search_box.expectOne().val().trim();
+    const params = {
         input: input,
         subscribed_only: subscribed_only,
     };
@@ -465,11 +465,11 @@ exports.maybe_reset_right_panel = function () {
 };
 
 exports.actually_filter_streams = function () {
-    var search_params = exports.get_search_params();
+    const search_params = exports.get_search_params();
     exports.filter_table(search_params);
 };
 
-var filter_streams = _.throttle(exports.actually_filter_streams, 50);
+const filter_streams = _.throttle(exports.actually_filter_streams, 50);
 
 // Make it explicit that our toggler is not created right away.
 exports.toggler = undefined;
@@ -518,7 +518,7 @@ exports.setup_page = function (callback) {
         });
 
         if (should_list_all_streams()) {
-            var toggler_elem = exports.toggler.get();
+            const toggler_elem = exports.toggler.get();
             $("#subscriptions_table .search-container").prepend(toggler_elem);
         }
         if (page_params.is_guest) {
@@ -533,7 +533,7 @@ exports.setup_page = function (callback) {
 
         $('#subscriptions_table').empty();
 
-        var template_data = {
+        const template_data = {
             can_create_streams: page_params.can_create_streams,
             hide_all_streams: !should_list_all_streams(),
             max_name_length: page_params.stream_name_max_length,
@@ -541,7 +541,7 @@ exports.setup_page = function (callback) {
             is_admin: page_params.is_admin,
         };
 
-        var rendered = render_subscription_table_body(template_data);
+        const rendered = render_subscription_table_body(template_data);
         $('#subscriptions_table').append(rendered);
 
         exports.populate_stream_settings_left_panel();
@@ -567,7 +567,7 @@ exports.setup_page = function (callback) {
 };
 
 exports.switch_to_stream_row = function (stream_id) {
-    var stream_row = exports.row_for_stream_id(stream_id);
+    const stream_row = exports.row_for_stream_id(stream_id);
 
     exports.get_active_data().row.removeClass("active");
     stream_row.addClass("active");
@@ -605,7 +605,7 @@ exports.change_state = function (section) {
 
     // if the section is a valid number.
     if (/\d+/.test(section)) {
-        var stream_id = section;
+        const stream_id = section;
         // Guest users can not access unsubscribed streams
         // So redirect guest users to 'subscribed' tab
         // for any unsubscribed stream settings hash
@@ -640,8 +640,8 @@ exports.close = function () {
 };
 
 exports.switch_rows = function (event) {
-    var active_data = exports.get_active_data();
-    var switch_row;
+    const active_data = exports.get_active_data();
+    let switch_row;
     if (window.location.hash === '#streams/new') {
         // Prevent switching stream rows when creating a new stream
         return false;
@@ -663,9 +663,9 @@ exports.switch_rows = function (event) {
         }
     }
 
-    var row_data = get_row_data(switch_row);
+    const row_data = get_row_data(switch_row);
     if (row_data) {
-        var stream_id = row_data.id;
+        const stream_id = row_data.id;
         exports.switch_to_stream_row(stream_id);
     } else if (event === 'up_arrow' && !row_data) {
         $('#search_stream_name').focus();
@@ -674,8 +674,8 @@ exports.switch_rows = function (event) {
 };
 
 exports.keyboard_sub = function () {
-    var active_data = exports.get_active_data();
-    var row_data = get_row_data(active_data.row);
+    const active_data = exports.get_active_data();
+    const row_data = get_row_data(active_data.row);
     if (row_data) {
         exports.sub_or_unsub(row_data.object);
         if (row_data.object.subscribed && active_data.tab.text() === 'Subscribed') {
@@ -686,7 +686,7 @@ exports.keyboard_sub = function () {
 };
 
 exports.toggle_view = function (event) {
-    var active_data = exports.get_active_data();
+    const active_data = exports.get_active_data();
 
     if (event === 'right_arrow' && active_data.tab.text() === 'Subscribed') {
         exports.toggler.goto('all-streams');
@@ -696,17 +696,17 @@ exports.toggle_view = function (event) {
 };
 
 exports.view_stream = function () {
-    var active_data = exports.get_active_data();
-    var row_data = get_row_data(active_data.row);
+    const active_data = exports.get_active_data();
+    const row_data = get_row_data(active_data.row);
     if (row_data) {
-        var stream_narrow_hash = '#narrow/stream/' + hash_util.encode_stream_name(row_data.object.name);
+        const stream_narrow_hash = '#narrow/stream/' + hash_util.encode_stream_name(row_data.object.name);
         hashchange.go_to_location(stream_narrow_hash);
     }
 };
 
 function ajaxSubscribe(stream, color) {
     // Subscribe yourself to a single stream.
-    var true_stream_name;
+    let true_stream_name;
 
     return channel.post({
         url: "/json/users/me/subscriptions",
@@ -716,7 +716,7 @@ function ajaxSubscribe(stream, color) {
                 $("#create_stream_name").val("");
             }
 
-            var res = JSON.parse(xhr.responseText);
+            const res = JSON.parse(xhr.responseText);
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
@@ -752,7 +752,7 @@ exports.do_open_create_stream = function () {
     // Only call this directly for hash changes.
     // Prefer open_create_stream().
 
-    var stream = $.trim($("#search_stream_name").val());
+    const stream = $.trim($("#search_stream_name").val());
 
     if (!should_list_all_streams()) {
         // Realms that don't allow listing streams should simply be subscribed to.
@@ -809,11 +809,11 @@ exports.initialize = function () {
         e.preventDefault();
 
         $('#subscription-status').hide();
-        var stream_name = narrow_state.stream();
+        const stream_name = narrow_state.stream();
         if (stream_name === undefined) {
             return;
         }
-        var sub = stream_data.get_sub(stream_name);
+        const sub = stream_data.get_sub(stream_name);
         exports.sub_or_unsub(sub);
 
         $('.empty_feed_notice').hide();
@@ -831,7 +831,7 @@ exports.initialize = function () {
     });
 
     (function defocus_sub_settings() {
-        var sel = ".search-container, .streams-list, .subscriptions-header";
+        const sel = ".search-container, .streams-list, .subscriptions-header";
 
         $("#subscriptions_table").on("click", sel, function (e) {
             if ($(e.target).is(sel)) {
