@@ -367,6 +367,7 @@
         // Updated regex expressions are currently being tested in casper
         // files and will decide about a potential future enforcement of this rule.
         "no-useless-escape": "off",
+        "no-var": "error",
         "space-unary-ops": "error",
         "no-whitespace-before-property": "error",
         "no-with": "error",
@@ -411,6 +412,15 @@
         "yoda": "error"
     },
     "overrides": [
+        {
+            "files": [
+                "frontend_tests/casper_tests/*.js",
+                "frontend_tests/casper_lib/*.js"
+            ],
+            "rules": {
+                "no-var": "off" // PhantomJS doesn’t support let, const
+            }
+        },
         {
             "files": ["**/*.ts"],
             "parser": "@typescript-eslint/parser",

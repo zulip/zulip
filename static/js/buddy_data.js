@@ -202,7 +202,7 @@ function get_last_seen(active_status, last_seen) {
         return last_seen;
     }
 
-    var last_seen_text = i18n.t('Last active: __last_seen__', {last_seen: last_seen});
+    const last_seen_text = i18n.t('Last active: __last_seen__', {last_seen: last_seen});
     return last_seen_text;
 }
 
@@ -226,7 +226,7 @@ exports.get_title_data = function (user_ids_string, is_group) {
             person.bot_owner_full_name = people.get_person_from_user_id(
                 person.bot_owner_id).full_name;
 
-            var bot_owner_name = i18n.t('Owner: __name__', {name: person.bot_owner_full_name});
+            const bot_owner_name = i18n.t('Owner: __name__', {name: person.bot_owner_full_name});
 
             return {
                 first_line: person.full_name,

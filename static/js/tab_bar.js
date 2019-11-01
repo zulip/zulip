@@ -1,4 +1,4 @@
-var render_tab_bar = require('../templates/tab_bar.hbs');
+const render_tab_bar = require('../templates/tab_bar.hbs');
 
 function make_tab(title, hash, data, extra_class, home) {
     return {active: "inactive",
@@ -10,15 +10,15 @@ function make_tab(title, hash, data, extra_class, home) {
 }
 
 function make_tab_data() {
-    var tabs = [];
-    var filter = narrow_state.filter();
+    const tabs = [];
+    const filter = narrow_state.filter();
 
     function filtered_to_non_home_view_stream() {
         if (!filter.has_operator('stream')) {
             return false;
         }
-        var stream_name = filter.operands('stream')[0];
-        var stream_id = stream_data.get_stream_id(stream_name);
+        const stream_name = filter.operands('stream')[0];
+        const stream_id = stream_data.get_stream_id(stream_name);
         if (!stream_id) {
             return true;
         }
@@ -46,10 +46,10 @@ function make_tab_data() {
     }
 
     if (narrow_state.active() && narrow_state.operators().length > 0) {
-        var stream;
-        var ops = narrow_state.operators();
+        let stream;
+        const ops = narrow_state.operators();
         // Second breadcrumb item
-        var hashed = hash_util.operators_to_hash(ops.slice(0, 1));
+        let hashed = hash_util.operators_to_hash(ops.slice(0, 1));
         if (filter.has_operator("stream")) {
             stream = filter.operands("stream")[0];
             tabs.push(make_tab(stream, hashed, stream, 'stream'));
@@ -60,8 +60,8 @@ function make_tab_data() {
                                undefined, 'private_message '));
 
             if (filter.has_operator("pm-with")) {
-                var emails = filter.operands("pm-with")[0].split(',');
-                var names = _.map(emails, function (email) {
+                const emails = filter.operands("pm-with")[0].split(',');
+                const names = _.map(emails, function (email) {
                     if (!people.get_by_email(email)) {
                         return email;
                     }
@@ -88,7 +88,7 @@ function make_tab_data() {
         } else if (filter.has_operand("is", "mentioned")) {
             tabs.push(make_tab("Mentions", hashed));
         } else if (filter.has_operator("sender")) {
-            var sender = filter.operands("sender")[0];
+            let sender = filter.operands("sender")[0];
             if (people.get_by_email(sender)) {
                 sender = people.get_by_email(sender).full_name;
             }
@@ -102,7 +102,7 @@ function make_tab_data() {
         // Third breadcrumb item for stream-topic naarrows
         if (filter.has_operator("stream") &&
             filter.has_operator("topic")) {
-            var topic = filter.operands("topic")[0];
+            const topic = filter.operands("topic")[0];
             hashed = hash_util.operators_to_hash(ops.slice(0, 2));
 
             tabs.push(make_tab(topic, hashed, null));
@@ -120,17 +120,17 @@ function make_tab_data() {
 }
 
 exports.colorize_tab_bar = function () {
-    var stream_tab = $('#tab_list .stream');
+    const stream_tab = $('#tab_list .stream');
     if (stream_tab.length > 0) {
-        var stream_name = stream_tab.data('name');
+        let stream_name = stream_tab.data('name');
         if (stream_name === undefined) {
             return;
         }
         stream_name = stream_name.toString();
 
-        var color_for_stream = stream_data.get_color(stream_name);
-        var stream_dark = stream_color.get_color_class(color_for_stream);
-        var stream_light = colorspace.getHexColor(
+        const color_for_stream = stream_data.get_color(stream_name);
+        const stream_dark = stream_color.get_color_class(color_for_stream);
+        const stream_light = colorspace.getHexColor(
             colorspace.getLighterColor(
                 colorspace.getDecimalColor(color_for_stream), 0.2));
 
@@ -152,13 +152,13 @@ exports.colorize_tab_bar = function () {
 };
 
 function build_tab_bar() {
-    var tabs = make_tab_data();
+    const tabs = make_tab_data();
 
-    var tab_bar = $("#tab_bar");
+    const tab_bar = $("#tab_bar");
     tab_bar.empty();
 
     tabs[tabs.length - 1].active = "active";
-    var rendered =  render_tab_bar({tabs: tabs});
+    const rendered =  render_tab_bar({tabs: tabs});
 
     tab_bar.append(rendered);
     exports.colorize_tab_bar();
