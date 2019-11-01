@@ -14,13 +14,13 @@ exports.feature_check = function (upload_button) {
 };
 
 exports.options = function (config) {
-    var textarea;
-    var send_button;
-    var send_status;
-    var send_status_close;
-    var error_msg;
-    var upload_bar;
-    var file_input;
+    let textarea;
+    let send_button;
+    let send_status;
+    let send_status_close;
+    let error_msg;
+    let upload_bar;
+    let file_input;
 
     switch (config.mode) {
     case 'compose':
@@ -45,13 +45,13 @@ exports.options = function (config) {
         throw Error("Invalid upload mode!");
     }
 
-    var hide_upload_status = function () {
+    const hide_upload_status = function () {
         send_button.prop("disabled", false);
         send_status.removeClass("alert-info").hide();
         $('div.progress.active').remove();
     };
 
-    var drop = function () {
+    const drop = function () {
         send_button.attr("disabled", "");
         send_status.addClass("alert-info").show();
         send_status_close.one('click', function () {
@@ -62,7 +62,7 @@ exports.options = function (config) {
         });
     };
 
-    var uploadStarted = function (i, file) {
+    const uploadStarted = function (i, file) {
         error_msg.html($("<p>").text(i18n.t("Uploading…")));
         // file.lastModified is unique for each upload, and was previously used to track each
         // upload. But, when an image is pasted into Safari, it looks like the lastModified time
@@ -77,12 +77,12 @@ exports.options = function (config) {
         compose_ui.insert_syntax_and_focus("[Uploading " + file.name + "…]()", textarea);
     };
 
-    var progressUpdated = function (i, file, progress) {
+    const progressUpdated = function (i, file, progress) {
         $("#" + upload_bar + '-' + file.trackingId).width(progress + "%");
     };
 
-    var uploadError = function (error_code, server_response, file) {
-        var msg;
+    const uploadError = function (error_code, server_response, file) {
+        let msg;
         send_status.addClass("alert-error").removeClass("alert-info");
         send_button.prop("disabled", false);
         if (file !== undefined) {
@@ -99,7 +99,7 @@ exports.options = function (config) {
         case 'FileTooLarge':
             if (page_params.max_file_upload_size > 0) {
                 // sanitization not needed as the file name is not potentially parsed as HTML, etc.
-                var context = {
+                const context = {
                     file_name: file.name,
                     file_size: page_params.max_file_upload_size,
                 };
@@ -114,7 +114,7 @@ exports.options = function (config) {
             msg = i18n.t("Sorry, the file was too large.");
             break;
         case 400: {
-            var server_message = server_response && server_response.msg;
+            const server_message = server_response && server_response.msg;
             msg = server_message || i18n.t("An unknown error occurred.");
             break;
         }
@@ -125,12 +125,12 @@ exports.options = function (config) {
         error_msg.text(msg);
     };
 
-    var uploadFinished = function (i, file, response) {
+    const uploadFinished = function (i, file, response) {
         if (response.uri === undefined) {
             return;
         }
-        var split_uri = response.uri.split("/");
-        var filename = split_uri[split_uri.length - 1];
+        const split_uri = response.uri.split("/");
+        const filename = split_uri[split_uri.length - 1];
         // Urgh, yet another hack to make sure we're "composing"
         // when text gets added into the composebox.
         if (config.mode === 'compose' && !compose_state.composing()) {
@@ -140,15 +140,15 @@ exports.options = function (config) {
             textarea.focus();
         }
 
-        var uri = make_upload_absolute(response.uri);
+        const uri = make_upload_absolute(response.uri);
 
         if (i === -1) {
             // This is a paste, so there's no filename. Show the image directly
-            var pasted_image_uri = "[pasted image](" + uri + ")";
+            const pasted_image_uri = "[pasted image](" + uri + ")";
             compose_ui.replace_syntax("[Uploading " + file.name + "…]()", pasted_image_uri, textarea);
         } else {
             // This is a dropped file, so make the filename a link to the image
-            var filename_uri = "[" + filename + "](" + uri + ")";
+            const filename_uri = "[" + filename + "](" + uri + ")";
             compose_ui.replace_syntax("[Uploading " + file.name + "…]()", filename_uri, textarea);
         }
         compose_ui.autosize_textarea();

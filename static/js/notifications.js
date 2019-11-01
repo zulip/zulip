@@ -1,20 +1,20 @@
-var render_compose_notification = require('../templates/compose_notification.hbs');
-var render_notification = require('../templates/notification.hbs');
+const render_compose_notification = require('../templates/compose_notification.hbs');
+const render_notification = require('../templates/notification.hbs');
 
-var notice_memory = {};
+let notice_memory = {};
 
 // When you start Zulip, window_has_focus should be true, but it might not be the
 // case after a server-initiated reload.
-var window_has_focus = document.hasFocus && document.hasFocus();
+let window_has_focus = document.hasFocus && document.hasFocus();
 
-var supports_sound;
+let supports_sound;
 
-var unread_pms_favicon = '/static/images/favicon/favicon-pms.png';
-var current_favicon;
-var previous_favicon;
-var flashing = false;
+const unread_pms_favicon = '/static/images/favicon/favicon-pms.png';
+let current_favicon;
+let previous_favicon;
+let flashing = false;
 
-var notifications_api;
+let notifications_api;
 
 exports.set_notification_api = function (n) {
     notifications_api = n;
@@ -33,9 +33,9 @@ if (window.webkitNotifications) {
         },
         requestPermission: window.Notification.requestPermission,
         createNotification: function createNotification(icon, title, content, tag) {
-            var notification_object = new window.Notification(title, {icon: icon,
-                                                                      body: content,
-                                                                      tag: tag});
+            const notification_object = new window.Notification(title, {icon: icon,
+                                                                        body: content,
+                                                                        tag: tag});
             notification_object.show = function () {};
             notification_object.cancel = function () { notification_object.close(); };
             return notification_object;
@@ -79,7 +79,7 @@ exports.initialize = function () {
         window_has_focus = false;
     });
 
-    var audio = $("<audio>");
+    const audio = $("<audio>");
     if (audio[0].canPlayType === undefined) {
         supports_sound = false;
     } else {
@@ -87,7 +87,7 @@ exports.initialize = function () {
 
         $("#notifications-area").append(audio);
         audio.append($("<source>").attr("loop", "yes"));
-        var source = $("#notifications-area audio source");
+        const source = $("#notifications-area audio source");
 
         if (audio[0].canPlayType('audio/ogg; codecs="vorbis"')) {
             source.attr("type", "audio/ogg");
@@ -95,7 +95,7 @@ exports.initialize = function () {
             source.attr("type", "audio/mpeg");
         }
 
-        var audio_file_without_extension
+        const audio_file_without_extension
             = "/static/audio/notification_sounds/" + page_params.notification_sound;
         source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
     }
@@ -104,9 +104,9 @@ exports.initialize = function () {
 function update_notification_sound_source() {
     // Simplified version of the source creation in `exports.initialize`, for
     // updating the source instead of creating it for the first time.
-    var audio = $("#notifications-area audio");
-    var source = $("#notifications-area audio source");
-    var audio_file_without_extension
+    const audio = $("#notifications-area audio");
+    const source = $("#notifications-area audio source");
+    const audio_file_without_extension
         = "/static/audio/notification_sounds/" + page_params.notification_sound;
     source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
 
@@ -124,7 +124,7 @@ exports.permission_state = function () {
     return window.Notification.permission;
 };
 
-var new_message_count = 0;
+let new_message_count = 0;
 
 exports.update_title_count = function (count) {
     new_message_count = count;
@@ -133,9 +133,9 @@ exports.update_title_count = function (count) {
 
 exports.redraw_title = function () {
     // Update window title and favicon to reflect unread messages in current view
-    var n;
+    let n;
 
-    var new_title = (new_message_count ? "(" + new_message_count + ") " : "")
+    const new_title = (new_message_count ? "(" + new_message_count + ") " : "")
         + narrow.narrow_title + " - "
         + page_params.realm_name + " - "
         + "Zulip";
@@ -230,7 +230,7 @@ exports.window_has_focus = function () {
 };
 
 function in_browser_notify(message, title, content, raw_operators, opts) {
-    var notification_html = $(render_notification({
+    const notification_html = $(render_notification({
         gravatar_url: people.small_avatar_url(message),
         title: title,
         content: content,
@@ -254,7 +254,7 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
 }
 
 exports.notify_above_composebox = function (note, link_class, link_msg_id, link_text) {
-    var notification_html = $(render_compose_notification({
+    const notification_html = $(render_compose_notification({
         note: note,
         link_class: link_class,
         link_msg_id: link_msg_id,
@@ -272,8 +272,8 @@ if (window.electron_bridge !== undefined) {
     // to narrow to the message being sent.
     window.electron_bridge.send_notification_reply_message_supported = true;
     window.electron_bridge.on_event('send_notification_reply_message', function (message_id, reply) {
-        var message = message_store.get(message_id);
-        var data = {
+        const message = message_store.get(message_id);
+        const data = {
             type: message.type,
             content: reply,
             to: message.type === 'private' ? message.reply_to : message.stream,
@@ -306,23 +306,23 @@ if (window.electron_bridge !== undefined) {
 }
 
 function process_notification(notification) {
-    var i;
-    var notification_object;
-    var key;
-    var content;
-    var other_recipients;
-    var message = notification.message;
-    var title = message.sender_full_name;
-    var msg_count = 1;
-    var notification_source;
-    var raw_operators = [];
-    var opts = {trigger: "notification click"};
+    let i;
+    let notification_object;
+    let key;
+    let content;
+    let other_recipients;
+    const message = notification.message;
+    let title = message.sender_full_name;
+    let msg_count = 1;
+    let notification_source;
+    let raw_operators = [];
+    const opts = {trigger: "notification click"};
     // Convert the content to plain text, replacing emoji with their alt text
     content = $('<div/>').html(message.content);
     ui.replace_emoji_with_text(content);
     content = content.text();
 
-    var topic = util.get_message_topic(message);
+    const topic = util.get_message_topic(message);
 
     if (message.is_me_message) {
         content = message.sender_full_name + content.slice(3);
@@ -398,7 +398,7 @@ function process_notification(notification) {
 
     // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
     if (notification.desktop_notify && /webkit/i.test(navigator.userAgent)) {
-        var icon_url = people.small_avatar_url(message);
+        const icon_url = people.small_avatar_url(message);
         notice_memory[key] = {
             obj: notifications_api.createNotification(icon_url, title, content, message.id),
             msg_count: msg_count,
@@ -597,7 +597,7 @@ function get_message_header(message) {
 }
 
 exports.get_local_notify_mix_reason = function (message) {
-    var row = current_msg_list.get_row(message.id);
+    const row = current_msg_list.get_row(message.id);
     if (row.length > 0) {
         // If our message is in the current message list, we do
         // not have a mix, so we are happy.
@@ -645,7 +645,7 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
             return;
         }
 
-        var reason = exports.get_local_notify_mix_reason(message);
+        let reason = exports.get_local_notify_mix_reason(message);
 
         if (!reason) {
             if (need_user_to_scroll) {
@@ -661,10 +661,10 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
             return;
         }
 
-        var link_msg_id = message.id;
-        var link_class = "compose_notification_narrow_by_topic";
-        var link_text = i18n.t("Narrow to __- message_recipient__",
-                               {message_recipient: get_message_header(message)});
+        const link_msg_id = message.id;
+        const link_class = "compose_notification_narrow_by_topic";
+        const link_text = i18n.t("Narrow to __- message_recipient__",
+                                 {message_recipient: get_message_header(message)});
 
         exports.notify_above_composebox(reason, link_class, link_msg_id, link_text);
     });
@@ -677,8 +677,8 @@ exports.notify_messages_outside_current_search = function (messages) {
         if (!people.is_current_user(message.sender_email)) {
             return;
         }
-        var link_text = i18n.t("Narrow to __- message_recipient__",
-                               {message_recipient: get_message_header(message)});
+        const link_text = i18n.t("Narrow to __- message_recipient__",
+                                 {message_recipient: get_message_header(message)});
         exports.notify_above_composebox(i18n.t("Sent! Your recent message is outside the current search."),
                                         "compose_notification_narrow_by_topic",
                                         message.id,
@@ -693,14 +693,14 @@ exports.clear_compose_notifications = function () {
 };
 
 exports.reify_message_id = function (opts) {
-    var old_id = opts.old_id;
-    var new_id = opts.new_id;
+    const old_id = opts.old_id;
+    const new_id = opts.new_id;
 
     // If a message ID that we're currently storing (as a link) has changed,
     // update that link as well
     _.each($('#out-of-view-notification a'), function (e) {
-        var elem = $(e);
-        var message_id = elem.data('message-id');
+        const elem = $(e);
+        const message_id = elem.data('message-id');
 
         if (message_id === old_id) {
             elem.data('message-id', new_id);
@@ -710,13 +710,13 @@ exports.reify_message_id = function (opts) {
 
 exports.register_click_handlers = function () {
     $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_topic', function (e) {
-        var message_id = $(e.currentTarget).data('message-id');
+        const message_id = $(e.currentTarget).data('message-id');
         narrow.by_topic(message_id, {trigger: 'compose_notification'});
         e.stopPropagation();
         e.preventDefault();
     });
     $('#out-of-view-notification').on('click', '.compose_notification_scroll_to_message', function (e) {
-        var message_id = $(e.currentTarget).data('message-id');
+        const message_id = $(e.currentTarget).data('message-id');
         current_msg_list.select_id(message_id);
         navigate.scroll_to_selected();
         e.stopPropagation();
