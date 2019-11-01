@@ -1,5 +1,5 @@
 function maybe_add_narrowed_messages(messages, msg_list) {
-    var ids = [];
+    const ids = [];
     _.each(messages, function (elem) {
         ids.push(elem.id);
     });
@@ -15,8 +15,8 @@ function maybe_add_narrowed_messages(messages, msg_list) {
                 return;
             }
 
-            var new_messages = [];
-            var elsewhere_messages = [];
+            let new_messages = [];
+            const elsewhere_messages = [];
             _.each(messages, function (elem) {
                 if (data.messages.hasOwnProperty(elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
@@ -60,7 +60,7 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
     // other lists, so we always update this
     message_util.add_new_messages(messages, message_list.all);
 
-    var render_info;
+    let render_info;
 
     if (narrow_state.active()) {
         // We do this NOW even though the home view is not active,
@@ -80,7 +80,7 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
 
 
     if (sent_by_this_client) {
-        var need_user_to_scroll = render_info && render_info.need_user_to_scroll;
+        const need_user_to_scroll = render_info && render_info.need_user_to_scroll;
         // sent_by_this_client will be true if ANY of the messages
         // were sent by this client; notifications.notify_local_mixes
         // will filter out any not sent by us.
@@ -99,14 +99,14 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
 };
 
 exports.update_messages = function update_messages(events) {
-    var msgs_to_rerender = [];
-    var topic_edited = false;
-    var changed_narrow = false;
-    var changed_compose = false;
-    var message_content_edited = false;
+    const msgs_to_rerender = [];
+    let topic_edited = false;
+    let changed_narrow = false;
+    let changed_compose = false;
+    let message_content_edited = false;
 
     _.each(events, function (event) {
-        var msg = message_store.get(event.message_id);
+        const msg = message_store.get(event.message_id);
         if (msg === undefined) {
             return;
         }
@@ -124,12 +124,12 @@ exports.update_messages = function update_messages(events) {
             msg.is_me_message = event.is_me_message;
         }
 
-        var row = current_msg_list.get_row(event.message_id);
+        const row = current_msg_list.get_row(event.message_id);
         if (row.length > 0) {
             message_edit.end(row);
         }
 
-        var new_topic = util.get_edit_event_topic(event);
+        const new_topic = util.get_edit_event_topic(event);
 
         if (new_topic !== undefined) {
             // A topic edit may affect multiple messages, listed in
@@ -137,11 +137,11 @@ exports.update_messages = function update_messages(events) {
             // where the user initiated the edit.
             topic_edited = true;
 
-            var going_forward_change = _.indexOf(['change_later', 'change_all'], event.propagate_mode) >= 0;
+            const going_forward_change = _.indexOf(['change_later', 'change_all'], event.propagate_mode) >= 0;
 
-            var stream_name = stream_data.get_sub_by_id(event.stream_id).name;
-            var compose_stream_name = compose_state.stream_name();
-            var orig_topic = util.get_edit_event_orig_topic(event);
+            const stream_name = stream_data.get_sub_by_id(event.stream_id).name;
+            const compose_stream_name = compose_state.stream_name();
+            const orig_topic = util.get_edit_event_orig_topic(event);
 
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
@@ -153,16 +153,16 @@ exports.update_messages = function update_messages(events) {
                 }
             }
 
-            var current_filter = narrow_state.filter();
+            const current_filter = narrow_state.filter();
             if (going_forward_change) {
-                var current_id = current_msg_list.selected_id();
-                var selection_changed_topic = _.indexOf(event.message_ids, current_id) >= 0;
+                const current_id = current_msg_list.selected_id();
+                const selection_changed_topic = _.indexOf(event.message_ids, current_id) >= 0;
                 if (selection_changed_topic) {
                     if (current_filter && stream_name) {
                         if (current_filter.has_topic(stream_name, orig_topic)) {
-                            var new_filter = current_filter.filter_with_new_topic(new_topic);
-                            var operators = new_filter.operators();
-                            var opts = {
+                            const new_filter = current_filter.filter_with_new_topic(new_topic);
+                            const operators = new_filter.operators();
+                            const opts = {
                                 trigger: 'topic change',
                                 then_select_id: current_id,
                             };
@@ -174,7 +174,7 @@ exports.update_messages = function update_messages(events) {
             }
 
             _.each(event.message_ids, function (id) {
-                var msg = message_store.get(id);
+                const msg = message_store.get(id);
                 if (msg === undefined) {
                     return;
                 }
@@ -207,7 +207,7 @@ exports.update_messages = function update_messages(events) {
                     // current narrow, which is not being changed as
                     // part of processing this event.  So we should
                     // remove the message from the current/narrowed message list.
-                    var cur_row = current_msg_list.get_row(id);
+                    const cur_row = current_msg_list.get_row(id);
                     if (cur_row !== undefined) {
                         current_msg_list.remove_and_rerender([{id: id}]);
                     }
@@ -220,7 +220,7 @@ exports.update_messages = function update_messages(events) {
                 // Most correctly, we should do this for topic edits as
                 // well; but we don't use the data except for content
                 // edits anyway.
-                var edit_history_entry = {
+                const edit_history_entry = {
                     edited_by: event.edited_by,
                     prev_content: event.orig_content,
                     prev_rendered_content: event.orig_rendered_content,

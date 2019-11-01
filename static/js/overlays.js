@@ -1,6 +1,6 @@
-var active_overlay;
-var close_handler;
-var open_overlay_name;
+let active_overlay;
+let close_handler;
+let open_overlay_name;
 
 function reset_state() {
     active_overlay = undefined;
@@ -193,7 +193,7 @@ exports.open_settings = function () {
 
 exports.initialize = function () {
     $("body").on("click", ".overlay, .overlay .exit", function (e) {
-        var $target = $(e.target);
+        let $target = $(e.target);
 
         // if the target is not the .overlay element, search up the node tree
         // until it is found.
@@ -204,7 +204,7 @@ exports.initialize = function () {
             return;
         }
 
-        var target_name = $target.attr("data-overlay");
+        const target_name = $target.attr("data-overlay");
 
         exports.close_overlay(target_name);
 

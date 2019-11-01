@@ -1,6 +1,6 @@
-var noop = function () {};
-var return_false = function () { return false; };
-var return_true = function () { return true; };
+const noop = function () {};
+const return_false = function () { return false; };
+const return_true = function () { return true; };
 
 set_global('document', {
     location: {}, // we need this to load compose.js
@@ -25,17 +25,17 @@ zrequire('stream_data');
 
 set_global('document', 'document-stub');
 
-var start = compose_actions.start;
-var cancel = compose_actions.cancel;
-var get_focus_area = compose_actions._get_focus_area;
-var respond_to_message = compose_actions.respond_to_message;
-var reply_with_mention = compose_actions.reply_with_mention;
-var quote_and_reply = compose_actions.quote_and_reply;
+const start = compose_actions.start;
+const cancel = compose_actions.cancel;
+const get_focus_area = compose_actions._get_focus_area;
+const respond_to_message = compose_actions.respond_to_message;
+const reply_with_mention = compose_actions.reply_with_mention;
+const quote_and_reply = compose_actions.quote_and_reply;
 
-var compose_state = global.compose_state;
+const compose_state = global.compose_state;
 
 compose_state.recipient = (function () {
-    var recipient;
+    let recipient;
 
     return function (arg) {
         if (arg === undefined) {
@@ -121,13 +121,13 @@ run_test('start', () => {
 
     // Start stream message
     global.narrow_state.set_compose_defaults = function () {
-        var opts = {};
+        const opts = {};
         opts.stream = 'stream1';
         opts.topic = 'topic1';
         return opts;
     };
 
-    var opts = {};
+    let opts = {};
     start('stream', opts);
 
     assert_visible('#stream-message');
@@ -139,7 +139,7 @@ run_test('start', () => {
     assert(compose_state.composing());
 
     // Autofill stream field for single subscription
-    var denmark = {
+    const denmark = {
         subscribed: true,
         color: 'blue',
         name: 'Denmark',
@@ -148,7 +148,7 @@ run_test('start', () => {
     stream_data.add_sub('Denmark', denmark);
 
     global.narrow_state.set_compose_defaults = function () {
-        var opts = {};
+        const opts = {};
         opts.trigger = "new topic button";
         return opts;
     };
@@ -159,7 +159,7 @@ run_test('start', () => {
     assert.equal($('#stream_message_recipient_topic').val(), '');
 
     global.narrow_state.set_compose_defaults = function () {
-        var opts = {};
+        const opts = {};
         opts.trigger = "compose_hotkey";
         return opts;
     };
@@ -169,7 +169,7 @@ run_test('start', () => {
     assert.equal($('#stream_message_recipient_stream').val(), 'Denmark');
     assert.equal($('#stream_message_recipient_topic').val(), '');
 
-    var social = {
+    const social = {
         subscribed: true,
         color: 'red',
         name: 'social',
@@ -186,7 +186,7 @@ run_test('start', () => {
 
     // Start PM
     global.narrow_state.set_compose_defaults = function () {
-        var opts = {};
+        const opts = {};
         opts.private_message_recipient = 'foo@example.com';
         return opts;
     };
@@ -207,7 +207,7 @@ run_test('start', () => {
     assert(compose_state.composing());
 
     // Cancel compose.
-    var pill_cleared;
+    let pill_cleared;
 
     compose_pm_pill.clear = function () {
         pill_cleared = true;
@@ -223,20 +223,20 @@ run_test('start', () => {
 
 run_test('respond_to_message', () => {
     // Test PM
-    var person = {
+    const person = {
         user_id: 22,
         email: 'alice@example.com',
         full_name: 'Alice',
     };
     people.add_in_realm(person);
 
-    var msg = {
+    let msg = {
         type: 'private',
         sender_id: person.user_id,
     };
     stub_selected_message(msg);
 
-    var opts = {
+    let opts = {
         reply_type: 'personal',
     };
 
@@ -260,7 +260,7 @@ run_test('respond_to_message', () => {
 });
 
 run_test('reply_with_mention', () => {
-    var msg = {
+    const msg = {
         type: 'stream',
         stream: 'devel',
         topic: 'python',
@@ -270,12 +270,12 @@ run_test('reply_with_mention', () => {
     };
     stub_selected_message(msg);
 
-    var syntax_to_insert;
+    let syntax_to_insert;
     compose_ui.insert_syntax_and_focus = function (syntax) {
         syntax_to_insert = syntax;
     };
 
-    var opts = {
+    const opts = {
     };
 
     reply_with_mention(opts);
@@ -284,13 +284,13 @@ run_test('reply_with_mention', () => {
     assert(compose_state.has_message_content());
 
     // Test for extended mention syntax
-    var bob_1 = {
+    const bob_1 = {
         user_id: 30,
         email: 'bob1@example.com',
         full_name: 'Bob Roberts',
     };
     people.add_in_realm(bob_1);
-    var bob_2 = {
+    const bob_2 = {
         user_id: 40,
         email: 'bob2@example.com',
         full_name: 'Bob Roberts',
@@ -304,7 +304,7 @@ run_test('reply_with_mention', () => {
 });
 
 run_test('quote_and_reply', () => {
-    var msg = {
+    const msg = {
         type: 'stream',
         stream: 'devel',
         topic: 'python',
@@ -328,7 +328,7 @@ run_test('quote_and_reply', () => {
         assert.equal(replacement, '```quote\nTesting.\n```');
     };
 
-    var opts = {
+    const opts = {
         reply_type: 'personal',
     };
 
@@ -395,7 +395,7 @@ run_test('focus_in_empty_compose', () => {
 });
 
 run_test('on_narrow', () => {
-    var cancel_called = false;
+    let cancel_called = false;
     compose_actions.cancel = function () {
         cancel_called = true;
     };
@@ -404,7 +404,7 @@ run_test('on_narrow', () => {
     });
     assert(cancel_called);
 
-    var on_topic_narrow_called = false;
+    let on_topic_narrow_called = false;
     compose_actions.on_topic_narrow = function () {
         on_topic_narrow_called = true;
     };
@@ -416,7 +416,7 @@ run_test('on_narrow', () => {
     });
     assert(on_topic_narrow_called);
 
-    var update_message_list_called = false;
+    let update_message_list_called = false;
     narrow_state.narrowed_by_topic_reply = function () {
         return false;
     };
@@ -434,7 +434,7 @@ run_test('on_narrow', () => {
     compose_state.has_message_content = function () {
         return false;
     };
-    var start_called = false;
+    let start_called = false;
     compose_actions.start = function () {
         start_called = true;
     };

@@ -1,4 +1,4 @@
-var message_type = false; // 'stream', 'private', or false-y
+let message_type = false; // 'stream', 'private', or false-y
 
 exports.set_message_type = function (msg_type) {
     message_type = msg_type;
@@ -26,8 +26,8 @@ function get_or_set(fieldname, keep_leading_whitespace) {
     // because the DOM element might not exist yet when get_or_set
     // is called.
     return function (newval) {
-        var elem = $('#' + fieldname);
-        var oldval = elem.val();
+        const elem = $('#' + fieldname);
+        const oldval = elem.val();
         if (newval !== undefined) {
             elem.val(newval);
         }

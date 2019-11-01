@@ -20,7 +20,7 @@ exports.frequently_used_emojis_list = [
     '1f419',    // octopus
 ];
 
-var zulip_emoji = {
+const zulip_emoji = {
     id: 'zulip',
     emoji_name: 'zulip',
     emoji_url: '/static/generated/emoji/images/emoji/unicode/zulip.png',
@@ -56,7 +56,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
 exports.initialize = function initialize() {
 
     _.each(emoji_codes.names, function (value) {
-        var base_name = emoji_codes.name_to_codepoint[value];
+        const base_name = emoji_codes.name_to_codepoint[value];
 
         if (exports.default_emoji_aliases.hasOwnProperty(base_name)) {
             exports.default_emoji_aliases[base_name].push(value);
@@ -67,7 +67,7 @@ exports.initialize = function initialize() {
 
     exports.update_emojis(page_params.realm_emoji);
 
-    var emojiset = page_params.emojiset;
+    let emojiset = page_params.emojiset;
     if (page_params.emojiset === 'text') {
         // If the current emojiset is `text`, then we fallback to the
         // `google` emojiset on the backend (see zerver/views/home.py)
@@ -78,15 +78,15 @@ exports.initialize = function initialize() {
     }
     // Load the sprite image and octopus image in the background, so
     // that the browser will cache it for later use.
-    var sprite = new Image();
+    const sprite = new Image();
     sprite.src = '/static/generated/emoji/sheet-' + emojiset + '-64.png';
-    var octopus_image = new Image();
+    const octopus_image = new Image();
     octopus_image.src = '/static/generated/emoji/images-' + emojiset + '-64/1f419.png';
 };
 
 exports.build_emoji_data = function (realm_emojis) {
     exports.emojis_by_name = {};
-    var emoji_dict;
+    let emoji_dict;
     _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
         emoji_dict = {
             name: realm_emoji_name,
@@ -102,7 +102,7 @@ exports.build_emoji_data = function (realm_emojis) {
     _.each(emoji_codes.emoji_catalog, function (codepoints) {
         _.each(codepoints, function (codepoint) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-                var emoji_name = emoji_codes.codepoint_to_name[codepoint];
+                const emoji_name = emoji_codes.codepoint_to_name[codepoint];
                 if (!exports.emojis_by_name.hasOwnProperty(emoji_name)) {
                     emoji_dict = {
                         name: emoji_name,
@@ -121,14 +121,14 @@ exports.build_emoji_data = function (realm_emojis) {
 
 exports.build_emoji_upload_widget = function () {
 
-    var get_file_input = function () {
+    const get_file_input = function () {
         return $('#emoji_file_input');
     };
 
-    var file_name_field = $('#emoji-file-name');
-    var input_error = $('#emoji_file_input_error');
-    var clear_button = $('#emoji_image_clear_button');
-    var upload_button = $('#emoji_upload_button');
+    const file_name_field = $('#emoji-file-name');
+    const input_error = $('#emoji_file_input_error');
+    const clear_button = $('#emoji_image_clear_button');
+    const upload_button = $('#emoji_upload_button');
 
     return upload_widget.build_widget(
         get_file_input,
@@ -147,28 +147,28 @@ exports.get_canonical_name = function (emoji_name) {
         blueslip.error("Invalid emoji name: " + emoji_name);
         return;
     }
-    var codepoint = emoji_codes.name_to_codepoint[emoji_name];
+    const codepoint = emoji_codes.name_to_codepoint[emoji_name];
 
     return emoji_codes.codepoint_to_name[codepoint];
 };
 
 // Translates emoticons in a string to their colon syntax.
 exports.translate_emoticons_to_names = function translate_emoticons_to_names(text) {
-    var translated = text;
-    var replacement_text;
-    var terminal_symbols = ',.;?!()[] "\'\n\t'; // From composebox_typeahead
-    var symbols_except_space = terminal_symbols.replace(' ', '');
+    let translated = text;
+    let replacement_text;
+    const terminal_symbols = ',.;?!()[] "\'\n\t'; // From composebox_typeahead
+    const symbols_except_space = terminal_symbols.replace(' ', '');
 
-    var emoticon_replacer = function (match, g1, offset, str) {
-        var prev_char = str[offset - 1];
-        var next_char = str[offset + match.length];
+    const emoticon_replacer = function (match, g1, offset, str) {
+        const prev_char = str[offset - 1];
+        const next_char = str[offset + match.length];
 
-        var symbol_at_start = terminal_symbols.indexOf(prev_char) !== -1;
-        var symbol_at_end = terminal_symbols.indexOf(next_char) !== -1;
-        var non_space_at_start = symbols_except_space.indexOf(prev_char) !== -1;
-        var non_space_at_end = symbols_except_space.indexOf(next_char) !== -1;
-        var valid_start = symbol_at_start || offset === 0;
-        var valid_end = symbol_at_end || offset === str.length - match.length;
+        const symbol_at_start = terminal_symbols.indexOf(prev_char) !== -1;
+        const symbol_at_end = terminal_symbols.indexOf(next_char) !== -1;
+        const non_space_at_start = symbols_except_space.indexOf(prev_char) !== -1;
+        const non_space_at_end = symbols_except_space.indexOf(next_char) !== -1;
+        const valid_start = symbol_at_start || offset === 0;
+        const valid_end = symbol_at_end || offset === str.length - match.length;
 
         if (non_space_at_start && non_space_at_end) { // Hello!:)?
             return match;
@@ -179,10 +179,10 @@ exports.translate_emoticons_to_names = function translate_emoticons_to_names(tex
         return match;
     };
 
-    for (var emoticon in emoji_codes.emoticon_conversions) {
+    for (const emoticon in emoji_codes.emoticon_conversions) {
         if (emoji_codes.emoticon_conversions.hasOwnProperty(emoticon)) {
             replacement_text = emoji_codes.emoticon_conversions[emoticon];
-            var emoticon_regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
+            const emoticon_regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
             translated = translated.replace(emoticon_regex, emoticon_replacer);
         }
     }

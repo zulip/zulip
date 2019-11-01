@@ -1,7 +1,7 @@
-var Dict = require('./dict').Dict;
+const Dict = require('./dict').Dict;
 
 // These colors are used now for streams.
-var stream_colors = [
+const stream_colors = [
     "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
     "#bfd56f", "#f4ae55", "#b0a5fd", "#addfe5",
     "#f5ce6e", "#c2726a", "#94c849", "#bd86e5",
@@ -21,7 +21,7 @@ exports.reset = function () {
 exports.reset();
 
 exports.claim_color = function (color) {
-    var i = exports.unused_colors.indexOf(color);
+    const i = exports.unused_colors.indexOf(color);
 
     if (i < 0) {
         return;
@@ -35,7 +35,7 @@ exports.claim_color = function (color) {
 };
 
 exports.claim_colors = function (subs) {
-    var used_colors = new Dict();
+    const used_colors = new Dict();
 
     _.each(subs, function (sub) {
         if (sub.color) {
@@ -49,7 +49,7 @@ exports.claim_colors = function (subs) {
 };
 
 exports.pick_color = function () {
-    var color = exports.unused_colors[0];
+    const color = exports.unused_colors[0];
 
     exports.claim_color(color);
 

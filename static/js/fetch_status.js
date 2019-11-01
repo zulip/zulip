@@ -1,12 +1,12 @@
-var FetchStatus = function () {
+const FetchStatus = function () {
 
-    var self = {};
+    const self = {};
 
-    var loading_older = false;
-    var loading_newer = false;
-    var found_oldest = false;
-    var found_newest = false;
-    var history_limited = false;
+    let loading_older = false;
+    let loading_newer = false;
+    let found_oldest = false;
+    let found_newest = false;
+    let history_limited = false;
 
     self.start_older_batch = function () {
         loading_older = true;

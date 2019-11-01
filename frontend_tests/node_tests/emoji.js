@@ -11,7 +11,7 @@ zrequire('markdown');
 zrequire('util');
 
 run_test('build_emoji_upload_widget', () => {
-    var build_widget_stub = false;
+    let build_widget_stub = false;
     upload_widget.build_widget = function (
         get_file_input,
         file_name_field,
@@ -31,9 +31,9 @@ run_test('build_emoji_upload_widget', () => {
 });
 
 run_test('initialize', () => {
-    var image_stub = false;
-    var urls = [];
-    var calls = 0;
+    let image_stub = false;
+    let urls = [];
+    let calls = 0;
     class Image {
         set src(data) {
             image_stub = true;
@@ -64,10 +64,10 @@ run_test('get_canonical_name', () => {
     emoji.active_realm_emojis = {
         realm_emoji: 'TBD',
     };
-    var canonical_name = emoji.get_canonical_name('realm_emoji');
+    let canonical_name = emoji.get_canonical_name('realm_emoji');
     assert.equal(canonical_name, 'realm_emoji');
 
-    var orig_emoji_codes = global.emoji_codes;
+    const orig_emoji_codes = global.emoji_codes;
     global.emoji_codes = {
         name_to_codepoint: {
             '+1': '1f44d',
@@ -94,15 +94,15 @@ run_test('get_canonical_name', () => {
 
 run_test('translate_emoticons_to_names', () => {
     // Simple test
-    var test_text = 'Testing :)';
-    var expected = 'Testing :slight_smile:';
-    var result = emoji.translate_emoticons_to_names(test_text);
+    const test_text = 'Testing :)';
+    const expected = 'Testing :slight_smile:';
+    const result = emoji.translate_emoticons_to_names(test_text);
     assert.equal(expected, result);
 
     // Extensive tests.
     // The following code loops over the test cases and each emoticon conversion
     // to generate multiple test cases.
-    var testcases = [
+    const testcases = [
         {name: 'only emoticon', original: '<original>', expected: '<converted>'},
         {name: 'space at start', original: ' <original>', expected: ' <converted>'},
         {name: 'space at end', original: '<original> ', expected: '<converted> '},
@@ -116,13 +116,13 @@ run_test('translate_emoticons_to_names', () => {
     ];
     _.each(emoji_codes.emoticon_conversions, (full_name, shortcut) => {
         _.each(testcases, (t) => {
-            var converted_value = full_name;
-            var original = t.original;
-            var expected = t.expected;
+            const converted_value = full_name;
+            let original = t.original;
+            let expected = t.expected;
             original = original.replace(/(<original>)/g, shortcut);
             expected = expected.replace(/(<original>)/g, shortcut)
                 .replace(/(<converted>)/g, converted_value);
-            var result = emoji.translate_emoticons_to_names(original);
+            const result = emoji.translate_emoticons_to_names(original);
             assert.equal(result, expected);
         });
     });

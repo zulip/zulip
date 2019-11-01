@@ -1,5 +1,5 @@
-var noop = function () {};
-var return_true = function () { return true; };
+const noop = function () {};
+const return_true = function () { return true; };
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
 
@@ -13,16 +13,16 @@ set_global('colorspace', {
 zrequire('people');
 zrequire('stream_data');
 zrequire('stream_events');
-var with_overrides = global.with_overrides;
+const with_overrides = global.with_overrides;
 
-var george = {
+const george = {
     email: 'george@zulip.com',
     full_name: 'George',
     user_id: 103,
 };
 people.add(george);
 
-var frontend = {
+const frontend = {
     subscribed: false,
     color: 'yellow',
     name: 'frontend',
@@ -36,7 +36,7 @@ stream_data.add_sub(frontend.name, frontend);
 run_test('update_property', () => {
     // Invoke error for non-existent stream/property
     with_overrides(function (override) {
-        var errors = 0;
+        let errors = 0;
         override('blueslip.warn', function () {
             errors += 1;
         });
@@ -53,7 +53,7 @@ run_test('update_property', () => {
         global.with_stub(function (stub) {
             override('stream_color.update_stream_color', stub.f);
             stream_events.update_property(1, 'color', 'blue');
-            var args = stub.get_args('sub', 'val');
+            const args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, 'blue');
         });
@@ -64,7 +64,7 @@ run_test('update_property', () => {
         global.with_stub(function (stub) {
             override('stream_muting.update_is_muted', stub.f);
             stream_events.update_property(1, 'in_home_view', false);
-            var args = stub.get_args('sub', 'val');
+            const args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, true);
         });
@@ -73,7 +73,7 @@ run_test('update_property', () => {
     // Test desktop notifications
     stream_events.update_property(1, 'desktop_notifications', true);
     assert.equal(frontend.desktop_notifications, true);
-    var checkbox = $("#desktop_notifications_1");
+    let checkbox = $("#desktop_notifications_1");
     assert.equal(checkbox.prop('checked'), true);
 
     // Tests audible notifications
@@ -99,7 +99,7 @@ run_test('update_property', () => {
         global.with_stub(function (stub) {
             override('subs.update_stream_name', stub.f);
             stream_events.update_property(1, 'name', 'the frontend');
-            var args = stub.get_args('sub', 'val');
+            const args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, 'the frontend');
         });
@@ -110,7 +110,7 @@ run_test('update_property', () => {
         global.with_stub(function (stub) {
             override('subs.update_stream_description', stub.f);
             stream_events.update_property(1, 'description', 'we write code', {rendered_description: 'we write code'});
-            var args = stub.get_args('sub', 'val');
+            const args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, 'we write code');
         });
@@ -135,7 +135,7 @@ run_test('update_property', () => {
             stream_events.update_property(1, 'invite_only', true, {
                 history_public_to_subscribers: true,
             });
-            var args = stub.get_args('sub', 'val');
+            const args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
             assert.deepEqual(args.val,  {
                 invite_only: true,
@@ -149,7 +149,7 @@ run_test('update_property', () => {
         global.with_stub(function (stub) {
             override('subs.update_stream_announcement_only', stub.f);
             stream_events.update_property(1, 'is_announcement_only', true);
-            var args = stub.get_args('sub', 'val');
+            const args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
             assert.equal(args.val, true);
         });
@@ -159,7 +159,7 @@ run_test('update_property', () => {
 run_test('marked_subscribed', () => {
     // Test undefined error
     with_overrides(function (override) {
-        var errors = 0;
+        let errors = 0;
         override('stream_color.update_stream_color', noop);
         override('blueslip.error', function () {
             errors += 1;
@@ -170,11 +170,11 @@ run_test('marked_subscribed', () => {
 
     // Test early return if subscribed
     with_overrides(function (override) {
-        var completed = false;
+        let completed = false;
         override('message_util.do_unread_count_updates', function () {
             completed = true; // This gets run if we continue and don't early return
         });
-        var subscribed = {subscribed: true};
+        const subscribed = {subscribed: true};
         stream_events.mark_subscribed(subscribed, [], 'yellow');
         assert.equal(completed, false);
     });
@@ -200,7 +200,7 @@ run_test('marked_subscribed', () => {
             override('stream_color.update_stream_color', noop);
             override('message_util.do_unread_count_updates', stub.f);
             stream_events.mark_subscribed(frontend, [], '');
-            var args = stub.get_args('messages');
+            const args = stub.get_args('messages');
             assert.deepEqual(args.messages, ['msg']);
         });
     });
@@ -213,7 +213,7 @@ run_test('marked_subscribed', () => {
         global.with_stub(function (stub) {
             $(document).on('subscription_add_done.zulip', stub.f);
             stream_events.mark_subscribed(frontend, [], '');
-            var args = stub.get_args('event');
+            const args = stub.get_args('event');
             assert.equal(args.event.sub.stream_id, 1);
         });
     });
@@ -224,7 +224,7 @@ run_test('marked_subscribed', () => {
         override('narrow_state.is_for_stream_id', function () {
             return true;
         });
-        var updated = false;
+        let updated = false;
         override('current_msg_list.update_trailing_bookend', function () {
             updated = true;
         });
@@ -248,7 +248,7 @@ run_test('marked_subscribed', () => {
         override('color_data.pick_color', function () {
             return 'green';
         });
-        var warnings = 0;
+        let warnings = 0;
         override('blueslip.warn', function () {
             warnings += 1;
         });
@@ -257,7 +257,7 @@ run_test('marked_subscribed', () => {
             override('stream_color.update_stream_color', noop);
             override('subs.set_color', stub.f);
             stream_events.mark_subscribed(frontend, [], undefined);
-            var args = stub.get_args('id', 'color');
+            const args = stub.get_args('id', 'color');
             assert.equal(args.id, 1);
             assert.equal(args.color, 'green');
             assert.equal(warnings, 1);
@@ -269,9 +269,9 @@ run_test('marked_subscribed', () => {
         override('stream_color.update_stream_color', noop);
         global.with_stub(function (stub) {
             override('stream_data.set_subscribers', stub.f);
-            var user_ids = [15, 20, 25];
+            const user_ids = [15, 20, 25];
             stream_events.mark_subscribed(frontend, user_ids, '');
-            var args = stub.get_args('sub', 'subscribers');
+            const args = stub.get_args('sub', 'subscribers');
             assert.deepEqual(frontend, args.sub);
             assert.deepEqual(user_ids, args.subscribers);
         });
@@ -280,7 +280,7 @@ run_test('marked_subscribed', () => {
         global.with_stub(function (stub) {
             override('stream_data.subscribe_myself', stub.f);
             stream_events.mark_subscribed(frontend, [], '');
-            var args = stub.get_args('sub');
+            const args = stub.get_args('sub');
             assert.deepEqual(frontend, args.sub);
         });
 
@@ -288,14 +288,14 @@ run_test('marked_subscribed', () => {
         global.with_stub(function (stub) {
             override('subs.update_settings_for_subscribed', stub.f);
             stream_events.mark_subscribed(frontend, [], '');
-            var args = stub.get_args('sub');
+            const args = stub.get_args('sub');
             assert.deepEqual(frontend, args.sub);
         });
     });
 });
 
 run_test('mark_unsubscribed', () => {
-    var removed_sub = false;
+    let removed_sub = false;
     $(document).on('subscription_remove_done.zulip', function () {
         removed_sub = true;
     });
@@ -316,7 +316,7 @@ run_test('mark_unsubscribed', () => {
             override('stream_data.unsubscribe_myself', stub.f);
             override('subs.update_settings_for_unsubscribed', noop);
             stream_events.mark_unsubscribed(frontend);
-            var args = stub.get_args('sub');
+            const args = stub.get_args('sub');
             assert.deepEqual(args.sub, frontend);
         });
     });
@@ -327,7 +327,7 @@ run_test('mark_unsubscribed', () => {
             override('subs.update_settings_for_unsubscribed', stub.f);
             override('stream_data.unsubscribe_myself', noop);
             stream_events.mark_unsubscribed(frontend);
-            var args = stub.get_args('sub');
+            const args = stub.get_args('sub');
             assert.deepEqual(args.sub, frontend);
         });
     });
@@ -340,12 +340,12 @@ run_test('mark_unsubscribed', () => {
             return true;
         });
 
-        var updated = false;
+        let updated = false;
         override('current_msg_list.update_trailing_bookend', function () {
             updated = true;
         });
 
-        var event_triggered = false;
+        let event_triggered = false;
         $(document).trigger = function (ev) {
             assert.equal(ev.name, 'subscription_remove_done.zulip');
             assert.deepEqual(ev.data.sub, frontend);
@@ -359,7 +359,7 @@ run_test('mark_unsubscribed', () => {
 });
 
 stream_data.clear_subscriptions();
-var dev_help = {
+const dev_help = {
     subscribed: true,
     color: 'blue',
     name: 'dev help',

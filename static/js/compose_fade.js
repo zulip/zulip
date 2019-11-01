@@ -1,5 +1,5 @@
-var focused_recipient;
-var normal_display = false;
+let focused_recipient;
+let normal_display = false;
 
 exports.should_fade_message =  function (message) {
     return !util.same_recipient(focused_recipient, message);
@@ -17,24 +17,24 @@ exports.set_focused_recipient = function (msg_type) {
     };
 
     if (focused_recipient.type === "stream") {
-        var stream_name = $('#stream_message_recipient_stream').val();
+        const stream_name = $('#stream_message_recipient_stream').val();
         focused_recipient.topic = $('#stream_message_recipient_topic').val();
         focused_recipient.stream = stream_name;
-        var sub = stream_data.get_sub(stream_name);
+        const sub = stream_data.get_sub(stream_name);
         if (sub) {
             focused_recipient.stream_id = sub.stream_id;
         }
     } else {
         // Normalize the recipient list so it matches the one used when
         // adding the message (see message_store.add_message_metadata()).
-        var reply_to = util.normalize_recipients(compose_state.recipient());
+        const reply_to = util.normalize_recipients(compose_state.recipient());
         focused_recipient.reply_to = reply_to;
         focused_recipient.to_user_ids = people.reply_to_to_user_ids_string(reply_to);
     }
 };
 
 function display_messages_normally() {
-    var table = rows.get_table(current_msg_list.table_name);
+    const table = rows.get_table(current_msg_list.table_name);
     table.find('.recipient_row').removeClass("message-fade");
 
     normal_display = true;
@@ -50,11 +50,11 @@ function change_fade_state(elt, should_fade_group) {
 }
 
 function fade_messages() {
-    var i;
-    var first_message;
-    var first_row;
-    var should_fade_group = false;
-    var visible_groups = message_viewport.visible_groups(false);
+    let i;
+    let first_message;
+    let first_row;
+    let should_fade_group = false;
+    const visible_groups = message_viewport.visible_groups(false);
 
     normal_display = false;
 
@@ -69,7 +69,7 @@ function fade_messages() {
 
     // Defer updating all message groups so that the compose box can open sooner
     setTimeout(function (expected_msg_list, expected_recipient) {
-        var all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
+        const all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
 
         if (current_msg_list !== expected_msg_list ||
             !compose_state.composing() ||
@@ -82,7 +82,7 @@ function fade_messages() {
         // Note: The below algorithm relies on the fact that all_elts is
         // sorted as it would be displayed in the message view
         for (i = 0; i < all_groups.length; i += 1) {
-            var group_elt = $(all_groups[i]);
+            const group_elt = $(all_groups[i]);
             should_fade_group = exports.should_fade_message(rows.recipient_from_group(group_elt));
             change_fade_state(group_elt, should_fade_group);
         }
@@ -93,8 +93,8 @@ function fade_messages() {
 
 exports.would_receive_message = function (email) {
     if (focused_recipient.type === 'stream') {
-        var user = people.get_active_user_for_email(email);
-        var sub = stream_data.get_sub(focused_recipient.stream);
+        const user = people.get_active_user_for_email(email);
+        const sub = stream_data.get_sub(focused_recipient.stream);
         if (!sub || !user) {
             // If the stream or user isn't valid, there is no risk of a mix
             // yet, so we sort of "lie" and say they would receive a
@@ -109,7 +109,7 @@ exports.would_receive_message = function (email) {
     return util.is_pm_recipient(email, focused_recipient);
 };
 
-var user_fade_config = {
+const user_fade_config = {
     get_user_id: function (li) {
         return buddy_list.get_key_from_li({li: li});
     },
@@ -122,9 +122,9 @@ var user_fade_config = {
 };
 
 function update_user_row_when_fading(li, conf) {
-    var user_id = conf.get_user_id(li);
-    var email = people.get_person_from_user_id(user_id).email;
-    var would_receive = exports.would_receive_message(email);
+    const user_id = conf.get_user_id(li);
+    const email = people.get_person_from_user_id(user_id).email;
+    const would_receive = exports.would_receive_message(email);
 
     if (would_receive || people.is_my_user_id(user_id)) {
         conf.unfade(li);
@@ -172,7 +172,7 @@ function want_normal_display() {
 }
 
 function do_update_all() {
-    var user_items = buddy_list.get_items();
+    const user_items = buddy_list.get_items();
 
     if (want_normal_display()) {
         if (!normal_display) {
@@ -189,7 +189,7 @@ function do_update_all() {
 // This is for when new presence information comes in, redrawing the presence
 // list.
 exports.update_faded_users = function () {
-    var user_items = buddy_list.get_items();
+    const user_items = buddy_list.get_items();
 
     exports.update_user_info(user_items, user_fade_config);
 };
@@ -233,9 +233,9 @@ exports.update_rendered_message_groups = function (message_groups, get_element) 
     // important difference here is that we look at each message individually, whereas
     // the other code takes advantage of blocks beneath recipient bars.
     _.each(message_groups, function (message_group) {
-        var elt = get_element(message_group);
-        var first_message = message_group.message_containers[0].msg;
-        var should_fade = exports.should_fade_message(first_message);
+        const elt = get_element(message_group);
+        const first_message = message_group.message_containers[0].msg;
+        const should_fade = exports.should_fade_message(first_message);
         change_fade_state(elt, should_fade);
     });
 };

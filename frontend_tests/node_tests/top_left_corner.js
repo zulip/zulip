@@ -10,8 +10,8 @@ zrequire('top_left_corner');
 run_test('narrowing', () => {
     // activating narrow
 
-    var pm_expanded;
-    var pm_closed;
+    let pm_expanded;
+    let pm_closed;
 
     set_global('pm_list', {
         close: function () { pm_closed = true; },
@@ -19,7 +19,7 @@ run_test('narrowing', () => {
     });
 
     assert(!pm_expanded);
-    var filter = new Filter([
+    let filter = new Filter([
         {operator: 'is', operand: 'private'},
     ]);
     top_left_corner.handle_narrow_activated(filter);
@@ -92,8 +92,8 @@ run_test('narrowing', () => {
 
 run_test('update_count_in_dom', () => {
     function make_elem(elem, count_selector, value_selector) {
-        var count = $(count_selector);
-        var value = $(value_selector);
+        const count = $(count_selector);
+        const value = $(value_selector);
         elem.set_find_results('.count', count);
         count.set_find_results('.value', value);
         count.set_parent(elem);
@@ -101,7 +101,7 @@ run_test('update_count_in_dom', () => {
         return elem;
     }
 
-    var counts = {
+    const counts = {
         mentioned_message_count: 222,
         home_unread_messages: 333,
     };

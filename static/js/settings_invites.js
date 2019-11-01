@@ -1,7 +1,7 @@
-var render_admin_invites_list = require("../templates/admin_invites_list.hbs");
-var render_settings_revoke_invite_modal = require("../templates/settings/revoke_invite_modal.hbs");
+const render_admin_invites_list = require("../templates/admin_invites_list.hbs");
+const render_settings_revoke_invite_modal = require("../templates/settings/revoke_invite_modal.hbs");
 
-var meta = {
+const meta = {
     loaded: false,
 };
 
@@ -31,7 +31,7 @@ exports.invited_as_values = {
 
 function add_invited_as_text(invites) {
     invites.forEach(function (data) {
-        var invited_as_type = _.findKey(exports.invited_as_values, function (elem) {
+        const invited_as_type = _.findKey(exports.invited_as_values, function (elem) {
             return elem.value === data.invited_as;
         });
         data.invited_as_text = exports.invited_as_values[invited_as_type].description;
@@ -46,16 +46,16 @@ function populate_invites(invites_data) {
 
     add_invited_as_text(invites_data.invites);
 
-    var invites_table = $("#admin_invites_table").expectOne();
+    const invites_table = $("#admin_invites_table").expectOne();
 
-    var admin_invites_list = list_render.get("admin_invites_list");
+    const admin_invites_list = list_render.get("admin_invites_list");
 
     if (admin_invites_list) {
         admin_invites_list.data(invites_data.invites);
         admin_invites_list.set_container(invites_table);
         admin_invites_list.render();
     } else {
-        var invites_list = list_render.create(invites_table, invites_data.invites, {
+        const invites_list = list_render.create(invites_table, invites_data.invites, {
             name: "admin_invites_list",
             modifier: function (item) {
                 item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
@@ -64,11 +64,11 @@ function populate_invites(invites_data) {
             filter: {
                 element: invites_table.closest(".settings-section").find(".search"),
                 callback: function (item, value) {
-                    var referrer_email_matched = item.ref.toLowerCase().indexOf(value) >= 0;
+                    const referrer_email_matched = item.ref.toLowerCase().indexOf(value) >= 0;
                     if (item.is_multiuse) {
                         return referrer_email_matched;
                     }
-                    var invitee_email_matched = item.email.toLowerCase().indexOf(value) >= 0;
+                    const invitee_email_matched = item.email.toLowerCase().indexOf(value) >= 0;
                     return referrer_email_matched || invitee_email_matched;
                 },
             },
@@ -82,9 +82,9 @@ function populate_invites(invites_data) {
 }
 
 function do_revoke_invite() {
-    var modal_invite_id = $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id");
-    var modal_is_multiuse = $("#revoke_invite_modal #do_revoke_invite_button").attr("data-is-multiuse");
-    var revoke_button = meta.current_revoke_invite_user_modal_row.find("button.revoke");
+    const modal_invite_id = $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id");
+    const modal_is_multiuse = $("#revoke_invite_modal #do_revoke_invite_button").attr("data-is-multiuse");
+    const revoke_button = meta.current_revoke_invite_user_modal_row.find("button.revoke");
 
     if (modal_invite_id !== meta.invite_id || modal_is_multiuse !== meta.is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
@@ -93,7 +93,7 @@ function do_revoke_invite() {
     }
     $("#revoke_invite_modal").modal("hide");
     revoke_button.prop("disabled", true).text(i18n.t("Working…"));
-    var url = '/json/invites/' + meta.invite_id;
+    let url = '/json/invites/' + meta.invite_id;
 
     if (modal_is_multiuse === "true") {
         url = '/json/invites/multiuse/' + meta.invite_id;
@@ -141,14 +141,14 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
-        var row = $(e.target).closest(".invite_row");
-        var email = row.find('.email').text();
-        var referred_by = row.find('.referred_by').text();
+        const row = $(e.target).closest(".invite_row");
+        const email = row.find('.email').text();
+        const referred_by = row.find('.referred_by').text();
         meta.current_revoke_invite_user_modal_row = row;
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
         meta.is_multiuse = $(e.currentTarget).attr("data-is-multiuse");
-        var ctx = {is_multiuse: meta.is_multiuse === "true", email: email, referred_by: referred_by};
-        var rendered_revoke_modal = render_settings_revoke_invite_modal(ctx);
+        const ctx = {is_multiuse: meta.is_multiuse === "true", email: email, referred_by: referred_by};
+        const rendered_revoke_modal = render_settings_revoke_invite_modal(ctx);
         $("#revoke_invite_modal_holder").html(rendered_revoke_modal);
         $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id", meta.invite_id);
         $("#revoke_invite_modal #do_revoke_invite_button").attr("data-is-multiuse", meta.is_multiuse);
@@ -163,8 +163,8 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
         e.preventDefault();
         e.stopPropagation();
 
-        var row = $(e.target).closest(".invite_row");
-        var email = row.find('.email').text();
+        const row = $(e.target).closest(".invite_row");
+        const email = row.find('.email').text();
         meta.current_resend_invite_user_modal_row = row;
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
 
@@ -174,8 +174,8 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
     });
 
     $("#do_resend_invite_button").click(function () {
-        var modal_invite_id = $("#resend_invite_modal #do_resend_invite_button").attr("data-invite-id");
-        var resend_button = meta.current_resend_invite_user_modal_row.find("button.resend");
+        const modal_invite_id = $("#resend_invite_modal #do_resend_invite_button").attr("data-invite-id");
+        const resend_button = meta.current_resend_invite_user_modal_row.find("button.resend");
 
         if (modal_invite_id !== meta.invite_id) {
             blueslip.error("Invite resending canceled due to non-matching fields.");

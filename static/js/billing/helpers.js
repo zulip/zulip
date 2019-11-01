@@ -1,12 +1,12 @@
 exports.create_ajax_request = function (url, form_name, stripe_token = null) {
-    var form = $("#" + form_name + "-form");
-    var form_loading_indicator = "#" + form_name + "_loading_indicator";
-    var form_input_section = "#" + form_name + "-input-section";
-    var form_success = "#" + form_name + "-success";
-    var form_error = "#" + form_name + "-error";
-    var form_loading = "#" + form_name + "-loading";
+    const form = $("#" + form_name + "-form");
+    const form_loading_indicator = "#" + form_name + "_loading_indicator";
+    const form_input_section = "#" + form_name + "-input-section";
+    const form_success = "#" + form_name + "-success";
+    const form_error = "#" + form_name + "-error";
+    const form_loading = "#" + form_name + "-loading";
 
-    var numeric_inputs = ["licenses"];
+    const numeric_inputs = ["licenses"];
 
     loading.make_indicator($(form_loading_indicator),
                            {text: 'Processing ...', abs_positioned: true});
@@ -14,7 +14,7 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null) {
     $(form_error).hide();
     $(form_loading).show();
 
-    var data = {};
+    const data = {};
     if (stripe_token) {
         data.stripe_token = JSON.stringify(stripe_token.id);
     }
@@ -54,7 +54,7 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null) {
 exports.format_money = function (cents) {
     // allow for small floating point errors
     cents = Math.ceil(cents - 0.001);
-    var precision;
+    let precision;
     if (cents % 100 === 0) {
         precision = 0;
     } else {
@@ -77,14 +77,14 @@ exports.show_license_section = function (license) {
     $("#automatic_license_count").prop('disabled', true);
     $("#manual_license_count").prop('disabled', true);
 
-    var section_id = "#license-" + license + "-section";
+    const section_id = "#license-" + license + "-section";
     $(section_id).show();
-    var input_id = "#" + license + "_license_count";
+    const input_id = "#" + license + "_license_count";
     $(input_id).prop("disabled", false);
 };
 
 exports.set_tab = function (page) {
-    var hash = location.hash;
+    const hash = location.hash;
     if (hash) {
         $('#' + page + '-tabs.nav a[href="' + hash + '"]').tab('show');
         $('html').scrollTop(0);

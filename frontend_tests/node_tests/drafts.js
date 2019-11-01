@@ -10,8 +10,8 @@ zrequire('util');
 zrequire('stream_color');
 zrequire('colorspace');
 
-var ls_container = {};
-var noop = function () { return; };
+let ls_container = {};
+const noop = function () { return; };
 
 set_global('localStorage', {
     getItem: function (key) {
@@ -52,7 +52,7 @@ set_global('page_params', {
 });
 
 function stub_timestamp(timestamp, func) {
-    var original_func = Date.prototype.getTime;
+    const original_func = Date.prototype.getTime;
     Date.prototype.getTime = function () {
         return timestamp;
     };
@@ -60,33 +60,33 @@ function stub_timestamp(timestamp, func) {
     Date.prototype.getTime = original_func;
 }
 
-var legacy_draft = {
+const legacy_draft = {
     stream: "stream",
     subject: "lunch",
     type: "stream",
     content: "whatever",
 };
 
-var compose_args_for_legacy_draft = {
+const compose_args_for_legacy_draft = {
     stream: "stream",
     topic: "lunch",
     type: "stream",
     content: "whatever",
 };
 
-var draft_1 = {
+const draft_1 = {
     stream: "stream",
     topic: "topic",
     type: "stream",
     content: "Test Stream Message",
 };
-var draft_2 = {
+const draft_2 = {
     private_message_recipient: "aaron@zulip.com",
     reply_to: "aaron@zulip.com",
     type: "private",
     content: "Test Private Message",
 };
-var short_msg = {
+const short_msg = {
     stream: "stream",
     subject: "topic",
     type: "stream",
@@ -101,12 +101,12 @@ run_test('legacy', () => {
 });
 
 run_test('draft_model', () => {
-    var draft_model = drafts.draft_model;
-    var ls = localstorage();
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
 
     localStorage.clear();
     (function test_get() {
-        var expected = { id1: draft_1, id2: draft_2 };
+        const expected = { id1: draft_1, id2: draft_2 };
         ls.set("drafts", expected);
 
         assert.deepEqual(draft_model.get(), expected);
@@ -123,9 +123,9 @@ run_test('draft_model', () => {
     localStorage.clear();
     (function test_addDraft() {
         stub_timestamp(1, function () {
-            var expected = _.clone(draft_1);
+            const expected = _.clone(draft_1);
             expected.updatedAt = 1;
-            var id = draft_model.addDraft(_.clone(draft_1));
+            const id = draft_model.addDraft(_.clone(draft_1));
 
             assert.deepEqual(ls.get("drafts")[id], expected);
         });
@@ -135,7 +135,7 @@ run_test('draft_model', () => {
     (function test_editDraft() {
         stub_timestamp(2, function () {
             ls.set("drafts", { id1: draft_1 });
-            var expected = _.clone(draft_2);
+            const expected = _.clone(draft_2);
             expected.updatedAt = 2;
             draft_model.editDraft("id1", _.clone(draft_2));
 
@@ -188,7 +188,7 @@ run_test('snapshot_message', () => {
 });
 
 run_test('initialize', () => {
-    var message_content = $("#compose-textarea");
+    const message_content = $("#compose-textarea");
     message_content.focusout = function (f) {
         assert.equal(f, drafts.update_draft);
         f();
@@ -196,7 +196,7 @@ run_test('initialize', () => {
 
     global.window.addEventListener = function (event_name, f) {
         assert.equal(event_name, "beforeunload");
-        var called = false;
+        let called = false;
         drafts.update_draft = function () { called = true; };
         f();
         assert(called);
@@ -206,24 +206,24 @@ run_test('initialize', () => {
 });
 
 run_test('remove_old_drafts', () => {
-    var draft_3 = {
+    const draft_3 = {
         stream: "stream",
         subject: "topic",
         type: "stream",
         content: "Test Stream Message",
         updatedAt: Date.now(),
     };
-    var draft_4 = {
+    const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "aaron@zulip.com",
         type: "private",
         content: "Test Private Message",
         updatedAt: new Date().setDate(-30),
     };
-    var draft_model = drafts.draft_model;
-    var ls = localstorage();
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
     localStorage.clear();
-    var data = {id3: draft_3, id4: draft_4};
+    const data = {id3: draft_3, id4: draft_4};
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
@@ -236,21 +236,21 @@ run_test('format_drafts', () => {
 
     draft_1.updatedAt = new Date(1549958107000).getTime();      // 2/12/2019 07:55:07 AM (UTC+0)
     draft_2.updatedAt = new Date(1549958107000).setDate(-1);
-    var draft_3 = {
+    const draft_3 = {
         stream: "stream 2",
         subject: "topic",
         type: "stream",
         content: "Test Stream Message 2",
         updatedAt: new Date(1549958107000).setDate(-10),
     };
-    var draft_4 = {
+    const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "iago@zulip.com",
         type: "private",
         content: "Test Private Message 2",
         updatedAt: new Date(1549958107000).setDate(-5),
     };
-    var draft_5 = {
+    const draft_5 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "zoe@zulip.com",
         type: "private",
@@ -258,7 +258,7 @@ run_test('format_drafts', () => {
         updatedAt: new Date(1549958107000).setDate(-2),
     };
 
-    var expected = [
+    const expected = [
         {
             draft_id: 'id1',
             is_stream: true,
@@ -305,14 +305,14 @@ run_test('format_drafts', () => {
     blueslip.error = noop;
     $('#drafts_table').append = noop;
 
-    var draft_model = drafts.draft_model;
-    var ls = localstorage();
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
     localStorage.clear();
-    var data = { id1: draft_1, id2: draft_2, id3: draft_3, id4: draft_4, id5: draft_5 };
+    const data = { id1: draft_1, id2: draft_2, id3: draft_3, id4: draft_4, id5: draft_5 };
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
-    var stub_render_now = timerender.render_now;
+    const stub_render_now = timerender.render_now;
     timerender.render_now = function (time) {
         return stub_render_now(time, new XDate(1549958107000));
     };

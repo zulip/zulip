@@ -1,4 +1,4 @@
-var events = {
+const events = {
     documentMouseup: [],
     windowResize: [],
 };
@@ -44,11 +44,11 @@ const funcs = {
     // this is a function given a canvas that attaches all of the events
     // required to pan and zoom.
     attachEvents: function (canvas, context, meta) {
-        var mousedown = false;
+        let mousedown = false;
 
         // wheelEvent.deltaMode is a value that describes what the unit is
         // for the `deltaX`, `deltaY`, and `deltaZ` properties.
-        var DELTA_MODE = {
+        const DELTA_MODE = {
             PIXEL: 0,
             LINE: 1,
             PAGE: 2,
@@ -56,13 +56,13 @@ const funcs = {
 
         // give object structure in `mousedown`, because its props are only
         // ever set once `mousedown` + `mousemove` is triggered.
-        var lastPosition = {};
+        let lastPosition = {};
 
         // in browsers such as Safari, the `e.movementX` and `e.movementY`
         // props don't exist, so we need to create them as a difference of
         // where the last `layerX` and `layerY` movements since the last
         // `mousemove` event in this `mousedown` event were registered.
-        var polyfillMouseMovement = function (e) {
+        const polyfillMouseMovement = function (e) {
             e.movementX = e.layerX - lastPosition.x || 0;
             e.movementY = e.layerY - lastPosition.y || 0;
 
@@ -80,7 +80,7 @@ const funcs = {
             e.preventDefault();
 
             // this is to reverese scrolling directions for the image.
-            var delta = meta.direction * e.deltaY;
+            let delta = meta.direction * e.deltaY;
 
             if (e.deltaMode === DELTA_MODE.LINE) {
                 // the vertical height in pixels of an approximate line.
@@ -99,7 +99,7 @@ const funcs = {
             // delta = 8
             // normalizedDelta = delta * (1 / 20) * 1 = 0.4
             // zoom = zoom * (0.4 / 100) + 1
-            var zoom = meta.zoom * (
+            const zoom = meta.zoom * (
                 meta.speed * meta.internalSpeedMultiplier * delta / 100 + 1
             );
 
@@ -122,7 +122,7 @@ const funcs = {
                 polyfillMouseMovement(e);
                 // find the percent of movement relative to the canvas width
                 // since e.movementX, e.movementY are in px.
-                var percentMovement = {
+                const percentMovement = {
                     x: e.movementX / canvas.width,
                     y: e.movementY / canvas.height,
                 };
@@ -205,15 +205,15 @@ const funcs = {
         meta.coords.y = Math.max(1 / (meta.zoom * 2), meta.coords.y);
         meta.coords.y = Math.min(1 - 1 / (meta.zoom * 2), meta.coords.y);
 
-        var c = {
+        const c = {
             x: meta.coords.x - 1,
             y: meta.coords.y - 1,
         };
 
-        var x = meta.zoom * c.x * canvas.width + canvas.width / 2;
-        var y = meta.zoom * c.y * canvas.height + canvas.height / 2;
-        var w = canvas.width * meta.zoom;
-        var h = canvas.height * meta.zoom;
+        const x = meta.zoom * c.x * canvas.width + canvas.width / 2;
+        const y = meta.zoom * c.y * canvas.height + canvas.height / 2;
+        const w = canvas.width * meta.zoom;
+        const h = canvas.height * meta.zoom;
 
         canvas.width = canvas.width;
         context.imageSmoothingEnabled = false;
@@ -233,7 +233,7 @@ const funcs = {
             meta.onresize(canvas);
         }
 
-        var parent = {
+        const parent = {
             width: canvas.parentNode.clientWidth,
             height: canvas.parentNode.clientHeight,
         };
@@ -258,8 +258,8 @@ const funcs = {
 };
 
 // a class w/ prototype to create a new `LightboxCanvas` instance.
-var LightboxCanvas = function (el) {
-    var self = this;
+const LightboxCanvas = function (el) {
+    const self = this;
 
     this.meta = {
         direction: -1,

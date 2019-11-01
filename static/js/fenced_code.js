@@ -5,7 +5,7 @@
 // auto-completing code blocks missing a trailing close.
 
 // See backend fenced_code.py:71 for associated regexp
-var fencestr = "^(~{3,}|`{3,})"            + // Opening Fence
+const fencestr = "^(~{3,}|`{3,})"            + // Opening Fence
                "[ ]*"                      + // Spaces
                "("                         +
                    "\\{?\\.?"              +
@@ -13,14 +13,14 @@ var fencestr = "^(~{3,}|`{3,})"            + // Opening Fence
                    "\\}?"                  +
                "[ ]*"                      + // Spaces
                ")$";
-var fence_re = new RegExp(fencestr);
+const fence_re = new RegExp(fencestr);
 
 // Default stashing function does nothing
-var stash_func = function (text) {
+let stash_func = function (text) {
     return text;
 };
 
-var escape_func = function (text) {
+let escape_func = function (text) {
     return text;
 };
 
@@ -35,12 +35,12 @@ function wrap_code(code) {
 }
 
 function wrap_quote(text) {
-    var paragraphs = text.split('\n\n');
-    var quoted_paragraphs = [];
+    const paragraphs = text.split('\n\n');
+    const quoted_paragraphs = [];
     // Prefix each quoted paragraph with > at the
     // beginning of each line
     _.each(paragraphs, function (paragraph) {
-        var lines = paragraph.split('\n');
+        const lines = paragraph.split('\n');
         quoted_paragraphs.push(_.map(
             _.reject(lines, function (line) { return line === ''; }),
             function (line) { return '> ' + line; }).join('\n'));
@@ -67,16 +67,16 @@ exports.set_escape_func = function (escape) {
 };
 
 exports.process_fenced_code = function (content) {
-    var input = content.split('\n');
-    var output = [];
-    var handler_stack = [];
-    var consume_line;
+    const input = content.split('\n');
+    const output = [];
+    const handler_stack = [];
+    let consume_line;
 
     function handler_for_fence(output_lines, fence, lang) {
         // lang is ignored except for 'quote', as we
         // don't do syntax highlighting yet
         return (function () {
-            var lines = [];
+            const lines = [];
             if (lang === 'quote') {
                 return {
                     handle_line: function (line) {
@@ -88,7 +88,7 @@ exports.process_fenced_code = function (content) {
                     },
 
                     done: function () {
-                        var text = wrap_quote(lines.join('\n'));
+                        const text = wrap_quote(lines.join('\n'));
                         output_lines.push('');
                         output_lines.push(text);
                         output_lines.push('');
@@ -108,8 +108,8 @@ exports.process_fenced_code = function (content) {
                     },
 
                     done: function () {
-                        var text = wrap_tex(lines.join('\n'));
-                        var placeholder = stash_func(text, true);
+                        const text = wrap_tex(lines.join('\n'));
+                        const placeholder = stash_func(text, true);
                         output_lines.push('');
                         output_lines.push(placeholder);
                         output_lines.push('');
@@ -128,9 +128,9 @@ exports.process_fenced_code = function (content) {
                 },
 
                 done: function () {
-                    var text = wrap_code(lines.join('\n'));
+                    const text = wrap_code(lines.join('\n'));
                     // insert safe HTML that is passed through the parsing
-                    var placeholder = stash_func(text, true);
+                    const placeholder = stash_func(text, true);
                     output_lines.push('');
                     output_lines.push(placeholder);
                     output_lines.push('');
@@ -152,29 +152,29 @@ exports.process_fenced_code = function (content) {
     }
 
     consume_line = function consume_line(output_lines, line) {
-        var match = fence_re.exec(line);
+        const match = fence_re.exec(line);
         if (match) {
-            var fence = match[1];
-            var lang = match[3];
-            var handler = handler_for_fence(output_lines, fence, lang);
+            const fence = match[1];
+            const lang = match[3];
+            const handler = handler_for_fence(output_lines, fence, lang);
             handler_stack.push(handler);
         } else {
             output_lines.push(line);
         }
     };
 
-    var current_handler = default_hander();
+    const current_handler = default_hander();
     handler_stack.push(current_handler);
 
     _.each(input, function (line) {
-        var handler = handler_stack[handler_stack.length - 1];
+        const handler = handler_stack[handler_stack.length - 1];
         handler.handle_line(line);
     });
 
     // Clean up all trailing blocks by letting them
     // insert closing fences
     while (handler_stack.length !== 0) {
-        var handler = handler_stack[handler_stack.length - 1];
+        const handler = handler_stack[handler_stack.length - 1];
         handler.done();
     }
 

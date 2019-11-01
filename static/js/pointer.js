@@ -21,7 +21,7 @@ exports.set_server_furthest_read = function (value) {
     exports.server_furthest_read = value;
 };
 
-var pointer_update_in_flight = false;
+let pointer_update_in_flight = false;
 
 function update_pointer() {
     if (!pointer_update_in_flight) {
@@ -54,7 +54,7 @@ exports.send_pointer_update = function () {
 function unconditionally_send_pointer_update() {
     if (pointer_update_in_flight) {
         // Keep trying.
-        var deferred = $.Deferred();
+        const deferred = $.Deferred();
 
         setTimeout(function () {
             deferred.resolve(unconditionally_send_pointer_update());
@@ -105,7 +105,7 @@ exports.initialize = function initialize() {
         // if the selected message is local-only
         if (event.msg_list === home_msg_list && page_params.narrow_stream === undefined) {
             if (event.id > exports.furthest_read) {
-                var msg = home_msg_list.get(event.id);
+                const msg = home_msg_list.get(event.id);
                 if (!msg.locally_echoed) {
                     exports.furthest_read = event.id;
                 }
@@ -114,7 +114,7 @@ exports.initialize = function initialize() {
 
         if (event.mark_read && event.previously_selected !== -1) {
             // Mark messages between old pointer and new pointer as read
-            var messages;
+            let messages;
             if (event.id < event.previously_selected) {
                 messages = event.msg_list.message_range(event.id, event.previously_selected);
             } else {

@@ -48,12 +48,12 @@ run_test('basics', () => {
 
 
 run_test('timers', () => {
-    var events = {};
+    const events = {};
 
-    var stub_timer_id = 'timer_id_stub';
-    var stub_group = [5, 10, 15];
-    var stub_delay = 99;
-    var stub_f = 'function';
+    const stub_timer_id = 'timer_id_stub';
+    const stub_group = [5, 10, 15];
+    const stub_delay = 99;
+    const stub_f = 'function';
 
     function set_timeout(f, delay) {
         assert.equal(delay, stub_delay);

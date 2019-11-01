@@ -1,6 +1,6 @@
-var Dict = require('./dict').Dict;
+const Dict = require('./dict').Dict;
 
-var partners = new Dict();
+const partners = new Dict();
 
 exports.set_partner = function (user_id) {
     partners.set(user_id, true);
@@ -11,12 +11,12 @@ exports.is_partner = function (user_id) {
 };
 
 exports.recent = (function () {
-    var self = {};
-    var recent_timestamps = new Dict({fold_case: true}); // key is user_ids_string
-    var recent_private_messages = [];
+    const self = {};
+    const recent_timestamps = new Dict({fold_case: true}); // key is user_ids_string
+    const recent_private_messages = [];
 
     self.insert = function (user_ids_string, timestamp) {
-        var conversation = recent_timestamps.get(user_ids_string);
+        let conversation = recent_timestamps.get(user_ids_string);
 
         if (conversation === undefined) {
             // This is a new user, so create a new object.

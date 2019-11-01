@@ -3,7 +3,7 @@ function truncate_precision(float) {
 }
 
 exports.now = function () {
-    var timestamp = new XDate().getTime() / 1000;
+    const timestamp = new XDate().getTime() / 1000;
 
     return timestamp;
 };
@@ -17,16 +17,16 @@ exports.insert_message = function (message) {
 
 exports.get_next_id = (function () {
 
-    var already_used = {};
+    const already_used = {};
 
     return function () {
-        var local_id_increment = 0.01;
-        var latest = page_params.max_message_id;
+        const local_id_increment = 0.01;
+        let latest = page_params.max_message_id;
         if (typeof message_list.all !== 'undefined' && message_list.all.last() !== undefined) {
             latest = message_list.all.last().id;
         }
         latest = Math.max(0, latest);
-        var next_local_id = truncate_precision(latest + local_id_increment);
+        const next_local_id = truncate_precision(latest + local_id_increment);
 
         if (already_used[next_local_id]) {
             // If our id is already used, it is probably an edge case like we had

@@ -1,9 +1,9 @@
-var render_subscription_count = require("../templates/subscription_count.hbs");
-var render_subscription_setting_icon = require('../templates/subscription_setting_icon.hbs');
-var render_subscription_type = require('../templates/subscription_type.hbs');
+const render_subscription_count = require("../templates/subscription_count.hbs");
+const render_subscription_setting_icon = require('../templates/subscription_setting_icon.hbs');
+const render_subscription_type = require('../templates/subscription_type.hbs');
 
 exports.update_check_button_for_sub = function (sub) {
-    var button = subs.check_button_for_sub(sub);
+    const button = subs.check_button_for_sub(sub);
     if (sub.subscribed) {
         button.addClass("checked");
     } else {
@@ -43,14 +43,14 @@ exports.initialize_disable_btn_hint_popover = function (btn_wrapper, popover_btn
 };
 
 exports.initialize_cant_subscribe_popover = function (sub) {
-    var button_wrapper = stream_edit.settings_for_sub(sub).find('.sub_unsub_button_wrapper');
-    var settings_button = subs.settings_button_for_sub(sub);
+    const button_wrapper = stream_edit.settings_for_sub(sub).find('.sub_unsub_button_wrapper');
+    const settings_button = subs.settings_button_for_sub(sub);
     exports.initialize_disable_btn_hint_popover(button_wrapper, settings_button, settings_button,
                                                 i18n.t("Only stream members can add users to a private stream"));
 };
 
 exports.update_settings_button_for_sub = function (sub) {
-    var settings_button = subs.settings_button_for_sub(sub);
+    const settings_button = subs.settings_button_for_sub(sub);
     if (sub.subscribed) {
         settings_button.text(i18n.t("Unsubscribe")).removeClass("unsubscribed");
     } else {
@@ -71,7 +71,7 @@ exports.update_regular_sub_settings = function (sub) {
     if (!stream_edit.is_sub_settings_active(sub)) {
         return;
     }
-    var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
+    const $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
     if (sub.subscribed) {
         if ($settings.find(".email-address").val().length === 0) {
             // Rerender stream email address, if not.
@@ -87,7 +87,7 @@ exports.update_regular_sub_settings = function (sub) {
 };
 
 exports.update_change_stream_privacy_settings = function (sub) {
-    var stream_privacy_btn = $(".change-stream-privacy");
+    const stream_privacy_btn = $(".change-stream-privacy");
 
     if (sub.can_change_stream_permissions) {
         stream_privacy_btn.show();
@@ -103,7 +103,7 @@ exports.update_stream_row_in_settings_tab = function (sub) {
     // "Subscribed" tab, otherwise if stream is not public hide
     // stream row under tab.
     if (subs.is_subscribed_stream_tab_active()) {
-        var sub_row = subs.row_for_stream_id(sub.stream_id);
+        const sub_row = subs.row_for_stream_id(sub.stream_id);
         if (sub.subscribed) {
             sub_row.removeClass("notdisplayed");
         } else if (sub.invite_only || page_params.is_guest) {
@@ -113,15 +113,15 @@ exports.update_stream_row_in_settings_tab = function (sub) {
 };
 
 exports.update_stream_privacy_type_icon = function (sub) {
-    var stream_settings = stream_edit.settings_for_sub(sub);
-    var sub_row = subs.row_for_stream_id(sub.stream_id);
-    var html = render_subscription_setting_icon(sub);
+    const stream_settings = stream_edit.settings_for_sub(sub);
+    const sub_row = subs.row_for_stream_id(sub.stream_id);
+    const html = render_subscription_setting_icon(sub);
 
     if (overlays.streams_open()) {
         sub_row.find('.icon').expectOne().replaceWith($(html));
     }
     if (stream_edit.is_sub_settings_active(sub)) {
-        var large_icon = stream_settings.find('.large-icon').expectOne();
+        const large_icon = stream_settings.find('.large-icon').expectOne();
         if (sub.invite_only) {
             large_icon.removeClass("hash").addClass("lock")
                 .html("<i class='fa fa-lock' aria-hidden='true'></i>");
@@ -132,8 +132,8 @@ exports.update_stream_privacy_type_icon = function (sub) {
 };
 
 exports.update_stream_privacy_type_text = function (sub) {
-    var stream_settings = stream_edit.settings_for_sub(sub);
-    var html = render_subscription_type(sub);
+    const stream_settings = stream_edit.settings_for_sub(sub);
+    const html = render_subscription_type(sub);
     if (stream_edit.is_sub_settings_active(sub)) {
         stream_settings.find('.subscription-type-text').expectOne().html(html);
     }
@@ -144,9 +144,9 @@ exports.update_subscribers_count = function (sub, just_subscribed) {
         // If the streams overlay isn't open, we don't need to rerender anything.
         return;
     }
-    var stream_row = subs.row_for_stream_id(sub.stream_id);
+    const stream_row = subs.row_for_stream_id(sub.stream_id);
     if (!sub.can_access_subscribers || just_subscribed && sub.invite_only || page_params.is_guest) {
-        var rendered_sub_count = render_subscription_count(sub);
+        const rendered_sub_count = render_subscription_count(sub);
         stream_row.find('.subscriber-count').expectOne().html(rendered_sub_count);
     } else {
         stream_row.find(".subscriber-count-text").expectOne().text(sub.subscriber_count);
@@ -162,8 +162,8 @@ exports.update_subscribers_list = function (sub) {
     if (!sub.can_access_subscribers) {
         $(".subscriber_list_settings_container").hide();
     } else {
-        var emails = stream_edit.get_email_of_subscribers(sub.subscribers);
-        var subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
+        const emails = stream_edit.get_email_of_subscribers(sub.subscribers);
+        const subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
 
         // Changing the data clears the rendered list and the list needs to be re-rendered.
         // Perform re-rendering only when the stream settings form of the corresponding
@@ -190,9 +190,9 @@ exports.update_add_subscriptions_elements = function (sub) {
 
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add subscribers.
-    var input_element = $('.add_subscribers_container').find('input[name="principal"]').expectOne();
-    var button_element = $('.add_subscribers_container').find('button[name="add_subscriber"]').expectOne();
-    var allow_user_to_add_subs = sub.can_add_subscribers;
+    const input_element = $('.add_subscribers_container').find('input[name="principal"]').expectOne();
+    const button_element = $('.add_subscribers_container').find('button[name="add_subscriber"]').expectOne();
+    const allow_user_to_add_subs = sub.can_add_subscribers;
 
     if (allow_user_to_add_subs) {
         input_element.removeAttr("disabled");

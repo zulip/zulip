@@ -4,7 +4,7 @@ set_global('page_params', {});
 zrequire('user_groups');
 
 run_test('user_groups', () => {
-    var students = {
+    const students = {
         name: 'Students',
         id: 0,
         members: [1, 2],
@@ -14,13 +14,13 @@ run_test('user_groups', () => {
     user_groups.initialize();
     assert.equal(user_groups.get_user_group_from_id(students.id), students);
 
-    var admins = {
+    const admins = {
         name: 'Admins',
         description: 'foo',
         id: 1,
         members: [3],
     };
-    var all = {
+    const all = {
         name: 'Everyone',
         id: 2,
         members: [1, 2, 3],
@@ -29,7 +29,7 @@ run_test('user_groups', () => {
     user_groups.add(admins);
     assert.equal(user_groups.get_user_group_from_id(admins.id), admins);
 
-    var update_name_event = {
+    const update_name_event = {
         group_id: admins.id,
         data: {
             name: "new admins",
@@ -38,7 +38,7 @@ run_test('user_groups', () => {
     user_groups.update(update_name_event);
     assert.equal(user_groups.get_user_group_from_id(admins.id).name, "new admins");
 
-    var update_des_event = {
+    const update_des_event = {
         group_id: admins.id,
         data: {
             description: "administer",
@@ -63,7 +63,7 @@ run_test('user_groups', () => {
     assert.equal(user_groups.get_user_group_from_name(admins.name).id, 1);
 
     user_groups.add(all);
-    var user_groups_array = user_groups.get_realm_user_groups();
+    const user_groups_array = user_groups.get_realm_user_groups();
     assert.equal(user_groups_array.length, 2);
     assert.equal(user_groups_array[1].name, 'Everyone');
     assert.equal(user_groups_array[0].name, 'new admins');
@@ -80,7 +80,7 @@ run_test('user_groups', () => {
                      Dict.from_array([2, 3, 5]));
 
     assert(user_groups.is_user_group(admins));
-    var object = {
+    const object = {
         name: 'core',
         id: 3,
     };

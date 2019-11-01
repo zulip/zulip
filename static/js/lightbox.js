@@ -1,20 +1,20 @@
-var is_open = false;
+let is_open = false;
 // the asset map is a map of all retrieved images and YouTube videos that are
 // memoized instead of being looked up multiple times.
-var asset_map = {
+const asset_map = {
 
 };
 
 function render_lightbox_list_images(preview_source) {
     if (!is_open) {
-        var images = Array.prototype.slice.call($(".focused_table .message_inline_image img"));
-        var $image_list = $("#lightbox_overlay .image-list").html("");
+        const images = Array.prototype.slice.call($(".focused_table .message_inline_image img"));
+        const $image_list = $("#lightbox_overlay .image-list").html("");
 
         images.forEach(function (img) {
-            var src = img.getAttribute("src");
-            var className = preview_source === src ? "image selected" : "image";
+            const src = img.getAttribute("src");
+            const className = preview_source === src ? "image selected" : "image";
 
-            var node = $("<div></div>", {
+            const node = $("<div></div>", {
                 class: className,
                 "data-src": src,
             }).css({ backgroundImage: "url(" + src + ")"});
@@ -31,14 +31,14 @@ function display_image(payload, options) {
     $(".image-actions, .image-description, .download, .lightbox-canvas-trigger").show();
 
     if (options.lightbox_canvas === true) {
-        var canvas = document.createElement("canvas");
+        const canvas = document.createElement("canvas");
         canvas.setAttribute("data-src", payload.source);
 
         $("#lightbox_overlay .image-preview").html(canvas).show();
-        var photo = new LightboxCanvas(canvas);
+        const photo = new LightboxCanvas(canvas);
         photo.speed(2.3);
     } else {
-        var img = new Image();
+        const img = new Image();
         img.src = payload.source;
 
         $("#lightbox_overlay .image-preview").html(img).show();
@@ -55,14 +55,14 @@ function display_video(payload) {
 
     $("#lightbox_overlay .image-preview, .image-description, .download, .lightbox-canvas-trigger").hide();
 
-    var source;
+    let source;
     if (payload.type === "youtube-video") {
         source = "https://www.youtube.com/embed/" + payload.source;
     } else if (payload.type === "vimeo-video") {
         source = "https://player.vimeo.com/video/" + payload.source;
     }
 
-    var iframe = $("<iframe></iframe>");
+    let iframe = $("<iframe></iframe>");
     iframe.attr("src", source);
     iframe.attr("frameborder", 0);
     iframe.attr("allowfullscreen", true);
@@ -87,28 +87,28 @@ exports.open = function (image, options) {
         };
     }
 
-    var $image = $(image);
+    const $image = $(image);
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
-    var is_youtube_video = !!$image.closest(".youtube-video").length;
-    var is_vimeo_video = !!$image.closest(".vimeo-video").length;
-    var is_embed_video = !!$image.closest(".embed-video").length;
+    const is_youtube_video = !!$image.closest(".youtube-video").length;
+    const is_vimeo_video = !!$image.closest(".vimeo-video").length;
+    const is_embed_video = !!$image.closest(".embed-video").length;
 
     // check if image is descendent of #preview_content
-    var is_compose_preview_image = $image.closest("#preview_content").length === 1;
-    var payload;
+    const is_compose_preview_image = $image.closest("#preview_content").length === 1;
+    let payload;
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
-    var $image_source = $image.attr("data-src-fullsize") || $image.attr("src");
+    const $image_source = $image.attr("data-src-fullsize") || $image.attr("src");
     if (asset_map[$image_source]) {
         payload = asset_map[$image_source];
     // otherwise retrieve the metadata from the DOM and store into the asset_map.
     } else {
-        var $parent = $image.parent();
-        var $type;
-        var $source;
-        var $url = $parent.attr("href");
+        const $parent = $image.parent();
+        let $type;
+        let $source;
+        const $url = $parent.attr("href");
         if (is_youtube_video) {
             $type = "youtube-video";
             $source = $parent.attr("data-id");
@@ -127,12 +127,12 @@ exports.open = function (image, options) {
                 $source = $image.attr("src");
             }
         }
-        var sender_full_name;
+        let sender_full_name;
         if (is_compose_preview_image) {
             sender_full_name = people.my_full_name();
         } else {
-            var $message = $parent.closest("[zid]");
-            var message = message_store.get($message.attr("zid"));
+            const $message = $parent.closest("[zid]");
+            const message = message_store.get($message.attr("zid"));
             if (message === undefined) {
                 blueslip.error("Lightbox for unknown message " + $message.attr("zid"));
             }
@@ -177,10 +177,10 @@ exports.open = function (image, options) {
 };
 
 exports.show_from_selected_message = function () {
-    var $message_selected = $(".selected_message");
-    var $message = $message_selected;
-    var $image = $message.find(".message_inline_image img");
-    var $prev_traverse = false;
+    const $message_selected = $(".selected_message");
+    let $message = $message_selected;
+    let $image = $message.find(".message_inline_image img");
+    let $prev_traverse = false;
 
     while ($image.length === 0) {
         if ($message.prev().length === 0) {
@@ -234,7 +234,7 @@ exports.initialize = function () {
         e.preventDefault();
         // prevent the message compose dialog from happening.
         e.stopPropagation();
-        var $img = $(this).find("img");
+        const $img = $(this).find("img");
         exports.open($img);
     });
 
@@ -243,17 +243,17 @@ exports.initialize = function () {
     });
 
     $("#lightbox_overlay").on("click", ".image-list .image", function () {
-        var $image_list = $(this).parent();
-        var original_image = $(".message_row img[src='" + $(this).attr('data-src') + "']");
+        const $image_list = $(this).parent();
+        const original_image = $(".message_row img[src='" + $(this).attr('data-src') + "']");
 
         exports.open(original_image);
 
         $(".image-list .image.selected").removeClass("selected");
         $(this).addClass("selected");
 
-        var parentOffset = this.parentNode.clientWidth + this.parentNode.scrollLeft;
+        const parentOffset = this.parentNode.clientWidth + this.parentNode.scrollLeft;
         // this is the left and right of the image compared to its parent.
-        var coords = {
+        const coords = {
             left: this.offsetLeft,
             right: this.offsetLeft + this.clientWidth,
         };
@@ -270,7 +270,7 @@ exports.initialize = function () {
     });
 
     $("#lightbox_overlay").on("click", ".center .arrow", function () {
-        var direction = $(this).attr("data-direction");
+        const direction = $(this).attr("data-direction");
 
         if (direction === 'next') {
             exports.next();
@@ -280,7 +280,7 @@ exports.initialize = function () {
     });
 
     $("#lightbox_overlay").on("click", ".lightbox-canvas-trigger", function () {
-        var $img = $("#lightbox_overlay").find(".image-preview img");
+        let $img = $("#lightbox_overlay").find(".image-preview img");
 
         if ($img.length) {
             $(this).addClass("enabled");

@@ -7,24 +7,24 @@ zrequire('user_pill');
 set_global('page_params', {
 });
 
-var alice = {
+const alice = {
     email: 'alice@example.com',
     user_id: 99,
     full_name: 'Alice Barson',
 };
 
-var isaac = {
+const isaac = {
     email: 'isaac@example.com',
     user_id: 102,
     full_name: 'Isaac Newton',
 };
 
-var bogus_item = {
+const bogus_item = {
     email: 'bogus@example.com',
     display_value: 'bogus@example.com',
 };
 
-var isaac_item = {
+const isaac_item = {
     email: 'isaac@example.com',
     display_value: 'Isaac Newton',
     user_id: isaac.user_id,
@@ -39,7 +39,7 @@ run_test('setup', () => {
 run_test('create_item', () => {
 
     function test_create_item(email, current_items, expected_item) {
-        var item = user_pill.create_item_from_email(email, current_items);
+        const item = user_pill.create_item_from_email(email, current_items);
         assert.deepEqual(item, expected_item);
     }
 
@@ -63,8 +63,8 @@ run_test('get_email', () => {
 });
 
 run_test('append', () => {
-    var appended;
-    var cleared;
+    let appended;
+    let cleared;
 
     function fake_append(opts) {
         appended = true;
@@ -78,7 +78,7 @@ run_test('append', () => {
         cleared = true;
     }
 
-    var pill_widget = {
+    const pill_widget = {
         appendValidatedData: fake_append,
         clear_text: fake_clear,
     };
@@ -93,9 +93,9 @@ run_test('append', () => {
 });
 
 run_test('get_items', () => {
-    var items = [isaac_item, bogus_item];
+    const items = [isaac_item, bogus_item];
 
-    var pill_widget = {
+    const pill_widget = {
         items: function () { return items; },
     };
 
@@ -103,15 +103,15 @@ run_test('get_items', () => {
 });
 
 run_test('typeahead', () => {
-    var items = [isaac_item, bogus_item];
+    const items = [isaac_item, bogus_item];
 
-    var pill_widget = {
+    const pill_widget = {
         items: function () { return items; },
     };
 
     // Both alice and isaac are in our realm, but isaac will be
     // excluded by virtue of already being one of the widget items.
     // And then bogus_item is just a red herring to test robustness.
-    var result = user_pill.typeahead_source(pill_widget);
+    const result = user_pill.typeahead_source(pill_widget);
     assert.deepEqual(result, [alice]);
 });

@@ -1,6 +1,6 @@
-var Dict = require('./dict').Dict;
+const Dict = require('./dict').Dict;
 
-var current_filter;
+let current_filter;
 
 exports.reset_current_filter = function () {
     current_filter = undefined;
@@ -55,10 +55,10 @@ exports.search_string = function () {
 // Collect operators which appear only once into an object,
 // and discard those which appear more than once.
 function collect_single(operators) {
-    var seen   = new Dict();
-    var result = new Dict();
+    const seen   = new Dict();
+    const result = new Dict();
     _.each(operators, function (elem) {
-        var key = elem.operator;
+        const key = elem.operator;
         if (seen.has(key)) {
             result.del(key);
         } else {
@@ -76,8 +76,8 @@ function collect_single(operators) {
 // it will get more complicated as we add things to the narrow
 // operator language.
 exports.set_compose_defaults = function () {
-    var opts = {};
-    var single = collect_single(exports.operators());
+    const opts = {};
+    const single = collect_single(exports.operators());
 
     // Set the stream, topic, and/or PM recipient if they are
     // uniquely specified in the narrow view.
@@ -91,7 +91,7 @@ exports.set_compose_defaults = function () {
     }
 
     if (single.has('pm-with')) {
-        var private_message_recipient = single.get('pm-with');
+        const private_message_recipient = single.get('pm-with');
         if (people.is_valid_bulk_emails_for_compose(private_message_recipient.split(','))) {
             opts.private_message_recipient = private_message_recipient;
         }
@@ -103,9 +103,9 @@ exports.stream = function () {
     if (current_filter === undefined) {
         return;
     }
-    var stream_operands = current_filter.operands("stream");
+    const stream_operands = current_filter.operands("stream");
     if (stream_operands.length === 1) {
-        var name = stream_operands[0];
+        const name = stream_operands[0];
 
         // Use get_name() to get the most current stream
         // name (considering renames and capitalization).
@@ -118,19 +118,19 @@ exports.stream_sub = function () {
     if (current_filter === undefined) {
         return;
     }
-    var stream_operands = current_filter.operands("stream");
+    const stream_operands = current_filter.operands("stream");
     if (stream_operands.length !== 1) {
         return;
     }
 
-    var name = stream_operands[0];
-    var sub = stream_data.get_sub_by_name(name);
+    const name = stream_operands[0];
+    const sub = stream_data.get_sub_by_name(name);
 
     return sub;
 };
 
 exports.stream_id = function () {
-    var sub = exports.stream_sub();
+    const sub = exports.stream_sub();
 
     if (!sub) {
         return;
@@ -143,7 +143,7 @@ exports.topic = function () {
     if (current_filter === undefined) {
         return;
     }
-    var operands = current_filter.operands("topic");
+    const operands = current_filter.operands("topic");
     if (operands.length === 1) {
         return operands[0];
     }
@@ -158,18 +158,18 @@ exports.pm_string = function () {
         return;
     }
 
-    var operands = current_filter.operands("pm-with");
+    const operands = current_filter.operands("pm-with");
     if (operands.length !== 1) {
         return;
     }
 
-    var emails_string = operands[0];
+    const emails_string = operands[0];
 
     if (!emails_string) {
         return;
     }
 
-    var user_ids_string = people.reply_to_to_user_ids_string(emails_string);
+    const user_ids_string = people.reply_to_to_user_ids_string(emails_string);
 
     return user_ids_string;
 };
@@ -193,7 +193,7 @@ exports.get_first_unread_info = function () {
         };
     }
 
-    var unread_ids = exports._possible_unread_message_ids();
+    const unread_ids = exports._possible_unread_message_ids();
 
     if (unread_ids === undefined) {
         // _possible_unread_message_ids() only works for certain narrows
@@ -202,7 +202,7 @@ exports.get_first_unread_info = function () {
         };
     }
 
-    var msg_id = current_filter.first_valid_id_from(unread_ids);
+    const msg_id = current_filter.first_valid_id_from(unread_ids);
 
     if (msg_id === undefined) {
         return {
@@ -229,9 +229,9 @@ exports._possible_unread_message_ids = function () {
         return;
     }
 
-    var stream_id;
-    var topic_name;
-    var pm_string;
+    let stream_id;
+    let topic_name;
+    let pm_string;
 
     if (current_filter.can_bucket_by('stream', 'topic')) {
         stream_id = exports.stream_id();
@@ -296,7 +296,7 @@ exports.narrowed_by_pm_reply = function () {
     if (current_filter === undefined) {
         return false;
     }
-    var operators = current_filter.operators();
+    const operators = current_filter.operators();
     return operators.length === 1 &&
             current_filter.has_operator('pm-with');
 };
@@ -305,7 +305,7 @@ exports.narrowed_by_topic_reply = function () {
     if (current_filter === undefined) {
         return false;
     }
-    var operators = current_filter.operators();
+    const operators = current_filter.operators();
     return operators.length === 2 &&
             current_filter.operands("stream").length === 1 &&
             current_filter.operands("topic").length === 1;
@@ -322,7 +322,7 @@ exports.narrowed_by_stream_reply = function () {
     if (current_filter === undefined) {
         return false;
     }
-    var operators = current_filter.operators();
+    const operators = current_filter.operators();
     return operators.length === 1 &&
             current_filter.operands("stream").length === 1;
 };
@@ -348,7 +348,7 @@ exports.is_for_stream_id = function (stream_id) {
     // This is not perfect, since we still track narrows by
     // name, not id, but at least the interface is good going
     // forward.
-    var narrow_stream_id = exports.stream_id();
+    const narrow_stream_id = exports.stream_id();
 
     if (narrow_stream_id === undefined) {
         return false;

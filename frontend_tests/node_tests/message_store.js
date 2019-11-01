@@ -3,8 +3,8 @@ zrequire('util');
 zrequire('people');
 zrequire('message_store');
 
-var noop = function () {};
-var people = global.people;
+const noop = function () {};
+const people = global.people;
 
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
@@ -28,25 +28,25 @@ set_global('page_params', {
 
 set_global('blueslip', global.make_zblueslip());
 
-var me = {
+const me = {
     email: 'me@example.com',
     user_id: 101,
     full_name: 'Me Myself',
 };
 
-var alice = {
+const alice = {
     email: 'alice@example.com',
     user_id: 102,
     full_name: 'Alice',
 };
 
-var bob = {
+const bob = {
     email: 'bob@example.com',
     user_id: 103,
     full_name: 'Bob',
 };
 
-var cindy = {
+const cindy = {
     email: 'cindy@example.com',
     user_id: 104,
     full_name: 'Cindy',
@@ -60,7 +60,7 @@ people.add_in_realm(cindy);
 global.people.initialize_current_user(me.user_id);
 
 run_test('add_message_metadata', () => {
-    var message = {
+    let message = {
         sender_email: 'me@example.com',
         sender_id: me.user_id,
         type: 'private',
@@ -79,7 +79,7 @@ run_test('add_message_metadata', () => {
     assert.equal(message.alerted, true);
     assert.equal(message.is_me_message, false);
 
-    var retrieved_message = message_store.get(2067);
+    const retrieved_message = message_store.get(2067);
     assert.equal(retrieved_message, message);
 
     // access cached previous message, and test match subject/content
@@ -155,7 +155,7 @@ run_test('message_booleans_parity', () => {
 
 run_test('errors', () => {
     // Test a user that doesn't exist
-    var message = {
+    let message = {
         type: 'private',
         display_recipient: [{user_id: 92714}],
     };
@@ -165,11 +165,11 @@ run_test('errors', () => {
 
     // Expect each to throw two blueslip errors
     // One from message_store.js, one from person.js
-    var emails = message_store.get_pm_emails(message);
+    const emails = message_store.get_pm_emails(message);
     assert.equal(emails, '?');
     assert.equal(blueslip.get_test_logs('error').length, 2);
 
-    var names = message_store.get_pm_full_names(message);
+    const names = message_store.get_pm_full_names(message);
     assert.equal(names, '?');
     assert.equal(blueslip.get_test_logs('error').length, 4);
 
@@ -181,7 +181,7 @@ run_test('errors', () => {
     };
 
     // This should early return and not run pm_conversation.set_partner
-    var num_partner = 0;
+    let num_partner = 0;
     set_global('pm_conversation', {
         set_partner: function () {
             num_partner += 1;
@@ -192,14 +192,14 @@ run_test('errors', () => {
 });
 
 run_test('update_booleans', () => {
-    var message = {};
+    const message = {};
 
     // First, test fields that we do actually want to update.
     message.mentioned = false;
     message.mentioned_me_directly = false;
     message.alerted = false;
 
-    var flags = ['mentioned', 'has_alert_word', 'read'];
+    let flags = ['mentioned', 'has_alert_word', 'read'];
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, true);
     assert.equal(message.mentioned_me_directly, true);
@@ -235,7 +235,7 @@ run_test('each', () => {
 });
 
 run_test('message_id_change', () => {
-    var message = {
+    const message = {
         sender_email: 'me@example.com',
         sender_id: me.user_id,
         type: 'private',
@@ -253,7 +253,7 @@ run_test('message_id_change', () => {
     set_global('message_list', {});
     set_global('home_msg_list', {});
 
-    var opts = {
+    const opts = {
         old_id: 401,
         new_id: 402,
     };
@@ -261,7 +261,7 @@ run_test('message_id_change', () => {
     global.with_stub(function (stub) {
         home_msg_list.change_message_id = stub.f;
         message_store.reify_message_id(opts);
-        var msg_id = stub.get_args('old', 'new');
+        const msg_id = stub.get_args('old', 'new');
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
     });
@@ -270,7 +270,7 @@ run_test('message_id_change', () => {
     global.with_stub(function (stub) {
         home_msg_list.view.change_message_id = stub.f;
         message_store.reify_message_id(opts);
-        var msg_id = stub.get_args('old', 'new');
+        const msg_id = stub.get_args('old', 'new');
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
     });

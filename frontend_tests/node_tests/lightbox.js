@@ -19,9 +19,9 @@ set_global('$', global.make_zjquery());
 run_test('pan_and_zoom', () => {
     $.clear_all_elements();
 
-    var img = '<img src="./image.png" data-src-fullsize="./original.png">';
-    var link = '<a href="https://zulip.com"></a>';
-    var msg = '<div [zid]></div>';
+    const img = '<img src="./image.png" data-src-fullsize="./original.png">';
+    const link = '<a href="https://zulip.com"></a>';
+    const msg = '<div [zid]></div>';
     $(img).set_parent($(link));
     $(link).set_parent($(msg));
 
@@ -37,13 +37,13 @@ run_test('pan_and_zoom', () => {
 run_test('open_url', () => {
     $.clear_all_elements();
 
-    var url = 'https://youtube.com/1234';
-    var img = '<img></img>';
+    const url = 'https://youtube.com/1234';
+    const img = '<img></img>';
     $(img).attr('src', "https://youtube.com/image.png");
-    var link = '<a></a>';
+    const link = '<a></a>';
     $(link).attr('href', url);
-    var div = '<div class="youtube-video"></div>';
-    var msg = '<div [zid]></div>';
+    const div = '<div class="youtube-video"></div>';
+    const msg = '<div [zid]></div>';
     $(img).set_parent($(link));
     $(link).set_parent($(div));
     $(div).set_parent($(msg));

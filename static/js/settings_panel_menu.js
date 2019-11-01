@@ -1,13 +1,13 @@
 exports.make_menu = function (opts) {
-    var main_elem = opts.main_elem;
-    var hash_prefix = opts.hash_prefix;
-    var curr_li = main_elem.children('li').eq(0);
+    const main_elem = opts.main_elem;
+    const hash_prefix = opts.hash_prefix;
+    let curr_li = main_elem.children('li').eq(0);
 
-    var self = {};
+    const self = {};
 
     self.show = function () {
         main_elem.show();
-        var section = self.current_tab();
+        const section = self.current_tab();
         self.activate_section(section);
         curr_li.focus();
     };
@@ -21,7 +21,7 @@ exports.make_menu = function (opts) {
     };
 
     self.li_for_section = function (section) {
-        var li = $("#settings_overlay_container li[data-section='" + section + "']");
+        const li = $("#settings_overlay_container li[data-section='" + section + "']");
         return li;
     };
 
@@ -49,9 +49,9 @@ exports.make_menu = function (opts) {
     };
 
     self.enter_panel = function () {
-        var panel = self.get_panel();
-        var sel = 'input:visible,button:visible,select:visible';
-        var panel_elem = panel.find(sel).first();
+        const panel = self.get_panel();
+        const sel = 'input:visible,button:visible,select:visible';
+        const panel_elem = panel.find(sel).first();
 
         panel_elem.focus();
         return true;
@@ -64,7 +64,7 @@ exports.make_menu = function (opts) {
         curr_li.addClass("active");
         curr_li.prev().addClass("no-border");
 
-        var settings_section_hash = '#' + hash_prefix + section;
+        const settings_section_hash = '#' + hash_prefix + section;
         hashchange.update_browser_history(settings_section_hash);
 
         $(".settings-section, .settings-wrapper").removeClass("show");
@@ -75,7 +75,7 @@ exports.make_menu = function (opts) {
 
         ui.reset_scrollbar($("#settings_content"));
 
-        var $settings_overlay_container = $("#settings_overlay_container");
+        const $settings_overlay_container = $("#settings_overlay_container");
         $settings_overlay_container.find(".right").addClass("show");
         $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
 
@@ -83,14 +83,14 @@ exports.make_menu = function (opts) {
     };
 
     self.get_panel = function () {
-        var section = curr_li.data('section');
-        var sel = "[data-name='" + section + "']";
-        var panel = $(".settings-section" + sel + ", .settings-wrapper" + sel);
+        const section = curr_li.data('section');
+        const sel = "[data-name='" + section + "']";
+        const panel = $(".settings-section" + sel + ", .settings-wrapper" + sel);
         return panel;
     };
 
     main_elem.on("click", "li[data-section]", function (e) {
-        var section = $(this).attr('data-section');
+        const section = $(this).attr('data-section');
 
         self.activate_section(section);
 

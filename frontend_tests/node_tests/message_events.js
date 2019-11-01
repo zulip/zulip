@@ -70,7 +70,7 @@ run_test('update_messages', () => {
     };
     current_msg_list.view = {};
 
-    var rendered_mgs;
+    let rendered_mgs;
 
     current_msg_list.view.rerender_messages = (msgs_to_rerender, message_content_edited) => {
         rendered_mgs = msgs_to_rerender;

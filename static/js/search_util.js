@@ -1,5 +1,5 @@
 exports.get_search_terms = function (input) {
-    var search_terms = input.toLowerCase().split(",").map(function (s) {
+    const search_terms = input.toLowerCase().split(",").map(function (s) {
         return s.trim();
     });
     return search_terms;
@@ -16,7 +16,7 @@ exports.vanilla_match = function (opts) {
 
         This is case insensitive.
     */
-    var val = opts.val.toLowerCase();
+    const val = opts.val.toLowerCase();
     return _.any(opts.search_terms, function (term) {
         if (val.indexOf(term) !== -1) {
             return true;

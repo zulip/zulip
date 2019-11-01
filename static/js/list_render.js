@@ -1,4 +1,4 @@
-var DEFAULTS = {
+const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
     LOAD_COUNT: 20,
     instances: {},
@@ -25,7 +25,7 @@ exports.create = function ($container, list, opts) {
             .init();
     }
 
-    var meta = {
+    const meta = {
         sorting_function: null,
         prop: null,
         sorting_functions: {},
@@ -68,16 +68,16 @@ exports.create = function ($container, list, opts) {
                 return;
             }
 
-            var slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
+            const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
-            var html = _.reduce(slice, function (acc, item) {
-                var _item = opts.modifier(item);
+            const html = _.reduce(slice, function (acc, item) {
+                let _item = opts.modifier(item);
 
                 // if valid jQuery selection, attempt to grab all elements within
                 // and string them together into a giant outerHTML fragment.
                 if (_item.constructor === jQuery) {
                     _item = (function ($nodes) {
-                        var html = "";
+                        let html = "";
                         $nodes.each(function () {
                             if (this.nodeType === 1) {
                                 html += this.outerHTML;
@@ -131,7 +131,7 @@ exports.create = function ($container, list, opts) {
                 meta.list = data;
 
                 if (opts.filter && opts.filter.element) {
-                    var value = $(opts.filter.element).val().toLocaleLowerCase();
+                    const value = $(opts.filter.element).val().toLocaleLowerCase();
                     meta.filter_list(value, opts.filter.callback);
                 }
 
@@ -236,7 +236,7 @@ exports.create = function ($container, list, opts) {
         // this sets the events given the particular arguments assigned in
         // the container and opts.
         __set_events: function () {
-            var $nearestScrollingContainer = $container;
+            let $nearestScrollingContainer = $container;
             while ($nearestScrollingContainer.length) {
                 if ($nearestScrollingContainer.is("body, html")) {
                     blueslip.warn("Please wrap progressive scrolling lists in an element with 'max-height' attribute. Error found in:\n" + blueslip.preview_node($container));
@@ -260,8 +260,8 @@ exports.create = function ($container, list, opts) {
 
             if (opts.filter.element) {
                 opts.filter.element.on(opts.filter.event || "input", function () {
-                    var self = this;
-                    var value = self.value.toLocaleLowerCase();
+                    const self = this;
+                    const value = self.value.toLocaleLowerCase();
 
                     // run the sort algorithm that was used last, which is done
                     // by passing `undefined` -- which will make it use the params
@@ -292,8 +292,8 @@ exports.create = function ($container, list, opts) {
     prototype.add_generic_sort_function("alphabetic", function (prop) {
         return function (a, b) {
             // The conversion to uppercase helps make the sorting case insensitive.
-            var str1 = a[prop].toUpperCase();
-            var str2 = b[prop].toUpperCase();
+            const str1 = a[prop].toUpperCase();
+            const str2 = b[prop].toUpperCase();
 
             if (str1 === str2) {
                 return 0;
@@ -352,12 +352,12 @@ exports.handle_sort = function () {
             </table>
         </div>
         */
-    var $this = $(this);
-    var sort_type = $this.data("sort");
-    var prop_name = $this.data("sort-prop");
-    var list_name = $this.closest(".progressive-table-wrapper").data("list-render");
+    const $this = $(this);
+    const sort_type = $this.data("sort");
+    const prop_name = $this.data("sort-prop");
+    const list_name = $this.closest(".progressive-table-wrapper").data("list-render");
 
-    var list = exports.get(list_name);
+    const list = exports.get(list_name);
 
     if (!list) {
         blueslip.error("Error. This `.progressive-table-wrapper` has no `data-list-render` attribute.");

@@ -1,4 +1,4 @@
-var render_input_pill = require('../templates/input_pill.hbs');
+const render_input_pill = require('../templates/input_pill.hbs');
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 exports.random_id = function () {
@@ -8,7 +8,7 @@ exports.random_id = function () {
 exports.create = function (opts) {
     // a dictionary of the key codes that are associated with each key
     // to make if/else more human readable.
-    var KEY = {
+    const KEY = {
         ENTER: 13,
         BACKSPACE: 8,
         LEFT_ARROW: 37,
@@ -33,7 +33,7 @@ exports.create = function (opts) {
 
     // a stateful object of this `pill_container` instance.
     // all unique instance information is stored in here.
-    var store = {
+    const store = {
         pills: [],
         $parent: opts.container,
         $input: opts.container.find(".input").expectOne(),
@@ -68,8 +68,8 @@ exports.create = function (opts) {
         },
 
         create_item: function (text) {
-            var existing_items = funcs.items();
-            var item = store.create_item_from_text(text, existing_items);
+            const existing_items = funcs.items();
+            const item = store.create_item_from_text(text, existing_items);
 
             if (!item || !item.display_value) {
                 store.$input.addClass("shake");
@@ -86,23 +86,23 @@ exports.create = function (opts) {
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
         appendValidatedData: function (item) {
-            var id = exports.random_id();
+            const id = exports.random_id();
 
             if (!item.display_value) {
                 blueslip.error('no display_value returned');
                 return;
             }
 
-            var payload = {
+            const payload = {
                 id: id,
                 item: item,
             };
 
             store.pills.push(payload);
 
-            var has_image = item.img_src !== undefined;
+            const has_image = item.img_src !== undefined;
 
-            var opts = {
+            const opts = {
                 id: payload.id,
                 display_value: item.display_value,
                 has_image: has_image,
@@ -112,7 +112,7 @@ exports.create = function (opts) {
                 opts.img_src = item.img_src;
             }
 
-            var pill_html = render_input_pill(opts);
+            const pill_html = render_input_pill(opts);
             payload.$element = $(pill_html);
             store.$input.before(payload.$element);
         },
@@ -128,7 +128,7 @@ exports.create = function (opts) {
                 return false;
             }
 
-            var payload = this.create_item(value);
+            const payload = this.create_item(value);
             // if the pill object is undefined, then it means the pill was
             // rejected so we should return out of this.
             if (!payload) {
@@ -143,8 +143,8 @@ exports.create = function (opts) {
         // this would generally be used for DOM-provoked actions, such as a user
         // clicking on a pill to remove it.
         removePill: function (id) {
-            var idx;
-            for (var x = 0; x < store.pills.length; x += 1) {
+            let idx;
+            for (let x = 0; x < store.pills.length; x += 1) {
                 if (store.pills[x].id === id) {
                     idx = x;
                 }
@@ -152,7 +152,7 @@ exports.create = function (opts) {
 
             if (typeof idx === "number") {
                 store.pills[idx].$element.remove();
-                var pill = store.pills.splice(idx, 1);
+                const pill = store.pills.splice(idx, 1);
                 if (typeof store.removePillFunction === "function") {
                     store.removePillFunction(pill);
                 }
@@ -167,7 +167,7 @@ exports.create = function (opts) {
         // pill will not be evaluated. This is useful when using clear to reset
         // the pills.
         removeLastPill: function (quiet) {
-            var pill = store.pills.pop();
+            const pill = store.pills.pop();
 
             if (pill) {
                 pill.$element.remove();
@@ -194,7 +194,7 @@ exports.create = function (opts) {
 
             // this is an array to push all the errored values to, so it's drafts
             // of pills for the user to fix.
-            var drafts = [];
+            const drafts = [];
 
             pills.forEach(function (pill) {
                 // if this returns `false`, it erroed and we should push it to
@@ -231,7 +231,7 @@ exports.create = function (opts) {
 
     (function events() {
         store.$parent.on("keydown", ".input", function (e) {
-            var char = e.keyCode || e.charCode;
+            const char = e.keyCode || e.charCode;
 
             if (char === KEY.ENTER) {
                 // regardless of the value of the input, the ENTER keyword
@@ -241,10 +241,10 @@ exports.create = function (opts) {
 
                 // if there is input, grab the input, make a pill from it,
                 // and append the pill, then clear the input.
-                var value = funcs.value(e.target);
+                const value = funcs.value(e.target);
                 if (value.length > 0) {
                     // append the pill and by proxy create the pill object.
-                    var ret = funcs.appendPill(value);
+                    const ret = funcs.appendPill(value);
 
                     // if the pill to append was rejected, no need to clear the
                     // input; it may have just been a typo or something close but
@@ -297,17 +297,17 @@ exports.create = function (opts) {
         // handle events while hovering on ".pill" elements.
         // the three primary events are next, previous, and delete.
         store.$parent.on("keydown", ".pill", function (e) {
-            var char = e.keyCode || e.charCode;
+            const char = e.keyCode || e.charCode;
 
-            var $pill = store.$parent.find(".pill:focus");
+            const $pill = store.$parent.find(".pill:focus");
 
             if (char === KEY.LEFT_ARROW) {
                 $pill.prev().focus();
             } else if (char === KEY.RIGHT_ARROW) {
                 $pill.next().focus();
             } else if (char === KEY.BACKSPACE) {
-                var $next = $pill.next();
-                var id = $pill.data("id");
+                const $next = $pill.next();
+                const id = $pill.data("id");
                 funcs.removePill(id);
                 $next.focus();
                 // the "backspace" key in FireFox will go back a page if you do
@@ -328,7 +328,7 @@ exports.create = function (opts) {
             e.preventDefault();
 
             // get text representation of clipboard
-            var text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            const text = (e.originalEvent || e).clipboardData.getData('text/plain');
 
             // insert text manually
             document.execCommand("insertText", false, text);
@@ -340,9 +340,9 @@ exports.create = function (opts) {
         // select the next pill (or input).
         store.$parent.on("click", ".exit", function (e) {
             e.stopPropagation();
-            var $pill = $(this).closest(".pill");
-            var $next = $pill.next();
-            var id = $pill.data("id");
+            const $pill = $(this).closest(".pill");
+            const $next = $pill.next();
+            const id = $pill.data("id");
 
             funcs.removePill(id);
             $next.focus();
@@ -355,15 +355,15 @@ exports.create = function (opts) {
         });
 
         store.$parent.on("copy", ".pill", function (e) {
-            var id = store.$parent.find(":focus").data("id");
-            var data = funcs.getByID(id);
+            const id = store.$parent.find(":focus").data("id");
+            const data = funcs.getByID(id);
             e.originalEvent.clipboardData.setData("text/plain", store.get_text_from_item(data.item));
             e.preventDefault();
         });
     }());
 
     // the external, user-accessible prototype.
-    var prototype = {
+    const prototype = {
         appendValue: funcs.appendPill.bind(funcs),
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 

@@ -1,20 +1,20 @@
-var render_settings_upload_space_stats = require("../templates/settings/upload_space_stats.hbs");
-var render_uploaded_files_list = require("../templates/uploaded_files_list.hbs");
+const render_settings_upload_space_stats = require("../templates/settings/upload_space_stats.hbs");
+const render_uploaded_files_list = require("../templates/uploaded_files_list.hbs");
 
-var attachments;
-var upload_space_used;
+let attachments;
+let upload_space_used;
 
 exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
     if (kb_with_1024_bytes === undefined) {
         kb_with_1024_bytes = false;
     }
-    var kb_size = kb_with_1024_bytes ? 1024 : 1000;
-    var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const kb_size = kb_with_1024_bytes ? 1024 : 1000;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (bytes === 0) {
         return '0 B';
     }
-    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
-    var size = Math.round(bytes / Math.pow(kb_size, i));
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
+    let size = Math.round(bytes / Math.pow(kb_size, i));
     if (i > 0 && size < 10) {
         size = Math.round(bytes / Math.pow(kb_size, i) * 10) / 10;
     }
@@ -32,17 +32,17 @@ function set_upload_space_stats() {
     if (page_params.realm_upload_quota === null) {
         return;
     }
-    var args = {
+    const args = {
         show_upgrade_message: page_params.realm_plan_type === 2,
         percent_used: exports.percentage_used_space(upload_space_used),
         upload_quota: exports.bytes_to_size(page_params.realm_upload_quota, true),
     };
-    var rendered_upload_stats_html = render_settings_upload_space_stats(args);
+    const rendered_upload_stats_html = render_settings_upload_space_stats(args);
     $("#attachment-stats-holder").html(rendered_upload_stats_html);
 }
 
 function delete_attachments(attachment) {
-    var status = $('#delete-upload-status');
+    const status = $('#delete-upload-status');
     channel.del({
         url: '/json/attachments/' + attachment,
         idempotent: true,
@@ -58,10 +58,10 @@ function delete_attachments(attachment) {
 function render_attachments_ui() {
     set_upload_space_stats();
 
-    var uploaded_files_table = $("#uploaded_files_table").expectOne();
-    var $search_input = $("#upload_file_search");
+    const uploaded_files_table = $("#uploaded_files_table").expectOne();
+    const $search_input = $("#upload_file_search");
 
-    var list = list_render.create(uploaded_files_table, attachments, {
+    const list = list_render.create(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         modifier: function (attachment) {
             return render_uploaded_files_list({ attachment: attachment });
@@ -81,8 +81,8 @@ function render_attachments_ui() {
     list.sort('numeric', 'create_time');
 
     list.add_sort_function("mentioned-in", function (a, b) {
-        var a_m = a.messages[0];
-        var b_m = b.messages[0];
+        const a_m = a.messages[0];
+        const b_m = b.messages[0];
 
         if (!a_m) { return 1; }
         if (!b_m) { return -1; }
@@ -101,7 +101,7 @@ function render_attachments_ui() {
 
 function format_attachment_data(new_attachments) {
     _.each(new_attachments, function (attachment) {
-        var time = new XDate(attachment.create_time);
+        const time = new XDate(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
         attachment.size_str = exports.bytes_to_size(attachment.size);
     });
@@ -130,7 +130,7 @@ exports.update_attachments = function (event) {
 exports.set_up_attachments = function () {
     // The settings page must be rendered before this function gets called.
 
-    var status = $('#delete-upload-status');
+    const status = $('#delete-upload-status');
     loading.make_indicator($('#attachments_loading_indicator'), {text: 'Loading...'});
 
     $('#uploaded_files_table').on('click', '.remove-attachment', function (e) {

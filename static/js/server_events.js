@@ -1,13 +1,13 @@
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
-var waiting_on_homeview_load = true;
+let waiting_on_homeview_load = true;
 
-var events_stored_while_loading = [];
+let events_stored_while_loading = [];
 
-var get_events_xhr;
-var get_events_timeout;
-var get_events_failures = 0;
-var get_events_params = {};
+let get_events_xhr;
+let get_events_timeout;
+let get_events_failures = 0;
+const get_events_params = {};
 
 // This field keeps track of whether we are attempting to
 // force-reconnect to the events server due to suspecting we are
@@ -16,12 +16,12 @@ var get_events_params = {};
 exports.suspect_offline = false;
 
 function get_events_success(events) {
-    var messages = [];
-    var update_message_events = [];
-    var post_message_events = [];
-    var new_pointer;
+    let messages = [];
+    const update_message_events = [];
+    const post_message_events = [];
+    let new_pointer;
 
-    var clean_event = function clean_event(event) {
+    const clean_event = function clean_event(event) {
         // Only log a whitelist of the event to remove private data
         return _.pick(event, 'id', 'type', 'op');
     };
@@ -51,10 +51,10 @@ function get_events_success(events) {
     // called in the default case.  The goal of this split is to avoid
     // contributors needing to read or understand the complex and
     // rarely modified logic for non-normal events.
-    var dispatch_event = function dispatch_event(event) {
+    const dispatch_event = function dispatch_event(event) {
         switch (event.type) {
         case 'message': {
-            var msg = event.message;
+            const msg = event.message;
             msg.flags = event.flags;
             if (event.local_message_id) {
                 msg.local_id = event.local_message_id;
@@ -103,9 +103,9 @@ function get_events_success(events) {
             messages = echo.process_from_server(messages);
             if (messages.length > 0) {
                 _.each(messages, message_store.set_message_booleans);
-                var sent_by_this_client = false;
+                let sent_by_this_client = false;
                 _.each(messages, function (msg) {
-                    var msg_state = sent_messages.messages[msg.local_id];
+                    const msg_state = sent_messages.messages[msg.local_id];
                     if (msg_state) {
                         // Almost every time, this message will be the
                         // only one in messages, because multiple messages
@@ -257,7 +257,7 @@ function get_events(options) {
                                undefined,
                                ex.stack);
             }
-            var retry_sec = Math.min(90, Math.exp(get_events_failures / 2));
+            const retry_sec = Math.min(90, Math.exp(get_events_failures / 2));
             get_events_timeout = setTimeout(get_events, retry_sec * 1000);
         },
     });
@@ -285,9 +285,9 @@ exports.home_view_loaded = function home_view_loaded() {
 };
 
 
-var watchdog_time = $.now();
+let watchdog_time = $.now();
 exports.check_for_unsuspend = function () {
-    var new_time = $.now();
+    const new_time = $.now();
     if (new_time - watchdog_time > 20000) { // 20 seconds.
         // Defensively reset watchdog_time here in case there's an
         // exception in one of the event handlers

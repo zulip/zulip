@@ -6,13 +6,13 @@ exports.reset_id_state = function () {
 
 exports.get_new_local_id = function () {
     exports.next_local_id += 1;
-    var local_id = exports.next_local_id;
+    const local_id = exports.next_local_id;
     return 'loc-' + local_id.toString();
 };
 
 function report_send_time(send_time, receive_time,
                           locally_echoed, rendered_changed) {
-    var data = {
+    const data = {
         time: send_time.toString(),
         received: receive_time.toString(),
         locally_echoed: locally_echoed,
@@ -29,7 +29,7 @@ function report_send_time(send_time, receive_time,
 }
 
 exports.start_tracking_message = function (opts) {
-    var local_id = opts.local_id;
+    const local_id = opts.local_id;
 
     if (!opts.local_id) {
         blueslip.error('You must supply a local_id');
@@ -41,13 +41,13 @@ exports.start_tracking_message = function (opts) {
         return;
     }
 
-    var state = exports.message_state(opts);
+    const state = exports.message_state(opts);
 
     exports.messages[local_id] = state;
 };
 
 exports.message_state = function (opts) {
-    var self = {};
+    const self = {};
     self.data = {};
 
     self.data.start = new Date();
@@ -84,7 +84,7 @@ exports.message_state = function (opts) {
         if (!self.ready()) {
             return;
         }
-        var data = self.data;
+        const data = self.data;
         report_send_time(data.send_finished - data.start,
                          data.received - data.start,
                          data.locally_echoed,
@@ -123,7 +123,7 @@ exports.message_state = function (opts) {
 };
 
 exports.get_message_state = function (local_id) {
-    var state = exports.messages[local_id];
+    const state = exports.messages[local_id];
 
     if (!state) {
         blueslip.warn('Unknown local_id: ' + local_id);
@@ -134,7 +134,7 @@ exports.get_message_state = function (local_id) {
 
 
 exports.mark_disparity = function (local_id) {
-    var state = exports.get_message_state(local_id);
+    const state = exports.get_message_state(local_id);
     if (!state) {
         return;
     }
@@ -142,7 +142,7 @@ exports.mark_disparity = function (local_id) {
 };
 
 exports.report_event_received = function (local_id) {
-    var state = exports.get_message_state(local_id);
+    const state = exports.get_message_state(local_id);
     if (!state) {
         return;
     }
@@ -151,7 +151,7 @@ exports.report_event_received = function (local_id) {
 };
 
 exports.start_resend = function (local_id) {
-    var state = exports.get_message_state(local_id);
+    const state = exports.get_message_state(local_id);
     if (!state) {
         return;
     }
@@ -160,7 +160,7 @@ exports.start_resend = function (local_id) {
 };
 
 exports.report_server_ack = function (local_id) {
-    var state = exports.get_message_state(local_id);
+    const state = exports.get_message_state(local_id);
     if (!state) {
         return;
     }

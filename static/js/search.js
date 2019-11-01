@@ -2,7 +2,7 @@
 exports.is_using_input_method = false;
 
 function narrow_or_search_for_term(search_string) {
-    var search_query_box = $("#search_query");
+    const search_query_box = $("#search_query");
     if (exports.is_using_input_method) {
         // Neither narrow nor search when using input tools as
         // `updater` is also triggered when 'enter' is triggered
@@ -11,15 +11,15 @@ function narrow_or_search_for_term(search_string) {
     }
     ui_util.change_tab_to('#home');
 
-    var operators;
+    let operators;
     if (page_params.search_pills_enabled) {
         // search_string only contains the suggestion selected
         // from the typeahead. base_query stores the query
         // corresponding to the existing pills.
-        var base_query = search_pill.get_search_string_for_current_filter(
+        const base_query = search_pill.get_search_string_for_current_filter(
             search_pill_widget.widget);
-        var base_operators = Filter.parse(base_query);
-        var suggestion_operator = Filter.parse(search_string);
+        const base_operators = Filter.parse(base_query);
+        const suggestion_operator = Filter.parse(search_string);
         operators = base_operators.concat(suggestion_operator);
     } else {
         operators = Filter.parse(search_string);
@@ -37,7 +37,7 @@ function narrow_or_search_for_term(search_string) {
 }
 
 function update_buttons_with_focus(focused) {
-    var search_query_box = $('#search_query');
+    const search_query_box = $('#search_query');
 
     // Show buttons iff the search input is focused, or has non-empty contents,
     // or we are narrowed.
@@ -55,22 +55,22 @@ exports.update_button_visibility = function () {
 };
 
 exports.initialize = function () {
-    var search_query_box = $('#search_query');
-    var searchbox_form = $('#searchbox_form');
-    var searchbox = $('#searchbox');
+    const search_query_box = $('#search_query');
+    const searchbox_form = $('#searchbox_form');
+    const searchbox = $('#searchbox');
 
     // Data storage for the typeahead.
     // This maps a search string to an object with a "description" field.
     // (It's a bit of legacy that we have an object with only one important
     // field.  There's also a "search_string" field on each element that actually
     // just represents the key of the hash, so it's redundant.)
-    var search_object = {};
+    let search_object = {};
 
     search_query_box.typeahead({
         source: function (query) {
-            var suggestions;
+            let suggestions;
             if (page_params.search_pills_enabled) {
-                var base_query = search_pill.get_search_string_for_current_filter(
+                const base_query = search_pill.get_search_string_for_current_filter(
                     search_pill_widget.widget);
                 suggestions = search_suggestion.get_suggestions(base_query, query);
             } else {
@@ -85,7 +85,7 @@ exports.initialize = function () {
         helpOnEmptyStrings: true,
         naturalSearch: true,
         highlighter: function (item) {
-            var obj = search_object[item];
+            const obj = search_object[item];
             return obj.description;
         },
         matcher: function () {
@@ -100,7 +100,7 @@ exports.initialize = function () {
             // pills at the time for calling that function would also
             // have the newly selected suggestion, and appending it again
             // would cause duplication.
-            var result = narrow_or_search_for_term(search_string);
+            const result = narrow_or_search_for_term(search_string);
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string,
                                                  search_pill_widget.widget);
@@ -127,7 +127,7 @@ exports.initialize = function () {
 
     searchbox_form.keydown(function (e) {
         exports.update_button_visibility();
-        var code = e.which;
+        const code = e.which;
         if (code === 13 && search_query_box.is(":focus")) {
             // Don't submit the form so that the typeahead can instead
             // handle our Enter keypress. Any searching that needs
@@ -139,7 +139,7 @@ exports.initialize = function () {
             exports.is_using_input_method = false;
             return;
         }
-        var code = e.which;
+        const code = e.which;
         if (code === 13 && search_query_box.is(":focus")) {
             // We just pressed enter and the box had focus, which
             // means we didn't use the typeahead at all.  In that
@@ -176,7 +176,7 @@ exports.initialize = function () {
         // really it would be OK if they did).
 
         setTimeout(function () {
-            var search_string = narrow_state.search_string();
+            const search_string = narrow_state.search_string();
             search_query_box.val(search_string);
             exports.update_button_visibility();
         }, 100);

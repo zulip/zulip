@@ -1,6 +1,6 @@
-var FetchStatus = zrequire('fetch_status');
+const FetchStatus = zrequire('fetch_status');
 
-var fetch_status = FetchStatus();
+let fetch_status = FetchStatus();
 
 function reset() {
     fetch_status = FetchStatus();
@@ -49,7 +49,7 @@ run_test('basics', () => {
     can_load_history();
     has_not_found_newest();
 
-    var data = {
+    let data = {
         found_oldest: true,
         found_newest: true,
         history_limited: true,

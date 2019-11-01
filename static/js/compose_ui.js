@@ -1,4 +1,4 @@
-var autosize = require('autosize');
+const autosize = require('autosize');
 
 exports.autosize_textarea = function () {
     autosize.update($("#compose-textarea"));
@@ -9,9 +9,9 @@ exports.smart_insert = function (textarea, syntax) {
         return c === ' ' || c === '\t' || c === '\n';
     }
 
-    var pos = textarea.caret();
-    var before_str = textarea.val().slice(0, pos);
-    var after_str = textarea.val().slice(pos);
+    const pos = textarea.caret();
+    const before_str = textarea.val().slice(0, pos);
+    const after_str = textarea.val().slice(pos);
 
     if (pos > 0) {
         // If there isn't space either at the end of the content
@@ -91,16 +91,16 @@ exports.compute_placeholder_text = function (opts) {
 
     // For Private Messages
     if (opts.private_message_recipient) {
-        var recipient_list = opts.private_message_recipient.split(",");
-        var recipient_names = _.map(recipient_list, (recipient) => {
-            var user = people.get_by_email(recipient);
+        const recipient_list = opts.private_message_recipient.split(",");
+        const recipient_names = _.map(recipient_list, (recipient) => {
+            const user = people.get_by_email(recipient);
             return user.full_name;
         }).join(", ");
 
         if (recipient_list.length === 1) {
             // If it's a single user, display status text if available
-            var user = people.get_by_email(recipient_list[0]);
-            var status = user_status.get_status_text(user.user_id);
+            const user = people.get_by_email(recipient_list[0]);
+            const status = user_status.get_status_text(user.user_id);
             if (status) {
                 return i18n.t("Message __- recipient_name__ (__- recipient_status__)",
                               {recipient_name: recipient_names,

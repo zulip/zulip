@@ -1,5 +1,5 @@
 exports.initialize_pill = function () {
-    var container = $("#private_message_recipient").parent();
+    const container = $("#private_message_recipient").parent();
 
     const pill = input_pill.create({
         container: container,
@@ -41,16 +41,16 @@ exports.has_unconverted_data = function () {
 };
 
 exports.get_user_ids_string = function () {
-    var user_ids = exports.get_user_ids();
-    var sorted_user_ids = util.sorted_ids(user_ids);
-    var user_ids_string = sorted_user_ids.join(',');
+    const user_ids = exports.get_user_ids();
+    const sorted_user_ids = util.sorted_ids(user_ids);
+    const user_ids_string = sorted_user_ids.join(',');
     return user_ids_string;
 };
 
 exports.get_emails = function () {
     // return something like "alice@example.com,bob@example.com"
-    var user_ids = exports.get_user_ids();
-    var emails = user_ids.map(function (id) {
+    const user_ids = exports.get_user_ids();
+    const emails = user_ids.map(function (id) {
         return people.get_person_from_user_id(id).email;
     }).join(",");
     return emails;

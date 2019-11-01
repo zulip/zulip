@@ -25,7 +25,7 @@ exports.process_read_messages_event = function (message_ids) {
         actually read locally (and which we may not have even
         loaded locally).
     */
-    var options = {from: 'server'};
+    const options = {from: 'server'};
 
     message_ids = unread.get_unread_message_ids(message_ids);
     if (message_ids.length === 0) {
@@ -41,7 +41,7 @@ exports.process_read_messages_event = function (message_ids) {
 
         unread.mark_as_read(message_id);
 
-        var message = message_store.get(message_id);
+        const message = message_store.get(message_id);
 
         if (message) {
             process_newly_read_message(message, options);

@@ -7,81 +7,81 @@ zrequire('XDate', 'xdate');
 zrequire('timerender');
 
 run_test('render_now_returns_today', () => {
-    var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    var expected = {
+    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const expected = {
         time_str: i18n.t('Today'),
         formal_time_str: 'Friday, April 12, 2019',
         needs_update: true,
     };
-    var actual = timerender.render_now(today, today);
+    const actual = timerender.render_now(today, today);
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
 });
 
 run_test('render_now_returns_yesterday', () => {
-    var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    var yesterday = today.clone().addDays(-1);
-    var expected = {
+    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const yesterday = today.clone().addDays(-1);
+    const expected = {
         time_str: i18n.t('Yesterday'),
         formal_time_str: 'Thursday, April 11, 2019',
         needs_update: true,
     };
-    var actual = timerender.render_now(yesterday, today);
+    const actual = timerender.render_now(yesterday, today);
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
 });
 
 run_test('render_now_returns_year', () => {
-    var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    var year_ago = today.clone().addYears(-1);
-    var expected = {
+    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const year_ago = today.clone().addYears(-1);
+    const expected = {
         time_str: 'Apr 12, 2018',
         formal_time_str: 'Thursday, April 12, 2018',
         needs_update: false,
     };
-    var actual = timerender.render_now(year_ago, today);
+    const actual = timerender.render_now(year_ago, today);
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
 });
 
 run_test('render_now_returns_month_and_day', () => {
-    var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    var three_months_ago = today.clone().addMonths(-3, true);
-    var expected = {
+    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const three_months_ago = today.clone().addMonths(-3, true);
+    const expected = {
         time_str: 'Jan 12',
         formal_time_str: 'Saturday, January 12, 2019',
         needs_update: false,
     };
-    var actual = timerender.render_now(three_months_ago, today);
+    const actual = timerender.render_now(three_months_ago, today);
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
 });
 
 run_test('render_now_returns_year_with_year_boundary', () => {
-    var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    var three_months_ago = today.clone().addMonths(-6, true);
-    var expected = {
+    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const three_months_ago = today.clone().addMonths(-6, true);
+    const expected = {
         time_str: 'Oct 12, 2018',
         formal_time_str: 'Friday, October 12, 2018',
         needs_update: false,
     };
-    var actual = timerender.render_now(three_months_ago, today);
+    const actual = timerender.render_now(three_months_ago, today);
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
 });
 
 run_test('render_date_renders_time_html', () => {
-    var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    var message_time  = today.clone();
-    var expected_html = i18n.t('Today');
+    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const message_time  = today.clone();
+    const expected_html = i18n.t('Today');
 
-    var attrs = new Dict();
-    var span_stub = $('<span />');
+    const attrs = new Dict();
+    const span_stub = $('<span />');
 
     span_stub.attr = function (name, val) {
         attrs.set(name, val);
@@ -93,26 +93,26 @@ run_test('render_date_renders_time_html', () => {
         return span_stub;
     };
 
-    var actual = timerender.render_date(message_time, undefined, today);
+    const actual = timerender.render_date(message_time, undefined, today);
     assert.equal(expected_html, actual.html());
     assert.equal(attrs.get('title'), 'Friday, April 12, 2019');
     assert.equal(attrs.get('class'), 'timerender0');
 });
 
 run_test('render_date_renders_time_above_html', () => {
-    var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    var message_time = today.clone();
-    var message_time_above = today.clone().addDays(-1);
+    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const message_time = today.clone();
+    const message_time_above = today.clone().addDays(-1);
 
-    var span_stub = $('<span />');
+    const span_stub = $('<span />');
 
-    var appended_val;
+    let appended_val;
     span_stub.append = function (val) {
         appended_val = val;
         return span_stub;
     };
 
-    var expected = [
+    const expected = [
         '<i class="date-direction fa fa-caret-up"></i>',
         i18n.t('Yesterday'),
         '<hr class="date-line">',
@@ -125,9 +125,9 @@ run_test('render_date_renders_time_above_html', () => {
 });
 
 run_test('get_full_time', () => {
-    var timestamp = 1495091573; // 5/18/2017 7:12:53 AM (UTC+0)
-    var expected = '2017-05-18T07:12:53Z'; // ISO 8601 date format
-    var actual = timerender.get_full_time(timestamp);
+    const timestamp = 1495091573; // 5/18/2017 7:12:53 AM (UTC+0)
+    const expected = '2017-05-18T07:12:53Z'; // ISO 8601 date format
+    const actual = timerender.get_full_time(timestamp);
     assert.equal(expected, actual);
 });
 
@@ -137,10 +137,10 @@ run_test('absolute_time_12_hour', () => {
     });
 
     // timestamp with hour > 12, same year
-    var timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
-    var today = new Date(timestamp);
-    var expected = 'Apr 12 05:52 PM';
-    var actual = timerender.absolute_time(timestamp, today);
+    let timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
+    let today = new Date(timestamp);
+    let expected = 'Apr 12 05:52 PM';
+    let actual = timerender.absolute_time(timestamp, today);
     assert.equal(expected, actual);
 
     // timestamp with hour > 12, different year
@@ -169,10 +169,10 @@ run_test('absolute_time_24_hour', () => {
     });
 
     // timestamp with hour > 12, same year
-    var timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
-    var today = new Date(timestamp);
-    var expected = 'Apr 12 17:52';
-    var actual = timerender.absolute_time(timestamp, today);
+    let timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
+    let today = new Date(timestamp);
+    let expected = 'Apr 12 17:52';
+    let actual = timerender.absolute_time(timestamp, today);
     assert.equal(expected, actual);
 
     // timestamp with hour > 12, different year
@@ -196,11 +196,11 @@ run_test('absolute_time_24_hour', () => {
 });
 
 run_test('set_full_datetime', () => {
-    var message = {
+    const message = {
         timestamp: 1495091573, // 2017/5/18 7:12:53 AM (UTC+0)
     };
-    var time_element = $('<span/>');
-    var attrs = new Dict();
+    const time_element = $('<span/>');
+    const attrs = new Dict();
 
     time_element.attr = function (name, val) {
         attrs.set(name, val);
@@ -209,21 +209,21 @@ run_test('set_full_datetime', () => {
 
     // The formatting of the string time.toLocale(Date|Time)String() on Node
     // might differ from the browser.
-    var time = new Date(message.timestamp * 1000);
-    var expected = `${time.toLocaleDateString()} 7:12:53 AM (UTC+0)`;
+    const time = new Date(message.timestamp * 1000);
+    const expected = `${time.toLocaleDateString()} 7:12:53 AM (UTC+0)`;
     timerender.set_full_datetime(message, time_element);
-    var actual = attrs.get('title');
+    const actual = attrs.get('title');
     assert.equal(expected, actual);
 });
 
 run_test('last_seen_status_from_date', () => {
     // Set base_dateto to March 1 2016 12.30 AM (months are zero based)
-    var base_date = new XDate(2016, 2, 1, 0, 30);
+    let base_date = new XDate(2016, 2, 1, 0, 30);
 
     function assert_same(modifier, expected_status) {
-        var past_date = base_date.clone();
+        let past_date = base_date.clone();
         past_date = modifier(past_date);
-        var actual_status = timerender.last_seen_status_from_date(past_date, base_date);
+        const actual_status = timerender.last_seen_status_from_date(past_date, base_date);
         assert.equal(actual_status, expected_status);
     }
 
@@ -275,9 +275,9 @@ run_test('last_seen_status_from_date', () => {
 });
 
 run_test('set_full_datetime', () => {
-    var time = new XDate(1549958107000); // Tuesday 2/12/2019 07:55:07 AM (UTC+0)
-    var time_str = timerender.stringify_time(time);
-    var expected = '07:55';
+    let time = new XDate(1549958107000); // Tuesday 2/12/2019 07:55:07 AM (UTC+0)
+    let time_str = timerender.stringify_time(time);
+    let expected = '07:55';
     assert.equal(expected, time_str);
 
     page_params.twenty_four_hour_time = false;

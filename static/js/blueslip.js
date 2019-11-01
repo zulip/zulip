@@ -4,7 +4,7 @@
 // in order to be able to report exceptions that occur during their
 // execution.
 
-var blueslip_stacktrace = require("./blueslip_stacktrace");
+const blueslip_stacktrace = require("./blueslip_stacktrace");
 
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
@@ -16,7 +16,7 @@ function Logger() {
 
 Logger.prototype = (function () {
     function pad(num, width) {
-        var ret = num.toString();
+        let ret = num.toString();
         while (ret.length < width) {
             ret = "0" + ret;
         }
@@ -25,8 +25,8 @@ Logger.prototype = (function () {
 
     function make_logger_func(name) {
         return function Logger_func() {
-            var now = new Date();
-            var date_str =
+            const now = new Date();
+            const date_str =
                 now.getUTCFullYear() + '-' +
                 pad(now.getUTCMonth() + 1, 2) + '-' +
                 pad(now.getUTCDate(), 2) + ' ' +
@@ -35,14 +35,14 @@ Logger.prototype = (function () {
                 pad(now.getUTCSeconds(), 2) + '.' +
                 pad(now.getUTCMilliseconds(), 3) + ' UTC';
 
-            var str_args = _.map(arguments, function (x) {
+            const str_args = _.map(arguments, function (x) {
                 if (typeof x === 'object') {
                     return JSON.stringify(x);
                 }
                 return x;
             });
 
-            var log_entry = date_str + " " + name.toUpperCase() +
+            const log_entry = date_str + " " + name.toUpperCase() +
                 ': ' + str_args.join("");
             this._memory_log.push(log_entry);
 
@@ -58,14 +58,14 @@ Logger.prototype = (function () {
         };
     }
 
-    var proto = {
+    const proto = {
         get_log: function Logger_get_log() {
             return this._memory_log;
         },
     };
 
-    var methods = ['debug', 'log', 'info', 'warn', 'error'];
-    var i;
+    const methods = ['debug', 'log', 'info', 'warn', 'error'];
+    let i;
     for (i = 0; i < methods.length; i += 1) {
         proto[methods[i]] = make_logger_func(methods[i]);
     }
@@ -73,14 +73,14 @@ Logger.prototype = (function () {
     return proto;
 }());
 
-var logger = new Logger();
+const logger = new Logger();
 
 exports.get_log = function blueslip_get_log() {
     return logger.get_log();
 };
 
-var reported_errors = {};
-var last_report_attempt = {};
+const reported_errors = {};
+const last_report_attempt = {};
 
 function report_error(msg, stack, opts) {
     opts = _.extend({show_ui_msg: false}, opts);
@@ -95,7 +95,7 @@ function report_error(msg, stack, opts) {
         blueslip_stacktrace.display_stacktrace(msg, stack);
     }
 
-    var key = ':' + msg + stack;
+    const key = ':' + msg + stack;
     if (reported_errors.hasOwnProperty(key)
         || last_report_attempt.hasOwnProperty(key)
             // Only try to report a given error once every 5 minutes
@@ -174,11 +174,11 @@ function report_error(msg, stack, opts) {
 function BlueslipError(msg, more_info) {
     // One can't subclass Error normally so we have to play games
     // with setting __proto__
-    var self = new Error(msg);
+    const self = new Error(msg);
     self.name = "BlueslipError";
 
     // Indirect access to __proto__ keeps jslint quiet
-    var proto = '__proto__';
+    const proto = '__proto__';
     self[proto] = BlueslipError.prototype;
 
     if (more_info !== undefined) {
@@ -190,7 +190,7 @@ function BlueslipError(msg, more_info) {
 BlueslipError.prototype = Object.create(Error.prototype);
 
 exports.exception_msg = function blueslip_exception_msg(ex) {
-    var message = ex.message;
+    let message = ex.message;
     if (ex.hasOwnProperty('fileName')) {
         message += " at " + ex.fileName;
         if (ex.hasOwnProperty('lineNumber')) {
@@ -201,16 +201,16 @@ exports.exception_msg = function blueslip_exception_msg(ex) {
 };
 
 $(window).on('error', function (event) {
-    var ex = event.originalEvent.error;
+    const ex = event.originalEvent.error;
     if (!ex || ex instanceof BlueslipError) {
         return;
     }
-    var message = exports.exception_msg(ex);
+    const message = exports.exception_msg(ex);
     report_error(message, ex.stack);
 });
 
 function build_arg_list(msg, more_info) {
-    var args = [msg];
+    const args = [msg];
     if (more_info !== undefined) {
         args.push("\nAdditional information: ", more_info);
     }
@@ -218,22 +218,22 @@ function build_arg_list(msg, more_info) {
 }
 
 exports.debug = function blueslip_debug(msg, more_info) {
-    var args = build_arg_list(msg, more_info);
+    const args = build_arg_list(msg, more_info);
     logger.debug.apply(logger, args);
 };
 
 exports.log = function blueslip_log(msg, more_info) {
-    var args = build_arg_list(msg, more_info);
+    const args = build_arg_list(msg, more_info);
     logger.log.apply(logger, args);
 };
 
 exports.info = function blueslip_info(msg, more_info) {
-    var args = build_arg_list(msg, more_info);
+    const args = build_arg_list(msg, more_info);
     logger.info.apply(logger, args);
 };
 
 exports.warn = function blueslip_warn(msg, more_info) {
-    var args = build_arg_list(msg, more_info);
+    const args = build_arg_list(msg, more_info);
     logger.warn.apply(logger, args);
     if (page_params.debug_mode) {
         console.trace();
@@ -244,7 +244,7 @@ exports.error = function blueslip_error(msg, more_info, stack) {
     if (stack === undefined) {
         stack = Error().stack;
     }
-    var args = build_arg_list(msg, more_info);
+    const args = build_arg_list(msg, more_info);
     logger.error.apply(logger, args);
     report_error(msg, stack, {more_info: more_info});
 
@@ -267,11 +267,11 @@ exports.preview_node = function (node) {
         node = node[0];
     }
 
-    var tag = node.tagName.toLowerCase();
-    var className = node.className.length ? node.className : false;
-    var id = node.id.length ? node.id : false;
+    const tag = node.tagName.toLowerCase();
+    const className = node.className.length ? node.className : false;
+    const id = node.id.length ? node.id : false;
 
-    var node_preview = "<" + tag +
+    const node_preview = "<" + tag +
        (id ? " id='" + id + "'" : "") +
        (className ? " class='" + className + "'" : "") +
        "></" + tag + ">";

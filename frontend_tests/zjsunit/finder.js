@@ -1,10 +1,10 @@
-var _ = require('underscore/underscore.js');
-var fs = require('fs');
-var path = require('path');
+const _ = require('underscore/underscore.js');
+const fs = require('fs');
+const path = require('path');
 
 exports.find_files_to_run = function () {
-    var oneFileFilter = [];
-    var testsDifference = [];
+    let oneFileFilter = [];
+    let testsDifference = [];
     if (process.argv[2]) {
         oneFileFilter = process.argv
             .slice(2)
@@ -14,9 +14,9 @@ exports.find_files_to_run = function () {
 
     // tests_dir is where we find our specific unit tests (as opposed
     // to framework code)
-    var tests_dir = __dirname.replace(/zjsunit/, 'node_tests');
+    const tests_dir = __dirname.replace(/zjsunit/, 'node_tests');
 
-    var tests = fs.readdirSync(tests_dir)
+    let tests = fs.readdirSync(tests_dir)
         .filter(function (filename) {return !(/^\./i).test(filename);})
         .filter(function (filename) {return (/\.js$/i).test(filename);})
         .map(function (filename) {return filename.replace(/\.js$/i, '');});
@@ -34,8 +34,8 @@ exports.find_files_to_run = function () {
 
     tests.sort();
 
-    var files = tests.map(function (fn) {
-        var obj = {};
+    const files = tests.map(function (fn) {
+        const obj = {};
         obj.name = fn;
         obj.full_name = path.join(tests_dir, fn);
         return obj;

@@ -1,22 +1,22 @@
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
-var waiting_for_id = {};
-var waiting_for_ack = {};
+const waiting_for_id = {};
+let waiting_for_ack = {};
 
 function resend_message(message, row) {
     message.content = message.raw_content;
-    var retry_spinner = row.find('.refresh-failed-message');
+    const retry_spinner = row.find('.refresh-failed-message');
     retry_spinner.toggleClass('rotating', true);
 
     // Always re-set queue_id if we've gotten a new one
     // since the time when the message object was initially created
     message.queue_id = page_params.queue_id;
 
-    var local_id = message.local_id;
+    const local_id = message.local_id;
 
     function on_success(data) {
-        var message_id = data.id;
-        var locally_echoed = true;
+        const message_id = data.id;
+        const locally_echoed = true;
 
         retry_spinner.toggleClass('rotating', false);
 
@@ -43,7 +43,7 @@ function insert_local_message(message_request, local_id) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
-    var message = $.extend({}, message_request);
+    const message = $.extend({}, message_request);
 
     // Locally delivered messages cannot be unread (since we sent them), nor
     // can they alert the user.
@@ -74,10 +74,10 @@ function insert_local_message(message_request, local_id) {
         // recipient.  Note that it's important that use
         // util.extract_pm_recipients, which filters out any spurious
         // ", " at the end of the recipient list
-        var emails = util.extract_pm_recipients(message_request.private_message_recipient);
+        const emails = util.extract_pm_recipients(message_request.private_message_recipient);
         message.display_recipient = _.map(emails, function (email) {
             email = email.trim();
-            var person = people.get_by_email(email);
+            const person = people.get_by_email(email);
             if (person === undefined) {
                 // For unknown users, we return a skeleton object.
                 return {
@@ -124,7 +124,7 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
         return;
     }
 
-    var next_local_id = local_message.get_next_id();
+    const next_local_id = local_message.get_next_id();
 
     if (!next_local_id) {
         // This can happen for legit reasons.
@@ -135,7 +135,7 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
 };
 
 exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
-    var message_content_edited = raw_content !== undefined && message.raw_content !== raw_content;
+    const message_content_edited = raw_content !== undefined && message.raw_content !== raw_content;
 
     if (new_topic !== undefined) {
         topic_data.remove_message({
@@ -168,7 +168,7 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
 };
 
 exports.reify_message_id = function reify_message_id(local_id, server_id) {
-    var message = waiting_for_id[local_id];
+    const message = waiting_for_id[local_id];
     delete waiting_for_id[local_id];
 
     // reify_message_id is called both on receiving a self-sent message
@@ -181,20 +181,20 @@ exports.reify_message_id = function reify_message_id(local_id, server_id) {
     message.id = server_id;
     message.locally_echoed = false;
 
-    var opts = {old_id: parseFloat(local_id), new_id: server_id};
+    const opts = {old_id: parseFloat(local_id), new_id: server_id};
 
     message_store.reify_message_id(opts);
     notifications.reify_message_id(opts);
 };
 
 exports.process_from_server = function process_from_server(messages) {
-    var msgs_to_rerender = [];
-    var non_echo_messages = [];
+    const msgs_to_rerender = [];
+    const non_echo_messages = [];
 
     _.each(messages, function (message) {
         // In case we get the sent message before we get the send ACK, reify here
 
-        var client_message = waiting_for_ack[message.local_id];
+        const client_message = waiting_for_ack[message.local_id];
         if (client_message === undefined) {
             // For messages that weren't locally echoed, we go through
             // the "main" codepath that doesn't have to id reconciliation.
@@ -270,11 +270,11 @@ exports.initialize = function () {
         $("#main_div").on("click", "." + action + "-failed-message", function (e) {
             e.stopPropagation();
             popovers.hide_all();
-            var row = $(this).closest(".message_row");
-            var message_id = rows.id(row);
+            const row = $(this).closest(".message_row");
+            const message_id = rows.id(row);
             // Message should be waiting for ack and only have a local id,
             // otherwise send would not have failed
-            var message = waiting_for_ack[message_id];
+            const message = waiting_for_ack[message_id];
             if (message === undefined) {
                 blueslip.warn("Got resend or retry on failure request but did not find message in ack list " + message_id);
                 return;

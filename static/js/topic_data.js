@@ -1,33 +1,33 @@
-var Dict = require('./dict').Dict;
+const Dict = require('./dict').Dict;
 
-var stream_dict = new Dict(); // stream_id -> array of objects
+let stream_dict = new Dict(); // stream_id -> array of objects
 
 exports.stream_has_topics = function (stream_id) {
     if (!stream_dict.has(stream_id)) {
         return false;
     }
 
-    var history = stream_dict.get(stream_id);
+    const history = stream_dict.get(stream_id);
 
     return history.has_topics();
 };
 
 exports.topic_history = function (stream_id) {
-    var topics = new Dict({fold_case: true});
+    const topics = new Dict({fold_case: true});
 
-    var self = {};
+    const self = {};
 
     self.has_topics = function () {
         return !topics.is_empty();
     };
 
     self.add_or_update = function (opts) {
-        var name = opts.name;
-        var message_id = opts.message_id || 0;
+        const name = opts.name;
+        let message_id = opts.message_id || 0;
 
         message_id = parseInt(message_id, 10);
 
-        var existing = topics.get(name);
+        const existing = topics.get(name);
 
         if (!existing) {
             topics.set(opts.name, {
@@ -50,7 +50,7 @@ exports.topic_history = function (stream_id) {
     };
 
     self.maybe_remove = function (topic_name) {
-        var existing = topics.get(topic_name);
+        const existing = topics.get(topic_name);
 
         if (!existing) {
             return;
@@ -77,10 +77,10 @@ exports.topic_history = function (stream_id) {
         // client can maintain for newer topics.
 
         _.each(server_history, function (obj) {
-            var name = obj.name;
-            var message_id = obj.max_id;
+            const name = obj.name;
+            const message_id = obj.max_id;
 
-            var existing = topics.get(name);
+            const existing = topics.get(name);
 
             if (existing) {
                 if (!existing.historical) {
@@ -103,20 +103,20 @@ exports.topic_history = function (stream_id) {
     };
 
     self.get_recent_names = function () {
-        var my_recents = topics.values();
+        const my_recents = topics.values();
 
-        var missing_topics = unread.get_missing_topics({
+        const missing_topics = unread.get_missing_topics({
             stream_id: stream_id,
             topic_dict: topics,
         });
 
-        var recents = my_recents.concat(missing_topics);
+        const recents = my_recents.concat(missing_topics);
 
         recents.sort(function (a, b) {
             return b.message_id - a.message_id;
         });
 
-        var names = _.map(recents, function (obj) {
+        const names = _.map(recents, function (obj) {
             return obj.pretty_name;
         });
 
@@ -127,9 +127,9 @@ exports.topic_history = function (stream_id) {
 };
 
 exports.remove_message = function (opts) {
-    var stream_id = opts.stream_id;
-    var name = opts.topic_name;
-    var history = stream_dict.get(stream_id);
+    const stream_id = opts.stream_id;
+    const name = opts.topic_name;
+    const history = stream_dict.get(stream_id);
 
     // This is the special case of "removing" a message from
     // a topic, which happens when we edit topics.
@@ -143,7 +143,7 @@ exports.remove_message = function (opts) {
 };
 
 exports.find_or_create = function (stream_id) {
-    var history = stream_dict.get(stream_id);
+    let history = stream_dict.get(stream_id);
 
     if (!history) {
         history = exports.topic_history(stream_id);
@@ -154,11 +154,11 @@ exports.find_or_create = function (stream_id) {
 };
 
 exports.add_message = function (opts) {
-    var stream_id = opts.stream_id;
-    var message_id = opts.message_id;
-    var name = opts.topic_name;
+    const stream_id = opts.stream_id;
+    const message_id = opts.message_id;
+    const name = opts.topic_name;
 
-    var history = exports.find_or_create(stream_id);
+    const history = exports.find_or_create(stream_id);
 
     history.add_or_update({
         name: name,
@@ -167,18 +167,18 @@ exports.add_message = function (opts) {
 };
 
 exports.add_history = function (stream_id, server_history) {
-    var history = exports.find_or_create(stream_id);
+    const history = exports.find_or_create(stream_id);
     history.add_history(server_history);
 };
 
 exports.get_server_history = function (stream_id, on_success) {
-    var url = '/json/users/me/' + stream_id + '/topics';
+    const url = '/json/users/me/' + stream_id + '/topics';
 
     channel.get({
         url: url,
         data: {},
         success: function (data) {
-            var server_history = data.topics;
+            const server_history = data.topics;
             exports.add_history(stream_id, server_history);
             on_success();
         },
@@ -186,7 +186,7 @@ exports.get_server_history = function (stream_id, on_success) {
 };
 
 exports.get_recent_names = function (stream_id) {
-    var history = exports.find_or_create(stream_id);
+    const history = exports.find_or_create(stream_id);
 
     return history.get_recent_names();
 };

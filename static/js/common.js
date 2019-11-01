@@ -25,16 +25,16 @@ exports.password_quality = function (password, bar, password_field) {
         return;
     }
 
-    var min_length = password_field.data('minLength');
-    var min_guesses = password_field.data('minGuesses');
+    const min_length = password_field.data('minLength');
+    const min_guesses = password_field.data('minGuesses');
 
-    var result = zxcvbn(password);
-    var acceptable = password.length >= min_length
+    const result = zxcvbn(password);
+    const acceptable = password.length >= min_length
                       && result.guesses >= min_guesses;
 
     if (bar !== undefined) {
-        var t = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
-        var bar_progress = Math.min(1, Math.log(1 + t) / 22);
+        const t = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
+        let bar_progress = Math.min(1, Math.log(1 + t) / 22);
 
         // Even if zxcvbn loves your short password, the bar should be
         // filled at most 1/3 of the way, because we won't accept it.
@@ -57,7 +57,7 @@ exports.password_warning = function (password, password_field) {
         return;
     }
 
-    var min_length = password_field.data('minLength');
+    const min_length = password_field.data('minLength');
 
     if (password.length < min_length) {
         return i18n.t('Password should be at least __length__ characters long', {length: min_length});
@@ -67,7 +67,7 @@ exports.password_warning = function (password, password_field) {
 
 exports.phrase_match = function (query, phrase) {
     // match "tes" to "test" and "stream test" but not "hostess"
-    var i;
+    let i;
     query = query.toLowerCase();
 
     phrase = phrase.toLowerCase();
@@ -75,7 +75,7 @@ exports.phrase_match = function (query, phrase) {
         return true;
     }
 
-    var parts = phrase.split(' ');
+    const parts = phrase.split(' ');
     for (i = 0; i < parts.length; i += 1) {
         if (parts[i].indexOf(query) === 0) {
             return true;
@@ -87,7 +87,7 @@ exports.phrase_match = function (query, phrase) {
 exports.copy_data_attribute_value = function (elem, key) {
     // function to copy the value of data-key
     // attribute of the element to clipboard
-    var temp = $(document.createElement('input'));
+    const temp = $(document.createElement('input'));
     $("body").append(temp);
     temp.val(elem.data(key)).select();
     document.execCommand("copy");
@@ -105,7 +105,7 @@ exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
         return;
     }
 
-    var keys_map = new Map([
+    const keys_map = new Map([
         ['Backspace', 'Delete'],
         ['Enter', 'Return'],
         ['Home', 'Fn + ←'],
@@ -116,8 +116,8 @@ exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
     ]);
 
     $(key_elem_class).each(function () {
-        var key_text = $(this).text();
-        var keys = key_text.match(/[^\s\+]+/g);
+        let key_text = $(this).text();
+        const keys = key_text.match(/[^\s\+]+/g);
 
         if (key_text.indexOf('Ctrl') > -1 && require_cmd_style) {
             $(this).addClass("mac-cmd-key");

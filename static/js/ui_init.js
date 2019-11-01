@@ -6,7 +6,7 @@
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
 
-var current_message_hover;
+let current_message_hover;
 function message_unhover() {
     if (current_message_hover === undefined) {
         return;
@@ -16,7 +16,7 @@ function message_unhover() {
 }
 
 function message_hover(message_row) {
-    var id = parseInt(message_row.attr("zid"), 10);
+    const id = parseInt(message_row.attr("zid"), 10);
     if (current_message_hover && message_row && current_message_hover.attr("zid") === message_row.attr("zid")) {
         return;
     }
@@ -49,7 +49,7 @@ exports.initialize_kitchen_sink_stuff = function () {
     //      the code here can probably be moved to more
     //      specific-purpose modules like message_viewport.js.
 
-    var throttled_mousewheelhandler = _.throttle(function (e, delta) {
+    const throttled_mousewheelhandler = _.throttle(function (e, delta) {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
@@ -68,7 +68,7 @@ exports.initialize_kitchen_sink_stuff = function () {
     }, 50);
 
     message_viewport.message_pane.on('wheel', function (e) {
-        var delta = e.originalEvent.deltaY;
+        const delta = e.originalEvent.deltaY;
         if (!overlays.is_active()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
@@ -85,13 +85,13 @@ exports.initialize_kitchen_sink_stuff = function () {
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
     $('.modal-body, .scrolling_list, input, textarea').on('wheel', function (e) {
-        var self = ui.get_scroll_element($(this));
-        var scroll = self.scrollTop();
-        var delta = e.originalEvent.deltaY;
+        const self = ui.get_scroll_element($(this));
+        const scroll = self.scrollTop();
+        const delta = e.originalEvent.deltaY;
 
         // The -1 fudge factor is important here due to rounding errors.  Better
         // to err on the side of not scrolling.
-        var max_scroll = self.prop("scrollHeight") - self.innerHeight() - 1;
+        const max_scroll = self.prop("scrollHeight") - self.innerHeight() - 1;
 
         e.stopPropagation();
         if (delta < 0 && scroll <= 0 ||
@@ -126,7 +126,7 @@ exports.initialize_kitchen_sink_stuff = function () {
     }
 
     $("#main_div").on("mouseover", ".message_row", function () {
-        var row = $(this).closest(".message_row");
+        const row = $(this).closest(".message_row");
         message_hover(row);
     });
 
@@ -135,12 +135,12 @@ exports.initialize_kitchen_sink_stuff = function () {
     });
 
     $("#main_div").on("mouseover", ".sender_info_hover", function () {
-        var row = $(this).closest(".message_row");
+        const row = $(this).closest(".message_row");
         row.addClass("sender_name_hovered");
     });
 
     $("#main_div").on("mouseout", ".sender_info_hover", function () {
-        var row = $(this).closest(".message_row");
+        const row = $(this).closest(".message_row");
         row.removeClass("sender_name_hovered");
     });
 
@@ -153,12 +153,12 @@ exports.initialize_kitchen_sink_stuff = function () {
     });
 
     $("#main_div").on("mouseenter", ".embed-video a", function () {
-        var elem = $(this);
+        const elem = $(this);
         // Set image height and css vars for play button position, if not done already
-        var setPosition = !elem.data("entered-before");
+        const setPosition = !elem.data("entered-before");
         if (setPosition) {
-            var imgW = elem.find("img")[0].width;
-            var imgH = elem.find("img")[0].height;
+            const imgW = elem.find("img")[0].width;
+            const imgH = elem.find("img")[0].height;
             // Ensure height doesn't change on mouse enter
             elem.css("height", imgH);
             // variables to set play button position
@@ -201,14 +201,14 @@ exports.initialize_kitchen_sink_stuff = function () {
             // If the message list is empty, don't do anything
             return;
         }
-        var row = event.msg_list.get_row(event.id);
+        const row = event.msg_list.get_row(event.id);
         $('.selected_message').removeClass('selected_message');
         row.addClass('selected_message');
 
         if (event.then_scroll) {
             if (row.length === 0) {
-                var row_from_dom = current_msg_list.get_row(event.id);
-                var messages = event.msg_list.all_messages();
+                const row_from_dom = current_msg_list.get_row(event.id);
+                const messages = event.msg_list.all_messages();
                 blueslip.debug("message_selected missing selected row", {
                     previously_selected: event.previously_selected,
                     selected_id: event.id,
@@ -238,9 +238,9 @@ exports.initialize_kitchen_sink_stuff = function () {
     });
 
     $("#main_div").on("mouseenter", ".message_time", function (e) {
-        var time_elem = $(e.target);
-        var row = time_elem.closest(".message_row");
-        var message = current_msg_list.get(rows.id(row));
+        const time_elem = $(e.target);
+        const row = time_elem.closest(".message_row");
+        const message = current_msg_list.get(rows.id(row));
         timerender.set_full_datetime(message, time_elem);
     });
 

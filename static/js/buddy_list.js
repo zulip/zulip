@@ -1,8 +1,8 @@
-var render_user_presence_row = require('../templates/user_presence_row.hbs');
-var render_user_presence_rows = require('../templates/user_presence_rows.hbs');
+const render_user_presence_row = require('../templates/user_presence_row.hbs');
+const render_user_presence_rows = require('../templates/user_presence_rows.hbs');
 
 function buddy_list_conf() {
-    var conf = {};
+    const conf = {};
 
     conf.container_sel = '#user_presences';
     conf.scroll_container_sel = '#buddy_list_wrapper';
@@ -10,31 +10,31 @@ function buddy_list_conf() {
     conf.padding_sel = '#buddy_list_wrapper_padding';
 
     conf.items_to_html = function (opts) {
-        var user_info = opts.items;
-        var html = render_user_presence_rows({users: user_info});
+        const user_info = opts.items;
+        const html = render_user_presence_rows({users: user_info});
         return html;
     };
 
     conf.item_to_html = function (opts) {
-        var html = render_user_presence_row(opts.item);
+        const html = render_user_presence_row(opts.item);
         return html;
     };
 
     conf.get_li_from_key = function (opts) {
-        var user_id = opts.key;
-        var container = $(conf.container_sel);
-        var sel = conf.item_sel + "[data-user-id='" + user_id + "']";
+        const user_id = opts.key;
+        const container = $(conf.container_sel);
+        const sel = conf.item_sel + "[data-user-id='" + user_id + "']";
         return container.find(sel);
     };
 
     conf.get_key_from_li = function (opts) {
-        var user_id = opts.li.expectOne().attr('data-user-id');
+        const user_id = opts.li.expectOne().attr('data-user-id');
         return user_id;
     };
 
     conf.get_data_from_keys = function (opts) {
-        var keys = opts.keys;
-        var data = buddy_data.get_items_for_users(keys);
+        const keys = opts.keys;
+        const data = buddy_data.get_items_for_users(keys);
         return data;
     };
 
@@ -46,7 +46,7 @@ function buddy_list_conf() {
         // how much content to render.  Even on tall monitors this should
         // still be a significant optimization for orgs with thousands of
         // users.
-        var height = message_viewport.height();
+        const height = message_viewport.height();
         return height;
     };
 
@@ -54,16 +54,16 @@ function buddy_list_conf() {
 }
 
 function buddy_list_create() {
-    var conf = buddy_list_conf();
+    const conf = buddy_list_conf();
 
-    var self = {};
+    const self = {};
 
     self.container_sel = conf.container_sel;
     self.scroll_container_sel = conf.scroll_container_sel;
     self.item_sel = conf.item_sel;
     self.padding_sel = conf.padding_sel;
 
-    var func_names = [
+    const func_names = [
         'items_to_html',
         'item_to_html',
         'get_li_from_key',
@@ -93,22 +93,22 @@ function buddy_list_create() {
     };
 
     self.render_more = function (opts) {
-        var chunk_size = opts.chunk_size;
+        const chunk_size = opts.chunk_size;
 
-        var begin = self.render_count;
-        var end = begin + chunk_size;
+        const begin = self.render_count;
+        const end = begin + chunk_size;
 
-        var more_keys = self.keys.slice(begin, end);
+        const more_keys = self.keys.slice(begin, end);
 
         if (more_keys.length === 0) {
             return;
         }
 
-        var items = self.get_data_from_keys({
+        const items = self.get_data_from_keys({
             keys: more_keys,
         });
 
-        var html = self.items_to_html({
+        const html = self.items_to_html({
             items: items,
         });
         self.container = $(self.container_sel);
@@ -125,7 +125,7 @@ function buddy_list_create() {
     };
 
     self.get_items = function () {
-        var obj = self.container.find(self.item_sel);
+        const obj = self.container.find(self.item_sel);
         return obj.map(function (i, elem) {
             return $(elem);
         });
@@ -136,7 +136,7 @@ function buddy_list_create() {
     };
 
     self.prev_key = function (key) {
-        var i = self.keys.indexOf(key.toString());
+        const i = self.keys.indexOf(key.toString());
 
         if (i <= 0) {
             return;
@@ -146,7 +146,7 @@ function buddy_list_create() {
     };
 
     self.next_key = function (key) {
-        var i = self.keys.indexOf(key.toString());
+        const i = self.keys.indexOf(key.toString());
 
         if (i < 0) {
             return;
@@ -156,7 +156,7 @@ function buddy_list_create() {
     };
 
     self.maybe_remove_key = function (opts) {
-        var pos = self.keys.indexOf(opts.key);
+        const pos = self.keys.indexOf(opts.key);
 
         if (pos < 0) {
             return;
@@ -166,18 +166,18 @@ function buddy_list_create() {
 
         if (pos < self.render_count) {
             self.render_count -= 1;
-            var li = self.find_li({key: opts.key});
+            const li = self.find_li({key: opts.key});
             li.remove();
             self.update_padding();
         }
     };
 
     self.find_position = function (opts) {
-        var key = opts.key;
-        var i;
+        const key = opts.key;
+        let i;
 
         for (i = 0; i < self.keys.length; i += 1) {
-            var list_key = self.keys[i];
+            const list_key = self.keys[i];
 
             if (self.compare_function(key, list_key) < 0) {
                 return i;
@@ -188,11 +188,11 @@ function buddy_list_create() {
     };
 
     self.force_render = function (opts) {
-        var pos = opts.pos;
+        const pos = opts.pos;
 
         // Try to render a bit optimistically here.
-        var cushion_size = 3;
-        var chunk_size = pos + cushion_size - self.render_count;
+        const cushion_size = 3;
+        const chunk_size = pos + cushion_size - self.render_count;
 
         if (chunk_size <= 0) {
             blueslip.error('cannot show key at this position: ' + pos);
@@ -204,10 +204,10 @@ function buddy_list_create() {
     };
 
     self.find_li = function (opts) {
-        var key = opts.key.toString();
+        const key = opts.key.toString();
 
         // Try direct DOM lookup first for speed.
-        var li = self.get_li_from_key({
+        let li = self.get_li_from_key({
             key: key,
         });
 
@@ -221,7 +221,7 @@ function buddy_list_create() {
             return li;
         }
 
-        var pos = self.keys.indexOf(key);
+        const pos = self.keys.indexOf(key);
 
         if (pos < 0) {
             // TODO: See list_cursor.get_row() for why this is
@@ -241,9 +241,9 @@ function buddy_list_create() {
     };
 
     self.insert_new_html = function (opts) {
-        var other_key = opts.other_key;
-        var html = opts.html;
-        var pos = opts.pos;
+        const other_key = opts.other_key;
+        const html = opts.html;
+        const pos = opts.pos;
 
         if (other_key === undefined) {
             if (pos === self.render_count) {
@@ -256,30 +256,30 @@ function buddy_list_create() {
 
         if (pos < self.render_count) {
             self.render_count += 1;
-            var li = self.find_li({key: other_key});
+            const li = self.find_li({key: other_key});
             li.before(html);
             self.update_padding();
         }
     };
 
     self.insert_or_move = function (opts) {
-        var key = opts.key.toString();
-        var item = opts.item;
+        const key = opts.key.toString();
+        const item = opts.item;
 
         self.maybe_remove_key({key: key});
 
-        var pos = self.find_position({
+        const pos = self.find_position({
             key: key,
         });
 
         // Order is important here--get the other_key
         // before mutating our list.  An undefined value
         // corresponds to appending.
-        var other_key = self.keys[pos];
+        const other_key = self.keys[pos];
 
         self.keys.splice(pos, 0, key);
 
-        var html = self.item_to_html({item: item});
+        const html = self.item_to_html({item: item});
         self.insert_new_html({
             pos: pos,
             html: html,
@@ -288,22 +288,22 @@ function buddy_list_create() {
     };
 
     self.fill_screen_with_content = function () {
-        var height = self.height_to_fill();
+        let height = self.height_to_fill();
 
-        var elem = ui.get_scroll_element($(self.scroll_container_sel)).expectOne()[0];
+        const elem = ui.get_scroll_element($(self.scroll_container_sel)).expectOne()[0];
 
         // Add a fudge factor.
         height += 10;
 
         while (self.render_count < self.keys.length) {
-            var padding_height = $(self.padding_sel).height();
-            var bottom_offset = elem.scrollHeight - elem.scrollTop - padding_height;
+            const padding_height = $(self.padding_sel).height();
+            const bottom_offset = elem.scrollHeight - elem.scrollTop - padding_height;
 
             if (bottom_offset > height) {
                 break;
             }
 
-            var chunk_size = 20;
+            const chunk_size = 20;
 
             self.render_more({
                 chunk_size: chunk_size,
@@ -318,7 +318,7 @@ function buddy_list_create() {
     self.start_scroll_handler = function () {
         // We have our caller explicitly call this to make
         // sure everything's in place.
-        var scroll_container = ui.get_scroll_element($(self.scroll_container_sel));
+        const scroll_container = ui.get_scroll_element($(self.scroll_container_sel));
 
         scroll_container.scroll(function () {
             self.fill_screen_with_content();
@@ -337,7 +337,7 @@ function buddy_list_create() {
     return self;
 }
 
-var buddy_list = buddy_list_create();
+const buddy_list = buddy_list_create();
 
 module.exports = buddy_list;
 

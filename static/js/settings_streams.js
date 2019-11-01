@@ -1,7 +1,7 @@
-var render_admin_default_streams_list = require("../templates/admin_default_streams_list.hbs");
-var Dict = require('./dict').Dict;
+const render_admin_default_streams_list = require("../templates/admin_default_streams_list.hbs");
+const Dict = require('./dict').Dict;
 
-var meta = {
+const meta = {
     loaded: false,
 };
 
@@ -19,16 +19,16 @@ exports.maybe_disable_widgets = function () {
 };
 
 exports.build_default_stream_table = function (streams_data) {
-    var self = {};
+    const self = {};
 
     self.row_dict = new Dict();
 
-    var table = $("#admin_default_streams_table").expectOne();
+    const table = $("#admin_default_streams_table").expectOne();
 
-    var streams_list = list_render.create(table, streams_data, {
+    const streams_list = list_render.create(table, streams_data, {
         name: "default_streams_list",
         modifier: function (item) {
-            var row = $(render_admin_default_streams_list({
+            const row = $(render_admin_default_streams_list({
                 stream: item,
                 can_modify: page_params.is_admin,
             }));
@@ -53,7 +53,7 @@ exports.build_default_stream_table = function (streams_data) {
 
     self.remove = function (stream_id) {
         if (self.row_dict.has(stream_id)) {
-            var row = self.row_dict.get(stream_id);
+            const row = self.row_dict.get(stream_id);
             row.remove();
         }
     };
@@ -61,7 +61,7 @@ exports.build_default_stream_table = function (streams_data) {
     return self;
 };
 
-var default_stream_table;
+let default_stream_table;
 
 exports.remove_default_stream = function (stream_id) {
     if (default_stream_table) {
@@ -79,10 +79,10 @@ exports.update_default_streams_table = function () {
 };
 
 function make_stream_default(stream_name) {
-    var data = {
+    const data = {
         stream_name: stream_name,
     };
-    var default_stream_status = $("#admin-default-stream-status");
+    const default_stream_status = $("#admin-default-stream-status");
     default_stream_status.hide();
 
     channel.post({
@@ -125,7 +125,7 @@ exports.build_page = function () {
         if (e.which === 13) {
             e.preventDefault();
             e.stopPropagation();
-            var default_stream_input = $(".create_default_stream");
+            const default_stream_input = $(".create_default_stream");
             make_stream_default(default_stream_input.val());
             default_stream_input[0].value = "";
         }
@@ -148,15 +148,15 @@ exports.build_page = function () {
     $(".default-stream-form").on("click", "#do_submit_stream", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var default_stream_input = $(".create_default_stream");
+        const default_stream_input = $(".create_default_stream");
         make_stream_default(default_stream_input.val());
         // Clear value inside input box
         default_stream_input[0].value = "";
     });
 
     $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
-        var row = $(this).closest(".default_stream_row");
-        var stream_name = row.attr("id");
+        const row = $(this).closest(".default_stream_row");
+        const stream_name = row.attr("id");
         exports.delete_default_stream(stream_name, row, $(e.target));
     });
 };

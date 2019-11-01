@@ -3,11 +3,11 @@
 
 exports.create_item_from_email = function (email, current_items) {
     // For normal Zulip use, we need to validate the email for our realm.
-    var user = people.get_by_email(email);
+    const user = people.get_by_email(email);
 
     if (!user) {
         if (page_params.realm_is_zephyr_mirror_realm) {
-            var existing_emails = _.pluck(current_items, 'email');
+            const existing_emails = _.pluck(current_items, 'email');
 
             if (existing_emails.indexOf(email) >= 0) {
                 return;
@@ -26,17 +26,17 @@ exports.create_item_from_email = function (email, current_items) {
         return;
     }
 
-    var existing_ids = _.pluck(current_items, 'user_id');
+    const existing_ids = _.pluck(current_items, 'user_id');
 
     if (existing_ids.indexOf(user.user_id) >= 0) {
         return;
     }
 
-    var avatar_url = people.small_avatar_url_for_person(user);
+    const avatar_url = people.small_avatar_url_for_person(user);
 
     // We must supply display_value for the widget to work.  Everything
     // else is for our own use in callbacks.
-    var item = {
+    const item = {
         display_value: user.full_name,
         user_id: user.user_id,
         email: user.email,
@@ -51,9 +51,9 @@ exports.get_email_from_item = function (item) {
 };
 
 exports.append_person = function (opts) {
-    var person = opts.person;
-    var pill_widget = opts.pill_widget;
-    var avatar_url = people.small_avatar_url_for_person(person);
+    const person = opts.person;
+    const pill_widget = opts.pill_widget;
+    const avatar_url = people.small_avatar_url_for_person(person);
 
     pill_widget.appendValidatedData({
         display_value: person.full_name,
@@ -65,8 +65,8 @@ exports.append_person = function (opts) {
 };
 
 exports.get_user_ids = function (pill_widget) {
-    var items = pill_widget.items();
-    var user_ids = _.pluck(items, 'user_id');
+    const items = pill_widget.items();
+    let user_ids = _.pluck(items, 'user_id');
     user_ids = _.filter(user_ids); // be defensive about undefined users
 
     return user_ids;
@@ -79,8 +79,8 @@ exports.has_unconverted_data = function (pill_widget) {
         return true;
     }
 
-    var items = pill_widget.items();
-    var has_unknown_items = _.any(items, function (item) {
+    const items = pill_widget.items();
+    const has_unknown_items = _.any(items, function (item) {
         return item.user_id === undefined;
     });
 
@@ -88,8 +88,8 @@ exports.has_unconverted_data = function (pill_widget) {
 };
 
 exports.typeahead_source = function (pill_widget) {
-    var items = people.get_realm_persons();
-    var taken_user_ids = exports.get_user_ids(pill_widget);
+    let items = people.get_realm_persons();
+    const taken_user_ids = exports.get_user_ids(pill_widget);
     items = _.filter(items, function (item) {
         return taken_user_ids.indexOf(item.user_id) === -1;
     });
@@ -108,7 +108,7 @@ exports.append_user = function (user, pills) {
 };
 
 exports.create_pills = function (pill_container) {
-    var pills = input_pill.create({
+    const pills = input_pill.create({
         container: pill_container,
         create_item_from_text: exports.create_item_from_email,
         get_text_from_item: exports.get_email_from_item,
@@ -128,7 +128,7 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
             return typeahead_helper.render_person(item);
         },
         matcher: function (item) {
-            var query = this.query.toLowerCase();
+            let query = this.query.toLowerCase();
             query = query.replace(/\u00A0/g, String.fromCharCode(32));
             return item.email.toLowerCase().indexOf(query) !== -1
                     || item.full_name.toLowerCase().indexOf(query) !== -1;

@@ -55,7 +55,7 @@ function clear_search_input() {
 }
 
 run_test('basics', () => {
-    var cursor_helper;
+    let cursor_helper;
     const input = $('.stream-list-filter');
     const section = $('.stream_search_section');
 
@@ -87,7 +87,7 @@ run_test('basics', () => {
     }
 
     function verify_list_updated(f) {
-        var updated;
+        let updated;
         stream_list.update_streams_sidebar = () => {
             updated = true;
         };

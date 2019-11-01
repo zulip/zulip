@@ -17,13 +17,13 @@ run_test('starred', () => {
         all_messages: () => [message],
         is_search: () => false,
     });
-    var ui_updated;
+    let ui_updated;
 
     ui.update_starred_view = () => {
         ui_updated = true;
     };
 
-    var posted_data;
+    let posted_data;
 
     channel.post = (opts) => {
         assert.equal(opts.url, '/json/messages/flags');
@@ -64,14 +64,14 @@ run_test('starred', () => {
 });
 run_test('read', () => {
     // Way to capture posted info in every request
-    var channel_post_opts;
+    let channel_post_opts;
     channel.post = (opts) => {
         channel_post_opts = opts;
     };
 
     // For testing purpose limit the batch size value to 5 instead of 1000
     message_flags._unread_batch_size = 5;
-    var msgs_to_flag_read = [
+    let msgs_to_flag_read = [
         { locally_echoed: false, id: 1 },
         { locally_echoed: false, id: 2 },
         { locally_echoed: false, id: 3 },
@@ -93,7 +93,7 @@ run_test('read', () => {
     });
 
     // Mock successful flagging of ids
-    var success_response_data = {
+    let success_response_data = {
         messages: [1, 2, 3, 4, 5],
     };
     channel_post_opts.success(success_response_data);
@@ -113,8 +113,8 @@ run_test('read', () => {
     channel_post_opts.success(success_response_data);
 
     // Don't flag locally echoed messages as read
-    var local_msg_1 = { locally_echoed: true, id: 1 };
-    var local_msg_2 = { locally_echoed: true, id: 2 };
+    const local_msg_1 = { locally_echoed: true, id: 1 };
+    const local_msg_2 = { locally_echoed: true, id: 2 };
     msgs_to_flag_read = [
         local_msg_1,
         local_msg_2,

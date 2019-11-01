@@ -18,14 +18,14 @@ function registerCodeSection($codeSection) {
 
 function highlight_current_article() {
     $('.help .sidebar a').removeClass('highlighted');
-    var path = window.location.pathname;
+    const path = window.location.pathname;
 
     if (!path) {
         return;
     }
 
-    var hash = window.location.hash;
-    var article = $('.help .sidebar a[href="' + path + hash + '"]');
+    const hash = window.location.hash;
+    let article = $('.help .sidebar a[href="' + path + hash + '"]');
     if (!article.length) {
         // If there isn't an entry in the left sidebar that matches
         // the full url+hash pair, instead highlight an entry in the
@@ -53,33 +53,33 @@ function render_code_sections() {
 }
 
 function scrollToHash(simplebar) {
-    var hash = window.location.hash;
-    var scrollbar = simplebar.getScrollElement();
+    const hash = window.location.hash;
+    const scrollbar = simplebar.getScrollElement();
     if (hash !== '') {
-        var position = $(hash).position().top - $(scrollbar.firstChild).position().top;
+        const position = $(hash).position().top - $(scrollbar.firstChild).position().top;
         scrollbar.scrollTop = position;
     } else {
         scrollbar.scrollTop = 0;
     }
 }
 
-var html_map = {};
-var loading = {
+const html_map = {};
+const loading = {
     name: null,
 };
 
-var markdownSB = new SimpleBar($(".markdown")[0]);
+const markdownSB = new SimpleBar($(".markdown")[0]);
 
-var fetch_page = function (path, callback) {
+const fetch_page = function (path, callback) {
     $.get(path, function (res) {
-        var $html = $(res).find(".markdown .content");
+        const $html = $(res).find(".markdown .content");
 
         callback($html.html().trim());
         render_code_sections();
     });
 };
 
-var update_page = function (html_map, path) {
+const update_page = function (html_map, path) {
     if (html_map[path]) {
         $(".markdown .content").html(html_map[path]);
         render_code_sections();
@@ -98,7 +98,7 @@ var update_page = function (html_map, path) {
 new SimpleBar($(".sidebar")[0]);
 
 $(".sidebar.slide h2").click(function (e) {
-    var $next = $(e.target).next();
+    const $next = $(e.target).next();
 
     if ($next.is("ul")) {
         // Close other article's headings first
@@ -109,9 +109,9 @@ $(".sidebar.slide h2").click(function (e) {
 });
 
 $(".sidebar a").click(function (e) {
-    var path = $(this).attr("href");
-    var path_dir = path.split('/')[1];
-    var current_dir = window.location.pathname.split('/')[1];
+    const path = $(this).attr("href");
+    const path_dir = path.split('/')[1];
+    const current_dir = window.location.pathname.split('/')[1];
 
     // Do not block redirecting to external URLs
     if (path_dir !== current_dir) {
@@ -161,7 +161,7 @@ render_code_sections();
 scrollToHash(markdownSB);
 
 window.addEventListener("popstate", function () {
-    var path = window.location.pathname;
+    const path = window.location.pathname;
     update_page(html_map, path);
 });
 

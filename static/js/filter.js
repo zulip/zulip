@@ -2,12 +2,12 @@ function zephyr_stream_name_match(message, operand) {
     // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
     // TODO: hoist the regex compiling out of the closure
-    var m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(operand);
-    var base_stream_name = operand;
+    const m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(operand);
+    let base_stream_name = operand;
     if (m !== null && m[1] !== undefined) {
         base_stream_name = m[1];
     }
-    var related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source, 'i');
+    const related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source, 'i');
     return related_regexp.test(message.stream);
 }
 
@@ -15,9 +15,9 @@ function zephyr_topic_name_match(message, operand) {
     // Zephyr users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
     // (foo, foo.d, foo.d.d, etc)
     // TODO: hoist the regex compiling out of the closure
-    var m = /^(.*?)(?:\.d)*$/i.exec(operand);
-    var base_topic = m[1];
-    var related_regexp;
+    const m = /^(.*?)(?:\.d)*$/i.exec(operand);
+    const base_topic = m[1];
+    let related_regexp;
 
     // Additionally, Zephyr users expect the empty instance and
     // instance "personal" to be the same.
@@ -86,7 +86,7 @@ function message_matches_search_term(message, operator, operand) {
 
         // Try to match by stream_id if have a valid sub for
         // the operand.
-        var stream_id = stream_data.get_stream_id(operand);
+        const stream_id = stream_data.get_stream_id(operand);
         if (stream_id) {
             return message.stream_id === stream_id;
         }
@@ -113,11 +113,11 @@ function message_matches_search_term(message, operator, operand) {
         return people.id_matches_email_operand(message.sender_id, operand);
 
     case 'group-pm-with': {
-        var operand_ids = people.pm_with_operand_ids(operand);
+        const operand_ids = people.pm_with_operand_ids(operand);
         if (!operand_ids) {
             return false;
         }
-        var user_ids = people.group_pm_with_user_ids(message);
+        const user_ids = people.group_pm_with_user_ids(message);
         if (!user_ids) {
             return false;
         }
@@ -170,9 +170,9 @@ Filter.canonicalize_operator = function (operator) {
 };
 
 Filter.canonicalize_term = function (opts) {
-    var negated = opts.negated;
-    var operator = opts.operator;
-    var operand = opts.operand;
+    let negated = opts.negated;
+    let operator = opts.operator;
+    let operand = opts.operand;
 
     // Make negated be explicitly false for both clarity and
     // simplifying deepEqual checks in the tests.
@@ -247,21 +247,21 @@ function decodeOperand(encoded, operator) {
 
 // Parse a string into a list of operators (see below).
 Filter.parse = function (str) {
-    var operators   = [];
-    var search_term = [];
-    var negated;
-    var operator;
-    var operand;
-    var term;
+    const operators   = [];
+    const search_term = [];
+    let negated;
+    let operator;
+    let operand;
+    let term;
 
     // Match all operands that either have no spaces, or are surrounded by
     // quotes, preceded by an optional operator that may have a space after it.
-    var matches = str.match(/([^\s:]+: ?)?("[^"]+"?|\S+)/g);
+    const matches = str.match(/([^\s:]+: ?)?("[^"]+"?|\S+)/g);
     if (matches === null) {
         return operators;
     }
     _.each(matches, function (token) {
-        var operator;
+        let operator;
         const parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.
@@ -308,7 +308,7 @@ Filter.parse = function (str) {
    might need to support multiple operators of the same type.
 */
 Filter.unparse = function (operators) {
-    var parts = _.map(operators, function (elem) {
+    const parts = _.map(operators, function (elem) {
 
         if (elem.operator === 'search') {
             // Search terms are the catch-all case.
@@ -316,7 +316,7 @@ Filter.unparse = function (operators) {
             // a colon are glued together to form a search term.
             return elem.operand;
         }
-        var sign = elem.negated ? '-' : '';
+        const sign = elem.negated ? '-' : '';
         if (elem.operator === '') {
             return elem.operand;
         }
@@ -340,7 +340,7 @@ Filter.prototype = {
     },
 
     public_operators: function () {
-        var safe_to_return = _.filter(this._operators, function (value) {
+        const safe_to_return = _.filter(this._operators, function (value) {
             // Filter out the embedded narrow (if any).
             return !(page_params.narrow_stream !== undefined &&
                      value.operator === "stream" &&
@@ -430,8 +430,8 @@ Filter.prototype = {
     },
 
     filter_with_new_topic: function (new_topic) {
-        var terms = _.map(this._operators, function (term) {
-            var new_term = _.clone(term);
+        const terms = _.map(this._operators, function (term) {
+            const new_term = _.clone(term);
             if (new_term.operator === 'topic' && !new_term.negated) {
                 new_term.operand = new_topic;
             }
@@ -445,9 +445,9 @@ Filter.prototype = {
     },
 
     sorted_term_types: function () {
-        var terms = this._operators;
-        var term_types = _.map(terms, Filter.term_type);
-        var sorted_terms = Filter.sorted_term_types(term_types);
+        const terms = this._operators;
+        const term_types = _.map(terms, Filter.term_type);
+        const sorted_terms = Filter.sorted_term_types(term_types);
         return sorted_terms;
     },
 
@@ -457,8 +457,8 @@ Filter.prototype = {
         // Examples calls:
         //     filter.is_exactly('stream', 'topic')
         //     filter.is_exactly('pm-with')
-        var wanted_term_types = [].slice.call(arguments);
-        var term_types = this.sorted_term_types();
+        const wanted_term_types = [].slice.call(arguments);
+        const term_types = this.sorted_term_types();
 
         return _.isEqual(term_types, wanted_term_types);
     },
@@ -470,8 +470,8 @@ Filter.prototype = {
         // or id:<number> that jump you to parts of the message
         // view where you might only care about reading the
         // current message.
-        var term_types = this.sorted_term_types();
-        var wanted_list = [
+        const term_types = this.sorted_term_types();
+        const wanted_list = [
             ['stream'],
             ['stream', 'topic'],
             ['is-private'],
@@ -495,18 +495,18 @@ Filter.prototype = {
         // a predicate to a larger list of candidate ids.
         //
         // (It's for optimization, basically.)
-        var wanted_term_types = [].slice.call(arguments);
-        var all_term_types = this.sorted_term_types();
-        var term_types = all_term_types.slice(0, wanted_term_types.length);
+        const wanted_term_types = [].slice.call(arguments);
+        const all_term_types = this.sorted_term_types();
+        const term_types = all_term_types.slice(0, wanted_term_types.length);
 
         return _.isEqual(term_types, wanted_term_types);
     },
 
     first_valid_id_from: function (msg_ids) {
-        var predicate = this.predicate();
+        const predicate = this.predicate();
 
-        var first_id = _.find(msg_ids, function (msg_id) {
-            var message = message_store.get(msg_id);
+        const first_id = _.find(msg_ids, function (msg_id) {
+            const message = message_store.get(msg_id);
 
             if (message === undefined) {
                 return false;
@@ -536,7 +536,7 @@ Filter.prototype = {
 
     // Build a filter function from a list of operators.
     _build_predicate: function () {
-        var operators = this._operators;
+        const operators = this._operators;
 
         if (!this.can_apply_locally()) {
             return function () { return true; };
@@ -548,7 +548,7 @@ Filter.prototype = {
 
         return function (message) {
             return _.all(operators, function (term) {
-                var ok = message_matches_search_term(message, term.operator, term.operand);
+                let ok = message_matches_search_term(message, term.operator, term.operand);
                 if (term.negated) {
                     ok = !ok;
                 }
@@ -559,11 +559,11 @@ Filter.prototype = {
 };
 
 Filter.term_type = function (term) {
-    var operator = term.operator;
-    var operand = term.operand;
-    var negated = term.negated;
+    const operator = term.operator;
+    const operand = term.operand;
+    const negated = term.negated;
 
-    var result = negated ? 'not-' : '';
+    let result = negated ? 'not-' : '';
 
     result += operator;
 
@@ -575,7 +575,7 @@ Filter.term_type = function (term) {
 };
 
 Filter.sorted_term_types = function (term_types) {
-    var levels = [
+    const levels = [
         'streams',
         'stream', 'topic',
         'pm-with', 'group-pm-with', 'sender',
@@ -587,7 +587,7 @@ Filter.sorted_term_types = function (term_types) {
     ];
 
     function level(term_type) {
-        var i = levels.indexOf(term_type);
+        let i = levels.indexOf(term_type);
         if (i === -1) {
             i = 999;
         }
@@ -595,7 +595,7 @@ Filter.sorted_term_types = function (term_types) {
     }
 
     function compare(a, b) {
-        var diff = level(a) - level(b);
+        const diff = level(a) - level(b);
         if (diff !== 0) {
             return diff;
         }
@@ -652,9 +652,9 @@ Filter.operator_to_prefix = function (operator, negated) {
 };
 
 function describe_is_operator(operator) {
-    var verb = operator.negated ? 'exclude ' : '';
-    var operand = operator.operand;
-    var operand_list = ['private', 'starred', 'alerted', 'unread'];
+    const verb = operator.negated ? 'exclude ' : '';
+    const operand = operator.operand;
+    const operand_list = ['private', 'starred', 'alerted', 'unread'];
     if (operand_list.indexOf(operand) !== -1) {
         return verb + operand + ' messages';
     } else if (operand === 'mentioned') {
@@ -669,38 +669,38 @@ function describe_unescaped(operators) {
         return 'all messages';
     }
 
-    var parts = [];
+    let parts = [];
 
     if (operators.length >= 2) {
-        var is = function (term, expected) {
+        const is = function (term, expected) {
             return term.operator === expected && !term.negated;
         };
 
         if (is(operators[0], 'stream') && is(operators[1], 'topic')) {
-            var stream = operators[0].operand;
-            var topic = operators[1].operand;
-            var part = "stream " + stream + ' > ' + topic;
+            const stream = operators[0].operand;
+            const topic = operators[1].operand;
+            const part = "stream " + stream + ' > ' + topic;
             parts = [part];
             operators = operators.slice(2);
         }
     }
 
-    var more_parts = _.map(operators, function (elem) {
-        var operand = elem.operand;
-        var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
+    const more_parts = _.map(operators, function (elem) {
+        const operand = elem.operand;
+        const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator === 'is') {
             return describe_is_operator(elem);
         }
         if (canonicalized_operator === 'has') {
             // search_suggestion.get_suggestions takes care that this message will
             // only be shown if the `has` operator is not at the last.
-            var valid_has_operands = ['image', 'images', 'link', 'links', 'attachment', 'attachments'];
+            const valid_has_operands = ['image', 'images', 'link', 'links', 'attachment', 'attachments'];
             if (valid_has_operands.indexOf(operand) === -1) {
                 return 'invalid ' + operand + ' operand for has operator';
             }
         }
-        var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
-                                                            elem.negated);
+        const prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
+                                                              elem.negated);
         if (prefix_for_operator !== '') {
             return prefix_for_operator + ' ' + operand;
         }

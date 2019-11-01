@@ -3,14 +3,14 @@ exports.build_bot_create_widget = function () {
     // We have to do strange gyrations with the file input to clear it,
     // where we replace it wholesale, so we generalize the file input with
     // a callback function.
-    var get_file_input = function () {
+    const get_file_input = function () {
         return $('#bot_avatar_file_input');
     };
 
-    var file_name_field = $('#bot_avatar_file');
-    var input_error = $('#bot_avatar_file_input_error');
-    var clear_button = $('#bot_avatar_clear_button');
-    var upload_button = $('#bot_avatar_upload_button');
+    const file_name_field = $('#bot_avatar_file');
+    const input_error = $('#bot_avatar_file_input_error');
+    const clear_button = $('#bot_avatar_clear_button');
+    const upload_button = $('#bot_avatar_upload_button');
 
     return upload_widget.build_widget(
         get_file_input,
@@ -22,14 +22,14 @@ exports.build_bot_create_widget = function () {
 };
 
 exports.build_bot_edit_widget = function (target) {
-    var get_file_input = function () {
+    const get_file_input = function () {
         return target.find('.edit_bot_avatar_file_input');
     };
 
-    var file_name_field = target.find('.edit_bot_avatar_file');
-    var input_error = target.find('.edit_bot_avatar_error');
-    var clear_button = target.find('.edit_bot_avatar_clear_button');
-    var upload_button = target.find('.edit_bot_avatar_upload_button');
+    const file_name_field = target.find('.edit_bot_avatar_file');
+    const input_error = target.find('.edit_bot_avatar_error');
+    const clear_button = target.find('.edit_bot_avatar_clear_button');
+    const upload_button = target.find('.edit_bot_avatar_upload_button');
 
     return upload_widget.build_widget(
         get_file_input,
@@ -41,7 +41,7 @@ exports.build_bot_edit_widget = function (target) {
 };
 
 exports.build_user_avatar_widget = function (upload_function) {
-    var get_file_input = function () {
+    const get_file_input = function () {
         return $('#user_avatar_file_input').expectOne();
     };
 

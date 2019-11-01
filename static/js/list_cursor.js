@@ -1,7 +1,7 @@
-var list_cursor = function (opts) {
-    var self = {};
+const list_cursor = function (opts) {
+    const self = {};
 
-    var config_ok =
+    const config_ok =
         opts.highlight_class &&
         opts.list &&
         opts.list.scroll_container_sel &&
@@ -20,7 +20,7 @@ var list_cursor = function (opts) {
         if (self.curr_key === undefined) {
             return;
         }
-        var row = self.get_row(self.curr_key);
+        const row = self.get_row(self.curr_key);
         if (row) {
             row.clear();
         }
@@ -43,7 +43,7 @@ var list_cursor = function (opts) {
             return;
         }
 
-        var li = opts.list.find_li({
+        const li = opts.list.find_li({
             key: key,
             force_render: true,
         });
@@ -64,7 +64,7 @@ var list_cursor = function (opts) {
     };
 
     self.adjust_scroll = function (li) {
-        var scroll_container = $(opts.list.scroll_container_sel);
+        const scroll_container = $(opts.list.scroll_container_sel);
         scroll_util.scroll_element_into_container(li, scroll_container);
     };
 
@@ -74,7 +74,7 @@ var list_cursor = function (opts) {
         // changing it, so we just want to re-highlight the current
         // row in the new DOM.  If you are filtering, for now you
         // should call the 'reset()' method.
-        var row = self.get_row(self.curr_key);
+        const row = self.get_row(self.curr_key);
 
         if (row === undefined) {
             return;
@@ -91,7 +91,7 @@ var list_cursor = function (opts) {
             return;
         }
         self.clear();
-        var row = self.get_row(key);
+        const row = self.get_row(key);
         if (row === undefined) {
             blueslip.error('Cannot highlight key for list_cursor: ' + key);
             return;
@@ -102,7 +102,7 @@ var list_cursor = function (opts) {
 
     self.reset = function () {
         self.clear();
-        var key = opts.list.first_key();
+        const key = opts.list.first_key();
         if (key === undefined) {
             self.curr_key = undefined;
             return;
@@ -114,7 +114,7 @@ var list_cursor = function (opts) {
         if (self.curr_key === undefined) {
             return;
         }
-        var key = opts.list.prev_key(self.curr_key);
+        const key = opts.list.prev_key(self.curr_key);
         if (key === undefined) {
             // leave the current key
             return;
@@ -129,7 +129,7 @@ var list_cursor = function (opts) {
             self.reset();
             return;
         }
-        var key = opts.list.next_key(self.curr_key);
+        const key = opts.list.next_key(self.curr_key);
         if (key === undefined) {
             // leave the current key
             return;

@@ -5,7 +5,7 @@ $(function () {
     });
 
     $("body").click(function (e) {
-        var $this = $(e.target);
+        const $this = $(e.target);
 
         if ($this.closest(".dropdown .dropdown-pill").length > 0 && !$(".dropdown").hasClass("show")) {
             $(".dropdown").addClass("show");

@@ -29,7 +29,7 @@ $(function () {
     // this collects all localStorage keys that match the format of:
     //   i18next:dddddddddd:w+ => 1484902202:en
     // these are all language translation strings.
-    var translations = Object.keys(localStorage).filter(function (key) {
+    const translations = Object.keys(localStorage).filter(function (key) {
         return /^i18next:\d{10}:\w+$/.test(key);
     });
 

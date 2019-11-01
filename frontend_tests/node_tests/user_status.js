@@ -41,8 +41,8 @@ run_test('basics', () => {
 run_test('server', () => {
     initialize();
 
-    var sent_data;
-    var success;
+    let sent_data;
+    let success;
 
     channel.post = (opts) => {
         sent_data = opts.data;
@@ -58,7 +58,7 @@ run_test('server', () => {
     user_status.server_revoke_away();
     assert.deepEqual(sent_data, {away: false, status_text: undefined});
 
-    var called;
+    let called;
 
     user_status.server_update({
         status_text: 'out to lunch',

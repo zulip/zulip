@@ -1,19 +1,19 @@
-var render_widgets_poll_widget = require('../templates/widgets/poll_widget.hbs');
-var render_widgets_poll_widget_results = require('../templates/widgets/poll_widget_results.hbs');
+const render_widgets_poll_widget = require('../templates/widgets/poll_widget.hbs');
+const render_widgets_poll_widget_results = require('../templates/widgets/poll_widget_results.hbs');
 
 exports.poll_data_holder = function (is_my_poll, question, options) {
     // This object just holds data for a poll, although it
     // works closely with the widget's concept of how data
     // should be represented for rendering, plus how the
     // server sends us data.
-    var self = {};
+    const self = {};
 
-    var me = people.my_current_user_id();
-    var poll_question = question;
-    var key_to_option = {};
-    var my_idx = 1;
+    const me = people.my_current_user_id();
+    let poll_question = question;
+    const key_to_option = {};
+    let my_idx = 1;
 
-    var input_mode = is_my_poll; // for now
+    let input_mode = is_my_poll; // for now
 
     self.set_question = function (new_question) {
         input_mode = false;
@@ -41,11 +41,11 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
     }
 
     self.get_widget_data = function () {
-        var options = [];
+        const options = [];
 
         _.each(key_to_option, function (obj, key) {
-            var voters = _.keys(obj.votes);
-            var current_user_vote = _.contains(voters, String(me));
+            const voters = _.keys(obj.votes);
+            const current_user_vote = _.contains(voters, String(me));
 
             options.push({
                 option: obj.option,
@@ -57,7 +57,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
         });
 
 
-        var widget_data = {
+        const widget_data = {
             options: options,
             question: poll_question,
         };
@@ -68,7 +68,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
     self.handle = {
         new_option: {
             outbound: function (option) {
-                var event = {
+                const event = {
                     type: 'new_option',
                     idx: my_idx,
                     option: option,
@@ -80,10 +80,10 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
             },
 
             inbound: function (sender_id, data) {
-                var idx = data.idx;
-                var key = sender_id + ',' + idx;
-                var option = data.option;
-                var votes = {};
+                const idx = data.idx;
+                const key = sender_id + ',' + idx;
+                const option = data.option;
+                const votes = {};
 
                 key_to_option[key] = {
                     option: option,
@@ -99,7 +99,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
         question: {
             outbound: function (question) {
-                var event = {
+                const event = {
                     type: 'question',
                     question: question,
                 };
@@ -117,14 +117,14 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
         vote: {
             outbound: function (key) {
-                var vote = 1;
+                let vote = 1;
 
                 // toggle
                 if (key_to_option[key].votes[me]) {
                     vote = -1;
                 }
 
-                var event = {
+                const event = {
                     type: 'vote',
                     key: key,
                     vote: vote,
@@ -134,16 +134,16 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
             },
 
             inbound: function (sender_id, data) {
-                var key = data.key;
-                var vote = data.vote;
-                var option = key_to_option[key];
+                const key = data.key;
+                const vote = data.vote;
+                const option = key_to_option[key];
 
                 if (option === undefined) {
                     blueslip.warn('unknown key for poll: ' + key);
                     return;
                 }
 
-                var votes = option.votes;
+                const votes = option.votes;
 
                 if (vote === 1) {
                     votes[sender_id] = 1;
@@ -155,7 +155,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
     };
 
     self.handle_event = function (sender_id, data) {
-        var type = data.type;
+        const type = data.type;
         if (self.handle[type]) {
             self.handle[type].inbound(sender_id, data);
         }
@@ -180,32 +180,32 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 };
 
 exports.activate = function (opts) {
-    var elem = opts.elem;
-    var callback = opts.callback;
+    const elem = opts.elem;
+    const callback = opts.callback;
 
-    var question = '';
-    var options = [];
+    let question = '';
+    let options = [];
     if (opts.extra_data) {
         question = opts.extra_data.question || '';
         options = opts.extra_data.options || [];
     }
 
-    var is_my_poll = people.is_my_user_id(opts.message.sender_id);
-    var poll_data = exports.poll_data_holder(is_my_poll, question, options);
+    const is_my_poll = people.is_my_user_id(opts.message.sender_id);
+    const poll_data = exports.poll_data_holder(is_my_poll, question, options);
 
     function update_edit_controls() {
-        var has_question = elem.find('input.poll-question').val().trim() !== '';
+        const has_question = elem.find('input.poll-question').val().trim() !== '';
         elem.find('button.poll-question-check').toggle(has_question);
     }
 
     function render_question() {
-        var question = poll_data.get_question();
-        var input_mode = poll_data.get_input_mode();
-        var can_edit = is_my_poll && !input_mode;
-        var has_question = question.trim() !== '';
-        var can_vote = has_question;
-        var waiting = !is_my_poll && !has_question;
-        var author_help = is_my_poll && !has_question;
+        const question = poll_data.get_question();
+        const input_mode = poll_data.get_input_mode();
+        const can_edit = is_my_poll && !input_mode;
+        const has_question = question.trim() !== '';
+        const can_vote = has_question;
+        const waiting = !is_my_poll && !has_question;
+        const author_help = is_my_poll && !has_question;
 
         elem.find('.poll-question-header').toggle(!input_mode);
         elem.find('.poll-question-header').text(question);
@@ -223,7 +223,7 @@ exports.activate = function (opts) {
     function start_editing() {
         poll_data.set_input_mode();
 
-        var question = poll_data.get_question();
+        const question = poll_data.get_question();
         elem.find('input.poll-question').val(question);
         render_question();
         elem.find('input.poll-question').focus();
@@ -235,9 +235,9 @@ exports.activate = function (opts) {
     }
 
     function submit_question() {
-        var poll_question_input = elem.find("input.poll-question");
-        var new_question = poll_question_input.val().trim();
-        var old_question = poll_data.get_question();
+        const poll_question_input = elem.find("input.poll-question");
+        let new_question = poll_question_input.val().trim();
+        const old_question = poll_data.get_question();
 
         // We should disable the button for blank questions,
         // so this is just defensive code.
@@ -255,14 +255,14 @@ exports.activate = function (opts) {
         }
 
         // Broadcast the new question to our peers.
-        var data = poll_data.handle.question.outbound(new_question);
+        const data = poll_data.handle.question.outbound(new_question);
         callback(data);
     }
 
     function submit_option() {
-        var poll_option_input = elem.find("input.poll-option");
-        var option = poll_option_input.val().trim();
-        var options = poll_data.get_widget_data().options;
+        const poll_option_input = elem.find("input.poll-option");
+        const option = poll_option_input.val().trim();
+        const options = poll_data.get_widget_data().options;
 
         if (poll_data.is_option_present(options, option)) {
             return;
@@ -274,17 +274,17 @@ exports.activate = function (opts) {
 
         poll_option_input.val('').focus();
 
-        var data = poll_data.handle.new_option.outbound(option);
+        const data = poll_data.handle.new_option.outbound(option);
         callback(data);
     }
 
     function submit_vote(key) {
-        var data = poll_data.handle.vote.outbound(key);
+        const data = poll_data.handle.vote.outbound(key);
         callback(data);
     }
 
     function build_widget() {
-        var html = render_widgets_poll_widget();
+        const html = render_widgets_poll_widget();
         elem.html(html);
 
         elem.find('input.poll-question').on('keyup', function (e) {
@@ -343,14 +343,14 @@ exports.activate = function (opts) {
     }
 
     function render_results() {
-        var widget_data = poll_data.get_widget_data();
+        const widget_data = poll_data.get_widget_data();
 
-        var html = render_widgets_poll_widget_results(widget_data);
+        const html = render_widgets_poll_widget_results(widget_data);
         elem.find('ul.poll-widget').html(html);
 
         elem.find("button.poll-vote").off('click').on('click', function (e) {
             e.stopPropagation();
-            var key = $(e.target).attr('data-key');
+            const key = $(e.target).attr('data-key');
             submit_vote(key);
         });
     }

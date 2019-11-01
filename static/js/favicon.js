@@ -1,4 +1,4 @@
-var favicon_selector = 'link[rel="shortcut icon"]';
+const favicon_selector = 'link[rel="shortcut icon"]';
 
 // We need to reset the favicon after changing the
 // window.location.hash or Firefox will drop the favicon.  See

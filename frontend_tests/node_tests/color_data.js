@@ -17,7 +17,7 @@ run_test('pick_color', () => {
         { color: 'bogus' },
     ]);
 
-    var expected_colors = [
+    const expected_colors = [
         'blue',
         'red',
         // ok, now we'll cycle through all colors

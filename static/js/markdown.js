@@ -6,8 +6,8 @@
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
-var realm_filter_map = {};
-var realm_filter_list = [];
+let realm_filter_map = {};
+let realm_filter_list = [];
 
 
 // Helper function
@@ -21,7 +21,7 @@ function escape(html, encode) {
 }
 
 // Regexes that match some of our common bugdown markup
-var backend_only_markdown_re = [
+const backend_only_markdown_re = [
     // Inline image previews, check for contiguous chars ending in image suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
@@ -45,16 +45,16 @@ exports.set_name_in_mention_element = function (element, name) {
 exports.contains_backend_only_syntax = function (content) {
     // Try to guess whether or not a message has bugdown in it
     // If it doesn't, we can immediately render it client-side
-    var markedup = _.find(backend_only_markdown_re, function (re) {
+    const markedup = _.find(backend_only_markdown_re, function (re) {
         return re.test(content);
     });
 
     // If a realm filter doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    var false_filter_match = _.find(realm_filter_list, function (re) {
-        var pattern = /(?:[^\s'"\(,:<])/.source + re[0].source + /(?![\w])/.source;
-        var regex = new RegExp(pattern);
+    const false_filter_match = _.find(realm_filter_list, function (re) {
+        const pattern = /(?:[^\s'"\(,:<])/.source + re[0].source + /(?![\w])/.source;
+        const regex = new RegExp(pattern);
         return regex.test(content);
     });
     return markedup !== undefined || false_filter_match !== undefined;
@@ -63,12 +63,12 @@ exports.contains_backend_only_syntax = function (content) {
 exports.apply_markdown = function (message) {
     message_store.init_booleans(message);
 
-    var options = {
+    const options = {
         userMentionHandler: function (name, silently) {
-            var person = people.get_by_name(name);
+            let person = people.get_by_name(name);
 
-            var id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
-            var match = id_regex.exec(name);
+            const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
+            const match = id_regex.exec(name);
             if (match) {
                 if (people.is_known_user_id(match[2])) {
                     person = people.get_person_from_user_id(match[2]);
@@ -83,7 +83,7 @@ exports.apply_markdown = function (message) {
                     message.mentioned = true;
                     message.mentioned_me_directly = true;
                 }
-                var str = '';
+                let str = '';
                 if (silently) {
                     str += '<span class="user-mention silent" data-user-id="' + person.user_id + '">';
                 } else {
@@ -99,7 +99,7 @@ exports.apply_markdown = function (message) {
             return;
         },
         groupMentionHandler: function (name) {
-            var group = user_groups.get_user_group_from_name(name);
+            const group = user_groups.get_user_group_from_name(name);
             if (group !== undefined) {
                 if (user_groups.is_member_of(group.id, people.my_current_user_id())) {
                     message.mentioned = true;
@@ -112,7 +112,7 @@ exports.apply_markdown = function (message) {
         },
         silencedMentionHandler: function (quote) {
             // Silence quoted mentions.
-            var user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>@/gm;
+            const user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>@/gm;
             quote = quote.replace(user_mention_re, function (match) {
                 match = match.replace(/"user-mention"/g, '"user-mention silent"');
                 match = match.replace(/>@/g, '>');
@@ -137,20 +137,20 @@ exports.add_topic_links = function (message) {
         util.set_topic_links(message, []);
         return;
     }
-    var topic = util.get_message_topic(message);
-    var links = [];
+    const topic = util.get_message_topic(message);
+    let links = [];
     _.each(realm_filter_list, function (realm_filter) {
-        var pattern = realm_filter[0];
-        var url = realm_filter[1];
-        var match;
+        const pattern = realm_filter[0];
+        const url = realm_filter[1];
+        let match;
         while ((match = pattern.exec(topic)) !== null) {
-            var link_url = url;
-            var matched_groups = match.slice(1);
-            var i = 0;
+            let link_url = url;
+            const matched_groups = match.slice(1);
+            let i = 0;
             while (i < matched_groups.length) {
-                var matched_group = matched_groups[i];
-                var current_group = i + 1;
-                var back_ref = "\\" + current_group;
+                const matched_group = matched_groups[i];
+                const current_group = i + 1;
+                const back_ref = "\\" + current_group;
                 link_url = link_url.replace(back_ref, matched_group);
                 i += 1;
             }
@@ -159,8 +159,8 @@ exports.add_topic_links = function (message) {
     });
 
     // Also make raw urls navigable
-    var url_re = /\b(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g; // Slightly modified from third/marked.js
-    var match = topic.match(url_re);
+    const url_re = /\b(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g; // Slightly modified from third/marked.js
+    const match = topic.match(url_re);
     if (match) {
         links = links.concat(match);
     }
@@ -182,26 +182,26 @@ function make_emoji_span(codepoint, title, alt_text) {
 }
 
 function handleUnicodeEmoji(unicode_emoji) {
-    var codepoint = unicode_emoji.codePointAt(0).toString(16);
+    const codepoint = unicode_emoji.codePointAt(0).toString(16);
     if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-        var emoji_name = emoji_codes.codepoint_to_name[codepoint];
-        var alt_text = ':' + emoji_name + ':';
-        var title = emoji_name.split("_").join(" ");
+        const emoji_name = emoji_codes.codepoint_to_name[codepoint];
+        const alt_text = ':' + emoji_name + ':';
+        const title = emoji_name.split("_").join(" ");
         return make_emoji_span(codepoint, title, alt_text);
     }
     return unicode_emoji;
 }
 
 function handleEmoji(emoji_name) {
-    var alt_text = ':' + emoji_name + ':';
-    var title = emoji_name.split("_").join(" ");
+    const alt_text = ':' + emoji_name + ':';
+    const title = emoji_name.split("_").join(" ");
     if (emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
-        var emoji_url = emoji.active_realm_emojis[emoji_name].emoji_url;
+        const emoji_url = emoji.active_realm_emojis[emoji_name].emoji_url;
         return '<img alt="' + alt_text + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + title + '">';
     } else if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
-        var codepoint = emoji_codes.name_to_codepoint[emoji_name];
+        const codepoint = emoji_codes.name_to_codepoint[emoji_name];
         return make_emoji_span(codepoint, title, alt_text);
     }
     return alt_text;
@@ -214,33 +214,33 @@ function handleAvatar(email) {
 }
 
 function handleStream(streamName) {
-    var stream = stream_data.get_sub(streamName);
+    const stream = stream_data.get_sub(streamName);
     if (stream === undefined) {
         return;
     }
-    var href = hash_util.by_stream_uri(stream.stream_id);
+    const href = hash_util.by_stream_uri(stream.stream_id);
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
         'href="/' + href + '"' +
         '>' + '#' + escape(stream.name) + '</a>';
 }
 
 function handleStreamTopic(streamName, topic) {
-    var stream = stream_data.get_sub(streamName);
+    const stream = stream_data.get_sub(streamName);
     if (stream === undefined || !topic) {
         return;
     }
-    var href = hash_util.by_stream_topic_uri(stream.stream_id, topic);
-    var text = '#' + escape(stream.name) + ' > ' + escape(topic);
+    const href = hash_util.by_stream_topic_uri(stream.stream_id, topic);
+    const text = '#' + escape(stream.name) + ' > ' + escape(topic);
     return '<a class="stream-topic" data-stream-id="' + stream.stream_id + '" ' +
         'href="/' + href + '"' + '>' + text + '</a>';
 }
 
 function handleRealmFilter(pattern, matches) {
-    var url = realm_filter_map[pattern];
+    let url = realm_filter_map[pattern];
 
-    var current_group = 1;
+    let current_group = 1;
     _.each(matches, function (match) {
-        var back_ref = "\\" + current_group;
+        const back_ref = "\\" + current_group;
         url = url.replace(back_ref, match);
         current_group += 1;
     });
@@ -262,11 +262,11 @@ function handleTex(tex, fullmatch) {
 function python_to_js_filter(pattern, url) {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
-    var named_group_re = /\(?P<([^>]+?)>/g;
-    var match = named_group_re.exec(pattern);
-    var current_group = 1;
+    const named_group_re = /\(?P<([^>]+?)>/g;
+    let match = named_group_re.exec(pattern);
+    let current_group = 1;
     while (match) {
-        var name = match[1];
+        const name = match[1];
         // Replace named group with regular matching group
         pattern = pattern.replace('(?P<' + name + '>', '(');
         // Replace named reference in url to numbered reference
@@ -279,14 +279,14 @@ function python_to_js_filter(pattern, url) {
         current_group += 1;
     }
     // Convert any python in-regex flags to RegExp flags
-    var js_flags = 'g';
-    var inline_flag_re = /\(\?([iLmsux]+)\)/;
+    let js_flags = 'g';
+    const inline_flag_re = /\(\?([iLmsux]+)\)/;
     match = inline_flag_re.exec(pattern);
 
     // JS regexes only support i (case insensitivity) and m (multiline)
     // flags, so keep those and ignore the rest
     if (match) {
-        var py_flags = match[1].split("");
+        const py_flags = match[1].split("");
         _.each(py_flags, function (flag) {
             if ("im".indexOf(flag) !== -1) {
                 js_flags += flag;
@@ -303,7 +303,7 @@ function python_to_js_filter(pattern, url) {
     // message is rendered on the backend which has proper support
     // for negative lookbehind.
     pattern = pattern + /(?![\w])/.source;
-    var final_regex = null;
+    let final_regex = null;
     try {
         final_regex = new RegExp(pattern, js_flags);
     } catch (ex) {
@@ -320,11 +320,11 @@ exports.set_realm_filters = function (realm_filters) {
     realm_filter_map = {};
     realm_filter_list = [];
 
-    var marked_rules = [];
+    const marked_rules = [];
     _.each(realm_filters, function (realm_filter) {
-        var pattern = realm_filter[0];
-        var url = realm_filter[1];
-        var js_filters = python_to_js_filter(pattern, url);
+        const pattern = realm_filter[0];
+        const url = realm_filter[1];
+        const js_filters = python_to_js_filter(pattern, url);
         if (!js_filters[0]) {
             // Skip any realm filters that could not be converted
             return;
@@ -347,7 +347,7 @@ exports.initialize = function () {
     }
 
     // Configure the marked markdown parser for our usage
-    var r = new marked.Renderer();
+    const r = new marked.Renderer();
 
     // No <code> around our code blocks instead a codehilite <div> and disable
     // class-specific highlighting.
@@ -363,7 +363,7 @@ exports.initialize = function () {
         if (!text.trim()) {
             text = href;
         }
-        var out = '<a href="' + href + '"' + ' target="_blank" title="' +
+        const out = '<a href="' + href + '"' + ' target="_blank" title="' +
                   title + '"' + '>' + text + '</a>';
         return out;
     };

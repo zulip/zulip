@@ -1,4 +1,4 @@
-var noop = function () {};
+const noop = function () {};
 
 set_global('document', {});
 global.patch_builtin('window', {
@@ -40,7 +40,7 @@ set_global('ui_report', {
 server_events.home_view_loaded();
 
 run_test('message_event', () => {
-    var event = {
+    const event = {
         type: 'message',
         message: {
             content: 'hello',
@@ -48,7 +48,7 @@ run_test('message_event', () => {
         flags: [],
     };
 
-    var inserted;
+    let inserted;
     set_global('message_events', {
         insert_new_messages: function (messages) {
             assert.equal(messages[0].content, event.message.content);
@@ -61,7 +61,7 @@ run_test('message_event', () => {
 });
 
 run_test('pointer_event', () => {
-    var event = {
+    const event = {
         type: 'pointer',
         pointer: 999,
     };
@@ -82,7 +82,7 @@ run_test('pointer_event', () => {
 
 // Start blueslip tests here
 
-var setup = function () {
+const setup = function () {
     server_events.home_view_loaded();
     set_global('message_events', {
         insert_new_messages: function () {
@@ -102,7 +102,7 @@ var setup = function () {
 run_test('event_dispatch_error', () => {
     setup();
 
-    var data = {events: [{type: 'stream', op: 'update', id: 1, other: 'thing'}]};
+    const data = {events: [{type: 'stream', op: 'update', id: 1, other: 'thing'}]};
     global.channel.get = function (options) {
         options.success(data);
     };
@@ -124,7 +124,7 @@ run_test('event_dispatch_error', () => {
 run_test('event_new_message_error', () => {
     setup();
 
-    var data = {events: [{type: 'message', id: 1, other: 'thing', message: {}}]};
+    const data = {events: [{type: 'message', id: 1, other: 'thing', message: {}}]};
     global.channel.get = function (options) {
         options.success(data);
     };
@@ -141,7 +141,7 @@ run_test('event_new_message_error', () => {
 
 run_test('event_edit_message_error', () => {
     setup();
-    var data = {events: [{type: 'update_message', id: 1, other: 'thing'}]};
+    const data = {events: [{type: 'update_message', id: 1, other: 'thing'}]};
     global.channel.get = function (options) {
         options.success(data);
     };

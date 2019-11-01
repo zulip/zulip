@@ -1,6 +1,6 @@
-var autosize = require('autosize');
+const autosize = require('autosize');
 
-var narrow_window = false;
+let narrow_window = false;
 
 function confine_to_range(lo, val, hi) {
     if (val < lo) {
@@ -13,13 +13,13 @@ function confine_to_range(lo, val, hi) {
 }
 
 function size_blocks(blocks, usable_height) {
-    var sum_height = 0;
+    let sum_height = 0;
     _.each(blocks, function (block) {
         sum_height += block.real_height;
     });
 
     _.each(blocks, function (block) {
-        var ratio = block.real_height / sum_height;
+        let ratio = block.real_height / sum_height;
         ratio = confine_to_range(0.05, ratio, 0.85);
         block.max_height = confine_to_range(80, usable_height * ratio, 1.2 * block.real_height);
     });
@@ -29,7 +29,7 @@ function set_user_list_heights(res, usable_height, buddy_list_wrapper, group_pms
     // Calculate these heights:
     //    res.buddy_list_wrapper_max_height
     //    res.group_pms_max_height
-    var blocks = [
+    const blocks = [
         {
             real_height: ui.get_scroll_element(buddy_list_wrapper).prop('scrollHeight'),
         },
@@ -45,10 +45,10 @@ function set_user_list_heights(res, usable_height, buddy_list_wrapper, group_pms
 }
 
 function get_new_heights() {
-    var res = {};
-    var viewport_height = message_viewport.height();
-    var top_navbar_height = $("#top_navbar").safeOuterHeight(true);
-    var invite_user_link_height = $("#invite-user-link").safeOuterHeight(true) || 0;
+    const res = {};
+    const viewport_height = message_viewport.height();
+    const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
+    const invite_user_link_height = $("#invite-user-link").safeOuterHeight(true) || 0;
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
@@ -65,10 +65,10 @@ function get_new_heights() {
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
     // RIGHT SIDEBAR
-    var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
-    var group_pms = $('#group-pms').expectOne();
+    const buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
+    const group_pms = $('#group-pms').expectOne();
 
-    var usable_height = viewport_height
+    const usable_height = viewport_height
         - parseInt($("#right-sidebar").css("marginTop"), 10)
         - $("#feedback_section").safeOuterHeight(true)
         - parseInt(buddy_list_wrapper.css("marginTop"), 10)
@@ -96,24 +96,24 @@ function get_new_heights() {
 
 function left_userlist_get_new_heights() {
 
-    var res = {};
-    var viewport_height = message_viewport.height();
-    var viewport_width = message_viewport.width();
+    const res = {};
+    const viewport_height = message_viewport.height();
+    const viewport_width = message_viewport.width();
     res.viewport_height = viewport_height;
     res.viewport_width = viewport_width;
 
     // main div
-    var top_navbar_height = $(".header").safeOuterHeight(true);
+    const top_navbar_height = $(".header").safeOuterHeight(true);
     res.bottom_whitespace_height = viewport_height * 0.4;
     res.main_div_min_height = viewport_height - top_navbar_height;
 
 
     // left sidebar
-    var stream_filters = $('#stream_filters').expectOne();
-    var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
+    const stream_filters = $('#stream_filters').expectOne();
+    const buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
 
-    var stream_filters_real_height = stream_filters.prop("scrollHeight");
-    var user_list_real_height = ui.get_scroll_element(buddy_list_wrapper).prop("scrollHeight");
+    const stream_filters_real_height = stream_filters.prop("scrollHeight");
+    const user_list_real_height = ui.get_scroll_element(buddy_list_wrapper).prop("scrollHeight");
 
     res.total_leftlist_height = viewport_height
                                 - parseInt($("#left-sidebar").css("marginTop"), 10)
@@ -127,7 +127,7 @@ function left_userlist_get_new_heights() {
                                 - parseInt(buddy_list_wrapper.css("marginTop"), 10)
                                 - parseInt(buddy_list_wrapper.css("marginBottom"), 10);
 
-    var blocks = [
+    const blocks = [
         {
             real_height: stream_filters_real_height,
         },
@@ -147,20 +147,20 @@ function left_userlist_get_new_heights() {
 
 exports.watch_manual_resize = function (element) {
     return (function on_box_resize(cb) {
-        var box = document.querySelector(element);
+        const box = document.querySelector(element);
 
         if (!box) {
             blueslip.error('Bad selector in watch_manual_resize: ' + element);
             return;
         }
 
-        var meta = {
+        const meta = {
             box: box,
             height: null,
             mousedown: false,
         };
 
-        var box_handler = function () {
+        const box_handler = function () {
             meta.mousedown = true;
             meta.height = meta.box.clientHeight;
         };
@@ -168,7 +168,7 @@ exports.watch_manual_resize = function (element) {
 
         // If the user resizes the textarea manually, we use the
         // callback to stop autosize from adjusting the height.
-        var body_handler = function () {
+        const body_handler = function () {
             if (meta.mousedown === true) {
                 meta.mousedown = false;
                 if (meta.height !== meta.box.clientHeight) {
@@ -201,14 +201,14 @@ exports.resize_stream_filters_container = function (h) {
 };
 
 exports.resize_page_components = function () {
-    var sidebar;
+    let sidebar;
 
     if (page_params.left_side_userlist) {
-        var css_narrow_mode = message_viewport.is_narrow();
+        const css_narrow_mode = message_viewport.is_narrow();
 
         $("#top_navbar").removeClass("rightside-userlist");
 
-        var right_items = $('.right-sidebar-items').expectOne();
+        const right_items = $('.right-sidebar-items').expectOne();
 
         if (css_narrow_mode && !narrow_window) {
             // move stuff to the left sidebar (skinny mode)
@@ -242,10 +242,10 @@ exports.resize_page_components = function () {
     panels.resize_app();
 };
 
-var _old_width = $(window).width();
+let _old_width = $(window).width();
 
 exports.handler = function () {
-    var new_width = $(window).width();
+    const new_width = $(window).width();
 
     if (new_width !== _old_width) {
         _old_width = new_width;
@@ -255,7 +255,7 @@ exports.handler = function () {
     // On mobile web, we want to avoid hiding a popover here,
     // especially if this resize was triggered by a virtual keyboard
     // popping up when the user opened that very popover.
-    var mobile = util.is_mobile();
+    const mobile = util.is_mobile();
     if (!mobile) {
         popovers.hide_all();
     }

@@ -15,10 +15,10 @@ exports.random_int = function random_int(min, max) {
 // Usage: lower_bound(array, value, [less])
 //        lower_bound(array, first, last, value, [less])
 exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
-    var first;
-    var last;
-    var value;
-    var less;
+    let first;
+    let last;
+    let value;
+    let less;
     if (arg3 === undefined) {
         first = 0;
         last = array.length;
@@ -35,9 +35,9 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
         less = function (a, b) { return a < b; };
     }
 
-    var len = last - first;
-    var middle;
-    var step;
+    let len = last - first;
+    let middle;
+    let step;
     while (len > 0) {
         step = Math.floor(len / 2);
         middle = first + step;
@@ -66,7 +66,7 @@ exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
 };
 
 exports.is_pm_recipient = function (email, message) {
-    var recipients = message.reply_to.toLowerCase().split(',');
+    const recipients = message.reply_to.toLowerCase().split(',');
     return recipients.indexOf(email.toLowerCase()) !== -1;
 };
 
@@ -119,7 +119,7 @@ exports.normalize_recipients = function (recipients) {
 // we are decoding input that the user is in the middle of
 // typing.
 exports.robust_uri_decode = function (str) {
-    var end = str.length;
+    let end = str.length;
     while (end > 0) {
         try {
             return decodeURIComponent(str.substring(0, end));
@@ -143,7 +143,7 @@ exports.rtrim = function (str) {
 // String.localeCompare is really slow.
 exports.make_strcmp = function () {
     try {
-        var collator = new Intl.Collator();
+        const collator = new Intl.Collator();
         return collator.compare;
     } catch (e) {
         // continue regardless of error
@@ -165,7 +165,7 @@ exports.array_compare = function util_array_compare(a, b) {
     if (a.length !== b.length) {
         return false;
     }
-    var i;
+    let i;
     for (i = 0; i < a.length; i += 1) {
         if (a[i] !== b[i]) {
             return false;
@@ -181,7 +181,7 @@ exports.array_compare = function util_array_compare(a, b) {
  * You must supply a option to the constructor called compute_value
  * which should be a function that computes the uncached value.
  */
-var unassigned_value_sentinel = {};
+const unassigned_value_sentinel = {};
 exports.CachedValue = function (opts) {
     this._value = unassigned_value_sentinel;
     _.extend(this, opts);
@@ -201,18 +201,18 @@ exports.CachedValue.prototype = {
 };
 
 exports.is_all_or_everyone_mentioned = function (message_content) {
-    var all_everyone_re = /(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/;
+    const all_everyone_re = /(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/;
     return all_everyone_re.test(message_content);
 };
 
 exports.move_array_elements_to_front = function util_move_array_elements_to_front(array, selected) {
-    var i;
-    var selected_hash = {};
+    let i;
+    const selected_hash = {};
     for (i = 0; i < selected.length; i += 1) {
         selected_hash[selected[i]] = true;
     }
-    var selected_elements = [];
-    var unselected_elements = [];
+    const selected_elements = [];
+    const unselected_elements = [];
     for (i = 0; i < array.length; i += 1) {
         if (selected_hash[array[i]]) {
             selected_elements.push(array[i]);
@@ -226,19 +226,19 @@ exports.move_array_elements_to_front = function util_move_array_elements_to_fron
 
 // check by the userAgent string if a user's client is likely mobile.
 exports.is_mobile = function () {
-    var regex = "Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini";
+    const regex = "Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini";
     return new RegExp(regex, "i").test(window.navigator.userAgent);
 };
 
 exports.prefix_sort = function (query, objs, get_item) {
     // Based on Bootstrap typeahead's default sorter, but taking into
     // account case sensitivity on "begins with"
-    var beginswithCaseSensitive = [];
-    var beginswithCaseInsensitive = [];
-    var noMatch = [];
-    var obj;
-    var item;
-    for (var i = 0; i < objs.length; i += 1) {
+    const beginswithCaseSensitive = [];
+    const beginswithCaseInsensitive = [];
+    const noMatch = [];
+    let obj;
+    let item;
+    for (let i = 0; i < objs.length; i += 1) {
         obj = objs[i];
         if (get_item) {
             item = get_item(obj);
@@ -266,7 +266,7 @@ function to_int(s) {
 exports.sorted_ids = function (ids) {
     // This mapping makes sure we are using ints, and
     // it also makes sure we don't mutate the list.
-    var id_list = _.map(ids, to_int);
+    let id_list = _.map(ids, to_int);
     id_list.sort(function (a, b) {
         return a - b;
     });

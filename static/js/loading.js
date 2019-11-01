@@ -1,8 +1,8 @@
-var render_loader = require("../templates/loader.hbs");
+const render_loader = require("../templates/loader.hbs");
 
 exports.make_indicator = function (outer_container, opts) {
     opts = opts || {};
-    var container = outer_container;
+    let container = outer_container;
 
     // TODO: We set white-space to 'nowrap' because under some
     // unknown circumstances (it happens on Keegan's laptop) the text
@@ -17,8 +17,8 @@ exports.make_indicator = function (outer_container, opts) {
     if (opts.abs_positioned !== undefined && opts.abs_positioned) {
         // Create some additional containers to facilitate absolutely
         // positioned spinners.
-        var container_id = container.attr('id');
-        var inner_container = $('<div id="' + container_id + '_box_container"></div>');
+        const container_id = container.attr('id');
+        let inner_container = $('<div id="' + container_id + '_box_container"></div>');
         container.append(inner_container);
         container = inner_container;
         inner_container = $('<div id="' + container_id + '_box"></div>');
@@ -26,13 +26,13 @@ exports.make_indicator = function (outer_container, opts) {
         container = inner_container;
     }
 
-    var spinner_elem = $('<div class="loading_indicator_spinner"></div>');
+    const spinner_elem = $('<div class="loading_indicator_spinner"></div>');
     spinner_elem.html(render_loader({ container_id: outer_container.attr("id") }));
     container.append(spinner_elem);
-    var text_width = 0;
+    let text_width = 0;
 
     if (opts.text !== undefined && opts.text !== '') {
-        var text_elem = $('<span class="loading_indicator_text"></span>');
+        const text_elem = $('<span class="loading_indicator_text"></span>');
         text_elem.text(opts.text);
         container.append(text_elem);
         // See note, below
@@ -55,7 +55,7 @@ exports.destroy_indicator = function (container) {
     }
     container.data("destroying", true);
 
-    var spinner = container.data("spinner_obj");
+    const spinner = container.data("spinner_obj");
     if (spinner !== undefined) {
         spinner.stop();
     }

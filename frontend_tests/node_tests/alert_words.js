@@ -1,4 +1,4 @@
-var _page_params = {
+const _page_params = {
     alert_words: ['alertone', 'alerttwo', 'alertthree', 'al*rt.*s', '.+', 'emoji'],
 };
 

@@ -1,16 +1,16 @@
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
-var changing_hash = false;
+let changing_hash = false;
 
 function get_full_url(hash) {
-    var location = window.location;
+    const location = window.location;
 
     if (hash === '' || hash.charAt(0) !== '#') {
         hash = '#' + hash;
     }
 
     // IE returns pathname as undefined and missing the leading /
-    var pathname = location.pathname;
+    let pathname = location.pathname;
     if (pathname === undefined) {
         pathname = '/';
     } else if (pathname === '' || pathname.charAt(0) !== '/') {
@@ -18,13 +18,13 @@ function get_full_url(hash) {
     }
 
     // Build a full URL to not have same origin problems
-    var url =  location.protocol + '//' + location.host + pathname + hash;
+    const url =  location.protocol + '//' + location.host + pathname + hash;
     return url;
 }
 
 function set_hash(hash) {
     if (history.pushState) {
-        var url = get_full_url(hash);
+        const url = get_full_url(hash);
         history.pushState(null, null, url);
     } else {
         blueslip.warn('browser does not support pushState');
@@ -45,7 +45,7 @@ exports.save_narrow = function (operators) {
     if (changing_hash) {
         return;
     }
-    var new_hash = hash_util.operators_to_hash(operators);
+    const new_hash = hash_util.operators_to_hash(operators);
     exports.changehash(new_hash);
 };
 
@@ -55,7 +55,7 @@ function activate_home_tab() {
     floating_recipient_bar.update();
 }
 
-var state = {
+const state = {
     is_internal_change: false,
     hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
@@ -63,8 +63,8 @@ var state = {
 
 function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
-    var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
-    var main_hash = hash_util.get_hash_category(hash);
+    const overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
+    const main_hash = hash_util.get_hash_category(hash);
 
     return overlay_list.indexOf(main_hash) > -1;
 }
@@ -76,11 +76,11 @@ function do_hashchange_normal(from_reload) {
     // NB: In Firefox, window.location.hash is URI-decoded.
     // Even if the URL bar says #%41%42%43%44, the value here will
     // be #ABCD.
-    var hash = window.location.hash.split("/");
+    const hash = window.location.hash.split("/");
     switch (hash[0]) {
     case "#narrow": {
         ui_util.change_tab_to("#home");
-        var operators = hash_util.parse_narrow(hash);
+        const operators = hash_util.parse_narrow(hash);
         if (operators === undefined) {
             // If the narrow URL didn't parse, clear
             // window.location.hash and send them to the home tab
@@ -88,7 +88,7 @@ function do_hashchange_normal(from_reload) {
             activate_home_tab();
             return false;
         }
-        var narrow_opts = {
+        const narrow_opts = {
             change_hash: false,  // already set
             trigger: 'hash change',
         };
@@ -129,11 +129,11 @@ function do_hashchange_normal(from_reload) {
 }
 
 function do_hashchange_overlay(old_hash) {
-    var base = hash_util.get_hash_category(window.location.hash);
-    var old_base = hash_util.get_hash_category(old_hash);
-    var section = hash_util.get_hash_section(window.location.hash);
+    const base = hash_util.get_hash_category(window.location.hash);
+    const old_base = hash_util.get_hash_category(old_hash);
+    let section = hash_util.get_hash_section(window.location.hash);
 
-    var coming_from_overlay = is_overlay_hash(old_hash || '#');
+    const coming_from_overlay = is_overlay_hash(old_hash || '#');
 
     // Start by handling the specific case of going
     // from something like streams/all to streams_subscribed.
@@ -202,7 +202,7 @@ function do_hashchange_overlay(old_hash) {
     if (base === 'settings') {
         if (!section) {
             section = settings_panel_menu.normal_settings.current_tab();
-            var settings_hash = '#settings/' + section;
+            const settings_hash = '#settings/' + section;
             exports.replace_hash(settings_hash);
         }
 
@@ -213,7 +213,7 @@ function do_hashchange_overlay(old_hash) {
     if (base === 'organization') {
         if (!section) {
             section = settings_panel_menu.org_settings.current_tab();
-            var org_hash = '#organization/' + section;
+            const org_hash = '#organization/' + section;
             exports.replace_hash(org_hash);
         }
 
@@ -233,7 +233,7 @@ function hashchanged(from_reload, e) {
         return;
     }
 
-    var old_hash;
+    let old_hash;
     if (e) {
         old_hash = "#" + (e.oldURL || state.old_hash).split(/#/).slice(1).join("");
         state.old_hash = window.location.hash;
@@ -247,13 +247,13 @@ function hashchanged(from_reload, e) {
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
     changing_hash = true;
-    var ret = do_hashchange_normal(from_reload);
+    const ret = do_hashchange_normal(from_reload);
     changing_hash = false;
     return ret;
 }
 
 exports.update_browser_history = function (new_hash) {
-    var old_hash = window.location.hash;
+    const old_hash = window.location.hash;
 
     if (!new_hash.startsWith('#')) {
         blueslip.error('programming error: prefix hashes with #: ' + new_hash);
@@ -281,7 +281,7 @@ exports.replace_hash = function (hash) {
         return;
     }
 
-    var url = get_full_url(hash);
+    const url = get_full_url(hash);
     window.history.replaceState(null, null, url);
 };
 
@@ -301,7 +301,7 @@ exports.initialize = function () {
 exports.exit_overlay = function (callback) {
     if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
-        var new_hash = state.hash_before_overlay || "#";
+        const new_hash = state.hash_before_overlay || "#";
         exports.update_browser_history(new_hash);
         if (typeof callback === "function") {
             callback();

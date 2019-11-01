@@ -17,9 +17,9 @@ What in the heck is a zcommand?
 */
 
 exports.send = function (opts) {
-    var command = opts.command;
-    var on_success = opts.on_success;
-    var data = {
+    const command = opts.command;
+    const on_success = opts.on_success;
+    const data = {
         command: command,
     };
 
@@ -90,31 +90,31 @@ exports.enter_night_mode = function () {
 
 exports.process = function (message_content) {
 
-    var content = message_content.trim();
+    const content = message_content.trim();
 
     if (content === '/ping') {
-        var start_time = new Date();
+        const start_time = new Date();
 
         exports.send({
             command: content,
             on_success: function () {
-                var end_time = new Date();
-                var diff = end_time - start_time;
+                const end_time = new Date();
+                let diff = end_time - start_time;
                 diff = Math.round(diff);
-                var msg = "ping time: " + diff + "ms";
+                const msg = "ping time: " + diff + "ms";
                 exports.tell_user(msg);
             },
         });
         return true;
     }
 
-    var day_commands = ['/day', '/light'];
+    const day_commands = ['/day', '/light'];
     if (day_commands.indexOf(content) >= 0) {
         exports.enter_day_mode();
         return true;
     }
 
-    var night_commands = ['/night', '/dark'];
+    const night_commands = ['/night', '/dark'];
     if (night_commands.indexOf(content) >= 0) {
         exports.enter_night_mode();
         return true;

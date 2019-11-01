@@ -34,7 +34,7 @@ exports.error = function (response, xhr, status_box) {
     if (xhr && xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        var server_response = escape(JSON.parse(xhr.responseText).msg);
+        const server_response = escape(JSON.parse(xhr.responseText).msg);
         if (response) {
             response += ": " + server_response;
         } else {
@@ -50,8 +50,8 @@ exports.success = function (response, status_box, remove_after) {
 };
 
 exports.generic_embed_error = function (error) {
-    var $alert = $("<div class='alert home-error-bar'></div>");
-    var $exit = "<div class='exit'></div>";
+    const $alert = $("<div class='alert home-error-bar'></div>");
+    const $exit = "<div class='exit'></div>";
 
     $(".alert-box").append($alert.html($exit + "<div class='content'>" + error + "</div>").addClass("show"));
 };

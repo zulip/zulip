@@ -1,14 +1,14 @@
-var render_bot_avatar_row = require('../templates/bot_avatar_row.hbs');
-var render_edit_bot = require('../templates/edit_bot.hbs');
-var render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");
-var render_settings_edit_outgoing_webhook_service = require("../templates/settings/edit_outgoing_webhook_service.hbs");
+const render_bot_avatar_row = require('../templates/bot_avatar_row.hbs');
+const render_edit_bot = require('../templates/edit_bot.hbs');
+const render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");
+const render_settings_edit_outgoing_webhook_service = require("../templates/settings/edit_outgoing_webhook_service.hbs");
 
 exports.hide_errors = function () {
     $('#bot_table_error').hide();
     $('.bot_error').hide();
 };
 
-var focus_tab = {
+const focus_tab = {
     add_a_new_bot_tab: function () {
         $("#bots_lists_navbar .active").removeClass("active");
         $("#bots_lists_navbar .add-a-new-bot-tab").addClass("active");
@@ -36,21 +36,21 @@ var focus_tab = {
 };
 
 exports.get_bot_info_div = function (bot_id) {
-    var sel = '.bot_info[data-user-id="' + bot_id + '"]';
+    const sel = '.bot_info[data-user-id="' + bot_id + '"]';
     return $(sel).expectOne();
 };
 
 exports.bot_error = function (bot_id, xhr) {
-    var bot_info = exports.get_bot_info_div(bot_id);
-    var bot_error_div = bot_info.find('.bot_error');
+    const bot_info = exports.get_bot_info_div(bot_id);
+    const bot_error_div = bot_info.find('.bot_error');
     bot_error_div.text(JSON.parse(xhr.responseText).msg);
     bot_error_div.show();
-    var bot_box = bot_info.closest('.bot-information-box');
+    const bot_box = bot_info.closest('.bot-information-box');
     bot_box.scrollTop(bot_box[0].scrollHeight - bot_box[0].clientHeight);
 };
 
 function add_bot_row(info) {
-    var row = $(render_bot_avatar_row(info));
+    const row = $(render_bot_avatar_row(info));
     if (info.is_active) {
         $('#active_bots_list').append(row);
     } else {
@@ -64,7 +64,7 @@ function is_local_part(value, element) {
 }
 
 exports.type_id_to_string = function (type_id) {
-    var name = _.find(page_params.bot_types, function (bot_type) {
+    const name = _.find(page_params.bot_types, function (bot_type) {
         return bot_type.type_id === type_id;
     }).name;
     return i18n.t(name);
@@ -74,8 +74,8 @@ exports.render_bots = function () {
     $('#active_bots_list').empty();
     $('#inactive_bots_list').empty();
 
-    var all_bots_for_current_user = bot_data.get_all_bots_for_current_user();
-    var user_owns_an_active_bot = false;
+    const all_bots_for_current_user = bot_data.get_all_bots_for_current_user();
+    let user_owns_an_active_bot = false;
 
     _.each(all_bots_for_current_user, function (elem) {
         add_bot_row({
@@ -114,8 +114,8 @@ exports.render_bots = function () {
 };
 
 exports.generate_zuliprc_uri = function (bot_id) {
-    var bot = bot_data.get(bot_id);
-    var token;
+    const bot = bot_data.get(bot_id);
+    let token;
     // For outgoing webhooks, include the token in the zuliprc.
     // It's needed for authenticating to the Botserver.
     if (bot.bot_type === 3) {
@@ -177,9 +177,9 @@ exports.can_create_new_bots = function () {
 };
 
 exports.update_bot_settings_tip = function () {
-    var permission_type = exports.bot_creation_policy_values;
-    var current_permission = page_params.realm_bot_creation_policy;
-    var tip_text;
+    const permission_type = exports.bot_creation_policy_values;
+    const current_permission = page_params.realm_bot_creation_policy;
+    let tip_text;
     if (current_permission === permission_type.admins_only.code) {
         tip_text = i18n.t("Only organization administrators can add bots to this organization");
     } else if (current_permission === permission_type.restricted.code) {
@@ -209,17 +209,17 @@ exports.set_up = function () {
     $('#create_payload_url').val('');
     $('#service_name_list').hide();
     $('#config_inputbox').hide();
-    var selected_embedded_bot = 'converter';
+    const selected_embedded_bot = 'converter';
     $('#select_service_name').val(selected_embedded_bot); // TODO: Use 'select a bot'.
     $('#config_inputbox').children().hide();
     $("[name*='" + selected_embedded_bot + "']").show();
 
     $('#download_botserverrc').click(function () {
-        var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
-        var content = "";
+        const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
+        let content = "";
         _.each(bot_data.get_all_bots_for_current_user(), function (bot) {
             if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
-                var bot_token = bot_data.get_services(bot.user_id)[0].token;
+                const bot_token = bot_data.get_services(bot.user_id)[0].token;
                 content += exports.generate_botserverrc_content(bot.email, bot.api_key, bot_token);
             }
         });
@@ -235,12 +235,12 @@ exports.set_up = function () {
                           "Please only use characters that are valid in an email address");
 
 
-    var create_avatar_widget = avatar.build_bot_create_widget();
-    var OUTGOING_WEBHOOK_BOT_TYPE = '3';
-    var GENERIC_BOT_TYPE = '1';
-    var EMBEDDED_BOT_TYPE = '4';
+    const create_avatar_widget = avatar.build_bot_create_widget();
+    const OUTGOING_WEBHOOK_BOT_TYPE = '3';
+    const GENERIC_BOT_TYPE = '1';
+    const EMBEDDED_BOT_TYPE = '4';
 
-    var GENERIC_INTERFACE = '1';
+    const GENERIC_INTERFACE = '1';
 
     $('#create_bot_form').validate({
         errorClass: 'text-error',
@@ -248,14 +248,14 @@ exports.set_up = function () {
             exports.hide_errors();
         },
         submitHandler: function () {
-            var bot_type = $('#create_bot_type :selected').val();
-            var full_name = $('#create_bot_name').val();
-            var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
-            var payload_url = $('#create_payload_url').val();
-            var interface_type = $('#create_interface_type').val();
-            var service_name = $('#select_service_name :selected').val();
-            var formData = new FormData();
-            var spinner = $('.create_bot_spinner');
+            const bot_type = $('#create_bot_type :selected').val();
+            const full_name = $('#create_bot_name').val();
+            const short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
+            const payload_url = $('#create_payload_url').val();
+            const interface_type = $('#create_interface_type').val();
+            const service_name = $('#select_service_name :selected').val();
+            const formData = new FormData();
+            const spinner = $('.create_bot_spinner');
 
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('bot_type', bot_type);
@@ -268,7 +268,7 @@ exports.set_up = function () {
                 formData.append('interface_type', interface_type);
             } else if (bot_type === EMBEDDED_BOT_TYPE) {
                 formData.append('service_name', service_name);
-                var config_data = {};
+                const config_data = {};
                 $("#config_inputbox [name*='" + service_name + "'] input").each(function () {
                     config_data[$(this).attr('name')] = $(this).val();
                 });
@@ -314,7 +314,7 @@ exports.set_up = function () {
     });
 
     $("#create_bot_type").on("change", function () {
-        var bot_type = $('#create_bot_type :selected').val();
+        const bot_type = $('#create_bot_type :selected').val();
         // For "generic bot" or "incoming webhook" both these fields need not be displayed.
         $('#service_name_list').hide();
         $('#select_service_name').removeClass('required');
@@ -336,17 +336,17 @@ exports.set_up = function () {
 
     $("#select_service_name").on("change", function () {
         $('#config_inputbox').children().hide();
-        var selected_bot = $('#select_service_name :selected').val();
+        const selected_bot = $('#select_service_name :selected').val();
         $("[name*='" + selected_bot + "']").show();
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", function (e) {
-        var bot_id = $(e.currentTarget).attr('data-user-id');
+        const bot_id = $(e.currentTarget).attr('data-user-id');
 
         channel.del({
             url: '/json/bots/' + encodeURIComponent(bot_id),
             success: function () {
-                var row = $(e.currentTarget).closest("li");
+                const row = $(e.currentTarget).closest("li");
                 row.hide('slow', function () { row.remove(); });
             },
             error: function (xhr) {
@@ -356,7 +356,7 @@ exports.set_up = function () {
     });
 
     $("#inactive_bots_list").on("click", "button.reactivate_bot", function (e) {
-        var user_id = $(e.currentTarget).attr('data-user-id');
+        const user_id = $(e.currentTarget).attr('data-user-id');
 
         channel.post({
             url: '/json/users/' + encodeURIComponent(user_id) + "/reactivate",
@@ -367,41 +367,41 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
-        var bot_id = $(e.currentTarget).attr('data-user-id');
+        const bot_id = $(e.currentTarget).attr('data-user-id');
         channel.post({
             url: '/json/bots/' + encodeURIComponent(bot_id) + '/api_key/regenerate',
             idempotent: true,
             success: function (data) {
-                var row = $(e.currentTarget).closest("li");
+                const row = $(e.currentTarget).closest("li");
                 row.find(".api_key").find(".value").text(data.api_key);
                 row.find("api_key_error").hide();
             },
             error: function (xhr) {
-                var row = $(e.currentTarget).closest("li");
+                const row = $(e.currentTarget).closest("li");
                 row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
             },
         });
     });
 
-    var image_version = 0;
+    let image_version = 0;
 
     $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
-        var li = $(e.currentTarget).closest('li');
-        var bot_id = li.find('.bot_info').attr('data-user-id').valueOf();
-        var bot = bot_data.get(bot_id);
-        var users_list = people.get_active_human_persons();
+        const li = $(e.currentTarget).closest('li');
+        const bot_id = li.find('.bot_info').attr('data-user-id').valueOf();
+        const bot = bot_data.get(bot_id);
+        const users_list = people.get_active_human_persons();
         $("#edit_bot").empty();
         $("#edit_bot").append(render_edit_bot({
             bot: bot,
             users_list: users_list,
         }));
-        var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
-        var form = $('#settings_page .edit_bot_form');
-        var image = li.find(".image");
-        var errors = form.find('.bot_edit_errors');
+        const avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
+        const form = $('#settings_page .edit_bot_form');
+        const image = li.find(".image");
+        const errors = form.find('.bot_edit_errors');
 
         $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
-        var service = bot_data.get_services(bot_id)[0];
+        const service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(render_settings_edit_outgoing_webhook_service({
                 service: service,
@@ -422,27 +422,27 @@ exports.set_up = function () {
                 errors.hide();
             },
             submitHandler: function () {
-                var bot_id = form.attr('data-user-id');
-                var type = form.attr('data-type');
+                const bot_id = form.attr('data-user-id');
+                const type = form.attr('data-type');
 
-                var full_name = form.find('.edit_bot_name').val();
-                var bot_owner = form.find('.edit-bot-owner select').val();
-                var file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
-                var spinner = form.find('.edit_bot_spinner');
-                var edit_button = form.find('.edit_bot_button');
+                const full_name = form.find('.edit_bot_name').val();
+                const bot_owner = form.find('.edit-bot-owner select').val();
+                const file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
+                const spinner = form.find('.edit_bot_spinner');
+                const edit_button = form.find('.edit_bot_button');
 
-                var formData = new FormData();
+                const formData = new FormData();
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
                 formData.append('bot_owner_id', people.get_by_email(bot_owner).user_id);
 
                 if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
-                    var service_payload_url = $("#edit_service_base_url").val();
-                    var service_interface = $("#edit_service_interface :selected").val();
+                    const service_payload_url = $("#edit_service_base_url").val();
+                    const service_interface = $("#edit_service_interface :selected").val();
                     formData.append('service_payload_url', JSON.stringify(service_payload_url));
                     formData.append('service_interface', service_interface);
                 } else if (type === EMBEDDED_BOT_TYPE) {
-                    var config_data = {};
+                    const config_data = {};
                     $("#config_edit_inputbox input").each(function () {
                         config_data[$(this).attr('name')] = $(this).val();
                     });
@@ -484,17 +484,17 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
-        var bot_info = $(this).closest(".bot-information-box").find(".bot_info");
-        var bot_id = bot_info.attr("data-user-id");
+        const bot_info = $(this).closest(".bot-information-box").find(".bot_info");
+        const bot_id = bot_info.attr("data-user-id");
         $(this).attr("href", exports.generate_zuliprc_uri(bot_id));
     });
 
     new ClipboardJS('#copy_zuliprc', {
         text: function (trigger) {
-            var bot_info = trigger.closest(".bot-information-box");
-            var email = $(bot_info).find(".email .value").text();
-            var api_key = $(bot_info).find(".api_key .api-key-value-and-button .value").text();
-            var data = exports.generate_zuliprc_content(email.trim(), api_key.trim());
+            const bot_info = trigger.closest(".bot-information-box");
+            const email = $(bot_info).find(".email .value").text();
+            const api_key = $(bot_info).find(".api_key .api-key-value-and-button .value").text();
+            const data = exports.generate_zuliprc_content(email.trim(), api_key.trim());
             return data;
         },
     });

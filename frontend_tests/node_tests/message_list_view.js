@@ -9,7 +9,7 @@ zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
 zrequire('message_list');
 
-var noop = function () {};
+const noop = function () {};
 
 set_global('page_params', {
     twenty_four_hour_time: false,
@@ -76,7 +76,7 @@ run_test('msg_edited_vars', () => {
     }
 
     function build_list(message_groups) {
-        var list = new MessageListView(undefined, undefined, true);
+        const list = new MessageListView(undefined, undefined, true);
         list._message_groups = message_groups;
         return list;
     }
@@ -100,20 +100,20 @@ run_test('msg_edited_vars', () => {
     }
 
     (function test_msg_edited_vars() {
-        var messages = [
+        const messages = [
             build_message_context(),
             build_message_context({}, { include_sender: false }),
             build_message_context({ is_me_message: true, content: "<p>/me test</p>" }),
         ];
-        var message_group = build_message_group(messages);
-        var list = build_list([message_group]);
+        const message_group = build_message_group(messages);
+        const list = build_list([message_group]);
 
         _.each(messages, function (message_container) {
             list._maybe_format_me_message(message_container);
             list._add_msg_edited_vars(message_container);
         });
 
-        var result = list._message_groups[0].message_containers;
+        const result = list._message_groups[0].message_containers;
 
         assert_alongside_sender(result[0]);
         assert_left_col(result[1]);
@@ -155,7 +155,7 @@ run_test('merge_message_groups', () => {
     }
 
     function build_list(message_groups) {
-        var list = new MessageListView(undefined, undefined, true);
+        const list = new MessageListView(undefined, undefined, true);
         list._message_groups = message_groups;
         list.list = {
             unsubscribed_bookend_content: function () {},
@@ -171,8 +171,8 @@ run_test('merge_message_groups', () => {
     }
 
     function assert_message_list_equal(list1, list2) {
-        var ids1 = extract_message_ids(list1);
-        var ids2 = extract_message_ids(list2);
+        const ids1 = extract_message_ids(list1);
+        const ids2 = extract_message_ids(list2);
         assert(ids1.length);
         assert.deepEqual(ids1, ids2);
     }
@@ -182,19 +182,19 @@ run_test('merge_message_groups', () => {
     }
 
     function assert_message_groups_list_equal(list1, list2) {
-        var ids1 = _.map(list1, extract_group);
-        var ids2 = _.map(list2, extract_group);
+        const ids1 = _.map(list1, extract_group);
+        const ids2 = _.map(list2, extract_group);
         assert(ids1.length);
         assert.deepEqual(ids1, ids2);
     }
 
     (function test_empty_list_bottom() {
-        var list = build_list([]);
-        var message_group = build_message_group([
+        const list = build_list([]);
+        const message_group = build_message_group([
             build_message_context(),
         ]);
 
-        var result = list.merge_message_groups([message_group], 'bottom');
+        const result = list.merge_message_groups([message_group], 'bottom');
 
         assert_message_groups_list_equal(list._message_groups, [message_group]);
         assert_message_groups_list_equal(result.append_groups, [message_group]);
@@ -206,18 +206,18 @@ run_test('merge_message_groups', () => {
 
     (function test_append_message_same_subject() {
 
-        var message1 = build_message_context();
-        var message_group1 = build_message_group([
+        const message1 = build_message_context();
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context();
-        var message_group2 = build_message_group([
+        const message2 = build_message_context();
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'bottom');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'bottom');
 
         assert_message_groups_list_equal(
             list._message_groups,
@@ -231,18 +231,18 @@ run_test('merge_message_groups', () => {
 
     (function test_append_message_different_subject() {
 
-        var message1 = build_message_context();
-        var message_group1 = build_message_group([
+        const message1 = build_message_context();
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({topic: 'Test subject 2'});
-        var message_group2 = build_message_group([
+        const message2 = build_message_context({topic: 'Test subject 2'});
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'bottom');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'bottom');
 
         assert(!message_group2.group_date_divider_html);
         assert_message_groups_list_equal(
@@ -257,19 +257,19 @@ run_test('merge_message_groups', () => {
 
     (function test_append_message_different_subject_and_days() {
 
-        var message1 = build_message_context({timestamp: 1000});
-        var message_group1 = build_message_group([
+        const message1 = build_message_context({timestamp: 1000});
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({topic: 'Test subject 2',
-                                              timestamp: 900000});
-        var message_group2 = build_message_group([
+        const message2 = build_message_context({topic: 'Test subject 2',
+                                                timestamp: 900000});
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'bottom');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'bottom');
 
         assert_message_groups_list_equal(
             list._message_groups,
@@ -286,18 +286,18 @@ run_test('merge_message_groups', () => {
 
     (function test_append_message_different_day() {
 
-        var message1 = build_message_context({timestamp: 1000});
-        var message_group1 = build_message_group([
+        const message1 = build_message_context({timestamp: 1000});
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({timestamp: 900000});
-        var message_group2 = build_message_group([
+        const message2 = build_message_context({timestamp: 900000});
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'bottom');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'bottom');
 
         assert_message_groups_list_equal(list._message_groups, [message_group1]);
         assert.deepEqual(result.append_groups, []);
@@ -310,18 +310,18 @@ run_test('merge_message_groups', () => {
 
     (function test_append_message_historical() {
 
-        var message1 = build_message_context({historical: false});
-        var message_group1 = build_message_group([
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({historical: true});
-        var message_group2 = build_message_group([
+        const message2 = build_message_context({historical: true});
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'bottom');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'bottom');
 
         assert(message_group2.bookend_top);
         assert_message_groups_list_equal(
@@ -336,18 +336,18 @@ run_test('merge_message_groups', () => {
 
     (function test_append_message_same_subject_me_message() {
 
-        var message1 = build_message_context();
-        var message_group1 = build_message_group([
+        const message1 = build_message_context();
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({is_me_message: true});
-        var message_group2 = build_message_group([
+        const message2 = build_message_context({is_me_message: true});
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'bottom');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'bottom');
 
         assert(message2.include_sender);
         assert_message_groups_list_equal(
@@ -363,18 +363,18 @@ run_test('merge_message_groups', () => {
 
     (function test_prepend_message_same_subject() {
 
-        var message1 = build_message_context();
-        var message_group1 = build_message_group([
+        const message1 = build_message_context();
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context();
-        var message_group2 = build_message_group([
+        const message2 = build_message_context();
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'top');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'top');
 
         assert_message_groups_list_equal(
             list._message_groups,
@@ -389,18 +389,18 @@ run_test('merge_message_groups', () => {
 
     (function test_prepend_message_different_subject() {
 
-        var message1 = build_message_context();
-        var message_group1 = build_message_group([
+        const message1 = build_message_context();
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({topic: 'Test Subject 2'});
-        var message_group2 = build_message_group([
+        const message2 = build_message_context({topic: 'Test Subject 2'});
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'top');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'top');
 
         assert_message_groups_list_equal(
             list._message_groups,
@@ -414,19 +414,19 @@ run_test('merge_message_groups', () => {
 
     (function test_prepend_message_different_subject_and_day() {
 
-        var message1 = build_message_context({timestamp: 900000});
-        var message_group1 = build_message_group([
+        const message1 = build_message_context({timestamp: 900000});
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({topic: 'Test Subject 2',
-                                              timestamp: 1000});
-        var message_group2 = build_message_group([
+        const message2 = build_message_context({topic: 'Test Subject 2',
+                                                timestamp: 1000});
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'top');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'top');
 
         // We should have a group date divider between the recipient blocks.
         assert.equal(
@@ -444,18 +444,18 @@ run_test('merge_message_groups', () => {
 
     (function test_prepend_message_different_day() {
 
-        var message1 = build_message_context({timestamp: 900000});
-        var message_group1 = build_message_group([
+        const message1 = build_message_context({timestamp: 900000});
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({timestamp: 1000});
-        var message_group2 = build_message_group([
+        const message2 = build_message_context({timestamp: 1000});
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'top');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'top');
 
         // We should have a group date divider within the single recipient block.
         assert.equal(
@@ -473,18 +473,18 @@ run_test('merge_message_groups', () => {
 
     (function test_prepend_message_historical() {
 
-        var message1 = build_message_context({historical: false});
-        var message_group1 = build_message_group([
+        const message1 = build_message_context({historical: false});
+        const message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({historical: true});
-        var message_group2 = build_message_group([
+        const message2 = build_message_context({historical: true});
+        const message_group2 = build_message_group([
             message2,
         ]);
 
-        var list = build_list([message_group1]);
-        var result = list.merge_message_groups([message_group2], 'top');
+        const list = build_list([message_group1]);
+        const result = list.merge_message_groups([message_group2], 'top');
 
         assert(message_group1.bookend_top);
         assert_message_groups_list_equal(
@@ -509,16 +509,16 @@ run_test('render_windows', () => {
     // start/end) when the pointer moves outside of the window or close
     // to the edges.
 
-    var view = (function make_view() {
-        var table_name = 'zfilt';
-        var filter = new Filter();
+    const view = (function make_view() {
+        const table_name = 'zfilt';
+        const filter = new Filter();
 
-        var list = new message_list.MessageList({
+        const list = new message_list.MessageList({
             table_name: table_name,
             filter: filter,
         });
 
-        var view = list.view;
+        const view = list.view;
 
         // Stub out functionality that is not core to the rendering window
         // logic.
@@ -534,15 +534,15 @@ run_test('render_windows', () => {
         return view;
     }());
 
-    var list = view.list;
+    const list = view.list;
 
     (function test_with_empty_list() {
         // The function should early exit here.
-        var rendered = view.maybe_rerender();
+        const rendered = view.maybe_rerender();
         assert.equal(rendered, false);
     }());
 
-    var messages;
+    let messages;
 
     function reset_list(opts) {
         messages = _.map(_.range(opts.count), function (i) {
@@ -564,17 +564,17 @@ run_test('render_windows', () => {
         // performance reasons.
         _.each(_.range(start, end), function (idx) {
             list.selected_idx = function () { return idx; };
-            var rendered = view.maybe_rerender();
+            const rendered = view.maybe_rerender();
             assert.equal(rendered, false);
         });
     }
 
     function verify_move(idx, range) {
-        var start = range[0];
-        var end = range[1];
+        const start = range[0];
+        const end = range[1];
 
         list.selected_idx = function () { return idx; };
-        var rendered = view.maybe_rerender();
+        const rendered = view.maybe_rerender();
         assert.equal(rendered, true);
         assert.equal(view._render_win_start, start);
         assert.equal(view._render_win_end, end);

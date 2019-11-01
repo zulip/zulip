@@ -15,13 +15,13 @@ function returns_time(secs) {
 run_test('basics', () => {
 
     // invalid conversation basically does nothing
-    var worker = {};
+    let worker = {};
     typing_status.update(worker, null);
 
     // Start setting up more testing state.
     typing_status.initialize_state();
 
-    var events = {};
+    const events = {};
 
     function set_timeout(f, delay) {
         assert.equal(delay, 5000);
@@ -112,7 +112,7 @@ run_test('basics', () => {
     });
 
     // Now call alice's idle callback that we captured earlier.
-    var callback = events.idle_callback;
+    const callback = events.idle_callback;
     clear_events();
     callback();
     assert.deepEqual(typing_status.state, {

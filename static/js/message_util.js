@@ -12,7 +12,7 @@ function add_messages(messages, msg_list, opts) {
     loading.destroy_indicator($('#page_loading_indicator'));
     $('#first_run_message').remove();
 
-    var render_info = msg_list.add_messages(messages, opts);
+    const render_info = msg_list.add_messages(messages, opts);
 
     return render_info;
 }

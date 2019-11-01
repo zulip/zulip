@@ -7,11 +7,11 @@ exports.presence_info = {};
 /* Mark users as offline after 140 seconds since their last checkin,
  * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
  */
-var OFFLINE_THRESHOLD_SECS = 140;
+const OFFLINE_THRESHOLD_SECS = 140;
 
-var BIG_REALM_COUNT = 250;
+const BIG_REALM_COUNT = 250;
 
-var MOBILE_DEVICES = ["Android", "ZulipiOS", "ios"];
+const MOBILE_DEVICES = ["Android", "ZulipiOS", "ios"];
 
 function is_mobile(device) {
     return MOBILE_DEVICES.indexOf(device) !== -1;
@@ -19,7 +19,7 @@ function is_mobile(device) {
 
 exports.is_active = function (user_id) {
     if (exports.presence_info[user_id]) {
-        var status = exports.presence_info[user_id].status;
+        const status = exports.presence_info[user_id].status;
         if (status && status === "active") {
             return true;
         }
@@ -38,17 +38,17 @@ exports.get_status = function (user_id) {
 };
 
 exports.get_user_ids = function () {
-    var user_ids = Object.keys(exports.presence_info);
+    const user_ids = Object.keys(exports.presence_info);
     return user_ids;
 };
 
 function status_from_timestamp(baseline_time, info) {
-    var status = 'offline';
-    var last_active = 0;
-    var mobileAvailable = false;
-    var nonmobileAvailable = false;
+    let status = 'offline';
+    let last_active = 0;
+    let mobileAvailable = false;
+    let nonmobileAvailable = false;
     _.each(info, function (device_presence, device) {
-        var age = baseline_time - device_presence.timestamp;
+        const age = baseline_time - device_presence.timestamp;
         if (last_active < device_presence.timestamp) {
             last_active = device_presence.timestamp;
         }
@@ -89,14 +89,14 @@ function status_from_timestamp(baseline_time, info) {
 exports._status_from_timestamp = status_from_timestamp;
 
 exports.set_info_for_user = function (user_id, info, server_time) {
-    var status = status_from_timestamp(server_time, info);
+    const status = status_from_timestamp(server_time, info);
     exports.presence_info[user_id] = status;
 };
 
 exports.set_info = function (presences, server_timestamp) {
     exports.presence_info = {};
     _.each(presences, function (info, this_email) {
-        var person = people.get_by_email(this_email);
+        const person = people.get_by_email(this_email);
 
         if (person === undefined) {
             if (!(server_events.suspect_offline || reload_state.is_in_progress())) {
@@ -109,11 +109,11 @@ exports.set_info = function (presences, server_timestamp) {
             return;
         }
 
-        var user_id = person.user_id;
+        const user_id = person.user_id;
 
         if (user_id) {
-            var status = status_from_timestamp(server_timestamp,
-                                               info);
+            const status = status_from_timestamp(server_timestamp,
+                                                 info);
             exports.presence_info[user_id] = status;
         }
     });
@@ -129,11 +129,11 @@ exports.update_info_for_small_realm = function () {
 
     // For small realms, we create presence info for users
     // that the server didn't include in its presence update.
-    var persons = people.get_realm_persons();
+    const persons = people.get_realm_persons();
 
     _.each(persons, function (person) {
-        var user_id = person.user_id;
-        var status = "offline";
+        const user_id = person.user_id;
+        let status = "offline";
 
         if (exports.presence_info[user_id]) {
             // this is normal, we have data for active
@@ -159,13 +159,13 @@ exports.update_info_for_small_realm = function () {
 };
 
 exports.last_active_date = function (user_id) {
-    var info = exports.presence_info[user_id];
+    const info = exports.presence_info[user_id];
 
     if (!info || !info.last_active) {
         return;
     }
 
-    var date = new XDate(info.last_active * 1000);
+    const date = new XDate(info.last_active * 1000);
     return date;
 };
 

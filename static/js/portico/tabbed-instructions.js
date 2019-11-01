@@ -18,8 +18,8 @@ export function detect_user_os() {
 }
 
 export function activate_correct_tab($codeSection) {
-    var user_os = detect_user_os();
-    var desktop_os = ["mac", "linux", "windows"];
+    const user_os = detect_user_os();
+    const desktop_os = ["mac", "linux", "windows"];
     const $li = $codeSection.find("ul.nav li");
     const $blocks = $codeSection.find(".blocks div");
 
@@ -48,10 +48,10 @@ export function activate_correct_tab($codeSection) {
     });
 
     // if no tab was activated, just activate the first one
-    var active_list_items = $li.filter(".active");
+    const active_list_items = $li.filter(".active");
     if (!active_list_items.length) {
         $li.first().addClass("active");
-        var language = $li.first()[0].dataset.language;
+        const language = $li.first()[0].dataset.language;
         $blocks.filter("[data-language=" + language + "]").addClass("active");
     }
 }

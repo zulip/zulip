@@ -2,7 +2,7 @@
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
 
-var noop = function () {};
+const noop = function () {};
 
 set_global('Filter', noop);
 global.stub_out_jquery();
@@ -14,15 +14,15 @@ zrequire('util');
 zrequire('muting');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
-var MessageList = zrequire('message_list').MessageList;
+const MessageList = zrequire('message_list').MessageList;
 
 set_global('i18n', global.stub_i18n);
 set_global('feature_flags', {});
 
-var with_overrides = global.with_overrides; // make lint happy
+const with_overrides = global.with_overrides; // make lint happy
 
 function accept_all_filter() {
-    var filter = {
+    const filter = {
         predicate: () => {
             return () => true;
         },
@@ -32,13 +32,13 @@ function accept_all_filter() {
 }
 
 run_test('basics', () => {
-    var filter = accept_all_filter();
+    const filter = accept_all_filter();
 
-    var list = new MessageList({
+    const list = new MessageList({
         filter: filter,
     });
 
-    var messages = [
+    const messages = [
         {
             id: 50,
             content: 'fifty',
@@ -87,7 +87,7 @@ run_test('basics', () => {
     assert.equal(list.selected_idx(), 1);
 
     // Make sure not rerendered when reselected
-    var num_renders = 0;
+    let num_renders = 0;
     list.rerender = function () {
         num_renders += 1;
     };
@@ -95,7 +95,7 @@ run_test('basics', () => {
     assert.equal(num_renders, 0);
     assert.equal(list.selected_id(), 60);
 
-    var old_messages = [
+    const old_messages = [
         {
             id: 30,
         },
@@ -107,7 +107,7 @@ run_test('basics', () => {
     assert.equal(list.first().id, 30);
     assert.equal(list.last().id, 80);
 
-    var new_messages = [
+    const new_messages = [
         {
             id: 90,
         },
@@ -118,7 +118,7 @@ run_test('basics', () => {
     list.view.clear_table = function () {};
 
     list.remove_and_rerender([{id: 60}]);
-    var removed = list.all_messages().filter(function (msg) {
+    const removed = list.all_messages().filter(function (msg) {
         return msg.id !== 60;
     });
     assert.deepEqual(list.all_messages(), removed);
@@ -128,7 +128,7 @@ run_test('basics', () => {
 });
 
 run_test('prev_next', () => {
-    var list = new MessageList({});
+    const list = new MessageList({});
 
     assert.equal(list.prev(), undefined);
     assert.equal(list.next(), undefined);
@@ -140,7 +140,7 @@ run_test('prev_next', () => {
     assert.equal(list.next(), undefined);
     assert.equal(list.is_at_end(), false);
 
-    var messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
+    const messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
     list.append(messages, true);
     assert.equal(list.prev(), undefined);
     assert.equal(list.next(), undefined);
@@ -167,9 +167,9 @@ run_test('prev_next', () => {
 });
 
 run_test('message_range', () => {
-    var list = new MessageList({});
+    const list = new MessageList({});
 
-    var messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
+    const messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
     list.append(messages, true);
     assert.deepEqual(list.message_range(2, 30), [{id: 30}]);
     assert.deepEqual(list.message_range(2, 31), [{id: 30}, {id: 40}]);
@@ -181,10 +181,10 @@ run_test('message_range', () => {
 });
 
 run_test('updates', () => {
-    var list = new MessageList({});
+    const list = new MessageList({});
     list.view.rerender_preserving_scrolltop = noop;
 
-    var messages = [
+    const messages = [
         {
             id: 1,
             sender_id: 100,
@@ -218,7 +218,7 @@ run_test('updates', () => {
 });
 
 run_test('nth_most_recent_id', () => {
-    var list = new MessageList({});
+    const list = new MessageList({});
     list.append([{id: 10}, {id: 20}, {id: 30}]);
     assert.equal(list.nth_most_recent_id(1), 30);
     assert.equal(list.nth_most_recent_id(2), 20);
@@ -227,7 +227,7 @@ run_test('nth_most_recent_id', () => {
 });
 
 run_test('change_message_id', () => {
-    var list = new MessageList({});
+    const list = new MessageList({});
     list.data._add_to_hash([{id: 10.5, content: "good job"}, {id: 20.5, content: "ok!"}]);
 
     // local to local
@@ -245,8 +245,8 @@ run_test('change_message_id', () => {
 });
 
 run_test('last_sent_by_me', () => {
-    var list = new MessageList({});
-    var items = [
+    const list = new MessageList({});
+    const items = [
         {
             id: 1,
             sender_id: 3,
@@ -268,7 +268,7 @@ run_test('last_sent_by_me', () => {
 });
 
 run_test('local_echo', () => {
-    var list = new MessageList({});
+    let list = new MessageList({});
     list.append([{id: 10}, {id: 20}, {id: 30}, {id: 20.02},
                  {id: 20.03}, {id: 40}, {id: 50}, {id: 60}]);
     list._local_only = {20.02: {id: 20.02}, 20.03: {id: 20.03}};
@@ -318,10 +318,10 @@ run_test('local_echo', () => {
 });
 
 run_test('bookend', () => {
-    var list = new MessageList({});
+    const list = new MessageList({});
 
     with_overrides(function (override) {
-        var expected = "translated: You subscribed to stream IceCream";
+        let expected = "translated: You subscribed to stream IceCream";
         list.view.clear_trailing_bookend = noop;
         list.narrowed = true;
 
@@ -336,7 +336,7 @@ run_test('bookend', () => {
         global.with_stub(function (stub) {
             list.view.render_trailing_bookend = stub.f;
             list.update_trailing_bookend();
-            var bookend = stub.get_args('content', 'subscribed', 'show_button');
+            const bookend = stub.get_args('content', 'subscribed', 'show_button');
             assert.equal(bookend.content, expected);
             assert.equal(bookend.subscribed, true);
             assert.equal(bookend.show_button, true);
@@ -355,7 +355,7 @@ run_test('bookend', () => {
         global.with_stub(function (stub) {
             list.view.render_trailing_bookend = stub.f;
             list.update_trailing_bookend();
-            var bookend = stub.get_args('content', 'subscribed', 'show_button');
+            const bookend = stub.get_args('content', 'subscribed', 'show_button');
             assert.equal(bookend.content, expected);
             assert.equal(bookend.subscribed, false);
             assert.equal(bookend.show_button, true);
@@ -374,7 +374,7 @@ run_test('bookend', () => {
         global.with_stub(function (stub) {
             list.view.render_trailing_bookend = stub.f;
             list.update_trailing_bookend();
-            var bookend = stub.get_args('content', 'subscribed', 'show_button');
+            const bookend = stub.get_args('content', 'subscribed', 'show_button');
             assert.equal(bookend.content, expected);
             assert.equal(bookend.subscribed, false);
             assert.equal(bookend.show_button, false);
@@ -386,7 +386,7 @@ run_test('bookend', () => {
         global.with_stub(function (stub) {
             list.view.render_trailing_bookend = stub.f;
             list.update_trailing_bookend();
-            var bookend = stub.get_args('content', 'subscribed', 'show_button');
+            const bookend = stub.get_args('content', 'subscribed', 'show_button');
             assert.equal(bookend.content, expected);
             assert.equal(bookend.subscribed, false);
             assert.equal(bookend.show_button, true);
@@ -395,11 +395,11 @@ run_test('bookend', () => {
 });
 
 run_test('unmuted_messages', () => {
-    var list = new MessageList({});
+    const list = new MessageList({});
 
-    var muted_stream_id = 999;
+    const muted_stream_id = 999;
 
-    var unmuted = [
+    const unmuted = [
         {
             id: 50,
             stream_id: muted_stream_id,
@@ -413,7 +413,7 @@ run_test('unmuted_messages', () => {
             topic: 'whatever',
         },
     ];
-    var muted = [
+    const muted = [
         {
             id: 70,
             stream_id: muted_stream_id,
@@ -429,17 +429,17 @@ run_test('unmuted_messages', () => {
 
         // Make sure unmuted_message filters out the "muted" entry,
         // which we mark as having a muted topic, and not mentioned.
-        var test_unmuted = list.unmuted_messages(unmuted.concat(muted));
+        const test_unmuted = list.unmuted_messages(unmuted.concat(muted));
         assert.deepEqual(unmuted, test_unmuted);
     });
 });
 
 run_test('add_remove_rerender', () => {
-    var filter = accept_all_filter();
+    const filter = accept_all_filter();
 
-    var list = new MessageList({filter: filter});
+    const list = new MessageList({filter: filter});
 
-    var messages = [{id: 1}, {id: 2}, {id: 3}];
+    const messages = [{id: 1}, {id: 2}, {id: 3}];
 
     list.data.unmuted_messages = function (msgs) { return msgs; };
     list.add_messages(messages);

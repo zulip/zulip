@@ -1,6 +1,6 @@
-var render_sidebar_private_message_list = require('../templates/sidebar_private_message_list.hbs');
+const render_sidebar_private_message_list = require('../templates/sidebar_private_message_list.hbs');
 
-var private_messages_open = false;
+let private_messages_open = false;
 
 // This module manages the "Private Messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
@@ -20,14 +20,14 @@ function update_count_in_dom(count_span, value_span, count) {
 }
 
 function set_count(count) {
-    var count_span = get_filter_li().find('.count');
-    var value_span = count_span.find('.value');
+    const count_span = get_filter_li().find('.count');
+    const value_span = count_span.find('.value');
     update_count_in_dom(count_span, value_span, count);
 }
 
 exports.get_conversation_li = function (conversation) {
     // conversation is something like "foo@example.com,bar@example.com"
-    var user_ids_string = people.reply_to_to_user_ids_string(conversation);
+    const user_ids_string = people.reply_to_to_user_ids_string(conversation);
     if (!user_ids_string) {
         return;
     }
@@ -35,15 +35,15 @@ exports.get_conversation_li = function (conversation) {
 };
 
 exports.get_li_for_user_ids_string = function (user_ids_string) {
-    var pm_li = get_filter_li();
-    var convo_li = pm_li.find("li[data-user-ids-string='" + user_ids_string + "']");
+    const pm_li = get_filter_li();
+    const convo_li = pm_li.find("li[data-user-ids-string='" + user_ids_string + "']");
     return convo_li;
 };
 
 function set_pm_conversation_count(user_ids_string, count) {
-    var pm_li = exports.get_li_for_user_ids_string(user_ids_string);
-    var count_span = pm_li.find('.private_message_count');
-    var value_span = count_span.find('.value');
+    const pm_li = exports.get_li_for_user_ids_string(user_ids_string);
+    const count_span = pm_li.find('.private_message_count');
+    const value_span = count_span.find('.value');
 
     if (count_span.length === 0 || value_span.length === 0) {
         return;
@@ -66,8 +66,8 @@ exports.close = function () {
 
 exports._build_private_messages_list = function (active_conversation) {
 
-    var private_messages = pm_conversations.recent.get();
-    var display_messages = [];
+    const private_messages = pm_conversations.recent.get();
+    const display_messages = [];
 
     // SHIM
     if (active_conversation) {
@@ -75,29 +75,29 @@ exports._build_private_messages_list = function (active_conversation) {
     }
 
     _.each(private_messages, function (private_message_obj) {
-        var user_ids_string = private_message_obj.user_ids_string;
-        var reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-        var recipients_string = people.get_recipients(user_ids_string);
+        const user_ids_string = private_message_obj.user_ids_string;
+        const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
+        const recipients_string = people.get_recipients(user_ids_string);
 
-        var num_unread = unread.num_unread_for_person(user_ids_string);
+        const num_unread = unread.num_unread_for_person(user_ids_string);
 
-        var is_group = user_ids_string.indexOf(',') >= 0;
+        const is_group = user_ids_string.indexOf(',') >= 0;
 
-        var user_circle_class = buddy_data.get_user_circle_class(user_ids_string);
+        let user_circle_class = buddy_data.get_user_circle_class(user_ids_string);
 
-        var fraction_present;
+        let fraction_present;
         if (is_group) {
             user_circle_class = 'user_circle_fraction';
             fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
         } else {
-            var recipient_user_obj = people.get_person_from_user_id(user_ids_string);
+            const recipient_user_obj = people.get_person_from_user_id(user_ids_string);
 
             if (recipient_user_obj.is_bot) {
                 user_circle_class = 'user_circle_green';
             }
         }
 
-        var display_message = {
+        const display_message = {
             recipients: recipients_string,
             user_ids_string: user_ids_string,
             unread: num_unread,
@@ -110,7 +110,7 @@ exports._build_private_messages_list = function (active_conversation) {
         display_messages.push(display_message);
     });
 
-    var recipients_dom = render_sidebar_private_message_list({
+    const recipients_dom = render_sidebar_private_message_list({
         messages: display_messages,
     });
     return recipients_dom;
@@ -120,13 +120,13 @@ exports.rebuild_recent = function (active_conversation) {
     stream_popover.hide_topic_popover();
 
     if (private_messages_open) {
-        var rendered_pm_list = exports._build_private_messages_list(
+        const rendered_pm_list = exports._build_private_messages_list(
             active_conversation);
         ui.get_content_element($("#private-container")).html(rendered_pm_list);
     }
 
     if (active_conversation) {
-        var active_li = exports.get_conversation_li(active_conversation);
+        const active_li = exports.get_conversation_li(active_conversation);
         if (active_li) {
             active_li.addClass('active-sub-filter');
         }
@@ -140,12 +140,12 @@ exports.update_private_messages = function () {
         return;
     }
 
-    var is_pm_filter = false;
-    var pm_with = '';
-    var filter = narrow_state.filter();
+    let is_pm_filter = false;
+    let pm_with = '';
+    const filter = narrow_state.filter();
 
     if (filter) {
-        var conversation = filter.operands('pm-with');
+        const conversation = filter.operands('pm-with');
         if (conversation.length === 1) {
             pm_with = conversation[0];
         }

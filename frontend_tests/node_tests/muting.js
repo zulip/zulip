@@ -11,27 +11,27 @@ run_test('edge_cases', () => {
     assert(!muting.is_topic_muted('nonexistent', undefined));
 });
 
-var design = {
+const design = {
     stream_id: 100,
     name: 'design',
 };
 
-var devel = {
+const devel = {
     stream_id: 101,
     name: 'devel',
 };
 
-var office = {
+const office = {
     stream_id: 102,
     name: 'office',
 };
 
-var social = {
+const social = {
     stream_id: 103,
     name: 'social',
 };
 
-var unknown = {
+const unknown = {
     stream_id: 999,
     name: 'whatever',
 };

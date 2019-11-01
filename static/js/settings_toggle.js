@@ -1,4 +1,4 @@
-var toggler;
+let toggler;
 
 exports.highlight_toggle = function (tab_name) {
     if (toggler) {
@@ -29,9 +29,9 @@ exports.initialize = function () {
 
 // Handles the collapse/reveal of some tabs in the org settings for non-admins.
 exports.toggle_org_setting_collapse = function () {
-    var is_collapsed = $(".collapse-org-settings").hasClass("hide-org-settings");
-    var show_fewer_settings_text = i18n.t("Show fewer");
-    var show_more_settings_text = i18n.t("Show more");
+    const is_collapsed = $(".collapse-org-settings").hasClass("hide-org-settings");
+    const show_fewer_settings_text = i18n.t("Show fewer");
+    const show_more_settings_text = i18n.t("Show more");
 
     if (is_collapsed) {
         _.each($(".collapse-org-settings"), function (elem) {
@@ -55,7 +55,7 @@ exports.toggle_org_setting_collapse = function () {
     }
 
     // If current tab is about to be collapsed, go to default tab.
-    var current_tab = $(".org-settings-list .active");
+    const current_tab = $(".org-settings-list .active");
     if (current_tab.hasClass("hide-org-settings")) {
         $(location).attr("href", "/#organization/organization-profile");
     }

@@ -1,4 +1,4 @@
-var render_feedback_container = require('../templates/feedback_container.hbs');
+const render_feedback_container = require('../templates/feedback_container.hbs');
 
 /*
 
@@ -19,7 +19,7 @@ Codewise it's a singleton widget that controls the DOM inside
 */
 
 
-var meta = {
+const meta = {
     hide_me_time: null,
     alert_hover_state: false,
     $container: null,
@@ -119,7 +119,7 @@ exports.show = function (opts) {
 
     meta.$container = $('#feedback_container');
 
-    var html = render_feedback_container();
+    const html = render_feedback_container();
     meta.$container.html(html);
 
     set_up_handlers();

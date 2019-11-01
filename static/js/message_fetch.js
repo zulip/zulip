@@ -1,4 +1,4 @@
-var consts = {
+const consts = {
     backfill_idle_time: 10 * 1000,
     error_retry_time: 5000,
     backfill_batch_size: 1000,
@@ -12,7 +12,7 @@ var consts = {
 };
 
 function process_result(data, opts) {
-    var messages = data.messages;
+    let messages = data.messages;
 
     if (!$('#connection-error').hasClass('get-events-error')) {
         ui_report.hide_error($("#connection-error"));
@@ -105,8 +105,8 @@ function get_messages_success(data, opts) {
 // or convert the emails string to user IDs directly into the Filter code
 // because doing so breaks the app in various modules that expect emails string.
 function handle_operators_supporting_id_based_api(data) {
-    var operators_supporting_ids = ['pm-with'];
-    var operators_supporting_id = ['sender', 'group-pm-with', 'stream'];
+    const operators_supporting_ids = ['pm-with'];
+    const operators_supporting_id = ['sender', 'group-pm-with', 'stream'];
 
     if (data.narrow === undefined) {
         return data;
@@ -129,7 +129,7 @@ function handle_operators_supporting_id_based_api(data) {
             }
 
             // The other operands supporting object IDs all work with user objects.
-            var person = people.get_by_email(filter.operand);
+            const person = people.get_by_email(filter.operand);
             if (person !== undefined) {
                 filter.operand = person.user_id;
             }
@@ -143,12 +143,12 @@ function handle_operators_supporting_id_based_api(data) {
 }
 
 exports.load_messages = function (opts) {
-    var data = {anchor: opts.anchor,
+    let data = {anchor: opts.anchor,
                 num_before: opts.num_before,
                 num_after: opts.num_after};
 
     if (opts.msg_list.narrowed && narrow_state.active()) {
-        var operators = narrow_state.public_operators();
+        let operators = narrow_state.public_operators();
         if (page_params.narrow !== undefined) {
             operators = operators.concat(page_params.narrow);
         }
@@ -197,7 +197,7 @@ exports.load_messages = function (opts) {
                 // retry or display a connection error.
                 //
                 // FIXME: Warn the user when this has happened?
-                var data = {
+                const data = {
                     messages: [],
                 };
                 process_result(data, opts);
@@ -214,7 +214,7 @@ exports.load_messages = function (opts) {
 };
 
 exports.load_messages_for_narrow = function (opts) {
-    var msg_list = message_list.narrowed;
+    const msg_list = message_list.narrowed;
 
     exports.load_messages({
         anchor: opts.then_select_id.toFixed(),
@@ -230,7 +230,7 @@ exports.load_messages_for_narrow = function (opts) {
 };
 
 exports.get_backfill_anchor = function (msg_list) {
-    var oldest_message_id;
+    let oldest_message_id;
 
     if (msg_list === home_msg_list) {
         msg_list = message_list.all;
@@ -249,7 +249,7 @@ exports.get_frontfill_anchor = function (msg_list) {
         msg_list = message_list.all;
     }
 
-    var last_msg = msg_list.last();
+    const last_msg = msg_list.last();
 
     if (last_msg) {
         return last_msg.id;
@@ -262,7 +262,7 @@ exports.maybe_load_older_messages = function (opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
     // than what the browers originally fetched.
-    var msg_list = opts.msg_list;
+    const msg_list = opts.msg_list;
     if (!msg_list.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
         // got the oldest one.
@@ -280,8 +280,8 @@ exports.maybe_load_older_messages = function (opts) {
 };
 
 exports.do_backfill = function (opts) {
-    var msg_list = opts.msg_list;
-    var anchor = exports.get_backfill_anchor(msg_list).toFixed();
+    const msg_list = opts.msg_list;
+    const anchor = exports.get_backfill_anchor(msg_list).toFixed();
 
     exports.load_messages({
         anchor: anchor,
@@ -300,7 +300,7 @@ exports.maybe_load_newer_messages = function (opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages newer
     // than what the browers originally fetched.
-    var msg_list = opts.msg_list;
+    const msg_list = opts.msg_list;
 
     if (!msg_list.fetch_status.can_load_newer_messages()) {
         // We may already be loading new messages or already
@@ -308,7 +308,7 @@ exports.maybe_load_newer_messages = function (opts) {
         return;
     }
 
-    var anchor = exports.get_frontfill_anchor(msg_list).toFixed();
+    const anchor = exports.get_frontfill_anchor(msg_list).toFixed();
 
     exports.load_messages({
         anchor: anchor,
@@ -351,8 +351,8 @@ exports.initialize = function () {
 
         // If we fall through here, we need to keep fetching more data, and
         // we'll call back to the function we're in.
-        var messages = data.messages;
-        var latest_id = messages[messages.length - 1].id;
+        const messages = data.messages;
+        const latest_id = messages[messages.length - 1].id;
 
         exports.load_messages({
             anchor: latest_id.toFixed(),

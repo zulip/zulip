@@ -7,8 +7,8 @@
     would be kind of upside down.
 */
 
-var reload_in_progress = false;
-var reload_pending = false;
+let reload_in_progress = false;
+let reload_pending = false;
 
 exports.is_pending = function () {
     return reload_pending;

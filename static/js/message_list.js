@@ -1,4 +1,4 @@
-var autosize = require('autosize');
+const autosize = require('autosize');
 
 exports.narrowed = undefined;
 exports.set_narrowed = function (value) {
@@ -10,7 +10,7 @@ exports.MessageList = function (opts) {
         this.muting_enabled = opts.data.muting_enabled;
         this.data = opts.data;
     } else {
-        var filter = opts.filter;
+        const filter = opts.filter;
 
         this.muting_enabled = opts.muting_enabled;
         this.data = new MessageListData({
@@ -23,8 +23,8 @@ exports.MessageList = function (opts) {
         collapse_messages: true,
     });
 
-    var collapse_messages = opts.collapse_messages;
-    var table_name = opts.table_name;
+    const collapse_messages = opts.collapse_messages;
+    const table_name = opts.table_name;
     this.view = new MessageListView(this, table_name, collapse_messages);
     this.fetch_status = FetchStatus();
     this.table_name = table_name;
@@ -36,21 +36,21 @@ exports.MessageList = function (opts) {
 
 exports.MessageList.prototype = {
     add_messages: function MessageList_add_messages(messages, opts) {
-        var self = this;
+        const self = this;
 
         // This adds all messages to our data, but only returns
         // the currently viewable ones.
-        var info = this.data.add_messages(messages);
+        const info = this.data.add_messages(messages);
 
-        var top_messages = info.top_messages;
-        var bottom_messages = info.bottom_messages;
-        var interior_messages = info.interior_messages;
+        const top_messages = info.top_messages;
+        const bottom_messages = info.bottom_messages;
+        const interior_messages = info.interior_messages;
 
         // Currently we only need data back from rendering to
         // tell us whether users needs to scroll, which only
         // applies for `append_to_view`, but this may change over
         // time.
-        var render_info;
+        let render_info;
 
         if (interior_messages.length > 0) {
             self.view.rerender_preserving_scrolltop(true);
@@ -154,7 +154,7 @@ exports.MessageList.prototype = {
         });
 
         function convert_id(str_id) {
-            var id = parseFloat(str_id);
+            const id = parseFloat(str_id);
             if (isNaN(id)) {
                 blueslip.fatal("Bad message id " + str_id);
             }
@@ -163,9 +163,9 @@ exports.MessageList.prototype = {
 
         id = convert_id(id);
 
-        var closest_id = this.closest_id(id);
+        const closest_id = this.closest_id(id);
 
-        var error_data;
+        let error_data;
 
         // The name "use_closest" option is a bit legacy.  We
         // are always gonna move to the closest visible id; the flag
@@ -252,13 +252,13 @@ exports.MessageList.prototype = {
         if (!this.narrowed) {
             return;
         }
-        var stream_name = narrow_state.stream();
+        const stream_name = narrow_state.stream();
         if (stream_name === undefined) {
             return;
         }
-        var trailing_bookend_content;
-        var show_button = true;
-        var subscribed = stream_data.is_subscribed(stream_name);
+        let trailing_bookend_content;
+        let show_button = true;
+        const subscribed = stream_data.is_subscribed(stream_name);
         if (subscribed) {
             trailing_bookend_content = this.subscribed_bookend_content(stream_name);
         } else {
@@ -268,7 +268,7 @@ exports.MessageList.prototype = {
                 // For invite only streams or streams that no longer
                 // exist, hide the resubscribe button
                 // Hide button for guest users
-                var sub = stream_data.get_sub(stream_name);
+                const sub = stream_data.get_sub(stream_name);
                 if (sub !== undefined) {
                     show_button = !page_params.is_guest && !sub.invite_only;
                 } else {
@@ -288,7 +288,7 @@ exports.MessageList.prototype = {
     },
 
     append: function MessageList_append(messages, opts) {
-        var viewable_messages = this.data.append(messages);
+        const viewable_messages = this.data.append(messages);
         this.append_to_view(viewable_messages, opts);
     },
 
@@ -296,7 +296,7 @@ exports.MessageList.prototype = {
         opts = _.extend({messages_are_new: false}, opts);
 
         this.num_appends += 1;
-        var render_info = this.view.append(messages, opts.messages_are_new);
+        const render_info = this.view.append(messages, opts.messages_are_new);
         return render_info;
     },
 
@@ -332,7 +332,7 @@ exports.MessageList.prototype = {
     },
 
     show_message_as_read: function (message, options) {
-        var row = this.get_row(message.id);
+        const row = this.get_row(message.id);
         if (options.from === 'pointer' || options.from === "server") {
             row.find('.unread_marker').addClass('fast_fade');
         } else {
@@ -362,7 +362,7 @@ exports.MessageList.prototype = {
     },
 
     redo_selection: function () {
-        var selected_id = this.data.selected_id();
+        const selected_id = this.data.selected_id();
 
         if (selected_id !== -1) {
             this.select_id(selected_id);
@@ -415,8 +415,8 @@ exports.MessageList.prototype = {
     },
 
     change_message_id: function MessageList_change_message_id(old_id, new_id) {
-        var self = this;
-        var opts = {
+        const self = this;
+        const opts = {
             is_current_list: function () {
                 return current_msg_list === self;
             },

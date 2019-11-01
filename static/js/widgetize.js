@@ -1,25 +1,25 @@
-var widgets = {};
+const widgets = {};
 
 widgets.poll = poll_widget;
 widgets.tictactoe = tictactoe_widget;
 widgets.todo = todo_widget;
 widgets.zform = zform;
 
-var widget_contents = {};
+const widget_contents = {};
 exports.widget_contents = widget_contents;
 
 function set_widget_in_message(row, widget_elem) {
-    var content_holder = row.find('.message_content');
+    const content_holder = row.find('.message_content');
     content_holder.empty().append(widget_elem);
 }
 
 exports.activate = function (in_opts) {
-    var widget_type = in_opts.widget_type;
-    var extra_data = in_opts.extra_data;
-    var events = in_opts.events;
-    var row = in_opts.row;
-    var message = in_opts.message;
-    var post_to_server = in_opts.post_to_server;
+    const widget_type = in_opts.widget_type;
+    const extra_data = in_opts.extra_data;
+    const events = in_opts.events;
+    const row = in_opts.row;
+    const message = in_opts.message;
+    const post_to_server = in_opts.post_to_server;
 
     events.shift();
 
@@ -28,7 +28,7 @@ exports.activate = function (in_opts) {
         return;
     }
 
-    var callback = function (data) {
+    const callback = function (data) {
         post_to_server({
             msg_type: 'widget',
             data: data,
@@ -41,7 +41,7 @@ exports.activate = function (in_opts) {
         return;
     }
 
-    var widget_elem = widget_contents[message.id];
+    let widget_elem = widget_contents[message.id];
     if (widget_elem) {
         set_widget_in_message(row, widget_elem);
         return;
@@ -72,14 +72,14 @@ exports.activate = function (in_opts) {
 exports.set_widgets_for_list = function () {
     _.each(widget_contents, function (widget_elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {
-            var row = current_msg_list.get_row(idx);
+            const row = current_msg_list.get_row(idx);
             set_widget_in_message(row, widget_elem);
         }
     });
 };
 
 exports.handle_event = function (widget_event) {
-    var widget_elem = widget_contents[widget_event.message_id];
+    const widget_elem = widget_contents[widget_event.message_id];
 
     if (!widget_elem) {
         // It is common for submessage events to arrive on
@@ -88,7 +88,7 @@ exports.handle_event = function (widget_event) {
         return;
     }
 
-    var events = [widget_event];
+    const events = [widget_event];
 
     widget_elem.handle_events(events);
 };

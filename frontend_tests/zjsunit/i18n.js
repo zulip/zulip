@@ -5,10 +5,10 @@ exports.t = function (str, context) {
     if (context === undefined) {
         return 'translated: ' + str;
     }
-    var keyword_regex = /__(- )?(\w)+__/g;
-    var keys_in_str = str.match(keyword_regex);
-    var substitutions = _.map(keys_in_str, function (key) {
-        var prefix_length;
+    const keyword_regex = /__(- )?(\w)+__/g;
+    const keys_in_str = str.match(keyword_regex);
+    const substitutions = _.map(keys_in_str, function (key) {
+        let prefix_length;
         if (key.startsWith("__- ")) {
             prefix_length = 4;
         } else {

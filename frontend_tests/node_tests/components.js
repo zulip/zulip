@@ -3,20 +3,20 @@ set_global('i18n', global.stub_i18n);
 zrequire('keydown_util');
 zrequire('components');
 
-var noop = function () {};
+const noop = function () {};
 
-var LEFT_KEY = { which: 37, preventDefault: noop, stopPropagation: noop };
-var RIGHT_KEY = { which: 39, preventDefault: noop, stopPropagation: noop };
+const LEFT_KEY = { which: 37, preventDefault: noop, stopPropagation: noop };
+const RIGHT_KEY = { which: 39, preventDefault: noop, stopPropagation: noop };
 
 run_test('basics', () => {
-    var keydown_f;
-    var click_f;
-    var tabs = [];
-    var focused_tab;
-    var callback_args;
+    let keydown_f;
+    let click_f;
+    const tabs = [];
+    let focused_tab;
+    let callback_args;
 
     function make_tab(i) {
-        var self = {};
+        const self = {};
 
         assert.equal(tabs.length, i);
 
@@ -25,17 +25,17 @@ run_test('basics', () => {
 
         self.addClass = function (c) {
             self.class += ' ' + c;
-            var tokens = self.class.trim().split(/ +/);
+            const tokens = self.class.trim().split(/ +/);
             self.class = _.uniq(tokens).join(' ');
         };
 
         self.removeClass = function (c) {
-            var tokens = self.class.trim().split(/ +/);
+            const tokens = self.class.trim().split(/ +/);
             self.class = _.without(tokens, c).join(' ');
         };
 
         self.hasClass = function (c) {
-            var tokens = self.class.trim().split(/ +/);
+            const tokens = self.class.trim().split(/ +/);
             return tokens.includes(c);
         };
 
@@ -53,8 +53,8 @@ run_test('basics', () => {
         return self;
     }
 
-    var ind_tab = (function () {
-        var self = {};
+    const ind_tab = (function () {
+        const self = {};
 
         self.stub = true;
 
@@ -79,8 +79,8 @@ run_test('basics', () => {
         return self;
     }());
 
-    var switcher = (function () {
-        var self = {};
+    const switcher = (function () {
+        const self = {};
 
         self.stub = true;
 
@@ -122,7 +122,7 @@ run_test('basics', () => {
         }
     });
 
-    var callback_value;
+    let callback_value;
 
     let widget = null;
     widget = components.toggle({

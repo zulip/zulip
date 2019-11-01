@@ -15,7 +15,7 @@ function init_simulated_scrolling() {
         height: () => 550,
     });
 
-    var elem = {
+    const elem = {
         dataset: {},
         scrollTop: 0,
         scrollHeight: 0,
@@ -96,7 +96,7 @@ run_test('big_list', () => {
 
     // Don't actually render, but do simulate filling up
     // the screen.
-    var chunks_inserted = 0;
+    let chunks_inserted = 0;
 
     buddy_list.render_more = () => {
         elem.scrollHeight += 100;

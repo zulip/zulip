@@ -1,11 +1,11 @@
-var zoomed_in = false;
+let zoomed_in = false;
 
 exports.is_zoomed_in = function () {
     return zoomed_in;
 };
 
 function zoom_in() {
-    var stream_id = topic_list.active_stream_id();
+    const stream_id = topic_list.active_stream_id();
 
     popovers.hide_all_except_sidebars();
     topic_list.zoom_in();
@@ -17,7 +17,7 @@ function zoom_in() {
 }
 
 exports.zoom_out = function () {
-    var stream_li = topic_list.get_stream_li();
+    const stream_li = topic_list.get_stream_li();
 
     popovers.hide_all_except_sidebars();
     topic_list.zoom_out();
@@ -31,7 +31,7 @@ exports.zoom_out = function () {
 };
 
 exports.clear_topics = function () {
-    var stream_li = topic_list.get_stream_li();
+    const stream_li = topic_list.get_stream_li();
 
     topic_list.close();
 

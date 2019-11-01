@@ -1,6 +1,6 @@
 exports.create_item_from_search_string = function (search_string) {
-    var operator = Filter.parse(search_string);
-    var description = Filter.describe(operator);
+    const operator = Filter.parse(search_string);
+    const description = Filter.describe(operator);
     return {
         display_value: search_string,
         description: description,
@@ -12,7 +12,7 @@ exports.get_search_string_from_item = function (item) {
 };
 
 exports.create_pills = function (pill_container) {
-    var pills = input_pill.create({
+    const pills = input_pill.create({
         container: pill_container,
         create_item_from_text: exports.create_item_from_search_string,
         get_text_from_item: exports.get_search_string_from_item,
@@ -28,8 +28,8 @@ exports.append_search_string = function (search_string, pill_widget) {
 };
 
 exports.get_search_string_for_current_filter = function (pill_widget) {
-    var items = pill_widget.items();
-    var search_strings = _.pluck(items, 'display_value');
+    const items = pill_widget.items();
+    const search_strings = _.pluck(items, 'display_value');
     return search_strings.join(' ');
 };
 

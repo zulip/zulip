@@ -18,14 +18,14 @@ exports.check_record = function (var_name, val, fields) {
         return var_name + ' is not a record';
     }
 
-    var field_results = _.map(fields, function (f, field_name) {
+    const field_results = _.map(fields, function (f, field_name) {
         if (val[field_name] === undefined) {
             return field_name + ' is missing';
         }
         return f(field_name, val[field_name]);
     });
 
-    var msg = _.filter(field_results).sort().join(', ');
+    const msg = _.filter(field_results).sort().join(', ');
 
     if (msg) {
         return 'in ' + var_name + ' ' + msg;
@@ -37,10 +37,10 @@ exports.check_array = function (var_name, val, checker) {
         return var_name + ' is not an array';
     }
 
-    var msg;
+    let msg;
 
     _.find(val, function (item) {
-        var res = checker('item', item);
+        const res = checker('item', item);
 
         if (res) {
             msg = res;

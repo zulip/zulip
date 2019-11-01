@@ -1,6 +1,6 @@
-var render_admin_export_list = require('../templates/admin_export_list.hbs');
+const render_admin_export_list = require('../templates/admin_export_list.hbs');
 
-var meta = {
+const meta = {
     loaded: false,
 };
 
@@ -9,7 +9,7 @@ exports.reset = function () {
 };
 
 exports.clear_success_banner = function () {
-    var export_status = $('#export_status');
+    const export_status = $('#export_status');
     if (export_status.hasClass('alert-success')) {
         // Politely remove our success banner if the export
         // finishes before the view is closed.
@@ -25,8 +25,8 @@ exports.populate_exports_table = function (exports) {
         return;
     }
 
-    var exports_table = $('#admin_exports_table').expectOne();
-    var exports_list = list_render.create(exports_table, Object.values(exports), {
+    const exports_table = $('#admin_exports_table').expectOne();
+    const exports_list = list_render.create(exports_table, Object.values(exports), {
         name: "admin_exports_list",
         modifier: function (data) {
             if (data.deleted_timestamp === null) {
@@ -57,8 +57,8 @@ exports.populate_exports_table = function (exports) {
     }).init();
 
     exports_list.add_sort_function("user", function (a, b) {
-        var a_name = people.get_full_name(a.acting_user_id).toLowerCase();
-        var b_name = people.get_full_name(b.acting_user_id).toLowerCase();
+        const a_name = people.get_full_name(a.acting_user_id).toLowerCase();
+        const b_name = people.get_full_name(b.acting_user_id).toLowerCase();
         if (a_name > b_name) {
             return 1;
         } else if (a_name === b_name) {
@@ -76,7 +76,7 @@ exports.set_up = function () {
     $("#export-data").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var export_status = $('#export_status');
+        const export_status = $('#export_status');
 
         channel.post({
             url: '/json/export/realm',
@@ -100,7 +100,7 @@ exports.set_up = function () {
     $('.admin_exports_table').on('click', '.delete', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var btn = $(this);
+        const btn = $(this);
 
         channel.del({
             url: '/json/export/realm/' + encodeURIComponent(btn.attr('data-export-id')),

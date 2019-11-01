@@ -5,7 +5,7 @@ const fs = require("fs");
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, { pretendToBeVisual: true });
 const document = dom.window.document;
-var jquery_init;
+let jquery_init;
 
 global.$ = (f) => {jquery_init = f;};
 
@@ -29,7 +29,7 @@ zrequire('upgrade', "js/billing/upgrade");
 set_global('$', global.make_zjquery());
 
 run_test("initialize", () => {
-    var token_func;
+    let token_func;
     helpers.set_tab = (page_name) => {
         assert.equal(page_name, "upgrade");
     };
@@ -142,12 +142,12 @@ run_test("autopay_form_fields", () => {
     assert.equal(document.querySelector("#autopay-form #automatic_license_count").value, "{{ seat_count }}");
     assert.equal(document.querySelector("#autopay-form #manual_license_count").min, "{{ seat_count }}");
 
-    var license_options = document.querySelectorAll("#autopay-form input[type=radio][name=license_management]");
+    const license_options = document.querySelectorAll("#autopay-form input[type=radio][name=license_management]");
     assert.equal(license_options.length, 2);
     assert.equal(license_options[0].value, "automatic");
     assert.equal(license_options[1].value, "manual");
 
-    var schedule_options = document.querySelectorAll("#autopay-form input[type=radio][name=schedule]");
+    const schedule_options = document.querySelectorAll("#autopay-form input[type=radio][name=schedule]");
     assert.equal(schedule_options.length, 2);
     assert.equal(schedule_options[0].value, "annual");
     assert.equal(schedule_options[1].value, "monthly");
@@ -167,7 +167,7 @@ run_test("invoice_form_fields", () => {
     assert.equal(document.querySelector("#invoice-form [name=billing_modality]").value, "send_invoice");
     assert.equal(document.querySelector("#invoice-form [name=licenses]").min, "{{ min_invoiced_licenses }}");
 
-    var schedule_options = document.querySelectorAll("#invoice-form input[type=radio][name=schedule]");
+    const schedule_options = document.querySelectorAll("#invoice-form input[type=radio][name=schedule]");
     assert.equal(schedule_options.length, 1);
     assert.equal(schedule_options[0].value, "annual");
 

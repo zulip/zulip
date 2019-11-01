@@ -72,10 +72,10 @@ the selector and then calls info_overlay.show.
 // To do so, we need to save away the old position of the
 // scrollbar when we switch to a new tab (and restore it
 // when we switch back.)
-var scroll_positions = {};
+const scroll_positions = {};
 
 exports.update_org_settings_menu_item = function () {
-    var item = $('.admin-menu-item').expectOne();
+    const item = $('.admin-menu-item').expectOne();
     if (page_params.is_admin) {
         item.find("span").text(i18n.t("Manage organization"));
     } else {
@@ -88,17 +88,17 @@ exports.initialize = function () {
 
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
-        var old_tab = $(e.relatedTarget).attr('href');
+        const old_tab = $(e.relatedTarget).attr('href');
         scroll_positions[old_tab] = message_viewport.scrollTop();
     });
     $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
-        var target_tab = $(e.target).attr('href');
+        const target_tab = $(e.target).attr('href');
         resize.resize_bottom_whitespace();
         // Hide all our error messages when switching tabs
         $('.alert').removeClass("show");
 
         // Set the URL bar title to show the sub-page you're currently on.
-        var browser_url = target_tab;
+        let browser_url = target_tab;
         if (browser_url === "#home") {
             browser_url = "";
         }

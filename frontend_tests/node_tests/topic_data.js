@@ -5,7 +5,7 @@ zrequire('topic_data');
 set_global('channel', {});
 
 run_test('basics', () => {
-    var stream_id = 55;
+    const stream_id = 55;
 
     topic_data.add_message({
         stream_id: stream_id,
@@ -13,7 +13,7 @@ run_test('basics', () => {
         topic_name: 'toPic1',
     });
 
-    var history = topic_data.get_recent_names(stream_id);
+    let history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['toPic1']);
 
     topic_data.add_message({
@@ -63,7 +63,7 @@ run_test('basics', () => {
 });
 
 run_test('server_history', () => {
-    var stream_id = 66;
+    const stream_id = 66;
 
     topic_data.add_message({
         stream_id: stream_id,
@@ -80,7 +80,7 @@ run_test('server_history', () => {
     }
 
     add_server_history();
-    var history = topic_data.get_recent_names(stream_id);
+    let history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['local', 'hist2', 'hist1']);
 
     // If new activity comes in for historical messages,
@@ -129,7 +129,7 @@ run_test('server_history', () => {
 });
 
 run_test('test_unread_logic', () => {
-    var stream_id = 77;
+    const stream_id = 77;
 
     topic_data.add_message({
         stream_id: stream_id,
@@ -143,7 +143,7 @@ run_test('test_unread_logic', () => {
         topic_name: 'topic2',
     });
 
-    var history = topic_data.get_recent_names(stream_id);
+    let history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['toPic1', 'topic2']);
 
     const msgs = [
@@ -166,7 +166,7 @@ run_test('test_unread_logic', () => {
 });
 
 run_test('test_stream_has_topics', () => {
-    var stream_id = 88;
+    const stream_id = 88;
 
     assert.equal(topic_data.stream_has_topics(stream_id), false);
 
@@ -188,16 +188,16 @@ run_test('test_stream_has_topics', () => {
 run_test('server_history_end_to_end', () => {
     topic_data.reset();
 
-    var stream_id = 99;
+    const stream_id = 99;
 
-    var topics = [
+    const topics = [
         { name: 'topic3', max_id: 501 },
         { name: 'topic2', max_id: 31 },
         { name: 'topic1', max_id: 30 },
     ];
 
-    var get_success_callback;
-    var on_success_called;
+    let get_success_callback;
+    let on_success_called;
 
     channel.get = function (opts) {
         assert.equal(opts.url, '/json/users/me/99/topics');
@@ -213,6 +213,6 @@ run_test('server_history_end_to_end', () => {
 
     assert(on_success_called);
 
-    var history = topic_data.get_recent_names(stream_id);
+    const history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['topic3', 'topic2', 'topic1']);
 });

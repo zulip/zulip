@@ -11,12 +11,12 @@
 */
 
 exports.toggle = function (opts) {
-    var component = (function render_component(opts) {
-        var _component = $("<div class='tab-switcher'></div>");
+    const component = (function render_component(opts) {
+        const _component = $("<div class='tab-switcher'></div>");
         opts.values.forEach(function (value, i) {
             // create a tab with a tab-id so they don't have to be referenced
             // by text value which can be inconsistent.
-            var tab = $("<div class='ind-tab' data-tab-key='" + value.key + "' data-tab-id='" + i + "' tabindex='0'>" + value.label + "</div>");
+            const tab = $("<div class='ind-tab' data-tab-key='" + value.key + "' data-tab-id='" + i + "' tabindex='0'>" + value.label + "</div>");
 
             // add proper classes for styling in CSS.
             if (i === 0) {
@@ -32,13 +32,13 @@ exports.toggle = function (opts) {
         return _component;
     }(opts));
 
-    var meta = {
+    const meta = {
         $ind_tab: component.find(".ind-tab"),
         idx: -1,
     };
 
     function select_tab(idx) {
-        var elem = meta.$ind_tab.eq(idx);
+        const elem = meta.$ind_tab.eq(idx);
         if (elem.hasClass('disabled')) {
             return;
         }
@@ -75,7 +75,7 @@ exports.toggle = function (opts) {
 
     (function () {
         meta.$ind_tab.click(function () {
-            var idx = $(this).data("tab-id");
+            const idx = $(this).data("tab-id");
             select_tab(idx);
         });
 
@@ -93,16 +93,16 @@ exports.toggle = function (opts) {
         }
     }());
 
-    var prototype = {
+    const prototype = {
         maybe_go_left: maybe_go_left,
         maybe_go_right: maybe_go_right,
 
         disable_tab: function (name) {
-            var value = _.find(opts.values, function (o) {
+            const value = _.find(opts.values, function (o) {
                 return o.key === name;
             });
 
-            var idx = opts.values.indexOf(value);
+            const idx = opts.values.indexOf(value);
             meta.$ind_tab.eq(idx).addClass('disabled');
         },
 
@@ -118,11 +118,11 @@ exports.toggle = function (opts) {
         // go through the process of finding the correct tab for a given name,
         // and when found, select that one and provide the proper callback.
         goto: function (name) {
-            var value = _.find(opts.values, function (o) {
+            const value = _.find(opts.values, function (o) {
                 return o.label === name || o.key === name;
             });
 
-            var idx = opts.values.indexOf(value);
+            const idx = opts.values.indexOf(value);
 
             if (idx >= 0) {
                 select_tab(idx);

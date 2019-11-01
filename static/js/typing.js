@@ -21,7 +21,7 @@ function send_typing_notification_ajax(user_ids_array, operation) {
 }
 
 function get_user_ids_array() {
-    var user_ids_string = compose_pm_pill.get_user_ids_string();
+    const user_ids_string = compose_pm_pill.get_user_ids_string();
     if (user_ids_string === "") {
         return null;
     }
@@ -30,7 +30,7 @@ function get_user_ids_array() {
 }
 
 function is_valid_conversation() {
-    var compose_empty = !compose_state.has_message_content();
+    const compose_empty = !compose_state.has_message_content();
     if (compose_empty) {
         return false;
     }
@@ -52,7 +52,7 @@ function notify_server_stop(user_ids_array) {
 
 exports.get_recipient = get_user_ids_array;
 exports.initialize = function () {
-    var worker = {
+    const worker = {
         get_current_time: get_current_time,
         notify_server_start: notify_server_start,
         notify_server_stop: notify_server_stop,
@@ -61,7 +61,7 @@ exports.initialize = function () {
     $(document).on('input', '#compose-textarea', function () {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
-        var new_recipient =
+        const new_recipient =
           is_valid_conversation() ? exports.get_recipient() : null;
         typing_status.update(worker, new_recipient);
     });

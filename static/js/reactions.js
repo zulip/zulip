@@ -1,5 +1,5 @@
-var render_message_reaction = require('../templates/message_reaction.hbs');
-var Dict = require('./dict').Dict;
+const render_message_reaction = require('../templates/message_reaction.hbs');
+const Dict = require('./dict').Dict;
 
 exports.view = {}; // function namespace
 
@@ -12,7 +12,7 @@ exports.get_local_reaction_id = function (reaction_info) {
 };
 
 exports.get_reaction_info = function (reaction_id) {
-    var reaction_info = reaction_id.split(',');
+    const reaction_info = reaction_id.split(',');
     return {
         reaction_type: reaction_info[0],
         emoji_name: reaction_info[1],
@@ -21,8 +21,8 @@ exports.get_reaction_info = function (reaction_id) {
 };
 
 exports.open_reactions_popover = function () {
-    var message = current_msg_list.selected_message();
-    var target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
+    const message = current_msg_list.selected_message();
+    let target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
     if (!message.sent_by_me) {
         target = $(current_msg_list.selected_row()).find(".reaction_button")[0];
     }
@@ -31,7 +31,7 @@ exports.open_reactions_popover = function () {
 };
 
 exports.current_user_has_reacted_to_emoji = function (message, emoji_code, type) {
-    var user_id = page_params.user_id;
+    const user_id = page_params.user_id;
     return _.any(message.reactions, function (r) {
         return r.user.id === user_id &&
                r.reaction_type === type &&
@@ -40,7 +40,7 @@ exports.current_user_has_reacted_to_emoji = function (message, emoji_code, type)
 };
 
 function get_message(message_id) {
-    var message = message_store.get(message_id);
+    const message = message_store.get(message_id);
     if (!message) {
         blueslip.error('reactions: Bad message id: ' + message_id);
         return;
@@ -64,14 +64,14 @@ function create_reaction(message_id, reaction_info) {
 }
 
 function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
-    var message = get_message(message_id);
-    var has_reacted = exports.current_user_has_reacted_to_emoji(
+    const message = get_message(message_id);
+    const has_reacted = exports.current_user_has_reacted_to_emoji(
         message,
         reaction_info.emoji_code,
         reaction_info.reaction_type
     );
-    var operation = has_reacted ? 'remove' : 'add';
-    var reaction = create_reaction(message_id, reaction_info);
+    const operation = has_reacted ? 'remove' : 'add';
+    const reaction = create_reaction(message_id, reaction_info);
 
     if (operation === "add") {
         exports.add_reaction(reaction);
@@ -79,12 +79,12 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
         exports.remove_reaction(reaction);
     }
 
-    var args = {
+    const args = {
         url: '/json/messages/' + message_id + '/reactions',
         data: reaction_info,
         success: function () {},
         error: function (xhr) {
-            var response = channel.xhr_error_message("Error sending reaction", xhr);
+            const response = channel.xhr_error_message("Error sending reaction", xhr);
             // Errors are somewhat commmon here, due to race conditions
             // where the user tries to add/remove the reaction when there is already
             // an in-flight request.  We eventually want to make this a blueslip
@@ -101,7 +101,7 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
 }
 
 function get_user_list_for_message_reaction(message, local_id) {
-    var matching_reactions = message.reactions.filter(function (reaction) {
+    const matching_reactions = message.reactions.filter(function (reaction) {
         return reaction.local_id === local_id;
     });
     return matching_reactions.map(function (reaction) {
@@ -115,7 +115,7 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
     // clicking on a reaction and that is handled by `process_reaction_click()`
     // method. This codepath is to be used only where there is no chance of an
     // user interacting with a deactivated realm emoji like emoji picker.
-    var reaction_info = {
+    const reaction_info = {
         emoji_name: emoji_name,
     };
 
@@ -142,7 +142,7 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
 };
 
 exports.process_reaction_click = function (message_id, local_id) {
-    var reaction_info = exports.get_reaction_info(local_id);
+    const reaction_info = exports.get_reaction_info(local_id);
 
     update_ui_and_send_reaction_ajax(message_id, reaction_info);
 };
@@ -155,14 +155,14 @@ function full_name(user_id) {
 }
 
 function generate_title(emoji_name, user_ids) {
-    var i = user_ids.indexOf(page_params.user_id);
+    const i = user_ids.indexOf(page_params.user_id);
     if (i !== -1) {
         // Move current user's id to start of list
         user_ids.splice(i, 1);
         user_ids.unshift(page_params.user_id);
     }
-    var reacted_with_string = ' reacted with :' + emoji_name + ':';
-    var user_names = user_ids.map(full_name);
+    const reacted_with_string = ' reacted with :' + emoji_name + ':';
+    const user_names = user_ids.map(full_name);
     if (user_names.length === 1) {
         return user_names[0] + reacted_with_string;
     }
@@ -171,40 +171,40 @@ function generate_title(emoji_name, user_ids) {
 
 // Add a tooltip showing who reacted to a message.
 exports.get_reaction_title_data = function (message_id, local_id) {
-    var message = get_message(message_id);
-    var user_list = get_user_list_for_message_reaction(message, local_id);
-    var emoji_name = exports.get_reaction_info(local_id).emoji_name;
-    var title = generate_title(emoji_name, user_list);
+    const message = get_message(message_id);
+    const user_list = get_user_list_for_message_reaction(message, local_id);
+    const emoji_name = exports.get_reaction_info(local_id).emoji_name;
+    const title = generate_title(emoji_name, user_list);
 
     return title;
 };
 
 exports.get_reaction_section = function (message_id) {
-    var message_element = $('.message_table').find("[zid='" + message_id + "']");
-    var section = message_element.find('.message_reactions');
+    const message_element = $('.message_table').find("[zid='" + message_id + "']");
+    const section = message_element.find('.message_reactions');
     return section;
 };
 
 exports.find_reaction = function (message_id, local_id) {
-    var reaction_section = exports.get_reaction_section(message_id);
-    var reaction = reaction_section.find("[data-reaction-id='" + local_id + "']");
+    const reaction_section = exports.get_reaction_section(message_id);
+    const reaction = reaction_section.find("[data-reaction-id='" + local_id + "']");
     return reaction;
 };
 
 exports.get_add_reaction_button = function (message_id) {
-    var reaction_section = exports.get_reaction_section(message_id);
-    var add_button = reaction_section.find('.reaction_button');
+    const reaction_section = exports.get_reaction_section(message_id);
+    const add_button = reaction_section.find('.reaction_button');
     return add_button;
 };
 
 exports.set_reaction_count = function (reaction, count) {
-    var count_element = reaction.find('.message_reaction_count');
+    const count_element = reaction.find('.message_reaction_count');
     count_element.text(count);
 };
 
 exports.add_reaction = function (event) {
-    var message_id = event.message_id;
-    var message = message_store.get(message_id);
+    const message_id = event.message_id;
+    const message = message_store.get(message_id);
 
     if (message === undefined) {
         // If we don't have the message in cache, do nothing; if we
@@ -213,9 +213,9 @@ exports.add_reaction = function (event) {
         return;
     }
 
-    var reacted = exports.current_user_has_reacted_to_emoji(message,
-                                                            event.emoji_code,
-                                                            event.reaction_type);
+    const reacted = exports.current_user_has_reacted_to_emoji(message,
+                                                              event.emoji_code,
+                                                              event.reaction_type);
     if (reacted && event.user.user_id === page_params.user_id) {
         return;
     }
@@ -225,8 +225,8 @@ exports.add_reaction = function (event) {
 
     message.reactions.push(event);
 
-    var user_list = get_user_list_for_message_reaction(message, event.local_id);
-    var opts = {
+    const user_list = get_user_list_for_message_reaction(message, event.local_id);
+    const opts = {
         message_id: event.message_id,
         reaction_type: event.reaction_type,
         emoji_name: event.emoji_name,
@@ -247,16 +247,16 @@ exports.view.update_existing_reaction = function (opts) {
     // for this emoji and sets up our user_list.  This function
     // simply updates the DOM.
 
-    var message_id = opts.message_id;
-    var emoji_name = opts.emoji_name;
-    var user_list = opts.user_list;
-    var user_id = opts.user_id;
-    var local_id = exports.get_local_reaction_id(opts);
-    var reaction = exports.find_reaction(message_id, local_id);
+    const message_id = opts.message_id;
+    const emoji_name = opts.emoji_name;
+    const user_list = opts.user_list;
+    const user_id = opts.user_id;
+    const local_id = exports.get_local_reaction_id(opts);
+    const reaction = exports.find_reaction(message_id, local_id);
 
     exports.set_reaction_count(reaction, user_list.length);
 
-    var new_label = generate_title(emoji_name, user_list);
+    const new_label = generate_title(emoji_name, user_list);
     reaction.attr('aria-label', new_label);
 
     if (user_id === page_params.user_id) {
@@ -270,19 +270,19 @@ exports.view.insert_new_reaction = function (opts) {
     // us.  We then render the emoji/title/count and insert it
     // before the add button.
 
-    var message_id = opts.message_id;
-    var emoji_name = opts.emoji_name;
-    var emoji_code = opts.emoji_code;
-    var user_id = opts.user_id;
-    var user_list = [user_id];
+    const message_id = opts.message_id;
+    const emoji_name = opts.emoji_name;
+    const emoji_code = opts.emoji_code;
+    const user_id = opts.user_id;
+    const user_list = [user_id];
 
-    var context = {
+    const context = {
         message_id: message_id,
         emoji_name: emoji_name,
         emoji_code: emoji_code,
     };
 
-    var new_label = generate_title(emoji_name, user_list);
+    const new_label = generate_title(emoji_name, user_list);
 
     if (opts.reaction_type !== 'unicode_emoji') {
         context.is_realm_emoji = true;
@@ -300,22 +300,22 @@ exports.view.insert_new_reaction = function (opts) {
         context.class = "message_reaction";
     }
 
-    var new_reaction = $(render_message_reaction(context));
+    const new_reaction = $(render_message_reaction(context));
 
     // Now insert it before the add button.
-    var reaction_button_element = exports.get_add_reaction_button(message_id);
+    const reaction_button_element = exports.get_add_reaction_button(message_id);
     new_reaction.insertBefore(reaction_button_element);
 };
 
 exports.remove_reaction = function (event) {
-    var reaction_type = event.reaction_type;
-    var emoji_name = event.emoji_name;
-    var emoji_code = event.emoji_code;
-    var message_id = event.message_id;
-    var user_id = event.user.user_id;
-    var i = -1;
-    var message = message_store.get(message_id);
-    var local_id = exports.get_local_reaction_id(event);
+    const reaction_type = event.reaction_type;
+    const emoji_name = event.emoji_name;
+    const emoji_code = event.emoji_code;
+    const message_id = event.message_id;
+    const user_id = event.user.user_id;
+    let i = -1;
+    const message = message_store.get(message_id);
+    const local_id = exports.get_local_reaction_id(event);
 
     if (message === undefined) {
         // If we don't have the message in cache, do nothing; if we
@@ -324,9 +324,9 @@ exports.remove_reaction = function (event) {
         return;
     }
 
-    var not_reacted = !exports.current_user_has_reacted_to_emoji(message,
-                                                                 emoji_code,
-                                                                 reaction_type);
+    const not_reacted = !exports.current_user_has_reacted_to_emoji(message,
+                                                                   emoji_code,
+                                                                   reaction_type);
     if (not_reacted && event.user.user_id === page_params.user_id) {
         return;
     }
@@ -344,7 +344,7 @@ exports.remove_reaction = function (event) {
     }
 
     // Compute the new user list for this reaction.
-    var user_list = get_user_list_for_message_reaction(message, local_id);
+    const user_list = get_user_list_for_message_reaction(message, local_id);
 
     exports.view.remove_reaction({
         message_id: message_id,
@@ -358,12 +358,12 @@ exports.remove_reaction = function (event) {
 
 exports.view.remove_reaction = function (opts) {
 
-    var message_id = opts.message_id;
-    var emoji_name = opts.emoji_name;
-    var user_list = opts.user_list;
-    var user_id = opts.user_id;
-    var local_id = exports.get_local_reaction_id(opts);
-    var reaction = exports.find_reaction(message_id, local_id);
+    const message_id = opts.message_id;
+    const emoji_name = opts.emoji_name;
+    const user_list = opts.user_list;
+    const user_id = opts.user_id;
+    const local_id = exports.get_local_reaction_id(opts);
+    const reaction = exports.find_reaction(message_id, local_id);
 
     if (user_list.length === 0) {
         // If this user was the only one reacting for this emoji, we simply
@@ -376,7 +376,7 @@ exports.view.remove_reaction = function (opts) {
     // the title/count and, if the user is the current user, turn off the
     // "reacted" class.
 
-    var new_label = generate_title(emoji_name, user_list);
+    const new_label = generate_title(emoji_name, user_list);
     reaction.attr('aria-label', new_label);
 
     // If the user is the current user, turn off the "reacted" class.
@@ -389,9 +389,9 @@ exports.view.remove_reaction = function (opts) {
 };
 
 exports.get_emojis_used_by_user_for_message_id = function (message_id) {
-    var user_id = page_params.user_id;
-    var message = message_store.get(message_id);
-    var reactions_by_user = message.reactions.filter(function (reaction) {
+    const user_id = page_params.user_id;
+    const message = message_store.get(message_id);
+    const reactions_by_user = message.reactions.filter(function (reaction) {
         return reaction.user.id === user_id;
     });
     return reactions_by_user.map(function (reaction) {
@@ -400,9 +400,9 @@ exports.get_emojis_used_by_user_for_message_id = function (message_id) {
 };
 
 exports.get_message_reactions = function (message) {
-    var message_reactions = new Dict();
+    const message_reactions = new Dict();
     _.each(message.reactions, function (reaction) {
-        var user_id = reaction.user.id;
+        const user_id = reaction.user.id;
         reaction.local_id = exports.get_local_reaction_id(reaction);
         if (!people.is_known_user_id(user_id)) {
             blueslip.warn('Unknown user_id ' + user_id +
@@ -410,14 +410,14 @@ exports.get_message_reactions = function (message) {
             return;
         }
         reaction.user_ids = [];
-        var collapsed_reaction = message_reactions.setdefault(
+        const collapsed_reaction = message_reactions.setdefault(
             reaction.local_id,
             _.omit(reaction, 'user')
         );
         collapsed_reaction.user_ids.push(user_id);
     });
-    var reactions = message_reactions.items().map(function (item) {
-        var reaction = item[1];
+    const reactions = message_reactions.items().map(function (item) {
+        const reaction = item[1];
         reaction.local_id = reaction.local_id;
         reaction.reaction_type = reaction.reaction_type;
         reaction.emoji_name = reaction.emoji_name;
