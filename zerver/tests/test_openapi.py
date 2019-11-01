@@ -182,7 +182,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/dev_list_users',
         '/fetch_api_key',
         '/fetch_google_client_id',
-        '/get_auth_backends',
         '/settings',
         '/submessage',
         '/attachments',

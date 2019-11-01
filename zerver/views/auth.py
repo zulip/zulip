@@ -808,13 +808,6 @@ def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
         result[key] = auth_enabled_helper([auth_backend_name], realm)
     return result
 
-@csrf_exempt
-def api_get_auth_backends(request: HttpRequest) -> HttpResponse:
-    """Deprecated route; this is to be replaced by api_get_server_settings"""
-    auth_backends = get_auth_backends_data(request)
-    auth_backends['zulip_version'] = ZULIP_VERSION
-    return json_success(auth_backends)
-
 def check_server_incompatibility(request: HttpRequest) -> bool:
     user_agent = parse_user_agent(request.META.get("HTTP_USER_AGENT", "Missing User-Agent"))
     return user_agent['name'] == "ZulipInvalid"
