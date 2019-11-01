@@ -2248,7 +2248,7 @@ paths:
                             "name": "google",
                             "display_name": "Google",
                             "display_logo": "/static/images/landing-page/logos/googl_e-icon.png",
-                            "login_url": "/accounts/login/google/",
+                            "login_url": "/accounts/login/social/google",
                             "signup_url": "/accounts/register/social/google",
                             "sort_order": 150
                           },
