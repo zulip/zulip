@@ -419,18 +419,19 @@ i18n_urls = [
     url(r'^desktop_home/$', zerver.views.home.desktop_home,
         name='zerver.views.home.desktop_home'),
 
-    url(r'^accounts/login/sso/$', zerver.views.auth.remote_user_sso, name='login-sso'),
-    url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
-    url(r'^accounts/login/social/([\w,-]+)$', zerver.views.auth.start_social_login,
-        name='login-social'),
-    url(r'^accounts/login/social/([\w,-]+)/([\w,-]+)$', zerver.views.auth.start_social_login,
-        name='login-social-extra-arg'),
     # Backwards-compatibility (legacy) Google auth URL for the mobile
     # apps; see https://github.com/zulip/zulip/issues/13081 for
     # background.  We can remove this once older versions of the
     # mobile app are no longer present in the wild.
     url(r'^accounts/login/(google)/$', zerver.views.auth.start_social_login,
         name='login-social'),
+
+    url(r'^accounts/login/sso/$', zerver.views.auth.remote_user_sso, name='login-sso'),
+    url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
+    url(r'^accounts/login/social/([\w,-]+)$', zerver.views.auth.start_social_login,
+        name='login-social'),
+    url(r'^accounts/login/social/([\w,-]+)/([\w,-]+)$', zerver.views.auth.start_social_login,
+        name='login-social-extra-arg'),
 
     url(r'^accounts/register/social/([\w,-]+)$',
         zerver.views.auth.start_social_signup,
