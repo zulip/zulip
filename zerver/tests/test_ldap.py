@@ -26,8 +26,23 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
             self.assertEqual(self.backend.django_to_ldap_username("hamlet"), "hamlet")
             self.assertEqual(self.backend.django_to_ldap_username("hamlet@zulip.com"), "hamlet")
-            with self.assertRaises(ZulipLDAPExceptionOutsideDomain):
+            with self.assertRaisesRegex(ZulipLDAPExceptionOutsideDomain,
+                                        'Email hamlet@example.com does not match LDAP domain zulip.com.'):
                 self.backend.django_to_ldap_username("hamlet@example.com")
+
+            self.mock_ldap.directory['uid="hamlet@test",ou=users,dc=zulip,dc=com'] = {
+                "cn": ["King Hamlet"],
+                "uid": ['"hamlet@test"'],
+            }
+            username = self.backend.django_to_ldap_username('"hamlet@test"@zulip.com')
+            self.assertEqual(username, '"hamlet@test"')
+
+            self.mock_ldap.directory['uid="hamlet@test"@zulip,ou=users,dc=zulip,dc=com'] = {
+                "cn": ["King Hamlet"],
+                "uid": ['"hamlet@test"@zulip'],
+            }
+            username = self.backend.django_to_ldap_username('"hamlet@test"@zulip')
+            self.assertEqual(username, '"hamlet@test"@zulip')
 
     def test_django_to_ldap_username_without_email_search(self) -> None:
         with self.settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=None):
@@ -72,6 +87,13 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
                                                                      "(uid=%(email)s)")):
             self.assertEqual(self.backend.django_to_ldap_username("newuser_email_as_uid@zulip.com"),
                              "newuser_email_as_uid@zulip.com")
+
+            self.mock_ldap.directory['uid="hamlet@test"@zulip.com",ou=users,dc=zulip,dc=com'] = {
+                "cn": ["King Hamlet"],
+                "uid": ['"hamlet@test"@zulip.com'],
+            }
+            username = self.backend.django_to_ldap_username('"hamlet@test"@zulip.com')
+            self.assertEqual(username, '"hamlet@test"@zulip.com')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
                                                 'zproject.backends.ZulipLDAPAuthBackend',))

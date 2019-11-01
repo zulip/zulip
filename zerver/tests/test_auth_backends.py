@@ -54,7 +54,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, google_auth_enabled, \
     require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
-    ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain, \
+    ZulipLDAPConfigurationError, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
     PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
     get_social_backend_dicts, AzureADAuthBackend
@@ -2536,52 +2536,6 @@ class TestLDAP(ZulipLDAPTestCase):
         self.assertTrue(backend.get_group_permissions(None, None) == set())
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_django_to_ldap_username_without_append_domain(self) -> None:
-        backend = self.backend
-        with self.settings(
-            AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
-                                                        ldap.SCOPE_ONELEVEL,
-                                                        "(uid=%(email)s)")
-        ):
-            self.mock_ldap.directory = {
-                'uid="hamlet@test"@zulip.com",ou=users,dc=zulip,dc=com': {
-                    "cn": ["King Hamlet"],
-                    "uid": ['"hamlet@test"@zulip.com'],
-                }
-            }
-            username = backend.django_to_ldap_username('"hamlet@test"@zulip.com')
-            self.assertEqual(username, '"hamlet@test"@zulip.com')
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_django_to_ldap_username_with_append_domain(self) -> None:
-        backend = self.backend
-        with self.settings(LDAP_APPEND_DOMAIN='zulip.com'):
-            self.mock_ldap.directory = {
-                'uid="hamlet@test",ou=users,dc=zulip,dc=com': {
-                    "cn": ["King Hamlet"],
-                    "uid": ['"hamlet@test"'],
-                }
-            }
-            username = backend.django_to_ldap_username('"hamlet@test"@zulip.com')
-            self.assertEqual(username, '"hamlet@test"')
-
-            self.mock_ldap.directory = {
-                'uid="hamlet@test"@zulip,ou=users,dc=zulip,dc=com': {
-                    "cn": ["King Hamlet"],
-                    "uid": ['"hamlet@test"@zulip'],
-                }
-            }
-            username = backend.django_to_ldap_username('"hamlet@test"@zulip')
-            self.assertEqual(username, '"hamlet@test"@zulip')
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_django_to_ldap_username_with_invalid_domain(self) -> None:
-        backend = self.backend
-        with self.settings(LDAP_APPEND_DOMAIN='zulip.com'), \
-                self.assertRaises(ZulipLDAPExceptionOutsideDomain):
-            backend.django_to_ldap_username('"hamlet@test"@test.com')
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_user_email_from_ldapuser_with_append_domain(self) -> None:
         backend = self.backend
         with self.settings(LDAP_APPEND_DOMAIN='zulip.com'):
@@ -2692,14 +2646,6 @@ class TestLDAP(ZulipLDAPTestCase):
             email = 'nonexisting@zulip.com'
             with self.assertRaisesRegex(Exception, "Missing required mapping for user's full name"):
                 backend.get_or_build_user(email, _LDAPUser())
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_django_to_ldap_username_when_domain_does_not_match(self) -> None:
-        backend = self.backend
-        email = self.example_email("hamlet")
-        with self.assertRaisesRegex(Exception, 'Email hamlet@zulip.com does not match LDAP domain acme.com.'):
-            with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
-                backend.django_to_ldap_username(email)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_when_domain_does_not_match(self) -> None:
