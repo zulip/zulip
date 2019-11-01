@@ -128,9 +128,9 @@ run_test('buddy_status', () => {
 
 run_test('title_data', () => {
     // Groups
-    var is_group = true;
-    var user_ids_string = "9999,1000";
-    var expected_group_data = {
+    let is_group = true;
+    const user_ids_string = "9999,1000";
+    let expected_group_data = {
         is_group: is_group,
         recipients: "Human Selma, Old User",
         is_bot: false,
@@ -140,7 +140,7 @@ run_test('title_data', () => {
     is_group = '';
 
     // Bots with owners.
-    var bot_owner_exists = true;
+    let bot_owner_exists = true;
     expected_group_data = {
         is_group: '',
         name: 'Blue Herring Bot',
@@ -168,7 +168,7 @@ run_test('title_data', () => {
         status_text: 'out to lunch',
     });
 
-    var expected_data = {
+    let expected_data = {
         is_group: is_group,
         status_text: 'out to lunch',
         last_seen: 'translated: Active now',

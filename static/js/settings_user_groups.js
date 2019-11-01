@@ -1,7 +1,7 @@
-var render_admin_user_group_list = require('../templates/admin_user_group_list.hbs');
-var render_confirm_delete_user = require('../templates/confirm_delete_user.hbs');
+const render_admin_user_group_list = require('../templates/admin_user_group_list.hbs');
+const render_confirm_delete_user = require('../templates/confirm_delete_user.hbs');
 
-var meta = {
+const meta = {
     loaded: false,
 };
 
@@ -14,7 +14,7 @@ exports.reload = function () {
         return;
     }
 
-    var user_groups_section = $('#user-groups').expectOne();
+    const user_groups_section = $('#user-groups').expectOne();
     user_groups_section.html('');
     exports.populate_user_groups();
 };
@@ -39,8 +39,8 @@ exports.can_edit = function (group_id) {
 
 exports.populate_user_groups = function () {
 
-    var user_groups_section = $('#user-groups').expectOne();
-    var user_groups_array = user_groups.get_realm_user_groups();
+    const user_groups_section = $('#user-groups').expectOne();
+    const user_groups_array = user_groups.get_realm_user_groups();
     _.each(user_groups_array, function (data) {
         user_groups_section.append(render_admin_user_group_list({
             user_group: {
@@ -49,16 +49,16 @@ exports.populate_user_groups = function () {
                 description: data.description,
             },
         }));
-        var pill_container = $('.pill-container[data-group-pills="' + data.id + '"]');
-        var pills = user_pill.create_pills(pill_container);
+        const pill_container = $('.pill-container[data-group-pills="' + data.id + '"]');
+        const pills = user_pill.create_pills(pill_container);
 
         function get_pill_user_ids() {
             return user_pill.get_user_ids(pills);
         }
 
-        var userg = $('div.user-group[id="' + data.id + '"]');
+        const userg = $('div.user-group[id="' + data.id + '"]');
         data.members.keys().forEach(function (user_id) {
-            var user = people.get_person_from_user_id(user_id);
+            const user = people.get_person_from_user_id(user_id);
             user_pill.append_user(user, pills);
         });
 
@@ -85,13 +85,13 @@ exports.populate_user_groups = function () {
         update_membership(data.id);
 
         function is_user_group_changed() {
-            var draft_group = get_pill_user_ids();
-            var group_data = user_groups.get_user_group_from_id(data.id);
-            var original_group = group_data.members.keys();
-            var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
-            var description = $('#user-groups #' + data.id + ' .description').text().trim();
-            var name = $('#user-groups #' + data.id + ' .name').text().trim();
-            var user_group_status = $('#user-groups #' + data.id + ' .user-group-status');
+            const draft_group = get_pill_user_ids();
+            const group_data = user_groups.get_user_group_from_id(data.id);
+            const original_group = group_data.members.keys();
+            const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
+            const description = $('#user-groups #' + data.id + ' .description').text().trim();
+            const name = $('#user-groups #' + data.id + ' .name').text().trim();
+            const user_group_status = $('#user-groups #' + data.id + ' .user-group-status');
 
             if (user_group_status.is(':visible')) {
                 return false;
@@ -108,9 +108,9 @@ exports.populate_user_groups = function () {
             if (!exports.can_edit(data.id)) {
                 return;
             }
-            var cancel_button = $('#user-groups #' + data.id + ' .save-status.btn-danger');
-            var saved_button = $('#user-groups #' + data.id + ' .save-status.sea-green');
-            var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
+            const cancel_button = $('#user-groups #' + data.id + ' .save-status.btn-danger');
+            const saved_button = $('#user-groups #' + data.id + ' .save-status.sea-green');
+            const save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
 
             if (is_user_group_changed() &&
                !cancel_button.is(':visible')) {
@@ -125,9 +125,9 @@ exports.populate_user_groups = function () {
         }
 
         function show_saved_button() {
-            var cancel_button = $('#user-groups #' + data.id + ' .save-status.btn-danger');
-            var saved_button = $('#user-groups #' + data.id + ' .save-status.sea-green');
-            var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
+            const cancel_button = $('#user-groups #' + data.id + ' .save-status.btn-danger');
+            const saved_button = $('#user-groups #' + data.id + ' .save-status.sea-green');
+            const save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
             if (!saved_button.is(':visible')) {
                 cancel_button.fadeOut(0);
                 save_instructions.fadeOut(0);
@@ -136,15 +136,15 @@ exports.populate_user_groups = function () {
         }
 
         function save_members() {
-            var draft_group = get_pill_user_ids();
-            var group_data = user_groups.get_user_group_from_id(data.id);
-            var original_group = group_data.members.keys();
-            var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
+            const draft_group = get_pill_user_ids();
+            const group_data = user_groups.get_user_group_from_id(data.id);
+            const original_group = group_data.members.keys();
+            const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             if (!draft_group.length || same_groups) {
                 return;
             }
-            var added = _.difference(draft_group, original_group);
-            var removed = _.difference(original_group, draft_group);
+            const added = _.difference(draft_group, original_group);
+            const removed = _.difference(original_group, draft_group);
             channel.post({
                 url: "/json/user_groups/" + data.id + '/members',
                 data: {
@@ -158,10 +158,10 @@ exports.populate_user_groups = function () {
         }
 
         function save_name_desc() {
-            var user_group_status = $('#user-groups #' + data.id + ' .user-group-status');
-            var group_data = user_groups.get_user_group_from_id(data.id);
-            var description = $('#user-groups #' + data.id + ' .description').text().trim();
-            var name = $('#user-groups #' + data.id + ' .name').text().trim();
+            const user_group_status = $('#user-groups #' + data.id + ' .user-group-status');
+            const group_data = user_groups.get_user_group_from_id(data.id);
+            const description = $('#user-groups #' + data.id + ' .description').text().trim();
+            const name = $('#user-groups #' + data.id + ' .name').text().trim();
 
             if (group_data.description === description && group_data.name === name) {
                 return;
@@ -178,7 +178,7 @@ exports.populate_user_groups = function () {
                     setTimeout(show_saved_button, 200);
                 },
                 error: function (xhr) {
-                    var errors = JSON.parse(xhr.responseText).msg;
+                    const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
                     ui_report.error(i18n.t("Failed"), xhr, user_group_status);
                     update_cancel_button();
@@ -194,8 +194,8 @@ exports.populate_user_groups = function () {
                 return true;
             }
 
-            var blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
-                                            except_class);
+            const blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
+                                              except_class);
             if ($(event.relatedTarget).closest('#user-groups #' + data.id).length) {
                 return _.some(blur_exceptions, function (class_name) {
                     return $(event.relatedTarget).closest(class_name).length;
@@ -239,7 +239,7 @@ exports.populate_user_groups = function () {
             update_cancel_button();
         });
 
-        var input = pill_container.children('.input');
+        const input = pill_container.children('.input');
         if (exports.can_edit(data.id)) {
             user_pill.set_up_typeahead_on_pills(input, pills, update_cancel_button);
         }
@@ -268,9 +268,9 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
 
-        var user_group_status = $('#admin-user-group-status');
+        const user_group_status = $('#admin-user-group-status');
 
-        var group = {
+        const group = {
             members: JSON.stringify([people.my_current_user_id()]),
         };
         _.each($(this).serializeArray(), function (obj) {
@@ -290,7 +290,7 @@ exports.set_up = function () {
             },
             error: function (xhr) {
                 user_group_status.hide();
-                var errors = JSON.parse(xhr.responseText).msg;
+                const errors = JSON.parse(xhr.responseText).msg;
                 xhr.responseText = JSON.stringify({msg: errors});
                 ui_report.error(i18n.t("Failed"), xhr, user_group_status);
             },
@@ -298,12 +298,12 @@ exports.set_up = function () {
     });
 
     $('#user-groups').on('click', '.delete', function () {
-        var group_id = $(this).parents('.user-group').attr('id');
+        const group_id = $(this).parents('.user-group').attr('id');
         if (!exports.can_edit(group_id)) {
             return;
         }
-        var user_group = user_groups.get_user_group_from_id(group_id);
-        var btn = $(this);
+        const user_group = user_groups.get_user_group_from_id(group_id);
+        const btn = $(this);
 
         function delete_user_group() {
             channel.del({
@@ -322,9 +322,9 @@ exports.set_up = function () {
         }
 
         // This is mostly important for styling concerns.
-        var modal_parent = $('#settings_content');
+        const modal_parent = $('#settings_content');
 
-        var html_body = render_confirm_delete_user({
+        const html_body = render_confirm_delete_user({
             group_name: user_group.name,
         });
 

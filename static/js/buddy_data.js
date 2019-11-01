@@ -9,7 +9,7 @@
 
 exports.max_size_before_shrinking = 600;
 
-var fade_config = {
+const fade_config = {
     get_user_id: function (item) {
         return item.user_id;
     },
@@ -22,7 +22,7 @@ var fade_config = {
 };
 
 exports.get_user_circle_class = function (user_id) {
-    var status = exports.buddy_status(user_id);
+    const status = exports.buddy_status(user_id);
 
     switch (status) {
     case 'active':
@@ -38,7 +38,7 @@ exports.get_user_circle_class = function (user_id) {
 };
 
 exports.status_description = function (user_id) {
-    var status = exports.buddy_status(user_id);
+    const status = exports.buddy_status(user_id);
 
     switch (status) {
     case 'active':
@@ -59,7 +59,7 @@ exports.level = function (user_id) {
         return 0;
     }
 
-    var status = exports.buddy_status(user_id);
+    const status = exports.buddy_status(user_id);
 
     switch (status) {
     case 'active':
@@ -87,19 +87,19 @@ exports.buddy_status = function (user_id) {
 };
 
 exports.compare_function = function (a, b) {
-    var level_a = exports.level(a);
-    var level_b = exports.level(b);
-    var diff = level_a - level_b;
+    const level_a = exports.level(a);
+    const level_b = exports.level(b);
+    const diff = level_a - level_b;
     if (diff !== 0) {
         return diff;
     }
 
     // Sort equivalent PM names alphabetically
-    var person_a = people.get_person_from_user_id(a);
-    var person_b = people.get_person_from_user_id(b);
+    const person_a = people.get_person_from_user_id(a);
+    const person_b = people.get_person_from_user_id(b);
 
-    var full_name_a = person_a ? person_a.full_name : '';
-    var full_name_b = person_b ? person_b.full_name : '';
+    const full_name_a = person_a ? person_a.full_name : '';
+    const full_name_b = person_b ? person_b.full_name : '';
 
     return util.strcmp(full_name_a, full_name_b);
 };
@@ -117,16 +117,16 @@ function filter_user_ids(filter_text, user_ids) {
 
     user_ids = _.reject(user_ids, people.is_my_user_id);
 
-    var search_terms = filter_text.toLowerCase().split(/[|,]+/);
+    let search_terms = filter_text.toLowerCase().split(/[|,]+/);
     search_terms = _.map(search_terms, function (s) {
         return s.trim();
     });
 
-    var persons = _.map(user_ids, function (user_id) {
+    const persons = _.map(user_ids, function (user_id) {
         return people.get_person_from_user_id(user_id);
     });
 
-    var user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
+    const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
     return user_id_dict.keys();
 }
 
@@ -156,7 +156,7 @@ exports.my_user_status = function (user_id) {
 };
 
 exports.user_last_seen_time_status = function (user_id) {
-    var status = presence.get_status(user_id);
+    const status = presence.get_status(user_id);
     if (status === "active") {
         return i18n.t("Active now");
     }
@@ -172,7 +172,7 @@ exports.user_last_seen_time_status = function (user_id) {
     // may have queries on presence that go back only N weeks).
     //
     // We give the somewhat vague status of "Unknown" for these users.
-    var last_active_date = presence.last_active_date(user_id);
+    const last_active_date = presence.last_active_date(user_id);
     if (last_active_date === undefined) {
         return i18n.t("More than 2 weeks ago");
     }
@@ -180,10 +180,10 @@ exports.user_last_seen_time_status = function (user_id) {
 };
 
 exports.info_for = function (user_id) {
-    var user_circle_class = exports.get_user_circle_class(user_id);
-    var person = people.get_person_from_user_id(user_id);
-    var my_user_status = exports.my_user_status(user_id);
-    var user_circle_status = exports.status_description(user_id);
+    const user_circle_class = exports.get_user_circle_class(user_id);
+    const person = people.get_person_from_user_id(user_id);
+    const my_user_status = exports.my_user_status(user_id);
+    const user_circle_status = exports.status_description(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
@@ -208,9 +208,9 @@ exports.get_title_data = function (user_ids_string, is_group) {
     }
 
     // Since it's not a group, user_ids_string is a single user ID.
-    var user_id = user_ids_string;
-    var person = people.get_person_from_user_id(user_id);
-    var bot_owner_exists = false;
+    const user_id = user_ids_string;
+    const person = people.get_person_from_user_id(user_id);
+    let bot_owner_exists = false;
 
     if (person.is_bot) {
         if (person.bot_owner_id !== null) {
@@ -231,9 +231,9 @@ exports.get_title_data = function (user_ids_string, is_group) {
 
     // For buddy list and individual PMS.  Since is_group=False, it's
     // a single, human, user.
-    var active_status = presence.get_status(user_id);
-    var last_seen = exports.user_last_seen_time_status(user_id);
-    var online_now = active_status === 'active';
+    const active_status = presence.get_status(user_id);
+    const last_seen = exports.user_last_seen_time_status(user_id);
+    const online_now = active_status === 'active';
 
     return {
         is_group: '',
@@ -247,7 +247,7 @@ exports.get_title_data = function (user_ids_string, is_group) {
 };
 
 exports.get_item = function (user_id) {
-    var info = exports.info_for(user_id);
+    const info = exports.info_for(user_id);
     compose_fade.update_user_info([info], fade_config);
     return info;
 };
@@ -278,7 +278,7 @@ function maybe_shrink_list(user_ids, filter_text) {
 }
 
 exports.get_filtered_and_sorted_user_ids = function (filter_text) {
-    var user_ids;
+    let user_ids;
 
     if (filter_text) {
         // If there's a filter, select from all users, not just those
@@ -292,7 +292,7 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
     }
 
     user_ids = _.filter(user_ids, function (user_id) {
-        var person = people.get_person_from_user_id(user_id);
+        const person = people.get_person_from_user_id(user_id);
 
         if (person) {
             // if the user is bot, do not show in presence data.
@@ -310,7 +310,7 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
 };
 
 exports.get_items_for_users = function (user_ids) {
-    var user_info = _.map(user_ids, exports.info_for).filter(function (person) {
+    const user_info = _.map(user_ids, exports.info_for).filter(function (person) {
         // filtered bots and yourself are set to "undefined" in the `info_for`
         // function.
         return typeof person !== "undefined";
@@ -322,9 +322,9 @@ exports.get_items_for_users = function (user_ids) {
 };
 
 exports.huddle_fraction_present = function (huddle) {
-    var user_ids = huddle.split(',');
+    const user_ids = huddle.split(',');
 
-    var num_present = 0;
+    let num_present = 0;
     _.each(user_ids, function (user_id) {
         if (presence.is_active(user_id)) {
             num_present += 1;

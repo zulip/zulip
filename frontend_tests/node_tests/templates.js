@@ -1590,7 +1590,7 @@ run_test('user_presence_rows', () => {
 });
 
 run_test('buddy_list_tooltip_content', () => {
-    var args = {
+    const args = {
         status_text: 'out to lunch',
         last_seen: 'Active now',
         is_away: false,
@@ -1598,8 +1598,8 @@ run_test('buddy_list_tooltip_content', () => {
         online_now: true,
     };
 
-    var html = render('buddy_list_tooltip_content', args);
-    var tooltip_content = $(html).find(".tooltip_inner_content");
+    const html = render('buddy_list_tooltip_content', args);
+    const tooltip_content = $(html).find(".tooltip_inner_content");
     assert.equal(tooltip_content.text().trim(), 'Iagoout to lunchActive now');
 });
 
