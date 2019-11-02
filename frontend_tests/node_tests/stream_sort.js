@@ -92,4 +92,10 @@ with_overrides(function (override) {
     assert.deepEqual(sorted.pinned_streams, []);
     assert.deepEqual(sorted.normal_streams, ['fast tortoise']);
     assert.deepEqual(sorted.dormant_streams, []);
+
+    // Test searching stream with , and |
+    sorted = stream_sort.sort_groups("clarinet| tortoise, scalene");
+    assert.deepEqual(sorted.pinned_streams, ['scalene']);
+    assert.deepEqual(sorted.normal_streams, ['clarinet', 'fast tortoise']);
+    assert.deepEqual(sorted.dormant_streams, []);
 });

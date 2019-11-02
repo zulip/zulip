@@ -14,7 +14,7 @@ function filter_streams_by_search(streams, search_term) {
         return streams;
     }
 
-    var search_terms = search_term.toLowerCase().split(",");
+    var search_terms = search_term.toLowerCase().split(/[|,]+/);
     search_terms = _.map(search_terms, function (s) {
         return s.trim();
     });
