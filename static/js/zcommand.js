@@ -91,6 +91,7 @@ exports.enter_night_mode = function () {
 exports.process = function (message_content) {
 
     var content = message_content.trim();
+    var tokens = content.split(' ');
 
     if (content === '/ping') {
         var start_time = new Date();
@@ -122,6 +123,25 @@ exports.process = function (message_content) {
 
     if (content === '/settings') {
         hashchange.go_to_location('settings/your-account');
+        return true;
+    }
+
+    if (tokens[0] === '/subscribe') {
+
+        exports.send({
+            command: content,
+            on_success: function (data) {
+                if (data.stream && data.user_id) {
+                    if (!stream_data.is_user_subscribed(data.stream, data.user_id)) {
+                        stream_data.add_subscriber(data.stream, data.user_id);
+                        data.msg = "Subcribed user to '" + data.stream + "'!";
+                    } else {
+                        data.msg = "User is already subscribed!";
+                    }
+                }
+                exports.tell_user(data.msg);
+            },
+        });
         return true;
     }
 
