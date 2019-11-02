@@ -58,9 +58,10 @@ Fetch global settings for a Zulip server.
   authentication backends (such as google/github/SAML). Each dictionary specifies
   the name and icon that should be displayed on the login buttons (`display_name`
   and `display_icon`, where `display_icon` can be the empty string, if no icon
-  is to be displayed) and the URLs that should be accessed to initiate login/signup
-  with the backend (`login_url` and `signup_url`). The list is sorted in the order
-  in which these authentication methods should be displayed.
+  is to be displayed), the URLs that should be accessed to initiate login/signup
+  with the backend (`login_url` and `signup_url`) and `name`, which is a unique key
+  for the authentication backend, as well as allowing to figure out its type.
+  The list is sorted in the order in which these authentication methods should be displayed.
 
 [ldap-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
 
