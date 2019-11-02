@@ -10,6 +10,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     most_recent_usermessage,
 )
+from zerver.lib.actions import do_set_realm_property
 from zerver.lib.user_groups import (
     check_add_user_to_user_group,
     check_remove_user_from_user_group,
@@ -440,3 +441,80 @@ class UserGroupAPITestCase(ZulipTestCase):
         for user in other_users:
             um = most_recent_usermessage(user)
             self.assertFalse(um.flags.mentioned)
+
+    def test_only_admin_manage_groups(self) -> None:
+        iago = self.example_user('iago')
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        self.login(iago.email)
+        do_set_realm_property(iago.realm, 'user_group_edit_policy', 2)
+
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([iago.id, hamlet.id]),
+            'description': 'Support team',
+        }
+
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_success(result)
+        user_group = UserGroup.objects.get(name='support')
+
+        # Test add member
+        params = {'add': ujson.dumps([cordelia.id])}
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_success(result)
+
+        # Test remove member
+        params = {'delete': ujson.dumps([cordelia.id])}
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_success(result)
+
+        # Test changing groups name
+        params = {
+            'name': 'help',
+            'description': 'Troubleshooting',
+        }
+        result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
+        self.assert_json_success(result)
+
+        # Test delete a group
+        result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
+        self.assert_json_success(result)
+
+        user_group = create_user_group(name='support',
+                                       members=[hamlet, iago],
+                                       realm=iago.realm,
+                                       )
+
+        self.logout()
+
+        self.login(self.example_email("hamlet"))
+
+        # Test creating a group
+        params = {
+            'name': 'support2',
+            'members': ujson.dumps([hamlet.id]),
+            'description': 'Support team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        # Test add member
+        params = {'add': ujson.dumps([cordelia.id])}
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        # Test delete a group
+        result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        # Test changing groups name
+        params = {
+            'name': 'help',
+            'description': 'Troubleshooting',
+        }
+        result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
+        self.assert_json_error(result, "Must be an organization administrator")

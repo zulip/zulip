@@ -33,6 +33,7 @@ exports.build_page = function () {
         realm_create_stream_policy: page_params.realm_create_stream_policy,
         realm_invite_to_stream_policy: page_params.realm_invite_to_stream_policy,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
+        realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,

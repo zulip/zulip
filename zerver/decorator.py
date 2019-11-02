@@ -533,6 +533,16 @@ def require_member_or_admin(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
+def require_user_group_edit_policy(view_func: ViewFuncT) -> ViewFuncT:
+    @wraps(view_func)
+    def _wrapped_view_func(request: HttpRequest, user_profile: UserProfile,
+                           *args: Any, **kwargs: Any) -> HttpResponse:
+        realm = user_profile.realm
+        if realm.user_group_edit_policy != realm.USER_GROUP_EDIT_MEMBERS and not user_profile.is_realm_admin:
+            raise JsonableError(_("Must be an organization administrator"))
+        return view_func(request, user_profile, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
 # This API endpoint is used only for the mobile apps.  It is part of a
 # workaround for the fact that React Native doesn't support setting
 # HTTP basic authentication headers.

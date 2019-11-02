@@ -28,6 +28,10 @@ exports.can_edit = function (group_id) {
         return false;
     }
 
+    if (page_params.realm_user_group_edit_policy !== 1) {
+        return false;
+    }
+
     return user_groups.is_member_of(group_id, people.my_current_user_id());
 };
 

@@ -117,6 +117,15 @@ function get_property_value(property_name) {
         }
     }
 
+    if (property_name === 'realm_user_group_edit_policy') {
+        if (page_params.realm_user_group_edit_policy === 1) {
+            return "by_members";
+        }
+        if (page_params.realm_user_group_edit_policy === 2) {
+            return "by_admins_only";
+        }
+    }
+
     if (property_name === 'realm_add_emoji_by_admins_only') {
         if (page_params.realm_add_emoji_by_admins_only) {
             return "by_admins_only";
@@ -200,6 +209,11 @@ function set_create_stream_policy_dropdown() {
 function set_invite_to_stream_policy_dropdown() {
     var value = get_property_value("realm_invite_to_stream_policy");
     $("#id_realm_invite_to_stream_policy").val(value);
+}
+
+function set_user_group_edit_policy_dropdown() {
+    var value = get_property_value("realm_user_group_edit_policy");
+    $("#id_realm_user_group_edit_policy").val(value);
 }
 
 function set_add_emoji_permission_dropdown() {
@@ -454,6 +468,8 @@ function update_dependent_subsettings(property_name) {
         set_create_stream_policy_dropdown();
     } else if (property_name === 'realm_invite_to_stream_policy') {
         set_invite_to_stream_policy_dropdown();
+    } else if (property_name === 'realm_user_group_edit_policy') {
+        set_user_group_edit_policy_dropdown();
     } else if (property_name === 'realm_video_chat_provider' ||
                property_name === 'realm_google_hangouts_domain' ||
                property_name.startsWith('realm_zoom')) {
@@ -618,6 +634,7 @@ exports.build_page = function () {
     set_user_invite_restriction_dropdown();
     set_message_content_in_email_notifications_visiblity();
     set_digest_emails_weekday_visibility();
+    set_user_group_edit_policy_dropdown();
 
     function get_auth_method_table_data() {
         var new_auth_methods = {};
@@ -752,6 +769,7 @@ exports.build_page = function () {
             var waiting_period_threshold = $("#id_realm_waiting_period_setting").val();
             var create_stream_policy = $("#id_realm_create_stream_policy").val();
             var invite_to_stream_policy = $("#id_realm_invite_to_stream_policy").val();
+            var user_group_edit_policy = $("#id_realm_user_group_edit_policy").val();
             var add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
 
             if (add_emoji_permission === "by_admins_only") {
@@ -774,6 +792,12 @@ exports.build_page = function () {
                 data.invite_to_stream_policy = 1;
             } else if (invite_to_stream_policy === "by_full_members") {
                 data.invite_to_stream_policy = 3;
+            }
+
+            if (user_group_edit_policy === "by_admins_only") {
+                data.user_group_edit_policy = 2;
+            } else if (user_group_edit_policy === "by_members") {
+                data.user_group_edit_policy = 1;
             }
 
             if (waiting_period_threshold === "none") {

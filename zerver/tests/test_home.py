@@ -180,6 +180,7 @@ class HomeTest(ZulipTestCase):
             "realm_signup_notifications_stream_id",
             "realm_upload_quota",
             "realm_uri",
+            "realm_user_group_edit_policy",
             "realm_user_groups",
             "realm_users",
             "realm_video_chat_provider",

@@ -3,28 +3,30 @@
     <div class="tip">Only group members and organization administrators can modify a group.</div>
     {{/unless}}
     {{#unless is_guest}}
-    <p>
-        {{#tr this}}User groups allow you to <a href="/help/mention-a-user-or-group" target="_blank">mention</a> multiple users at once. When you mention a user group, everyone in the group is notified as if they were individually mentioned.{{/tr}}
-    </p>
-    <form class="form-horizontal admin-user-group-form">
-        <div class="add-new-user-group-box grey-box">
-            <div class="new-user-group-form">
-                <div class="settings-section-title new-user-group-section-title no-padding">{{t "Add a new user group" }}</div>
-                <div class="alert" id="admin-user-group-status"></div>
-                <div class="inline-block">
-                    <label for="user_group_name">{{t "Name" }}</label>
-                    <input type="text" name="name" id="user_group_name" maxlength="100" placeholder="{{t 'marketing' }}" />
+        <p>
+            {{#tr this}}User groups allow you to <a href="/help/mention-a-user-or-group" target="_blank">mention</a> multiple users at once. When you mention a user group, everyone in the group is notified as if they were individually mentioned.{{/tr}}
+        </p>
+        {{#unless (and (not (eq realm_user_group_edit_policy 1) (not is_admin)))}}
+        <form class="form-horizontal admin-user-group-form">
+            <div class="add-new-user-group-box grey-box">
+                <div class="new-user-group-form">
+                    <div class="settings-section-title new-user-group-section-title no-padding">{{t "Add a new user group" }}</div>
+                    <div class="alert" id="admin-user-group-status"></div>
+                    <div class="inline-block">
+                        <label for="user_group_name">{{t "Name" }}</label>
+                        <input type="text" name="name" id="user_group_name" maxlength="100" placeholder="{{t 'marketing' }}" />
+                    </div>
+                    <div class="inline-block">
+                        <label for="user_group_description">{{t "Description" }}</label>
+                        <input type="text" name="description" id="user_group_description" maxlength="300" placeholder="{{t 'Marketing team' }}" />
+                    </div>
+                    <button type="submit" class="button rounded sea-green">
+                        {{t 'Save' }}
+                    </button>
                 </div>
-                <div class="inline-block">
-                    <label for="user_group_description">{{t "Description" }}</label>
-                    <input type="text" name="description" id="user_group_description" maxlength="300" placeholder="{{t 'Marketing team' }}" />
-                </div>
-                <button type="submit" class="button rounded sea-green">
-                    {{t 'Save' }}
-                </button>
             </div>
-        </div>
-    </form>
+        </form>
+        {{/unless}}
     {{/unless}}
 
     <div id="user-groups" class="new-style"></div>
