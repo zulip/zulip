@@ -1257,7 +1257,6 @@ SocialBackendDictT = TypedDict('SocialBackendDictT', {
     'display_logo': str,
     'login_url': str,
     'signup_url': str,
-    'sort_order': int,
 })
 
 def create_standard_social_backend_dict(social_backend: SocialAuthMixin) -> SocialBackendDictT:
@@ -1268,7 +1267,6 @@ def create_standard_social_backend_dict(social_backend: SocialAuthMixin) -> Soci
         display_logo=social_backend.display_logo,
         login_url=reverse('login-social', args=(social_backend.name,)),
         signup_url=reverse('signup-social', args=(social_backend.name,)),
-        sort_order=social_backend.sort_order
     )
 
 def list_saml_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
@@ -1280,22 +1278,27 @@ def list_saml_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDi
             display_logo=idp_dict.get('display_logo', SAMLAuthBackend.display_logo),
             login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
             signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
-            sort_order=SAMLAuthBackend.sort_order - len(result)
         )  # type: SocialBackendDictT
         result.append(saml_dict)
 
     return result
 
 def get_social_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
+    """
+    Returns a list of dictionaries that represent social backends, sorted
+    in the order in which they should be displayed.
+    """
     result = []
     for backend in SOCIAL_AUTH_BACKENDS:
+        # SOCIAL_AUTH_BACKENDS is already sorted in the correct order,
+        # so we don't need to worry about sorting here.
         if auth_enabled_helper([backend.auth_backend_name], realm):
             if backend != SAMLAuthBackend:
                 result.append(create_standard_social_backend_dict(backend))
             else:
                 result += list_saml_backend_dicts(realm)
 
-    return sorted(result, key=lambda x: x['sort_order'], reverse=True)
+    return result
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
@@ -1309,6 +1312,8 @@ SOCIAL_AUTH_BACKENDS = []  # type: List[BaseOAuth2]
 for social_auth_subclass in SocialAuthMixin.__subclasses__():
     AUTH_BACKEND_NAME_MAP[social_auth_subclass.auth_backend_name] = social_auth_subclass
     SOCIAL_AUTH_BACKENDS.append(social_auth_subclass)
+
+SOCIAL_AUTH_BACKENDS = sorted(SOCIAL_AUTH_BACKENDS, key=lambda x: x.sort_order, reverse=True)
 
 # Provide this alternative name for backwards compatibility with
 # installations that had the old backend enabled.

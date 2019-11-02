@@ -57,7 +57,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
     PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
-    get_social_backend_dicts
+    get_social_backend_dicts, AzureADAuthBackend
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
@@ -1829,6 +1829,27 @@ class DevGetEmailsTest(ZulipTestCase):
             result = self.client_get("/api/v1/dev_list_users")
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
+class SocialBackendDictsTests(ZulipTestCase):
+    def test_get_social_backend_dicts_correctly_sorted(self) -> None:
+        with self.settings(
+            AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
+                                     'zproject.backends.GitHubAuthBackend',
+                                     'zproject.backends.GoogleAuthBackend',
+                                     'zproject.backends.SAMLAuthBackend',
+                                     'zproject.backends.AzureADAuthBackend')
+        ):
+            social_backends = get_social_backend_dicts()
+            # First backends in the list should be SAML:
+            self.assertIn('saml:', social_backends[0]['name'])
+            self.assertEqual(
+                [social_backend['name'] for social_backend in social_backends[1:]],
+                [social_backend.name for social_backend in sorted(
+                    [GitHubAuthBackend, AzureADAuthBackend, GoogleAuthBackend],
+                    key=lambda x: x.sort_order,
+                    reverse=True
+                )]
+            )
+
 class FetchAuthBackends(ZulipTestCase):
     def assert_on_error(self, error: Optional[str]) -> None:
         if error:
@@ -1860,6 +1881,7 @@ class FetchAuthBackends(ZulipTestCase):
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")
         check_result(result)
+        self.assertEqual(result.json()['social_backends'], get_social_backend_dicts())
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="ZulipInvalid")
         self.assertTrue(result.json()["is_incompatible"])

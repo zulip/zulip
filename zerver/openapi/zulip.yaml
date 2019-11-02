@@ -2241,24 +2241,21 @@ paths:
                             "display_name": "SAML",
                             "display_logo": "",
                             "login_url": "/accounts/login/social/saml/idp_name",
-                            "signup_url": "/accounts/register/social/saml/idp_name",
-                            "sort_order": 9999
+                            "signup_url": "/accounts/register/social/saml/idp_name"
                           },
                           {
                             "name": "google",
                             "display_name": "Google",
                             "display_logo": "/static/images/landing-page/logos/googl_e-icon.png",
                             "login_url": "/accounts/login/social/google",
-                            "signup_url": "/accounts/register/social/google",
-                            "sort_order": 150
+                            "signup_url": "/accounts/register/social/google"
                           },
                           {
                             "name": "github",
                             "display_name": "GitHub",
                             "display_logo": "/static/images/landing-page/logos/github-icon.png",
                             "login_url": "/accounts/login/social/github",
-                            "signup_url": "/accounts/register/social/github",
-                            "sort_order": 100
+                            "signup_url": "/accounts/register/social/github"
                           }
                         ]
                     }
