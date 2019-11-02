@@ -197,6 +197,11 @@ class Realm(models.Model):
     invite_to_stream_policy = models.PositiveSmallIntegerField(
         default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
 
+    USER_GROUP_EDIT_POLICY_MEMBERS = 1
+    USER_GROUP_EDIT_POLICY_ADMINS = 2
+    user_group_edit_policy = models.PositiveSmallIntegerField(
+        default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is the
     # same as UserProfile.delivery_email, or is instead garbage.
@@ -330,6 +335,7 @@ class Realm(models.Model):
         video_chat_provider=int,
         waiting_period_threshold=int,
         digest_weekday=int,
+        user_group_edit_policy=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
     # Icon is the square mobile icon.

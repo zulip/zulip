@@ -59,6 +59,28 @@ run_test('can_edit', () => {
         return false;
     };
     assert(!settings_user_groups.can_edit(1));
+
+    page_params.realm_user_group_edit_policy = 2;
+    page_params.is_admin = true;
+    assert(settings_user_groups.can_edit(1));
+
+    page_params.is_admin = false;
+    user_groups.is_member_of = (group_id, user_id) => {
+        assert.equal(group_id, 1);
+        assert.equal(user_id, undefined);
+        return true;
+    };
+    assert(!settings_user_groups.can_edit(1));
+
+    page_params.realm_user_group_edit_policy = 1;
+    page_params.is_admin = false;
+    user_groups.is_member_of = (group_id, user_id) => {
+        assert.equal(group_id, 1);
+        assert.equal(user_id, undefined);
+        return true;
+    };
+    assert(settings_user_groups.can_edit(1));
+
 });
 
 var user_group_selector = "#user-groups #1";

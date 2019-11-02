@@ -591,6 +591,8 @@ class RealmAPITest(ZulipTestCase):
             create_stream_policy=[Realm.CREATE_STREAM_POLICY_ADMINS,
                                   Realm.CREATE_STREAM_POLICY_MEMBERS,
                                   Realm.CREATE_STREAM_POLICY_WAITING_PERIOD],
+            user_group_edit_policy=[Realm.USER_GROUP_EDIT_POLICY_ADMINS,
+                                    Realm.USER_GROUP_EDIT_POLICY_MEMBERS],
             invite_to_stream_policy=[Realm.INVITE_TO_STREAM_POLICY_ADMINS,
                                      Realm.INVITE_TO_STREAM_POLICY_MEMBERS,
                                      Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD],
