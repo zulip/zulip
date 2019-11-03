@@ -2243,6 +2243,53 @@ class UserSignUpTest(InviteUserBase):
         result = self.submit_reg_form_for_user(email, password, default_stream_groups=["group 1"])
         self.check_user_subscribed_only_to_streams("newguy", default_streams + group1_streams)
 
+    def test_signup_two_confirmation_links(self) -> None:
+        email = self.nonreg_email('newguy')
+        password = "newpassword"
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result["Location"])
+        first_confirmation_url = self.get_confirmation_url_from_outbox(email)
+        first_confirmation_key = find_key_by_email(email)
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result["Location"])
+        second_confirmation_url = self.get_confirmation_url_from_outbox(email)
+
+        # Sanity check:
+        self.assertNotEqual(first_confirmation_url, second_confirmation_url)
+
+        # Register the account (this will use the second confirmation url):
+        result = self.submit_reg_form_for_user(email, password, full_name="New Guy",
+                                               from_confirmation="1")
+        self.assert_in_success_response(["We just need you to do one last thing.",
+                                         "New Guy",
+                                         email],
+                                        result)
+        result = self.submit_reg_form_for_user(email,
+                                               password,
+                                               full_name="New Guy")
+        user_profile = UserProfile.objects.get(email=email)
+        self.assertEqual(user_profile.email, email)
+
+        # Now try to to register using the first confirmation url:
+        result = self.client_get(first_confirmation_url)
+        self.assertEqual(result.status_code, 200)
+        result = self.client_post(
+            '/accounts/register/',
+            {'password': password,
+             'key': first_confirmation_key,
+             'terms': True,
+             'full_name': "New Guy",
+             'from_confirmation': '1'})
+        # We should get redirected back to the login page.
+        expected_url = ('/accounts/login/' + '?email=' +
+                        urllib.parse.quote_plus(email))
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], expected_url)
+
     def test_signup_with_multiple_default_stream_groups(self) -> None:
         # Check if user is subscribed to the streams of default
         # stream groups as well as default streams.

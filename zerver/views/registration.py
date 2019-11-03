@@ -109,7 +109,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         try:
             validate_email_for_realm(realm, email)
-        except ValidationError:  # nocoverage # We need to add a test for this.
+        except ValidationError:
             return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
                                         urllib.parse.quote_plus(email))
 
