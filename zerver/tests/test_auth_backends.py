@@ -1867,7 +1867,7 @@ class FetchAuthBackends(ZulipTestCase):
             self.assert_json_success(result)
             checker = check_dict_only([
                 ('authentication_methods', check_dict_only(authentication_methods_list)),
-                ('social_backends', check_list(None, length=len(social_backends))),
+                ('external_authentication_methods', check_list(None, length=len(social_backends))),
                 ('email_auth_enabled', check_bool),
                 ('is_incompatible', check_bool),
                 ('require_email_format_usernames', check_bool),
@@ -1881,7 +1881,7 @@ class FetchAuthBackends(ZulipTestCase):
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")
         check_result(result)
-        self.assertEqual(result.json()['social_backends'], get_social_backend_dicts())
+        self.assertEqual(result.json()['external_authentication_methods'], get_social_backend_dicts())
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="ZulipInvalid")
         self.assertTrue(result.json()["is_incompatible"])

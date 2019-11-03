@@ -126,7 +126,7 @@ page can be easily identified in it's respective JavaScript file. -->
 
                         {% endif %} <!-- if password_auth_enabled -->
 
-                        {% for backend in social_backends %}
+                        {% for backend in external_authentication_methods %}
                         <div class="login-social">
                             <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
                                 <input type="hidden" name="next" value="{{ next }}">

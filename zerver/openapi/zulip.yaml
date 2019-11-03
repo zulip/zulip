@@ -2169,11 +2169,12 @@ paths:
                       description: Each key-value pair in the object indicates
                         whether the authentication method is enabled on this
                         server.
-                    social_backends:
+                    external_authentication_methods:
                       type: array
-                      description: List of "social backend" objects, describing which
-                        social backends are enabled and their parameters - most importantly
-                        the login url, display_name and display_icon.
+                      description: List of dictionaries describing which
+                        external authentication methods are enabled and their
+                        parameters - most importantly the login url, display_name
+                        and display_icon.
                     zulip_version:
                       type: string
                       description: The version of Zulip running in the server.
@@ -2235,7 +2236,7 @@ paths:
                         "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
                         "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",
                         "result": "success",
-                        "social_backends": [
+                        "external_authentication_methods": [
                           {
                             "name": "saml:idp_name",
                             "display_name": "SAML",

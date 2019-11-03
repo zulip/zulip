@@ -175,7 +175,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         if is_enabled:
             no_auth_enabled = False
 
-    context['social_backends'] = get_social_backend_dicts(realm)
+    context['external_authentication_methods'] = get_social_backend_dicts(realm)
     context['no_auth_enabled'] = no_auth_enabled
 
     return context

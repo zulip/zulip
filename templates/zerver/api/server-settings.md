@@ -54,13 +54,13 @@ Fetch global settings for a Zulip server.
   mobile and desktop apps.
 * `realm_description`: HTML description of the organization, as configured by
   the [organization profile](/help/create-your-organization-profile).
-* `social_backends`: list of dictionaries describing the available social
-  authentication backends (such as google/github/SAML). Each dictionary specifies
-  the name and icon that should be displayed on the login buttons (`display_name`
-  and `display_icon`, where `display_icon` can be the empty string, if no icon
-  is to be displayed), the URLs that should be accessed to initiate login/signup
-  with the backend (`login_url` and `signup_url`) and `name`, which is a unique key
-  for the authentication backend, as well as allowing to figure out its type.
+* `external_authentication_methods`: list of dictionaries describing the available
+  external authentication methods (such as google/github/SAML).
+  Each dictionary specifies the name and icon that should be displayed on the login buttons
+  (`display_name` and `display_icon`, where `display_icon` can be the empty string,
+  if no icon is to be displayed), the URLs that should be accessed to initiate login/signup
+  using the method (`login_url` and `signup_url`) and `name`, which is a unique key
+  for the authentication method, as well as allowing to figure out its type.
   The list is sorted in the order in which these authentication methods should be displayed.
 
 [ldap-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
