@@ -2173,7 +2173,7 @@ paths:
                       type: array
                       description: List of "social backend" objects, describing which
                         social backends are enabled and their parameters - most importantly
-                        the login url, display_name and display_logo.
+                        the login url, display_name and display_icon.
                     zulip_version:
                       type: string
                       description: The version of Zulip running in the server.
@@ -2239,21 +2239,21 @@ paths:
                           {
                             "name": "saml:idp_name",
                             "display_name": "SAML",
-                            "display_logo": "",
+                            "display_icon": "",
                             "login_url": "/accounts/login/social/saml/idp_name",
                             "signup_url": "/accounts/register/social/saml/idp_name"
                           },
                           {
                             "name": "google",
                             "display_name": "Google",
-                            "display_logo": "/static/images/landing-page/logos/googl_e-icon.png",
+                            "display_icon": "/static/images/landing-page/logos/googl_e-icon.png",
                             "login_url": "/accounts/login/social/google",
                             "signup_url": "/accounts/register/social/google"
                           },
                           {
                             "name": "github",
                             "display_name": "GitHub",
-                            "display_logo": "/static/images/landing-page/logos/github-icon.png",
+                            "display_icon": "/static/images/landing-page/logos/github-icon.png",
                             "login_url": "/accounts/login/social/github",
                             "signup_url": "/accounts/register/social/github"
                           }
