@@ -47,13 +47,20 @@
             <h3 class="inline-block">{{t "Time settings" }}</h3>
             <div class="alert-notification" id="time-settings-status"></div>
 
-            {{> settings_checkbox
-              setting_name="twenty_four_hour_time"
-              is_checked=page_params.twenty_four_hour_time
-              label=settings_label.twenty_four_hour_time}}
+            <div class="input-group">
+                <label for="twenty_four_hour_time" class="dropdown-title">{{t "Time Format" }}</label>
+                <select name="twenty_four_hour_time" id="user_timeformat">
+                    {{#unless page_params.twenty_four_hour_time}}
+                    <option></option>
+                    {{/unless}}
+
+                    <option value="true">24-hour time (17:00 instead of 5:00 PM)</option>
+                    <option value="false">12-hour time</option>
+                </select>
+            </div>
 
             <div class="input-group">
-                <label for="timezone" class="dropdown-title">{{t "Time zone" }}</label>
+                <label for="timezone" class="dropdown-title">{{t "Time Zone" }}</label>
                 <select name="timezone" id="user_timezone">
                     {{#unless page_params.timezone}}
                     <option></option>

@@ -54,6 +54,8 @@ exports.set_up = function () {
     meta.loaded = true;
     $("#display-settings-status").hide();
 
+    $("#user_timeformat").val(page_params.twenty_four_hour_time);
+
     $("#user_timezone").val(page_params.timezone);
 
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
@@ -112,8 +114,8 @@ exports.set_up = function () {
         window.location.reload();
     });
 
-    $("#twenty_four_hour_time").change(function () {
-        var data = {twenty_four_hour_time: JSON.stringify(this.checked)};
+    $("#user_timeformat").change(function () {
+        var data = {twenty_four_hour_time: this.value};
         change_display_setting(data, '#time-settings-status');
     });
 
@@ -179,7 +181,7 @@ exports.report_emojiset_change = function () {
 };
 
 exports.update_page = function () {
-    $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
+    $("#twenty_four_hour_time").prop('selectedIndex', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
     $("#default_language_name").text(page_params.default_language_name);
     $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
