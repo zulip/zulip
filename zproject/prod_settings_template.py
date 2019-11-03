@@ -224,14 +224,14 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         # The "x509cert" attribute is automatically read from
         # /etc/zulip/saml/idps/{idp_name}.crt; don't specify it here.
 
-        # Optionally, you can edit display_name and display_logo
+        # Optionally, you can edit display_name and display_icon
         # settings below to change the name and icon that will show on
         # the login button.
         "display_name": "SAML",
         # Path to a square image file containing a logo to appear at
         # the left end of the login/register buttons for this IDP.
         # The default of "" results in a text-only button.
-        "display_logo": "",
+        "display_icon": "",
     }
 }
 

@@ -997,7 +997,7 @@ def social_auth_finish(backend: Any,
 class SocialAuthMixin(ZulipAuthMixin):
     auth_backend_name = "undeclared"
     name = "undeclared"
-    display_logo = None  # type: Optional[str]
+    display_icon = None  # type: Optional[str]
 
     # Used to determine how to order buttons on login form, backend with
     # higher sort order are displayed first.
@@ -1030,7 +1030,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     name = "github"
     auth_backend_name = "GitHub"
     sort_order = 100
-    display_logo = "/static/images/landing-page/logos/github-icon.png"
+    display_icon = "/static/images/landing-page/logos/github-icon.png"
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
         access_token = kwargs["response"]["access_token"]
@@ -1096,13 +1096,13 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
-    display_logo = "/static/images/landing-page/logos/azuread-icon.png"
+    display_icon = "/static/images/landing-page/logos/azuread-icon.png"
 
 class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     sort_order = 150
     auth_backend_name = "Google"
     name = "google"
-    display_logo = "/static/images/landing-page/logos/googl_e-icon.png"
+    display_icon = "/static/images/landing-page/logos/googl_e-icon.png"
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
         verified_emails = []    # type: List[str]
@@ -1123,7 +1123,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     # SAML buttons at the top.
     sort_order = 9999
     # There's no common default logo for SAML authentication.
-    display_logo = ""
+    display_icon = ""
 
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to
@@ -1254,17 +1254,17 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 SocialBackendDictT = TypedDict('SocialBackendDictT', {
     'name': str,
     'display_name': str,
-    'display_logo': str,
+    'display_icon': str,
     'login_url': str,
     'signup_url': str,
 })
 
 def create_standard_social_backend_dict(social_backend: SocialAuthMixin) -> SocialBackendDictT:
-    assert social_backend.display_logo is not None
+    assert social_backend.display_icon is not None
     return dict(
         name=social_backend.name,
         display_name=social_backend.auth_backend_name,
-        display_logo=social_backend.display_logo,
+        display_icon=social_backend.display_icon,
         login_url=reverse('login-social', args=(social_backend.name,)),
         signup_url=reverse('signup-social', args=(social_backend.name,)),
     )
@@ -1275,7 +1275,7 @@ def list_saml_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDi
         saml_dict = dict(
             name='saml:{}'.format(idp_name),
             display_name=idp_dict.get('display_name', SAMLAuthBackend.auth_backend_name),
-            display_logo=idp_dict.get('display_logo', SAMLAuthBackend.display_logo),
+            display_icon=idp_dict.get('display_icon', SAMLAuthBackend.display_icon),
             login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
             signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
         )  # type: SocialBackendDictT
