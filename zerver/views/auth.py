@@ -837,7 +837,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
             "realm_name",
             "realm_icon",
             "realm_description",
-            "social_backends"]:
+            "external_authentication_methods"]:
         if context[settings_item] is not None:
             result[settings_item] = context[settings_item]
     return json_success(result)
