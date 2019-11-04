@@ -118,11 +118,21 @@ def update_realm(
                 third_party_service="Zoom"))
 
     # Additional validation of enum-style values
+    # TODO: Ideally, these checks would be automated rather than being manually maintained.
     if bot_creation_policy is not None and bot_creation_policy not in Realm.BOT_CREATION_POLICY_TYPES:
-        return json_error(_("Invalid bot creation policy"))
+        return json_error(_("Invalid %(field_name)s") % dict(field_name="bot_creation_policy"))
     if email_address_visibility is not None and \
             email_address_visibility not in Realm.EMAIL_ADDRESS_VISIBILITY_TYPES:
-        return json_error(_("Invalid email address visibility policy"))
+        return json_error(_("Invalid %(field_name)s") % dict(field_name="email_address_visibility"))
+    if create_stream_policy is not None and \
+            create_stream_policy not in Realm.CREATE_STREAM_POLICY_TYPES:
+        return json_error(_("Invalid %(field_name)s") % dict(field_name="create_stream_policy"))
+    if invite_to_stream_policy is not None and \
+            invite_to_stream_policy not in Realm.INVITE_TO_STREAM_POLICY_TYPES:
+        return json_error(_("Invalid %(field_name)s") % dict(field_name="invite_to_stream_policy"))
+    if user_group_edit_policy is not None and \
+            user_group_edit_policy not in Realm.USER_GROUP_EDIT_POLICY_TYPES:
+        return json_error(_("Invalid %(field_name)s") % dict(field_name="user_group_edit_policy"))
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
