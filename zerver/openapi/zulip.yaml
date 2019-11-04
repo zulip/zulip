@@ -2240,7 +2240,7 @@ paths:
                           {
                             "name": "saml:idp_name",
                             "display_name": "SAML",
-                            "display_icon": "",
+                            "display_icon": null,
                             "login_url": "/accounts/login/social/saml/idp_name",
                             "signup_url": "/accounts/register/social/saml/idp_name"
                           },

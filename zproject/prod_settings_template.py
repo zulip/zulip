@@ -230,8 +230,8 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         "display_name": "SAML",
         # Path to a square image file containing a logo to appear at
         # the left end of the login/register buttons for this IDP.
-        # The default of "" results in a text-only button.
-        "display_icon": "",
+        # The default of None results in a text-only button.
+        # "display_icon": "/path/to/icon.png",
     }
 }
 
