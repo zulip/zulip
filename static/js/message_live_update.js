@@ -17,7 +17,7 @@ exports.update_user_full_name = function (user_id, full_name) {
 };
 
 exports.update_avatar = function (user_id, avatar_url) {
-    var url = avatar_url;
+    let url = avatar_url;
     url = people.format_small_avatar_url(url);
 
     _.each([home_msg_list, message_list.narrowed, message_list.all], function (list) {

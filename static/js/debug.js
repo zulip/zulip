@@ -16,21 +16,21 @@
     to the console along with the name "foo". */
 
 export function print_elapsed_time(name, fun) {
-    var t0 = new Date().getTime();
-    var out = fun();
-    var t1 = new Date().getTime();
+    const t0 = new Date().getTime();
+    const out = fun();
+    const t1 = new Date().getTime();
     console.log(name + ': ' + (t1 - t0) + ' ms');
     return out;
 }
 
 export function check_duplicate_ids() {
-    var ids = {};
-    var collisions = [];
-    var total_collisions = 0;
+    const ids = {};
+    const collisions = [];
+    let total_collisions = 0;
 
     Array.prototype.slice.call(document.querySelectorAll("*")).forEach(function (o) {
         if (o.id && ids[o.id]) {
-            var el = collisions.find(function (c) {
+            const el = collisions.find(function (c) {
                 return c.id === o.id;
             });
 
@@ -38,7 +38,7 @@ export function check_duplicate_ids() {
             total_collisions += 1;
 
             if (!el) {
-                var tag = o.tagName.toLowerCase();
+                const tag = o.tagName.toLowerCase();
                 collisions.push({
                     id: o.id,
                     count: 1,
@@ -100,8 +100,8 @@ IterationProfiler.prototype = {
     },
 
     iteration_stop: function () {
-        var now = window.performance.now();
-        var diff = now - this.last_time;
+        const now = window.performance.now();
+        const diff = now - this.last_time;
         if (diff > 1) {
             if (this.sections._rest_of_iteration === undefined) {
                 this.sections._rest_of_iteration = 0;
@@ -112,7 +112,7 @@ IterationProfiler.prototype = {
     },
 
     section: function (label) {
-        var now = window.performance.now();
+        const now = window.performance.now();
         if (this.sections[label] === undefined) {
             this.sections[label] = 0;
         }
@@ -122,7 +122,7 @@ IterationProfiler.prototype = {
 
     done: function () {
         this.section('_iteration_overhead');
-        var prop;
+        let prop;
 
         for (prop in this.sections) {
             if (this.sections.hasOwnProperty(prop)) {

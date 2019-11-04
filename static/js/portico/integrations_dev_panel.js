@@ -4,11 +4,11 @@
 // Data Segment: We lazy load the requested fixtures from the backend
 // as and when required and then cache them here.
 
-var loaded_fixtures = {};
-var url_base = "/api/v1/external/";
+const loaded_fixtures = {};
+const url_base = "/api/v1/external/";
 
 // A map defining how to clear the various UI elements.
-var clear_handlers = {
+const clear_handlers = {
     stream_name: "#stream_name",
     topic_name: "#topic_name",
     URL: "#URL",
@@ -25,9 +25,9 @@ function clear_elements(elements) {
     // Supports strings (a selector to clear) or calling a function
     // (for more complex logic).
     elements.forEach(function (element_name) {
-        var handler = clear_handlers[element_name];
+        const handler = clear_handlers[element_name];
         if (typeof handler === "string") {
-            var element_object = $(handler)[0];
+            const element_object = $(handler)[0];
             element_object.value = "";
             element_object.innerHTML = "";
         } else {
@@ -38,13 +38,13 @@ function clear_elements(elements) {
 }
 
 // Success/failure colors used for displaying results to the user.
-var results_notice_level_to_color_map = {
+const results_notice_level_to_color_map = {
     warning: "#be1931",
     success: "#085d44",
 };
 
 function set_results_notice(msg, level) {
-    var results_notice_field = $("#results_notice")[0];
+    const results_notice_field = $("#results_notice")[0];
     results_notice_field.innerHTML = msg;
     results_notice_field.style.color = results_notice_level_to_color_map[level];
     return;
@@ -59,12 +59,12 @@ function get_selected_integration_name() {
 }
 
 function get_fixture_format(fixture_name) {
-    var pieces = fixture_name.split(".");
+    const pieces = fixture_name.split(".");
     return pieces[pieces.length - 1];
 }
 
 function get_custom_http_headers() {
-    var custom_headers = $("#custom_http_headers").val();
+    let custom_headers = $("#custom_http_headers").val();
     if (custom_headers !== "") {
         // JSON.parse("") would trigger an error, as empty strings do not qualify as JSON.
         try {
@@ -85,9 +85,9 @@ function set_results(response) {
     responses to the user in the "results" panel.
 
     The following is a bit messy, but it's a devtool, so ultimately OK */
-    var responses = response.responses;
+    const responses = response.responses;
 
-    var data = "Results:\n\n";
+    let data = "Results:\n\n";
     responses.forEach(function (response) {
         if (response.fixture_name !== undefined) {
             data += "Fixture:            " + response.fixture_name;
@@ -103,10 +103,10 @@ function set_results(response) {
 function load_fixture_body(fixture_name) {
     /* Given a fixture name, use the loaded_fixtures dictionary to set
      * the fixture body field. */
-    var integration_name = get_selected_integration_name();
-    var fixture = loaded_fixtures[integration_name][fixture_name];
-    var fixture_body = fixture.body;
-    var headers = fixture.headers;
+    const integration_name = get_selected_integration_name();
+    const fixture = loaded_fixtures[integration_name][fixture_name];
+    let fixture_body = fixture.body;
+    const headers = fixture.headers;
     if (fixture_body === undefined) {
         set_results_notice("Fixture does not have a body.", "warning");
         return;
@@ -125,11 +125,11 @@ function load_fixture_options(integration_name) {
     /* Using the integration name and loaded_fixtures object to set
     the fixture options for the fixture_names dropdown and also set
     the fixture body to the first fixture by default. */
-    var fixtures_options_dropdown = $("#fixture_name")[0];
-    var fixtures_names = Object.keys(loaded_fixtures[integration_name]).sort();
+    const fixtures_options_dropdown = $("#fixture_name")[0];
+    const fixtures_names = Object.keys(loaded_fixtures[integration_name]).sort();
 
     fixtures_names.forEach(function (fixture_name) {
-        var new_dropdown_option = document.createElement("option");
+        const new_dropdown_option = document.createElement("option");
         new_dropdown_option.value = fixture_name;
         new_dropdown_option.innerHTML = fixture_name;
         fixtures_options_dropdown.add(new_dropdown_option);
@@ -145,19 +145,19 @@ function update_url() {
     are both optional, and for the sake of completeness, it should be
     noted that the topic is irrelavent without specifying the
     stream. */
-    var url_field = $("#URL")[0];
+    const url_field = $("#URL")[0];
 
-    var integration_name = get_selected_integration_name();
-    var api_key = get_api_key_from_selected_bot();
+    const integration_name = get_selected_integration_name();
+    const api_key = get_api_key_from_selected_bot();
 
     if (integration_name === "" || api_key === "") {
         clear_elements(["URL"]);
     } else {
-        var url = url_base + integration_name + "?api_key=" + api_key;
-        var stream_name = $("#stream_name").val();
+        let url = url_base + integration_name + "?api_key=" + api_key;
+        const stream_name = $("#stream_name").val();
         if (stream_name !== "") {
             url += "&stream=" + stream_name;
-            var topic_name = $("#topic_name").val();
+            const topic_name = $("#topic_name").val();
             if (topic_name !== "") {
                 url += "&topic=" + topic_name;
             }
@@ -172,7 +172,7 @@ function update_url() {
 // API Callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response) {
     try {
-        var status_code = response.statusCode().status;
+        const status_code = response.statusCode().status;
         response = JSON.parse(response.responseText);
         set_results_notice("Result: " + "(" + status_code + ") " + response.msg, "warning");
     } catch (err) {
@@ -226,17 +226,17 @@ function send_webhook_fixture_message() {
     // then the csrf token that we have stored in the hidden input
     // element would have been expired, leading to an error message
     // when the user tries to send the fixture body.
-    var csrftoken = $("#csrftoken").val();
+    const csrftoken = $("#csrftoken").val();
 
-    var url = $("#URL").val();
+    const url = $("#URL").val();
     if (url === "") {
         set_results_notice("URL can't be empty.", "warning");
         return;
     }
 
-    var body = $("#fixture_body").val();
-    var fixture_name = $("#fixture_name").val();
-    var is_json = false;
+    let body = $("#fixture_body").val();
+    const fixture_name = $("#fixture_name").val();
+    let is_json = false;
     if (fixture_name && get_fixture_format(fixture_name) === "json") {
         try {
             // Let JavaScript validate the JSON for us.
@@ -248,7 +248,7 @@ function send_webhook_fixture_message() {
         }
     }
 
-    var custom_headers = get_custom_http_headers();
+    const custom_headers = get_custom_http_headers();
 
     channel.post({
         url: "/devtools/integrations/check_send_webhook_fixture_message",
@@ -275,14 +275,14 @@ function send_webhook_fixture_message() {
 
 function send_all_fixture_messages() {
     /* Send all fixture messages for a given integration. */
-    var url = $("#URL").val();
-    var integration = get_selected_integration_name();
+    const url = $("#URL").val();
+    const integration = get_selected_integration_name();
     if (integration === "") {
         set_results_notice("You have to select an integration first.");
         return;
     }
 
-    var csrftoken = $("#csrftoken").val();
+    const csrftoken = $("#csrftoken").val();
     channel.post({
         url: "/devtools/integrations/send_all_webhook_fixture_messages",
         data: {url: url, integration_name: integration},
@@ -303,14 +303,14 @@ $(function () {
     $("#stream_name")[0].value = "Denmark";
     $("#topic_name")[0].value = "Integrations Testing";
 
-    var potential_default_bot = $("#bot_name")[0][1];
+    const potential_default_bot = $("#bot_name")[0][1];
     if (potential_default_bot !== undefined) {
         potential_default_bot.selected = true;
     }
 
     $('#integration_name').change(function () {
         clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "results_notice"]);
-        var integration_name = $(this).children("option:selected").val();
+        const integration_name = $(this).children("option:selected").val();
         get_fixtures(integration_name);
         update_url();
         return;
@@ -318,7 +318,7 @@ $(function () {
 
     $('#fixture_name').change(function () {
         clear_elements(["fixture_body", "results_notice"]);
-        var fixture_name = $(this).children("option:selected").val();
+        const fixture_name = $(this).children("option:selected").val();
         load_fixture_body(fixture_name);
         return;
     });

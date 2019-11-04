@@ -1,4 +1,4 @@
-var pending_requests = [];
+const pending_requests = [];
 
 function add_pending_request(jqXHR) {
     pending_requests.push(jqXHR);
@@ -9,7 +9,7 @@ function add_pending_request(jqXHR) {
 }
 
 function remove_pending_request(jqXHR) {
-    var pending_request_index = _.indexOf(pending_requests, jqXHR);
+    const pending_request_index = _.indexOf(pending_requests, jqXHR);
     if (pending_request_index !== -1) {
         pending_requests.splice(pending_request_index, 1);
     }
@@ -18,7 +18,7 @@ function remove_pending_request(jqXHR) {
 function call(args, idempotent) {
     // Wrap the error handlers to reload the page if we get a CSRF error
     // (What probably happened is that the user logged out in another tab).
-    var orig_error = args.error;
+    let orig_error = args.error;
     if (orig_error === undefined) {
         orig_error = function () {};
     }
@@ -42,7 +42,7 @@ function call(args, idempotent) {
         }
         return orig_error(xhr, error_type, xhn);
     };
-    var orig_success = args.success;
+    let orig_success = args.success;
     if (orig_success === undefined) {
         orig_success = function () {};
     }
@@ -53,7 +53,7 @@ function call(args, idempotent) {
             // If idempotent, retry
             blueslip.log("Retrying idempotent" + args);
             setTimeout(function () {
-                var jqXHR = $.ajax(args);
+                const jqXHR = $.ajax(args);
                 add_pending_request(jqXHR);
             }, 0);
             return;
@@ -61,29 +61,29 @@ function call(args, idempotent) {
         return orig_success(data, textStatus, jqXHR);
     };
 
-    var jqXHR = $.ajax(args);
+    const jqXHR = $.ajax(args);
     add_pending_request(jqXHR);
     return jqXHR;
 }
 
 exports.get = function (options) {
-    var args = _.extend({type: "GET", dataType: "json"}, options);
+    const args = _.extend({type: "GET", dataType: "json"}, options);
     return call(args, options.idempotent);
 };
 
 exports.post = function (options) {
-    var args = _.extend({type: "POST", dataType: "json"}, options);
+    const args = _.extend({type: "POST", dataType: "json"}, options);
     return call(args, options.idempotent);
 };
 
 exports.put = function (options) {
-    var args = _.extend({type: "PUT", dataType: "json"}, options);
+    const args = _.extend({type: "PUT", dataType: "json"}, options);
     return call(args, options.idempotent);
 };
 
 // Not called exports.delete because delete is a reserved word in JS
 exports.del = function (options) {
-    var args = _.extend({type: "DELETE", dataType: "json"}, options);
+    const args = _.extend({type: "DELETE", dataType: "json"}, options);
     return call(args, options.idempotent);
 };
 

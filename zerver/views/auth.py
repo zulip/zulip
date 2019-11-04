@@ -60,21 +60,27 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
         return redirect_host
 
 def create_preregistration_user(email: str, request: HttpRequest, realm_creation: bool=False,
-                                password_required: bool=True) -> HttpResponse:
+                                password_required: bool=True, full_name: Optional[str]=None,
+                                full_name_validated: bool=False) -> HttpResponse:
     realm = None
     if not realm_creation:
         try:
             realm = get_realm(get_subdomain(request))
         except Realm.DoesNotExist:
             pass
-    return PreregistrationUser.objects.create(email=email,
-                                              realm_creation=realm_creation,
-                                              password_required=password_required,
-                                              realm=realm)
+    return PreregistrationUser.objects.create(
+        email=email,
+        realm_creation=realm_creation,
+        password_required=password_required,
+        realm=realm,
+        full_name=full_name,
+        full_name_validated=full_name_validated
+    )
 
 def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str='',
                                is_signup: bool=False, password_required: bool=True,
-                               multiuse_object_key: str='') -> HttpResponse:
+                               multiuse_object_key: str='',
+                               full_name_validated: bool=False) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
     currently have a Zulip account in the target realm, send them to
@@ -114,8 +120,12 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
                 prereg_user = create_preregistration_user(email, request,
                                                           password_required=password_required)
         else:
-            prereg_user = create_preregistration_user(email, request,
-                                                      password_required=password_required)
+            prereg_user = create_preregistration_user(
+                email, request,
+                password_required=password_required,
+                full_name=full_name,
+                full_name_validated=full_name_validated
+            )
 
         if multiuse_object_key:
             request.session.modified = True
@@ -167,7 +177,8 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
                                   user_profile: Optional[UserProfile], full_name: str='',
                                   mobile_flow_otp: Optional[str]=None,
                                   is_signup: bool=False, redirect_to: str='',
-                                  multiuse_object_key: str='') -> HttpResponse:
+                                  multiuse_object_key: str='',
+                                  full_name_validated: bool=False) -> HttpResponse:
     """Given a successful authentication showing the user controls given
     email address (remote_username) and potentially a UserProfile
     object (if the user already has a Zulip account), redirect the
@@ -192,7 +203,8 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
         # there's no associated Zulip user account.  Consider sending
         # the request to registration.
         return maybe_send_to_registration(request, email, full_name, password_required=False,
-                                          is_signup=is_signup, multiuse_object_key=multiuse_object_key)
+                                          is_signup=is_signup, multiuse_object_key=multiuse_object_key,
+                                          full_name_validated=full_name_validated)
 
     # Otherwise, the user has successfully authenticated to an
     # account, and we need to do the right thing depending whether
@@ -435,6 +447,7 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     full_name = data['name']
     is_signup = data['is_signup']
     redirect_to = data['next']
+    full_name_validated = data.get('full_name_validated', False)
 
     if 'multiuse_object_key' in data:
         multiuse_object_key = data['multiuse_object_key']
@@ -473,14 +486,17 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name,
                                          is_signup=is_signup, redirect_to=redirect_to,
-                                         multiuse_object_key=multiuse_object_key)
+                                         multiuse_object_key=multiuse_object_key,
+                                         full_name_validated=full_name_validated)
 
 def redirect_and_log_into_subdomain(realm: Realm, full_name: str, email_address: str,
                                     is_signup: bool=False, redirect_to: str='',
-                                    multiuse_object_key: str='') -> HttpResponse:
+                                    multiuse_object_key: str='',
+                                    full_name_validated: bool=False) -> HttpResponse:
     data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
             'is_signup': is_signup, 'next': redirect_to,
-            'multiuse_object_key': multiuse_object_key}
+            'multiuse_object_key': multiuse_object_key,
+            'full_name_validated': full_name_validated}
     token = signing.dumps(data, salt=_subdomain_token_salt)
     subdomain_login_uri = (realm.uri
                            + reverse('zerver.views.auth.log_into_subdomain', args=[token]))
@@ -808,13 +824,6 @@ def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
         result[key] = auth_enabled_helper([auth_backend_name], realm)
     return result
 
-@csrf_exempt
-def api_get_auth_backends(request: HttpRequest) -> HttpResponse:
-    """Deprecated route; this is to be replaced by api_get_server_settings"""
-    auth_backends = get_auth_backends_data(request)
-    auth_backends['zulip_version'] = ZULIP_VERSION
-    return json_success(auth_backends)
-
 def check_server_incompatibility(request: HttpRequest) -> bool:
     user_agent = parse_user_agent(request.META.get("HTTP_USER_AGENT", "Missing User-Agent"))
     return user_agent['name'] == "ZulipInvalid"
@@ -844,7 +853,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
             "realm_name",
             "realm_icon",
             "realm_description",
-            "social_backends"]:
+            "external_authentication_methods"]:
         if context[settings_item] is not None:
             result[settings_item] = context[settings_item]
     return json_success(result)

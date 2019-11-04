@@ -189,6 +189,11 @@ class Realm(models.Model):
     CREATE_STREAM_POLICY_WAITING_PERIOD = 3
     create_stream_policy = models.PositiveSmallIntegerField(
         default=CREATE_STREAM_POLICY_MEMBERS)  # type: int
+    CREATE_STREAM_POLICY_TYPES = [
+        CREATE_STREAM_POLICY_MEMBERS,
+        CREATE_STREAM_POLICY_ADMINS,
+        CREATE_STREAM_POLICY_WAITING_PERIOD,
+    ]
 
     # Who in the organization is allowed to invite other users to streams.
     INVITE_TO_STREAM_POLICY_MEMBERS = 1
@@ -196,6 +201,20 @@ class Realm(models.Model):
     INVITE_TO_STREAM_POLICY_WAITING_PERIOD = 3
     invite_to_stream_policy = models.PositiveSmallIntegerField(
         default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
+    INVITE_TO_STREAM_POLICY_TYPES = [
+        INVITE_TO_STREAM_POLICY_MEMBERS,
+        INVITE_TO_STREAM_POLICY_ADMINS,
+        INVITE_TO_STREAM_POLICY_WAITING_PERIOD,
+    ]
+
+    USER_GROUP_EDIT_POLICY_MEMBERS = 1
+    USER_GROUP_EDIT_POLICY_ADMINS = 2
+    user_group_edit_policy = models.PositiveSmallIntegerField(
+        default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
+    USER_GROUP_EDIT_POLICY_TYPES = [
+        USER_GROUP_EDIT_POLICY_MEMBERS,
+        USER_GROUP_EDIT_POLICY_ADMINS,
+    ]
 
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is the
@@ -270,6 +289,11 @@ class Realm(models.Model):
     BOT_CREATION_LIMIT_GENERIC_BOTS = 2
     BOT_CREATION_ADMINS_ONLY = 3
     bot_creation_policy = models.PositiveSmallIntegerField(default=BOT_CREATION_EVERYONE)  # type: int
+    BOT_CREATION_POLICY_TYPES = [
+        BOT_CREATION_EVERYONE,
+        BOT_CREATION_LIMIT_GENERIC_BOTS,
+        BOT_CREATION_ADMINS_ONLY,
+    ]
 
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     UPLOAD_QUOTA_LIMITED = 5
@@ -330,6 +354,7 @@ class Realm(models.Model):
         video_chat_provider=int,
         waiting_period_threshold=int,
         digest_weekday=int,
+        user_group_edit_policy=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
     # Icon is the square mobile icon.
@@ -357,12 +382,6 @@ class Realm(models.Model):
     night_logo_source = models.CharField(default=LOGO_DEFAULT, choices=LOGO_SOURCES,
                                          max_length=1)  # type: str
     night_logo_version = models.PositiveSmallIntegerField(default=1)  # type: int
-
-    BOT_CREATION_POLICY_TYPES = [
-        BOT_CREATION_EVERYONE,
-        BOT_CREATION_LIMIT_GENERIC_BOTS,
-        BOT_CREATION_ADMINS_ONLY,
-    ]
 
     def authentication_methods_dict(self) -> Dict[str, bool]:
         """Returns the a mapping from authentication flags to their status,
@@ -1168,6 +1187,11 @@ class PreregistrationUser(models.Model):
     #   form.
 
     email = models.EmailField()  # type: str
+
+    # If the pre-registration process provides a suggested full name for this user,
+    # store it here to use it to prepopulate the Full Name field in the registration form:
+    full_name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)  # type: Optional[str]
+    full_name_validated = models.BooleanField(default=False)
     referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
     streams = models.ManyToManyField('Stream')  # type: Manager
     invited_at = models.DateTimeField(auto_now=True)  # type: datetime.datetime

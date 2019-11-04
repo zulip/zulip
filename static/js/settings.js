@@ -1,12 +1,12 @@
-var render_settings_tab = require('../templates/settings_tab.hbs');
+const render_settings_tab = require('../templates/settings_tab.hbs');
 
 $("body").ready(function () {
-    var $sidebar = $(".form-sidebar");
-    var $targets = $sidebar.find("[data-target]");
-    var $title = $sidebar.find(".title h1");
-    var is_open = false;
+    const $sidebar = $(".form-sidebar");
+    const $targets = $sidebar.find("[data-target]");
+    const $title = $sidebar.find(".title h1");
+    let is_open = false;
 
-    var close_sidebar = function () {
+    const close_sidebar = function () {
         $sidebar.removeClass("show");
         $sidebar.find("#edit_bot").empty();
         is_open = false;
@@ -14,7 +14,7 @@ $("body").ready(function () {
 
     exports.trigger_sidebar = function (target) {
         $targets.hide();
-        var $target = $(".form-sidebar").find("[data-target='" + target + "']");
+        const $target = $(".form-sidebar").find("[data-target='" + target + "']");
 
         $title.text($target.attr("data-title"));
         $target.show();
@@ -98,7 +98,7 @@ function setup_settings_label() {
 exports.build_page = function () {
     setup_settings_label();
 
-    var rendered_settings_tab = render_settings_tab({
+    const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
         page_params: page_params,
         enable_sound_select: page_params.enable_sounds ||
@@ -132,7 +132,7 @@ exports.launch = function (section) {
 };
 
 exports.set_settings_header = function (key) {
-    var header_text = $(`#settings_page .sidebar-list [data-section='${key}'] .text`).text();
+    const header_text = $(`#settings_page .sidebar-list [data-section='${key}'] .text`).text();
     if (header_text) {
         $(".settings-header h1 .section").text(" / " + header_text);
     } else {

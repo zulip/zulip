@@ -1,7 +1,7 @@
 zrequire('util');
 zrequire('stream_data');
 zrequire('stream_sort');
-var with_overrides = global.with_overrides;
+const with_overrides = global.with_overrides;
 
 run_test('no_subscribed_streams', () => {
     assert.equal(stream_sort.sort_groups(''), undefined);
@@ -51,7 +51,7 @@ with_overrides(function (override) {
     });
 
     // Test sorting into categories/alphabetized
-    var sorted = stream_sort.sort_groups("");
+    let sorted = stream_sort.sort_groups("");
     assert.deepEqual(sorted.pinned_streams, ['scalene']);
     assert.deepEqual(sorted.normal_streams, ['clarinet', 'fast tortoise']);
     assert.deepEqual(sorted.dormant_streams, ['pneumonia']);

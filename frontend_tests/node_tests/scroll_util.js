@@ -59,7 +59,7 @@ run_test('scroll_delta', () => {
 
 run_test('scroll_element_into_container', () => {
     const container = (function () {
-        var top = 3;
+        let top = 3;
         return {
             height: () => 100,
             scrollTop: (arg) => {

@@ -73,11 +73,11 @@ page can be easily identified in it's respective JavaScript file -->
                             {% endif %}
                         {% endif %}
 
-                        {% for backend in social_backends %}
+                        {% for backend in external_authentication_methods %}
                         <div class="login-social">
                             <form class="form-inline" action="{{ backend.signup_url }}" method="get">
                                 <input type='hidden' name='multiuse_object_key' value='{{ multiuse_object_key }}' />
-                                <button class="login-social-button full-width" {% if backend.display_logo %} style="background-image:url({{ backend.display_logo }})"  {% endif %}>
+                                <button class="login-social-button full-width" {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}>
                                     {{ _('Sign up with %(identity_provider)s', identity_provider=backend.display_name) }}
                                 </button>
                             </form>

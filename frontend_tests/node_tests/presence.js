@@ -1,7 +1,7 @@
 zrequire('people');
 zrequire('presence');
 
-var return_false = function () { return false; };
+const return_false = function () { return false; };
 
 set_global('server_events', {});
 set_global('blueslip', {});
@@ -9,33 +9,33 @@ set_global('reload_state', {
     is_in_progress: return_false,
 });
 
-var OFFLINE_THRESHOLD_SECS = 140;
+const OFFLINE_THRESHOLD_SECS = 140;
 
-var me = {
+const me = {
     email: 'me@zulip.com',
     user_id: 999,
     full_name: 'Me Myself',
 };
 
-var alice = {
+const alice = {
     email: 'alice@zulip.com',
     user_id: 1,
     full_name: 'Alice Smith',
 };
 
-var fred = {
+const fred = {
     email: 'fred@zulip.com',
     user_id: 2,
     full_name: "Fred Flintstone",
 };
 
-var zoe = {
+const zoe = {
     email: 'zoe@example.com',
     user_id: 6,
     full_name: 'Zoe Yang',
 };
 
-var bot = {
+const bot = {
     email: 'bot@zulip.com',
     user_id: 7,
     full_name: 'The Bot',
@@ -55,16 +55,16 @@ run_test('my user', () => {
 
 run_test('on_mobile_property', () => {
     // TODO: move this test to a new test module directly testing presence.js
-    var status_from_timestamp = presence._status_from_timestamp;
+    const status_from_timestamp = presence._status_from_timestamp;
 
-    var base_time = 500;
-    var info = {
+    const base_time = 500;
+    const info = {
         website: {
             status: "active",
             timestamp: base_time,
         },
     };
-    var status = status_from_timestamp(
+    let status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS - 1, info);
     assert.equal(status.mobile, false);
 
@@ -133,7 +133,7 @@ run_test('on_mobile_property', () => {
         timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
         pushable: true,
     };
-    var called = false;
+    let called = false;
     blueslip.error = function () {
         assert.equal(arguments[0], 'Unexpected status');
         assert.deepEqual(arguments[1].presence_object, info.Android);
@@ -148,8 +148,8 @@ run_test('on_mobile_property', () => {
 });
 
 run_test('set_presence_info', () => {
-    var presences = {};
-    var base_time = 500;
+    const presences = {};
+    const base_time = 500;
 
     presences[alice.email] = {
         website: {
@@ -193,12 +193,12 @@ run_test('set_presence_info', () => {
     assert(!presence.presence_info[bot.user_id]);
 
     // Make it seem like realm has a lot of people
-    var get_realm_count = people.get_realm_count;
+    const get_realm_count = people.get_realm_count;
     people.get_realm_count = function () { return 1000; };
     assert.equal(presence.set_info(presences, base_time), undefined);
     people.get_realm_count = get_realm_count;
 
-    var unknown = {
+    const unknown = {
         email: 'unknown@zulip.com',
         user_id: 42,
         full_name: 'Unknown Name',
@@ -213,7 +213,7 @@ run_test('set_presence_info', () => {
 });
 
 run_test('last_active_date', () => {
-    var unknown_id = 42;
+    const unknown_id = 42;
     presence.presence_info = {
         1: { last_active: 500 }, // alice.user_id
         2: {}, // fred.user_id
@@ -226,8 +226,8 @@ run_test('last_active_date', () => {
 });
 
 run_test('set_info_for_user', () => {
-    var server_time = 500;
-    var info = {
+    const server_time = 500;
+    const info = {
         website: {
             status: "active",
             timestamp: server_time,
@@ -237,6 +237,6 @@ run_test('set_info_for_user', () => {
     presence.presence_info[alice.user_id] = undefined;
     presence.set_info_for_user(alice.user_id, info, server_time);
 
-    var expected = { status: 'active', mobile: false, last_active: 500 };
+    const expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
 });

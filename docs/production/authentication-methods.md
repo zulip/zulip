@@ -82,7 +82,7 @@ it as follows:
         "Attribute Mapping" with GSuite).  You'll want to connect
         these so that Zulip gets the email address (used as a unique
         user ID) and name for the user.
-     5. The `display_name` and `display_logo` fields are used to
+     5. The `display_name` and `display_icon` fields are used to
         display the login/registration buttons for the IdP.
 
 3. Install the certificate(s) required for SAML authentication.  You

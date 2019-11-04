@@ -3,7 +3,7 @@
 exports.toggler = undefined;
 
 exports.set_up_toggler = function () {
-    var opts = {
+    const opts = {
         selected: 0,
         child_wants_focus: true,
         values: [
@@ -19,12 +19,12 @@ exports.set_up_toggler = function () {
     };
 
     exports.toggler = components.toggle(opts);
-    var elem = exports.toggler.get();
+    const elem = exports.toggler.get();
     elem.addClass('large allow-overflow');
 
-    var modals = _.map(opts.values, function (item) {
-        var key = item.key; // e.g. message-formatting
-        var modal = $('#' + key).find('.modal-body');
+    const modals = _.map(opts.values, function (item) {
+        const key = item.key; // e.g. message-formatting
+        const modal = $('#' + key).find('.modal-body');
         return modal;
     });
 
@@ -49,7 +49,7 @@ exports.show = function (target) {
         exports.set_up_toggler();
     }
 
-    var overlay = $(".informational-overlays");
+    const overlay = $(".informational-overlays");
 
     if (!overlay.hasClass("show")) {
         overlays.open_overlay({

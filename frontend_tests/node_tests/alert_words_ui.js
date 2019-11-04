@@ -9,13 +9,13 @@ set_global('channel', {});
 zrequire('alert_words_ui');
 
 run_test('render_alert_words_ui', () => {
-    var word_list = $('#alert_words_list');
-    var appended = [];
+    const word_list = $('#alert_words_list');
+    const appended = [];
     word_list.append = (rendered) => {
         appended.push(rendered);
     };
 
-    var alert_word_items = $.create('alert_word_items');
+    const alert_word_items = $.create('alert_word_items');
     word_list.set_find_results('.alert-word-item', alert_word_items);
 
     global.stub_templates((name, args) => {
@@ -23,7 +23,7 @@ run_test('render_alert_words_ui', () => {
         return 'stub-' + args.word;
     });
 
-    var new_alert_word = $('#create_alert_word_name');
+    const new_alert_word = $('#create_alert_word_name');
     assert(!new_alert_word.is_focused());
 
     alert_words_ui.render_alert_words_ui();
@@ -41,12 +41,12 @@ run_test('add_alert_word', () => {
 
     alert_words_ui.set_up_alert_words();
 
-    var word_list = $('#alert_words_list');
-    var add_func = word_list.get_on_handler('click', '#create_alert_word_button');
+    const word_list = $('#alert_words_list');
+    const add_func = word_list.get_on_handler('click', '#create_alert_word_button');
 
-    var new_alert_word = $('#create_alert_word_name');
-    var alert_word_status = $('#alert_word_status');
-    var alert_word_status_text = $('.alert_word_status_text');
+    const new_alert_word = $('#create_alert_word_name');
+    const alert_word_status = $('#alert_word_status');
+    const alert_word_status_text = $('.alert_word_status_text');
     alert_word_status.set_find_results('.alert_word_status_text', alert_word_status_text);
 
     // add '' as alert word
@@ -67,8 +67,8 @@ run_test('add_alert_word', () => {
     // add 'zot' as alert word (new word)
     new_alert_word.val('zot');
 
-    var success_func;
-    var fail_func;
+    let success_func;
+    let fail_func;
     channel.post = (opts) => {
         assert.equal(opts.url, '/json/users/me/alert_words');
         assert.deepEqual(opts.data, {alert_words: '["zot"]'});
@@ -92,19 +92,19 @@ run_test('add_alert_word', () => {
 });
 
 run_test('add_alert_word_keypress', () => {
-    var word_list = $('#alert_words_list');
-    var keypress_func = word_list.get_on_handler('keypress', '#create_alert_word_name');
+    const word_list = $('#alert_words_list');
+    const keypress_func = word_list.get_on_handler('keypress', '#create_alert_word_name');
 
-    var new_alert_word = $('#create_alert_word_name');
+    const new_alert_word = $('#create_alert_word_name');
     new_alert_word.val('zot');
 
-    var event = {
+    const event = {
         preventDefault: () => {},
         which: 13,
         target: '#create_alert_word_name',
     };
 
-    var called = false;
+    let called = false;
     channel.post = (opts) => {
         assert.deepEqual(opts.data, {alert_words: '["zot"]'});
         called = true;
@@ -115,23 +115,23 @@ run_test('add_alert_word_keypress', () => {
 });
 
 run_test('remove_alert_word', () => {
-    var word_list = $('#alert_words_list');
-    var remove_func = word_list.get_on_handler('click', '.remove-alert-word');
+    const word_list = $('#alert_words_list');
+    const remove_func = word_list.get_on_handler('click', '.remove-alert-word');
 
-    var remove_alert_word = $('.remove-alert-word');
-    var list_item = $('li.alert-word-item');
-    var val_item = $('span.value');
+    const remove_alert_word = $('.remove-alert-word');
+    const list_item = $('li.alert-word-item');
+    const val_item = $('span.value');
     val_item.text(i18n.t('zot'));
 
     remove_alert_word.set_parents_result('li', list_item);
     list_item.set_find_results('.value', val_item);
 
-    var event = {
+    const event = {
         currentTarget: '.remove-alert-word',
     };
 
-    var success_func;
-    var fail_func;
+    let success_func;
+    let fail_func;
     channel.del = (opts) => {
         assert.equal(opts.url, '/json/users/me/alert_words');
         assert.deepEqual(opts.data, {alert_words: '["translated: zot"]'});
@@ -141,8 +141,8 @@ run_test('remove_alert_word', () => {
 
     remove_func(event);
 
-    var alert_word_status = $('#alert_word_status');
-    var alert_word_status_text = $('.alert_word_status_text');
+    const alert_word_status = $('#alert_word_status');
+    const alert_word_status_text = $('.alert_word_status_text');
     alert_word_status.set_find_results('.alert_word_status_text', alert_word_status_text);
 
     // test failure
@@ -159,16 +159,16 @@ run_test('remove_alert_word', () => {
 });
 
 run_test('close_status_message', () => {
-    var alert_word_settings = $('#alert-word-settings');
-    var close = alert_word_settings.get_on_handler('click', '.close-alert-word-status');
+    const alert_word_settings = $('#alert-word-settings');
+    const close = alert_word_settings.get_on_handler('click', '.close-alert-word-status');
 
-    var alert = $('.alert');
-    var close_btn = $('.close-alert-word-status');
+    const alert = $('.alert');
+    const close_btn = $('.close-alert-word-status');
     close_btn.set_parents_result('.alert', alert);
 
     alert.show();
 
-    var event = {
+    const event = {
         preventDefault: () => {},
         currentTarget: '.close-alert-word-status',
     };

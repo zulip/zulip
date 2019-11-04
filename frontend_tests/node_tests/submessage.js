@@ -5,7 +5,7 @@ set_global('widgetize', {});
 set_global('message_store', {});
 
 run_test('get_message_events', () => {
-    var msg = {};
+    let msg = {};
 
     assert.equal(submessage.get_message_events(msg), undefined);
 
@@ -14,7 +14,7 @@ run_test('get_message_events', () => {
     };
     assert.equal(submessage.get_message_events(msg), undefined);
 
-    var submessages = [
+    const submessages = [
         {id: 222, sender_id: 99, content: '84'},
         {id: 9, sender_id: 33, content: '42'},
     ];
@@ -35,9 +35,9 @@ run_test('get_message_events', () => {
 });
 
 run_test('make_server_callback', () => {
-    var message_id = 444;
-    var callback = submessage.make_server_callback(message_id);
-    var was_posted;
+    const message_id = 444;
+    const callback = submessage.make_server_callback(message_id);
+    let was_posted;
 
     channel.post = function (opts) {
         was_posted = true;
@@ -72,7 +72,7 @@ run_test('handle_event', () => {
         content: '"some_data"',
     };
 
-    var args;
+    let args;
     widgetize.handle_event = (opts) => {
         args = opts;
     };

@@ -1,7 +1,7 @@
 exports.initialize = () => {
     helpers.set_tab("upgrade");
 
-    var add_card_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
+    const add_card_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
         key: $("#autopay-form").data("key"),
         image: '/static/images/logo/zulip-icon-128x128.png',
         locale: 'auto',
@@ -11,7 +11,7 @@ exports.initialize = () => {
     });
 
     $('#add-card-button').on('click', function (e) {
-        var license_management = $('input[type=radio][name=license_management]:checked').val();
+        const license_management = $('input[type=radio][name=license_management]:checked').val();
         if (helpers.is_valid_input($("#" + license_management + "_license_count")) === false) {
             return;
         }
@@ -36,7 +36,7 @@ exports.initialize = () => {
         helpers.create_ajax_request("/json/billing/upgrade", "invoice");
     });
 
-    var prices = {};
+    const prices = {};
     prices.annual = page_params.annual_price * (1 - page_params.percent_off / 100);
     prices.monthly = page_params.monthly_price * (1 - page_params.percent_off / 100);
 

@@ -1,5 +1,5 @@
 exports.build_realm_icon_widget = function (upload_function) {
-    var get_file_input = function () {
+    const get_file_input = function () {
         return $('#realm_icon_file_input').expectOne();
     };
 
@@ -33,7 +33,7 @@ exports.rerender = function () {
         $("#realm_icon_delete_button").hide();
         // Need to clear input because of a small edge case
         // where you try to upload the same image you just deleted.
-        var file_input = $("#realm_icon_file_input");
+        const file_input = $("#realm_icon_file_input");
         file_input.val('');
     }
 };

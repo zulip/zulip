@@ -1,4 +1,4 @@
-var render_typing_notifications = require('../templates/typing_notifications.hbs');
+const render_typing_notifications = require('../templates/typing_notifications.hbs');
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
@@ -10,7 +10,7 @@ var render_typing_notifications = require('../templates/typing_notifications.hbs
 
 // How long before we assume a client has gone away
 // and expire its typing status
-var TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
+const TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
 
 // Note!: There are also timing constants in typing_status.js
 // that make typing indicators work.
@@ -21,19 +21,19 @@ function get_users_typing_for_narrow() {
         return [];
     }
 
-    var first_term = narrow_state.operators()[0];
+    const first_term = narrow_state.operators()[0];
     if (first_term.operator === 'pm-with') {
         // Get list of users typing in this conversation
-        var narrow_emails_string = first_term.operand;
+        const narrow_emails_string = first_term.operand;
         // TODO: Create people.emails_strings_to_user_ids.
-        var narrow_user_ids_string = people.reply_to_to_user_ids_string(narrow_emails_string);
+        const narrow_user_ids_string = people.reply_to_to_user_ids_string(narrow_emails_string);
         if (!narrow_user_ids_string) {
             return [];
         }
-        var narrow_user_ids = narrow_user_ids_string.split(',').map(function (user_id_string) {
+        const narrow_user_ids = narrow_user_ids_string.split(',').map(function (user_id_string) {
             return parseInt(user_id_string, 10);
         });
-        var group = narrow_user_ids.concat([page_params.user_id]);
+        const group = narrow_user_ids.concat([page_params.user_id]);
         return typing_data.get_group_typists(group);
     }
     // Get all users typing (in all private conversations with current user)
@@ -41,8 +41,8 @@ function get_users_typing_for_narrow() {
 }
 
 exports.render_notifications_for_narrow = function () {
-    var user_ids = get_users_typing_for_narrow();
-    var users_typing = user_ids.map(people.get_person_from_user_id);
+    const user_ids = get_users_typing_for_narrow();
+    const users_typing = user_ids.map(people.get_person_from_user_id);
     if (users_typing.length === 0) {
         $('#typing_notifications').hide();
     } else {
@@ -52,14 +52,14 @@ exports.render_notifications_for_narrow = function () {
 };
 
 exports.hide_notification = function (event) {
-    var recipients = event.recipients.map(function (user) {
+    const recipients = event.recipients.map(function (user) {
         return user.user_id;
     });
     recipients.sort();
 
     typing_data.clear_inbound_timer(recipients);
 
-    var removed = typing_data.remove_typist(recipients, event.sender.user_id);
+    const removed = typing_data.remove_typist(recipients, event.sender.user_id);
 
     if (removed) {
         exports.render_notifications_for_narrow();
@@ -67,12 +67,12 @@ exports.hide_notification = function (event) {
 };
 
 exports.display_notification = function (event) {
-    var recipients = event.recipients.map(function (user) {
+    const recipients = event.recipients.map(function (user) {
         return user.user_id;
     });
     recipients.sort();
 
-    var sender_id = event.sender.user_id;
+    const sender_id = event.sender.user_id;
     event.sender.name = people.get_person_from_user_id(sender_id).full_name;
 
     typing_data.add_typist(recipients, sender_id);

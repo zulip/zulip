@@ -1,4 +1,4 @@
-var stored_messages = {};
+const stored_messages = {};
 
 exports.get = function get(message_id) {
     return stored_messages[message_id];
@@ -13,7 +13,7 @@ exports.each = function (f) {
 exports.get_pm_emails = function (message) {
 
     function email(user_id) {
-        var person = people.get_person_from_user_id(user_id);
+        const person = people.get_person_from_user_id(user_id);
         if (!person) {
             blueslip.error('Unknown user id ' + user_id);
             return '?';
@@ -21,8 +21,8 @@ exports.get_pm_emails = function (message) {
         return person.email;
     }
 
-    var user_ids = people.pm_with_user_ids(message);
-    var emails = _.map(user_ids, email).sort();
+    const user_ids = people.pm_with_user_ids(message);
+    const emails = _.map(user_ids, email).sort();
 
     return emails.join(', ');
 };
@@ -30,7 +30,7 @@ exports.get_pm_emails = function (message) {
 exports.get_pm_full_names = function (message) {
 
     function name(user_id) {
-        var person = people.get_person_from_user_id(user_id);
+        const person = people.get_person_from_user_id(user_id);
         if (!person) {
             blueslip.error('Unknown user id ' + user_id);
             return '?';
@@ -38,14 +38,14 @@ exports.get_pm_full_names = function (message) {
         return person.full_name;
     }
 
-    var user_ids = people.pm_with_user_ids(message);
-    var names = _.map(user_ids, name).sort();
+    const user_ids = people.pm_with_user_ids(message);
+    const names = _.map(user_ids, name).sort();
 
     return names.join(', ');
 };
 
 exports.process_message_for_recent_private_messages = function (message) {
-    var user_ids = people.pm_with_user_ids(message);
+    const user_ids = people.pm_with_user_ids(message);
     if (!user_ids) {
         return;
     }
@@ -54,13 +54,13 @@ exports.process_message_for_recent_private_messages = function (message) {
         pm_conversations.set_partner(user_id);
     });
 
-    var user_ids_string = user_ids.join(',');
+    const user_ids_string = user_ids.join(',');
 
     pm_conversations.recent.insert(user_ids_string, message.timestamp);
 };
 
 exports.set_message_booleans = function (message) {
-    var flags = message.flags || [];
+    const flags = message.flags || [];
 
     function convert_flag(flag_name) {
         return flags.indexOf(flag_name) >= 0;
@@ -109,7 +109,7 @@ exports.update_booleans = function (message, flags) {
 };
 
 exports.add_message_metadata = function (message) {
-    var cached_msg = stored_messages[message.id];
+    const cached_msg = stored_messages[message.id];
     if (cached_msg !== undefined) {
         // Copy the match topic and content over if they exist on
         // the new message
@@ -124,7 +124,7 @@ exports.add_message_metadata = function (message) {
     people.extract_people_from_message(message);
     people.maybe_incr_recipient_count(message);
 
-    var sender = people.get_person_from_user_id(message.sender_id);
+    const sender = people.get_person_from_user_id(message.sender_id);
     if (sender) {
         message.sender_full_name = sender.full_name;
         message.sender_email = sender.email;
@@ -170,8 +170,8 @@ exports.add_message_metadata = function (message) {
 };
 
 exports.reify_message_id = function (opts) {
-    var old_id = opts.old_id;
-    var new_id = opts.new_id;
+    const old_id = opts.old_id;
+    const new_id = opts.new_id;
     if (pointer.furthest_read === old_id) {
         pointer.set_furthest_read(new_id);
     }

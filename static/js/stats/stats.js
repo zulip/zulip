@@ -1,14 +1,14 @@
-var font_14pt = {
+const font_14pt = {
     family: 'Source Sans Pro',
     size: 14,
     color: '#000000',
 };
 
-var last_full_update = Math.min();
+let last_full_update = Math.min();
 
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
-    var accumulator = 0;
+    let accumulator = 0;
     return array.map(function (o) {
         accumulator += o;
         return accumulator;
@@ -17,20 +17,20 @@ function partial_sums(array) {
 
 // Assumes date is a round number of hours
 function floor_to_local_day(date) {
-    var date_copy = new Date(date.getTime());
+    const date_copy = new Date(date.getTime());
     date_copy.setHours(0);
     return date_copy;
 }
 
 // Assumes date is a round number of hours
 function floor_to_local_week(date) {
-    var date_copy = floor_to_local_day(date);
+    const date_copy = floor_to_local_day(date);
     date_copy.setHours(-24 * date.getDay());
     return date_copy;
 }
 
 function format_date(date, include_hour) {
-    var months = [
+    const months = [
         i18n.t('January'),
         i18n.t('February'),
         i18n.t('March'),
@@ -44,13 +44,13 @@ function format_date(date, include_hour) {
         i18n.t('November'),
         i18n.t('December'),
     ];
-    var month_str = months[date.getMonth()];
-    var year = date.getFullYear();
-    var day = date.getDate();
+    const month_str = months[date.getMonth()];
+    const year = date.getFullYear();
+    const day = date.getDate();
     if (include_hour) {
-        var hour = date.getHours();
+        const hour = date.getHours();
 
-        var str = hour >= 12 ? "PM" : "AM";
+        const str = hour >= 12 ? "PM" : "AM";
 
         return month_str + " " + day + ", " + hour % 12 + ":00" + str;
     }
@@ -63,9 +63,9 @@ function update_last_full_update(end_times) {
     }
 
     last_full_update = Math.min(last_full_update, end_times[end_times.length - 1]);
-    var update_time = new Date(last_full_update * 1000);
-    var locale_date = update_time.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    var locale_time = update_time.toLocaleTimeString().replace(":00 ", " ");
+    const update_time = new Date(last_full_update * 1000);
+    const locale_date = update_time.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const locale_time = update_time.toLocaleTimeString().replace(":00 ", " ");
 
     $('#id_last_full_update').text(locale_time + " on " + locale_date);
     $('#id_last_full_update').closest('.last-update').show();
@@ -91,10 +91,10 @@ function populate_messages_sent_over_time(data) {
 
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
-        var text = dates.map(function (date) {
+        const text = dates.map(function (date) {
             return date_formatter(date);
         });
-        var common = { x: dates, type: type, hoverinfo: 'none', text: text };
+        const common = { x: dates, type: type, hoverinfo: 'none', text: text };
         return {
             human: $.extend({ // 5062a0
                 name: i18n.t("Humans"), y: values.human, marker: {color: '#5f6ea0'}}, common),
@@ -105,7 +105,7 @@ function populate_messages_sent_over_time(data) {
         };
     }
 
-    var layout = {
+    const layout = {
         barmode: 'group',
         width: 750,
         height: 400,
@@ -131,11 +131,11 @@ function populate_messages_sent_over_time(data) {
     }
 
     // This is also the cumulative rangeselector
-    var daily_rangeselector = make_rangeselector(
+    const daily_rangeselector = make_rangeselector(
         0.68, -0.62,
         {count: 10, label: i18n.t('Last 10 days'), step: 'day'},
         {count: 30, label: i18n.t('Last 30 days'), step: 'day'});
-    var weekly_rangeselector = make_rangeselector(
+    const weekly_rangeselector = make_rangeselector(
         0.656, -0.62,
         {count: 2, label: i18n.t('Last 2 months'), step: 'month'},
         {count: 6, label: i18n.t('Last 6 months'), step: 'month'});
@@ -145,13 +145,13 @@ function populate_messages_sent_over_time(data) {
             $("#hoverinfo").show();
             document.getElementById('hover_date').innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
-            var values = [null, null, null];
+            const values = [null, null, null];
             data.points.forEach(function (trace) {
                 values[trace.curveNumber] = trace.y;
             });
-            var hover_text_ids = ['hover_me', 'hover_human', 'hover_bot'];
-            var hover_value_ids = ['hover_me_value', 'hover_human_value', 'hover_bot_value'];
-            for (var i = 0; i < values.length; i += 1) {
+            const hover_text_ids = ['hover_me', 'hover_human', 'hover_bot'];
+            const hover_value_ids = ['hover_me_value', 'hover_human_value', 'hover_bot_value'];
+            for (let i = 0; i < values.length; i += 1) {
                 if (values[i] !== null) {
                     document.getElementById(hover_text_ids[i]).style.display = 'inline';
                     document.getElementById(hover_value_ids[i]).style.display = 'inline';
@@ -164,14 +164,14 @@ function populate_messages_sent_over_time(data) {
         });
     }
 
-    var start_dates = data.end_times.map(function (timestamp) {
+    const start_dates = data.end_times.map(function (timestamp) {
         // data.end_times are the ends of hour long intervals.
         return new Date(timestamp * 1000 - 60 * 60 * 1000);
     });
 
     function aggregate_data(aggregation) {
-        var start;
-        var is_boundary;
+        let start;
+        let is_boundary;
         if (aggregation === 'day') {
             start = floor_to_local_day(start_dates[0]);
             is_boundary = function (date) {
@@ -183,17 +183,17 @@ function populate_messages_sent_over_time(data) {
                 return date.getHours() === 0 && date.getDay() === 0;
             };
         }
-        var dates = [start];
-        var values = {human: [], bot: [], me: []};
-        var current = {human: 0, bot: 0, me: 0};
-        var i_init = 0;
+        const dates = [start];
+        const values = {human: [], bot: [], me: []};
+        let current = {human: 0, bot: 0, me: 0};
+        let i_init = 0;
         if (is_boundary(start_dates[0])) {
             current = {human: data.everyone.human[0],
                        bot: data.everyone.bot[0],
                        me: data.user.human[0]};
             i_init = 1;
         }
-        for (var i = i_init; i < start_dates.length; i += 1) {
+        for (let i = i_init; i < start_dates.length; i += 1) {
             if (is_boundary(start_dates[i])) {
                 dates.push(start_dates[i]);
                 values.human.push(current.human);
@@ -215,26 +215,26 @@ function populate_messages_sent_over_time(data) {
     }
 
     // Generate traces
-    var date_formatter = function (date) {
+    let date_formatter = function (date) {
         return format_date(date, true);
     };
-    var values = {me: data.user.human, human: data.everyone.human, bot: data.everyone.bot};
+    let values = {me: data.user.human, human: data.everyone.human, bot: data.everyone.bot};
 
-    var info = aggregate_data('day');
+    let info = aggregate_data('day');
     date_formatter = function (date) {
         return format_date(date, false);
     };
-    var last_day_is_partial = info.last_value_is_partial;
-    var daily_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
+    const last_day_is_partial = info.last_value_is_partial;
+    const daily_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
     info = aggregate_data('week');
     date_formatter = function (date) {
         return i18n.t("Week of __date__", {date: format_date(date, false)});
     };
-    var last_week_is_partial = info.last_value_is_partial;
-    var weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
+    const last_week_is_partial = info.last_value_is_partial;
+    const weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
-    var dates = data.end_times.map(function (timestamp) {
+    const dates = data.end_times.map(function (timestamp) {
         return new Date(timestamp * 1000);
     });
     values = {human: partial_sums(data.everyone.human), bot: partial_sums(data.everyone.bot),
@@ -242,13 +242,13 @@ function populate_messages_sent_over_time(data) {
     date_formatter = function (date) {
         return format_date(date, true);
     };
-    var cumulative_traces = make_traces(dates, values, 'scatter', date_formatter);
+    const cumulative_traces = make_traces(dates, values, 'scatter', date_formatter);
 
     // Functions to draw and interact with the plot
 
     // We need to redraw plot entirely if switching from (the cumulative) line
     // graph to any bar graph, since otherwise the rangeselector shows both (plotly bug)
-    var clicked_cumulative = false;
+    let clicked_cumulative = false;
 
     function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
         $('#daily_button, #weekly_button, #cumulative_button').removeClass("selected");
@@ -258,7 +258,7 @@ function populate_messages_sent_over_time(data) {
             traces.bot.visible = 'legendonly';
             traces.me.visible = 'legendonly';
         } else {
-            var plotDiv = document.getElementById('id_messages_sent_over_time');
+            const plotDiv = document.getElementById('id_messages_sent_over_time');
             traces.me.visible = plotDiv.data[0].visible;
             traces.human.visible = plotDiv.data[1].visible;
             traces.bot.visible = plotDiv.data[2].visible;
@@ -314,9 +314,9 @@ function round_to_percentages(values, total) {
         if (x === 0) {
             return '0%';
         }
-        var unrounded = x / total * 100;
+        const unrounded = x / total * 100;
 
-        var precision = Math.min(
+        const precision = Math.min(
             6, // this is the max precision (two #, 4 decimal points; 99.9999%).
             Math.max(
                 2, // the minimum amount of precision (40% or 6.0%).
@@ -330,8 +330,8 @@ function round_to_percentages(values, total) {
 
 // Last label will turn into "Other" if time_series data has a label not in labels
 function compute_summary_chart_data(time_series_data, num_steps, labels_) {
-    var data = {};
-    var key;
+    const data = {};
+    let key;
     for (key in time_series_data) {
         if (!time_series_data.hasOwnProperty(key)) {
             continue;
@@ -339,14 +339,14 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
         if (time_series_data[key].length < num_steps) {
             num_steps = time_series_data[key].length;
         }
-        var sum = 0;
-        for (var i = 1; i <= num_steps; i += 1) {
+        let sum = 0;
+        for (let i = 1; i <= num_steps; i += 1) {
             sum += time_series_data[key][time_series_data[key].length - i];
         }
         data[key] = sum;
     }
-    var labels = labels_.slice();
-    var values = [];
+    const labels = labels_.slice();
+    const values = [];
     labels.forEach(function (label) {
         if (data.hasOwnProperty(label)) {
             values.push(data[label]);
@@ -363,7 +363,7 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
             }
         }
     }
-    var total = values.reduce(function (a, b) { return a + b; }, 0);
+    const total = values.reduce(function (a, b) { return a + b; }, 0);
     return {
         values: values,
         labels: labels,
@@ -373,7 +373,7 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
 }
 
 function populate_messages_sent_by_client(data) {
-    var layout = {
+    const layout = {
         width: 750,
         height: null, // set in draw_plot()
         margin: { l: 3, r: 40, b: 40, t: 0 },
@@ -384,26 +384,26 @@ function populate_messages_sent_by_client(data) {
     };
 
     // sort labels so that values are descending in the default view
-    var everyone_month = compute_summary_chart_data(
+    const everyone_month = compute_summary_chart_data(
         data.everyone, 30, data.display_order.slice(0, 12));
-    var label_values = [];
-    for (var i = 0; i < everyone_month.values.length; i += 1) {
+    const label_values = [];
+    for (let i = 0; i < everyone_month.values.length; i += 1) {
         label_values.push({
             label: everyone_month.labels[i],
             value: everyone_month.labels[i] === "Other" ? -1 : everyone_month.values[i],
         });
     }
     label_values.sort(function (a, b) { return b.value - a.value; });
-    var labels = [];
+    const labels = [];
     label_values.forEach(function (item) { labels.push(item.label); });
 
     function make_plot_data(time_series_data, num_steps) {
-        var plot_data = compute_summary_chart_data(time_series_data, num_steps, labels);
+        const plot_data = compute_summary_chart_data(time_series_data, num_steps, labels);
         plot_data.values.reverse();
         plot_data.labels.reverse();
         plot_data.percentages.reverse();
-        var annotations = {values: [], labels: [], text: []};
-        for (var i = 0; i < plot_data.values.length; i += 1) {
+        const annotations = {values: [], labels: [], text: []};
+        for (let i = 0; i < plot_data.values.length; i += 1) {
             if (plot_data.values[i] > 0) {
                 annotations.values.push(plot_data.values[i]);
                 annotations.labels.push(plot_data.labels[i]);
@@ -433,7 +433,7 @@ function populate_messages_sent_by_client(data) {
         };
     }
 
-    var plot_data = {
+    const plot_data = {
         everyone: {
             cumulative: make_plot_data(data.everyone, data.end_times.length),
             year: make_plot_data(data.everyone, 365),
@@ -448,8 +448,8 @@ function populate_messages_sent_by_client(data) {
         },
     };
 
-    var user_button = 'everyone';
-    var time_button;
+    let user_button = 'everyone';
+    let time_button;
     if (data.end_times.length >= 30) {
         time_button = 'month';
         $('#messages_by_client_last_month_button').addClass("selected");
@@ -470,7 +470,7 @@ function populate_messages_sent_by_client(data) {
 
     function draw_plot() {
         $('#id_messages_sent_by_client > div').removeClass("spinner");
-        var data_ = plot_data[user_button][time_button];
+        const data_ = plot_data[user_button][time_button];
         layout.height = layout.margin.b + data_.trace.x.length * 30;
         layout.xaxis.range = [0, Math.max.apply(null, data_.trace.x) * 1.3];
         Plotly.newPlot('id_messages_sent_by_client',
@@ -507,21 +507,21 @@ function populate_messages_sent_by_client(data) {
     // handle links with @href started with '#' only
     $(document).on('click', 'a[href^="#"]', function (e) {
         // target element id
-        var id = $(this).attr('href');
+        const id = $(this).attr('href');
         // target element
-        var $id = $(id);
+        const $id = $(id);
         if ($id.length === 0) {
             return;
         }
         // prevent standard hash navigation (avoid blinking in IE)
         e.preventDefault();
-        var pos = $id.offset().top + $('.page-content')[0].scrollTop - 50;
+        const pos = $id.offset().top + $('.page-content')[0].scrollTop - 50;
         $('.page-content').animate({scrollTop: pos + "px"}, 500);
     });
 }
 
 function populate_messages_sent_by_message_type(data) {
-    var layout = {
+    const layout = {
         margin: { l: 90, r: 0, b: 0, t: 0 },
         width: 750,
         height: 300,
@@ -529,13 +529,13 @@ function populate_messages_sent_by_message_type(data) {
     };
 
     function make_plot_data(time_series_data, num_steps) {
-        var plot_data = compute_summary_chart_data(
+        const plot_data = compute_summary_chart_data(
             time_series_data,
             num_steps,
             data.display_order
         );
-        var labels = [];
-        for (var i = 0; i < plot_data.labels.length; i += 1) {
+        const labels = [];
+        for (let i = 0; i < plot_data.labels.length; i += 1) {
             labels.push(plot_data.labels[i] + ' (' + plot_data.percentages[i] + ')');
         }
         return {
@@ -559,7 +559,7 @@ function populate_messages_sent_by_message_type(data) {
         };
     }
 
-    var plot_data = {
+    const plot_data = {
         everyone: {
             cumulative: make_plot_data(data.everyone, data.end_times.length),
             year: make_plot_data(data.everyone, 365),
@@ -574,8 +574,8 @@ function populate_messages_sent_by_message_type(data) {
         },
     };
 
-    var user_button = 'everyone';
-    var time_button;
+    let user_button = 'everyone';
+    let time_button;
     if (data.end_times.length >= 30) {
         time_button = 'month';
         $('#messages_by_type_last_month_button').addClass("selected");
@@ -583,7 +583,7 @@ function populate_messages_sent_by_message_type(data) {
         time_button = 'cumulative';
         $('#messages_by_type_cumulative_button').addClass("selected");
     }
-    var totaldiv = document.getElementById('pie_messages_sent_by_type_total');
+    const totaldiv = document.getElementById('pie_messages_sent_by_type_total');
 
     if (data.end_times.length < 365) {
         $("#pie_messages_sent_by_type button[data-time='year']").remove();
@@ -631,7 +631,7 @@ function populate_messages_sent_by_message_type(data) {
 }
 
 function populate_number_of_users(data) {
-    var layout = {
+    const layout = {
         width: 750,
         height: 370,
         margin: { l: 40, r: 0, b: 65, t: 20 },
@@ -649,11 +649,11 @@ function populate_number_of_users(data) {
         font: font_14pt,
     };
 
-    var end_dates = data.end_times.map(function (timestamp) {
+    const end_dates = data.end_times.map(function (timestamp) {
         return new Date(timestamp * 1000);
     });
 
-    var text = end_dates.map(function (date) {
+    const text = end_dates.map(function (date) {
         return format_date(date, false);
     });
 
@@ -674,13 +674,13 @@ function populate_number_of_users(data) {
             $("#users_hover_info").show();
             document.getElementById('users_hover_date').innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
-            var values = [null, null, null];
+            const values = [null, null, null];
             data.points.forEach(function (trace) {
                 values[trace.curveNumber] = trace.y;
             });
-            var hover_value_ids = [
+            const hover_value_ids = [
                 'users_hover_1day_value', 'users_hover_15day_value', 'users_hover_all_time_value'];
-            for (var i = 0; i < values.length; i += 1) {
+            for (let i = 0; i < values.length; i += 1) {
                 if (values[i] !== null) {
                     document.getElementById(hover_value_ids[i]).style.display = 'inline';
                     document.getElementById(hover_value_ids[i]).innerText = values[i];
@@ -691,9 +691,9 @@ function populate_number_of_users(data) {
         });
     }
 
-    var _1day_trace = make_traces(data.everyone._1day, 'bar');
-    var _15day_trace = make_traces(data.everyone._15day, 'scatter');
-    var all_time_trace = make_traces(data.everyone.all_time, 'scatter');
+    const _1day_trace = make_traces(data.everyone._1day, 'bar');
+    const _15day_trace = make_traces(data.everyone._15day, 'scatter');
+    const all_time_trace = make_traces(data.everyone.all_time, 'scatter');
 
     $('#id_number_of_users > div').removeClass("spinner");
 

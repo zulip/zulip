@@ -387,7 +387,7 @@ class RealmTest(ZulipTestCase):
         invalid_add_bot_permission = 4
         req = dict(bot_creation_policy = ujson.dumps(invalid_add_bot_permission))
         result = self.client_patch('/json/realm', req)
-        self.assert_json_error(result, 'Invalid bot creation policy')
+        self.assert_json_error(result, 'Invalid bot_creation_policy')
 
     def test_change_email_address_visibility(self) -> None:
         # We need an admin user.
@@ -396,7 +396,7 @@ class RealmTest(ZulipTestCase):
         invalid_value = 4
         req = dict(email_address_visibility = ujson.dumps(invalid_value))
         result = self.client_patch('/json/realm', req)
-        self.assert_json_error(result, 'Invalid email address visibility policy')
+        self.assert_json_error(result, 'Invalid email_address_visibility')
 
         realm = get_realm("zulip")
         self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
@@ -408,6 +408,45 @@ class RealmTest(ZulipTestCase):
 
         edited_user_profile = get_user_profile_by_id(user_profile.id)
         self.assertEqual(edited_user_profile.email, "user%s@zulip.testserver" % (edited_user_profile.id,))
+
+    def test_change_stream_creation_policy(self) -> None:
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+        req = dict(create_stream_policy = ujson.dumps(Realm.CREATE_STREAM_POLICY_ADMINS))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+
+        invalid_value = 10
+        req = dict(create_stream_policy = ujson.dumps(invalid_value))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid create_stream_policy')
+
+    def test_change_invite_to_stream_policy(self) -> None:
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+        req = dict(invite_to_stream_policy = ujson.dumps(Realm.INVITE_TO_STREAM_POLICY_ADMINS))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+
+        invalid_value = 10
+        req = dict(invite_to_stream_policy = ujson.dumps(invalid_value))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid invite_to_stream_policy')
+
+    def test_user_group_edit_policy(self) -> None:
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+        req = dict(user_group_edit_policy = ujson.dumps(Realm.USER_GROUP_EDIT_POLICY_ADMINS))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+
+        invalid_value = 10
+        req = dict(user_group_edit_policy = ujson.dumps(invalid_value))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid user_group_edit_policy')
 
     def test_change_video_chat_provider(self) -> None:
         self.assertEqual(get_realm('zulip').video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
@@ -591,6 +630,8 @@ class RealmAPITest(ZulipTestCase):
             create_stream_policy=[Realm.CREATE_STREAM_POLICY_ADMINS,
                                   Realm.CREATE_STREAM_POLICY_MEMBERS,
                                   Realm.CREATE_STREAM_POLICY_WAITING_PERIOD],
+            user_group_edit_policy=[Realm.USER_GROUP_EDIT_POLICY_ADMINS,
+                                    Realm.USER_GROUP_EDIT_POLICY_MEMBERS],
             invite_to_stream_policy=[Realm.INVITE_TO_STREAM_POLICY_ADMINS,
                                      Realm.INVITE_TO_STREAM_POLICY_MEMBERS,
                                      Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD],

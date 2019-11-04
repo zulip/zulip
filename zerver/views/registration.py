@@ -109,7 +109,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         try:
             validate_email_for_realm(realm, email)
-        except ValidationError:  # nocoverage # We need to add a test for this.
+        except ValidationError:
             return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
                                         urllib.parse.quote_plus(email))
 
@@ -166,6 +166,15 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     except TypeError:
                         # Let the user fill out a name and/or try another backend
                         form = RegistrationForm(realm_creation=realm_creation)
+        elif prereg_user.full_name:
+            if prereg_user.full_name_validated:
+                request.session['authenticated_full_name'] = prereg_user.full_name
+                name_validated = True
+                form = RegistrationForm({'full_name': prereg_user.full_name},
+                                        realm_creation=realm_creation)
+            else:
+                form = RegistrationForm(initial={'full_name': prereg_user.full_name},
+                                        realm_creation=realm_creation)
         elif 'full_name' in request.POST:
             form = RegistrationForm(
                 initial={'full_name': request.POST.get('full_name')},
@@ -185,8 +194,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             except KeyError:
                 pass
         form = RegistrationForm(postdata, realm_creation=realm_creation)
-        if not (password_auth_enabled(realm) and password_required):
-            form['password'].field.required = False
+
+    if not (password_auth_enabled(realm) and password_required):
+        form['password'].field.required = False
 
     if form.is_valid():
         if password_auth_enabled(realm):

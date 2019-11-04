@@ -1,11 +1,11 @@
-var render_muted_topic_ui_row = require('../templates/muted_topic_ui_row.hbs');
-var render_topic_muted = require('../templates/topic_muted.hbs');
+const render_muted_topic_ui_row = require('../templates/muted_topic_ui_row.hbs');
+const render_topic_muted = require('../templates/topic_muted.hbs');
 
 function timestamp_ms() {
     return (new Date()).getTime();
 }
 
-var last_topic_update = 0;
+let last_topic_update = 0;
 
 exports.rerender = function () {
     // Note: We tend to optimistically rerender muting preferences before
@@ -23,7 +23,7 @@ exports.rerender = function () {
 };
 
 exports.persist_mute = function (stream_id, topic_name) {
-    var data = {
+    const data = {
         stream_id: stream_id,
         topic: topic_name,
         op: 'add',
@@ -37,7 +37,7 @@ exports.persist_mute = function (stream_id, topic_name) {
 };
 
 exports.persist_unmute = function (stream_id, topic_name) {
-    var data = {
+    const data = {
         stream_id: stream_id,
         topic: topic_name,
         op: 'remove',
@@ -68,32 +68,32 @@ exports.update_muted_topics = function (muted_topics) {
 };
 
 exports.set_up_muted_topics_ui = function (muted_topics) {
-    var muted_topics_table = $("#muted_topics_table tbody");
+    const muted_topics_table = $("#muted_topics_table tbody");
     muted_topics_table.empty();
     _.each(muted_topics, function (tup) {
-        var stream_id = tup[0];
-        var topic = tup[1];
+        const stream_id = tup[0];
+        const topic = tup[1];
 
-        var stream = stream_data.maybe_get_stream_name(stream_id);
+        const stream = stream_data.maybe_get_stream_name(stream_id);
 
         if (!stream) {
             blueslip.warn('Unknown stream_id in set_up_muted_topics_ui: ' + stream_id);
             return;
         }
 
-        var template_data = {
+        const template_data = {
             stream: stream,
             stream_id: stream_id,
             topic: topic,
         };
 
-        var row = render_muted_topic_ui_row(template_data);
+        const row = render_muted_topic_ui_row(template_data);
         muted_topics_table.append(row);
     });
 };
 
 exports.mute = function (stream_id, topic) {
-    var stream_name = stream_data.maybe_get_stream_name(stream_id);
+    const stream_name = stream_data.maybe_get_stream_name(stream_id);
 
     stream_popover.hide_topic_popover();
     muting.add_muted_topic(stream_id, topic);
@@ -102,7 +102,7 @@ exports.mute = function (stream_id, topic) {
     exports.persist_mute(stream_id, topic);
     feedback_widget.show({
         populate: function (container) {
-            var rendered_html = render_topic_muted();
+            const rendered_html = render_topic_muted();
             container.html(rendered_html);
             container.find(".stream").text(stream_name);
             container.find(".topic").text(topic);
@@ -130,8 +130,8 @@ exports.unmute = function (stream_id, topic) {
 };
 
 exports.toggle_mute = function (message) {
-    var stream_id = message.stream_id;
-    var topic = util.get_message_topic(message);
+    const stream_id = message.stream_id;
+    const topic = util.get_message_topic(message);
 
     if (muting.is_topic_muted(stream_id, topic)) {
         exports.unmute(stream_id, topic);

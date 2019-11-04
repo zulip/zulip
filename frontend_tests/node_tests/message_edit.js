@@ -6,8 +6,8 @@ global.stub_out_jquery();
 zrequire('XDate', 'xdate/src/xdate');
 zrequire('message_edit');
 
-var get_editability = message_edit.get_editability;
-var editability_types = message_edit.editability_types;
+const get_editability = message_edit.get_editability;
+const editability_types = message_edit.editability_types;
 
 run_test('get_editability', () => {
     // You can't edit a null message
@@ -33,7 +33,7 @@ run_test('get_editability', () => {
 
     // For the rest of these tests, we only consider messages sent by the
     // user, and that were successfully sent (i.e. no failed_request or local_id)
-    var message = {
+    let message = {
         sent_by_me: true,
     };
 
@@ -53,8 +53,8 @@ run_test('get_editability', () => {
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 10,
     };
-    var now = new Date();
-    var current_timestamp = now / 1000;
+    const now = new Date();
+    const current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 60;
     // Have 55+10 > 60 seconds from message.timestamp to edit the message; we're good!
     assert.equal(get_editability(message, 55), editability_types.FULL);

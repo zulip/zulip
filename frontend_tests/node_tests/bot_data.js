@@ -1,4 +1,4 @@
-var _settings_bots = {
+const _settings_bots = {
     render_bots: () => {},
 };
 

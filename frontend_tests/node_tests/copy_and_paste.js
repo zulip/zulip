@@ -12,11 +12,11 @@ global.document = document;
 global.$ = require('jquery')(window);
 
 zrequire('toMarkdown', 'to-markdown/dist/to-markdown.js');
-var copy_and_paste = zrequire('copy_and_paste');
+const copy_and_paste = zrequire('copy_and_paste');
 
 // Super stripped down version of the code in the drag-mock library
 // https://github.com/andywer/drag-mock/blob/6d46c7c0ffd6a4d685e6612a90cd58cda80f30fc/src/DataTransfer.js
-var DataTransfer = function () {
+const DataTransfer = function () {
     this.dataByFormat = {};
 };
 DataTransfer.prototype.getData = function (dataFormat) {
@@ -26,16 +26,16 @@ DataTransfer.prototype.setData = function (dataFormat, data) {
     this.dataByFormat[dataFormat] = data;
 };
 
-var createPasteEvent = function () {
-    var clipboardData = new DataTransfer();
-    var pasteEvent = new window.Event('paste');
+const createPasteEvent = function () {
+    const clipboardData = new DataTransfer();
+    const pasteEvent = new window.Event('paste');
     pasteEvent.clipboardData = clipboardData;
     return $.Event(pasteEvent);
 };
 
 run_test('paste_handler', () => {
 
-    var input = '<meta http-equiv="content-type" content="text/html; charset=utf-8"><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;"><span> </span>love the<span> </span><b>Zulip</b><b> </b></span><b style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">Organization</b><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">.</span>';
+    let input = '<meta http-equiv="content-type" content="text/html; charset=utf-8"><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;"><span> </span>love the<span> </span><b>Zulip</b><b> </b></span><b style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">Organization</b><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">.</span>';
     assert.equal(copy_and_paste.paste_handler_converter(input),
                  'love the  **Zulip****Organization**.');
 
@@ -71,10 +71,10 @@ run_test('paste_handler', () => {
     assert.equal(copy_and_paste.paste_handler_converter(input),
                  'Test List:\n*   Item 1\n*   Item 2');
 
-    var data = '<p>text</p>';
-    var event = createPasteEvent();
+    let data = '<p>text</p>';
+    let event = createPasteEvent();
     event.originalEvent.clipboardData.setData('text/html', data);
-    var insert_syntax_and_focus_called = false;
+    let insert_syntax_and_focus_called = false;
     compose_ui.insert_syntax_and_focus = function () {
         insert_syntax_and_focus_called = true;
     };

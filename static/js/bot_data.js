@@ -1,16 +1,16 @@
-var bots = {};
-var bot_fields = ['api_key', 'avatar_url', 'default_all_public_streams',
-                  'default_events_register_stream', 'default_sending_stream',
-                  'email', 'full_name', 'is_active', 'owner', 'bot_type', 'user_id'];
-var services = {};
-var services_fields = ['base_url', 'interface',
-                       'config_data', 'service_name', 'token'];
+const bots = {};
+const bot_fields = ['api_key', 'avatar_url', 'default_all_public_streams',
+                    'default_events_register_stream', 'default_sending_stream',
+                    'email', 'full_name', 'is_active', 'owner', 'bot_type', 'user_id'];
+const services = {};
+const services_fields = ['base_url', 'interface',
+                         'config_data', 'service_name', 'token'];
 
-var send_change_event = _.debounce(function () {
+const send_change_event = _.debounce(function () {
     settings_bots.render_bots();
 }, 50);
 
-var set_can_admin = function bot_data__set_can_admin(bot) {
+const set_can_admin = function bot_data__set_can_admin(bot) {
     if (page_params.is_admin) {
         bot.can_admin = true;
     } else if (bot.owner !== undefined && people.is_current_user(bot.owner)) {
@@ -21,10 +21,10 @@ var set_can_admin = function bot_data__set_can_admin(bot) {
 };
 
 exports.add = function bot_data__add(bot) {
-    var clean_bot = _.pick(bot, bot_fields);
+    const clean_bot = _.pick(bot, bot_fields);
     bots[bot.user_id] = clean_bot;
     set_can_admin(clean_bot);
-    var clean_services = _.map(bot.services, function (service) {
+    const clean_services = _.map(bot.services, function (service) {
         return _.pick(service, services_fields);
     });
     services[bot.user_id] = clean_services;
@@ -44,12 +44,12 @@ exports.del = function bot_data__del(bot_id) {
 };
 
 exports.update = function bot_data__update(bot_id, bot_update) {
-    var bot = bots[bot_id];
+    const bot = bots[bot_id];
     _.extend(bot, _.pick(bot_update, bot_fields));
     set_can_admin(bot);
 
     // We currently only support one service per bot.
-    var service = services[bot_id][0];
+    const service = services[bot_id][0];
     if (typeof bot_update.services !== 'undefined' && bot_update.services.length > 0) {
         _.extend(service, _.pick(bot_update.services[0], services_fields));
     }

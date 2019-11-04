@@ -1,5 +1,11 @@
 {
     "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "*": ["types/*"],
+        },
+        "typeRoots": ["types"],
+
         /* Typescript 3.4 added the --incremental flag but its API is not
          * currently public so ts-loader cannot use it yet.
          * Tracking issue: https://github.com/microsoft/TypeScript/issues/29978
@@ -8,8 +14,8 @@
 
         /* Basic options */
         "noEmit": true,
-        "target": "es5",
-        "module": "es6",
+        "target": "ES2019",
+        "module": "ES6",
         "esModuleInterop": true,
         "moduleResolution": "node",
         "sourceMap": true,
@@ -25,5 +31,8 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-    }
+    },
+    "exclude": [
+        "types",
+    ],
 }

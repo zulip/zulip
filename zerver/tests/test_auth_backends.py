@@ -6,7 +6,7 @@ from django.test import override_settings
 from django_auth_ldap.backend import LDAPSearch, _LDAPUser
 from django.test.client import RequestFactory
 from django.utils.timezone import now as timezone_now
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from django.core import signing
 from django.urls import reverse
 
@@ -24,7 +24,6 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_reactivate_realm,
     do_reactivate_user,
-    do_set_realm_authentication_methods,
     ensure_stream,
     validate_email,
 )
@@ -58,11 +57,10 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
     PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
-    get_social_backend_dicts
+    get_social_backend_dicts, AzureADAuthBackend
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
-from version import ZULIP_VERSION
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -768,16 +766,9 @@ class SocialAuthBase(ZulipTestCase):
         # Name wasn't changed at all
         self.assertEqual(hamlet.full_name, "King Hamlet")
 
-    def test_social_auth_registration(self) -> None:
-        """If the user doesn't exist yet, social auth can be used to register an account"""
-        email = "newuser@zulip.com"
-        name = 'Full Name'
-        realm = get_realm("zulip")
-        account_data_dict = self.get_account_data_dict(email=email, name=name)
-        result = self.social_auth_test(account_data_dict,
-                                       expect_choose_email_screen=True,
-                                       subdomain='zulip', is_signup='1')
-
+    def stage_two_of_registration(self, result: HttpResponse, realm: Realm, subdomain: str,
+                                  email: str, name: str, expected_final_name: str,
+                                  skip_registration_form: bool) -> None:
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], email)
         self.assertEqual(data['name'], name)
@@ -791,36 +782,55 @@ class SocialAuthBase(ZulipTestCase):
         result = self.client_get(result.url)
 
         self.assertEqual(result.status_code, 302)
-        confirmation = Confirmation.objects.all().first()
+        confirmation = Confirmation.objects.all().last()
         confirmation_key = confirmation.confirmation_key
         self.assertIn('do_confirm/' + confirmation_key, result.url)
         result = self.client_get(result.url)
         self.assert_in_response('action="/accounts/register/"', result)
         data = {"from_confirmation": "1",
-                "full_name": name,
                 "key": confirmation_key}
         result = self.client_post('/accounts/register/', data)
-        self.assert_in_response("We just need you to do one last thing", result)
+        if not skip_registration_form:
+            self.assert_in_response("We just need you to do one last thing", result)
 
-        # Verify that the user is asked for name but not password
-        self.assert_not_in_success_response(['id_password'], result)
-        self.assert_in_success_response(['id_full_name'], result)
+            # Verify that the user is asked for name but not password
+            self.assert_not_in_success_response(['id_password'], result)
+            self.assert_in_success_response(['id_full_name'], result)
+            # Verify the name field gets correctly pre-populated:
+            self.assert_in_success_response([expected_final_name], result)
 
-        # Click confirm registration button.
-        result = self.client_post(
-            '/accounts/register/',
-            {'full_name': name,
-             'key': confirmation_key,
-             'terms': True})
+            # Click confirm registration button.
+            result = self.client_post(
+                '/accounts/register/',
+                {'full_name': expected_final_name,
+                 'key': confirmation_key,
+                 'terms': True})
 
         self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
+        self.assertEqual(user_profile.full_name, expected_final_name)
 
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_registration(self) -> None:
+        """If the user doesn't exist yet, social auth can be used to register an account"""
+        email = "newuser@zulip.com"
+        name = 'Full Name'
+        subdomain = 'zulip'
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(account_data_dict,
+                                       expect_choose_email_screen=True,
+                                       subdomain=subdomain, is_signup='1')
+        self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                       self.BACKEND_CLASS.full_name_validated)
+
+    @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration_using_multiuse_invite(self) -> None:
         """If the user doesn't exist yet, social auth can be used to register an account"""
         email = "newuser@zulip.com"
         name = 'Full Name'
+        subdomain = 'zulip'
         realm = get_realm("zulip")
         realm.invite_required = True
         realm.save()
@@ -842,55 +852,17 @@ class SocialAuthBase(ZulipTestCase):
         # First, try to signup for closed realm without using an invitation
         result = self.social_auth_test(account_data_dict,
                                        expect_choose_email_screen=True,
-                                       subdomain='zulip', is_signup='1')
+                                       subdomain=subdomain, is_signup='1')
         result = self.client_get(result.url)
         # Verify that we're unable to signup, since this is a closed realm
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["Sign up"], result)
 
-        result = self.social_auth_test(account_data_dict, subdomain='zulip', is_signup='1',
+        result = self.social_auth_test(account_data_dict, subdomain=subdomain, is_signup='1',
                                        expect_choose_email_screen=True,
                                        multiuse_object_key=multiuse_object_key)
-
-        data = load_subdomain_token(result)
-        self.assertEqual(data['email'], email)
-        self.assertEqual(data['name'], name)
-        self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['multiuse_object_key'], multiuse_object_key)
-        self.assertEqual(result.status_code, 302)
-        parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
-        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-        result = self.client_get(result.url)
-
-        self.assertEqual(result.status_code, 302)
-        confirmation = Confirmation.objects.all().last()
-        confirmation_key = confirmation.confirmation_key
-        self.assertIn('do_confirm/' + confirmation_key, result.url)
-        result = self.client_get(result.url)
-        self.assert_in_response('action="/accounts/register/"', result)
-        data = {"from_confirmation": "1",
-                "full_name": name,
-                "key": confirmation_key}
-        result = self.client_post('/accounts/register/', data)
-        self.assert_in_response("We just need you to do one last thing", result)
-
-        # Verify that the user is asked for name but not password
-        self.assert_not_in_success_response(['id_password'], result)
-        self.assert_in_success_response(['id_full_name'], result)
-
-        # Click confirm registration button.
-        result = self.client_post(
-            '/accounts/register/',
-            {'full_name': name,
-             'key': confirmation_key,
-             'terms': True})
-
-        self.assertEqual(result.status_code, 302)
-        user_profile = get_user(email, realm)
-        self.assert_logged_in_user_id(user_profile.id)
+        self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                       self.BACKEND_CLASS.full_name_validated)
 
     def test_social_auth_registration_without_is_signup(self) -> None:
         """If `is_signup` is not set then a new account isn't created"""
@@ -940,6 +912,32 @@ class SocialAuthBase(ZulipTestCase):
         self.assert_in_response('Your email address, {}, is not '
                                 'in one of the domains that are allowed to register '
                                 'for accounts in this organization.'.format(email), result)
+
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_with_ldap_populate_registration_from_confirmation(self) -> None:
+        self.init_default_ldap_database()
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        realm = get_realm("zulip")
+        subdomain = "zulip"
+        ldap_user_attr_map = {'full_name': 'cn'}
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        backend_path = 'zproject.backends.{}'.format(self.BACKEND_CLASS.__name__)
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTHENTICATION_BACKENDS=(backend_path,
+                                         'zproject.backends.ZulipLDAPUserPopulator',
+                                         'zproject.backends.ZulipDummyBackend')
+        ):
+            result = self.social_auth_test(account_data_dict,
+                                           expect_choose_email_screen=True,
+                                           subdomain=subdomain, is_signup='1')
+            # Full name should get populated from ldap:
+            self.stage_two_of_registration(result, realm, subdomain, email, name, "New LDAP fullname",
+                                           skip_registration_form=True)
 
     def test_social_auth_complete(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
@@ -1831,6 +1829,27 @@ class DevGetEmailsTest(ZulipTestCase):
             result = self.client_get("/api/v1/dev_list_users")
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
+class SocialBackendDictsTests(ZulipTestCase):
+    def test_get_social_backend_dicts_correctly_sorted(self) -> None:
+        with self.settings(
+            AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
+                                     'zproject.backends.GitHubAuthBackend',
+                                     'zproject.backends.GoogleAuthBackend',
+                                     'zproject.backends.SAMLAuthBackend',
+                                     'zproject.backends.AzureADAuthBackend')
+        ):
+            social_backends = get_social_backend_dicts()
+            # First backends in the list should be SAML:
+            self.assertIn('saml:', social_backends[0]['name'])
+            self.assertEqual(
+                [social_backend['name'] for social_backend in social_backends[1:]],
+                [social_backend.name for social_backend in sorted(
+                    [GitHubAuthBackend, AzureADAuthBackend, GoogleAuthBackend],
+                    key=lambda x: x.sort_order,
+                    reverse=True
+                )]
+            )
+
 class FetchAuthBackends(ZulipTestCase):
     def assert_on_error(self, error: Optional[str]) -> None:
         if error:
@@ -1848,7 +1867,7 @@ class FetchAuthBackends(ZulipTestCase):
             self.assert_json_success(result)
             checker = check_dict_only([
                 ('authentication_methods', check_dict_only(authentication_methods_list)),
-                ('social_backends', check_list(None, length=len(social_backends))),
+                ('external_authentication_methods', check_list(None, length=len(social_backends))),
                 ('email_auth_enabled', check_bool),
                 ('is_incompatible', check_bool),
                 ('require_email_format_usernames', check_bool),
@@ -1862,6 +1881,7 @@ class FetchAuthBackends(ZulipTestCase):
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")
         check_result(result)
+        self.assertEqual(result.json()['external_authentication_methods'], get_social_backend_dicts())
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="ZulipInvalid")
         self.assertTrue(result.json()["is_incompatible"])
@@ -1878,78 +1898,16 @@ class FetchAuthBackends(ZulipTestCase):
             ('realm_icon', check_string),
         ])
 
-    def test_fetch_auth_backend_format(self) -> None:
-        expected_keys = {'msg', 'password', 'zulip_version', 'result'}
-        for backend_name_with_case in AUTH_BACKEND_NAME_MAP:
-            expected_keys.add(backend_name_with_case.lower())
+        # Verify invalid subdomain
+        result = self.client_get("/api/v1/server_settings",
+                                 subdomain="invalid")
+        self.assert_json_error_contains(result, "Invalid subdomain", 400)
 
-        result = self.client_get("/api/v1/get_auth_backends")
-        self.assert_json_success(result)
-        data = result.json()
-
-        self.assertEqual(set(data.keys()), expected_keys)
-        for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
-            self.assertTrue(isinstance(data[backend], bool))
-
-    def test_fetch_auth_backend(self) -> None:
-        def get_expected_result(expected_backends: Set[str], password_auth_enabled: bool=False) -> Dict[str, Any]:
-            result = {
-                'msg': '',
-                'result': 'success',
-                'password': password_auth_enabled,
-                'zulip_version': ZULIP_VERSION,
-            }
-            for backend_name_raw in AUTH_BACKEND_NAME_MAP:
-                backend_name = backend_name_raw.lower()
-                result[backend_name] = backend_name in expected_backends
-            return result
-
-        backends = [GoogleAuthBackend(), DevAuthBackend()]
-        with mock.patch('django.contrib.auth.get_backends', return_value=backends):
-            result = self.client_get("/api/v1/get_auth_backends")
-            self.assert_json_success(result)
-            data = result.json()
-            # Check that a few keys are present, to guard against
-            # AUTH_BACKEND_NAME_MAP being broken
-            self.assertIn("email", data)
-            self.assertIn("github", data)
-            self.assertIn("google", data)
-            self.assertEqual(data, get_expected_result({"google", "dev"}))
-
-            # Test subdomains cases
-            with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
-                result = self.client_get("/api/v1/get_auth_backends")
-                self.assert_json_success(result)
-                data = result.json()
-                self.assertEqual(data, get_expected_result({"google", "dev"}))
-
-                # Verify invalid subdomain
-                result = self.client_get("/api/v1/get_auth_backends",
-                                         subdomain="invalid")
-                self.assert_json_error_contains(result, "Invalid subdomain", 400)
-
-                # Verify correct behavior with a valid subdomain with
-                # some backends disabled for the realm
-                realm = get_realm("zulip")
-                do_set_realm_authentication_methods(realm, dict(Google=False, Email=False, Dev=True))
-                result = self.client_get("/api/v1/get_auth_backends",
-                                         subdomain="zulip")
-                self.assert_json_success(result)
-                data = result.json()
-                self.assertEqual(data, get_expected_result({"dev"}))
-
-            with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-                # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
-                result = self.client_get("/api/v1/get_auth_backends",
-                                         subdomain="")
-                self.assert_json_error_contains(result, "Subdomain required", 400)
-
-                # With ROOT_DOMAIN_LANDING_PAGE, subdomain pages succeed
-                result = self.client_get("/api/v1/get_auth_backends",
-                                         subdomain="zulip")
-                self.assert_json_success(result)
-                data = result.json()
-                self.assertEqual(data, get_expected_result({"dev"}))
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
+            result = self.client_get("/api/v1/server_settings",
+                                     subdomain="")
+            self.assert_json_error_contains(result, "Subdomain required", 400)
 
 class TestTwoFactor(ZulipTestCase):
     def test_direct_dev_login_with_2fa(self) -> None:

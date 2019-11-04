@@ -521,8 +521,8 @@ exports.initialize = function () {
     });
 
     // this will hide the alerts that you click "x" on.
-    $("body").on("click", ".alert .exit", function () {
-        var $alert = $(this).closest(".alert");
+    $("body").on("click", ".alert-box > div .exit", function () {
+        var $alert = $(this).closest(".alert-box > div");
         $alert.addClass("fade-out");
         setTimeout(function () {
             $alert.removeClass("fade-out show");
@@ -531,6 +531,10 @@ exports.initialize = function () {
 
     $("#settings_page").on("click", ".collapse-settings-btn", function () {
         settings_toggle.toggle_org_setting_collapse();
+    });
+
+    $(".alert-box").on("click", ".stackframe .expand", function () {
+        $(this).parent().siblings(".code-context").toggle("fast");
     });
 
     // COMPOSE

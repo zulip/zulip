@@ -21,7 +21,7 @@ Handlebars.registerHelper({
         if (arguments.length < 2) {
             return true;
         }
-        var i;
+        let i;
         for (i = 0; i < arguments.length - 2; i += 1) {
             if (!arguments[i] || Handlebars.Utils.isEmpty(arguments[i])) {
                 return arguments[i];
@@ -34,7 +34,7 @@ Handlebars.registerHelper({
         if (arguments.length < 2) {
             return false;
         }
-        var i;
+        let i;
         for (i = 0; i < arguments.length - 2; i += 1) {
             if (arguments[i] && !Handlebars.Utils.isEmpty(arguments[i])) {
                 return arguments[i];
@@ -49,7 +49,7 @@ Handlebars.registerHelper('t', function (i18n_key) {
     // Marks a string for translation.
     // Example usage:
     //     {{t "some English text"}}
-    var result = i18n.t(i18n_key);
+    const result = i18n.t(i18n_key);
     return new Handlebars.SafeString(result);
 });
 
@@ -69,7 +69,7 @@ Handlebars.registerHelper('tr', function (context, options) {
     //     1. `context` is very important. It can be `this` or an
     //        object or key of the current context.
     //     2. Use `__` instead of `{{` and `}}` to declare expressions
-    var result = i18n.t(options.fn(context), context);
+    const result = i18n.t(options.fn(context), context);
     return new Handlebars.SafeString(result);
 });
 

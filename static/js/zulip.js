@@ -2,7 +2,7 @@
 // global variables from Zulip (everything is being moved into
 // modules).  Please don't add things here.
 
-var home_msg_list = new message_list.MessageList({
+const home_msg_list = new message_list.MessageList({
     table_name: 'zhome',
     filter: new Filter([{operator: "in", operand: "home"}]),
     muting_enabled: true,

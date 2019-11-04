@@ -24,7 +24,7 @@ set_global('page_params', {
 set_global('overlays', {
 });
 
-var noop = () => {};
+const noop = () => {};
 
 // jQuery stuff should go away if we make an initialize() method.
 set_global('document', 'document-stub');
@@ -32,7 +32,7 @@ set_global('$', global.make_zjquery());
 $.fn.keydown = noop;
 $.fn.keypress = noop;
 
-var hotkey = zrequire('hotkey');
+const hotkey = zrequire('hotkey');
 zrequire('common');
 
 set_global('list_util', {
@@ -149,7 +149,7 @@ run_test('mappings', () => {
 
 run_test('basic_chars', () => {
     function process(s) {
-        var e = {
+        const e = {
             which: s.charCodeAt(0),
         };
         try {
@@ -266,7 +266,7 @@ run_test('basic_chars', () => {
     assert_mapping('d', 'drafts.launch');
 
     // Next, test keys that only work on a selected message.
-    var message_view_only_keys = '@+>RjJkKsSuvi:GM';
+    const message_view_only_keys = '@+>RjJkKsSuvi:GM';
 
     // Check that they do nothing without a selected message
     global.current_msg_list.empty = return_true;
@@ -324,7 +324,7 @@ run_test('basic_chars', () => {
 });
 
 run_test('motion_keys', () => {
-    var codes = {
+    const codes = {
         down_arrow: 40,
         end: 35,
         home: 36,
@@ -338,7 +338,7 @@ run_test('motion_keys', () => {
     };
 
     function process(name, shiftKey, ctrlKey) {
-        var e = {
+        const e = {
             which: codes[name],
             shiftKey: shiftKey,
             ctrlKey: ctrlKey,

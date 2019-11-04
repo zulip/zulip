@@ -5,12 +5,12 @@ exports.next_visible = function (message_row) {
     if (message_row === undefined || message_row.length === 0) {
         return $();
     }
-    var row = message_row.next('.selectable_row');
+    const row = message_row.next('.selectable_row');
     if (row.length !== 0) {
         return row;
     }
-    var recipient_row = exports.get_message_recipient_row(message_row);
-    var next_recipient_rows = $(recipient_row).nextAll('.recipient_row');
+    const recipient_row = exports.get_message_recipient_row(message_row);
+    const next_recipient_rows = $(recipient_row).nextAll('.recipient_row');
     if (next_recipient_rows.length === 0) {
         return $();
     }
@@ -21,12 +21,12 @@ exports.prev_visible = function (message_row) {
     if (message_row === undefined || message_row.length === 0) {
         return $();
     }
-    var row = message_row.prev('.selectable_row');
+    const row = message_row.prev('.selectable_row');
     if (row.length !== 0) {
         return row;
     }
-    var recipient_row = exports.get_message_recipient_row(message_row);
-    var prev_recipient_rows = $(recipient_row).prevAll('.recipient_row');
+    const recipient_row = exports.get_message_recipient_row(message_row);
+    const prev_recipient_rows = $(recipient_row).prevAll('.recipient_row');
     if (prev_recipient_rows.length === 0) {
         return $();
     }
@@ -45,7 +45,7 @@ exports.id = function (message_row) {
     return parseFloat(message_row.attr('zid'));
 };
 
-var valid_table_names = {
+const valid_table_names = {
     zhome: true,
     zfilt: true,
 };
@@ -62,8 +62,8 @@ exports.get_message_id = function (elem) {
     // Gets the message_id for elem, where elem is a DOM
     // element inside a message.  This is typically used
     // in click handlers for things like the reaction button.
-    var row = $(elem).closest(".message_row");
-    var message_id = exports.id(row);
+    const row = $(elem).closest(".message_row");
+    const message_id = exports.id(row);
     return message_id;
 };
 
@@ -94,7 +94,7 @@ exports.id_for_recipient_row = function (recipient_row) {
     // A recipient row can be either a normal recipient row, or
     // the FRB, which is a fake recipient row. If it's a FRB, it has
     // a 'zid' property that stores the message id it is directly over
-    var msg_row = exports.first_message_in_group(recipient_row);
+    const msg_row = exports.first_message_in_group(recipient_row);
     if (msg_row.length === 0) {
         // If we're narrowing from the FRB, take the msg id
         // directly from it

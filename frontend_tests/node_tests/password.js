@@ -4,12 +4,12 @@ zrequire('common');
 set_global('i18n', global.stub_i18n);
 
 run_test('basics', () => {
-    var accepted;
-    var password;
-    var warning;
+    let accepted;
+    let password;
+    let warning;
 
-    var bar = (function () {
-        var self = {};
+    const bar = (function () {
+        const self = {};
 
         self.width = function (width) {
             self.w = width;
@@ -30,7 +30,7 @@ run_test('basics', () => {
     }());
 
     function password_field(min_length, min_guesses) {
-        var self = {};
+        const self = {};
 
         self.data = function (field) {
             if (field === 'minLength') {

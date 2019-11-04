@@ -30,8 +30,8 @@ set_global('ClipboardJS', function (sel) {
 bot_data.initialize();
 
 run_test('generate_zuliprc_uri', () => {
-    var uri = settings_bots.generate_zuliprc_uri(1);
-    var expected = "data:application/octet-stream;charset=utf-8," + encodeURIComponent(
+    const uri = settings_bots.generate_zuliprc_uri(1);
+    const expected = "data:application/octet-stream;charset=utf-8," + encodeURIComponent(
         "[api]\nemail=error-bot@zulip.org\n" +
         "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
         "site=https://chat.example.com\n"
@@ -41,12 +41,12 @@ run_test('generate_zuliprc_uri', () => {
 });
 
 run_test('generate_zuliprc_content', () => {
-    var user = {
+    const user = {
         email: "admin12@chatting.net",
         api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34",
     };
-    var content = settings_bots.generate_zuliprc_content(user.email, user.api_key);
-    var expected = "[api]\nemail=admin12@chatting.net\n" +
+    const content = settings_bots.generate_zuliprc_content(user.email, user.api_key);
+    const expected = "[api]\nemail=admin12@chatting.net\n" +
                    "key=nSlA0mUm7G42LP85lMv7syqFTzDE2q34\n" +
                    "site=https://chat.example.com\n";
 
@@ -54,17 +54,17 @@ run_test('generate_zuliprc_content', () => {
 });
 
 run_test('generate_botserverrc_content', () => {
-    var user = {
+    const user = {
         email: "vabstest-bot@zulip.com",
         api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34",
     };
-    var service = {
+    const service = {
         token: "abcd1234",
     };
-    var content = settings_bots.generate_botserverrc_content(user.email,
-                                                             user.api_key,
-                                                             service.token);
-    var expected = "[]\nemail=vabstest-bot@zulip.com\n" +
+    const content = settings_bots.generate_botserverrc_content(user.email,
+                                                               user.api_key,
+                                                               service.token);
+    const expected = "[]\nemail=vabstest-bot@zulip.com\n" +
                    "key=nSlA0mUm7G42LP85lMv7syqFTzDE2q34\n" +
                    "site=https://chat.example.com\n" +
                    "token=abcd1234\n";
@@ -73,12 +73,12 @@ run_test('generate_botserverrc_content', () => {
 });
 
 function test_create_bot_type_input_box_toggle(f) {
-    var create_payload_url = $('#create_payload_url');
-    var payload_url_inputbox = $('#payload_url_inputbox');
-    var config_inputbox = $('#config_inputbox');
-    var EMBEDDED_BOT_TYPE = '4';
-    var OUTGOING_WEBHOOK_BOT_TYPE = '3';
-    var GENERIC_BOT_TYPE = '1';
+    const create_payload_url = $('#create_payload_url');
+    const payload_url_inputbox = $('#payload_url_inputbox');
+    const config_inputbox = $('#config_inputbox');
+    const EMBEDDED_BOT_TYPE = '4';
+    const OUTGOING_WEBHOOK_BOT_TYPE = '3';
+    const GENERIC_BOT_TYPE = '1';
 
     $('#create_bot_type :selected').val(EMBEDDED_BOT_TYPE);
     f.apply();
@@ -117,7 +117,7 @@ function set_up() {
     };
 
     $('#config_inputbox').children = () => {
-        var mock_children = {
+        const mock_children = {
             hide: () => {
                 return;
             },
@@ -138,7 +138,7 @@ run_test('test tab clicks', () => {
     set_up();
 
     function click_on_tab(tab_elem) {
-        var e = {
+        const e = {
             preventDefault: () => {},
             stopPropagation: () => {},
         };

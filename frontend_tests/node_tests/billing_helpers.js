@@ -2,7 +2,7 @@ const { JSDOM } = require("jsdom");
 const fs = require("fs");
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, { pretendToBeVisual: true });
-var jquery = require('jquery')(dom.window);
+const jquery = require('jquery')(dom.window);
 
 set_global('$', global.make_zjquery());
 set_global('page_params', {});
@@ -20,13 +20,13 @@ set_global('location', {
 zrequire('helpers', "js/billing/helpers");
 
 run_test('create_ajax_request', () => {
-    var form_loading_indicator = "#autopay_loading_indicator";
-    var form_input_section = "#autopay-input-section";
-    var form_success = "#autopay-success";
-    var form_error = "#autopay-error";
-    var form_loading = "#autopay-loading";
+    const form_loading_indicator = "#autopay_loading_indicator";
+    const form_input_section = "#autopay-input-section";
+    const form_success = "#autopay-success";
+    const form_error = "#autopay-error";
+    const form_loading = "#autopay-loading";
 
-    var state = {
+    const state = {
         form_input_section_show: 0,
         form_input_section_hide: 0,
         form_error_show: 0,
@@ -145,7 +145,7 @@ run_test("format_money", () => {
 });
 
 run_test("update_charged_amount", () => {
-    var prices = {};
+    const prices = {};
     prices.annual = 8000;
     prices.monthly = 800;
     page_params.seat_count = 35;
@@ -158,7 +158,7 @@ run_test("update_charged_amount", () => {
 });
 
 run_test("show_license_section", () => {
-    var state = {
+    const state = {
         show_license_automatic_section: 0,
         show_license_manual_section: 0,
         hide_license_automatic_section: 0,
@@ -201,7 +201,7 @@ run_test("show_license_section", () => {
 });
 
 run_test("set_tab", () => {
-    var state = {
+    const state = {
         show_tab_billing: 0,
         show_tab_payment_method: 0,
         scrollTop: 0,

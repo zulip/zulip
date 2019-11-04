@@ -42,7 +42,7 @@ run_test('phrase_match', () => {
 });
 
 run_test('copy_data_attribute_value', () => {
-    var elem = $.create('.envelope-link');
+    const elem = $.create('.envelope-link');
     elem.data = (key) => {
         if (key === "admin-emails") {
             return "iago@zulip.com";
@@ -86,8 +86,8 @@ run_test('adjust_mac_shortcuts', () => {
         ['Ctrl + Backspace + End', 'Ctrl + Backspace + End'],
     ]);
 
-    var key_no;
-    var keys_elem_list = [];
+    let key_no;
+    let keys_elem_list = [];
 
     common.has_mac_keyboard = function () { return false; };
     key_no = 1;
@@ -110,7 +110,7 @@ run_test('adjust_mac_shortcuts', () => {
     });
 
     $(".markdown_content").each = (f) => {
-        for (var key_id = 0; key_id < keys_elem_list.length; key_id += 1) {
+        for (let key_id = 0; key_id < keys_elem_list.length; key_id += 1) {
             f.call(keys_elem_list[key_id]);
         }
     };
@@ -119,7 +119,7 @@ run_test('adjust_mac_shortcuts', () => {
         assert.equal(key_elem.text(), key_elem.expected_key());
     });
 
-    var markdown_hotkey_1 = get_key_stub_html("Ctrl + Backspace", "⌘ + Delete", "markdown_hotkey_1");
+    const markdown_hotkey_1 = get_key_stub_html("Ctrl + Backspace", "⌘ + Delete", "markdown_hotkey_1");
     $(".markdown_content").each = (f) => {
         f.call(markdown_hotkey_1);
     };

@@ -1,11 +1,11 @@
-var render_draft_table_body = require('../templates/draft_table_body.hbs');
+const render_draft_table_body = require('../templates/draft_table_body.hbs');
 
-var draft_model = (function () {
-    var exports = {};
+const draft_model = (function () {
+    const exports = {};
 
     // the key that the drafts are stored under.
-    var KEY = "drafts";
-    var ls = localstorage();
+    const KEY = "drafts";
+    const ls = localstorage();
     ls.version = 1;
 
     function getTimestamp() {
@@ -26,11 +26,11 @@ var draft_model = (function () {
     }
 
     exports.addDraft = function (draft) {
-        var drafts = get();
+        const drafts = get();
 
         // use the base16 of the current time + a random string to reduce
         // collisions to essentially zero.
-        var id = getTimestamp().toString(16) + "-" + Math.random().toString(16).split(/\./).pop();
+        const id = getTimestamp().toString(16) + "-" + Math.random().toString(16).split(/\./).pop();
 
         draft.updatedAt = getTimestamp();
         drafts[id] = draft;
@@ -40,7 +40,7 @@ var draft_model = (function () {
     };
 
     exports.editDraft = function (id, draft) {
-        var drafts = get();
+        const drafts = get();
 
         if (drafts[id]) {
             draft.updatedAt = getTimestamp();
@@ -50,7 +50,7 @@ var draft_model = (function () {
     };
 
     exports.deleteDraft = function (id) {
-        var drafts = get();
+        const drafts = get();
 
         delete drafts[id];
         save(drafts);
@@ -69,12 +69,12 @@ exports.snapshot_message = function () {
     }
 
     // Save what we can.
-    var message = {
+    const message = {
         type: compose_state.get_message_type(),
         content: compose_state.message_content(),
     };
     if (message.type === "private") {
-        var recipient = compose_state.recipient();
+        const recipient = compose_state.recipient();
         message.reply_to = recipient;
         message.private_message_recipient = recipient;
     } else {
@@ -89,7 +89,7 @@ exports.restore_message = function (draft) {
     // we are essentially making a deep copy of the draft,
     // being explicit about which fields we send to the compose
     // system.
-    var compose_args;
+    let compose_args;
 
     if (draft.type === "stream") {
         compose_args = {
@@ -116,8 +116,8 @@ function draft_notify() {
 }
 
 exports.update_draft = function () {
-    var draft = exports.snapshot_message();
-    var draft_id = $("#compose-textarea").data("draft-id");
+    const draft = exports.snapshot_message();
+    const draft_id = $("#compose-textarea").data("draft-id");
 
     if (draft_id !== undefined) {
         if (draft !== undefined) {
@@ -128,7 +128,7 @@ exports.update_draft = function () {
         }
     } else {
         if (draft !== undefined) {
-            var new_draft_id = draft_model.addDraft(draft);
+            const new_draft_id = draft_model.addDraft(draft);
             $("#compose-textarea").data("draft-id", new_draft_id);
             draft_notify();
         }
@@ -136,7 +136,7 @@ exports.update_draft = function () {
 };
 
 exports.delete_draft_after_send = function () {
-    var draft_id = $("#compose-textarea").data("draft-id");
+    const draft_id = $("#compose-textarea").data("draft-id");
     if (draft_id) {
         draft_model.deleteDraft(draft_id);
     }
@@ -144,12 +144,12 @@ exports.delete_draft_after_send = function () {
 };
 
 exports.restore_draft = function (draft_id) {
-    var draft = draft_model.getDraft(draft_id);
+    const draft = draft_model.getDraft(draft_id);
     if (!draft) {
         return;
     }
 
-    var compose_args = exports.restore_message(draft);
+    const compose_args = exports.restore_message(draft);
 
     if (compose_args.type === "stream") {
         if (draft.stream !== "") {
@@ -184,11 +184,11 @@ exports.restore_draft = function (draft_id) {
     $("#compose-textarea").data("draft-id", draft_id);
 };
 
-var DRAFT_LIFETIME = 30;
+const DRAFT_LIFETIME = 30;
 
 exports.remove_old_drafts = function () {
-    var old_date  = new Date().setDate(new Date().getDate() - DRAFT_LIFETIME);
-    var drafts = draft_model.get();
+    const old_date  = new Date().setDate(new Date().getDate() - DRAFT_LIFETIME);
+    const drafts = draft_model.get();
     _.each(drafts, function (draft, id) {
         if (draft.updatedAt < old_date) {
             draft_model.deleteDraft(id);
@@ -197,20 +197,20 @@ exports.remove_old_drafts = function () {
 };
 
 exports.format_draft = function (draft) {
-    var id = draft.id;
-    var formatted;
-    var time = new XDate(draft.updatedAt);
-    var time_stamp = timerender.render_now(time).time_str;
+    const id = draft.id;
+    let formatted;
+    const time = new XDate(draft.updatedAt);
+    let time_stamp = timerender.render_now(time).time_str;
     if (time_stamp === i18n.t("Today")) {
         time_stamp = timerender.stringify_time(time);
     }
     if (draft.type === "stream") {
         // In case there is no stream for the draft, we need a
         // single space char for proper rendering of the stream label
-        var space_string = new Handlebars.SafeString("&nbsp;");
-        var stream = draft.stream.length > 0 ? draft.stream : space_string;
-        var draft_topic = util.get_draft_topic(draft);
-        var draft_stream_color = stream_data.get_color(draft.stream);
+        const space_string = new Handlebars.SafeString("&nbsp;");
+        const stream = draft.stream.length > 0 ? draft.stream : space_string;
+        let draft_topic = util.get_draft_topic(draft);
+        const draft_stream_color = stream_data.get_color(draft.stream);
 
         if (draft_topic === '') {
             draft_topic = compose.empty_topic_placeholder();
@@ -227,10 +227,10 @@ exports.format_draft = function (draft) {
             time_stamp: time_stamp,
         };
     } else {
-        var emails = util.extract_pm_recipients(draft.private_message_recipient);
-        var recipients = _.map(emails, function (email) {
+        const emails = util.extract_pm_recipients(draft.private_message_recipient);
+        const recipients = _.map(emails, function (email) {
             email = email.trim();
-            var person = people.get_by_email(email);
+            const person = people.get_by_email(email);
             if (person !== undefined) {
                 return person.full_name;
             }
@@ -266,23 +266,23 @@ exports.format_draft = function (draft) {
 };
 
 function row_with_focus() {
-    var focused_draft = $(".draft-info-box:focus")[0];
+    const focused_draft = $(".draft-info-box:focus")[0];
     return $(focused_draft).parent(".draft-row");
 }
 
 function row_before_focus() {
-    var focused_row = row_with_focus();
+    const focused_row = row_with_focus();
     return focused_row.prev(".draft-row:visible");
 }
 
 function row_after_focus() {
-    var focused_row = row_with_focus();
+    const focused_row = row_with_focus();
     return focused_row.next(".draft-row:visible");
 }
 
 function remove_draft(draft_row) {
     // Deletes the draft and removes it from the list
-    var draft_id = draft_row.data("draft-id");
+    const draft_id = draft_row.data("draft-id");
 
     exports.draft_model.deleteDraft(draft_id);
 
@@ -299,20 +299,20 @@ exports.launch = function () {
             draft.id = id;
         });
 
-        var unsorted_raw_drafts = _.values(data);
+        const unsorted_raw_drafts = _.values(data);
 
-        var sorted_raw_drafts = unsorted_raw_drafts.sort(function (draft_a, draft_b) {
+        const sorted_raw_drafts = unsorted_raw_drafts.sort(function (draft_a, draft_b) {
             return draft_b.updatedAt - draft_a.updatedAt;
         });
 
-        var sorted_formatted_drafts = _.filter(_.map(sorted_raw_drafts, exports.format_draft));
+        const sorted_formatted_drafts = _.filter(_.map(sorted_raw_drafts, exports.format_draft));
 
         return sorted_formatted_drafts;
     }
 
     function render_widgets(drafts) {
         $('#drafts_table').empty();
-        var rendered = render_draft_table_body({
+        const rendered = render_draft_table_body({
             drafts: drafts,
             draft_lifetime: DRAFT_LIFETIME,
         });
@@ -326,20 +326,20 @@ exports.launch = function () {
         $(".restore-draft").on("click", function (e) {
             e.stopPropagation();
 
-            var draft_row = $(this).closest(".draft-row");
-            var draft_id = draft_row.data("draft-id");
+            const draft_row = $(this).closest(".draft-row");
+            const draft_id = draft_row.data("draft-id");
             exports.restore_draft(draft_id);
         });
 
         $(".draft_controls .delete-draft").on("click", function () {
-            var draft_row = $(this).closest(".draft-row");
+            const draft_row = $(this).closest(".draft-row");
 
             remove_draft(draft_row);
         });
     }
 
     exports.remove_old_drafts();
-    var drafts = format_drafts(draft_model.get());
+    const drafts = format_drafts(draft_model.get());
     render_widgets(drafts);
 
     // We need to force a style calculation on the newly created
@@ -364,19 +364,19 @@ function drafts_initialize_focus(event_name) {
         return;
     }
 
-    var draft_arrow = draft_model.get();
-    var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
+    const draft_arrow = draft_model.get();
+    const draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
     if (draft_id_arrow.length === 0) { // empty drafts modal
         return;
     }
 
-    var draft_element;
+    let draft_element;
     if (event_name === "up_arrow") {
         draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[draft_id_arrow.length - 1] + '"]');
     } else if (event_name === "down_arrow") {
         draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[0] + '"]');
     }
-    var focus_element = draft_element[0].children[0];
+    const focus_element = draft_element[0].children[0];
 
     activate_element(focus_element);
 }
@@ -407,9 +407,9 @@ function drafts_scroll(next_focus_draft_row) {
     }
 
     // If focused draft is cut off from the bottom, scroll down halfway in draft modal.
-    var dist_from_top = next_focus_draft_row.position().top;
-    var total_dist = dist_from_top + next_focus_draft_row[0].clientHeight;
-    var dist_from_bottom = $(".drafts-container")[0].clientHeight - total_dist;
+    const dist_from_top = next_focus_draft_row.position().top;
+    const total_dist = dist_from_top + next_focus_draft_row[0].clientHeight;
+    const dist_from_bottom = $(".drafts-container")[0].clientHeight - total_dist;
     if (dist_from_bottom < -4) {
         //-4 is the min dist from the bottom that will require extra scrolling.
         $(".drafts-list")[0].scrollTop += $(".drafts-list")[0].clientHeight / 2;
@@ -417,8 +417,8 @@ function drafts_scroll(next_focus_draft_row) {
 }
 
 exports.drafts_handle_events = function (e, event_key) {
-    var draft_arrow = draft_model.get();
-    var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
+    const draft_arrow = draft_model.get();
+    const draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
     drafts_initialize_focus(event_key);
 
     // This detects up arrow key presses when the draft overlay
@@ -433,14 +433,14 @@ exports.drafts_handle_events = function (e, event_key) {
         drafts_scroll(row_after_focus());
     }
 
-    var focused_draft_id = row_with_focus().data("draft-id");
+    const focused_draft_id = row_with_focus().data("draft-id");
     // Allows user to delete drafts with backspace
     if (event_key === "backspace" || event_key === "delete") {
         if (focused_draft_id !== undefined) {
-            var draft_row = row_with_focus();
-            var next_draft_row = row_after_focus();
-            var prev_draft_row = row_before_focus();
-            var draft_to_be_focused_id;
+            const draft_row = row_with_focus();
+            const next_draft_row = row_after_focus();
+            const prev_draft_row = row_before_focus();
+            let draft_to_be_focused_id;
 
             // Try to get the next draft in the list and 'focus' it
             // Use previous draft as a fallback
@@ -450,7 +450,7 @@ exports.drafts_handle_events = function (e, event_key) {
                 draft_to_be_focused_id = prev_draft_row.data("draft-id");
             }
 
-            var new_focus_element = document.querySelectorAll('[data-draft-id="' + draft_to_be_focused_id + '"]');
+            const new_focus_element = document.querySelectorAll('[data-draft-id="' + draft_to_be_focused_id + '"]');
             if (new_focus_element[0] !== undefined) {
                 activate_element(new_focus_element[0].children[0]);
             }
@@ -465,7 +465,7 @@ exports.drafts_handle_events = function (e, event_key) {
         if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
             exports.restore_draft(focused_draft_id);
         } else {
-            var first_draft = draft_id_arrow[draft_id_arrow.length - 1];
+            const first_draft = draft_id_arrow[draft_id_arrow.length - 1];
             exports.restore_draft(first_draft);
         }
     }
@@ -483,10 +483,10 @@ exports.open_modal = function () {
 
 exports.set_initial_element = function (drafts) {
     if (drafts.length > 0) {
-        var curr_draft_id = drafts[0].draft_id;
-        var selector = '[data-draft-id="' + curr_draft_id + '"]';
-        var curr_draft_element = document.querySelectorAll(selector);
-        var focus_element = curr_draft_element[0].children[0];
+        const curr_draft_id = drafts[0].draft_id;
+        const selector = '[data-draft-id="' + curr_draft_id + '"]';
+        const curr_draft_element = document.querySelectorAll(selector);
+        const focus_element = curr_draft_element[0].children[0];
         activate_element(focus_element);
         $(".drafts-list")[0].scrollTop = 0;
     }

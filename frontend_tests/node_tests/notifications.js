@@ -26,7 +26,7 @@ zrequire('util');
 zrequire('notifications');
 
 // Not muted streams
-var general = {
+const general = {
     subscribed: true,
     name: 'general',
     stream_id: 10,
@@ -34,7 +34,7 @@ var general = {
 };
 
 // Muted streams
-var muted = {
+const muted = {
     subscribed: true,
     name: 'muted',
     stream_id: 20,
@@ -160,14 +160,14 @@ run_test('message_is_notifiable', () => {
 
 run_test('basic_notifications', () => {
 
-    var n; // Object for storing all notification data for assertions.
-    var last_closed_message_id = null;
-    var last_shown_message_id = null;
+    let n; // Object for storing all notification data for assertions.
+    let last_closed_message_id = null;
+    let last_shown_message_id = null;
 
     // Notifications API stub
     notifications.set_notification_api({
         createNotification: function createNotification(icon, title, content, tag) {
-            var notification_object = {icon: icon, body: content, tag: tag};
+            const notification_object = {icon: icon, body: content, tag: tag};
             // properties for testing.
             notification_object.tests = {
                 shown: false,
@@ -183,7 +183,7 @@ run_test('basic_notifications', () => {
         },
     });
 
-    var message_1 = {
+    const message_1 = {
         id: 1000,
         content: '@-mentions the user',
         avatar_url: 'url',
@@ -197,7 +197,7 @@ run_test('basic_notifications', () => {
         topic: 'whatever',
     };
 
-    var message_2 = {
+    const message_2 = {
         id: 1500,
         avatar_url: 'url',
         content: '@-mentions the user',

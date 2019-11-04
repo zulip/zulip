@@ -10,12 +10,12 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 set_global('blueslip', {});
 
-var alice = {
+const alice = {
     email: 'alice@zulip.com',
     user_id: 101,
     full_name: 'Alice',
 };
-var bob = {
+const bob = {
     email: 'bob@zulip.com',
     user_id: 102,
     full_name: 'Bob',
@@ -24,11 +24,11 @@ var bob = {
 global.people.add_in_realm(alice);
 global.people.add_in_realm(bob);
 
-var noop = function () {};
+const noop = function () {};
 
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.
-    var widget = {};
+    const widget = {};
 
     widget.s = s;
     widget.focused = false;
@@ -42,8 +42,8 @@ function make_textbox(s) {
         if (arg) {
             widget.insert_pos = widget.pos;
             widget.insert_text = arg;
-            var before = widget.s.slice(0, widget.pos);
-            var after = widget.s.slice(widget.pos);
+            const before = widget.s.slice(0, widget.pos);
+            const after = widget.s.slice(widget.pos);
             widget.s = before + arg + after;
             widget.pos += arg.length;
             return;
@@ -94,7 +94,7 @@ run_test('insert_syntax_and_focus', () => {
 });
 
 run_test('smart_insert', () => {
-    var textbox = make_textbox('abc');
+    let textbox = make_textbox('abc');
     textbox.caret(4);
 
     compose_ui.smart_insert(textbox, ':smile:');
@@ -168,7 +168,7 @@ run_test('replace_syntax', () => {
 });
 
 run_test('compute_placeholder_text', () => {
-    var opts = {
+    let opts = {
         message_type: 'stream',
         stream: '',
         topic: '',

@@ -1,4 +1,4 @@
-var noop = function () {};
+const noop = function () {};
 
 set_global('$', global.make_zjquery());
 set_global('page_params', {
@@ -25,8 +25,8 @@ zrequire('transmit');
 
 function test_with_mock_socket(test_params) {
     transmit.initialize();
-    var socket_send_called;
-    var send_args = {};
+    let socket_send_called;
+    const send_args = {};
 
     global.socket.send = function (request, success, error) {
         global.socket.send = undefined;
@@ -51,17 +51,17 @@ run_test('transmit_message_sockets', () => {
 
     // Our request is mostly unimportant, except that the
     // socket_user_agent field will be added.
-    var request = {foo: 'bar'};
+    const request = {foo: 'bar'};
 
-    var success_func_checked = false;
-    var success = function () {
+    let success_func_checked = false;
+    const success = function () {
         success_func_checked = true;
     };
 
     // Our error function gets wrapped, so we set up a real
     // function to test the wrapping mechanism.
-    var error_func_checked = false;
-    var error = function (error_msg) {
+    let error_func_checked = false;
+    const error = function (error_msg) {
         assert.equal(error_msg, 'Error sending message: simulated_error');
         error_func_checked = true;
     };
@@ -97,12 +97,12 @@ page_params.use_websockets = false;
 
 run_test('transmit_message_ajax', () => {
 
-    var success_func_called;
-    var success = function () {
+    let success_func_called;
+    const success = function () {
         success_func_called = true;
     };
 
-    var request = {foo: 'bar'};
+    const request = {foo: 'bar'};
 
     channel.post = function (opts) {
         assert.equal(opts.url, '/json/messages');
@@ -122,12 +122,12 @@ run_test('transmit_message_ajax', () => {
     channel.post = function (opts) {
         assert.equal(opts.url, '/json/messages');
         assert.equal(opts.data.foo, 'bar');
-        var xhr = 'whatever';
+        const xhr = 'whatever';
         opts.error(xhr, 'timeout');
     };
 
-    var error_func_called;
-    var error = function (response) {
+    let error_func_called;
+    const error = function (response) {
         assert.equal(response, 'Error sending message');
         error_func_called = true;
     };
@@ -136,13 +136,13 @@ run_test('transmit_message_ajax', () => {
 });
 
 run_test('transmit_message_ajax_reload_pending', () => {
-    var success = function () { throw 'unexpected success'; };
+    const success = function () { throw 'unexpected success'; };
 
     reload_state.is_pending = function () {
         return true;
     };
 
-    var reload_initiated;
+    let reload_initiated;
     reload.initiate = function (opts) {
         reload_initiated = true;
         assert.deepEqual(opts, {
@@ -154,10 +154,10 @@ run_test('transmit_message_ajax_reload_pending', () => {
         });
     };
 
-    var request = {foo: 'bar'};
+    const request = {foo: 'bar'};
 
-    var error_func_called;
-    var error = function (response) {
+    let error_func_called;
+    const error = function (response) {
         assert.equal(response, 'Error sending message');
         error_func_called = true;
     };
@@ -166,7 +166,7 @@ run_test('transmit_message_ajax_reload_pending', () => {
     channel.post = function (opts) {
         assert.equal(opts.url, '/json/messages');
         assert.equal(opts.data.foo, 'bar');
-        var xhr = 'whatever';
+        const xhr = 'whatever';
         opts.error(xhr, 'bad request');
     };
     transmit.send_message(request, success, error);
@@ -185,7 +185,7 @@ run_test('reply_message_stream', () => {
 
     const content = 'hello';
 
-    var send_message_args;
+    let send_message_args;
 
     transmit.send_message = (args) => {
         send_message_args = args;
@@ -230,7 +230,7 @@ run_test('reply_message_private', () => {
 
     const content = 'hello';
 
-    var send_message_args;
+    let send_message_args;
 
     transmit.send_message = (args) => {
         send_message_args = args;

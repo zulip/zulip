@@ -1270,10 +1270,6 @@ def handle_deferred_message(sender: UserProfile, client: Client,
                            forwarder_user_profile=forwarder_user_profile)
     return json_success({"deliver_at": str(deliver_at_usertz)})
 
-# We do not @require_login for send_message_backend, since it is used
-# both from the API and the web service.  Code calling
-# send_message_backend should either check the API key or check that
-# the user is logged in.
 @has_request_variables
 def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: str=REQ('type'),

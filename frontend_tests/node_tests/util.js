@@ -5,9 +5,9 @@ set_global('document', {});
 zrequire('util');
 
 run_test('CachedValue', () => {
-    var x = 5;
+    let x = 5;
 
-    var cv = new util.CachedValue({
+    const cv = new util.CachedValue({
         compute_value: function () {
             return x * 2;
         },
@@ -33,7 +33,7 @@ run_test('extract_pm_recipients', () => {
 });
 
 run_test('is_pm_recipient', () => {
-    var message = { reply_to: 'alice@example.com,bOb@exaMple.com,fred@example.com' };
+    const message = { reply_to: 'alice@example.com,bOb@exaMple.com,fred@example.com' };
     assert(util.is_pm_recipient('alice@example.com', message));
     assert(util.is_pm_recipient('bob@example.com', message));
     assert(!util.is_pm_recipient('unknown@example.com', message));
@@ -46,7 +46,7 @@ run_test('rtrim', () => {
 });
 
 run_test('lower_bound', () => {
-    var arr = [10, 20, 30, 40, 50];
+    let arr = [10, 20, 30, 40, 50];
     assert.equal(util.lower_bound(arr, 5), 0);
     assert.equal(util.lower_bound(arr, 10), 0);
     assert.equal(util.lower_bound(arr, 15), 1);
@@ -123,7 +123,7 @@ run_test('get_message_topic', () => {
 
 run_test('dumb_strcmp', () => {
     Intl.Collator = undefined;
-    var strcmp = util.make_strcmp();
+    const strcmp = util.make_strcmp();
     assert.equal(strcmp('a', 'b'), -1);
     assert.equal(strcmp('c', 'c'), 0);
     assert.equal(strcmp('z', 'y'), 1);
@@ -160,11 +160,11 @@ run_test('normalize_recipients', () => {
 });
 
 run_test('random_int', () => {
-    var min = 0;
-    var max = 100;
+    const min = 0;
+    const max = 100;
 
     _.times(500, function () {
-        var val = util.random_int(min, max);
+        const val = util.random_int(min, max);
         assert(min <= val);
         assert(val <= max);
         assert.equal(val, Math.floor(val));
@@ -172,28 +172,28 @@ run_test('random_int', () => {
 });
 
 run_test('all_and_everyone_mentions_regexp', () => {
-    var messages_with_all_mentions = [
+    const messages_with_all_mentions = [
         '@**all**',
         'some text before @**all** some text after',
         '@**all** some text after only',
         'some text before only @**all**',
     ];
 
-    var messages_with_everyone_mentions = [
+    const messages_with_everyone_mentions = [
         '@**everyone**',
         'some text before @**everyone** some text after',
         '@**everyone** some text after only',
         'some text before only @**everyone**',
     ];
 
-    var messages_with_stream_mentions = [
+    const messages_with_stream_mentions = [
         '@**stream**',
         'some text before @**stream** some text after',
         '@**stream** some text after only',
         'some text before only @**stream**',
     ];
 
-    var messages_without_all_mentions = [
+    const messages_without_all_mentions = [
         '@all',
         'some text before @all some text after',
         '`@everyone`',
@@ -202,7 +202,7 @@ run_test('all_and_everyone_mentions_regexp', () => {
         'some_email@**everyone**.com',
     ];
 
-    var messages_without_everyone_mentions = [
+    const messages_without_everyone_mentions = [
         'some text before @everyone some text after',
         '@everyone',
         '`@everyone`',
@@ -211,7 +211,7 @@ run_test('all_and_everyone_mentions_regexp', () => {
         'some_email@**everyone**.com',
     ];
 
-    var messages_without_stream_mentions = [
+    const messages_without_stream_mentions = [
         'some text before @stream some text after',
         '@stream',
         '`@stream`',
@@ -220,7 +220,7 @@ run_test('all_and_everyone_mentions_regexp', () => {
         'some_email@**stream**.com',
     ];
 
-    var i;
+    let i;
     for (i = 0; i < messages_with_all_mentions.length; i += 1) {
         assert(util.is_all_or_everyone_mentioned(messages_with_all_mentions[i]));
     }
@@ -247,46 +247,46 @@ run_test('all_and_everyone_mentions_regexp', () => {
 });
 
 run_test('move_array_elements_to_front', () => {
-    var strings = [
+    const strings = [
         'string1',
         'string3',
         'string2',
         'string4',
     ];
-    var strings_selection = [
+    const strings_selection = [
         'string4',
         'string1',
     ];
-    var strings_expected = [
+    const strings_expected = [
         'string1',
         'string4',
         'string3',
         'string2',
     ];
-    var strings_no_selection = util.move_array_elements_to_front(strings, []);
-    var strings_no_array = util.move_array_elements_to_front([], strings_selection);
-    var strings_actual = util.move_array_elements_to_front(strings, strings_selection);
-    var emails = [
+    const strings_no_selection = util.move_array_elements_to_front(strings, []);
+    const strings_no_array = util.move_array_elements_to_front([], strings_selection);
+    const strings_actual = util.move_array_elements_to_front(strings, strings_selection);
+    const emails = [
         'test@zulip.com',
         'test@test.com',
         'test@localhost',
         'test@invalid@email',
         'something@zulip.com',
     ];
-    var emails_selection = [
+    const emails_selection = [
         'test@test.com',
         'test@localhost',
         'test@invalid@email',
     ];
-    var emails_expected = [
+    const emails_expected = [
         'test@test.com',
         'test@localhost',
         'test@invalid@email',
         'test@zulip.com',
         'something@zulip.com',
     ];
-    var emails_actual = util.move_array_elements_to_front(emails, emails_selection);
-    var i;
+    const emails_actual = util.move_array_elements_to_front(emails, emails_selection);
+    let i;
     assert(strings_no_selection.length === strings.length);
     for (i = 0; i < strings_no_selection.length; i += 1) {
         assert(strings_no_selection[i] === strings[i]);

@@ -1,4 +1,4 @@
-var is_floating_recipient_bar_showing = false;
+let is_floating_recipient_bar_showing = false;
 
 function top_offset(elem) {
     return elem.offset().top - $('#tab_bar').safeOuterHeight();
@@ -11,12 +11,12 @@ exports.first_visible_message = function (bar) {
     // displayed, which will always be the first messages whose bottom
     // overlaps the floating recipient bar's space (since you ).
 
-    var messages = bar.children('.message_row');
-    var frb_bottom = exports.frb_bottom();
-    var frb_top = frb_bottom - 25;
-    var result;
+    const messages = bar.children('.message_row');
+    const frb_bottom = exports.frb_bottom();
+    const frb_top = frb_bottom - 25;
+    let result;
 
-    for (var i = 0; i < messages.length; i += 1) {
+    for (let i = 0; i < messages.length; i += 1) {
         // The details of this comparison function are sensitive, since we're
         // balancing between three possible bugs:
         //
@@ -43,9 +43,9 @@ exports.first_visible_message = function (bar) {
         // message_viewport.scrollTop() to set precise scrolling
         // positions determines the value for date_bar_height_offset.
 
-        var message = $(messages[i]);
-        var message_bottom = top_offset(message) + message.safeOuterHeight();
-        var date_bar_height_offset = 10;
+        let message = $(messages[i]);
+        const message_bottom = top_offset(message) + message.safeOuterHeight();
+        const date_bar_height_offset = 10;
 
         if (message_bottom > frb_top) {
             result = message;
@@ -74,41 +74,41 @@ exports.first_visible_message = function (bar) {
 };
 
 exports.get_date = function (elem) {
-    var message_row = exports.first_visible_message(elem);
+    const message_row = exports.first_visible_message(elem);
 
     if (!message_row || !message_row.length) {
         return;
     }
 
-    var msg_id = rows.id(message_row);
+    const msg_id = rows.id(message_row);
 
     if (msg_id === undefined) {
         return;
     }
 
-    var message = message_store.get(msg_id);
+    const message = message_store.get(msg_id);
 
     if (!message) {
         return;
     }
 
-    var time = new XDate(message.timestamp * 1000);
-    var today = new XDate();
-    var rendered_date = timerender.render_date(time, undefined, today)[0].outerHTML;
+    const time = new XDate(message.timestamp * 1000);
+    const today = new XDate();
+    const rendered_date = timerender.render_date(time, undefined, today)[0].outerHTML;
 
     return rendered_date;
 };
 
 exports.frb_bottom = function () {
-    var bar = $("#floating_recipient_bar");
-    var bar_top = top_offset(bar);
-    var bar_bottom = bar_top + bar.safeOuterHeight();
+    const bar = $("#floating_recipient_bar");
+    const bar_top = top_offset(bar);
+    const bar_bottom = bar_top + bar.safeOuterHeight();
 
     return bar_bottom;
 };
 
 exports.relevant_recipient_bars = function () {
-    var elems = [];
+    let elems = [];
 
     // This line of code does a reverse traversal
     // from the selected message, which should be
@@ -116,7 +116,7 @@ exports.relevant_recipient_bars = function () {
     // not exactly where we want.  The value we get
     // may be be too far up in the feed, but we can
     // deal with that later.
-    var first_elem = exports.candidate_recipient_bar();
+    let first_elem = exports.candidate_recipient_bar();
 
     if (!first_elem) {
         first_elem = $('.focused_table').find('.recipient_row').first();
@@ -128,8 +128,8 @@ exports.relevant_recipient_bars = function () {
 
     elems.push(first_elem);
 
-    var max_offset = top_offset($('#compose'));
-    var header_height = first_elem.find('.message_header').safeOuterHeight();
+    const max_offset = top_offset($('#compose'));
+    let header_height = first_elem.find('.message_header').safeOuterHeight();
 
     // It's okay to overestimate header_height a bit, as we don't
     // really need an FRB for a section that barely shows.
@@ -145,7 +145,7 @@ exports.relevant_recipient_bars = function () {
 
     // Now start the forward traversal of recipient bars.
     // We'll stop when we go below the fold.
-    var elem = next(first_elem);
+    let elem = next(first_elem);
 
     while (elem.length) {
 
@@ -175,9 +175,9 @@ exports.relevant_recipient_bars = function () {
         return [];
     }
 
-    var items = _.map(elems, function (elem, i) {
-        var date_html;
-        var need_frb;
+    const items = _.map(elems, function (elem, i) {
+        let date_html;
+        let need_frb;
 
         if (i === 0) {
             date_html = exports.get_date(elem);
@@ -187,12 +187,12 @@ exports.relevant_recipient_bars = function () {
             need_frb = false;
         }
 
-        var date_text = $(date_html).text();
+        const date_text = $(date_html).text();
 
         // Add title here to facilitate troubleshooting.
-        var title = elem.find('.message_label_clickable').last().attr('title');
+        const title = elem.find('.message_label_clickable').last().attr('title');
 
-        var item = {
+        const item = {
             elem: elem,
             title: title,
             date_html: date_html,
@@ -205,7 +205,7 @@ exports.relevant_recipient_bars = function () {
 
     items[0].show_date = true;
 
-    for (var i = 1; i < items.length; i += 1) {
+    for (let i = 1; i < items.length; i += 1) {
         items[i].show_date = items[i].date_text !== items[i - 1].date_text;
     }
 
@@ -230,13 +230,13 @@ exports.candidate_recipient_bar = function () {
     // bars that is still above the fold.
 
     // Start with the pointer's current location.
-    var selected_row = current_msg_list.selected_row();
+    const selected_row = current_msg_list.selected_row();
 
     if (selected_row === undefined || selected_row.length === 0) {
         return;
     }
 
-    var candidate = rows.get_message_recipient_row(selected_row);
+    let candidate = rows.get_message_recipient_row(selected_row);
     if (candidate === undefined) {
         return;
     }
@@ -260,14 +260,14 @@ function show_floating_recipient_bar() {
     }
 }
 
-var old_source;
+let old_source;
 function replace_floating_recipient_bar(source_info) {
 
-    var source_recipient_bar = source_info.elem;
+    const source_recipient_bar = source_info.elem;
 
-    var new_label;
-    var other_label;
-    var header;
+    let new_label;
+    let other_label;
+    let header;
 
     if (source_recipient_bar !== old_source) {
         if (source_recipient_bar.children(".message_header_stream").length !== 0) {
@@ -288,7 +288,7 @@ function replace_floating_recipient_bar(source_info) {
         old_source = source_recipient_bar;
     }
 
-    var rendered_date = source_info.date_html || '';
+    const rendered_date = source_info.date_html || '';
 
     $('#floating_recipient_bar').find('.recipient_row_date').html(rendered_date);
 
@@ -309,7 +309,7 @@ exports.de_clutter_dates = function (items) {
 };
 
 exports.update = function () {
-    var items = exports.relevant_recipient_bars();
+    const items = exports.relevant_recipient_bars();
 
     if (!items || items.length === 0) {
         exports.hide();

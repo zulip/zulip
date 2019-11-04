@@ -1,8 +1,8 @@
 exports.set_up = function () {
     $('body').on('click', '.settings-unmute-topic', function (e) {
-        var $row = $(this).closest("tr");
-        var stream_id = $row.attr("data-stream-id");
-        var topic = $row.attr("data-topic");
+        const $row = $(this).closest("tr");
+        const stream_id = $row.attr("data-stream-id");
+        const topic = $row.attr("data-topic");
 
         e.stopImmediatePropagation();
 

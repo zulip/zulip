@@ -2,7 +2,7 @@ $(function () {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
 
-    var password_field = $('#id_password, #id_new_password1');
+    const password_field = $('#id_password, #id_new_password1');
     if (password_field.length > 0) {
         $.validator.addMethod('password_strength', function (value) {
             return common.password_quality(value, undefined, password_field);
@@ -54,12 +54,12 @@ $(function () {
         if ($('.help-inline:not(:empty)').length === 0) {
             // Find the first input field present in the form that is
             // not hidden and disabled and store it in a variable.
-            var firstInputElement = $("input:not(:hidden, :disabled)").first();
+            const firstInputElement = $("input:not(:hidden, :disabled)").first();
             // Focus on the first input field in the form.
             common.autofocus(firstInputElement);
         } else { // If input field with errors is present.
             // Find the input field having errors and stores it in a variable.
-            var inputElementWithError = $('.help-inline:not(:empty)').first().parent().find('input');
+            const inputElementWithError = $('.help-inline:not(:empty)').first().parent().find('input');
             // Focus on the input field having errors.
             common.autofocus(inputElementWithError);
         }
@@ -96,11 +96,11 @@ $(function () {
             /* We append the location.hash to the formaction so that URL can be
             preserved after user is logged in. See this:
             https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
-            var email_formaction = $("#login_form").attr('action');
+            const email_formaction = $("#login_form").attr('action');
             $("#login_form").attr('action', email_formaction + '/' + window.location.hash);
             $(".social_login_form input[name='next']").attr('value', '/' + window.location.hash);
 
-            var sso_address = $("#sso-login").attr('href');
+            const sso_address = $("#sso-login").attr('href');
             $("#sso-login").attr('href', sso_address + window.location.hash);
         }
     }
@@ -125,8 +125,8 @@ $(function () {
         }
     });
 
-    var show_subdomain_section = function (bool) {
-        var action = bool ? "hide" : "show";
+    const show_subdomain_section = function (bool) {
+        const action = bool ? "hide" : "show";
         $("#subdomain_section")[action]();
     };
 
@@ -157,7 +157,7 @@ $(function () {
     });
 
     function check_subdomain_avilable(subdomain) {
-        var url = "/json/realm/subdomain/" + subdomain;
+        const url = "/json/realm/subdomain/" + subdomain;
         $.get(url, function (response) {
             if (response.msg !== "available") {
                 $("#id_team_subdomain_error_client").html(response.msg);
@@ -170,8 +170,8 @@ $(function () {
         if ($("#source_realm_select").length && $("#source_realm_select").find(":selected").val() !== "on") {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();
-            var avatar_url = $("#source_realm_select").find(":selected").attr('data-avatar');
-            var full_name = $("#source_realm_select").find(":selected").attr('data-full-name');
+            const avatar_url = $("#source_realm_select").find(":selected").attr('data-avatar');
+            const full_name = $("#source_realm_select").find(":selected").attr('data-full-name');
             $("#profile_full_name").text(full_name);
             $("#id_full_name").val(full_name);
             $("#profile_avatar").attr("src", avatar_url);
@@ -184,7 +184,7 @@ $(function () {
     $("#source_realm_select").change(update_full_name_section);
     update_full_name_section();
 
-    var timer;
+    let timer;
     $('#id_team_subdomain').on("keydown", function () {
         $('.team_subdomain_error_server').text('').css('display', 'none');
         $("#id_team_subdomain_error_client").css('display', 'none');

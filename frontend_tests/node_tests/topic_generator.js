@@ -8,22 +8,22 @@ zrequire('unread');
 zrequire('stream_data');
 zrequire('topic_data');
 zrequire('stream_sort');
-var tg = zrequire('topic_generator');
+const tg = zrequire('topic_generator');
 
 function is_even(i) { return i % 2 === 0; }
 function is_odd(i) { return i % 2 === 1; }
 
 run_test('basics', () => {
-    var gen = tg.list_generator([10, 20, 30]);
+    let gen = tg.list_generator([10, 20, 30]);
     assert.equal(gen.next(), 10);
     assert.equal(gen.next(), 20);
     assert.equal(gen.next(), 30);
     assert.equal(gen.next(), undefined);
     assert.equal(gen.next(), undefined);
 
-    var gen1 = tg.list_generator([100, 200]);
-    var gen2 = tg.list_generator([300, 400]);
-    var outers = [gen1, gen2];
+    const gen1 = tg.list_generator([100, 200]);
+    const gen2 = tg.list_generator([300, 400]);
+    const outers = [gen1, gen2];
     gen = tg.chain(outers);
     assert.equal(gen.next(), 100);
     assert.equal(gen.next(), 200);
@@ -59,7 +59,7 @@ run_test('basics', () => {
     gen = tg.wrap([], 42);
     assert.equal(gen.next(), undefined);
 
-    var ints = tg.list_generator([1, 2, 3, 4, 5]);
+    let ints = tg.list_generator([1, 2, 3, 4, 5]);
     gen = tg.filter(ints, is_even);
     assert.equal(gen.next(), 2);
     assert.equal(gen.next(), 4);
@@ -81,7 +81,7 @@ run_test('basics', () => {
 });
 
 run_test('reverse', () => {
-    var gen = tg.reverse_list_generator([10, 20, 30]);
+    let gen = tg.reverse_list_generator([10, 20, 30]);
     assert.equal(gen.next(), 30);
     assert.equal(gen.next(), 20);
     assert.equal(gen.next(), 10);
@@ -142,8 +142,8 @@ run_test('reverse', () => {
 });
 
 run_test('fchain', () => {
-    var mults = function (n) {
-        var ret = 0;
+    const mults = function (n) {
+        let ret = 0;
         return {
             next: function () {
                 ret += n;
@@ -152,8 +152,8 @@ run_test('fchain', () => {
         };
     };
 
-    var ints = tg.list_generator([29, 43]);
-    var gen = tg.fchain(ints, mults);
+    let ints = tg.list_generator([29, 43]);
+    let gen = tg.fchain(ints, mults);
     assert.equal(gen.next(), 29);
     assert.equal(gen.next(), 58);
     assert.equal(gen.next(), 87);
@@ -173,7 +173,7 @@ run_test('fchain', () => {
     assert.equal(gen.next(), undefined);
     assert.equal(gen.next(), undefined);
 
-    var undef = function () {
+    const undef = function () {
         return;
     };
 
@@ -187,7 +187,7 @@ run_test('fchain', () => {
 
 run_test('streams', () => {
     function assert_next_stream(curr_stream, expected) {
-        var actual = tg.get_next_stream(curr_stream);
+        const actual = tg.get_next_stream(curr_stream);
         assert.equal(actual, expected);
     }
 
@@ -202,7 +202,7 @@ run_test('streams', () => {
     assert_next_stream('test here', 'announce');
 
     function assert_prev_stream(curr_stream, expected) {
-        var actual = tg.get_prev_stream(curr_stream);
+        const actual = tg.get_prev_stream(curr_stream);
         assert.equal(actual, expected);
     }
 
@@ -213,8 +213,8 @@ run_test('streams', () => {
 });
 
 run_test('topics', () => {
-    var streams = [1, 2, 3, 4];
-    var topics = {};
+    const streams = [1, 2, 3, 4];
+    const topics = {};
 
     topics[1] = ['read', 'read', '1a', '1b', 'read', '1c'];
     topics[2] = [];
@@ -259,10 +259,10 @@ run_test('topics', () => {
         return ['announce', 'muted', 'devel', 'test here'];
     };
 
-    var muted_stream_id = 400;
-    var devel_stream_id = 401;
+    const muted_stream_id = 400;
+    const devel_stream_id = 401;
 
-    var stream_id_dct = {
+    const stream_id_dct = {
         muted: muted_stream_id,
         devel: devel_stream_id,
     };
@@ -294,7 +294,7 @@ run_test('topics', () => {
         return topic === 'muted';
     };
 
-    var next_item = tg.get_next_topic('announce', 'whatever');
+    let next_item = tg.get_next_topic('announce', 'whatever');
     assert.deepEqual(next_item, {
         stream: 'devel',
         topic: 'python',

@@ -1,4 +1,4 @@
-var render_widgets_zform_choices = require('../templates/widgets/zform_choices.hbs');
+const render_widgets_zform_choices = require('../templates/widgets/zform_choices.hbs');
 
 exports.validate_extra_data = function (data) {
     function check(data) {
@@ -33,7 +33,7 @@ exports.validate_extra_data = function (data) {
     }
 
 
-    var msg = check(data);
+    const msg = check(data);
 
     if (msg) {
         blueslip.warn(msg);
@@ -44,10 +44,10 @@ exports.validate_extra_data = function (data) {
 };
 
 exports.activate = function (opts) {
-    var self = {};
+    const self = {};
 
-    var outer_elem = opts.elem;
-    var data = opts.extra_data;
+    const outer_elem = opts.elem;
+    const data = opts.extra_data;
 
     if (!exports.validate_extra_data(data)) {
         // callee will log reason we fail
@@ -62,18 +62,18 @@ exports.activate = function (opts) {
             choice.idx = idx;
         });
 
-        var html = render_widgets_zform_choices(data);
-        var elem = $(html);
+        const html = render_widgets_zform_choices(data);
+        const elem = $(html);
 
         elem.find('button').on('click', function (e) {
             e.stopPropagation();
 
             // Grab our index from the markup.
-            var idx = $(e.target).attr('data-idx');
+            const idx = $(e.target).attr('data-idx');
 
             // Use the index from the markup to dereference our
             // data structure.
-            var reply_content = data.choices[idx].reply;
+            const reply_content = data.choices[idx].reply;
 
             transmit.reply_message({
                 message: opts.message,
@@ -85,7 +85,7 @@ exports.activate = function (opts) {
     }
 
     function render() {
-        var rendered_widget;
+        let rendered_widget;
 
         if (data.type === 'choices') {
             rendered_widget = make_choices(data);

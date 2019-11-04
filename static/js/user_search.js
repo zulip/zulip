@@ -1,12 +1,12 @@
-var user_search = function (opts) {
+const user_search = function (opts) {
     // This is mostly view code to manage the user search widget
     // above the buddy list.  We rely on other code to manage the
     // details of populating the list when we change.
 
-    var self = {};
+    const self = {};
 
-    var $widget = $('#user_search_section').expectOne();
-    var $input = $('.user-list-filter').expectOne();
+    const $widget = $('#user_search_section').expectOne();
+    const $input = $('.user-list-filter').expectOne();
 
     self.input_field = function () {
         return $input;
@@ -75,7 +75,7 @@ var user_search = function (opts) {
     };
 
     self.expand_column = function () {
-        var column = $input.closest(".app-main [class^='column-']");
+        const column = $input.closest(".app-main [class^='column-']");
         if (!column.hasClass("expanded")) {
             popovers.hide_all();
             if (column.hasClass('column-left')) {

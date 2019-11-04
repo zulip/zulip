@@ -1,7 +1,7 @@
-var Dict = require('./dict').Dict;
+const Dict = require('./dict').Dict;
 
-var load_func_dict = new Dict(); // group -> function
-var is_loaded = new Dict(); // group -> bool
+const load_func_dict = new Dict(); // group -> function
+const is_loaded = new Dict(); // group -> bool
 
 exports.get_group = function (section) {
     // Sometimes several sections all share the same code.
@@ -46,7 +46,7 @@ exports.initialize = function () {
 };
 
 exports.load_settings_section = function (section) {
-    var group = exports.get_group(section);
+    const group = exports.get_group(section);
 
     if (!load_func_dict.has(group)) {
         blueslip.error('Unknown section ' + section);
@@ -59,7 +59,7 @@ exports.load_settings_section = function (section) {
         return;
     }
 
-    var load_func = load_func_dict.get(group);
+    const load_func = load_func_dict.get(group);
 
     // Do the real work here!
     load_func();

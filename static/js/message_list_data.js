@@ -8,7 +8,7 @@ function MessageListData(opts) {
     this._local_only = {};
     this._selected_id = -1;
 
-    var filter = opts.filter;
+    let filter = opts.filter;
     if (filter === undefined) {
         filter = new Filter();
     }
@@ -41,9 +41,9 @@ MessageListData.prototype = {
         if (this._selected_id === -1) {
             return;
         }
-        var ids = _.pluck(this._items, 'id');
+        const ids = _.pluck(this._items, 'id');
 
-        var i = ids.indexOf(this._selected_id);
+        const i = ids.indexOf(this._selected_id);
         if (i === -1) {
             return;
         }
@@ -51,7 +51,7 @@ MessageListData.prototype = {
     },
 
     prev: function () {
-        var i = this.select_idx();
+        const i = this.select_idx();
 
         if (i === undefined) {
             return;
@@ -65,7 +65,7 @@ MessageListData.prototype = {
     },
 
     next: function () {
-        var i = this.select_idx();
+        const i = this.select_idx();
 
         if (i === undefined) {
             return;
@@ -83,19 +83,19 @@ MessageListData.prototype = {
             return false;
         }
 
-        var n = this._items.length;
+        const n = this._items.length;
 
         if (n === 0) {
             return false;
         }
 
-        var last_msg = this._items[n - 1];
+        const last_msg = this._items[n - 1];
 
         return last_msg.id === this._selected_id;
     },
 
     nth_most_recent_id: function (n) {
-        var i = this._items.length - n;
+        const i = this._items.length - n;
         if (i < 0) {
             return -1;
         }
@@ -154,15 +154,15 @@ MessageListData.prototype = {
     },
 
     valid_non_duplicated_messages: function (messages) {
-        var predicate = this._get_predicate();
-        var self = this;
+        const predicate = this._get_predicate();
+        const self = this;
         return _.filter(messages, function (msg) {
             return self.get(msg.id) === undefined && predicate(msg);
         });
     },
 
     filter_incoming: function (messages) {
-        var predicate = this._get_predicate();
+        const predicate = this._get_predicate();
         return _.filter(messages, predicate);
     },
 
@@ -181,7 +181,7 @@ MessageListData.prototype = {
     },
 
     first_unread_message_id: function () {
-        var first_unread = _.find(this._items, function (message) {
+        const first_unread = _.find(this._items, function (message) {
             return unread.message_unread(message);
         });
 
@@ -223,15 +223,15 @@ MessageListData.prototype = {
     },
 
     add_messages: function (messages) {
-        var self = this;
-        var top_messages = [];
-        var bottom_messages = [];
-        var interior_messages = [];
+        const self = this;
+        let top_messages = [];
+        let bottom_messages = [];
+        let interior_messages = [];
 
         // If we're initially populating the list, save the messages in
         // bottom_messages regardless
         if (self.selected_id() === -1 && self.empty()) {
-            var narrow_messages = self.filter_incoming(messages);
+            const narrow_messages = self.filter_incoming(messages);
             bottom_messages = _.reject(narrow_messages, function (msg) {
                 return self.get(msg.id);
             });
@@ -268,7 +268,7 @@ MessageListData.prototype = {
             bottom_messages = self.append(bottom_messages);
         }
 
-        var info = {
+        const info = {
             top_messages: top_messages,
             bottom_messages: bottom_messages,
             interior_messages: interior_messages,
@@ -282,7 +282,7 @@ MessageListData.prototype = {
         // This should be used internally when we have
         // "interior" messages to add and can't optimize
         // things by only doing prepend or only doing append.
-        var viewable_messages;
+        let viewable_messages;
         if (this.muting_enabled) {
             this._all_items = messages.concat(this._all_items);
             this._all_items.sort(function (a, b) {return a.id - b.id;});
@@ -302,7 +302,7 @@ MessageListData.prototype = {
 
     append: function (messages) {
         // Caller should have already filtered
-        var viewable_messages;
+        let viewable_messages;
         if (this.muting_enabled) {
             this._all_items = this._all_items.concat(messages);
             viewable_messages = this.unmuted_messages(messages);
@@ -316,7 +316,7 @@ MessageListData.prototype = {
 
     prepend: function (messages) {
         // Caller should have already filtered
-        var viewable_messages;
+        let viewable_messages;
         if (this.muting_enabled) {
             this._all_items = messages.concat(this._all_items);
             viewable_messages = this.unmuted_messages(messages);
@@ -329,16 +329,16 @@ MessageListData.prototype = {
     },
 
     remove: function (messages) {
-        var self = this;
+        const self = this;
         _.each(messages, function (message) {
-            var stored_message = self._hash[message.id];
+            const stored_message = self._hash[message.id];
             if (stored_message !== undefined) {
                 delete self._hash[stored_message];
             }
             delete self._local_only[message.id];
         });
 
-        var msg_ids_to_remove = {};
+        const msg_ids_to_remove = {};
         _.each(messages, function (message) {
             msg_ids_to_remove[message.id] = true;
         });
@@ -358,8 +358,8 @@ MessageListData.prototype = {
             blueslip.error("message_range given a start of -1");
         }
 
-        var start_idx = this._lower_bound(start);
-        var end_idx   = this._lower_bound(end);
+        const start_idx = this._lower_bound(start);
+        const end_idx   = this._lower_bound(end);
         return this._items.slice(start_idx, end_idx + 1);
     },
 
@@ -368,16 +368,16 @@ MessageListData.prototype = {
     // This takes into account the potentially-unsorted
     // nature of local message IDs in the message list
     _lower_bound: function (id) {
-        var self = this;
+        const self = this;
         function less_func(msg, ref_id, a_idx) {
             if (self._is_localonly_id(msg.id)) {
                 // First non-local message before this one
-                var effective = self._next_nonlocal_message(self._items, a_idx,
-                                                            function (idx) { return idx - 1; });
+                const effective = self._next_nonlocal_message(self._items, a_idx,
+                                                              function (idx) { return idx - 1; });
                 if (effective) {
                     // Turn the 10.02 in [11, 10.02, 12] into 11.02
-                    var decimal = parseFloat((msg.id % 1).toFixed(0.02));
-                    var effective_id = effective.id + decimal;
+                    const decimal = parseFloat((msg.id % 1).toFixed(0.02));
+                    const effective_id = effective.id + decimal;
                     return effective_id < ref_id;
                 }
             }
@@ -395,19 +395,19 @@ MessageListData.prototype = {
             return id;
         }
 
-        var items = this._items;
+        const items = this._items;
 
         if (items.length === 0) {
             return -1;
         }
 
-        var closest = this._lower_bound(id);
+        let closest = this._lower_bound(id);
 
         if (closest < items.length && id === items[closest].id) {
             return items[closest].id;
         }
 
-        var potential_closest_matches = [];
+        const potential_closest_matches = [];
         if (closest > 0 && this._is_localonly_id(items[closest - 1].id)) {
             // Since we treated all blocks of local ids as their left-most-non-local message
             // for lower_bound purposes, find the real leftmost index (first non-local id)
@@ -424,20 +424,20 @@ MessageListData.prototype = {
             // Any of the ids that we skipped over (due to them being local-only) might be the
             // closest ID to the desired one, in case there is no exact match.
             potential_closest_matches.unshift(_.last(potential_closest_matches) - 1);
-            var best_match = items[closest].id;
+            let best_match = items[closest].id;
 
             _.each(potential_closest_matches, function (potential_idx) {
                 if (potential_idx < 0) {
                     return;
                 }
-                var item = items[potential_idx];
+                const item = items[potential_idx];
 
                 if (item === undefined) {
                     blueslip.warn('Invalid potential_idx: ' + potential_idx);
                     return;
                 }
 
-                var potential_match = item.id;
+                const potential_match = item.id;
                 // If the potential id is the closest to the requested, save that one
                 if (Math.abs(id - potential_match) < Math.abs(best_match - id)) {
                     best_match = potential_match;
@@ -453,17 +453,17 @@ MessageListData.prototype = {
         // pointer while the next message's id is in msg_ids.  See trac #1555
         // for more context, but basically we are skipping over contiguous
         // messages that we have recently visited.
-        var next_msg_id = 0;
+        let next_msg_id = 0;
 
-        var id_set = {};
+        const id_set = {};
 
         _.each(msg_ids, function (msg_id) {
             id_set[msg_id] = true;
         });
 
-        var idx = this.selected_idx() + 1;
+        let idx = this.selected_idx() + 1;
         while (idx < this._items.length) {
-            var msg_id = this._items[idx].id;
+            const msg_id = this._items[idx].id;
             if (!id_set[msg_id]) {
                 break;
             }
@@ -477,9 +477,9 @@ MessageListData.prototype = {
     },
 
     _add_to_hash: function (messages) {
-        var self = this;
+        const self = this;
         messages.forEach(function (elem) {
-            var id = parseFloat(elem.id);
+            const id = parseFloat(elem.id);
             if (isNaN(id)) {
                 blueslip.fatal("Bad message id");
             }
@@ -499,7 +499,7 @@ MessageListData.prototype = {
     },
 
     _next_nonlocal_message: function (item_list, start_index, op) {
-        var cur_idx = start_index;
+        let cur_idx = start_index;
         do {
             cur_idx = op(cur_idx);
         } while (item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
@@ -511,7 +511,7 @@ MessageListData.prototype = {
         function message_sort_func(a, b) {return a.id - b.id;}
 
         if (this._hash.hasOwnProperty(old_id)) {
-            var msg = this._hash[old_id];
+            const msg = this._hash[old_id];
             delete this._hash[old_id];
             this._hash[new_id] = msg;
         } else {
@@ -530,10 +530,10 @@ MessageListData.prototype = {
         }
 
         // If this message is now out of order, re-order and re-render
-        var self = this;
+        const self = this;
         setTimeout(function () {
-            var current_message = self._hash[new_id];
-            var index = self._items.indexOf(current_message);
+            const current_message = self._hash[new_id];
+            const index = self._items.indexOf(current_message);
 
             if (index === -1) {
                 if (!self.muting_enabled && opts.is_current_list()) {
@@ -542,10 +542,10 @@ MessageListData.prototype = {
                 return;
             }
 
-            var next = self._next_nonlocal_message(self._items, index,
-                                                   function (idx) { return idx + 1; });
-            var prev = self._next_nonlocal_message(self._items, index,
-                                                   function (idx) { return idx - 1; });
+            const next = self._next_nonlocal_message(self._items, index,
+                                                     function (idx) { return idx + 1; });
+            const prev = self._next_nonlocal_message(self._items, index,
+                                                     function (idx) { return idx - 1; });
 
             if (next !== undefined && current_message.id > next.id ||
                 prev !== undefined && current_message.id < prev.id) {
@@ -561,11 +561,11 @@ MessageListData.prototype = {
     },
 
     get_last_message_sent_by_me: function () {
-        var msg_index = _.findLastIndex(this._items, {sender_id: page_params.user_id});
+        const msg_index = _.findLastIndex(this._items, {sender_id: page_params.user_id});
         if (msg_index === -1) {
             return;
         }
-        var msg = this._items[msg_index];
+        const msg = this._items[msg_index];
         return msg;
     },
 };

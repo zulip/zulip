@@ -1,27 +1,27 @@
 zrequire('util');
-var rs = zrequire('recent_senders');
+const rs = zrequire('recent_senders');
 
 run_test('process_message_for_senders', () => {
-    var stream1 = 1;
-    var stream2 = 2;
-    var stream3 = 3;
+    const stream1 = 1;
+    const stream2 = 2;
+    const stream3 = 3;
 
-    var topic1 = "topic-1";
-    var topic2 = "topic-2";
-    var topic3 = "topic-3";
+    const topic1 = "topic-1";
+    const topic2 = "topic-2";
+    const topic3 = "topic-3";
 
-    var sender1 = 1;
-    var sender2 = 2;
-    var sender3 = 3;
+    const sender1 = 1;
+    const sender2 = 2;
+    const sender3 = 3;
 
     // New stream
-    var message1 = {
+    const message1 = {
         stream_id: stream1,
         id: _.uniqueId(),
         topic: topic1,
         sender_id: sender1,
     };
-    var message2 = {
+    const message2 = {
         stream_id: stream2,
         id: _.uniqueId(),
         topic: topic1,
@@ -44,7 +44,7 @@ run_test('process_message_for_senders', () => {
         true);
 
     // New topic
-    var message3 = {
+    const message3 = {
         stream_id: stream1,
         id: _.uniqueId(),
         topic: topic2,
@@ -56,7 +56,7 @@ run_test('process_message_for_senders', () => {
         true);
 
     // New sender
-    var message4 = {
+    const message4 = {
         stream_id: stream1,
         id: _.uniqueId(),
         topic: topic1,
@@ -68,7 +68,7 @@ run_test('process_message_for_senders', () => {
         true);
 
     // More recent message
-    var message5 = {
+    const message5 = {
         stream_id: stream1,
         id: _.uniqueId(),
         topic: topic1,
@@ -80,19 +80,19 @@ run_test('process_message_for_senders', () => {
         true);
 
     // Same stream, but different topics
-    var message6 = {
+    const message6 = {
         stream_id: stream3,
         id: _.uniqueId(),
         topic: topic1,
         sender_id: sender1,
     };
-    var message7 = {
+    const message7 = {
         stream_id: stream3,
         id: _.uniqueId(),
         topic: topic2,
         sender_id: sender2,
     };
-    var message8 = {
+    const message8 = {
         stream_id: stream3,
         id: _.uniqueId(),
         topic: topic3,

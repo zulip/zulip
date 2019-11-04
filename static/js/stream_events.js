@@ -3,13 +3,13 @@
 // doing so is unnecessary with the current code.  Ideally, we'd do a
 // refactor to address that, however.
 function update_stream_setting(sub, value, setting) {
-    var setting_checkbox = $("#" + setting + "_" + sub.stream_id);
+    const setting_checkbox = $("#" + setting + "_" + sub.stream_id);
     setting_checkbox.prop("checked", value);
     sub[setting] = value;
 }
 
 exports.update_property = function (stream_id, property, value, other_values) {
-    var sub = stream_data.get_sub_by_id(stream_id);
+    const sub = stream_data.get_sub_by_id(stream_id);
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
         blueslip.warn("Update for an unknown subscription", {stream_id: stream_id,
@@ -128,7 +128,7 @@ exports.mark_unsubscribed = function (sub) {
 };
 
 exports.remove_deactivated_user_from_all_streams = function (user_id) {
-    var all_subs = stream_data.get_unsorted_subs();
+    const all_subs = stream_data.get_unsorted_subs();
 
     _.each(all_subs, function (sub) {
         if (stream_data.is_user_subscribed(sub.name, user_id)) {

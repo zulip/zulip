@@ -46,7 +46,7 @@ run_test('basics', () => {
 
     // Next, look at how several functions correctly simulate setting
     // and getting for you.
-    var widget = $('#my-widget');
+    const widget = $('#my-widget');
 
     widget.attr('data-employee-id', 42);
     assert.equal(widget.attr('data-employee-id'), 42);
@@ -76,7 +76,7 @@ run_test('finding_related_objects', () => {
     // But you can set up your tests to simulate DOM relationships.
     //
     // We will use set_find_results(), which is a special zjquery helper.
-    var emoji = $('<div class="emoji">');
+    const emoji = $('<div class="emoji">');
     $('#my-message').set_find_results('.emoji', emoji);
 
     // And then calling the function produces the desired effect:
@@ -91,8 +91,8 @@ run_test('finding_related_objects', () => {
     Here is another example.
     */
 
-    var my_parents = $('#folder1,#folder4');
-    var elem = $('#folder555');
+    const my_parents = $('#folder1,#folder4');
+    const elem = $('#folder555');
 
     elem.set_parents_result('.folder', my_parents);
     elem.parents('.folder').addClass('active');
@@ -103,7 +103,7 @@ run_test('finding_related_objects', () => {
 run_test('clicks', () => {
     // We can support basic handlers like click and keydown.
 
-    var state = {};
+    const state = {};
 
     function set_up_click_handlers() {
         $('#widget1').click(function () {
@@ -135,7 +135,7 @@ run_test('events', () => {
     // functions that are hard for naive test code to cover.  zjquery
     // will come to our rescue.
 
-    var value;
+    let value;
 
     function initialize_handler() {
         $('#my-parent').on('click', '.button-red', function (e) {
@@ -155,10 +155,10 @@ run_test('events', () => {
 
     // We want to call the inner function, so first let's get it using the
     // get_on_handler() helper from zjquery.
-    var red_handler_func = $('#my-parent').get_on_handler('click', '.button-red');
+    const red_handler_func = $('#my-parent').get_on_handler('click', '.button-red');
 
     // Set up a stub event so that stopPropagation doesn't explode on us.
-    var stub_event = {
+    const stub_event = {
         stopPropagation: function () {},
     };
 
@@ -169,7 +169,7 @@ run_test('events', () => {
     assert.equal(value, 'red');
 
     // Test we can have multiple click handlers in the parent.
-    var blue_handler_func = $('#my-parent').get_on_handler('click', '.button-blue');
+    const blue_handler_func = $('#my-parent').get_on_handler('click', '.button-blue');
     blue_handler_func(stub_event);
     assert.equal(value, 'blue');
 });
@@ -178,8 +178,8 @@ run_test('create', () => {
     // You can create jQuery objects that aren't tied to any particular
     // selector, and which just have a name.
 
-    var obj1 = $.create('the table holding employees');
-    var obj2 = $.create('the collection of rows in the table');
+    const obj1 = $.create('the table holding employees');
+    const obj2 = $.create('the collection of rows in the table');
 
     obj1.show();
     assert(obj1.visible());
@@ -200,7 +200,7 @@ run_test('extensions', () => {
     // the predominant Zulip testing style is to stub objects
     // using direct syntax:
 
-    var rect = $.create('rectangle');
+    const rect = $.create('rectangle');
     rect.width = () => { return 5; };
     rect.height = () => { return 7; };
 
@@ -212,10 +212,10 @@ run_test('extensions', () => {
 });
 
 run_test('closest', () => {
-    var widget = $('#my-widget');
-    var parent;
-    var parentSelector;
-    var closest;
+    const widget = $('#my-widget');
+    let parent;
+    let parentSelector;
+    let closest;
 
     parentSelector = '#my-parent';
     parent = $(parentSelector);

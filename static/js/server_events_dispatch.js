@@ -1,5 +1,5 @@
 exports.dispatch_normal_event = function dispatch_normal_event(event) {
-    var noop = function () {};
+    const noop = function () {};
     switch (event.type) {
     case 'alert_words':
         alert_words.set_words(event.alert_words);
@@ -22,7 +22,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'delete_message': {
-        var msg_id = event.message_id;
+        const msg_id = event.message_id;
         // message is passed to unread.get_unread_messages,
         // which returns all the unread messages out of a given list.
         // So double marking something as read would not occur
@@ -60,7 +60,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'restart': {
-        var reload_options = {
+        const reload_options = {
             save_pointer: true,
             save_narrow: true,
             save_compose: true,
@@ -82,12 +82,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'realm': {
-        var realm_settings = {
+        const realm_settings = {
             add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
             allow_edit_history: noop,
             allow_message_deleting: noop,
             allow_message_editing: noop,
             allow_community_topic_editing: noop,
+            user_group_edit_policy: noop,
             avatar_changes_disabled: settings_account.update_avatar_change_display,
             bot_creation_policy: settings_bots.update_bot_permissions_ui,
             create_stream_policy: noop,
@@ -169,7 +170,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.realm_icon_source = event.data.icon_source;
             realm_icon.rerender();
 
-            var electron_bridge = window.electron_bridge;
+            const electron_bridge = window.electron_bridge;
             if (electron_bridge !== undefined) {
                 electron_bridge.send_event('realm_icon_url', event.data.icon_url);
             }
@@ -225,7 +226,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'realm_domains': {
-        var i;
+        let i;
         if (event.op === 'add') {
             page_params.realm_domains.push(event.realm_domain);
         } else if (event.op === 'change') {
@@ -274,13 +275,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         } else if (event.op === 'create') {
             stream_data.create_streams(event.streams);
             _.each(event.streams, function (stream) {
-                var sub = stream_data.get_sub_by_id(stream.stream_id);
+                const sub = stream_data.get_sub_by_id(stream.stream_id);
                 stream_data.update_calculated_fields(sub);
                 subs.add_sub_to_table(sub);
             });
         } else if (event.op === 'delete') {
             _.each(event.streams, function (stream) {
-                var was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
+                const was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
                 subs.remove_stream(stream.stream_id);
                 stream_data.delete_sub(stream.stream_id);
                 if (was_subscribed) {
@@ -308,7 +309,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         // The fields in the event don't quite exactly
         // match the layout of a submessage, since there's
         // an event id.  We also want to be explicit here.
-        var submsg = {
+        const submsg = {
             id: event.submessage_id,
             sender_id: event.sender_id,
             msg_type: event.msg_type,
@@ -322,7 +323,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'subscription':
         if (event.op === 'add') {
             _.each(event.subscriptions, function (rec) {
-                var sub = stream_data.get_sub_by_id(rec.stream_id);
+                const sub = stream_data.get_sub_by_id(rec.stream_id);
                 if (sub) {
                     stream_data.update_stream_email_address(sub, rec.email_address);
                     stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
@@ -348,7 +349,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             });
         } else if (event.op === 'remove') {
             _.each(event.subscriptions, function (rec) {
-                var sub = stream_data.get_sub_by_id(rec.stream_id);
+                const sub = stream_data.get_sub_by_id(rec.stream_id);
                 stream_events.mark_unsubscribed(sub);
             });
         } else if (event.op === 'update') {
@@ -375,7 +376,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'update_display_settings': {
-        var user_display_settings = [
+        const user_display_settings = [
             'default_language',
             'demote_inactive_streams',
             'dense_mode',
@@ -464,7 +465,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'update_message_flags': {
-        var new_value = event.operation === "add";
+        const new_value = event.operation === "add";
         switch (event.flag) {
         case 'starred':
             _.each(event.messages, function (message_id) {

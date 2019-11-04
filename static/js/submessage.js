@@ -15,7 +15,7 @@ exports.get_message_events = function (message) {
         return parseInt(m1.id, 10) - parseInt(m2.id, 10);
     });
 
-    var events = _.map(message.submessages, function (obj) {
+    const events = _.map(message.submessages, function (obj) {
         return {
             sender_id: obj.sender_id,
             data: JSON.parse(obj.content),
@@ -36,36 +36,36 @@ exports.process_submessages = function (in_opts) {
 };
 
 exports.do_process_submessages = function (in_opts) {
-    var message_id = in_opts.message_id;
-    var message = message_store.get(message_id);
+    const message_id = in_opts.message_id;
+    const message = message_store.get(message_id);
 
     if (!message) {
         return;
     }
 
-    var events = exports.get_message_events(message);
+    const events = exports.get_message_events(message);
 
     if (!events) {
         return;
     }
 
-    var row = in_opts.row;
+    const row = in_opts.row;
 
     // Right now, our only use of submessages is widgets.
 
-    var data = events[0].data;
+    const data = events[0].data;
 
     if (data === undefined) {
         return;
     }
 
-    var widget_type = data.widget_type;
+    const widget_type = data.widget_type;
 
     if (widget_type === undefined) {
         return;
     }
 
-    var post_to_server = exports.make_server_callback(message_id);
+    const post_to_server = exports.make_server_callback(message_id);
 
     widgetize.activate({
         widget_type: widget_type,
@@ -78,7 +78,7 @@ exports.do_process_submessages = function (in_opts) {
 };
 
 exports.update_message = function (submsg) {
-    var message = message_store.get(submsg.message_id);
+    const message = message_store.get(submsg.message_id);
 
     if (message === undefined) {
         // This is generally not a problem--the server
@@ -88,7 +88,7 @@ exports.update_message = function (submsg) {
         return;
     }
 
-    var existing = _.find(message.submessages, function (sm) {
+    const existing = _.find(message.submessages, function (sm) {
         return sm.id === submsg.id;
     });
 
@@ -111,14 +111,14 @@ exports.handle_event = function (submsg) {
     exports.update_message(submsg);
 
     // Right now, our only use of submessages is widgets.
-    var msg_type = submsg.msg_type;
+    const msg_type = submsg.msg_type;
 
     if (msg_type !== 'widget') {
         blueslip.warn('unknown msg_type: ' + msg_type);
         return;
     }
 
-    var data;
+    let data;
 
     try {
         data = JSON.parse(submsg.content);
@@ -136,7 +136,7 @@ exports.handle_event = function (submsg) {
 
 exports.make_server_callback = function (message_id) {
     return function (opts) {
-        var url = '/json/submessage';
+        const url = '/json/submessage';
 
         channel.post({
             url: url,

@@ -52,7 +52,7 @@ set_global('message_live_update', {
 
 set_global('blueslip', global.make_zblueslip());
 
-var me = {
+const me = {
     email: 'me@example.com',
     user_id: 30,
     full_name: 'Me Myself',
@@ -68,9 +68,9 @@ function initialize() {
 initialize();
 
 run_test('updates', () => {
-    var person;
+    let person;
 
-    var isaac = {
+    const isaac = {
         email: 'isaac@example.com',
         user_id: 32,
         full_name: 'Isaac Newton',
@@ -89,8 +89,8 @@ run_test('updates', () => {
     assert.equal(person.full_name, 'Isaac Newton');
     assert.equal(person.is_admin, true);
 
-    var user_id;
-    var full_name;
+    let user_id;
+    let full_name;
     global.message_live_update.update_user_full_name = function (user_id_arg, full_name_arg) {
         user_id = user_id_arg;
         full_name = full_name_arg;
@@ -121,7 +121,7 @@ run_test('updates', () => {
     assert.equal(person.email, 'meforu@example.com');
     assert.equal(person.full_name, 'Me V2');
 
-    var avatar_url;
+    let avatar_url;
     global.message_live_update.update_avatar = function (user_id_arg, avatar_url_arg) {
         user_id = user_id_arg;
         avatar_url = avatar_url_arg;
@@ -162,7 +162,7 @@ run_test('updates', () => {
     assert.equal(person.profile_data[3].value, 'Value');
     assert.equal(person.profile_data[3].rendered_value, '<p>Value</p>');
 
-    var updated = false;
+    let updated = false;
     settings_account.update_email = (email) => {
         assert.equal(email, 'you@example.org');
         updated = true;
@@ -171,7 +171,7 @@ run_test('updates', () => {
     user_events.update_person({user_id: me.user_id, delivery_email: 'you@example.org'});
     assert(updated);
 
-    var test_bot = {
+    const test_bot = {
         email: 'test-bot@example.com',
         user_id: 35,
         full_name: 'Test Bot',

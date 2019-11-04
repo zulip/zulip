@@ -1,6 +1,6 @@
 // This function subscribes the newly created bot to the stream specified by the user.
 function subscribe_to_stream(bot_email, stream_name) {
-    var bot_user_id = people.get_user_id(bot_email);
+    const bot_user_id = people.get_user_id(bot_email);
     stream_data.add_subscriber(stream_name, bot_user_id);
 }
 
@@ -8,7 +8,7 @@ function subscribe_to_stream(bot_email, stream_name) {
 // to use for incoming webhook services.
 function put_key_values_in_url(api_url, integration_url,
                                bot_api_key, stream_name) {
-    var integration_bot_url = api_url + integration_url +
+    const integration_bot_url = api_url + integration_url +
                               "?api_key=" + bot_api_key +
                               "&stream=" + stream_name;
     return integration_bot_url;
@@ -22,24 +22,24 @@ function get_url_span() {
 }
 
 function update_integration_bot_url(integration_bot_url) {
-    var url_span = get_url_span();
+    const url_span = get_url_span();
     url_span.text(integration_bot_url);
 }
 
 // This is the function that runs after the bot is created successfully.
 function on_create_bot_success(result, stream_name, api_url, integration_url) {
-    var bot_api_key = result.api_key;
-    var bot_email = result.email;
+    const bot_api_key = result.api_key;
+    const bot_email = result.email;
 
     subscribe_to_stream(bot_email, stream_name);
-    var integration_bot_url = put_key_values_in_url(api_url, integration_url,
-                                                    bot_api_key, stream_name);
+    const integration_bot_url = put_key_values_in_url(api_url, integration_url,
+                                                      bot_api_key, stream_name);
     update_integration_bot_url(integration_bot_url);
 }
 
 function create_bot(full_name, short_name, bot_avatar_file, stream_name,
                     api_url, integration_url, on_success) {
-    var formData = new FormData();
+    const formData = new FormData();
     formData.append('csrfmiddlewaretoken', csrf_token);
     formData.append('full_name', full_name);
     formData.append('short_name', short_name);
@@ -51,7 +51,7 @@ function create_bot(full_name, short_name, bot_avatar_file, stream_name,
         processData: false,
         contentType: false,
         success: function (resp, statusText, xhr) {
-            var result = JSON.parse(xhr.responseText);
+            const result = JSON.parse(xhr.responseText);
             on_success(result, stream_name, api_url, integration_url);
         },
         error: function (xhr) {

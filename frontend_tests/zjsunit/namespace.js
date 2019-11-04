@@ -1,8 +1,8 @@
-var _ = require('underscore/underscore.js');
+const _ = require('underscore/underscore.js');
 
-var dependencies = [];
-var requires = [];
-var old_builtins = {};
+let dependencies = [];
+const requires = [];
+let old_builtins = {};
 
 exports.set_global = function (name, val) {
     global[name] = val;
@@ -24,7 +24,7 @@ exports.zrequire = function (name, fn) {
         fn = '../../static/' + fn;
     }
     delete require.cache[require.resolve(fn)];
-    var obj = require(fn);
+    const obj = require(fn);
     requires.push(fn);
     set_global(name, obj);
     return obj;
@@ -60,12 +60,12 @@ exports.with_overrides = function (test_function) {
     // This function calls test_function() and passes in
     // a way to override the namespace temporarily.
 
-    var clobber_callbacks = [];
+    const clobber_callbacks = [];
 
-    var override = function (name, f) {
-        var parts = name.split('.');
-        var module = parts[0];
-        var func_name = parts[1];
+    const override = function (name, f) {
+        const parts = name.split('.');
+        const module = parts[0];
+        const func_name = parts[1];
 
         if (!_.has(global, module)) {
             set_global(module, {});

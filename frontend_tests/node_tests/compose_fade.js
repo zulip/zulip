@@ -6,19 +6,19 @@ zrequire('stream_data');
 zrequire('people');
 zrequire('compose_fade');
 
-var me = {
+const me = {
     email: 'me@example.com',
     user_id: 30,
     full_name: 'Me Myself',
 };
 
-var alice = {
+const alice = {
     email: 'alice@example.com',
     user_id: 31,
     full_name: 'Alice',
 };
 
-var bob = {
+const bob = {
     email: 'bob@example.com',
     user_id: 32,
     full_name: 'Bob',
@@ -32,7 +32,7 @@ people.add_in_realm(bob);
 
 
 run_test('set_focused_recipient', () => {
-    var sub = {
+    const sub = {
         stream_id: 101,
         name: 'social',
         subscribed: true,
@@ -65,12 +65,12 @@ run_test('set_focused_recipient', () => {
     assert.equal(compose_fade.would_receive_message('bob@example.com'), false);
     assert.equal(compose_fade.would_receive_message('nonrealmuser@example.com'), true);
 
-    var good_msg = {
+    const good_msg = {
         type: 'stream',
         stream_id: 101,
         subject: 'lunch',
     };
-    var bad_msg = {
+    const bad_msg = {
         type: 'stream',
         stream_id: 999,
         subject: 'lunch',

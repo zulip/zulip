@@ -1,6 +1,6 @@
-var default_max_file_size = 5;
+const default_max_file_size = 5;
 
-var supported_types = [
+const supported_types = [
     'image/jpeg',
     'image/png',
     'image/gif',
@@ -8,7 +8,7 @@ var supported_types = [
 ];
 
 function is_image_format(file) {
-    var type = file.type;
+    const type = file.type;
     if (!type) {
         return false;
     }
@@ -34,7 +34,7 @@ exports.build_widget = function (
     }
 
     function clear() {
-        var control = get_file_input();
+        const control = get_file_input();
         control.val('');
         file_name_field.text('');
         clear_button.hide();
@@ -47,7 +47,7 @@ exports.build_widget = function (
     });
 
     upload_button.on('drop', function (e) {
-        var files = e.dataTransfer.files;
+        const files = e.dataTransfer.files;
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
@@ -61,7 +61,7 @@ exports.build_widget = function (
         if (e.target.files.length === 0) {
             input_error.hide();
         } else if (e.target.files.length === 1) {
-            var file = e.target.files[0];
+            const file = e.target.files[0];
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 input_error.text(i18n.t('File size must be < __max_file_size__Mb.', {
                     max_file_size: max_file_upload_size,
@@ -123,13 +123,13 @@ exports.build_direct_upload_widget = function (
     }
 
     function clear() {
-        var control = get_file_input();
-        var new_control = control.clone(true);
+        const control = get_file_input();
+        const new_control = control.clone(true);
         control.replaceWith(new_control);
     }
 
     upload_button.on('drop', function (e) {
-        var files = e.dataTransfer.files;
+        const files = e.dataTransfer.files;
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
@@ -143,7 +143,7 @@ exports.build_direct_upload_widget = function (
         if (e.target.files.length === 0) {
             input_error.hide();
         } else if (e.target.files.length === 1) {
-            var file = e.target.files[0];
+            const file = e.target.files[0];
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 input_error.text(i18n.t('File size must be < __max_file_size__Mb.', {
                     max_file_size: max_file_upload_size,

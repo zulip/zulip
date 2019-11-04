@@ -6,7 +6,7 @@ function go_to_row(msg_id) {
 
 exports.up = function () {
     message_viewport.set_last_movement_direction(-1);
-    var msg_id = current_msg_list.prev();
+    const msg_id = current_msg_list.prev();
     if (msg_id === undefined) {
         return;
     }
@@ -20,7 +20,7 @@ exports.down = function (with_centering) {
         if (with_centering) {
             // At the last message, scroll to the bottom so we have
             // lots of nice whitespace for new messages coming in.
-            var current_msg_table = rows.get_table(current_msg_list.table_name);
+            const current_msg_table = rows.get_table(current_msg_list.table_name);
             message_viewport.scrollTop(current_msg_table.safeOuterHeight(true) -
                                        message_viewport.height() * 0.1);
             if (current_msg_list.can_mark_messages_read()) {
@@ -32,7 +32,7 @@ exports.down = function (with_centering) {
     }
 
     // Normal path starts here.
-    var msg_id = current_msg_list.next();
+    const msg_id = current_msg_list.next();
     if (msg_id === undefined) {
         return;
     }
@@ -41,13 +41,13 @@ exports.down = function (with_centering) {
 
 exports.to_home = function () {
     message_viewport.set_last_movement_direction(-1);
-    var first_id = current_msg_list.first().id;
+    const first_id = current_msg_list.first().id;
     current_msg_list.select_id(first_id, {then_scroll: true,
                                           from_scroll: true});
 };
 
 exports.to_end = function () {
-    var next_id = current_msg_list.last().id;
+    const next_id = current_msg_list.last().id;
     message_viewport.set_last_movement_direction(1);
     current_msg_list.select_id(next_id, {then_scroll: true,
                                          from_scroll: true});
@@ -60,8 +60,8 @@ function amount_to_paginate() {
     // Some day we might have separate versions of this function
     // for Page Up vs. Page Down, but for now it's the same
     // strategy in either direction.
-    var info = message_viewport.message_viewport_info();
-    var page_size = info.visible_height;
+    const info = message_viewport.message_viewport_info();
+    const page_size = info.visible_height;
 
     // We don't want to page up a full page, because Zulip users
     // are especially worried about missing messages, so we want
@@ -70,9 +70,9 @@ function amount_to_paginate() {
     // is nothing sacred about it, and somebody more anal than me
     // might wish to tie this to the size of some particular DOM
     // element.
-    var overlap_amount = 55;
+    const overlap_amount = 55;
 
-    var delta = page_size - overlap_amount;
+    let delta = page_size - overlap_amount;
 
     // If the user has shrunk their browser a whole lot, pagination
     // is not going to be very pleasant, but we can at least
@@ -92,13 +92,13 @@ exports.page_up_the_right_amount = function () {
     // positions above the message pane.  For other scrolling
     // related adjustements, try to make those happen in the
     // scroll handlers, not here.
-    var delta = amount_to_paginate();
+    const delta = amount_to_paginate();
     message_viewport.scrollTop(message_viewport.scrollTop() - delta);
 };
 
 exports.page_down_the_right_amount = function () {
     // see also: page_up_the_right_amount
-    var delta = amount_to_paginate();
+    const delta = amount_to_paginate();
     message_viewport.scrollTop(message_viewport.scrollTop() + delta);
 };
 
@@ -122,7 +122,7 @@ exports.page_down = function () {
 };
 
 exports.scroll_to_selected = function () {
-    var selected_row = current_msg_list.selected_row();
+    const selected_row = current_msg_list.selected_row();
     if (selected_row && selected_row.length !== 0) {
         message_viewport.recenter_view(selected_row);
     }

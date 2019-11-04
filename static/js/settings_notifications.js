@@ -1,40 +1,40 @@
-var stream_notification_settings = [
+const stream_notification_settings = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
     "enable_stream_push_notifications",
     "enable_stream_email_notifications",
 ];
 
-var pm_mention_notification_settings = [
+const pm_mention_notification_settings = [
     "enable_desktop_notifications",
     "enable_sounds",
     "enable_offline_push_notifications",
     "enable_offline_email_notifications",
 ];
 
-var desktop_notification_settings = [
+const desktop_notification_settings = [
     "pm_content_in_desktop_notifications",
 ];
 
-var mobile_notification_settings = [
+const mobile_notification_settings = [
     "enable_online_push_notifications",
 ];
 
-var email_notification_settings = [
+const email_notification_settings = [
     "enable_digest_emails",
     "enable_login_emails",
     "message_content_in_email_notifications",
     "realm_name_in_notifications",
 ];
 
-var other_notification_settings = desktop_notification_settings.concat(
+const other_notification_settings = desktop_notification_settings.concat(
     ["desktop_icon_count_display"],
     mobile_notification_settings,
     email_notification_settings,
     ["notification_sound"]
 );
 
-var notification_settings_status = [
+const notification_settings_status = [
     {status_label: "pm-mention-notify-settings-status", settings: pm_mention_notification_settings},
     {status_label: "other-notify-settings-status", settings: other_notification_settings},
     {status_label: "stream-notify-settings-status", settings: stream_notification_settings},
@@ -76,14 +76,14 @@ exports.desktop_icon_count_display_values = {
 };
 
 function change_notification_setting(setting, setting_data, status_element) {
-    var data = {};
+    const data = {};
     data[setting] = JSON.stringify(setting_data);
     settings_ui.do_settings_change(channel.patch, '/json/settings/notifications', data, status_element);
 }
 
 function update_desktop_icon_count_display() {
     $("#desktop_icon_count_display").val(page_params.desktop_icon_count_display);
-    var count = unread.get_notifiable_count();
+    const count = unread.get_notifiable_count();
     notifications.update_title_count(count);
 }
 
@@ -99,7 +99,7 @@ exports.set_up = function () {
     _.each(notification_settings_status, function (setting) {
         _.each(setting.settings, function (sub_setting) {
             $("#" + sub_setting).change(function () {
-                var value;
+                let value;
 
                 // `notification_sound` and `desktop_icon_count_display` are not booleans.
                 if (sub_setting === "notification_sound") {
@@ -121,7 +121,7 @@ exports.set_up = function () {
         $("#notifications-area").find("audio")[0].play();
     });
 
-    var notification_sound_dropdown = $("#notification_sound");
+    const notification_sound_dropdown = $("#notification_sound");
     notification_sound_dropdown.val(page_params.notification_sound);
 
     $("#enable_sounds, #enable_stream_audible_notifications").change(function () {

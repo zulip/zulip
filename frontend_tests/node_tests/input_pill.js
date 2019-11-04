@@ -8,8 +8,8 @@ zrequire('templates');
 set_global('blueslip', global.make_zblueslip());
 set_global('document', {});
 
-var noop = function () {};
-var example_img_link = 'http://example.com/example.png';
+const noop = function () {};
+const example_img_link = 'http://example.com/example.png';
 
 set_global('ui_util', {
     place_caret_at_end: noop,
@@ -23,7 +23,7 @@ global.patch_builtin('window', {
     },
 });
 
-var id_seq = 0;
+let id_seq = 0;
 run_test('set_up_ids', () => {
     // just get coverage on a simple one-liner:
     input_pill.random_id();
@@ -36,9 +36,9 @@ run_test('set_up_ids', () => {
 
 
 function pill_html(value, data_id, img_src) {
-    var has_image = img_src !== undefined;
+    const has_image = img_src !== undefined;
 
-    var opts = {
+    const opts = {
         id: data_id,
         display_value: value,
         has_image: has_image,
@@ -52,15 +52,15 @@ function pill_html(value, data_id, img_src) {
 }
 
 run_test('basics', () => {
-    var config = {};
+    const config = {};
 
     blueslip.set_test_data('error', 'Pill needs container.');
     input_pill.create(config);
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 
-    var pill_input = $.create('pill_input');
-    var container = $.create('container');
+    const pill_input = $.create('pill_input');
+    const container = $.create('container');
     container.set_find_results('.input', pill_input);
 
     blueslip.set_test_data('error', 'Pill needs create_item_from_text');
@@ -76,16 +76,16 @@ run_test('basics', () => {
     blueslip.clear_test_data();
 
     config.get_text_from_item = noop;
-    var widget = input_pill.create(config);
+    const widget = input_pill.create(config);
 
-    var item = {
+    const item = {
         display_value: 'JavaScript',
         language: 'js',
         img_src: example_img_link,
     };
 
-    var inserted_before;
-    var expected_html = pill_html('JavaScript', 'some_id1', example_img_link);
+    let inserted_before;
+    const expected_html = pill_html('JavaScript', 'some_id1', example_img_link);
 
     pill_input.before = function (elem) {
         inserted_before = true;
@@ -100,7 +100,7 @@ run_test('basics', () => {
 
 function set_up() {
     set_global('$', global.make_zjquery());
-    var items = {
+    const items = {
         blue: {
             display_value: 'BLUE',
             description: 'color of the sky',
@@ -118,18 +118,18 @@ function set_up() {
         },
     };
 
-    var pill_input = $.create('pill_input');
+    const pill_input = $.create('pill_input');
 
     pill_input.before = () => {};
 
-    var create_item_from_text = function (text) {
+    const create_item_from_text = function (text) {
         return items[text];
     };
 
-    var container = $.create('container');
+    const container = $.create('container');
     container.set_find_results('.input', pill_input);
 
-    var config = {
+    const config = {
         container: container,
         create_item_from_text: create_item_from_text,
         get_text_from_item: (item) => item.display_value,
@@ -155,7 +155,7 @@ run_test('copy from pill', () => {
 
     const copy_handler = container.get_on_handler('copy', '.pill');
 
-    var copied_text;
+    let copied_text;
 
     const pill_stub = {
         data: (field) => {
@@ -193,7 +193,7 @@ run_test('paste to input', () => {
 
     const paste_handler = container.get_on_handler('paste', '.input');
 
-    var paste_text = 'blue,yellow';
+    const paste_text = 'blue,yellow';
 
     const e = {
         originalEvent: {
@@ -239,8 +239,8 @@ run_test('arrows on pills', () => {
     const LEFT_ARROW = 37;
     const RIGHT_ARROW = 39;
 
-    var prev_focused = false;
-    var next_focused = false;
+    let prev_focused = false;
+    let next_focused = false;
 
     const pill_stub = {
         prev: () => {
@@ -282,7 +282,7 @@ run_test('left arrow on input', () => {
     const LEFT_ARROW = 37;
     const key_handler = container.get_on_handler('keydown', '.input');
 
-    var last_pill_focused = false;
+    let last_pill_focused = false;
 
     container.set_find_results('.pill', {
         last: () => {
@@ -385,15 +385,15 @@ run_test('insert_remove', () => {
     const items = info.items;
     const container = info.container;
 
-    var inserted_html = [];
+    const inserted_html = [];
     pill_input.before = function (elem) {
         inserted_html.push(elem.html());
     };
 
-    var widget = input_pill.create(config);
+    const widget = input_pill.create(config);
 
-    var created;
-    var removed;
+    let created;
+    let removed;
 
     widget.onPillCreate(function () {
         created = true;
@@ -427,8 +427,8 @@ run_test('insert_remove', () => {
     assert.equal(pill_input.text(), '');
     assert.equal(widget.is_pending(), false);
 
-    var BACKSPACE = 8;
-    var key_handler = container.get_on_handler('keydown', '.input');
+    const BACKSPACE = 8;
+    let key_handler = container.get_on_handler('keydown', '.input');
 
     key_handler({
         keyCode: BACKSPACE,
@@ -445,7 +445,7 @@ run_test('insert_remove', () => {
         items.red,
     ]);
 
-    var next_pill_focused = false;
+    let next_pill_focused = false;
 
     const next_pill_stub = {
         focus: () => {
@@ -483,7 +483,7 @@ run_test('exit button on pill', () => {
 
     widget.appendValue('blue,red');
 
-    var next_pill_focused = false;
+    let next_pill_focused = false;
 
     const next_pill_stub = {
         focus: () => {
@@ -510,7 +510,7 @@ run_test('exit button on pill', () => {
         },
     };
 
-    var e = {
+    const e = {
         stopPropagation: noop,
     };
     const exit_click_handler = container.get_on_handler('click', '.exit');
@@ -537,7 +537,7 @@ run_test('misc things', () => {
     // animation
     const animation_end_handler = container.get_on_handler('animationend', '.input');
 
-    var shake_class_removed = false;
+    let shake_class_removed = false;
 
     const input_stub = {
         to_$: () => {

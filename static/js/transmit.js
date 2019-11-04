@@ -1,4 +1,4 @@
-var socket;
+let socket;
 exports.initialize =  function () {
     // We initialize the socket inside a function so that this code
     // runs after `csrf_token` is initialized in setup.js.
@@ -12,7 +12,7 @@ exports.initialize =  function () {
 function send_message_socket(request, success, error) {
     request.socket_user_agent = navigator.userAgent;
     socket.send(request, success, function (type, resp) {
-        var err_msg = "Error sending message";
+        let err_msg = "Error sending message";
         if (type === 'response') {
             err_msg += ": " + resp.msg;
         }
@@ -36,7 +36,7 @@ function send_message_ajax(request, success, error) {
                 return;
             }
 
-            var response = channel.xhr_error_message("Error sending message", xhr);
+            const response = channel.xhr_error_message("Error sending message", xhr);
             error(response);
         },
     });
@@ -67,8 +67,8 @@ exports.reply_message = function (opts) {
     // bot that wants to give users 3 or 4 canned replies to some
     // choice, but it wants to front-end each of these options
     // with a one-click button.  This function is part of that architecture.
-    var message = opts.message;
-    var content = opts.content;
+    const message = opts.message;
+    let content = opts.content;
 
     function success() {
         // TODO: If server response comes back before the message event,
@@ -84,10 +84,10 @@ exports.reply_message = function (opts) {
         //       For now do nothing.
     }
 
-    var locally_echoed = false;
-    var local_id = sent_messages.get_new_local_id();
+    const locally_echoed = false;
+    const local_id = sent_messages.get_new_local_id();
 
-    var reply = {
+    const reply = {
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         local_id: local_id,
@@ -99,9 +99,9 @@ exports.reply_message = function (opts) {
     });
 
     if (message.type === 'stream') {
-        var stream = message.stream;
+        const stream = message.stream;
 
-        var mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
+        const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
 
         content = mention + ' ' + content;
 
@@ -115,7 +115,7 @@ exports.reply_message = function (opts) {
     }
 
     if (message.type === 'private') {
-        var pm_recipient = people.pm_reply_to(message);
+        const pm_recipient = people.pm_reply_to(message);
 
         reply.type = 'private';
         reply.to = JSON.stringify(pm_recipient.split(','));

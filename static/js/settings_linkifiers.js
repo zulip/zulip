@@ -1,6 +1,6 @@
-var render_admin_filter_list = require("../templates/admin_filter_list.hbs");
+const render_admin_filter_list = require("../templates/admin_filter_list.hbs");
 
-var meta = {
+const meta = {
     loaded: false,
 };
 
@@ -22,8 +22,8 @@ exports.populate_filters = function (filters_data) {
         return;
     }
 
-    var filters_table = $("#admin_filters_table").expectOne();
-    var filters_list = list_render.create(filters_table, filters_data, {
+    const filters_table = $("#admin_filters_table").expectOne();
+    const filters_list = list_render.create(filters_table, filters_data, {
         name: "linkifiers_list",
         modifier: function (filter) {
             return render_admin_filter_list({
@@ -67,7 +67,7 @@ exports.populate_filters = function (filters_data) {
         return compare_by_index(a, b, 1);
     });
 
-    var active_col = $('.admin_filters_table th.active').expectOne();
+    const active_col = $('.admin_filters_table th.active').expectOne();
     filters_list.sort(
         active_col.data('sort'),
         undefined,
@@ -95,7 +95,7 @@ exports.build_page = function () {
     $('.admin_filters_table').on('click', '.delete', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var btn = $(this);
+        const btn = $(this);
 
         channel.del({
             url: '/json/realm/filters/' + encodeURIComponent(btn.attr('data-filter-id')),
@@ -103,7 +103,7 @@ exports.build_page = function () {
                 ui_report.generic_row_button_error(xhr, btn);
             },
             success: function () {
-                var row = btn.parents('tr');
+                const row = btn.parents('tr');
                 row.remove();
             },
         });
@@ -112,15 +112,15 @@ exports.build_page = function () {
     $(".organization form.admin-filter-form").off('submit').on('submit', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var filter_status = $('#admin-filter-status');
-        var pattern_status = $('#admin-filter-pattern-status');
-        var format_status = $('#admin-filter-format-status');
-        var add_filter_button = $('.new-filter-form button');
+        const filter_status = $('#admin-filter-status');
+        const pattern_status = $('#admin-filter-pattern-status');
+        const format_status = $('#admin-filter-format-status');
+        const add_filter_button = $('.new-filter-form button');
         add_filter_button.attr("disabled", "disabled");
         filter_status.hide();
         pattern_status.hide();
         format_status.hide();
-        var filter = {};
+        const filter = {};
         _.each($(this).serializeArray(), function (obj) {
             filter[obj.name] = obj.value;
         });
@@ -136,7 +136,7 @@ exports.build_page = function () {
                 ui_report.success(i18n.t("Custom filter added!"), filter_status);
             },
             error: function (xhr) {
-                var errors = JSON.parse(xhr.responseText).errors;
+                const errors = JSON.parse(xhr.responseText).errors;
                 add_filter_button.removeAttr("disabled");
                 if (errors.pattern !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.pattern});

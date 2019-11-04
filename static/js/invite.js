@@ -1,8 +1,8 @@
-var render_invitation_failed_error = require("../templates/invitation_failed_error.hbs");
-var render_invite_subscription = require('../templates/invite_subscription.hbs');
-var render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
+const render_invitation_failed_error = require("../templates/invitation_failed_error.hbs");
+const render_invite_subscription = require('../templates/invite_subscription.hbs');
+const render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
 
-var autosize = require('autosize');
+const autosize = require('autosize');
 
 function reset_error_messages() {
     $('#invite_status').hide().text('').removeClass(common.status_classes);
@@ -16,13 +16,13 @@ function reset_error_messages() {
 }
 
 function get_common_invitation_data() {
-    var invite_as = parseInt($('#invite_as').val(), 10);
-    var stream_ids = [];
+    const invite_as = parseInt($('#invite_as').val(), 10);
+    const stream_ids = [];
     $("#invite-stream-checkboxes input:checked").each(function () {
-        var stream_id = parseInt($(this).val(), 10);
+        const stream_id = parseInt($(this).val(), 10);
         stream_ids.push(stream_id);
     });
-    var data = {
+    const data = {
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr('value'),
         invite_as: invite_as,
         stream_ids: JSON.stringify(stream_ids),
@@ -42,10 +42,10 @@ function beforeSend() {
 }
 
 function submit_invitation_form() {
-    var invite_status = $('#invite_status');
-    var invitee_emails = $("#invitee_emails");
-    var invitee_emails_group = invitee_emails.closest('.control-group');
-    var data = get_common_invitation_data();
+    const invite_status = $('#invite_status');
+    const invitee_emails = $("#invitee_emails");
+    const invitee_emails_group = invitee_emails.closest('.control-group');
+    const data = get_common_invitation_data();
     data.invitee_emails = $("#invitee_emails").val();
 
     channel.post({
@@ -58,26 +58,26 @@ function submit_invitation_form() {
             invitee_emails.val('');
 
             if (page_params.development_environment) {
-                var rendered_email_msg = render_settings_dev_env_email_access();
+                const rendered_email_msg = render_settings_dev_env_email_access();
                 $('#dev_env_msg').html(rendered_email_msg).addClass('alert-info').show();
             }
 
         },
         error: function (xhr) {
-            var arr = JSON.parse(xhr.responseText);
+            const arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
                 ui_report.error("", xhr, invite_status);
             } else {
                 // Some users were not invited.
-                var invitee_emails_errored = [];
-                var error_list = [];
+                const invitee_emails_errored = [];
+                const error_list = [];
                 arr.errors.forEach(function (value) {
                     error_list.push(value.join(': '));
                     invitee_emails_errored.push(value[0]);
                 });
 
-                var error_response = render_invitation_failed_error({
+                const error_response = render_invitation_failed_error({
                     error_message: arr.msg,
                     error_list: error_list,
                 });
@@ -96,8 +96,8 @@ function submit_invitation_form() {
 }
 
 function generate_multiuse_invite() {
-    var invite_status = $('#multiuse_invite_status');
-    var data = get_common_invitation_data();
+    const invite_status = $('#multiuse_invite_status');
+    const data = get_common_invitation_data();
     channel.post({
         url: "/json/invites/multiuse",
         data: data,
@@ -116,8 +116,8 @@ function generate_multiuse_invite() {
 }
 
 exports.get_invite_streams = function () {
-    var streams = _.filter(stream_data.get_invite_stream_data(), function (stream) {
-        var is_notifications_stream = stream.name === page_params.notifications_stream;
+    const streams = _.filter(stream_data.get_invite_stream_data(), function (stream) {
+        const is_notifications_stream = stream.name === page_params.notifications_stream;
         // You can't actually elect to invite someone to the
         // notifications stream. We won't even show it as a choice unless
         // it's the only stream you have, or if you've made it private.
@@ -129,8 +129,8 @@ exports.get_invite_streams = function () {
 };
 
 function update_subscription_checkboxes() {
-    var data = {streams: exports.get_invite_streams()};
-    var html = render_invite_subscription(data);
+    const data = {streams: exports.get_invite_streams()};
+    const html = render_invite_subscription(data);
     $('#streams_to_add').html(html);
 }
 
@@ -165,7 +165,7 @@ exports.initialize = function () {
     });
 
     $("#submit-invitation").on("click", function () {
-        var is_generate_invite_link = $('#generate_multiuse_invite_radio').prop('checked');
+        const is_generate_invite_link = $('#generate_multiuse_invite_radio').prop('checked');
         if (is_generate_invite_link) {
             generate_multiuse_invite();
         } else {

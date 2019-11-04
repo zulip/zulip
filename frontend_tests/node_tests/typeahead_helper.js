@@ -16,7 +16,7 @@ zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
 zrequire('actual_pygments_data', 'generated/pygments_data');
 zrequire('settings_org');
-var th = zrequire('typeahead_helper');
+const th = zrequire('typeahead_helper');
 
 stream_data.create_streams([
     {name: 'Dev', subscribed: true, color: 'blue', stream_id: 1},
@@ -24,15 +24,15 @@ stream_data.create_streams([
 ]);
 
 run_test('sort_streams', () => {
-    var popular = {num_items: function () {
+    const popular = {num_items: function () {
         return 10;
     }};
 
-    var unpopular = {num_items: function () {
+    const unpopular = {num_items: function () {
         return 2;
     }};
 
-    var test_streams = [
+    let test_streams = [
         {name: 'Dev', pin_to_top: false, subscribers: unpopular, subscribed: true},
         {name: 'Docs', pin_to_top: false, subscribers: popular, subscribed: true},
         {name: 'Derp', pin_to_top: false, subscribers: unpopular, subscribed: true},
@@ -93,7 +93,7 @@ run_test('sort_languages', () => {
         {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
     });
 
-    var test_langs = ["pascal", "perl", "php", "python", "javascript"];
+    let test_langs = ["pascal", "perl", "php", "python", "javascript"];
     test_langs = th.sort_languages(test_langs, "p");
 
     // Sort languages by matching first letter, and then by popularity
@@ -125,7 +125,7 @@ run_test('sort_languages', () => {
     assert.deepEqual(test_langs, ["j", "javascript", "java", "js"]);
 });
 
-var matches = [
+const matches = [
     {
         email: "a_bot@zulip.com",
         full_name: "A zulip test bot",
@@ -177,7 +177,7 @@ _.each(matches, function (person) {
 
 run_test('sort_recipients', () => {
     function get_typeahead_result(query, current_stream, current_topic) {
-        var result = th.sort_recipients(
+        const result = th.sort_recipients(
             global.people.get_realm_persons(),
             query,
             current_stream,
@@ -210,15 +210,15 @@ run_test('sort_recipients', () => {
         'b_bot@example.com',
     ]);
 
-    var subscriber_email_1 = "b_user_2@zulip.net";
-    var subscriber_email_2 = "b_user_3@zulip.net";
-    var subscriber_email_3 = "b_bot@example.com";
+    const subscriber_email_1 = "b_user_2@zulip.net";
+    const subscriber_email_2 = "b_user_3@zulip.net";
+    const subscriber_email_3 = "b_bot@example.com";
     stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_1));
     stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_2));
     stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_3));
 
-    var dev_sub = stream_data.get_sub("Dev");
-    var linux_sub = stream_data.get_sub("Linux");
+    const dev_sub = stream_data.get_sub("Dev");
+    const linux_sub = stream_data.get_sub("Linux");
     stream_data.update_calculated_fields(dev_sub);
     stream_data.update_calculated_fields(linux_sub);
 
@@ -284,7 +284,7 @@ run_test('sort_recipients', () => {
     ]);
 
     // Test person email is "all" or "everyone"
-    var person = {
+    const person = {
         email: "all",
         full_name: "All",
         is_admin: false,
@@ -327,11 +327,11 @@ run_test('sort_recipients', () => {
     // Test sort_recipients with duplicate people
     matches.push(matches[0]);
 
-    var recipients = th.sort_recipients(matches, "b", "", "");
-    var recipients_email = _.map(recipients, function (person) {
+    let recipients = th.sort_recipients(matches, "b", "", "");
+    let recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
-    var expected = [
+    let expected = [
         'b_bot@example.com',
         'b_user_3@zulip.net',
         'b_user_2@zulip.net',
@@ -347,7 +347,7 @@ run_test('sort_recipients', () => {
     matches.splice(matches.length - 1, 1);
 
     // full_name starts with same character but emails are 'all'
-    var small_matches = [
+    let small_matches = [
         {
             email: "all",
             full_name: "All 1",
@@ -408,10 +408,10 @@ run_test('sort_recipients', () => {
 });
 
 run_test('highlight_with_escaping', () => {
-    var item = "Denmark";
-    var query = "Den";
-    var expected = "<strong>Den</strong>mark";
-    var result = th.highlight_with_escaping(query, item);
+    let item = "Denmark";
+    let query = "Den";
+    let expected = "<strong>Den</strong>mark";
+    let result = th.highlight_with_escaping(query, item);
     assert.equal(result, expected);
 
     item = "w3IrD_naMe";
@@ -430,7 +430,7 @@ run_test('highlight_with_escaping', () => {
 run_test('render_person when emails hidden', () => {
     // Test render_person with regular person, under hidden email visiblity case
     settings_org.show_email = () => false;
-    var rendered = false;
+    let rendered = false;
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, matches[2].full_name);
@@ -445,7 +445,7 @@ run_test('render_person when emails hidden', () => {
 run_test('render_person', () => {
     settings_org.show_email = () => true;
     // Test render_person with regular person
-    var rendered = false;
+    let rendered = false;
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, matches[1].full_name);
@@ -457,7 +457,7 @@ run_test('render_person', () => {
     assert(rendered);
 
     // Test render_person with special_item_text person
-    var special_person = {
+    const special_person = {
         email: "special@example.com",
         full_name: "Special person",
         is_admin: false,
@@ -477,7 +477,7 @@ run_test('render_person', () => {
 });
 
 run_test('clear_rendered_person', () => {
-    var rendered = false;
+    let rendered = false;
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, matches[5].full_name);
@@ -504,8 +504,8 @@ run_test('clear_rendered_person', () => {
 
 run_test('render_stream', () => {
     // Test render_stream with short description
-    var rendered = false;
-    var stream = {
+    let rendered = false;
+    let stream = {
         description: 'This is a short description.',
         stream_id: 42,
         name: 'Short Description',
@@ -530,7 +530,7 @@ run_test('render_stream', () => {
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
         assert.equal(args.primary, stream.name);
-        var short_desc = stream.description.substring(0, 35);
+        const short_desc = stream.description.substring(0, 35);
         assert.equal(args.secondary, short_desc + "...");
         rendered = true;
         return 'typeahead-item-stub';
@@ -540,8 +540,8 @@ run_test('render_stream', () => {
 });
 
 run_test('clear_rendered_stream', () => {
-    var rendered = false;
-    var stream = {
+    let rendered = false;
+    const stream = {
         description: 'This is a description.',
         stream_id: 44,
         name: 'Stream To Be Cleared',
@@ -568,8 +568,8 @@ run_test('clear_rendered_stream', () => {
 
 run_test('render_emoji', () => {
     // Test render_emoji with normal emoji.
-    var rendered = false;
-    var test_emoji = {
+    let rendered = false;
+    let test_emoji = {
         emoji_name: 'thumbs_up',
         emoji_code: '1f44d',
     };
@@ -616,7 +616,7 @@ run_test('render_emoji', () => {
 });
 
 run_test('sort_slash_commands', () => {
-    var slash_commands = [
+    const slash_commands = [
         { name: 'my' },
         { name: 'poll' },
         { name: 'me' },
@@ -635,7 +635,7 @@ run_test('sort_slash_commands', () => {
 });
 
 run_test('sort_emojis', () => {
-    var emoji_list = [
+    const emoji_list = [
         { emoji_name: '+1' },
         { emoji_name: 'thumbs_up' },
         { emoji_name: 'pig' },
@@ -650,8 +650,8 @@ run_test('sort_emojis', () => {
 });
 
 run_test('sort_recipientbox_typeahead', () => {
-    var recipients = th.sort_recipientbox_typeahead("b, a", matches, ""); // search "a"
-    var recipients_email = _.map(recipients, function (person) {
+    let recipients = th.sort_recipientbox_typeahead("b, a", matches, ""); // search "a"
+    let recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
     assert.deepEqual(recipients_email, [

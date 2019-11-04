@@ -4,7 +4,7 @@ function do_narrow_action(action) {
 }
 
 // For message actions and user profile menu.
-var menu_dropdown_hotkeys = [
+const menu_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
     'vim_up',
@@ -23,13 +23,13 @@ var menu_dropdown_hotkeys = [
 // `message_view_only` hotkeys, as a group, are not processed if any
 // overlays are open (e.g. settings, streams, etc.).
 
-var keydown_shift_mappings = {
+const keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
     32: {name: 'shift_spacebar', message_view_only: true},  // space bar
 };
 
-var keydown_unshift_mappings = {
+const keydown_unshift_mappings = {
     // these can be triggered by key only (without shift)
     9: {name: 'tab', message_view_only: false}, // tab
     27: {name: 'escape', message_view_only: false}, // escape
@@ -44,18 +44,18 @@ var keydown_unshift_mappings = {
     40: {name: 'down_arrow', message_view_only: false}, // down arrow
 };
 
-var keydown_ctrl_mappings = {
+const keydown_ctrl_mappings = {
     219: {name: 'escape', message_view_only: false}, // '['
 };
 
-var keydown_cmd_or_ctrl_mappings = {
+const keydown_cmd_or_ctrl_mappings = {
     67: {name: 'copy_with_c', message_view_only: false}, // 'C'
     75: {name: 'search_with_k', message_view_only: false}, // 'K'
     83: {name: 'star_message', message_view_only: true}, // 's'
     190: {name: 'narrow_to_compose_target', message_view_only: true}, // '.'
 };
 
-var keydown_either_mappings = {
+const keydown_either_mappings = {
     // these can be triggered by key or shift + key
     // Note that codes for letters are still case sensitive!
     //
@@ -72,7 +72,7 @@ var keydown_either_mappings = {
     46: {name: 'delete', message_view_only: false}, // delete
 };
 
-var keypress_mappings = {
+const keypress_mappings = {
     42: {name: 'star_deprecated', message_view_only: true}, // '*'
     43: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
     45: {name: 'toggle_message_collapse', message_view_only: true}, // '-'
@@ -115,7 +115,7 @@ exports.get_keydown_hotkey = function (e) {
         return;
     }
 
-    var hotkey;
+    let hotkey;
 
     if (e.ctrlKey && !e.shiftKey) {
         hotkey = keydown_ctrl_mappings[e.which];
@@ -124,7 +124,7 @@ exports.get_keydown_hotkey = function (e) {
         }
     }
 
-    var isCmdOrCtrl = common.has_mac_keyboard() ? e.metaKey : e.ctrlKey;
+    const isCmdOrCtrl = common.has_mac_keyboard() ? e.metaKey : e.ctrlKey;
     if (isCmdOrCtrl && !e.shiftKey) {
         hotkey = keydown_cmd_or_ctrl_mappings[e.which];
         if (hotkey) {
@@ -161,7 +161,7 @@ exports.get_keypress_hotkey = function (e) {
 };
 
 exports.processing_text = (function () {
-    var selector = [
+    const selector = [
         'input:focus',
         'select:focus',
         'textarea:focus',
@@ -181,7 +181,7 @@ exports.is_editing_stream_name = function (e) {
 
 // Returns true if we handled it, false if the browser should.
 exports.process_escape_key = function (e) {
-    var row;
+    let row;
 
     if (exports.is_editing_stream_name(e)) {
         return false;
@@ -211,7 +211,7 @@ exports.process_escape_key = function (e) {
         // Using this definition of "row" instead of "current_msg_list.selected_row()"
         // because it returns a more complete object.
         // Necessary for refocusing on message list in Firefox.
-        var message_edit_inputs = $(".message_edit_content, .message_edit_topic");
+        const message_edit_inputs = $(".message_edit_content, .message_edit_topic");
         row = message_edit_inputs.filter(":focus").closest(".message_row");
         row.find('.message_edit_content').blur();
         message_edit.end(row);
@@ -384,9 +384,9 @@ exports.process_tab_key = function () {
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
 
-    var message_edit_form;
+    let message_edit_form;
 
-    var focused_message_edit_content = $(".message_edit_content").filter(":focus");
+    const focused_message_edit_content = $(".message_edit_content").filter(":focus");
     if (focused_message_edit_content.length > 0) {
         message_edit_form = focused_message_edit_content.closest(".message_edit_form");
         // Open message edit forms either have a save button or a close button, but not both.
@@ -394,7 +394,7 @@ exports.process_tab_key = function () {
         return true;
     }
 
-    var focused_message_edit_save = $(".message_edit_save").filter(":focus");
+    const focused_message_edit_save = $(".message_edit_save").filter(":focus");
     if (focused_message_edit_save.length > 0) {
         message_edit_form = focused_message_edit_save.closest(".message_edit_form");
         message_edit_form.find(".message_edit_cancel").focus();
@@ -427,7 +427,7 @@ exports.process_shift_tab_key = function () {
     }
 
     // Shift-tabbing from the edit message save button takes you to the content.
-    var focused_message_edit_save = $(".message_edit_save").filter(":focus");
+    const focused_message_edit_save = $(".message_edit_save").filter(":focus");
     if (focused_message_edit_save.length > 0) {
         focused_message_edit_save.closest(".message_edit_form")
             .find(".message_edit_content").focus();
@@ -446,7 +446,7 @@ exports.process_shift_tab_key = function () {
 //
 // Returns true if we handled it, false if the browser should.
 exports.process_hotkey = function (e, hotkey) {
-    var event_name = hotkey.name;
+    const event_name = hotkey.name;
 
     // We handle the most complex keys in their own functions.
     switch (event_name) {
@@ -581,7 +581,7 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         } else if (event_name === "page_down") {
             // so that it always goes to the end of the text box.
-            var height = $(":focus")[0].scrollHeight;
+            const height = $(":focus")[0].scrollHeight;
             $(":focus").caret(Infinity).animate({ scrollTop: height }, "fast");
             return true;
         } else if (event_name === "search_with_k") {
@@ -722,7 +722,7 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     }
 
-    var msg = current_msg_list.selected_message();
+    const msg = current_msg_list.selected_message();
     // Shortcuts that operate on a message
     switch (event_name) {
     case 'message_actions':
@@ -751,8 +751,8 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'thumbs_up_emoji': { // '+': reacts with thumbs up emoji on selected message
         // Use canonical name.
-        var thumbs_up_emoji_code = '1f44d';
-        var canonical_name = emoji_codes.codepoint_to_name[thumbs_up_emoji_code];
+        const thumbs_up_emoji_code = '1f44d';
+        const canonical_name = emoji_codes.codepoint_to_name[thumbs_up_emoji_code];
         reactions.toggle_emoji_reaction(msg.id, canonical_name);
         return true;
     }
@@ -766,7 +766,7 @@ exports.process_hotkey = function (e, hotkey) {
         compose_actions.quote_and_reply({trigger: 'hotkey'});
         return true;
     case 'edit_message': {
-        var row = current_msg_list.get_row(msg.id);
+        const row = current_msg_list.get_row(msg.id);
         message_edit.start(row);
         return true;
     }
@@ -787,7 +787,7 @@ exports.process_hotkey = function (e, hotkey) {
 
 exports.process_keydown = function (e) {
     activity.new_user_input = true;
-    var hotkey = exports.get_keydown_hotkey(e);
+    const hotkey = exports.get_keydown_hotkey(e);
     if (!hotkey) {
         return false;
     }
@@ -804,7 +804,7 @@ $(document).keydown(function (e) {
 });
 
 exports.process_keypress = function (e) {
-    var hotkey = exports.get_keypress_hotkey(e);
+    const hotkey = exports.get_keypress_hotkey(e);
     if (!hotkey) {
         return false;
     }

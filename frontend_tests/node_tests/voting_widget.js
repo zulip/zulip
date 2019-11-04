@@ -210,7 +210,7 @@ run_test('activate another person poll', () => {
         assert(!show);
     };
 
-    var show_submit = false;
+    const show_submit = false;
     poll_question_submit.toggle = (show) => {
         assert.equal(show, show_submit);
     };
@@ -372,7 +372,7 @@ run_test('activate own poll', () => {
         assert(show);
     };
 
-    var show_submit = false;
+    let show_submit = false;
     poll_question_submit.toggle = (show) => {
         assert.equal(show, show_submit);
     };

@@ -21,7 +21,7 @@ exports.rgb_luminance = function (channel) {
 //
 // http://en.wikipedia.org/wiki/Lab_color_space#Forward_transformation
 exports.luminance_to_lightness = function (luminance) {
-    var v;
+    let v;
     if (luminance <= 216 / 24389) {
         v = 841 / 108 * luminance + 4 / 29;
     } else {

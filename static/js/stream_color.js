@@ -6,15 +6,15 @@ exports.color_classes = 'dark_background';
 function update_table_stream_color(table, stream_name, color) {
     // This is ugly, but temporary, as the new design will make it
     // so that we only have color in the headers.
-    var style = color;
-    var color_class = exports.get_color_class(color);
+    const style = color;
+    const color_class = exports.get_color_class(color);
 
-    var stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
+    const stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
 
     _.each(stream_labels, function (label) {
-        var $label = $(label);
+        const $label = $(label);
         if ($.trim($label.text()) === stream_name) {
-            var messages = $label.closest(".recipient_row").children(".message_row");
+            const messages = $label.closest(".recipient_row").children(".message_row");
             messages.children(".messagebox").css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
             $label.css({background: style,
                         "border-left-color": style});
@@ -36,14 +36,14 @@ function update_historical_message_color(stream_name, color) {
     }
 }
 
-var stream_color_palette = [
+const stream_color_palette = [
     ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
     ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
     ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
     ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1'],
 ];
 
-var subscriptions_table_colorpicker_options = {
+const subscriptions_table_colorpicker_options = {
     clickoutFiresChange: true,
     showPalette: true,
     showInput: true,
@@ -59,7 +59,7 @@ exports.set_colorpicker_color = function (colorpicker, color) {
 exports.update_stream_color = function (sub, color, opts) {
     opts = _.defaults({}, opts, {update_historical: false});
     sub.color = color;
-    var id = parseInt(sub.stream_id, 10);
+    const id = parseInt(sub.stream_id, 10);
     // The swatch in the subscription row header.
     $(".stream-row[data-stream-id='" + id + "'] .icon").css('background-color', color);
     // The swatch in the color picker.
@@ -76,8 +76,8 @@ exports.update_stream_color = function (sub, color, opts) {
 };
 
 function picker_do_change_color(color) {
-    var stream_id = $(this).attr('stream_id');
-    var hex_color = color.toHexString();
+    const stream_id = $(this).attr('stream_id');
+    const hex_color = color.toHexString();
     subs.set_color(stream_id, hex_color);
 }
 subscriptions_table_colorpicker_options.change = picker_do_change_color;
@@ -103,12 +103,12 @@ exports.sidebar_popover_colorpicker_options_full = {
     change: picker_do_change_color,
 };
 
-var lightness_threshold;
+let lightness_threshold;
 exports.initialize = function () {
     // sRGB color component for dark label text.
     // 0x33 to match the color #333333 set by Bootstrap.
-    var label_color = 0x33;
-    var lightness = colorspace.luminance_to_lightness(
+    const label_color = 0x33;
+    const lightness = colorspace.luminance_to_lightness(
         colorspace.sRGB_to_linear(label_color));
 
     // Compute midpoint lightness between that and white (100).
@@ -125,10 +125,10 @@ exports.initialize = function () {
 //
 // This gets called on every message, so cache the results.
 exports.get_color_class = _.memoize(function (color) {
-    var match;
-    var i;
-    var channel = [0, 0, 0];
-    var mult = 1;
+    let match;
+    let i;
+    const channel = [0, 0, 0];
+    let mult = 1;
 
     match = /^#([\da-fA-F]{2})([\da-fA-F]{2})([\da-fA-F]{2})$/.exec(color);
     if (!match) {

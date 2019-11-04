@@ -19,12 +19,18 @@ exports.reload = function () {
     exports.populate_user_groups();
 };
 
+const USER_GROUP_EDIT_POLICY_MEMBERS = 1;
+
 exports.can_edit = function (group_id) {
     if (page_params.is_admin) {
         return true;
     }
 
     if (page_params.is_guest) {
+        return false;
+    }
+
+    if (page_params.realm_user_group_edit_policy !== USER_GROUP_EDIT_POLICY_MEMBERS) {
         return false;
     }
 

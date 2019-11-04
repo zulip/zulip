@@ -7,10 +7,10 @@ import _ from "underscore";
 
 // How frequently 'still typing' notifications are sent
 // to extend the expiry
-var TYPING_STARTED_WAIT_PERIOD = 10000; // 10s
+const TYPING_STARTED_WAIT_PERIOD = 10000; // 10s
 // How long after someone stops editing in the compose box
 // do we send a 'stopped typing' notification
-var TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
+const TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
 
 /** Exported only for tests. */
 export const state = {};
@@ -63,7 +63,7 @@ function actually_ping_server(worker, recipient, current_time) {
 
 /** Exported only for tests. */
 export function maybe_ping_server(worker, recipient) {
-    var current_time = worker.get_current_time();
+    const current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
         actually_ping_server(worker, recipient, current_time);
     }
@@ -96,7 +96,7 @@ export function maybe_ping_server(worker, recipient) {
  *   anymore.
  */
 export function update(worker, new_recipient) {
-    var current_recipient = state.current_recipient;
+    const current_recipient = state.current_recipient;
     if (current_recipient !== null) {
         // We need to use _.isEqual for comparisons; === doesn't work
         // on arrays.
@@ -126,7 +126,7 @@ export function update(worker, new_recipient) {
     // We just started talking to this recipient, so notify
     // the server.
     state.current_recipient = new_recipient;
-    var current_time = worker.get_current_time();
+    const current_time = worker.get_current_time();
     actually_ping_server(worker, new_recipient, current_time);
     start_or_extend_idle_timer(worker);
 }

@@ -1,4 +1,4 @@
-var CLOSE_REASONS = {
+const CLOSE_REASONS = {
     none_given: {code: 4000, msg: "No reason provided"},
     no_heartbeat: {code: 4001, msg: "Missed too many heartbeats"},
     auth_fail: {code: 4002, msg: "Authentication failed"},
@@ -20,7 +20,7 @@ function Socket(url) {
     this._localstorage_requests_key = 'zulip_socket_requests';
     this._requests = this._localstorage_requests();
 
-    var that = this;
+    const that = this;
     this._is_unloading = false;
     $(window).on("unload", function () {
         that._is_unloading = true;
@@ -69,7 +69,7 @@ Socket.prototype = {
     // If that is the case, the success/error callbacks will not
     // be automatically called.
     send: function Socket__send(msg, success, error) {
-        var request = this._make_request('request');
+        const request = this._make_request('request');
         request.msg = msg;
         request.success = success;
         request.error = error;
@@ -84,27 +84,27 @@ Socket.prototype = {
     },
 
     _get_next_req_id: function Socket__get_next_req_id() {
-        var req_id = page_params.queue_id + ':' + this._next_req_id_counter;
+        const req_id = page_params.queue_id + ':' + this._next_req_id_counter;
         this._next_req_id_counter += 1;
         return req_id;
     },
 
     _req_id_too_new: function Socket__req_id_too_new(req_id) {
-        var counter = req_id.split(':')[2];
+        const counter = req_id.split(':')[2];
 
         return parseInt(counter, 10) >= this._next_req_id_counter;
     },
 
     _req_id_sorter: function Socket__req_id_sorter(req_id_a, req_id_b) {
         // Sort in ascending order
-        var a_count = parseInt(req_id_a.split(':')[2], 10);
-        var b_count = parseInt(req_id_b.split(':')[2], 10);
+        const a_count = parseInt(req_id_a.split(':')[2], 10);
+        const b_count = parseInt(req_id_b.split(':')[2], 10);
 
         return a_count - b_count;
     },
 
     _do_send: function Socket__do_send(request) {
-        var that = this;
+        const that = this;
         this._requests[request.req_id].ack_timeout_id = setTimeout(function () {
             blueslip.info("Timeout on ACK for request " + request.req_id);
             that._try_to_reconnect({reason: 'ack_timeout'});
@@ -136,7 +136,7 @@ Socket.prototype = {
     },
 
     _resend: function Socket__resend(req_id) {
-        var req_info = this._requests[req_id];
+        const req_info = this._requests[req_id];
         if (req_info.ack_timeout_id !== null) {
             clearTimeout(req_info.ack_timeout_id);
             req_info.ack_timeout_id = null;
@@ -150,7 +150,7 @@ Socket.prototype = {
     },
 
     _process_response: function Socket__process_response(req_id, response) {
-        var req_info = this._requests[req_id];
+        const req_info = this._requests[req_id];
         if (req_info === undefined) {
             if (this._req_id_too_new(req_id)) {
                 blueslip.error("Got a response for an unknown request",
@@ -176,7 +176,7 @@ Socket.prototype = {
     },
 
     _process_ack: function Socket__process_ack(req_id) {
-        var req_info = this._requests[req_id];
+        const req_info = this._requests[req_id];
         if (req_info === undefined) {
             blueslip.error("Got an ACK for an unknown request",
                            {request_id: req_id, next_id: this._next_req_id_counter,
@@ -191,7 +191,7 @@ Socket.prototype = {
     },
 
     _setup_sockjs_callbacks: function Socket__setup_sockjs_callbacks(sockjs) {
-        var that = this;
+        const that = this;
         sockjs.onopen = function Socket__sockjs_onopen() {
             blueslip.info("Socket connected [transport=" + sockjs.protocol + "]");
             if (that._reconnect_initiation_time !== null) {
@@ -205,7 +205,7 @@ Socket.prototype = {
             // Notify listeners that we've finished the websocket handshake
             $(document).trigger($.Event('websocket_postopen.zulip', {}));
 
-            var request = that._make_request('auth');
+            const request = that._make_request('auth');
             request.msg = {csrf_token: csrf_token,
                            queue_id: page_params.queue_id,
                            status_inquiries: _.keys(that._requests)};
@@ -214,7 +214,7 @@ Socket.prototype = {
                 that._is_reconnecting = false;
                 that._reconnect_initiation_time = null;
                 that._connection_failures = 0;
-                var resend_queue = [];
+                const resend_queue = [];
                 _.each(resp.status_inquiries, function (status, id) {
                     if (status.status === 'complete') {
                         that._process_response(id, status.response);
@@ -286,9 +286,9 @@ Socket.prototype = {
 
     _try_to_reconnect: function Socket__try_to_reconnect(opts) {
         opts = _.extend({wait_time: 0, reason: 'none_given'}, opts);
-        var that = this;
+        const that = this;
 
-        var now = (new Date()).getTime();
+        const now = (new Date()).getTime();
         if (this._is_reconnecting && now - this._reconnect_initiation_time < 1000) {
             // Only try to reconnect once a second
             return;
@@ -326,7 +326,7 @@ Socket.prototype = {
         // this._sockjs isn't undefined since it's not created immediately
         // when running under the test suite.
         if (this._sockjs !== undefined) {
-            var close_reason = CLOSE_REASONS[opts.reason];
+            const close_reason = CLOSE_REASONS[opts.reason];
             this._sockjs.close(close_reason.code, close_reason.msg);
         }
 
@@ -350,7 +350,7 @@ Socket.prototype = {
         }
 
         // Auth requests are always session-specific, so don't store them for later
-        var non_auth_reqs = {};
+        const non_auth_reqs = {};
         _.each(this._requests, function (val, key) {
             if (val.type !== 'auth') {
                 non_auth_reqs[key] = val;

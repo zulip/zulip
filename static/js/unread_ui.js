@@ -1,6 +1,6 @@
-var render_bankruptcy_modal = require('../templates/bankruptcy_modal.hbs');
+const render_bankruptcy_modal = require('../templates/bankruptcy_modal.hbs');
 
-var last_mention_count = 0;
+let last_mention_count = 0;
 
 function do_new_messages_animation(li) {
     li.addClass("new_messages");
@@ -42,7 +42,7 @@ exports.update_unread_counts = function () {
     }
 
     // Pure computation:
-    var res = unread.get_counts();
+    const res = unread.get_counts();
 
     // Side effects from here down:
     // This updates some DOM elements directly, so try to
@@ -52,7 +52,7 @@ exports.update_unread_counts = function () {
     stream_list.update_dom_with_unread_counts(res);
     pm_list.update_dom_with_unread_counts(res);
     notifications.update_pm_count(res.private_message_count);
-    var notifiable_unread_count = unread.calculate_notifiable_count(res);
+    const notifiable_unread_count = unread.calculate_notifiable_count(res);
     notifications.update_title_count(notifiable_unread_count);
 
     exports.set_count_toggle_button($("#streamlist-toggle-unreadcount"),
@@ -77,10 +77,10 @@ function consider_bankruptcy() {
         return;
     }
 
-    var now = new XDate(true).getTime() / 1000;
+    const now = new XDate(true).getTime() / 1000;
     if (page_params.unread_msgs.count > 500 &&
             now - page_params.furthest_read_time > 60 * 60 * 24 * 2) { // 2 days.
-        var rendered_modal = render_bankruptcy_modal({
+        const rendered_modal = render_bankruptcy_modal({
             unread_count: page_params.unread_msgs.count});
         $('#bankruptcy-unread-count').html(rendered_modal);
         $('#bankruptcy').modal('show');

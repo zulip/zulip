@@ -19,7 +19,7 @@ run_test('stream', () => {
     assert.equal(narrow_state.public_operators(), undefined);
     assert(!narrow_state.active());
 
-    var test_stream = {name: 'Test', stream_id: 15};
+    const test_stream = {name: 'Test', stream_id: 15};
     stream_data.add_sub('Test', test_stream);
 
     assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
@@ -37,13 +37,13 @@ run_test('stream', () => {
     assert.equal(narrow_state.topic(), 'Bar');
     assert(narrow_state.is_for_stream_id(test_stream.stream_id));
 
-    var expected_operators = [
+    const expected_operators = [
         { negated: false, operator: 'stream', operand: 'Test' },
         { negated: false, operator: 'topic', operand: 'Bar' },
         { negated: false, operator: 'search', operand: 'yo' },
     ];
 
-    var public_operators = narrow_state.public_operators();
+    const public_operators = narrow_state.public_operators();
     assert.deepEqual(public_operators, expected_operators);
     assert.equal(narrow_state.search_string(), 'stream:Test topic:Bar yo');
 });
@@ -104,7 +104,7 @@ run_test('narrowed', () => {
 
 run_test('operators', () => {
     set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
-    var result = narrow_state.operators();
+    let result = narrow_state.operators();
     assert.equal(result.length, 3);
     assert.equal(result[0].operator, 'stream');
     assert.equal(result[0].operand, 'Foo');
@@ -141,15 +141,15 @@ run_test('muting_enabled', () => {
 run_test('set_compose_defaults', () => {
     set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
 
-    var stream_and_subject = narrow_state.set_compose_defaults();
+    const stream_and_subject = narrow_state.set_compose_defaults();
     assert.equal(stream_and_subject.stream, 'Foo');
     assert.equal(stream_and_subject.topic, 'Bar');
 
     set_filter([['pm-with', 'foo@bar.com']]);
-    var pm_test = narrow_state.set_compose_defaults();
+    let pm_test = narrow_state.set_compose_defaults();
     assert.equal(pm_test.private_message_recipient, undefined);
 
-    var john = {
+    const john = {
         email: 'john@doe.com',
         user_id: 57,
         full_name: 'John Doe',
@@ -167,12 +167,12 @@ run_test('set_compose_defaults', () => {
     stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
     set_filter([['stream', 'rome']]);
 
-    var stream_test = narrow_state.set_compose_defaults();
+    const stream_test = narrow_state.set_compose_defaults();
     assert.equal(stream_test.stream, 'ROME');
 });
 
 run_test('update_email', () => {
-    var steve = {
+    const steve = {
         email: 'steve@foo.com',
         user_id: 43,
         full_name: 'Steve',
@@ -185,7 +185,7 @@ run_test('update_email', () => {
         ['stream', 'steve@foo.com'], // try to be tricky
     ]);
     narrow_state.update_email(steve.user_id, 'showell@foo.com');
-    var filter = narrow_state.filter();
+    const filter = narrow_state.filter();
     assert.deepEqual(filter.operands('pm-with'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
@@ -247,13 +247,13 @@ run_test('pm_string', () => {
     set_filter([['pm-with', 'bogus@foo.com']]);
     assert.equal(narrow_state.pm_string(), undefined);
 
-    var alice = {
+    const alice = {
         email: 'alice@foo.com',
         user_id: 444,
         full_name: 'Alice',
     };
 
-    var bob = {
+    const bob = {
         email: 'bob@foo.com',
         user_id: 555,
         full_name: 'Bob',

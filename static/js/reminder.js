@@ -1,4 +1,4 @@
-var deferred_message_types = {
+const deferred_message_types = {
     scheduled: {
         delivery_type: 'send_later',
         test: /^\/schedule/,
@@ -14,8 +14,8 @@ var deferred_message_types = {
 exports.deferred_message_types = deferred_message_types;
 
 exports.is_deferred_delivery = function (message_content) {
-    var reminders_test = deferred_message_types.reminders.test;
-    var scheduled_test = deferred_message_types.scheduled.test;
+    const reminders_test = deferred_message_types.reminders.test;
+    const scheduled_test = deferred_message_types.scheduled.test;
     return reminders_test.test(message_content) ||
             scheduled_test.test(message_content);
 };
@@ -27,7 +27,7 @@ function patch_request_for_scheduling(request, message_content, deliver_at, deli
         request.to = JSON.stringify([request.to]);
     }
 
-    var new_request = request;
+    const new_request = request;
     new_request.content = message_content;
     new_request.deliver_at = deliver_at;
     new_request.delivery_type = delivery_type;
@@ -40,16 +40,16 @@ exports.schedule_message = function (request) {
         request = compose.create_message_object();
     }
 
-    var raw_message = request.content.split('\n');
-    var command_line = raw_message[0];
-    var message = raw_message.slice(1).join('\n');
+    const raw_message = request.content.split('\n');
+    const command_line = raw_message[0];
+    const message = raw_message.slice(1).join('\n');
 
-    var deferred_message_type = _.filter(deferred_message_types, function (props) {
+    const deferred_message_type = _.filter(deferred_message_types, function (props) {
         return command_line.match(props.test) !== null;
     })[0];
-    var command = command_line.match(deferred_message_type.test)[0];
+    const command = command_line.match(deferred_message_type.test)[0];
 
-    var deliver_at = command_line.slice(command.length + 1);
+    const deliver_at = command_line.slice(command.length + 1);
 
     if (message.trim() === '' || deliver_at.trim() === '' ||
         command_line.slice(command.length, command.length + 1) !== ' ') {
@@ -69,14 +69,14 @@ exports.schedule_message = function (request) {
         request, message, deliver_at, deferred_message_type.delivery_type
     );
 
-    var success = function (data) {
+    const success = function (data) {
         if (request.delivery_type === deferred_message_types.scheduled.delivery_type) {
             notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
         }
         $("#compose-textarea").attr('disabled', false);
         compose.clear_compose_box();
     };
-    var error = function (response) {
+    const error = function (response) {
         $("#compose-textarea").attr('disabled', false);
         compose.compose_error(response, $('#compose-textarea'));
     };
@@ -88,7 +88,7 @@ exports.schedule_message = function (request) {
 };
 
 exports.do_set_reminder_for_message = function (message_id, timestamp) {
-    var row = $("[zid='" + message_id + "']");
+    const row = $("[zid='" + message_id + "']");
     function error() {
         row.find(".alert-msg")
             .text(i18n.t("Reminder not set!"))
@@ -99,10 +99,10 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
             });
     }
 
-    var message = current_msg_list.get(message_id);
+    const message = current_msg_list.get(message_id);
 
     if (!message.raw_content) {
-        var msg_list = current_msg_list;
+        const msg_list = current_msg_list;
         channel.get({
             url: '/json/messages/' + message.id,
             idempotent: true,
@@ -117,17 +117,17 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
         return;
     }
 
-    var link_to_msg = hash_util.by_conversation_and_time_uri(message);
-    var reminder_msg_content = message.raw_content + '\n\n[Link to conversation](' + link_to_msg + ')';
-    var reminder_message = {
+    const link_to_msg = hash_util.by_conversation_and_time_uri(message);
+    const reminder_msg_content = message.raw_content + '\n\n[Link to conversation](' + link_to_msg + ')';
+    let reminder_message = {
         type: "private",
         sender_id: page_params.user_id,
         stream: '',
     };
     util.set_message_topic(reminder_message, '');
 
-    var recipient = page_params.email;
-    var emails = util.extract_pm_recipients(recipient);
+    const recipient = page_params.email;
+    const emails = util.extract_pm_recipients(recipient);
     reminder_message.to = emails;
     reminder_message.reply_to = recipient;
     reminder_message.private_message_recipient = recipient;

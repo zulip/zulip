@@ -13,24 +13,24 @@ zrequire('compose_pm_pill');
 zrequire('input_pill');
 zrequire('user_pill');
 
-var pills = {
+let pills = {
     pill: {},
 };
 
 run_test('pills', () => {
-    var othello = {
+    const othello = {
         user_id: 1,
         email: 'othello@example.com',
         full_name: 'Othello',
     };
 
-    var iago = {
+    const iago = {
         email: 'iago@zulip.com',
         user_id: 2,
         full_name: 'Iago',
     };
 
-    var hamlet = {
+    const hamlet = {
         email: 'hamlet@example.com',
         user_id: 3,
         full_name: 'Hamlet',
@@ -40,15 +40,15 @@ run_test('pills', () => {
         return [iago, othello, hamlet];
     };
 
-    var recipient_stub = $("#private_message_recipient");
-    var pill_container_stub = $('.pill-container[data-before="You and"]');
+    const recipient_stub = $("#private_message_recipient");
+    const pill_container_stub = $('.pill-container[data-before="You and"]');
     recipient_stub.set_parent(pill_container_stub);
-    var create_item_handler;
+    let create_item_handler;
 
-    var all_pills = {};
+    let all_pills = {};
 
     pills.appendValidatedData = function (item) {
-        var id = item.user_id;
+        const id = item.user_id;
         assert.equal(all_pills[id], undefined);
         all_pills[id] = item;
     };
@@ -56,12 +56,12 @@ run_test('pills', () => {
         return _.values(all_pills);
     };
 
-    var text_cleared;
+    let text_cleared;
     pills.clear_text = function () {
         text_cleared = true;
     };
 
-    var pills_cleared;
+    let pills_cleared;
     pills.clear = function () {
         pills_cleared = true;
         pills = {
@@ -70,14 +70,14 @@ run_test('pills', () => {
         all_pills = {};
     };
 
-    var appendValue_called;
+    let appendValue_called;
     pills.appendValue = function (value) {
         appendValue_called = true;
         assert.equal(value, 'othello@example.com');
         this.appendValidatedData(othello);
     };
 
-    var get_by_email_called = false;
+    let get_by_email_called = false;
     people.get_by_email = function (user_email) {
         get_by_email_called = true;
         if (user_email === iago.email) {
@@ -88,7 +88,7 @@ run_test('pills', () => {
         }
     };
 
-    var get_person_from_user_id_called = false;
+    let get_person_from_user_id_called = false;
     people.get_person_from_user_id = function (id) {
         get_person_from_user_id_called = true;
         if (id === othello.user_id) {
@@ -100,14 +100,14 @@ run_test('pills', () => {
 
     function test_create_item(handler) {
         (function test_rejection_path() {
-            var item = handler(othello.email, pills.items());
+            const item = handler(othello.email, pills.items());
             assert(get_by_email_called);
             assert.equal(item, undefined);
         }());
 
         (function test_success_path() {
             get_by_email_called = false;
-            var res = handler(iago.email, pills.items());
+            const res = handler(iago.email, pills.items());
             assert(get_by_email_called);
             assert.equal(typeof res, 'object');
             assert.equal(res.user_id, iago.user_id);
@@ -130,16 +130,16 @@ run_test('pills', () => {
     compose_pm_pill.set_from_typeahead(othello);
     compose_pm_pill.set_from_typeahead(hamlet);
 
-    var user_ids = compose_pm_pill.get_user_ids();
+    const user_ids = compose_pm_pill.get_user_ids();
     assert.deepEqual(user_ids, [othello.user_id, hamlet.user_id]);
 
-    var user_ids_string = compose_pm_pill.get_user_ids_string();
+    const user_ids_string = compose_pm_pill.get_user_ids_string();
     assert.equal(user_ids_string, '1,3');
 
-    var emails = compose_pm_pill.get_emails();
+    const emails = compose_pm_pill.get_emails();
     assert.equal(emails, 'othello@example.com,hamlet@example.com');
 
-    var items = compose_pm_pill.get_typeahead_items();
+    const items = compose_pm_pill.get_typeahead_items();
     assert.deepEqual(items, [{email: 'iago@zulip.com', user_id: 2, full_name: 'Iago'}]);
 
     test_create_item(create_item_handler);

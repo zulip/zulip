@@ -11,15 +11,15 @@ function send_flag_update(message, flag, op) {
 }
 exports._unread_batch_size = 1000;
 exports.send_read = (function () {
-    var queue = [];
-    var on_success;
-    var start;
+    let queue = [];
+    let on_success;
+    let start;
     function server_request() {
         // Wait for server IDs before sending flags
-        var real_msgs = _.filter(queue, function (msg) {
+        const real_msgs = _.filter(queue, function (msg) {
             return !msg.locally_echoed;
         });
-        var real_msg_ids = _.map(real_msgs, function (msg) {
+        const real_msg_ids = _.map(real_msgs, function (msg) {
             return msg.id;
         });
 
@@ -28,7 +28,7 @@ exports.send_read = (function () {
             return;
         }
 
-        var real_msg_ids_batch = real_msg_ids.slice(0, exports._unread_batch_size);
+        const real_msg_ids_batch = real_msg_ids.slice(0, exports._unread_batch_size);
 
         // We have some real IDs.  If there are any left in the queue when this
         // call finishes, they will be handled in the success callback.
@@ -78,7 +78,7 @@ exports.save_uncollapsed = function (message) {
 // This updates the state of the starred flag in local data
 // structures, and triggers a UI rerender.
 exports.update_starred_flag = function (message_id, new_value) {
-    var message = message_store.get(message_id);
+    const message = message_store.get(message_id);
     if (message === undefined) {
         // If we don't have the message locally, do nothing; if later
         // we fetch it, it'll come with the correct `starred` state.
@@ -116,7 +116,7 @@ exports.toggle_starred_and_update_server = function (message) {
 };
 
 exports.unstar_all_messages = function () {
-    var starred_msg_ids = starred_messages.get_starred_msg_ids();
+    const starred_msg_ids = starred_messages.get_starred_msg_ids();
     channel.post({
         url: '/json/messages/flags',
         idempotent: true,

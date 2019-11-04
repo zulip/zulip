@@ -2,7 +2,7 @@
     See hotkey.js for handlers that are more app-wide.
 */
 
-var keys = {
+const keys = {
     13: 'enter_key',
     37: 'left_arrow',
     38: 'up_arrow',
@@ -12,13 +12,13 @@ var keys = {
 
 exports.handle = function (opts) {
     opts.elem.keydown(function (e) {
-        var key = e.which || e.keyCode;
+        const key = e.which || e.keyCode;
 
         if (e.altKey || e.ctrlKey || e.shiftKey) {
             return;
         }
 
-        var key_name = keys[key];
+        const key_name = keys[key];
 
         if (!key_name) {
             return;
@@ -28,7 +28,7 @@ exports.handle = function (opts) {
             return;
         }
 
-        var handled = opts.handlers[key_name]();
+        const handled = opts.handlers[key_name]();
 
         if (handled) {
             e.preventDefault();

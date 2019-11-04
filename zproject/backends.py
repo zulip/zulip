@@ -948,6 +948,7 @@ def social_auth_finish(backend: Any,
     assert return_data.get('valid_attestation') is True
 
     strategy = backend.strategy
+    full_name_validated = backend.full_name_validated
     email_address = return_data['validated_email']
     full_name = return_data['full_name']
     is_signup = strategy.session_get('is_signup') == '1'
@@ -970,11 +971,14 @@ def social_auth_finish(backend: Any,
         # redirect directly from here, saving a round trip over what
         # we need to do to create session cookies on the right domain
         # in the web login flow (below).
-        return login_or_register_remote_user(strategy.request, email_address,
-                                             user_profile, full_name,
-                                             mobile_flow_otp=mobile_flow_otp,
-                                             is_signup=is_signup,
-                                             redirect_to=redirect_to)
+        return login_or_register_remote_user(
+            strategy.request, email_address,
+            user_profile, full_name,
+            mobile_flow_otp=mobile_flow_otp,
+            is_signup=is_signup,
+            redirect_to=redirect_to,
+            full_name_validated=full_name_validated
+        )
 
     # If this authentication code were executing on
     # subdomain.zulip.example.com, we would just call
@@ -989,19 +993,34 @@ def social_auth_finish(backend: Any,
     # cryptographically signed token) to a route on
     # subdomain.zulip.example.com that will verify the signature and
     # then call login_or_register_remote_user.
-    return redirect_and_log_into_subdomain(realm, full_name, email_address,
-                                           is_signup=is_signup,
-                                           redirect_to=redirect_to,
-                                           multiuse_object_key=multiuse_object_key)
+    return redirect_and_log_into_subdomain(
+        realm, full_name, email_address,
+        is_signup=is_signup,
+        redirect_to=redirect_to,
+        multiuse_object_key=multiuse_object_key,
+        full_name_validated=full_name_validated
+    )
 
 class SocialAuthMixin(ZulipAuthMixin):
     auth_backend_name = "undeclared"
     name = "undeclared"
-    display_logo = None  # type: Optional[str]
+    display_icon = None  # type: Optional[str]
 
     # Used to determine how to order buttons on login form, backend with
     # higher sort order are displayed first.
     sort_order = 0
+
+    # Whether we expect that the full_name value obtained by the
+    # social backend is definitely how the user should be referred to
+    # in Zulip, which in turn determines whether we should always show
+    # a registration form in the event with a default value of the
+    # user's name when using this social backend so they can change
+    # it.  For social backends like SAML that are expected to be a
+    # central database, this should be True; for backends like GitHub
+    # where the user might not have a name set or have it set to
+    # something other than the name they will prefer to use in Zulip,
+    # it should be False.
+    full_name_validated = False
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """This is a small wrapper around the core `auth_complete` method of
@@ -1030,7 +1049,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     name = "github"
     auth_backend_name = "GitHub"
     sort_order = 100
-    display_logo = "/static/images/landing-page/logos/github-icon.png"
+    display_icon = "/static/images/landing-page/logos/github-icon.png"
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
         access_token = kwargs["response"]["access_token"]
@@ -1096,13 +1115,13 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
-    display_logo = "/static/images/landing-page/logos/azuread-icon.png"
+    display_icon = "/static/images/landing-page/logos/azuread-icon.png"
 
 class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     sort_order = 150
     auth_backend_name = "Google"
     name = "google"
-    display_logo = "/static/images/landing-page/logos/googl_e-icon.png"
+    display_icon = "/static/images/landing-page/logos/googl_e-icon.png"
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
         verified_emails = []    # type: List[str]
@@ -1123,7 +1142,13 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     # SAML buttons at the top.
     sort_order = 9999
     # There's no common default logo for SAML authentication.
-    display_logo = ""
+    display_icon = ""
+
+    # The full_name provided by the IdP is very likely the standard
+    # employee directory name for the user, and thus what they and
+    # their organization want to use in Zulip.  So don't unnecessarily
+    # provide a registration flow prompt for them to set their name.
+    full_name_validated = True
 
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to
@@ -1254,21 +1279,19 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 SocialBackendDictT = TypedDict('SocialBackendDictT', {
     'name': str,
     'display_name': str,
-    'display_logo': str,
+    'display_icon': str,
     'login_url': str,
     'signup_url': str,
-    'sort_order': int,
 })
 
 def create_standard_social_backend_dict(social_backend: SocialAuthMixin) -> SocialBackendDictT:
-    assert social_backend.display_logo is not None
+    assert social_backend.display_icon is not None
     return dict(
         name=social_backend.name,
         display_name=social_backend.auth_backend_name,
-        display_logo=social_backend.display_logo,
+        display_icon=social_backend.display_icon,
         login_url=reverse('login-social', args=(social_backend.name,)),
         signup_url=reverse('signup-social', args=(social_backend.name,)),
-        sort_order=social_backend.sort_order
     )
 
 def list_saml_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
@@ -1277,25 +1300,30 @@ def list_saml_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDi
         saml_dict = dict(
             name='saml:{}'.format(idp_name),
             display_name=idp_dict.get('display_name', SAMLAuthBackend.auth_backend_name),
-            display_logo=idp_dict.get('display_logo', SAMLAuthBackend.display_logo),
+            display_icon=idp_dict.get('display_icon', SAMLAuthBackend.display_icon),
             login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
             signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
-            sort_order=SAMLAuthBackend.sort_order - len(result)
         )  # type: SocialBackendDictT
         result.append(saml_dict)
 
     return result
 
 def get_social_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
+    """
+    Returns a list of dictionaries that represent social backends, sorted
+    in the order in which they should be displayed.
+    """
     result = []
     for backend in SOCIAL_AUTH_BACKENDS:
+        # SOCIAL_AUTH_BACKENDS is already sorted in the correct order,
+        # so we don't need to worry about sorting here.
         if auth_enabled_helper([backend.auth_backend_name], realm):
             if backend != SAMLAuthBackend:
                 result.append(create_standard_social_backend_dict(backend))
             else:
                 result += list_saml_backend_dicts(realm)
 
-    return sorted(result, key=lambda x: x['sort_order'], reverse=True)
+    return result
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
@@ -1309,6 +1337,8 @@ SOCIAL_AUTH_BACKENDS = []  # type: List[BaseOAuth2]
 for social_auth_subclass in SocialAuthMixin.__subclasses__():
     AUTH_BACKEND_NAME_MAP[social_auth_subclass.auth_backend_name] = social_auth_subclass
     SOCIAL_AUTH_BACKENDS.append(social_auth_subclass)
+
+SOCIAL_AUTH_BACKENDS = sorted(SOCIAL_AUTH_BACKENDS, key=lambda x: x.sort_order, reverse=True)
 
 # Provide this alternative name for backwards compatibility with
 # installations that had the old backend enabled.

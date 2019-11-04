@@ -3,7 +3,7 @@ function stream_matches_query(stream_name, q) {
 }
 
 function highlight_person(query, person) {
-    var hilite = typeahead_helper.highlight_query_in_phrase;
+    const hilite = typeahead_helper.highlight_query_in_phrase;
     if (settings_org.show_email()) {
         return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
     }
@@ -11,7 +11,7 @@ function highlight_person(query, person) {
 }
 
 function match_criteria(operators, criteria) {
-    var filter = new Filter(operators);
+    const filter = new Filter(operators);
     return _.any(criteria, function (cr) {
         if (_.has(cr, 'operand')) {
             return filter.has_operand(cr.operator, cr.operand);
@@ -48,20 +48,20 @@ function compare_by_huddle(huddle) {
     });
 
     // Construct dict for all huddles, so we can lookup each's recency
-    var huddles = activity.get_huddles();
-    var huddle_dict = {};
-    for (var i = 0; i < huddles.length; i += 1) {
+    const huddles = activity.get_huddles();
+    const huddle_dict = {};
+    for (let i = 0; i < huddles.length; i += 1) {
         huddle_dict[huddles[i]] = i + 1;
     }
 
     return function (person1, person2) {
-        var huddle1 = huddle.concat(person1.user_id).sort().join(',');
-        var huddle2 = huddle.concat(person2.user_id).sort().join(',');
+        const huddle1 = huddle.concat(person1.user_id).sort().join(',');
+        const huddle2 = huddle.concat(person2.user_id).sort().join(',');
 
         // If not in the dict, assign an arbitrarily high index
-        var score1 = huddle_dict[huddle1] || 100;
-        var score2 = huddle_dict[huddle2] || 100;
-        var diff = score1 - score2;
+        const score1 = huddle_dict[huddle1] || 100;
+        const score2 = huddle_dict[huddle2] || 100;
+        const diff = score1 - score2;
 
         if (diff !== 0) {
             return diff;
@@ -71,8 +71,8 @@ function compare_by_huddle(huddle) {
 }
 
 function get_stream_suggestions(last, operators) {
-    var valid = ['stream', 'search', ''];
-    var invalid = [
+    const valid = ['stream', 'search', ''];
+    const invalid = [
         {operator: 'stream'},
         {operator: 'streams'},
         {operator: 'is', operand: 'private'},
@@ -82,8 +82,8 @@ function get_stream_suggestions(last, operators) {
         return [];
     }
 
-    var query = last.operand;
-    var streams = stream_data.subscribed_streams();
+    const query = last.operand;
+    let streams = stream_data.subscribed_streams();
 
     streams = _.filter(streams, function (stream) {
         return stream_matches_query(stream, query);
@@ -91,17 +91,17 @@ function get_stream_suggestions(last, operators) {
 
     streams = typeahead_helper.sorter(query, streams);
 
-    var objs = _.map(streams, function (stream) {
-        var prefix = 'stream';
-        var highlighted_stream = typeahead_helper.highlight_with_escaping(query, stream);
-        var verb = last.negated ? 'exclude ' : '';
-        var description = verb + prefix + ' ' + highlighted_stream;
-        var term = {
+    const objs = _.map(streams, function (stream) {
+        const prefix = 'stream';
+        const highlighted_stream = typeahead_helper.highlight_with_escaping(query, stream);
+        const verb = last.negated ? 'exclude ' : '';
+        const description = verb + prefix + ' ' + highlighted_stream;
+        const term = {
             operator: 'stream',
             operand: stream,
             negated: last.negated,
         };
-        var search_string = Filter.unparse([term]);
+        const search_string = Filter.unparse([term]);
         return {description: description, search_string: search_string};
     });
 
@@ -113,8 +113,8 @@ function get_group_suggestions(all_persons, last, operators) {
         return [];
     }
 
-    var operand = last.operand;
-    var negated = last.negated;
+    const operand = last.operand;
+    const negated = last.negated;
 
     // The operand has the form "part1,part2,pa", where all but the last part
     // are emails, and the last part is an arbitrary query.
@@ -122,7 +122,7 @@ function get_group_suggestions(all_persons, last, operators) {
     // We only generate group suggestions when there's more than one part, and
     // we only use the last part to generate suggestions.
 
-    var last_comma_index = operand.lastIndexOf(',');
+    const last_comma_index = operand.lastIndexOf(',');
     if (last_comma_index < 0) {
         return [];
     }
@@ -133,8 +133,8 @@ function get_group_suggestions(all_persons, last, operators) {
 
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
-    var parts = all_but_last_part.split(',').concat(people.my_current_email());
-    var persons = _.filter(all_persons, function (person) {
+    const parts = all_but_last_part.split(',').concat(people.my_current_email());
+    let persons = _.filter(all_persons, function (person) {
         if (_.contains(parts, person.email)) {
             return false;
         }
@@ -146,21 +146,21 @@ function get_group_suggestions(all_persons, last, operators) {
     // Take top 15 persons, since they're ordered by pm_recipient_count.
     persons = persons.slice(0, 15);
 
-    var prefix = Filter.operator_to_prefix('pm-with', negated);
+    const prefix = Filter.operator_to_prefix('pm-with', negated);
 
-    var suggestions = _.map(persons, function (person) {
-        var term = {
+    const suggestions = _.map(persons, function (person) {
+        const term = {
             operator: 'pm-with',
             operand: all_but_last_part + ',' + person.email,
             negated: negated,
         };
-        var name = highlight_person(last_part, person);
-        var description = prefix + ' ' + Handlebars.Utils.escapeExpression(all_but_last_part) + ',' + name;
-        var terms = [term];
+        const name = highlight_person(last_part, person);
+        const description = prefix + ' ' + Handlebars.Utils.escapeExpression(all_but_last_part) + ',' + name;
+        let terms = [term];
         if (negated) {
             terms = [{operator: 'is', operand: 'private'}, term];
         }
-        var search_string = Filter.unparse(terms);
+        const search_string = Filter.unparse(terms);
         return {description: description, search_string: search_string};
     });
 
@@ -174,15 +174,15 @@ function get_person_suggestions(all_persons, last, operators, autocomplete_opera
         last = {operator: "pm-with", operand: "", negated: false};
     }
 
-    var query = last.operand;
+    const query = last.operand;
 
     // Be especially strict about the less common "from" operator.
     if (autocomplete_operator === 'from' && last.operator !== 'from') {
         return [];
     }
 
-    var valid = ['search', autocomplete_operator];
-    var invalid;
+    const valid = ['search', autocomplete_operator];
+    let invalid;
     if (autocomplete_operator === 'pm-with') {
         invalid = [{operator: 'pm-with'}, {operator: 'stream'}];
     } else {
@@ -194,18 +194,18 @@ function get_person_suggestions(all_persons, last, operators, autocomplete_opera
         return [];
     }
 
-    var persons = _.filter(all_persons, function (person) {
+    const persons = _.filter(all_persons, function (person) {
         return people.person_matches_query(person, query);
     });
 
     persons.sort(typeahead_helper.compare_by_pms);
 
-    var prefix = Filter.operator_to_prefix(autocomplete_operator, last.negated);
+    const prefix = Filter.operator_to_prefix(autocomplete_operator, last.negated);
 
-    var objs = _.map(persons, function (person) {
-        var name = highlight_person(query, person);
-        var description = prefix + ' ' + name;
-        var terms = [{
+    const objs = _.map(persons, function (person) {
+        const name = highlight_person(query, person);
+        const description = prefix + ' ' + name;
+        const terms = [{
             operator: autocomplete_operator,
             operand: person.email,
             negated: last.negated,
@@ -215,7 +215,7 @@ function get_person_suggestions(all_persons, last, operators, autocomplete_opera
             // because we assume the user still wants to narrow to PMs
             terms.unshift({operator: 'is', operand: 'private'});
         }
-        var search_string = Filter.unparse(terms);
+        const search_string = Filter.unparse(terms);
         return {description: description, search_string: search_string};
     });
 
@@ -241,7 +241,7 @@ function get_default_suggestion_legacy(operators) {
 }
 
 function get_topic_suggestions(last, operators) {
-    var invalid = [
+    const invalid = [
         {operator: 'pm-with'},
         {operator: 'is', operand: 'private'},
         {operator: 'topic'},
@@ -250,13 +250,13 @@ function get_topic_suggestions(last, operators) {
         return [];
     }
 
-    var operator = Filter.canonicalize_operator(last.operator);
-    var operand = last.operand;
-    var negated = operator === 'topic' && last.negated;
-    var stream;
-    var guess;
-    var filter = new Filter(operators);
-    var suggest_operators = [];
+    const operator = Filter.canonicalize_operator(last.operator);
+    const operand = last.operand;
+    const negated = operator === 'topic' && last.negated;
+    let stream;
+    let guess;
+    const filter = new Filter(operators);
+    const suggest_operators = [];
 
     // stream:Rome -> show all Rome topics
     // stream:Rome topic: -> show all Rome topics
@@ -296,12 +296,12 @@ function get_topic_suggestions(last, operators) {
     }
 
 
-    var stream_id = stream_data.get_stream_id(stream);
+    const stream_id = stream_data.get_stream_id(stream);
     if (!stream_id) {
         return [];
     }
 
-    var topics = topic_data.get_recent_names(stream_id);
+    let topics = topic_data.get_recent_names(stream_id);
 
     if (!topics || !topics.length) {
         return [];
@@ -326,8 +326,8 @@ function get_topic_suggestions(last, operators) {
     topics.sort();
 
     return _.map(topics, function (topic) {
-        var topic_term = {operator: 'topic', operand: topic, negated: negated};
-        var operators = suggest_operators.concat([topic_term]);
+        const topic_term = {operator: 'topic', operand: topic, negated: negated};
+        const operators = suggest_operators.concat([topic_term]);
         return format_as_suggestion(operators);
     });
 }
@@ -340,11 +340,11 @@ function get_operator_subset_suggestions(operators) {
         return [];
     }
 
-    var i;
-    var suggestions = [];
+    let i;
+    const suggestions = [];
 
     for (i = operators.length - 1; i >= 1; i -= 1) {
-        var subset = operators.slice(0, i);
+        const subset = operators.slice(0, i);
         suggestions.push(format_as_suggestion(subset));
     }
 
@@ -352,7 +352,7 @@ function get_operator_subset_suggestions(operators) {
 }
 
 function get_special_filter_suggestions(last, operators, suggestions) {
-    var is_search_operand_negated = last.operator === 'search' && last.operand[0] === '-';
+    const is_search_operand_negated = last.operator === 'search' && last.operand[0] === '-';
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated operators.
     if (last.negated || is_search_operand_negated) {
@@ -365,7 +365,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         });
     }
 
-    var last_string = Filter.unparse([last]).toLowerCase();
+    const last_string = Filter.unparse([last]).toLowerCase();
     suggestions = _.filter(suggestions, function (s) {
         if (match_criteria(operators, s.invalid)) {
             return false;
@@ -375,9 +375,9 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         }
 
         // returns the substring after the ":" symbol.
-        var suggestion_operand = s.search_string.substring(s.search_string.indexOf(":") + 1);
+        const suggestion_operand = s.search_string.substring(s.search_string.indexOf(":") + 1);
         // e.g for `att` search query, `has:attachment` should be suggested.
-        var show_operator_suggestions = last.operator === 'search' && suggestion_operand.toLowerCase().indexOf(last_string) === 0;
+        const show_operator_suggestions = last.operator === 'search' && suggestion_operand.toLowerCase().indexOf(last_string) === 0;
         return s.search_string.toLowerCase().indexOf(last_string) === 0 ||
                show_operator_suggestions ||
                s.description.toLowerCase().indexOf(last_string) === 0;
@@ -391,7 +391,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
 }
 
 function get_streams_filter_suggestions(last, operators) {
-    var suggestions = [
+    const suggestions = [
         {
             search_string: 'streams:public',
             description: 'All public streams in organization',
@@ -409,7 +409,7 @@ function get_streams_filter_suggestions(last, operators) {
     return get_special_filter_suggestions(last, operators, suggestions);
 }
 function get_is_filter_suggestions(last, operators) {
-    var suggestions = [
+    const suggestions = [
         {
             search_string: 'is:private',
             description: 'private messages',
@@ -454,7 +454,7 @@ function get_is_filter_suggestions(last, operators) {
 }
 
 function get_has_filter_suggestions(last, operators) {
-    var suggestions = [
+    const suggestions = [
         {
             search_string: 'has:link',
             description: 'messages with one or more link',
@@ -482,19 +482,19 @@ function get_has_filter_suggestions(last, operators) {
 
 
 function get_sent_by_me_suggestions(last, operators) {
-    var last_string = Filter.unparse([last]).toLowerCase();
-    var negated = last.negated || last.operator === 'search' && last.operand[0] === '-';
-    var negated_symbol = negated ? '-' : '';
-    var verb = negated ? 'exclude ' : '';
+    const last_string = Filter.unparse([last]).toLowerCase();
+    const negated = last.negated || last.operator === 'search' && last.operand[0] === '-';
+    const negated_symbol = negated ? '-' : '';
+    const verb = negated ? 'exclude ' : '';
 
-    var sender_query = negated_symbol + 'sender:' + people.my_current_email();
-    var from_query = negated_symbol + 'from:' + people.my_current_email();
-    var sender_me_query = negated_symbol + 'sender:me';
-    var from_me_query = negated_symbol + 'from:me';
-    var sent_string = negated_symbol + 'sent';
-    var description = verb + 'sent by me';
+    const sender_query = negated_symbol + 'sender:' + people.my_current_email();
+    const from_query = negated_symbol + 'from:' + people.my_current_email();
+    const sender_me_query = negated_symbol + 'sender:me';
+    const from_me_query = negated_symbol + 'from:me';
+    const sent_string = negated_symbol + 'sent';
+    const description = verb + 'sent by me';
 
-    var invalid = [
+    const invalid = [
         {operator: 'sender'},
         {operator: 'from'},
     ];
@@ -526,21 +526,21 @@ function get_operator_suggestions(last) {
     if (!(last.operator === 'search')) {
         return [];
     }
-    var last_operand = last.operand;
+    let last_operand = last.operand;
 
-    var negated = false;
+    let negated = false;
     if (last_operand.indexOf("-") === 0) {
         negated = true;
         last_operand = last_operand.slice(1);
     }
 
-    var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'from', 'group-pm-with'];
+    let choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'from', 'group-pm-with'];
     choices = _.filter(choices, function (choice) {
         return common.phrase_match(last_operand, choice);
     });
 
     return _.map(choices, function (choice) {
-        var op = [{operator: choice, operand: '', negated: negated}];
+        const op = [{operator: choice, operand: '', negated: negated}];
         return format_as_suggestion(op);
     });
 }
@@ -561,9 +561,9 @@ exports.get_suggestions = function (base_query, query) {
     // the tests.  Its API is partly shaped by the typeahead library, which wants
     // us to give it strings only, but we also need to return our caller a hash
     // with information for subsequent callbacks.
-    var result = [];
-    var suggestion;
-    var suggestions;
+    let result = [];
+    let suggestion;
+    let suggestions;
 
     // base_query_operators correspond to the existing pills. query_operators correspond
     // to the operators for the query in the input. This query may contain one or more
@@ -571,10 +571,10 @@ exports.get_suggestions = function (base_query, query) {
     // or pressing enter in between i.e search pill for is:starred has not yet been added,
     // then `base` should be equal to the default suggestion for `is:starred`. Thus the
     // description of `is:starred` will act as a prefix in every suggestion.
-    var base_query_operators = Filter.parse(base_query);
-    var query_operators = Filter.parse(query);
-    var operators = base_query_operators.concat(query_operators);
-    var last = {operator: '', operand: '', negated: false};
+    const base_query_operators = Filter.parse(base_query);
+    const query_operators = Filter.parse(query);
+    const operators = base_query_operators.concat(query_operators);
+    let last = {operator: '', operand: '', negated: false};
     if (query_operators.length > 0) {
         last = query_operators.slice(-1)[0];
     } else {
@@ -586,9 +586,9 @@ exports.get_suggestions = function (base_query, query) {
         query_operators.push(last);
     }
 
-    var person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
-    var operators_len = operators.length;
-    var query_operators_len = query_operators.length;
+    const person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
+    const operators_len = operators.length;
+    const query_operators_len = query_operators.length;
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is
     // 'search' and the second last operator in query_operators is one out of person_suggestion_ops.
@@ -599,7 +599,7 @@ exports.get_suggestions = function (base_query, query) {
     if (query_operators_len > 1 &&
         last.operator === 'search' &&
         person_suggestion_ops.indexOf(query_operators[query_operators_len - 2].operator) !== -1) {
-        var person_op = query_operators[query_operators_len - 2];
+        const person_op = query_operators[query_operators_len - 2];
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
@@ -624,7 +624,7 @@ exports.get_suggestions = function (base_query, query) {
         }
     }
 
-    var base_operators = [];
+    let base_operators = [];
     if (operators.length > 1) {
         base_operators = operators.slice(0, -1);
     }
@@ -645,7 +645,7 @@ exports.get_suggestions = function (base_query, query) {
     suggestions = get_stream_suggestions(last, base_operators);
     attach_suggestions(result, base, suggestions);
 
-    var persons = people.get_all_persons();
+    const persons = people.get_all_persons();
 
     suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
     attach_suggestions(result, base, suggestions);
@@ -674,21 +674,21 @@ exports.get_suggestions = function (base_query, query) {
     result = result.concat(suggestions);
 
     _.each(result, function (sug) {
-        var first = sug.description.charAt(0).toUpperCase();
+        const first = sug.description.charAt(0).toUpperCase();
         sug.description = first + sug.description.slice(1);
     });
 
     // Typeahead expects us to give it strings, not objects, so we maintain our own hash
     // back to our objects, and we also filter duplicates here.
-    var lookup_table = {};
-    var unique_suggestions = [];
+    const lookup_table = {};
+    const unique_suggestions = [];
     _.each(result, function (obj) {
         if (!lookup_table[obj.search_string]) {
             lookup_table[obj.search_string] = obj;
             unique_suggestions.push(obj);
         }
     });
-    var strings = _.map(unique_suggestions, function (obj) {
+    const strings = _.map(unique_suggestions, function (obj) {
         return obj.search_string;
     });
     return {
@@ -703,19 +703,19 @@ exports.get_suggestions_legacy = function (query) {
     // the tests.  Its API is partly shaped by the typeahead library, which wants
     // us to give it strings only, but we also need to return our caller a hash
     // with information for subsequent callbacks.
-    var result = [];
-    var suggestion;
-    var suggestions;
+    let result = [];
+    let suggestion;
+    let suggestions;
 
     // Add an entry for narrow by operators.
-    var operators = Filter.parse(query);
-    var last = {operator: '', operand: '', negated: false};
+    const operators = Filter.parse(query);
+    let last = {operator: '', operand: '', negated: false};
     if (operators.length > 0) {
         last = operators.slice(-1)[0];
     }
 
-    var person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
-    var operators_len = operators.length;
+    const person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
+    const operators_len = operators.length;
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is
     // 'search' and the second last operator is one out of person_suggestion_ops.
@@ -726,7 +726,7 @@ exports.get_suggestions_legacy = function (query) {
     if (operators_len > 1 &&
         last.operator === 'search' &&
         person_suggestion_ops.indexOf(operators[operators_len - 2].operator) !== -1) {
-        var person_op = operators[operators_len - 2];
+        const person_op = operators[operators_len - 2];
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
@@ -747,7 +747,7 @@ exports.get_suggestions_legacy = function (query) {
         result = [suggestion];
     }
 
-    var base_operators = [];
+    let base_operators = [];
     if (operators.length > 1) {
         base_operators = operators.slice(0, -1);
     }
@@ -767,7 +767,7 @@ exports.get_suggestions_legacy = function (query) {
     suggestions = get_stream_suggestions(last, base_operators);
     attach_suggestions(result, base, suggestions);
 
-    var persons = people.get_all_persons();
+    const persons = people.get_all_persons();
 
     suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
     attach_suggestions(result, base, suggestions);
@@ -797,21 +797,21 @@ exports.get_suggestions_legacy = function (query) {
     result = result.concat(suggestions);
 
     _.each(result, function (sug) {
-        var first = sug.description.charAt(0).toUpperCase();
+        const first = sug.description.charAt(0).toUpperCase();
         sug.description = first + sug.description.slice(1);
     });
 
     // Typeahead expects us to give it strings, not objects, so we maintain our own hash
     // back to our objects, and we also filter duplicates here.
-    var lookup_table = {};
-    var unique_suggestions = [];
+    const lookup_table = {};
+    const unique_suggestions = [];
     _.each(result, function (obj) {
         if (!lookup_table[obj.search_string]) {
             lookup_table[obj.search_string] = obj;
             unique_suggestions.push(obj);
         }
     });
-    var strings = _.map(unique_suggestions, function (obj) {
+    const strings = _.map(unique_suggestions, function (obj) {
         return obj.search_string;
     });
     return {

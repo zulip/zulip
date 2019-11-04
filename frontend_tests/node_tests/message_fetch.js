@@ -3,7 +3,7 @@ set_global('document', 'document-stub');
 
 zrequire('message_fetch');
 
-var noop = () => {};
+const noop = () => {};
 
 set_global('MessageListView', function () { return {}; });
 
@@ -38,7 +38,7 @@ set_global('stream_list', {
     maybe_scroll_narrow_into_view: () => {},
 });
 
-var alice = {
+const alice = {
     email: 'alice@example.com',
     user_id: 7,
     full_name: 'Alice',
@@ -56,10 +56,10 @@ function stub_message_view(list) {
 }
 
 function make_home_msg_list() {
-    var table_name = 'whatever';
-    var filter = new Filter();
+    const table_name = 'whatever';
+    const filter = new Filter();
 
-    var list = new message_list.MessageList({
+    const list = new message_list.MessageList({
         table_name: table_name,
         filter: filter,
     });
@@ -79,8 +79,8 @@ function reset_lists() {
 }
 
 function config_fake_channel(conf) {
-    var self = {};
-    var called;
+    const self = {};
+    let called;
 
     channel.get = function (opts) {
         if (called) {
@@ -97,9 +97,9 @@ function config_fake_channel(conf) {
 }
 
 function config_process_results(messages) {
-    var self = {};
+    const self = {};
 
-    var messages_processed_for_bools = [];
+    const messages_processed_for_bools = [];
 
     message_store.set_message_booleans = function (message) {
         messages_processed_for_bools.push(message);
@@ -135,7 +135,7 @@ function message_range(start, end) {
     });
 }
 
-var initialize_data = {
+const initialize_data = {
     initial_fetch: {
         req: {
             anchor: 444,
@@ -177,19 +177,19 @@ var initialize_data = {
 };
 
 function test_fetch_success(opts) {
-    var response = opts.response;
-    var messages = response.messages;
+    const response = opts.response;
+    const messages = response.messages;
 
-    var process_results = config_process_results(messages);
+    const process_results = config_process_results(messages);
     opts.fetch.success(response);
     process_results.verify();
 }
 
 function initial_fetch_step() {
-    var self = {};
+    const self = {};
 
-    var fetch;
-    var response = initialize_data.initial_fetch.resp;
+    let fetch;
+    const response = initialize_data.initial_fetch.resp;
 
     self.prep = function () {
         fetch = config_fake_channel({
@@ -210,9 +210,9 @@ function initial_fetch_step() {
 }
 
 function forward_fill_step() {
-    var self = {};
+    const self = {};
 
-    var fetch;
+    let fetch;
 
     self.prep = function () {
         fetch = config_fake_channel({
@@ -221,9 +221,9 @@ function forward_fill_step() {
     };
 
     self.finish = function () {
-        var response = initialize_data.forward_fill.resp;
+        const response = initialize_data.forward_fill.resp;
 
-        var idle_config;
+        let idle_config;
         $('document-stub').idle = function (config) {
             idle_config = config;
         };
@@ -242,11 +242,11 @@ function forward_fill_step() {
 }
 
 function test_backfill_idle(idle_config) {
-    var fetch = config_fake_channel({
+    const fetch = config_fake_channel({
         expected_opts_data: initialize_data.back_fill.req,
     });
 
-    var response = initialize_data.back_fill.resp;
+    const response = initialize_data.back_fill.resp;
 
     idle_config.onIdle();
 
@@ -259,23 +259,23 @@ function test_backfill_idle(idle_config) {
 run_test('initialize', () => {
     reset_lists();
 
-    var step1 = initial_fetch_step();
+    const step1 = initial_fetch_step();
 
     step1.prep();
 
-    var step2 = forward_fill_step();
+    const step2 = forward_fill_step();
 
     step2.prep();
     step1.finish();
 
-    var idle_config = step2.finish();
+    const idle_config = step2.finish();
 
     test_backfill_idle(idle_config);
 });
 
 
 function simulate_narrow() {
-    var filter = {
+    const filter = {
         predicate: function () { return true; },
     };
 
@@ -284,7 +284,7 @@ function simulate_narrow() {
         return [{ operator: 'pm-with', operand: alice.email }];
     };
 
-    var msg_list = new message_list.MessageList({
+    const msg_list = new message_list.MessageList({
         table_name: 'zfilt',
         filter: filter,
     });
@@ -302,10 +302,10 @@ run_test('loading_newer', () => {
     }
 
     function test_happy_path(opts) {
-        var msg_list = opts.msg_list;
-        var data = opts.data;
+        const msg_list = opts.msg_list;
+        const data = opts.data;
 
-        var fetch = config_fake_channel({
+        const fetch = config_fake_channel({
             expected_opts_data: data.req,
         });
 
@@ -322,9 +322,9 @@ run_test('loading_newer', () => {
     }
 
     (function test_narrow() {
-        var msg_list = simulate_narrow();
+        const msg_list = simulate_narrow();
 
-        var data = {
+        const data = {
             req: {
                 anchor: '444',
                 num_before: 0,
@@ -348,9 +348,9 @@ run_test('loading_newer', () => {
 
     (function test_home() {
         reset_lists();
-        var msg_list = home_msg_list;
+        const msg_list = home_msg_list;
 
-        var data = [
+        const data = [
             {
                 req: {
                     anchor: '444',

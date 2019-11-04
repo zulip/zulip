@@ -427,6 +427,7 @@
                 "no-magic-numbers": "off",
                 "semi": "off",
                 "no-unused-vars": "off",
+                "no-useless-constructor": "off",
 
                 "@typescript-eslint/adjacent-overload-signatures": "error",
                 "@typescript-eslint/array-type": "error",
@@ -451,7 +452,7 @@
                 "@typescript-eslint/no-extraneous-class": "error",
                 "@typescript-eslint/no-for-in-array": "off",
                 "@typescript-eslint/no-inferrable-types": "error",
-                "@typescript-eslint/no-magic-numbers": "error",
+                "@typescript-eslint/no-magic-numbers": "off",
                 "@typescript-eslint/no-misused-new": "error",
                 "@typescript-eslint/no-namespace": "error",
                 "@typescript-eslint/no-non-null-assertion": "off",

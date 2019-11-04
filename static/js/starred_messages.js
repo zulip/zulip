@@ -1,4 +1,4 @@
-var Dict = require('./dict').Dict;
+const Dict = require('./dict').Dict;
 
 exports.ids = new Dict();
 
@@ -35,7 +35,7 @@ exports.get_starred_msg_ids = function () {
 };
 
 exports.rerender_ui = function () {
-    var count = exports.count();
+    let count = exports.count();
 
     if (!page_params.starred_message_counts) {
         // This essentially hides the count
