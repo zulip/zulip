@@ -195,11 +195,10 @@ def convert_channel_data(channel_data: List[ZerverFieldsT],
         for username in channel_members_map[stream_name]:
             channel_users.add(user_id_mapper.get(username))
 
-        if channel_users:
-            subscriber_handler.set_info(
-                users=channel_users,
-                stream_id=stream_id,
-            )
+        subscriber_handler.set_info(
+            users=channel_users,
+            stream_id=stream_id,
+        )
         streams.append(stream)
     return streams
 
