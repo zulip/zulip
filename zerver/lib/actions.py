@@ -1617,7 +1617,6 @@ def do_add_submessage(realm: Realm,
                       msg_type: str,
                       content: str,
                       ) -> None:
-                      
     submessage = SubMessage(
         sender_id=sender_id,
         message_id=message_id,
