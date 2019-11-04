@@ -416,7 +416,7 @@
             "files": ["**/*.ts"],
             "parser": "@typescript-eslint/parser",
             "parserOptions": {
-                "project": "static/js/tsconfig.json"
+                "project": "tsconfig.json"
             },
             "plugins": ["@typescript-eslint"],
             "rules": {

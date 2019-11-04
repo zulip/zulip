@@ -2,9 +2,9 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "*": ["types/*"],
+            "*": ["static/js/types/*"],
         },
-        "typeRoots": ["types"],
+        "typeRoots": ["static/js/types"],
 
         /* Typescript 3.4 added the --incremental flag but its API is not
          * currently public so ts-loader cannot use it yet.
@@ -33,6 +33,6 @@
         "noFallthroughCasesInSwitch": true,
     },
     "exclude": [
-        "types",
+        "static/js/types",
     ],
 }
