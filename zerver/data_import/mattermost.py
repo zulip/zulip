@@ -461,7 +461,10 @@ def process_posts(num_teams: int,
         # For now, we just append the replies immediately after the original message.
         if message_replies is not None:
             for reply in message_replies:
-                reply["channel"] = post_dict["channel"]
+                if 'channel' in post_dict:
+                    reply["channel"] = post_dict["channel"]
+                else:  # nocoverage
+                    reply["channel_members"] = post_dict["channel_members"]
                 raw_messages.append(message_to_dict(reply))
 
     def process_batch(lst: List[Dict[str, Any]]) -> None:
