@@ -1143,7 +1143,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     # SAML buttons at the top.
     sort_order = 9999
     # There's no common default logo for SAML authentication.
-    display_icon = ""
+    display_icon = None
 
     # The full_name provided by the IdP is very likely the standard
     # employee directory name for the user, and thus what they and
@@ -1280,13 +1280,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 SocialBackendDictT = TypedDict('SocialBackendDictT', {
     'name': str,
     'display_name': str,
-    'display_icon': str,
+    'display_icon': Optional[str],
     'login_url': str,
     'signup_url': str,
 })
 
 def create_standard_social_backend_dict(social_backend: SocialAuthMixin) -> SocialBackendDictT:
-    assert social_backend.display_icon is not None
     return dict(
         name=social_backend.name,
         display_name=social_backend.auth_backend_name,

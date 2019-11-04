@@ -59,7 +59,7 @@ Fetch global settings for a Zulip server.
   google/github/SAML) enabled for this organization. Each dictionary
   specifies the name and icon that should be displayed on the login
   buttons (`display_name` and `display_icon`, where `display_icon` can
-  be the empty string, if no icon is to be displayed), the URLs that
+  be `null`, if no icon is to be displayed), the URLs that
   should be accessed to initiate login/signup using the method
   (`login_url` and `signup_url`) and `name`, which is a unique,
   stable, machine-readable name for the authentication method.  The
