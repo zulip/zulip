@@ -85,7 +85,7 @@ def run():
     linter_config.external_linter('mypy', command, ['py'], pass_targets=False,
                                   description="Static type checker for Python (config: mypy.ini)")
     linter_config.external_linter('tsc', ['tools/run-tsc'], ['ts'], pass_targets=False,
-                                  description="TypeScript compiler (config: static/js/tsconfig.json)")
+                                  description="TypeScript compiler (config: tsconfig.json)")
     linter_config.external_linter('yarn-deduplicate', ['tools/run-yarn-deduplicate'], ['lock'],
                                   pass_targets=False,
                                   description="Shares duplicate packages in yarn.lock")
