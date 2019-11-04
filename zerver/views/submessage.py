@@ -8,12 +8,12 @@ from zerver.decorator import (
     REQ,
 )
 from zerver.lib.actions import do_add_submessage
-from zerver.lib.message import access_message, render_markdown
+from zerver.lib.message import access_message
 from zerver.lib.validator import check_int
 from zerver.lib.response import (
     json_error,
     json_success
-) 
+)
 from zerver.models import UserProfile
 
 @has_request_variables
@@ -28,7 +28,7 @@ def process_submessage(request: HttpRequest,
     try:
         ujson.loads(content)
     except Exception:
-        return json_error(_("Invalid json for Supplementalbmessage"))
+        return json_error(_("Invalid json for submessage"))
 
     do_add_submessage(
         realm=user_profile.realm,
