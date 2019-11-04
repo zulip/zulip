@@ -11,7 +11,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 import _webpackDevServer from 'webpack-dev-server';
 import webpack from 'webpack';
 
-const assets = require('./webpack.assets.json');
+const assets: { [name: string]: string[] } = require('./webpack.assets.json');
 
 export default (env?: string): webpack.Configuration[] => {
     const production: boolean = env === "production";
@@ -149,7 +149,7 @@ export default (env?: string): webpack.Configuration[] => {
                 // is fixed.
                 new OptimizeCssAssetsPlugin({
                     cssProcessor: {
-                        process: async (css, options) => {
+                        async process(css, options: any) {
                             const filename = basename(options.to);
                             const result = await new CleanCss(options).minify({
                                 [filename]: {
@@ -239,7 +239,7 @@ export default (env?: string): webpack.Configuration[] => {
     if (!production) {
         // Out JS debugging tools
         for (const name of Object.keys(config.entry)) {
-            config.entry[name].push('./static/js/debug.js');
+            assets[name].push('./static/js/debug.js');
         }
         config.devServer = {
             clientLogLevel: "error",

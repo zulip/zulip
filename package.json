@@ -71,8 +71,12 @@
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
+    "@types/html-minifier": "^3.5.3",
     "@types/jquery": "^3.3.31",
+    "@types/mini-css-extract-plugin": "^0.8.0",
     "@types/node": "^12.0.7",
+    "@types/optimize-css-assets-webpack-plugin": "^5.0.1",
+    "@types/terser-webpack-plugin": "^1.2.1",
     "@types/underscore": "^1.8.18",
     "@types/webpack": "^4.4.32",
     "@types/webpack-dev-server": "^3.1.6",
