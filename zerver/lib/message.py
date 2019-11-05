@@ -212,6 +212,7 @@ class MessageDict:
             del obj['rendered_content']
         del obj['sender_realm_id']
         del obj['sender_avatar_source']
+        del obj['sender_delivery_email']
         del obj['sender_avatar_version']
 
         del obj['recipient_type']
@@ -403,6 +404,7 @@ class MessageDict:
             'id',
             'full_name',
             'short_name',
+            'delivery_email',
             'email',
             'realm__string_id',
             'avatar_source',
@@ -423,6 +425,7 @@ class MessageDict:
             obj['sender_full_name'] = user_row['full_name']
             obj['sender_short_name'] = user_row['short_name']
             obj['sender_email'] = user_row['email']
+            obj['sender_delivery_email'] = user_row['delivery_email']
             obj['sender_realm_str'] = user_row['realm__string_id']
             obj['sender_avatar_source'] = user_row['avatar_source']
             obj['sender_avatar_version'] = user_row['avatar_version']
@@ -488,14 +491,14 @@ class MessageDict:
     def set_sender_avatar(obj: Dict[str, Any], client_gravatar: bool) -> None:
         sender_id = obj['sender_id']
         sender_realm_id = obj['sender_realm_id']
-        sender_email = obj['sender_email']
+        sender_delivery_email = obj['sender_delivery_email']
         sender_avatar_source = obj['sender_avatar_source']
         sender_avatar_version = obj['sender_avatar_version']
 
         obj['avatar_url'] = get_avatar_field(
             user_id=sender_id,
             realm_id=sender_realm_id,
-            email=sender_email,
+            email=sender_delivery_email,
             avatar_source=sender_avatar_source,
             avatar_version=sender_avatar_version,
             medium=False,

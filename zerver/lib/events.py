@@ -86,7 +86,7 @@ def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: 
         avatar_url = get_avatar_field(
             user_id=row['id'],
             realm_id=realm.id,
-            email=row['email'],
+            email=row['delivery_email'],
             avatar_source=row['avatar_source'],
             avatar_version=row['avatar_version'],
             medium=False,

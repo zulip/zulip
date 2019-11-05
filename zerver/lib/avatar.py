@@ -12,7 +12,7 @@ def avatar_url(user_profile: UserProfile, medium: bool=False, client_gravatar: b
     return get_avatar_field(
         user_id=user_profile.id,
         realm_id=user_profile.realm_id,
-        email=user_profile.email,
+        email=user_profile.delivery_email,
         avatar_source=user_profile.avatar_source,
         avatar_version=user_profile.avatar_version,
         medium=medium,

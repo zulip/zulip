@@ -194,7 +194,10 @@ class PermissionTest(ZulipTestCase):
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
         self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
-        self.assertEqual(hamlet['avatar_url'], get_gravatar_url(hamlet['email'], 1))
+        # Note that the Gravatar URL should still be computed from the
+        # `delivery_email`; otherwise, we won't be able to serve the
+        # user's Gravatar.
+        self.assertEqual(hamlet['avatar_url'], get_gravatar_url(user.delivery_email, 1))
         self.assertNotIn('delivery_email', hamlet)
 
         # Also verify the /events code path.  This is a bit hacky, but
@@ -219,7 +222,7 @@ class PermissionTest(ZulipTestCase):
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
         self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
-        self.assertEqual(hamlet['avatar_url'], get_gravatar_url(hamlet['email'], 1))
+        self.assertEqual(hamlet['avatar_url'], get_gravatar_url(user.email, 1))
         self.assertEqual(hamlet['delivery_email'], self.example_email("hamlet"))
 
     def test_user_cannot_promote_to_admin(self) -> None:

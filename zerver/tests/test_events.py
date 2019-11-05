@@ -1566,6 +1566,17 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
             ])),
         ])
+        avatar_schema_checker = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict_only([
+                ('email', check_string),
+                ('user_id', check_int),
+                ('avatar_url', check_string),
+                ('avatar_url_medium', check_string),
+                ('avatar_source', check_string),
+            ])),
+        ])
         do_set_realm_property(self.user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
         # Important: We need to refresh from the database here so that
@@ -1573,8 +1584,10 @@ class EventsRegisterTest(ZulipTestCase):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
         action = lambda: do_change_user_delivery_email(self.user_profile, 'newhamlet@zulip.com')
-        events = self.do_test(action, num_events=1)
+        events = self.do_test(action, num_events=2, client_gravatar=False)
         error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+        error = avatar_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
     def do_set_realm_property_test(self, name: str) -> None:
@@ -3378,6 +3391,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 #       will be useful when we let clients specify
                 #       that they can compute their own gravatar URLs.
                 sender_email=sender.email,
+                sender_delivery_email=sender.delivery_email,
                 sender_realm_id=sender.realm_id,
                 sender_avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 sender_avatar_version=1,

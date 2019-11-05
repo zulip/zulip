@@ -884,6 +884,12 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     event = dict(type='realm_user', op='update', person=payload)
     send_event(user_profile.realm, event, [user_profile.id])
 
+    if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+        # If the user is using Gravatar to manage their email address,
+        # their Gravatar just changed, and we need to notify other
+        # clients.
+        notify_avatar_url_change(user_profile)
+
     if user_profile.email_address_is_realm_public():
         # Additionally, if we're also changing the publicly visible
         # email, we send a new_email event as well.
@@ -3330,16 +3336,7 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
 
     return new_api_key
 
-def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str) -> None:
-    user_profile.avatar_source = avatar_source
-    user_profile.avatar_version += 1
-    user_profile.save(update_fields=["avatar_source", "avatar_version"])
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
-                                 extra_data={'avatar_source': avatar_source},
-                                 event_time=event_time)
-
+def notify_avatar_url_change(user_profile: UserProfile) -> None:
     if user_profile.is_bot:
         send_event(user_profile.realm,
                    dict(type='realm_bot',
@@ -3363,6 +3360,18 @@ def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str) -> No
                     op='update',
                     person=payload),
                active_user_ids(user_profile.realm_id))
+
+def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str) -> None:
+    user_profile.avatar_source = avatar_source
+    user_profile.avatar_version += 1
+    user_profile.save(update_fields=["avatar_source", "avatar_version"])
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
+                                 event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
+                                 extra_data={'avatar_source': avatar_source},
+                                 event_time=event_time)
+
+    notify_avatar_url_change(user_profile)
 
 def do_delete_avatar_image(user: UserProfile) -> None:
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR)
