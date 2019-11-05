@@ -199,7 +199,8 @@ class MessageDict:
     @staticmethod
     def finalize_payload(obj: Dict[str, Any],
                          apply_markdown: bool,
-                         client_gravatar: bool) -> None:
+                         client_gravatar: bool,
+                         keep_rendered_content: bool=False) -> None:
         MessageDict.set_sender_avatar(obj, client_gravatar)
         if apply_markdown:
             obj['content_type'] = 'text/html'
@@ -207,7 +208,8 @@ class MessageDict:
         else:
             obj['content_type'] = 'text/x-markdown'
 
-        del obj['rendered_content']
+        if not keep_rendered_content:
+            del obj['rendered_content']
         del obj['sender_realm_id']
         del obj['sender_avatar_source']
         del obj['sender_avatar_version']

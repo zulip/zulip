@@ -36,7 +36,6 @@
         "message": {
             "subject": "Verona2",
             "sender_email": "iago@zulip.com",
-            "recipient_type": 2,
             "timestamp": 1527876931,
             "client": "website",
             "submessages": [
@@ -47,14 +46,11 @@
 
             ],
             "sender_full_name": "Iago",
-            "sender_is_mirror_dummy": false,
+            "avatar_url": "https://secure.gravatar.com/avatar/1f4f1575bf002ae562fea8fc4b861b09?d=identicon&version=1",
             "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing Webhook Test</span> Zulip is the world\u2019s most productive group chat!</p>",
-            "sender_avatar_source": "G",
             "sender_id": 5,
             "stream_id": 5,
             "content": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
-            "sender_realm_id": 1,
-            "sender_avatar_version": 1,
             "display_recipient": "Verona",
             "type": "stream",
             "id": 112,
@@ -63,8 +59,7 @@
 
             ],
             "sender_realm_str": "zulip",
-            "sender_short_name": "iago",
-            "recipient_type_id": 5
+            "sender_short_name": "iago"
         },
         "bot_email": "outgoing-bot@localhost"
     }
