@@ -5,7 +5,6 @@ from confirmation.models import one_click_unsubscribe_link
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from django.contrib.auth import get_backends
-from django_auth_ldap.backend import LDAPBackend
 
 from zerver.decorator import statsd_increment
 from zerver.lib.message import bulk_access_messages
@@ -557,16 +556,18 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
     else:
         context['getting_started_link'] = "https://zulipchat.com"
 
-    from zproject.backends import email_belongs_to_ldap
+    # Imported here to avoid import cycles.
+    from zproject.backends import email_belongs_to_ldap, ZulipLDAPAuthBackend
 
     if email_belongs_to_ldap(user.realm, user.email):
         context["ldap"] = True
-        if settings.LDAP_APPEND_DOMAIN:
-            for backend in get_backends():
-                if isinstance(backend, LDAPBackend):
-                    context["ldap_username"] = backend.django_to_ldap_username(user.email)
-        elif not settings.LDAP_EMAIL_ATTR:
-            context["ldap_username"] = user.email
+        for backend in get_backends():
+            # If the user is doing authentication via LDAP, Note that
+            # we exclude ZulipLDAPUserPopulator here, since that
+            # isn't used for authentication.
+            if isinstance(backend, ZulipLDAPAuthBackend):
+                context["ldap_username"] = backend.django_to_ldap_username(user.email)
+                break
 
     send_future_email(
         "zerver/emails/followup_day1", user.realm, to_user_ids=[user.id], from_name=from_name,
