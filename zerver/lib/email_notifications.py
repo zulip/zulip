@@ -561,12 +561,10 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
 
     if email_belongs_to_ldap(user.realm, user.email):
         context["ldap"] = True
-        if settings.LDAP_APPEND_DOMAIN:
-            for backend in get_backends():
-                if isinstance(backend, LDAPBackend):
-                    context["ldap_username"] = backend.django_to_ldap_username(user.email)
-        elif not settings.LDAP_EMAIL_ATTR:
-            context["ldap_username"] = user.email
+        for backend in get_backends():
+            if isinstance(backend, LDAPBackend):
+                context["ldap_username"] = backend.django_to_ldap_username(user.email)
+                break
 
     send_future_email(
         "zerver/emails/followup_day1", user.realm, to_user_ids=[user.id], from_name=from_name,

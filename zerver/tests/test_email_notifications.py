@@ -105,7 +105,7 @@ class TestFollowupEmails(ZulipTestCase):
             self.assertEqual(len(scheduled_emails), 2)
             email_data = ujson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
-            self.assertNotIn("ldap_username", email_data["context"])
+            self.assertEqual(email_data["context"]["ldap_username"], "newuser_with_email")
 
     def test_followup_emails_count(self) -> None:
         hamlet = self.example_user("hamlet")
