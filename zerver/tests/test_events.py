@@ -483,7 +483,7 @@ class EventsRegisterTest(ZulipTestCase):
     def do_test(self, action: Callable[[], object], event_types: Optional[List[str]]=None,
                 include_subscribers: bool=True, state_change_expected: bool=True,
                 notification_settings_null: bool=False,
-                client_gravatar: bool=False, num_events: int=1) -> List[Dict[str, Any]]:
+                client_gravatar: bool=True, num_events: int=1) -> List[Dict[str, Any]]:
         '''
         Make sure we have a clean slate of client descriptors for these tests.
         If we don't do this, then certain failures will only manifest when you
@@ -511,7 +511,7 @@ class EventsRegisterTest(ZulipTestCase):
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(
             self.user_profile, event_types, "",
-            client_gravatar=True,
+            client_gravatar=client_gravatar,
             include_subscribers=include_subscribers
         )
         action()
@@ -522,7 +522,7 @@ class EventsRegisterTest(ZulipTestCase):
         post_process_state(self.user_profile, initial_state, notification_settings_null)
         before = ujson.dumps(initial_state)
         apply_events(hybrid_state, events, self.user_profile,
-                     client_gravatar=True, include_subscribers=include_subscribers)
+                     client_gravatar=client_gravatar, include_subscribers=include_subscribers)
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = ujson.dumps(hybrid_state)
 
@@ -539,7 +539,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         normal_state = fetch_initial_state_data(
             self.user_profile, event_types, "",
-            client_gravatar=True,
+            client_gravatar=client_gravatar,
             include_subscribers=include_subscribers,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
@@ -2410,7 +2410,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('type', equals('stream')),
                 ('submessages', check_list(check_string)),
                 (TOPIC_LINKS, check_list(check_url)),
-                ('avatar_url', check_url),
+                ('avatar_url', check_none_or(check_url)),
                 ('reactions', check_list(None)),
                 ('client', equals('Internal')),
                 (TOPIC_NAME, equals('stream events')),
