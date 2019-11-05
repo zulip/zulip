@@ -246,6 +246,11 @@ def is_valid_email(email: str) -> bool:
         return False
     return True
 
+def check_ldap_config() -> None:
+    if not settings.LDAP_APPEND_DOMAIN:
+        # Email search needs to be configured in this case.
+        assert settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
+
 def find_ldap_users_by_email(email: str) -> Optional[List[_LDAPUser]]:
     """
     Returns list of _LDAPUsers matching the email search,
@@ -265,16 +270,12 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     if not ldap_auth_enabled(realm):
         return False
 
+    check_ldap_config()
     if settings.LDAP_APPEND_DOMAIN:
         # Check if the email ends with LDAP_APPEND_DOMAIN
         return email.strip().lower().endswith("@" + settings.LDAP_APPEND_DOMAIN)
 
     # If we don't have an LDAP domain, we have to do a lookup for the email.
-    if not(settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH):
-        logging.warning("LDAP_APPEND_DOMAIN isn't used, but searching by email "
-                        "is not configured. email_belongs_to_ldap will always return True.")
-        return True
-
     if find_ldap_users_by_email(email):
         return True
     else:
@@ -313,6 +314,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
             init_fakeldap()
 
+        check_ldap_config()
+
     # Disable django-auth-ldap's permissions functions -- we don't use
     # the standard Django user/group permissions system because they
     # are prone to performance issues.
@@ -342,8 +345,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                     raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
                         username, settings.LDAP_APPEND_DOMAIN))
                 result = email_to_username(username)
-
-        elif settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH:
+        else:
             # We can use find_ldap_users_by_email
             if is_valid_email(username):
                 email_search_result = find_ldap_users_by_email(username)

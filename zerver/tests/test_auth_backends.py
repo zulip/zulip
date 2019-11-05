@@ -2416,14 +2416,6 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
             username = self.backend.django_to_ldap_username('"hamlet@test"@zulip')
             self.assertEqual(username, '"hamlet@test"@zulip')
 
-    def test_django_to_ldap_username_without_email_search(self) -> None:
-        with self.settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=None):
-            self.assertEqual(self.backend.django_to_ldap_username("hamlet"), "hamlet")
-            self.assertEqual(self.backend.django_to_ldap_username("newuser_email_as_uid@zulip.com"),
-                             "newuser_email_as_uid@zulip.com")
-            with self.assertRaises(ZulipLDAPExceptionNoMatchingLDAPUser):
-                self.backend.django_to_ldap_username("hamlet@example.com")
-
     def test_django_to_ldap_username_with_email_search(self) -> None:
         self.assertEqual(self.backend.django_to_ldap_username("hamlet"),
                          self.ldap_username("hamlet"))
@@ -2481,25 +2473,7 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
         user_profile.set_password(password)
         user_profile.save()
 
-        # Without email search, can't login via ldap:
-        with self.settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=None, LDAP_EMAIL_ATTR='mail'):
-            # Using hamlet's ldap password fails without email search:
-            self.assertEqual(
-                authenticate(username=user_profile.email, password=self.ldap_password(), realm=realm),
-                None)
-            # Need hamlet's zulip password to login (via email backend)
-            self.assertEqual(
-                authenticate(username=user_profile.email, password="testpassword", realm=realm),
-                user_profile)
-            # To login via ldap, username needs to be the ldap username, not email:
-            self.assertEqual(
-                authenticate(username=self.ldap_username("hamlet"), password=self.ldap_password(),
-                             realm=realm),
-                user_profile)
-
-        # With email search:
         with self.settings(LDAP_EMAIL_ATTR='mail'):
-            # Ldap password works now:
             self.assertEqual(
                 authenticate(username=user_profile.email, password=self.ldap_password(), realm=realm),
                 user_profile)
@@ -2522,11 +2496,6 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
             sync_user_from_ldap(user_profile, mock.Mock())
             # Syncing didn't deactivate the user:
             self.assertTrue(user_profile.is_active)
-
-        with self.settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=None):
-            # Without email search, the user will get deactivated.
-            sync_user_from_ldap(user_profile, mock.Mock())
-            self.assertFalse(user_profile.is_active)
 
 class ZulipLDAPTestCase(ZulipTestCase):
     def setUp(self) -> None:
@@ -2641,17 +2610,6 @@ class TestLDAP(ZulipLDAPTestCase):
             user_profile = EmailAuthBackend().authenticate(username=othello.email, password=password,
                                                            realm=realm)
             self.assertEqual(user_profile, othello)
-
-    @override_settings(AUTH_LDAP_REVERSE_EMAIL_SEARCH=None, LDAP_APPEND_DOMAIN=None,
-                       AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_no_append_domain_and_email_search_not_configured(self) -> None:
-        with mock.patch("zproject.backends.logging.warning") as mock_warning:
-            result = email_belongs_to_ldap(get_realm("zulip"), "nonexistant@email.com")
-            self.assertEqual(result, True)
-            mock_warning.assert_called_with(
-                "LDAP_APPEND_DOMAIN isn't used, but searching by email "
-                "is not configured. email_belongs_to_ldap will always return True."
-            )
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_wrong_password(self) -> None:
