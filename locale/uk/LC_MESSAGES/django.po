@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-24 19:55+0000\n"
-"PO-Revision-Date: 2019-09-24 19:55+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2019-11-06 09:09+0000\n"
+"Last-Translator: Mykola Ronik <mantikor.san@gmail.com>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/zulip/zulip/language/uk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -31,7 +31,7 @@ msgstr "Неправильна організація"
 
 #: analytics/views.py:190
 msgid "Public streams"
-msgstr "Публічні канали"
+msgstr "Відкриті канали"
 
 #: analytics/views.py:191
 msgid "Private streams"
@@ -1187,7 +1187,7 @@ msgstr "Показати тільки ідентифікатор повідом�
 
 #: templates/zerver/app/search_operators.html:45
 msgid "Search all public streams in the organization."
-msgstr ""
+msgstr "Знайти всі відкриті канали в організації."
 
 #: templates/zerver/app/search_operators.html:49
 msgid "Narrow to messages with alert words."
@@ -1357,7 +1357,7 @@ msgstr "Запрошення"
 
 #: templates/zerver/app/settings_overlay.html:150
 msgid "Data exports"
-msgstr ""
+msgstr "Експорт даних"
 
 #: templates/zerver/app/settings_overlay.html:156
 msgid "Show more"
@@ -1756,7 +1756,7 @@ msgid ""
 "style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) "
 "wants you to join them on Zulip — the team communication tool designed for "
 "productivity."
-msgstr ""
+msgstr "%(referrer_full_name)s (<a href=\"mailto:%(referrer_email)s\" style=\"color:#46aa8f; text-decoration:underline\">%(referrer_email)s</a>) хоче, щоб ви приєдналися до них на Zulip — командному інструменті для спілкування, створеному для підвищення продуктивності."
 
 #: templates/zerver/emails/compiled/invitation.html:15
 #: templates/zerver/emails/compiled/invitation_reminder.html:14
@@ -1798,7 +1798,7 @@ msgstr "Це останнє нагадування яке Ви отримаєт�
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr ""
+msgstr "Термін дії цього запрошення закінчується через два дні. Якщо термін дії запрошення закінчиться, вам потрібно буде попросити у%(referrer_name)s ще одне."
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:9
 #: templates/zerver/emails/notify_change_in_email.source.html:8
@@ -2170,7 +2170,7 @@ msgid ""
 "href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>) wants you to join"
 " them on Zulip &mdash; the team communication tool designed for "
 "productivity."
-msgstr ""
+msgstr "%(referrer_full_name)s (<a href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>) хоче, щоб ви приєдналися до них на Zulip &mdash; командному інструменті для спілкування, створеному для підвищення продуктивності."
 
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
@@ -2402,7 +2402,7 @@ msgstr "Найкращий чат для робочих місць"
 
 #: templates/zerver/for-open-source.html:23
 msgid "Zulip for open source"
-msgstr ""
+msgstr "Zulip для відкритого коду"
 
 #: templates/zerver/for-working-groups-and-communities.html:19
 msgid "The best chat for working groups and communities"
@@ -2799,7 +2799,7 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr ""
+msgstr "\n        <h1 class=\"get-started\">Вибрати обліковий запис</h1>\n        "
 
 #: templates/zerver/team.html:131
 msgid "Avatar"
@@ -3179,7 +3179,7 @@ msgstr "Недійсне(і) повідомлення"
 #: zerver/lib/actions.py:4877
 #, python-format
 msgid "%s already has an account"
-msgstr ""
+msgstr "%s вже має обліковий запис"
 
 #: zerver/lib/actions.py:4878
 msgid "Already has an account."
@@ -3527,12 +3527,12 @@ msgstr "Токен не існує"
 #: zerver/lib/push_notifications.py:585
 #, python-format
 msgid "%(full_name)s mentioned you:"
-msgstr ""
+msgstr "%(full_name)s згадав вас:"
 
 #: zerver/lib/push_notifications.py:587
 #, python-format
 msgid "%(full_name)s mentioned everyone:"
-msgstr ""
+msgstr "%(full_name)s згадав усіх:"
 
 #: zerver/lib/remote_server.py:70
 #, python-format
@@ -3647,16 +3647,16 @@ msgstr "Хибне ім'я або ім'я користувача"
 #: zerver/lib/users.py:61
 #, python-format
 msgid "Invalid integration '%s'."
-msgstr ""
+msgstr "Недійсна інтеграція '%s'."
 
 #: zerver/lib/users.py:65
 #, python-format
 msgid "Missing configuration parameters: %s"
-msgstr ""
+msgstr "Відсутні параметри конфігурації: %s"
 
 #: zerver/lib/users.py:72
 msgid "Invalid {} value {} ({})"
-msgstr ""
+msgstr "Неправильне {} значення {} ({})"
 
 #: zerver/lib/users.py:87
 msgid "Invalid configuration data!"
@@ -3780,7 +3780,7 @@ msgstr "%s не є URL-адресою"
 
 #: zerver/lib/validator.py:238
 msgid "Malformed URL pattern."
-msgstr ""
+msgstr "Неправильний шаблон URL."
 
 #: zerver/lib/validator.py:258
 #, python-brace-format
@@ -3924,12 +3924,12 @@ msgstr "Ви не маєте дозволу на отримання подій �
 #: zerver/tornado/event_queue.py:545
 #, python-format
 msgid "An event newer than %s has already been pruned!"
-msgstr ""
+msgstr "Подія, новіша за %s уже була очищена!"
 
 #: zerver/tornado/event_queue.py:551
 #, python-format
 msgid "Event %s was not in this queue"
-msgstr ""
+msgstr "Подія %s була не в цій черзі"
 
 #: zerver/tornado/exceptions.py:14
 #, python-brace-format
@@ -4035,7 +4035,7 @@ msgstr "Заголовок користувача-агента відсутні�
 
 #: zerver/views/custom_profile_fields.py:37
 msgid "Label cannot be blank."
-msgstr ""
+msgstr "Позначка не може бути порожньою."
 
 #: zerver/views/custom_profile_fields.py:53
 msgid "Field must have at least one choice."
@@ -4048,11 +4048,11 @@ msgstr "Недійсний тип поля."
 #: zerver/views/custom_profile_fields.py:112
 #: zerver/views/custom_profile_fields.py:150
 msgid "A field with that label already exists."
-msgstr ""
+msgstr "Поле з цією позначкою вже існує."
 
 #: zerver/views/custom_profile_fields.py:143
 msgid "Default custom field cannot be updated."
-msgstr ""
+msgstr "Користувацьке поле за замовчуванням не можна оновити."
 
 #: zerver/views/hotspots.py:17
 #, python-format
@@ -4311,15 +4311,15 @@ msgstr "Перевищив ліміт."
 #: zerver/views/realm_export.py:47
 #, python-format
 msgid "Please request a manual export from %s."
-msgstr ""
+msgstr "Запросіть експорт вручну з %s."
 
 #: zerver/views/realm_export.py:76
 msgid "Invalid data export ID"
-msgstr ""
+msgstr "Недійсний ID експорту даних"
 
 #: zerver/views/realm_export.py:80
 msgid "Export already deleted"
-msgstr ""
+msgstr "Експорт уже видалено"
 
 #: zerver/views/realm_filters.py:39
 msgid "Filter not found"
@@ -4543,7 +4543,7 @@ msgstr "Не вдалося змінити власника, боти не мо�
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr ""
+msgstr "Не можу створити ботів, поки не буде правильно налаштовано FAKE_EMAIL_DOMAIN.\nЗверніться до адміністратора сервера."
 
 #: zerver/views/users.py:289
 msgid "Embedded bots are not enabled."
@@ -4606,7 +4606,7 @@ msgstr "Помилково форматований вхідний JSON "
 
 #: zerver/webhooks/papertrail/view.py:25
 msgid "Missing expected keys"
-msgstr ""
+msgstr "Відсутні очікувані ключі"
 
 #: zerver/webhooks/pivotal/view.py:178
 msgid "Unable to handle Pivotal payload"

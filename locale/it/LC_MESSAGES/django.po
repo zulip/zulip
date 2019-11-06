@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Alessio Schreiber <alessio.schreiber@gmail.com>, 2019
 # Andrea <andrea.soccal@elmospa.com>, 2018-2019
 # Biagio Laquale <infingerprinting@gmail.com>, 2019
 # Marcello Nuccio <marcello.nuccio@nuccioservizi.it>, 2019
@@ -12,8 +13,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-24 19:55+0000\n"
-"PO-Revision-Date: 2019-09-24 19:55+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2019-10-07 00:46+0000\n"
+"Last-Translator: Alessio Schreiber <alessio.schreiber@gmail.com>\n"
 "Language-Team: Italian (http://www.transifex.com/zulip/zulip/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -939,7 +940,7 @@ msgstr "Tutti i canali"
 
 #: templates/zerver/app/left_sidebar.html:77
 msgid "Add streams"
-msgstr ""
+msgstr "Aggiungi canali"
 
 #: templates/zerver/app/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
@@ -1443,7 +1444,7 @@ msgstr "Utenti normali"
 #: templates/zerver/emails/notify_new_login.source.html:8
 #: templates/zerver/emails/password_reset.source.html:4
 msgid "Zulip logo"
-msgstr ""
+msgstr "Logo Zulip"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:9
 #: templates/zerver/emails/compiled/find_team.html:9
@@ -2505,7 +2506,7 @@ msgstr "Filtra per categoria"
 #: templates/zerver/integrations/index.html:62
 #: templates/zerver/integrations/index.html:89
 msgid "Custom integrations"
-msgstr ""
+msgstr "Integrazioni personalizzate"
 
 #: templates/zerver/integrations/index.html:64
 #: templates/zerver/integrations/index.html:91
@@ -2885,7 +2886,7 @@ msgstr "L'organizzazione è stata disattivata"
 
 #: zerver/decorator.py:251
 msgid "Account is deactivated"
-msgstr "L'account è stato disattivato"
+msgstr "L'account è disattivato"
 
 #: zerver/decorator.py:265
 msgid "Account is not associated with this subdomain"
@@ -3179,7 +3180,7 @@ msgstr "Messaggio(i) non valido"
 #: zerver/lib/actions.py:4877
 #, python-format
 msgid "%s already has an account"
-msgstr ""
+msgstr "%s ha già un account"
 
 #: zerver/lib/actions.py:4878
 msgid "Already has an account."
@@ -3187,7 +3188,7 @@ msgstr "Hai già un account."
 
 #: zerver/lib/actions.py:4881
 msgid "Account has been deactivated."
-msgstr ""
+msgstr "L'account è stato disattivato."
 
 #: zerver/lib/actions.py:4887
 msgid "Invalid address."
@@ -3895,7 +3896,7 @@ msgstr "Link"
 
 #: zerver/models.py:2675
 msgid "External account"
-msgstr ""
+msgstr "Account esterno"
 
 #: zerver/signals.py:90
 msgid "Unknown IP address"
@@ -4244,7 +4245,7 @@ msgstr "Almeno un metodo di autenticazione deve essere abilitato."
 
 #: zerver/views/realm.py:89
 msgid "Invalid video chat provider {}"
-msgstr ""
+msgstr "Provider della chat video non valido {}"
 
 #: zerver/views/realm.py:94 zerver/views/realm_domains.py:28
 msgid "Invalid domain: {}"
@@ -4252,15 +4253,15 @@ msgstr "Dominio non valido: {}"
 
 #: zerver/views/realm.py:100
 msgid "User ID cannot be empty"
-msgstr ""
+msgstr "User ID non può essere vuoto"
 
 #: zerver/views/realm.py:102
 msgid "API key cannot be empty"
-msgstr ""
+msgstr "API non può essere vuoto"
 
 #: zerver/views/realm.py:104
 msgid "API secret cannot be empty"
-msgstr ""
+msgstr "Secret API non può essere vuoto"
 
 #: zerver/views/realm.py:116
 #, python-format
@@ -4319,7 +4320,7 @@ msgstr ""
 
 #: zerver/views/realm_export.py:80
 msgid "Export already deleted"
-msgstr ""
+msgstr "Export già cancellato"
 
 #: zerver/views/realm_filters.py:39
 msgid "Filter not found"
@@ -4373,12 +4374,12 @@ msgstr "L'azione richiede i diritti di amministratore"
 #: zerver/views/streams.py:276
 #, python-format
 msgid "@**%(full_name)s** subscribed you to the stream #**%(stream_name)s**."
-msgstr ""
+msgstr "@**%(full_name)s** ti ha iscritto al canale #**%(stream_name)s**."
 
 #: zerver/views/streams.py:280
 #, python-format
 msgid "@**%(full_name)s** subscribed you to the following streams:"
-msgstr ""
+msgstr "@**%(full_name)s** ti ha iscritto ai seguenti canali:"
 
 #: zerver/views/streams.py:334
 #, python-format
@@ -4391,7 +4392,7 @@ msgstr "Puoi invitare altri utenti mirroring di Zephyr solo in canali privati."
 
 #: zerver/views/streams.py:343
 msgid "Only administrators can modify other users' subscriptions."
-msgstr ""
+msgstr "Solo gli amministratori possono modificare le iscrizioni di altri utenti."
 
 #: zerver/views/streams.py:348
 msgid "Your account is too new to modify other users' subscriptions."
@@ -4402,21 +4403,21 @@ msgstr "Il tuo account è troppo nuovo per modificare le iscrizioni di altri ute
 msgid ""
 "@_**%(user_name)s|%(user_id)d** created the following streams: "
 "%(stream_str)s."
-msgstr ""
+msgstr "@_**%(user_name)s|%(user_id)d** ha creato i canali seguenti: %(stream_str)s."
 
 #: zerver/views/streams.py:409
 #, python-format
 msgid "@_**%(user_name)s|%(user_id)d** created a new stream %(stream_str)s."
-msgstr ""
+msgstr "@_**%(user_name)s|%(user_id)d** ha creato un nuovo canale %(stream_str)s."
 
 #: zerver/views/streams.py:416
 msgid "new streams"
-msgstr ""
+msgstr "nuovi canali"
 
 #: zerver/views/streams.py:437
 #, python-format
 msgid "Stream created by @_**%(user_name)s|%(user_id)d**."
-msgstr ""
+msgstr "Canale creato da @_**%(user_name)s|%(user_id)d**."
 
 #: zerver/views/streams.py:592
 #, python-format
@@ -4469,7 +4470,7 @@ msgstr "Questo non è membro '%s' in questo gruppo"
 
 #: zerver/views/user_settings.py:29
 msgid "Avatar changes are disabled in this organization."
-msgstr ""
+msgstr "Le modifiche dell'avatar sono disabilitate in questa organizzazione."
 
 #: zerver/views/user_settings.py:42 zerver/views/user_settings.py:94
 msgid "Email address changes are disabled in this organization."
@@ -4504,7 +4505,7 @@ msgstr "Emojiset '%s'non valido"
 #: zerver/views/user_settings.py:146
 #, python-format
 msgid "Invalid setting value '%s'"
-msgstr ""
+msgstr "Valore impostazione '%s' non valido"
 
 #: zerver/views/user_settings.py:184
 #, python-format
@@ -4623,7 +4624,7 @@ msgstr "Messaggio da Slack"
 #: zerver/webhooks/wordpress/view.py:45
 #, python-format
 msgid "Unknown WordPress webhook action: %s"
-msgstr ""
+msgstr "Azione webhook Wordpress sconosciuta: %s"
 
 #: zerver/webhooks/zabbix/view.py:45
 msgid "Invalid payload"
