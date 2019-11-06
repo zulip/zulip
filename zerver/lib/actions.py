@@ -1028,6 +1028,7 @@ def get_recipient_info(recipient: Recipient,
         # stream_topic.  We may eventually want to have different versions
         # of this function for different message types.
         assert(stream_topic is not None)
+        user_ids_muting_topic = stream_topic.user_ids_muting_topic()
 
         subscription_rows = stream_topic.get_active_subscriptions().annotate(
             user_profile_email_notifications=F('user_profile__enable_stream_email_notifications'),
@@ -1052,25 +1053,25 @@ def get_recipient_info(recipient: Recipient,
             # values are not null).
             if row['is_muted']:
                 return False
+            if row['user_profile_id'] in user_ids_muting_topic:
+                return False
             if row[setting] is not None:
                 return row[setting]
             return row['user_profile_' + setting]
-
-        user_ids_muting_topic = stream_topic.user_ids_muting_topic()
 
         stream_push_user_ids = {
             row['user_profile_id']
             for row in subscription_rows
             # Note: muting a stream overrides stream_push_notify
             if should_send('push_notifications', row)
-        } - user_ids_muting_topic
+        }
 
         stream_email_user_ids = {
             row['user_profile_id']
             for row in subscription_rows
             # Note: muting a stream overrides stream_email_notify
             if should_send('email_notifications', row)
-        } - user_ids_muting_topic
+        }
 
     elif recipient.type == Recipient.HUDDLE:
         message_to_user_ids = get_huddle_user_ids(recipient)
