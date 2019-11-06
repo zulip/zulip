@@ -144,6 +144,8 @@ exports.maybe_show_deprecation_notice = function (key) {
         message = exports.get_hotkey_deprecation_notice('C', 'x');
     } else if (key === '*') {
         message = exports.get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
+    } else if (key === 'n') {
+        message = exports.get_hotkey_deprecation_notice("n", "Ctrl" + " + shift" + " + s");
     } else {
         blueslip.error("Unexpected deprecation notice for hotkey:", key);
         return;
