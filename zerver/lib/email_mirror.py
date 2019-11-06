@@ -27,7 +27,7 @@ from zerver.models import Stream, Recipient, \
     Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
 
 from zproject.backends import is_user_active
-# logger file
+# logger files
 logger = logging.getLogger(__name__)
 
 def redact_email_address(error_message: str) -> str:
