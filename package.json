@@ -58,7 +58,6 @@
     "style-loader": "^1.0.0",
     "terser-webpack-plugin": "^2.1.0",
     "to-markdown": "^3.1.0",
-    "typescript": "^3.5.1",
     "underscore": "^1.9.1",
     "webfonts-loader": "^5.0.0",
     "webpack": "^4.33.0",
@@ -91,6 +90,7 @@
     "stylelint": "^11.0.0",
     "svgo": "^1.2.2",
     "swagger-parser": "^8.0.1",
+    "typescript": "^3.5.1",
     "vnu-jar": "^19.6.7",
     "webpack-dev-server": "^3.5.1",
     "yarn-deduplicate": "^1.1.1"
