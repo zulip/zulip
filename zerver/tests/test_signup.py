@@ -1728,8 +1728,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
 class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
-    def check_able_to_create_realm(self, email: str) -> None:
-        password = "test"
+    def check_able_to_create_realm(self, email: str, password: str="test") -> None:
         string_id = "zuliptest"
         # Make sure the realm does not exist
         with self.assertRaises(Realm.DoesNotExist):
@@ -1781,6 +1780,13 @@ class RealmCreationTest(ZulipTestCase):
 
     def test_create_realm_existing_email(self) -> None:
         self.check_able_to_create_realm("hamlet@zulip.com")
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_create_realm_ldap_email(self) -> None:
+        self.init_default_ldap_database()
+
+        with self.settings(LDAP_EMAIL_ATTR="mail"):
+            self.check_able_to_create_realm("newuser_email@zulip.com", self.ldap_password())
 
     def test_create_realm_as_system_bot(self) -> None:
         result = self.client_post('/new/', {'email': 'notification-bot@zulip.com'})

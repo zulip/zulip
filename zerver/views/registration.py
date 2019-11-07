@@ -249,6 +249,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # But if the realm is using LDAPAuthBackend, we need to verify
             # their LDAP password (which will, as a side effect, create
             # the user account) here using authenticate.
+            # pregeg_user.realm_creation carries the information about whether
+            # we're in realm creation mode, and the ldap flow will handle
+            # that and create the user with the appropriate parameters.
             user_profile = authenticate(request,
                                         username=email,
                                         password=password,
@@ -276,9 +279,13 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     # is hidden for most users.
                     return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
                                                 urllib.parse.quote_plus(email))
-            else:
+            elif not realm_creation:
                 # Since we'll have created a user, we now just log them in.
                 return login_and_go_to_home(request, user_profile)
+            else:
+                # With realm_creation=True, we're going to return further down,
+                # after finishing up the creation process.
+                pass
 
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
@@ -288,7 +295,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             do_set_user_display_setting(user_profile, 'timezone', timezone)
             # TODO: When we clean up the `do_activate_user` code path,
             # make it respect invited_as_admin / is_realm_admin.
-        else:
+
+        if user_profile is None:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
                                           prereg_user=prereg_user,
                                           is_realm_admin=is_realm_admin,
