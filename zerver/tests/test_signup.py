@@ -1755,7 +1755,11 @@ class RealmCreationTest(ZulipTestCase):
         # Make sure the realm is created
         realm = get_realm(string_id)
         self.assertEqual(realm.string_id, string_id)
-        self.assertEqual(get_user(email, realm).realm, realm)
+        user = get_user(email, realm)
+        self.assertEqual(user.realm, realm)
+
+        # Check that user is the administrator.
+        self.assertEqual(user.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         # Check defaults
         self.assertEqual(realm.org_type, Realm.CORPORATE)
