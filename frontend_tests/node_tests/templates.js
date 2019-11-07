@@ -1086,9 +1086,12 @@ run_test('settings_tab', () => {
     const page_param_checkbox_options = {
         enable_stream_desktop_notifications: true,
         enable_stream_push_notifications: true,
-        enable_stream_audible_notifications: true, enable_desktop_notifications: true,
-        enable_sounds: true, enable_offline_email_notifications: true,
-        enable_offline_push_notifications: true, enable_online_push_notifications: true,
+        enable_stream_audible_notifications: true,
+        enable_desktop_notifications: true,
+        enable_sounds: true,
+        enable_offline_email_notifications: true,
+        enable_offline_push_notifications: true,
+        enable_online_push_notifications: true,
         enable_digest_emails: true,
         realm_digest_emails_enabled: true,
         realm_name_in_notifications: true,
@@ -1099,13 +1102,17 @@ run_test('settings_tab', () => {
         avatar_url: "https://google.com",
     });
 
-    const checkbox_ids = ["enable_stream_desktop_notifications",
-                          "enable_stream_push_notifications",
-                          "enable_stream_audible_notifications", "enable_desktop_notifications",
-                          "enable_sounds", "enable_offline_push_notifications",
-                          "enable_online_push_notifications",
-                          "enable_digest_emails",
-                          "realm_name_in_notifications"];
+    const checkbox_ids = [
+        "enable_stream_desktop_notifications",
+        "enable_stream_push_notifications",
+        "enable_stream_audible_notifications",
+        "enable_desktop_notifications",
+        "enable_sounds",
+        "enable_offline_push_notifications",
+        "enable_online_push_notifications",
+        "enable_digest_emails",
+        "realm_name_in_notifications",
+    ];
 
     // Render with all booleans set to true.
     let html = render('settings_tab', {
