@@ -2526,31 +2526,34 @@ class TestLDAP(ZulipLDAPTestCase):
         common_attrs = ['cn', 'userPassword', 'phoneNumber', 'birthDate']
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), common_attrs + ['thumbnailPhoto', 'userAccountControl'])
+            self.assertCountEqual(list(value.keys()), common_attrs + ['uid', 'thumbnailPhoto', 'userAccountControl'])
 
         ldap_dir = generate_dev_ldap_dir('b', 9)
         self.assertEqual(len(ldap_dir), 9)
         regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)')
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), common_attrs + ['jpegPhoto'])
+            self.assertCountEqual(list(value.keys()), common_attrs + ['uid', 'jpegPhoto'])
 
         ldap_dir = generate_dev_ldap_dir('c', 8)
         self.assertEqual(len(ldap_dir), 8)
         regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)')
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), common_attrs + ['email'])
+            self.assertCountEqual(list(value.keys()), common_attrs + ['uid', 'email'])
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_dev_ldap_fail_login(self) -> None:  # nocoverage
+    def test_dev_ldap_fail_login(self) -> None:
         # Tests that login with a substring of password fails. We had a bug in
         # dev LDAP environment that allowed login via password substrings.
         self.mock_ldap.directory = generate_dev_ldap_dir('B', 8)
         with self.settings(
-                LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_BIND_PASSWORD='',
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                               ldap.SCOPE_ONELEVEL, "(uid=%(user)s)"),
+            AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                                        ldap.SCOPE_ONELEVEL, "(email=%(email)s)"),
+            LDAP_APPEND_DOMAIN='zulip.com'
+        ):
             user_profile = self.backend.authenticate(username='ldapuser1', password='dapu',
                                                      realm=get_realm('zulip'))
 

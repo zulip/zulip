@@ -109,16 +109,20 @@ FAKE_LDAP_MODE = None  # type: Optional[str]
 # FAKE_LDAP_NUM_USERS = 8
 
 if FAKE_LDAP_MODE:
+    import ldap
+    from django_auth_ldap.config import LDAPSearch
     # To understand these parameters, read the docs in
     # prod_settings_template.py and on ReadTheDocs.
     LDAP_APPEND_DOMAIN = None
-    AUTH_LDAP_USER_DN_TEMPLATE = 'uid=%(user)s,ou=users,dc=zulip,dc=com'
+    AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                       ldap.SCOPE_ONELEVEL, "(uid=%(user)s)")
+    AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                                ldap.SCOPE_ONELEVEL, "(email=%(email)s)")
 
     if FAKE_LDAP_MODE == 'a':
-        import ldap
-        from django_auth_ldap.config import LDAPSearch
-        AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
-                                           ldap.SCOPE_SUBTREE, "(email=%(user)s)")
+        AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                                    ldap.SCOPE_ONELEVEL, "(uid=%(email)s)")
+        AUTH_LDAP_USERNAME_ATTR = "uid"
         AUTH_LDAP_USER_ATTR_MAP = {
             "full_name": "cn",
             "avatar": "thumbnailPhoto",
@@ -136,6 +140,7 @@ if FAKE_LDAP_MODE:
             "custom_profile_field__phone_number": "phoneNumber",
         }
     elif FAKE_LDAP_MODE == 'c':
+        AUTH_LDAP_USERNAME_ATTR = "uid"
         LDAP_EMAIL_ATTR = 'email'
         AUTH_LDAP_USER_ATTR_MAP = {
             "full_name": "cn",
