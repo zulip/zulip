@@ -619,9 +619,12 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         opts = {}   # type: Dict[str, Any]
         if self._prereg_user:
             invited_as = self._prereg_user.invited_as
+            realm_creation = self._prereg_user.realm_creation
             opts['prereg_user'] = self._prereg_user
-            opts['is_realm_admin'] = invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']
+            opts['is_realm_admin'] = (
+                invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']) or realm_creation
             opts['is_guest'] = invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']
+            opts['realm_creation'] = realm_creation
             opts['default_stream_groups'] = get_default_stream_groups(self._realm)
 
         user_profile = do_create_user(username, None, self._realm, full_name, short_name, **opts)
