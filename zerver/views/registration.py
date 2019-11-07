@@ -234,6 +234,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         else:
             existing_user_profile = None
 
+        user_profile = None  # type: Optional[UserProfile]
         return_data = {}  # type: Dict[str, bool]
         if ldap_auth_enabled(realm):
             # If the user was authenticated using an external SSO
@@ -248,13 +249,13 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # But if the realm is using LDAPAuthBackend, we need to verify
             # their LDAP password (which will, as a side effect, create
             # the user account) here using authenticate.
-            auth_result = authenticate(request,
-                                       username=email,
-                                       password=password,
-                                       realm=realm,
-                                       prereg_user=prereg_user,
-                                       return_data=return_data)
-            if auth_result is None:
+            user_profile = authenticate(request,
+                                        username=email,
+                                        password=password,
+                                        realm=realm,
+                                        prereg_user=prereg_user,
+                                        return_data=return_data)
+            if user_profile is None:
                 if return_data.get("no_matching_ldap_user") and email_auth_enabled(realm):
                     # If both the LDAP and Email auth backends are
                     # enabled, and there's no matching user in the LDAP
@@ -277,7 +278,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                                 urllib.parse.quote_plus(email))
             else:
                 # Since we'll have created a user, we now just log them in.
-                return login_and_go_to_home(request, auth_result)
+                return login_and_go_to_home(request, user_profile)
 
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
