@@ -300,7 +300,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
                                           content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            print(user_profile.id)
             missedmessage_hook(user_profile.id, client_descriptor, True)
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
