@@ -254,30 +254,30 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                        realm=realm,
                                        prereg_user=prereg_user,
                                        return_data=return_data)
-            if auth_result is not None:
+            if auth_result is None:
+                if return_data.get("no_matching_ldap_user") and email_auth_enabled(realm):
+                    # If both the LDAP and Email auth backends are
+                    # enabled, and there's no matching user in the LDAP
+                    # directory then the intent is to create a user in the
+                    # realm with their email outside the LDAP organization
+                    # (with e.g. a password stored in the Zulip database,
+                    # not LDAP).  So we fall through and create the new
+                    # account.
+                    #
+                    # It's likely that we can extend this block to the
+                    # Google and GitHub auth backends with no code changes
+                    # other than here.
+                    pass
+                else:
+                    # TODO: This probably isn't going to give a
+                    # user-friendly error message, but it doesn't
+                    # particularly matter, because the registration form
+                    # is hidden for most users.
+                    return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
+                                                urllib.parse.quote_plus(email))
+            else:
                 # Since we'll have created a user, we now just log them in.
                 return login_and_go_to_home(request, auth_result)
-
-            if return_data.get("no_matching_ldap_user") and email_auth_enabled(realm):
-                # If both the LDAP and Email auth backends are
-                # enabled, and there's no matching user in the LDAP
-                # directory then the intent is to create a user in the
-                # realm with their email outside the LDAP organization
-                # (with e.g. a password stored in the Zulip database,
-                # not LDAP).  So we fall through and create the new
-                # account.
-                #
-                # It's likely that we can extend this block to the
-                # Google and GitHub auth backends with no code changes
-                # other than here.
-                pass
-            else:
-                # TODO: This probably isn't going to give a
-                # user-friendly error message, but it doesn't
-                # particularly matter, because the registration form
-                # is hidden for most users.
-                return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
-                                            urllib.parse.quote_plus(email))
 
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
