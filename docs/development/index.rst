@@ -10,3 +10,4 @@ Development Environment
    Advanced Setup (non-Vagrant) <setup-advanced>
    Using the development environment <using>
    Developing remotely <remote>
+   Authentication in the development environment <authentication>

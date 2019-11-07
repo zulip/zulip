@@ -18,12 +18,10 @@ Subsystems Documentation
    realms
    management-commands
    schema-migrations
-   migration-renumbering
    hashchange-system
    emoji
    hotspots
    full-text-search
-   auth
    email
    analytics
    client

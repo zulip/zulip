@@ -2,9 +2,9 @@
 #
 # * https://zulip.readthedocs.io/en/latest/production/authentication-methods.html and
 #   zproject/prod_settings_template.py have user-level configuration documentation.
-# * https://zulip.readthedocs.io/en/latest/subsystems/auth.html has developer-level
-#   documentation, especially on testing authentication backends in the Zulip
-#   development environment.
+# * https://zulip.readthedocs.io/en/latest/development/authentication.html
+#   has developer-level documentation, especially on testing authentication backends
+#   in the Zulip development environment.
 #
 # Django upstream's documentation for authentication backends is also
 # helpful background.  The most important detail to understand for

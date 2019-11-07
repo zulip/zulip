@@ -776,7 +776,7 @@ markdown_docs_length_exclude = {
     "docs/development/setup-vagrant.md",
     # Have wide output in code blocks
     "docs/subsystems/logging.md",
-    "docs/subsystems/migration-renumbering.md",
+    "docs/subsystems/schema-migrations.md",
     # Have curl commands with JSON that would be messy to wrap
     "zerver/webhooks/helloworld/doc.md",
     "zerver/webhooks/trello/doc.md",

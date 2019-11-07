@@ -489,7 +489,7 @@ For example, the
 was about 30 lines of code, plus some documentation and an
 [automatically generated migration][schema-migrations].  We also have
 helpful developer documentation on
-[testing auth backends](../subsystems/auth.md).
+[testing auth backends](../development/authentication.md).
 
 [schema-migrations]: ../subsystems/schema-migrations.md
 [python-social-auth]: https://python-social-auth.readthedocs.io/en/latest/
