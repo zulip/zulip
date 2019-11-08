@@ -285,6 +285,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('gocd', ['continuous-integration'], display_name='GoCD'),
     WebhookIntegration('gogs', ['version-control'], stream_name='commits'),
     WebhookIntegration('gosquared', ['marketing'], display_name='GoSquared'),
+    WebhookIntegration('grafana', ['monitoring'], display_name='Grafana'),
     WebhookIntegration('greenhouse', ['hr'], display_name='Greenhouse'),
     WebhookIntegration('groove', ['customer-support'], display_name='Groove'),
     WebhookIntegration('harbor', ['deployment', 'productivity'], display_name='Harbor'),
