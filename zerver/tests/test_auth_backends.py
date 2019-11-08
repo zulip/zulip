@@ -21,6 +21,8 @@ import time
 import datetime
 
 from zerver.lib.actions import (
+    do_create_user,
+    do_create_realm,
     do_deactivate_realm,
     do_deactivate_user,
     do_reactivate_realm,
@@ -58,7 +60,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionNoMatchingLDAPUser, ZulipLDAPExceptionOutsideDomain, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
     PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
-    get_social_backend_dicts, AzureADAuthBackend
+    get_social_backend_dicts, AzureADAuthBackend, ZulipLDAPUser
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
@@ -2856,8 +2858,9 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 sync_user_from_ldap(self.example_user('hamlet'), mock.Mock())
             mock_deactivate.assert_not_called()
 
+    @override_settings(LDAP_EMAIL_ATTR="mail")
     def test_populate_user_returns_none(self) -> None:
-        with mock.patch.object(ZulipLDAPUserPopulator, 'populate_user', return_value=None):
+        with mock.patch.object(ZulipLDAPUser, 'populate_user', return_value=None):
             with self.assertRaises(PopulateUserLDAPError):
                 sync_user_from_ldap(self.example_user('hamlet'), mock.Mock())
 
@@ -2915,6 +2918,25 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.perform_ldap_sync(self.example_user('hamlet'))
         hamlet = self.example_user('hamlet')
         self.assertTrue(hamlet.is_active)
+
+    def test_user_in_multiple_realms(self) -> None:
+        test_realm = do_create_realm('test', 'test', False)
+        hamlet = self.example_user('hamlet')
+        hamlet2 = do_create_user(hamlet.email, None, test_realm, hamlet.full_name, hamlet.short_name)
+
+        self.change_ldap_user_attr('hamlet', 'cn', 'Second Hamlet')
+        expected_call_args = [hamlet2, 'Second Hamlet', None]
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn'}):
+            with mock.patch('zerver.lib.actions.do_change_full_name') as f:
+                self.perform_ldap_sync(hamlet2)
+                f.assert_called_once_with(*expected_call_args)
+
+                # Get the updated model and make sure the full name is changed correctly:
+                hamlet2 = get_user(hamlet.email, test_realm)
+                self.assertEqual(hamlet2.full_name, "Second Hamlet")
+                # Now get the original hamlet and make he still has his name unchanged:
+                hamlet = get_user(hamlet.email, get_realm("zulip"))
+                self.assertEqual(hamlet.full_name, "King Hamlet")
 
     def test_user_not_found_in_ldap(self) -> None:
         with self.settings(
