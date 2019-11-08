@@ -657,6 +657,20 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         return user_profile, True
 
+class ZulipLDAPUser(_LDAPUser):
+    """
+    This is an extension of the _LDAPUser class, with a realm attribute
+    attached to it. It's purpose is to call its inherited method
+    populate_user() which will sync the ldap data with the corresponding
+    UserProfile. The realm attribute serves to uniquely identify the UserProfile
+    in case the ldap user is registered to multiple realms.
+    """
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.realm = kwargs['realm']  # type: Realm
+        del kwargs['realm']
+
+        super().__init__(*args, **kwargs)
+
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     """Just like ZulipLDAPAuthBackend, but doesn't let you log in.  Used
     for syncing data like names, avatars, and custom profile fields
@@ -669,16 +683,18 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
         return None
 
     def get_or_build_user(self, username: str,
-                          ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
+                          ldap_user: ZulipLDAPUser) -> Tuple[UserProfile, bool]:
         """This is used only in non-authentication contexts such as:
              ./manage.py sync_ldap_user_data
         """
         # Obtain the django username from the ldap_user object:
         username = self.user_email_from_ldapuser(username, ldap_user)
 
-        # Call the library get_or_build_user for building the UserProfile
-        # with the username we obtained:
-        (user, built) = super().get_or_build_user(username, ldap_user)
+        # We set the built flag (which tells django-auth-ldap whether the user object
+        # was taken from the database or freshly built) to False - because in this codepath
+        # the user we're syncing of course already has to exist in the database.
+        user = get_user_by_delivery_email(username, ldap_user.realm)
+        built = False
         # Synchronise the UserProfile with its LDAP attributes:
         if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:
             user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
@@ -730,7 +746,22 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
             logger.warning("Did not find %s in LDAP." % (user_profile.email,))
         return False
 
-    updated_user = backend.populate_user(ldap_username)
+    # What one would expect to see like to do here is just a call to
+    # `backend.populate_user`, which in turn just creates the
+    # `_LDAPUser` object and calls `ldap_user.populate_user()` on
+    # that.  Unfortunately, that will produce incorrect results in the
+    # case that the server has multiple Zulip users in different
+    # realms associated with a single LDAP user, because
+    # `django-auth-ldap` isn't implemented with the possibility of
+    # multiple realms on different subdomains in mind.
+    #
+    # To address this, we construct a version of the _LDAPUser class
+    # extended to store the realm of the target user, and call its
+    # `.populate_user` function directly.
+    #
+    # Ideally, we'd contribute changes to `django-auth-ldap` upstream
+    # making this flow possible in a more directly supported fashion.
+    updated_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm).populate_user()
     if updated_user:
         logger.info("Updated %s." % (user_profile.email,))
         return True
