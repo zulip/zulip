@@ -133,6 +133,19 @@ function populate_users(realm_people_data) {
         if (user.is_bot) {
             // Convert bot type id to string for viewing to the users.
             user.bot_type = settings_bots.type_id_to_string(user.bot_type);
+
+            // TODO: This is a messy way to handle bot owners.
+            // Ideally, we'd send the user ID to the template, render
+            // owner names as a link, and have that link take the
+            // browser to that user's profile.  But showing the user's
+            // full name is simpler and doesn't look broken, so we do
+            // that for now.
+            if (user.bot_owner_id !== null) {
+                user.bot_owner_full_name = people.get_person_from_user_id(
+                    user.bot_owner_id).full_name;
+            } else {
+                user.bot_owner_full_name = i18n.t("No owner");
+            }
             bots.push(user);
         } else if (user.is_active) {
             user.last_active = get_last_active(user);

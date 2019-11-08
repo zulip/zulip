@@ -118,8 +118,9 @@ def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: 
             result["bot_type"] = row["bot_type"]
             if row['email'] in settings.CROSS_REALM_BOT_EMAILS:
                 result['is_cross_realm_bot'] = True
-            elif row['bot_owner_id'] is not None:
-                result['bot_owner_id'] = row['bot_owner_id']
+
+            # Note that bot_owner_id can be None with legacy data.
+            result['bot_owner_id'] = row['bot_owner_id']
         elif include_custom_profile_fields:
             result['profile_data'] = profiles_by_user_id.get(row['id'], {})
         return result
