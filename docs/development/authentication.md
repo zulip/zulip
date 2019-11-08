@@ -1,30 +1,46 @@
 # Authentication in the development environment
 
 This page documents special notes that are useful for configuring
-Zulip's various authentication methods for testing in a development
-environment.
+Zulip's various [authentication
+methods](../production/authentication-methods.md) for testing in a
+development environment.
 
-## Testing OAuth in development
+Because many of these authentication methods involve a complex
+interaction between Zulip, an external service, and the user's
+browser, and particularly because browsers can (rightly!) be picky
+about the identity of sites you interact with, the preferred way to
+set them up in a development environment is provide the secret keys
+for these authentication methods in your development so that you can
+go through the real flow.
 
-Among the many [authentication methods](../production/authentication-methods.md)
-we support, a server can be configured to allow users to sign in with
-their Google accounts or GitHub accounts, using the OAuth protocol.
-
-Because these authentication methods involve an interaction between
-Zulip, an external service, and the user's browser, and particularly
-because browsers can (rightly!) be picky about the identity of sites
-you interact with, the preferred way to set them up in a development
-environment is to set up the real Google and GitHub to process auth
-requests for your development environment.
-
-The steps to do this are a variation of the steps documented in
-`prod_settings_template.py`.  The main differences here are driven by
-the fact that `dev_settings.py` is in Git, so it can be inconvenient
-to put secrets there.  In development, we allow providing those values
-in the untracked file `zproject/dev-secrets.conf`, using the standard
+The steps to do this are a variation of the steps discussed in the
+production docs and `docs/prod_settings_template.py`.  The main
+differences here are driven by the fact that `dev_settings.py` is in
+Git, so it can be inconvenient to put secrets there.  As a result, in
+the development environmentm, we allow providing those values in the
+untracked file `zproject/dev-secrets.conf`, using the standard
 lower-case naming convention for that file.
 
-Here are the full procedures for dev:
+Below, we document the procedure for each of the major authentication
+methods supported by Zulip.
+
+### Email and Password
+
+Zulip's default EmailAuthBackend authenticates users by verifying
+control over their email address, and then allowing them to set a
+password for their account.  There are two development environment
+details worth understanding:
+
+* All of our authentication flows in the development environment have
+  special links to the `/emails` page (advertised in `/devtools`),
+  which shows all emails that the Zulip server has "sent" (emails are
+  not actually sent by the development environment), to make it
+  convenient to click through the UI of signup, password reset, etc.
+* There's a management command, `manage.py print_initial_password
+  username@example.com`, that prints out **default** passwords for the
+  development environment users.  Note that if you change a user's
+  password in the development environment, those passwords won't
+  work.  It also prints out the user's **current** API key.
 
 ### Google
 
