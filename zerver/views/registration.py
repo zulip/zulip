@@ -142,6 +142,18 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                         form = RegistrationForm(realm_creation=realm_creation)
                         break
 
+                    # Note that this `ldap_user` object is not a
+                    # `ZulipLDAPUser` with a `Realm` attached, so
+                    # calling `.populate_user()` on it will crash.
+                    # This is OK, since we're just accessing this user
+                    # to extract its name.
+                    #
+                    # TODO: We should potentially be accessing this
+                    # user to sync its initial avatar and custom
+                    # profile fields as well, if we indeed end up
+                    # creating a user account through this flow,
+                    # rather than waiting until `manage.py
+                    # sync_ldap_user_data` runs to populate it.
                     ldap_user = _LDAPUser(backend, ldap_username)
 
                     try:
