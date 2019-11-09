@@ -14,6 +14,7 @@ import os
 import html
 import time
 import functools
+from io import StringIO
 import ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element
@@ -1311,7 +1312,18 @@ class Tex(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Element:
         rendered = render_tex(match.group('body'), is_inline=True)
         if rendered is not None:
-            return etree.fromstring(rendered.encode('utf-8'))
+            # We need to give Python-Markdown an ElementTree object, but if we
+            # give it one with correctly stored XML namespaces, it will mangle
+            # everything when serializing it.  So we play this stupid game to
+            # store xmlns as a normal attribute.  :-[
+            assert ' zulip-xmlns="' not in rendered
+            rendered = rendered.replace(' xmlns="', ' zulip-xmlns="')
+            parsed = etree.iterparse(StringIO(rendered))
+            for event, elem in parsed:
+                if 'zulip-xmlns' in elem.attrib:
+                    elem.attrib['xmlns'] = elem.attrib.pop('zulip-xmlns')
+                root = elem
+            return root
         else:  # Something went wrong while rendering
             span = markdown.util.etree.Element('span')
             span.set('class', 'tex-error')
