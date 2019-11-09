@@ -253,6 +253,13 @@ def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
         RealmAuditLog.ROLE_COUNT_BOTS: bot_count,
     }
 
+def do_record_role_counts(realm: Realm) -> None:
+    RealmAuditLog.objects.create(
+        realm=realm, event_type=RealmAuditLog.BILLING_ROLE_COUNT_RECORDED,
+        event_time=timezone_now(), extra_data=ujson.dumps({
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm)
+        }))
+
 def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_stream: str,
                         user_profile: UserProfile, internal: bool=False,
                         realm: Optional[Realm]=None) -> None:
@@ -522,7 +529,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                                source_profile=source_profile)
 
     event_time = user_profile.date_joined
-    RealmAuditLog.objects.create(
+    log_entry = RealmAuditLog.objects.create(
         realm=user_profile.realm, modified_user=user_profile,
         event_type=RealmAuditLog.USER_CREATED, event_time=event_time,
         extra_data=ujson.dumps({
@@ -531,7 +538,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        update_license_ledger_if_needed(log_entry)
 
     notify_created_user(user_profile)
     if bot_type:
@@ -553,7 +560,7 @@ def do_activate_user(user_profile: UserProfile) -> None:
                                      "is_mirror_dummy", "tos_version"])
 
     event_time = user_profile.date_joined
-    RealmAuditLog.objects.create(
+    log_entry = RealmAuditLog.objects.create(
         realm=user_profile.realm, modified_user=user_profile,
         event_type=RealmAuditLog.USER_ACTIVATED, event_time=event_time,
         extra_data=ujson.dumps({
@@ -562,7 +569,7 @@ def do_activate_user(user_profile: UserProfile) -> None:
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        update_license_ledger_if_needed(log_entry)
 
     notify_created_user(user_profile)
 
@@ -573,7 +580,7 @@ def do_reactivate_user(user_profile: UserProfile, acting_user: Optional[UserProf
     user_profile.save(update_fields=["is_active"])
 
     event_time = timezone_now()
-    RealmAuditLog.objects.create(
+    log_entry = RealmAuditLog.objects.create(
         realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
         event_type=RealmAuditLog.USER_REACTIVATED, event_time=event_time,
         extra_data=ujson.dumps({
@@ -582,7 +589,7 @@ def do_reactivate_user(user_profile: UserProfile, acting_user: Optional[UserProf
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        update_license_ledger_if_needed(log_entry)
 
     notify_created_user(user_profile)
 
@@ -786,7 +793,7 @@ def do_deactivate_user(user_profile: UserProfile,
     clear_scheduled_emails([user_profile.id])
 
     event_time = timezone_now()
-    RealmAuditLog.objects.create(
+    log_entry = RealmAuditLog.objects.create(
         realm=user_profile.realm, modified_user=user_profile, acting_user=acting_user,
         event_type=RealmAuditLog.USER_DEACTIVATED, event_time=event_time,
         extra_data=ujson.dumps({
@@ -795,7 +802,7 @@ def do_deactivate_user(user_profile: UserProfile,
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time, increment=-1)
     if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        update_license_ledger_if_needed(log_entry)
 
     event = dict(type="realm_user", op="remove",
                  person=dict(email=user_profile.email,

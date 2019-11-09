@@ -4,11 +4,12 @@ from functools import wraps
 import logging
 import math
 import os
-from typing import Any, Callable, Dict, Optional, TypeVar, Tuple, cast
+from typing import Any, Callable, Dict, Optional, TypeVar, Tuple, Union, cast
 import ujson
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
 from django.core.signing import Signer
@@ -17,9 +18,10 @@ import stripe
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
-from zerver.models import Realm, UserProfile, RealmAuditLog
+from zerver.models import Realm, UserProfile, RealmAuditLog, AbstractRealmAuditLog
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_current_plan
+    get_current_plan, CustomerAuditLog
+from zilencer.models import RemoteZulipServer, RemoteRealmAuditLog
 from zproject.settings import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -38,11 +40,110 @@ CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 MIN_INVOICED_LICENSES = 30
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 
-def get_latest_seat_count(realm: Realm) -> int:
-    non_guests = UserProfile.objects.filter(
-        realm=realm, is_active=True, is_bot=False).exclude(role=UserProfile.ROLE_GUEST).count()
-    guests = UserProfile.objects.filter(
-        realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST).count()
+class BillingOrg(object):
+    def __init__(self, org: Union[Realm, RemoteZulipServer]) -> None:
+        if type(org) == Realm:
+            self.realm = cast(Realm, org)  # type: Optional[Realm]
+            self.server = None
+            self.customer_args = {'realm': self.realm}
+        else:
+            self.realm = None
+            self.server = cast(RemoteZulipServer, org)
+            self.customer_args = {'server': self.server}
+
+    def get_customer_if_exists(self) -> Optional[Customer]:
+        return Customer.objects.filter(**self.customer_args).first()
+
+    def get_customer(self) -> Customer:
+        return Customer.objects.get(**self.customer_args)
+
+    def get_audit_log_filter(self) -> QuerySet:
+        if self.realm is not None:
+            return RealmAuditLog.objects.filter(**self.customer_args)
+        return RemoteRealmAuditLog.objects.filter(**self.customer_args)
+
+    def get_latest_seat_count(self) -> int:
+        log_entry = self.get_audit_log_filter().filter(
+            event_type__in=RealmAuditLog.SYNCED_BILLING_EVENTS).order_by('-id').first()
+        if log_entry is None:
+            raise AssertionError(
+                '{}: get_latest_seat_count called with no log entries'.format(self))
+        return get_seat_count(log_entry)
+
+    def get_url_key(self) -> Optional[str]:
+        if self.server is not None:
+            return self.server.url_key
+        return None
+
+    # TODO: write for self.server
+    def change_plan_type(self, value: int) -> None:
+        if self.realm is not None:
+            from zerver.lib.actions import do_change_plan_type
+            do_change_plan_type(self.realm, value)
+
+    def stripe_description(self) -> str:
+        if self.realm is not None:
+            return 'Realm: {} ({})'.format(self.realm.string_id, self.realm.name)
+        assert self.server is not None
+        return 'RemoteZulipServer: {} ({})'.format(self.server.hostname, self.server.contact_email)
+
+    def stripe_metadata(self) -> Dict[str, Any]:
+        if self.realm is not None:
+            return {'realm_id': self.realm.id, 'realm_str': self.realm.string_id}
+        assert self.server is not None
+        return {'server_id': self.server.id, 'hostname': self.server.hostname}
+
+    def __str__(self) -> str:
+        if self.realm is not None:
+            return '<BillingOrg {}>'.format(self.realm)
+        assert self.server is not None
+        return '<BillingOrg {}>'.format(self.server)
+
+def init_billing_org_from_customer(customer: Customer) -> BillingOrg:
+    if customer.realm is not None:
+        return BillingOrg(customer.realm)
+    assert customer.server is not None
+    return BillingOrg(customer.server)
+
+# Note that BillingUser subclasses BillingOrg
+class BillingUser(BillingOrg):
+    def __init__(self, billing_user: Union[UserProfile, RemoteZulipServer]) -> None:
+        self.user = None
+        if type(billing_user) == RemoteZulipServer:
+            super().__init__(billing_user)
+        else:
+            self.user = cast(UserProfile, billing_user)
+            super().__init__(billing_user.realm)
+
+    def get_email(self) -> str:
+        if self.user is not None:
+            return self.user.email
+        assert self.server is not None
+        return self.server.contact_email
+
+    def has_billing_access(self) -> bool:
+        if self.user is not None:
+            return self.user.is_realm_admin or self.user.is_billing_admin
+        return True
+
+    def do_change_is_billing_admin(self, value: bool) -> None:
+        if self.user is not None:
+            self.user.is_billing_admin = value
+            self.user.save(update_fields=['is_billing_admin'])
+
+    def create_log_entry(self, event_type: int, event_time: datetime=timezone_now(),
+                         extra_data: Optional[str]=None) -> None:
+        common_args = {'event_type': event_type, 'event_time': event_time, 'extra_data': extra_data}
+        if self.user is not None:
+            RealmAuditLog.objects.create(realm=self.user.realm, acting_user=self.user, **common_args)
+        CustomerAuditLog.objects.create(customer=self.get_customer(), **common_args)
+
+def get_seat_count(log_entry: AbstractRealmAuditLog) -> int:
+    assert log_entry.extra_data is not None  # for mypy
+    role_count = ujson.loads(log_entry.extra_data)[str(RealmAuditLog.ROLE_COUNT)]
+    humans = role_count[str(RealmAuditLog.ROLE_COUNT_HUMANS)]
+    guests = humans[str(UserProfile.ROLE_GUEST)]
+    non_guests = sum(humans.values()) - guests
     return max(non_guests, math.ceil(guests / 5))
 
 def sign_string(string: str) -> Tuple[str, str]:
@@ -170,42 +271,35 @@ def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
     return stripe.Customer.retrieve(stripe_customer_id, expand=["default_source"])
 
 @catch_stripe_errors
-def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=None) -> Customer:
-    realm = user.realm
+def do_create_stripe_customer(billing_user: BillingUser, stripe_token: Optional[str]=None) -> Customer:
     # We could do a better job of handling race conditions here, but if two
     # people from a realm try to upgrade at exactly the same time, the main
     # bad thing that will happen is that we will create an extra stripe
     # customer that we can delete or ignore.
     stripe_customer = stripe.Customer.create(
-        description="%s (%s)" % (realm.string_id, realm.name),
-        email=user.email,
-        metadata={'realm_id': realm.id, 'realm_str': realm.string_id},
+        description=billing_user.stripe_description(),
+        email=billing_user.get_email(),
+        metadata=billing_user.stripe_metadata(),
         source=stripe_token)
     event_time = timestamp_to_datetime(stripe_customer.created)
     with transaction.atomic():
-        RealmAuditLog.objects.create(
-            realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CUSTOMER_CREATED,
-            event_time=event_time)
+        customer, created = Customer.objects.update_or_create(
+            defaults={'stripe_customer_id': stripe_customer.id},
+            **billing_user.customer_args)
+        billing_user.create_log_entry(RealmAuditLog.STRIPE_CUSTOMER_CREATED, event_time=event_time)
         if stripe_token is not None:
-            RealmAuditLog.objects.create(
-                realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
-                event_time=event_time)
-        customer, created = Customer.objects.update_or_create(realm=realm, defaults={
-            'stripe_customer_id': stripe_customer.id})
-        user.is_billing_admin = True
-        user.save(update_fields=["is_billing_admin"])
+            billing_user.create_log_entry(RealmAuditLog.STRIPE_CARD_CHANGED, event_time=event_time)
+        billing_user.do_change_is_billing_admin(True)
     return customer
 
 @catch_stripe_errors
-def do_replace_payment_source(user: UserProfile, stripe_token: str,
+def do_replace_payment_source(billing_user: BillingUser, stripe_token: str,
                               pay_invoices: bool=False) -> stripe.Customer:
-    stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+    stripe_customer = stripe_get_customer(billing_user.get_customer().stripe_customer_id)
     stripe_customer.source = stripe_token
     # Deletes existing card: https://stripe.com/docs/api#update_customer-source
     updated_stripe_customer = stripe.Customer.save(stripe_customer)
-    RealmAuditLog.objects.create(
-        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
-        event_time=timezone_now())
+    billing_user.create_log_entry(RealmAuditLog.STRIPE_CARD_CHANGED)
     if pay_invoices:
         for stripe_invoice in stripe.Invoice.list(
                 billing='charge_automatically', customer=stripe_customer.id, status='open'):
@@ -237,13 +331,13 @@ def make_end_of_cycle_updates_if_needed(plan: CustomerPlan,
 
 # Returns Customer instead of stripe_customer so that we don't make a Stripe
 # API call if there's nothing to update
-def update_or_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=None) -> Customer:
-    realm = user.realm
-    customer = Customer.objects.filter(realm=realm).first()
+def update_or_create_stripe_customer(billing_user: BillingUser,
+                                     stripe_token: Optional[str]=None) -> Customer:
+    customer = billing_user.get_customer_if_exists()
     if customer is None or customer.stripe_customer_id is None:
-        return do_create_stripe_customer(user, stripe_token=stripe_token)
+        return do_create_stripe_customer(billing_user, stripe_token=stripe_token)
     if stripe_token is not None:
-        do_replace_payment_source(user, stripe_token)
+        do_replace_payment_source(billing_user, stripe_token)
     return customer
 
 def compute_plan_parameters(
@@ -272,10 +366,9 @@ def compute_plan_parameters(
 
 # Only used for cloud signups
 @catch_stripe_errors
-def process_initial_upgrade(user: UserProfile, licenses: int, automanage_licenses: bool,
+def process_initial_upgrade(billing_user: BillingUser, licenses: int, automanage_licenses: bool,
                             billing_schedule: int, stripe_token: Optional[str]) -> None:
-    realm = user.realm
-    customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
+    customer = update_or_create_stripe_customer(billing_user, stripe_token=stripe_token)
     if get_current_plan(customer) is not None:
         # Unlikely race condition from two people upgrading (clicking "Make payment")
         # at exactly the same time. Doesn't fully resolve the race condition, but having
@@ -298,7 +391,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
             currency='usd',
             customer=customer.stripe_customer_id,
             description="Upgrade to Zulip Standard, ${} x {}".format(price_per_license/100, licenses),
-            receipt_email=user.email,
+            receipt_email=billing_user.get_email(),
             statement_descriptor='Zulip Standard')
         # Not setting a period start and end, but maybe we should? Unclear what will make things
         # most similar to the renewal case from an accounting perspective.
@@ -314,7 +407,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
     with transaction.atomic():
         # billed_licenses can greater than licenses if users are added between the start of
         # this function (process_initial_upgrade) and now
-        billed_licenses = max(get_latest_seat_count(realm), licenses)
+        billed_licenses = max(billing_user.get_latest_seat_count(), licenses)
         plan_params = {
             'automanage_licenses': automanage_licenses,
             'charge_automatically': charge_automatically,
@@ -335,10 +428,9 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
             licenses_at_next_renewal=billed_licenses)
         plan.invoiced_through = ledger_entry
         plan.save(update_fields=['invoiced_through'])
-        RealmAuditLog.objects.create(
-            realm=realm, acting_user=user, event_time=billing_cycle_anchor,
-            event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,
-            extra_data=ujson.dumps(plan_params))
+        billing_user.create_log_entry(RealmAuditLog.CUSTOMER_PLAN_CREATED,
+                                      event_time=billing_cycle_anchor,
+                                      extra_data=ujson.dumps(plan_params))
     stripe.InvoiceItem.create(
         currency='usd',
         customer=customer.stripe_customer_id,
@@ -363,22 +455,21 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
         statement_descriptor='Zulip Standard')
     stripe.Invoice.finalize_invoice(stripe_invoice)
 
-    from zerver.lib.actions import do_change_plan_type
-    do_change_plan_type(realm, Realm.STANDARD)
+    billing_user.change_plan_type(Realm.STANDARD)
 
-def update_license_ledger_for_automanaged_plan(realm: Realm, plan: CustomerPlan,
-                                               event_time: datetime) -> None:
-    last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, event_time)
+def update_license_ledger_for_automanaged_plan(log_entry: AbstractRealmAuditLog,
+                                               plan: CustomerPlan) -> None:
+    last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, log_entry.event_time)
     if last_ledger_entry is None:
         return
-    licenses_at_next_renewal = get_latest_seat_count(realm)
+    licenses_at_next_renewal = get_seat_count(log_entry)
     licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
     LicenseLedger.objects.create(
-        plan=plan, event_time=event_time, licenses=licenses,
+        plan=plan, event_time=log_entry.event_time, licenses=licenses,
         licenses_at_next_renewal=licenses_at_next_renewal)
 
-def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
-    customer = Customer.objects.filter(realm=realm).first()
+def update_license_ledger_if_needed(log_entry: AbstractRealmAuditLog) -> None:
+    customer = BillingOrg(log_entry.realm).get_customer_if_exists()
     if customer is None:
         return
     plan = get_current_plan(customer)
@@ -386,7 +477,7 @@ def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
         return
     if not plan.automanage_licenses:
         return
-    update_license_ledger_for_automanaged_plan(realm, plan, event_time)
+    update_license_ledger_for_automanaged_plan(log_entry, plan)
 
 def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.invoicing_status == CustomerPlan.STARTED:
@@ -463,11 +554,12 @@ def invoice_plans_as_needed(event_time: datetime=timezone_now()) -> None:
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
         invoice_plan(plan, event_time)
 
-def attach_discount_to_realm(realm: Realm, discount: Decimal) -> None:
-    Customer.objects.update_or_create(realm=realm, defaults={'default_discount': discount})
+def attach_discount_to_realm(billing_org: BillingOrg, discount: Decimal) -> None:
+    Customer.objects.update_or_create(defaults={'default_discount': discount},
+                                      **billing_org.customer_args)
 
-def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
-    customer = Customer.objects.filter(realm=realm).first()
+def get_discount_for_realm(billing_org: BillingOrg) -> Optional[Decimal]:
+    customer = billing_org.get_customer_if_exists()
     if customer is not None:
         return customer.default_discount
     return None
@@ -479,8 +571,8 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
         plan.customer.id, plan.id, status))
 
 def process_downgrade(plan: CustomerPlan) -> None:
-    from zerver.lib.actions import do_change_plan_type
-    do_change_plan_type(plan.customer.realm, Realm.LIMITED)
+    billing_org = init_billing_org_from_customer(plan.customer)
+    billing_org.change_plan_type(Realm.LIMITED)
     plan.status = CustomerPlan.ENDED
     plan.save(update_fields=['status'])
 

@@ -5,7 +5,8 @@ from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_change_user_delivery_email, do_change_avatar_fields, do_change_bot_owner, \
     do_regenerate_api_key, do_change_tos_version, \
     bulk_add_subscriptions, bulk_remove_subscriptions, get_streams_traffic, \
-    do_change_is_admin, do_change_is_guest, do_deactivate_realm, do_reactivate_realm
+    do_change_is_admin, do_change_is_guest, do_deactivate_realm, do_reactivate_realm, \
+    do_record_role_counts
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmAuditLog, get_client, get_realm, UserProfile
 from analytics.models import StreamCount
@@ -183,5 +184,13 @@ class TestRealmAuditLog(ZulipTestCase):
 
         do_reactivate_realm(realm)
         log_entry = RealmAuditLog.objects.get(realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED)
+        extra_data = ujson.loads(log_entry.extra_data)
+        self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
+
+    def test_record_role_counts(self) -> None:
+        realm = get_realm('zulip')
+        do_record_role_counts(realm)
+        log_entry = RealmAuditLog.objects.filter(
+            realm=realm, event_type=RealmAuditLog.BILLING_ROLE_COUNT_RECORDED).last()
         extra_data = ujson.loads(log_entry.extra_data)
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])

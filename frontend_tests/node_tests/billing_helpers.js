@@ -91,7 +91,7 @@ run_test('create_ajax_request', () => {
 
         assert.equal(url, "/json/billing/upgrade");
 
-        assert.equal(Object.keys(data).length, 8);
+        assert.equal(Object.keys(data).length, 9);
         assert.equal(data.stripe_token, '"stripe_token_id"');
         assert.equal(data.seat_count, '"{{ seat_count }}"');
         assert.equal(data.signed_seat_count, '"{{ signed_seat_count }}"');
