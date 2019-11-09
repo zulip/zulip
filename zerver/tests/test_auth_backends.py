@@ -984,6 +984,18 @@ class SocialAuthBase(ZulipTestCase):
             self.stage_two_of_registration(result, realm, subdomain, email, name, "New LDAP fullname",
                                            skip_registration_form=True)
 
+            # Now try a user that doesn't exist in ldap:
+            email = self.nonreg_email("alice")
+            name = "Alice Social"
+            account_data_dict = self.get_account_data_dict(email=email, name=name)
+            result = self.social_auth_test(account_data_dict,
+                                           expect_choose_email_screen=True,
+                                           subdomain=subdomain, is_signup='1')
+            # Full name should get populated as provided by the social backend, because
+            # this user isn't in the ldap dictionary:
+            self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                           skip_registration_form=self.BACKEND_CLASS.full_name_validated)
+
     def test_social_auth_complete(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
                         side_effect=AuthFailed('Not found')):

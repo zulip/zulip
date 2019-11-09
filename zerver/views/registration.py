@@ -122,24 +122,17 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             del request.session['authenticated_full_name']
         except KeyError:
             pass
-        if realm is not None and realm.is_zephyr_mirror_realm:
-            # For MIT users, we can get an authoritative name from Hesiod.
-            # Technically we should check that this is actually an MIT
-            # realm, but we can cross that bridge if we ever get a non-MIT
-            # zephyr mirroring realm.
-            hesiod_name = compute_mit_user_fullname(email)
-            form = RegistrationForm(
-                initial={'full_name': hesiod_name if "@" not in hesiod_name else ""},
-                realm_creation=realm_creation)
-            name_validated = True
-        elif settings.POPULATE_PROFILE_VIA_LDAP:
+
+        ldap_full_name = None
+        if settings.POPULATE_PROFILE_VIA_LDAP:
+            # If the user can be found in LDAP, we'll take the full name from the directory,
+            # and further down create a form pre-filled with it.
             for backend in get_backends():
                 if isinstance(backend, LDAPBackend):
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
                     except ZulipLDAPExceptionNoMatchingLDAPUser:
                         logging.warning("New account email %s could not be found in LDAP" % (email,))
-                        form = RegistrationForm(realm_creation=realm_creation)
                         break
 
                     # Note that this `ldap_user` object is not a
@@ -160,13 +153,6 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                         ldap_full_name, _ = backend.get_mapped_name(ldap_user)
                         request.session['authenticated_full_name'] = ldap_full_name
                         name_validated = True
-                        # We don't use initial= here, because if the form is
-                        # complete (that is, no additional fields need to be
-                        # filled out by the user) we want the form to validate,
-                        # so they can be directly registered without having to
-                        # go through this interstitial.
-                        form = RegistrationForm({'full_name': ldap_full_name},
-                                                realm_creation=realm_creation)
 
                         # Check whether this is ZulipLDAPAuthBackend,
                         # which is responsible for authentication and
@@ -176,8 +162,26 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                         require_ldap_password = isinstance(backend, ZulipLDAPAuthBackend)
                         break
                     except TypeError:
-                        # Let the user fill out a name and/or try another backend
-                        form = RegistrationForm(realm_creation=realm_creation)
+                        break
+
+        if ldap_full_name:
+            # We don't use initial= here, because if the form is
+            # complete (that is, no additional fields need to be
+            # filled out by the user) we want the form to validate,
+            # so they can be directly registered without having to
+            # go through this interstitial.
+            form = RegistrationForm({'full_name': ldap_full_name},
+                                    realm_creation=realm_creation)
+        elif realm is not None and realm.is_zephyr_mirror_realm:
+            # For MIT users, we can get an authoritative name from Hesiod.
+            # Technically we should check that this is actually an MIT
+            # realm, but we can cross that bridge if we ever get a non-MIT
+            # zephyr mirroring realm.
+            hesiod_name = compute_mit_user_fullname(email)
+            form = RegistrationForm(
+                initial={'full_name': hesiod_name if "@" not in hesiod_name else ""},
+                realm_creation=realm_creation)
+            name_validated = True
         elif prereg_user.full_name:
             if prereg_user.full_name_validated:
                 request.session['authenticated_full_name'] = prereg_user.full_name
