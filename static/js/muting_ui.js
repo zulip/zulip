@@ -2,7 +2,7 @@ const render_muted_topic_ui_row = require('../templates/muted_topic_ui_row.hbs')
 const render_topic_muted = require('../templates/topic_muted.hbs');
 
 function timestamp_ms() {
-    return (new Date()).getTime();
+    return new Date().getTime();
 }
 
 let last_topic_update = 0;

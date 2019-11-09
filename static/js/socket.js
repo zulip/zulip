@@ -288,7 +288,7 @@ Socket.prototype = {
         opts = _.extend({wait_time: 0, reason: 'none_given'}, opts);
         const that = this;
 
-        const now = (new Date()).getTime();
+        const now = new Date().getTime();
         if (this._is_reconnecting && now - this._reconnect_initiation_time < 1000) {
             // Only try to reconnect once a second
             return;
