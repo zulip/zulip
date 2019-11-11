@@ -52,6 +52,7 @@ python-gcm
 # Needed for the email mirror
 html2text
 httplib2
+# Forked to avoid pulling in scipy: https://github.com/mailgun/talon/issues/130
 https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1
 
 # Needed for hipchat import
@@ -103,6 +104,8 @@ sourcemap
 tornado==4.*  # https://github.com/zulip/zulip/issues/8913
 
 # Fast JSON parser
+# Forked for an issue related to unpaired Unicode surrogates:
+# https://github.com/zulip/zulip/issues/6332, https://github.com/esnme/ultrajson/pull/284
 https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab8a8.zip#egg=ujson==1.35+git
 
 # Django extension for serving webpack modules
@@ -167,7 +170,8 @@ disposable-email-domains
 yamole
 
 # Needed for signing thumbnail requests so that they can be authenticated on the
-# other end.  Using a fork to eliminate a really slow pkgresources import.
+# other end.  Using a fork to eliminate a really slow pkgresources import:
+# https://github.com/thumbor/libthumbor/pull/37
 https://github.com/zulip/libthumbor/archive/60ed2431c07686a12f2770b2d852c5650f3ccfc6.zip#egg=libthumbor==1.3.2zulip
 
 # Needed for string matching in AlertWordProcessor
