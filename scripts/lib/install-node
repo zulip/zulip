@@ -7,8 +7,8 @@ if [ "$TRAVIS" ] ; then
     ZULIP_SRV="/home/travis"
 fi
 YARN_PACKAGE_JSON="$ZULIP_SRV/zulip-yarn/package.json"
-node_version=12.11.1
-yarn_version=1.19.0
+node_version=12.13.0
+yarn_version=1.19.1
 
 # This is a fix for the fact that nvm uses $HOME to determine which
 # user account's home directory to ~/.config to.  Ideally, we'd have a
