@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-version=0.6.0
+version=0.7.0
 
 if ! out="$(shellcheck --version 2>/dev/null)" || [[ "$out" != *"
 version: $version
