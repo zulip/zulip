@@ -83,7 +83,8 @@
             {% if email %}
             <b>Email</b>: {{ email }}<br>
             {% endif %}
-            <b>Link</b>: {{ confirmation.url }}
+            <b>Link</b>: <a href="{{ confirmation.url }}?support=true" target="_blank">
+                View confirmation page</a> or
             <a title="Copy link" class="copy-button" data-copytext="{{ confirmation.url }}">
                 <i class="fa fa-copy"></i>
             </a><br>

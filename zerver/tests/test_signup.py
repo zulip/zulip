@@ -843,6 +843,81 @@ class InviteUserTest(InviteUserBase):
         self.assertFalse(invitee_profile.is_realm_admin)
         self.assertTrue(invitee_profile.is_guest)
 
+    def test_successful_invite_with_support_param_as_normal_user(self) -> None:
+        inviter = self.example_user("hamlet")
+        self.login(self.example_email('hamlet'))
+        self.assertFalse(inviter.is_staff)
+
+        invitee = self.nonreg_email('alice')
+        self.assert_json_success(self.invite(invitee, ["Scotland"]))
+
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        url = self.get_confirmation_url_from_outbox(invitee)
+        # should have no effect for non-staff users
+        url += "?support=True"
+
+        self.assertEqual(prereg_user.status, 0)
+        response = self.client_get(url)
+        prereg_user.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(prereg_user.status, 1)
+
+        self.submit_reg_form_for_user(invitee, "password")
+        prereg_user.refresh_from_db()
+        self.assertEqual(prereg_user.status, 1)
+        new_user = UserProfile.objects.get(email=invitee)
+        self.assert_logged_in_user_id(new_user.id)
+
+    def test_successful_invite_with_support_param_as_staff(self) -> None:
+        inviter = self.example_user('iago')
+        self.login(self.example_email('iago'))
+        self.assertTrue(inviter.is_staff)
+
+        invitee = self.nonreg_email('alice')
+        self.assert_json_success(self.invite(invitee, ["Scotland"]))
+
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        url = self.get_confirmation_url_from_outbox(invitee)
+        url += "?support=True"
+
+        self.assertEqual(prereg_user.status, 0)
+        response = self.client_get(url)
+        prereg_user.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(prereg_user.status, 0)
+
+        self.submit_reg_form_for_user(invitee, "password")
+        prereg_user.refresh_from_db()
+        self.assertEqual(prereg_user.status, 0)
+        new_user = UserProfile.objects.get(email=invitee)
+        self.assert_logged_in_user_id(new_user.id)
+
+    def test_logged_out_successful_invite_with_support_param(self) -> None:
+        inviter = self.example_user('iago')
+        self.login(self.example_email('iago'))
+        self.assertTrue(inviter.is_staff)
+
+        invitee = self.nonreg_email('alice')
+        self.assert_json_success(self.invite(invitee, ["Scotland"]))
+
+        self.logout()
+        self.assert_logged_in_user_id(None)
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        url = self.get_confirmation_url_from_outbox(invitee)
+        url += "?support=True"
+
+        self.assertEqual(prereg_user.status, 0)
+        response = self.client_get(url)
+        prereg_user.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(prereg_user.status, 1)
+
+        self.submit_reg_form_for_user(invitee, "password")
+        prereg_user.refresh_from_db()
+        self.assertEqual(prereg_user.status, 1)
+        new_user = UserProfile.objects.get(email=invitee)
+        self.assert_logged_in_user_id(new_user.id)
+
     def test_successful_invite_user_with_name(self) -> None:
         """
         A call to /json/invites with valid parameters causes an invitation

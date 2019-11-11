@@ -53,8 +53,12 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
             Confirmation.USER_REGISTRATION, Confirmation.INVITATION, Confirmation.REALM_CREATION]:
         return render_confirmation_key_error(
             request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
+
+    # update_status allows the staff member to inspect the /accounts/register page
+    # by preventing the status of the content object to be set to confirmation.settings.STATUS_ACTIVE
+    update_status = not(request.GET.get("support", False) and request.user.is_staff)
     try:
-        get_object_from_key(confirmation_key, confirmation.type)
+        get_object_from_key(confirmation_key, confirmation.type, update_status=update_status)
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
