@@ -57,7 +57,7 @@
     "stacktrace-gps": "^3.0.3",
     "style-loader": "^1.0.0",
     "terser-webpack-plugin": "^2.1.0",
-    "to-markdown": "^3.1.0",
+    "turndown": "^5.0.3",
     "underscore": "^1.9.1",
     "webfonts-loader": "^5.0.0",
     "webpack": "^4.33.0",

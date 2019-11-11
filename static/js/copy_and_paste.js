@@ -1,3 +1,5 @@
+const TurndownService = require("turndown/lib/turndown.cjs.js");
+
 function find_boundary_tr(initial_tr, iterate_row) {
     var j;
     var skip_same_td_check = false;
@@ -259,53 +261,36 @@ exports.analyze_selection = function (selection) {
 };
 
 exports.paste_handler_converter = function (paste_html) {
-    var converters = {
-        converters: [
-            {
-                filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-                replacement: function (content) {
-                    return content;
-                },
-            },
+    const turndownService = new TurndownService();
+    turndownService.addRule('headings', {
+        filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+        replacement: function (content) {
+            return content;
+        },
+    });
+    turndownService.addRule('emphasis', {
+        filter: ['em', 'i'],
+        replacement: function (content) {
+            return '*' + content + '*';
+        },
+    });
+    // Checks for raw links without custom text or title.
+    turndownService.addRule('links', {
+        filter: function (node) {
+            return node.nodeName === "A" &&
+                node.href === node.innerHTML &&
+                node.href === node.title;
+        },
+        replacement: function (content) {
+            return content;
+        },
+    });
 
-            {
-                filter: ['em', 'i'],
-                replacement: function (content) {
-                    return '*' + content + '*';
-                },
-            },
-            {
-                // Checks for raw links without custom text or title.
-                filter: function (node) {
-                    return node.nodeName === "A" &&
-                      node.href === node.innerHTML &&
-                      node.href === node.title;
-                },
-                replacement: function (content) {
-                    return content;
-                },
-            },
-            {
-                // Checks for escaped ordered list syntax.
-                filter: function (node) {
-                    return /(\d+)\\\. /.test(node.innerHTML);
-                },
-                replacement: function (content) {
-                    return content.replace(/(\d+)\\\. /g, '$1. ');
-                },
-            },
-        ],
-    };
-    var markdown_html = toMarkdown(paste_html, converters);
+    let markdown_text = turndownService.turndown(paste_html);
 
-    // Now that we've done the main conversion, we want to remove
-    // any HTML tags that weren't converted to markdown-style
-    // text, since Bugdown doesn't support those.
-    var div = document.createElement("div");
-    div.innerHTML = markdown_html;
-    // Using textContent for modern browsers, innerText works for Internet Explorer
-    var markdown_text = div.textContent || div.innerText || "";
-    markdown_text = markdown_text.trim();
+    // Checks for escaped ordered list syntax.
+    markdown_text = markdown_text.replace(/^(\W* {0,3})(\d+)\\\. /gm, '$1$2. ');
+
     // Removes newlines before the start of a list and between list elements.
     markdown_text = markdown_text.replace(/\n+([*+-])/g, '\n$1');
     return markdown_text;

@@ -230,7 +230,6 @@ export default (env?: string): webpack.Configuration[] => {
         { path: "jquery/dist/jquery.js", name: ['$', 'jQuery'] },
         { path: "underscore/underscore.js", name: '_' },
         { path: "handlebars/dist/cjs/handlebars.runtime.js", name: 'Handlebars' },
-        { path: "to-markdown/dist/to-markdown.js", name: 'toMarkdown' },
         { path: "sortablejs/Sortable.js"},
         { path: "winchan/winchan.js", name: 'WinChan'},
     ];
