@@ -15,7 +15,6 @@ import "blueimp-md5/js/md5.js";
 import "clipboard/dist/clipboard.js";
 import "winchan/winchan.js";
 import "handlebars/dist/cjs/handlebars.runtime.js";
-import "to-markdown/dist/to-markdown.js";
 import "flatpickr/dist/flatpickr.js";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.js";
 import "sortablejs/Sortable.js";
