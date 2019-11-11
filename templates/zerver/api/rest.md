@@ -3,7 +3,7 @@
 The Zulip REST API powers the Zulip web and mobile apps, so anything
 you can do in Zulip, you can do with Zulip's REST API.  To use this API:
 
-* You'll need to [get an API key](/api/api-keys).  You will likely
+* You'll need to [get an API key](/api/api-keys-zuliprc).  You will likely
   want to [create a bot](/help/add-a-bot-or-integration), unless you're
   using the API to interact with
   your own account (e.g. exporting your personal message history).

@@ -23,7 +23,8 @@ You'll need:
 1. Go to your Zulip account and
    [add a bot](/help/add-a-bot-or-integration). Use **Generic bot** as the bot type.
 
-1. Download the bot's `zuliprc` configuration file to your computer.
+1. [Download](/api/api-keys-zuliprc) the bot's `zuliprc` configuration file to
+   your computer.
 
 1. Download the `zulip_bots` Python package to your computer using `pip3 install zulip_bots`.
 

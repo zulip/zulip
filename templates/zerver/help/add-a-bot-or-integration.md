@@ -26,6 +26,6 @@ is visible and available for anyone to use.
 
 {end_tabs}
 
-Depending on the type of bot you're creating, you may need to download its
-`.zuliprc` configuration file. For that, click the **download**
-(<i class="fa fa-download"></i>) icon under the bot's name.
+Depending on the type of bot you're creating, you may need to
+[Download](/api/api-keys-zuliprc) its `.zuliprc` configuration file. For that,
+click the **download** (<i class="fa fa-download"></i>) icon under the bot's name.

@@ -94,8 +94,8 @@ pip3 install zulip_botserver
       the URL from above) and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
 
-1. Download the `zuliprc` file for your bot from the *Active Bots*
-   panel, using the download button.
+1. [Download](/api/api-keys-zuliprc) the `zuliprc` file for your bot from the
+   *Active Bots* panel, using the download button.
 
 1. Run the Botserver, where `helloworld` is the name of the bot you
    want to run:

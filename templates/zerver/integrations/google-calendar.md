@@ -21,8 +21,8 @@ right corner, and then clicking on **Settings**.
 
 Click on the tab that’s labeled **Your bots** and click on
 **Show/change your API key**. Enter your password if prompted, and
-download the `zuliprc` file. Save this file as `.zuliprc` to your `~/`
-directory.
+[Download](/api/api-keys-zuliprc) the `zuliprc` file. Save this file as `.zuliprc`
+to your `~/` directory.
 
 ![](/static/images/integrations/google/calendar/001.png)
 

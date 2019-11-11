@@ -10,7 +10,7 @@ if you're trying to decide.
 {start_tabs}
 {tab|python}
 
-Install the Python API with [pip](https://pypi.python.org/pypi/zulip/):
+Install the [Python bindings](https://pypi.python.org/pypi/zulip/) with pip:
 
 ```
 pip install zulip

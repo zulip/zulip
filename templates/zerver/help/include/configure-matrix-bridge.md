@@ -1,8 +1,8 @@
 ### Configure the bridge
 
 1. In Zulip, [create a bot](/help/add-a-bot-or-integration), using **Generic bot**
-   for the bot type. Download the bot's `zuliprc` configuration file to your
-   computer.
+   for the bot type. [Download](/api/api-keys-zuliprc) the bot's `zuliprc`
+   configuration file to your computer.
 
 1. [Subscribe the bot](/help/add-or-remove-users-from-a-stream) to the Zulip
    stream that will contain the mirror.

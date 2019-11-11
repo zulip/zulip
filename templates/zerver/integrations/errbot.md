@@ -11,7 +11,8 @@ Run your favorite chatbot in Zulip!
 0. Next, on your {{ settings_html|safe }}, [create a bot](/help/add-a-bot-or-integration) for
    {{ integration_display_name }}. Make sure that you select **Generic bot** as the **Bot type**.
 
-0. Download your Zulip bot's `zuliprc` config file. You will need its content for the next step.
+0. [Download](/api/api-keys-zuliprc) your Zulip bot's `zuliprc` config file. You
+   will need its content for the next step.
 
 0. Edit your ErrBot's `config.py`. Use the following template for a minimal configuration:
 

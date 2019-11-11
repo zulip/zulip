@@ -75,6 +75,9 @@ TAB_DISPLAY_NAMES = {
 
     'system-proxy-settings': 'System proxy settings',
     'custom-proxy-settings': 'Custom proxy settings',
+
+    'your-bots': 'Your Bots',
+    'your-account': 'Your Account',
 }
 
 class TabbedSectionsGenerator(Extension):

@@ -16,8 +16,7 @@
 
 * [Overview](/api/rest)
 * [Installation instructions](/api/installation-instructions)
-* [API keys](/api/api-keys)
-* [Configuring the Python bindings](/api/configuring-python-bindings)
+* [API keys and zuliprc files](/api/api-keys-zuliprc)
 * [Error handling](/api/rest-error-handling)
 * [Client Libraries](/api/client-libraries)
 

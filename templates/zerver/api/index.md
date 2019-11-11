@@ -23,4 +23,4 @@ the full [REST API](/api/rest), generally starting with
 [installing the API client bindings](/api/installation-instructions).
 
 In case you already know how you want to build your integration and you're
-just looking for an API key, we've got you covered [here](/api/api-keys).
+just looking for an API key, we've got you covered [here](/api/api-keys-zuliprc).

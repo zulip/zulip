@@ -16,7 +16,7 @@ sending messages via webhooks. Thus, this bot type lessens
 the security risks associated with exposing the bot's API
 key to third-party services.
 
-Download your new bot's `zuliprc` configuration file.
+[Download](/api/api-keys-zuliprc) your new bot's `zuliprc` configuration file.
 
 {!download-python-bindings.md!}
 
