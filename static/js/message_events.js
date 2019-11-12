@@ -119,6 +119,16 @@ exports.update_messages = function update_messages(events) {
 
         msgs_to_rerender.push(msg);
 
+        // Before updating booleans, we need to check whether the user was
+        // mentioned previously in the message. It will be used to remove
+        // the message from unread_mentions_counter list if the user isn't
+        // mentioned anymore.
+        const prev_unmuted_mention = msg.type === 'stream' && msg.mentioned &&
+                                     !muting.is_topic_muted(msg.stream_id,
+                                                            util.get_message_topic(msg));
+
+        const prev_mentioned = msg.mentioned_me_directly || prev_unmuted_mention;
+
         message_store.update_booleans(msg, event.flags);
 
         unread.update_message_for_mention(msg);
@@ -302,6 +312,7 @@ exports.update_messages = function update_messages(events) {
 
         notifications.received_messages([msg]);
         alert_words.process_message(msg);
+        unread.process_updated_message(msg, prev_mentioned);
     }
 
     // If a topic was edited, we re-render the whole view to get any

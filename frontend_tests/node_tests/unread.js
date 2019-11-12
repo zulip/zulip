@@ -545,6 +545,7 @@ run_test('mentions', () => {
                                                 muted_mention_all_message.id]);
     test_notifiable_count(counts.home_unread_messages, 2);
 
+    unread.mark_as_read(muted_mention_all_message.id);
     unread.mark_as_read(mention_me_message.id);
     unread.mark_as_read(mention_all_message.id);
     counts = unread.get_counts();
@@ -584,6 +585,115 @@ run_test('mention updates', () => {
 
     message.unread = true;
     test_counted(true);
+});
+
+run_test('update_messages', () => {
+    let counts = unread.get_counts();
+    assert.equal(counts.mentioned_message_count, 0);
+    assert.deepEqual(unread.get_msg_ids_for_mentions(), []);
+    assert.deepEqual(unread.get_all_msg_ids(), []);
+    test_notifiable_count(counts.home_unread_messages, 0);
+
+    const message1 = {
+        id: 18,
+        type: 'stream',
+        stream_id: 500,
+        topic: 'testing update',
+        mentioned: false,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    const message2 = {
+        id: 19,
+        type: 'stream',
+        stream_id: 500,
+        topic: 'testing update',
+        mentioned: false,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([message1, message2]);
+    counts = unread.get_counts();
+    assert.equal(counts.mentioned_message_count, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
+
+    message1.mentioned = true;
+    message2.mentioned_me_directly = true;
+    message2.mentioned = true;
+
+    unread.process_updated_message(message1, false);
+    unread.process_updated_message(message2, false);
+
+    counts = unread.get_counts();
+    assert.equal(counts.mentioned_message_count, 2);
+    test_notifiable_count(counts.home_unread_messages, 2);
+
+    message1.mentioned = false;
+
+    unread.process_updated_message(message1, true);
+
+    counts = unread.get_counts();
+    assert.equal(counts.mentioned_message_count, 1);
+    assert.deepEqual(unread.get_msg_ids_for_mentions(), [message2.id]);
+    test_notifiable_count(counts.home_unread_messages, 1);
+    assert.deepEqual(unread.get_all_msg_ids(), [message1.id,
+                                                message2.id]);
+
+    muting.add_muted_topic(500, 'testing update');
+    // Again mentioning the user in message1 after
+    // muting the topic.
+    message1.mentioned = true;
+    unread.process_updated_message(message1, false);
+
+    counts = unread.get_counts();
+    assert.equal(counts.mentioned_message_count, 1);
+    test_notifiable_count(counts.home_unread_messages, 1);
+
+    unread.mark_as_read(message1.id);
+    unread.mark_as_read(message2.id);
+
+    counts = unread.get_counts();
+    assert.deepEqual(unread.get_all_msg_ids(), []);
+    assert.equal(counts.mentioned_message_count, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
+
+    const message3 = {
+        id: 20,
+        type: 'stream',
+        stream_id: 505,
+        topic: 'testing update',
+        mentioned: false,
+        mentioned_me_directly: true,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([message3]);
+    unread.process_updated_message(message3, true);
+
+    counts = unread.get_counts();
+    assert.equal(counts.mentioned_message_count, 1);
+    test_notifiable_count(counts.home_unread_messages, 1);
+
+    unread.mark_as_read(message3.id);
+    // mark_as_read will not update the value of message3.unread because
+    // we have not stored the message in message_store here, so we have
+    // to manually update it.
+    message3.unread = false;
+
+    counts = unread.get_counts();
+    assert.equal(counts.mentioned_message_count, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
+
+    message3.mentioned_me_directly = false;
+    // If the message is being updated after the user has read it,
+    // it should make no difference.
+    unread.process_updated_message(message3, true);
+
+    counts = unread.get_counts();
+    assert.equal(counts.mentioned_message_count, 0);
+    test_notifiable_count(counts.home_unread_messages, 0);
 });
 
 run_test('starring', () => {

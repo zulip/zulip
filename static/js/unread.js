@@ -456,6 +456,30 @@ exports.update_message_for_mention = function (message) {
     }
 };
 
+exports.process_updated_message = function (message, prev_mentioned) {
+    // We don't need to add the message in unread_messages list in case
+    // of updated messages. If the message is being updated and it is
+    // not read by the client yet, it will be present in unread_messages
+    // list already. So, we only care about unread_mentions_counter.
+
+    if (!message.unread) {
+        // Ignore if the message has been read by the user.
+        return;
+    }
+    const is_unmuted_mention = message.type === 'stream' && message.mentioned &&
+                               !muting.is_topic_muted(message.stream_id,
+                                                      util.get_message_topic(message));
+    if (message.mentioned_me_directly || is_unmuted_mention) {
+        // Add message in unread_mentions_counter if user is mentioned
+        // in the updated message.
+        exports.unread_mentions_counter.add(message.id);
+    } else if (prev_mentioned) {
+        // Delete message from unread_mentions_counter if user isn't
+        // mentioned anymore.
+        exports.unread_mentions_counter.del(message.id);
+    }
+};
+
 exports.mark_as_read = function (message_id) {
     // We don't need to check anything about the message, since all
     // the following methods are cheap and work fine even if message_id

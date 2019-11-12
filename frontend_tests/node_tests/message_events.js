@@ -17,8 +17,10 @@ set_global('page_params', {});
 set_global('pm_list', {});
 set_global('stream_list', {});
 set_global('unread_ui', {});
+set_global('unread', {});
 
 alert_words.process_message = () => {};
+unread.process_updated_message = () => {};
 
 const alice = {
     email: 'alice@example.com',
