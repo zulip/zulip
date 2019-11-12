@@ -506,7 +506,7 @@ def delete_in_topic(request: HttpRequest, user_profile: UserProfile,
         messages = [message for message in messages if message.id in
                     deletable_message_ids]
 
-    do_delete_messages(user_profile, messages)
+    do_delete_messages(user_profile.realm, messages)
 
     return json_success()
 

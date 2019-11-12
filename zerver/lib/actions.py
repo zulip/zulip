@@ -4564,7 +4564,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     return len(changed_messages)
 
 
-def do_delete_messages(user_profile: UserProfile, messages: Iterable[Message]) -> None:
+def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     message_ids = []
     for message in messages:
         message_ids.append(message.id)
@@ -4590,7 +4590,7 @@ def do_delete_messages(user_profile: UserProfile, messages: Iterable[Message]) -
         ums = [{'id': um.user_profile_id} for um in
                UserMessage.objects.filter(message=message.id)]
         move_messages_to_archive([message.id])
-        send_event(user_profile.realm, event, ums)
+        send_event(realm, event, ums)
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
     message_ids = Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id')

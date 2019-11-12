@@ -730,7 +730,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             'trigger': 'private_message',
         }
         # Now, delete the message the normal way
-        do_delete_messages(user_profile, [message])
+        do_delete_messages(user_profile.realm, [message])
 
         with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
                 mock.patch('logging.error') as mock_logging_error, \

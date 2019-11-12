@@ -2653,7 +2653,7 @@ class EventsRegisterTest(ZulipTestCase):
         msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
         message = Message.objects.get(id=msg_id)
         events = self.do_test(
-            lambda: do_delete_messages(self.user_profile, [message]),
+            lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])
@@ -2675,7 +2675,7 @@ class EventsRegisterTest(ZulipTestCase):
         )
         message = Message.objects.get(id=msg_id)
         events = self.do_test(
-            lambda: do_delete_messages(self.user_profile, [message]),
+            lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])
@@ -2689,7 +2689,7 @@ class EventsRegisterTest(ZulipTestCase):
         msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
         message = Message.objects.get(id=msg_id)
         self.do_test(
-            lambda: do_delete_messages(self.user_profile, [message]),
+            lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True,
         )
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
