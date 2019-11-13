@@ -14,6 +14,7 @@ from copy import deepcopy
 import os
 import time
 import sys
+from typing import Any, Dict, List, Union
 
 from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
@@ -147,7 +148,7 @@ ALLOWED_HOSTS += REALM_HOSTS.values()
 
 from django.template.loaders import app_directories
 class TwoFactorLoader(app_directories.Loader):
-    def get_dirs(self):
+    def get_dirs(self) -> List[str]:
         dirs = super().get_dirs()
         return [d for d in dirs if 'two_factor' in d]
 
@@ -211,8 +212,8 @@ CORPORATE_ENABLED = 'corporate' in INSTALLED_APPS
 # Base URL of the Tornado server
 # We set it to None when running backend tests or populate_db.
 # We override the port number when running frontend tests.
-TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', 1))
-TORNADO_SERVER = 'http://127.0.0.1:9993'
+TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', '1'))
+TORNADO_SERVER = 'http://127.0.0.1:9993'  # type: Optional[str]
 RUNNING_INSIDE_TORNADO = False
 AUTORELOAD = DEBUG
 
@@ -270,7 +271,7 @@ DATABASES = {"default": {
     'OPTIONS': {
         'connection_factory': TimeTrackingConnection
     },
-}}
+}}  # type: Dict[str, Dict[str, Any]]
 
 if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
@@ -449,7 +450,7 @@ INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
                   'name': 'Welcome Bot'}]
 
 # Bots that are created for each realm like the reminder-bot goes here.
-REALM_INTERNAL_BOTS = []
+REALM_INTERNAL_BOTS = []  # type: List[Dict[str, str]]
 # These are realm-internal bots that may exist in some organizations,
 # so configure power the setting, but should not be auto-created at this time.
 DISABLED_REALM_INTERNAL_BOTS = [
@@ -545,7 +546,7 @@ WEBPACK_LOADER = {
 LOADERS = [
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-]
+]  # type: List[Union[str, Tuple[object, ...]]]
 if PRODUCTION:
     # Template caching is a significant performance win in production.
     LOADERS = [('django.template.loaders.cached.Loader', LOADERS)]
@@ -564,7 +565,7 @@ base_template_engine_settings = {
             'django.template.context_processors.i18n',
         ],
     },
-}
+}  # type: Dict[str, Any]
 
 default_template_engine_settings = deepcopy(base_template_engine_settings)
 default_template_engine_settings.update({
@@ -874,7 +875,7 @@ LOGGING = {
             'propagate': False,
         },
     }
-}
+}  # type: Dict[str, Any]
 
 LOGIN_REDIRECT_URL = '/'
 
