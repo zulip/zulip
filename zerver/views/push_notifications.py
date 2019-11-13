@@ -9,7 +9,7 @@ from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success
 from zerver.models import PushDeviceToken, UserProfile
 
-def validate_token(token_str: bytes, kind: int) -> None:
+def validate_token(token_str: str, kind: int) -> None:
     if token_str == '' or len(token_str) > 4096:
         raise JsonableError(_('Empty or invalid length token'))
     if kind == PushDeviceToken.APNS:
@@ -22,7 +22,7 @@ def validate_token(token_str: bytes, kind: int) -> None:
 @human_users_only
 @has_request_variables
 def add_apns_device_token(request: HttpRequest, user_profile: UserProfile,
-                          token: bytes=REQ(),
+                          token: str=REQ(),
                           appid: str=REQ(default=settings.ZULIP_IOS_APP_ID)
                           ) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
@@ -32,7 +32,7 @@ def add_apns_device_token(request: HttpRequest, user_profile: UserProfile,
 @human_users_only
 @has_request_variables
 def add_android_reg_id(request: HttpRequest, user_profile: UserProfile,
-                       token: bytes=REQ()) -> HttpResponse:
+                       token: str=REQ()) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     add_push_device_token(user_profile, token, PushDeviceToken.GCM)
     return json_success()
@@ -40,7 +40,7 @@ def add_android_reg_id(request: HttpRequest, user_profile: UserProfile,
 @human_users_only
 @has_request_variables
 def remove_apns_device_token(request: HttpRequest, user_profile: UserProfile,
-                             token: bytes=REQ()) -> HttpResponse:
+                             token: str=REQ()) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     remove_push_device_token(user_profile, token, PushDeviceToken.APNS)
     return json_success()
@@ -48,7 +48,7 @@ def remove_apns_device_token(request: HttpRequest, user_profile: UserProfile,
 @human_users_only
 @has_request_variables
 def remove_android_reg_id(request: HttpRequest, user_profile: UserProfile,
-                          token: bytes=REQ()) -> HttpResponse:
+                          token: str=REQ()) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     remove_push_device_token(user_profile, token, PushDeviceToken.GCM)
     return json_success()

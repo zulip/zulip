@@ -46,11 +46,11 @@ else:  # nocoverage  -- Not convenient to add test for this.
 DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
 
 # We store the token as b64, but apns-client wants hex strings
-def b64_to_hex(data: bytes) -> str:
+def b64_to_hex(data: str) -> str:
     return binascii.hexlify(base64.b64decode(data)).decode('utf-8')
 
-def hex_to_b64(data: str) -> bytes:
-    return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
+def hex_to_b64(data: str) -> str:
+    return base64.b64encode(binascii.unhexlify(data)).decode()
 
 #
 # Sending to APNs, for iOS
@@ -362,7 +362,7 @@ def num_push_devices_for_user(user_profile: UserProfile, kind: Optional[int]=Non
         return PushDeviceToken.objects.filter(user=user_profile, kind=kind).count()
 
 def add_push_device_token(user_profile: UserProfile,
-                          token_str: bytes,
+                          token_str: str,
                           kind: int,
                           ios_app_id: Optional[str]=None) -> None:
     logger.info("Registering push device: %d %r %d %r",
@@ -398,7 +398,7 @@ def add_push_device_token(user_profile: UserProfile,
     except IntegrityError:
         pass
 
-def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: int) -> None:
+def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: int) -> None:
 
     # If we're sending things to the push notification bouncer
     # unregister this user with them here

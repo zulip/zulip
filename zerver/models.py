@@ -1251,7 +1251,7 @@ class AbstractPushDeviceToken(models.Model):
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
-    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
+    token = models.CharField(max_length=4096, db_index=True)  # type: str
 
     # TODO: last_updated should be renamed date_created, since it is
     # no longer maintained as a last_updated value.

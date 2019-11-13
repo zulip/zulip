@@ -32,7 +32,7 @@ def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZuli
     return entity
 
 def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer],
-                                   token: bytes, kind: int) -> RemoteZulipServer:
+                                   token: str, kind: int) -> RemoteZulipServer:
     if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.GCM]:
         raise JsonableError(err_("Invalid token type"))
     server = validate_entity(entity)
@@ -84,7 +84,7 @@ def register_remote_server(
 
 @has_request_variables
 def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
-                                user_id: int=REQ(), token: bytes=REQ(),
+                                user_id: int=REQ(), token: str=REQ(),
                                 token_kind: int=REQ(validator=check_int),
                                 ios_app_id: Optional[str]=None) -> HttpResponse:
     server = validate_bouncer_token_request(entity, token, token_kind)
@@ -106,7 +106,7 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
 
 @has_request_variables
 def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
-                                  token: bytes=REQ(),
+                                  token: str=REQ(),
                                   token_kind: int=REQ(validator=check_int),
                                   user_id: int=REQ(),
                                   ios_app_id: Optional[str]=None) -> HttpResponse:
