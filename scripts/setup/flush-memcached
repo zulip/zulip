@@ -12,6 +12,7 @@ import scripts.lib.setup_path_on_import
 from zproject import settings
 
 url = urlsplit("//" + settings.MEMCACHED_LOCATION)
+assert url.port is not None
 
 print("Flushing memcached...")
 with socket.create_connection((url.hostname, url.port)) as f:

@@ -26,7 +26,7 @@ def run(args, dry_run=False):
                          stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     if p.returncode:
-        logger.error("Could not invoke %s\nstdout: %s\nstderror: %s"
+        logger.error("Could not invoke %s\nstdout: %r\nstderror: %r"
                      % (args[0], stdout, stderr))
         sys.exit(1)
     return stdout.decode()

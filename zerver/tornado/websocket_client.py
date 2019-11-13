@@ -60,7 +60,7 @@ class WebsocketClient:
 
     @gen.coroutine
     def _websocket_auth(self, queue_events_data: Dict[str, Dict[str, str]],
-                        cookies: SimpleCookie) -> Generator[str, str, None]:
+                        cookies: "SimpleCookie[str]") -> Generator[str, str, None]:
         message = {
             "req_id": self._get_request_id(),
             "type": "auth",
