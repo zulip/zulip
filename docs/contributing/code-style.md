@@ -174,8 +174,8 @@ messages).
 
 ### State and logs files
 
-When writing out state of log files, always declare the path in
-`ZULIP_PATHS` in `zproject/settings.py`, which will do the right thing
+When writing out state of log files, always declare the path with
+`zulip_path` in `zproject/settings.py`, which will do the right thing
 in both development and production.
 
 ## JS array/object manipulation
