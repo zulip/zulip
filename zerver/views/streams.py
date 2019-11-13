@@ -90,9 +90,9 @@ def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 @require_realm_admin
 @has_request_variables
 def update_default_stream_group_info(request: HttpRequest, user_profile: UserProfile, group_id: int,
-                                     new_group_name: str=REQ(validator=check_string, default=None),
-                                     new_description: str=REQ(validator=check_string,
-                                                              default=None)) -> None:
+                                     new_group_name: Optional[str]=REQ(validator=check_string, default=None),
+                                     new_description: Optional[str]=REQ(validator=check_string,
+                                                                        default=None)) -> None:
     if not new_group_name and not new_description:
         return json_error(_('You must pass "new_description" or "new_group_name".'))
 
@@ -544,7 +544,7 @@ def json_get_stream_id(request: HttpRequest,
 @has_request_variables
 def update_subscriptions_property(request: HttpRequest,
                                   user_profile: UserProfile,
-                                  stream_id: int=REQ(),
+                                  stream_id: int=REQ(validator=check_int),
                                   property: str=REQ(),
                                   value: str=REQ()) -> HttpResponse:
     subscription_data = [{"property": property,

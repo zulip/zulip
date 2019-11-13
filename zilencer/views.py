@@ -84,7 +84,7 @@ def register_remote_server(
 
 @has_request_variables
 def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
-                                user_id: int=REQ(), token: str=REQ(),
+                                user_id: int=REQ(validator=check_int), token: str=REQ(),
                                 token_kind: int=REQ(validator=check_int),
                                 ios_app_id: Optional[str]=None) -> HttpResponse:
     server = validate_bouncer_token_request(entity, token, token_kind)
@@ -108,7 +108,7 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
 def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                   token: str=REQ(),
                                   token_kind: int=REQ(validator=check_int),
-                                  user_id: int=REQ(),
+                                  user_id: int=REQ(validator=check_int),
                                   ios_app_id: Optional[str]=None) -> HttpResponse:
     server = validate_bouncer_token_request(entity, token, token_kind)
     deleted = RemotePushDeviceToken.objects.filter(token=token,

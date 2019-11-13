@@ -17,7 +17,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "url": url,
             "body": body,
             "custom_headers": "{}",
-            "is_json": True
+            "is_json": "true"
         }
 
         response = self.client_post(target_url, data)
@@ -37,7 +37,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "url": url,
             "body": body,
             "custom_headers": "{}",
-            "is_json": True
+            "is_json": "true"
         }
 
         response = self.client_post(target_url, data)
@@ -64,7 +64,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "url": url,
             "body": body,
             "custom_headers": ujson.dumps({"X_GITHUB_EVENT": "ping"}),
-            "is_json": True
+            "is_json": "true"
         }
 
         response = self.client_post(target_url, data)
@@ -87,7 +87,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "url": url,
             "body": body,
             "custom_headers": ujson.dumps({"Content-Type": "application/x-www-form-urlencoded"}),
-            "is_json": False,
+            "is_json": "false",
         }
 
         response = self.client_post(target_url, data)

@@ -1919,7 +1919,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "topic": "Test topic",
-                                                     "forged": True})
+                                                     "forged": "true"})
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_send_message_as_not_superuser_to_different_domain(self) -> None:

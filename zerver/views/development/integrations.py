@@ -10,6 +10,7 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.models import UserProfile, get_realm
+from zerver.lib.validator import check_bool
 from zerver.lib.webhooks.common import get_fixture_http_headers, \
     standardize_headers
 
@@ -27,10 +28,10 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
     context = {"integrations": integrations, "bots": bots}
     return render(request, "zerver/integrations/development/dev_panel.html", context)
 
-def send_webhook_fixture_message(url: str=REQ(),
-                                 body: str=REQ(),
-                                 is_json: bool=REQ(),
-                                 custom_headers: Dict[str, Any]=REQ()) -> HttpResponse:
+def send_webhook_fixture_message(url: str,
+                                 body: str,
+                                 is_json: bool,
+                                 custom_headers: Dict[str, Any]) -> HttpResponse:
     client = Client()
     realm = get_realm("zulip")
     standardized_headers = standardize_headers(custom_headers)
@@ -85,7 +86,7 @@ def get_fixtures(request: HttpResponse,
 def check_send_webhook_fixture_message(request: HttpRequest,
                                        url: str=REQ(),
                                        body: str=REQ(),
-                                       is_json: bool=REQ(),
+                                       is_json: bool=REQ(validator=check_bool),
                                        custom_headers: str=REQ()) -> HttpResponse:
     try:
         custom_headers_dict = ujson.loads(custom_headers)

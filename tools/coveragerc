@@ -15,6 +15,8 @@ exclude_lines =
     raise UnexpectedWebhookEventType
     # Don't require coverage for blocks only run when type-checking
     if TYPE_CHECKING:
+    # PEP 484 overloading syntax
+    ^\s*\.\.\.
 
 [run]
 omit =

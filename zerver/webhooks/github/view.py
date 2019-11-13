@@ -473,7 +473,7 @@ IGNORED_EVENTS = [
 def api_github_webhook(
         request: HttpRequest, user_profile: UserProfile,
         payload: Dict[str, Any]=REQ(argument_type='body'),
-        branches: str=REQ(default=None),
+        branches: Optional[str]=REQ(default=None),
         user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
@@ -489,7 +489,7 @@ def api_github_webhook(
         check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
-def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> Optional[str]:
+def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[str]) -> Optional[str]:
     event = validate_extract_webhook_http_header(request, 'X_GITHUB_EVENT', 'GitHub')
     if event == 'pull_request':
         action = payload['action']
