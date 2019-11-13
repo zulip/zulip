@@ -633,16 +633,16 @@ button.login-social-button:active {
 }
 
 .login-page-container .right-side .actions,
-.forgot-password-container .actions {
+.back-to-login-wrapper {
     margin: 20px 0px 0px;
     text-align: left;
 }
 
-.forgot-password-container .actions {
+.back-to-login-wrapper {
     line-height: 0;
 }
 
-.forgot-password-container .actions .back-to-login i {
+.back-to-login-wrapper .back-to-login i {
     position: relative;
     top: 5px;
 
