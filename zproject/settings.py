@@ -1027,45 +1027,42 @@ TEMPLATES = [
 # LOGGING SETTINGS
 ########################################################################
 
-ZULIP_PATHS = [
-    ("SERVER_LOG_PATH", "/var/log/zulip/server.log"),
-    ("ERROR_FILE_LOG_PATH", "/var/log/zulip/errors.log"),
-    ("MANAGEMENT_LOG_PATH", "/var/log/zulip/manage.log"),
-    ("WORKER_LOG_PATH", "/var/log/zulip/workers.log"),
-    ("JSON_PERSISTENT_QUEUE_FILENAME_PATTERN", "/home/zulip/tornado/event_queues%s.json"),
-    ("EMAIL_LOG_PATH", "/var/log/zulip/send_email.log"),
-    ("EMAIL_MIRROR_LOG_PATH", "/var/log/zulip/email_mirror.log"),
-    ("EMAIL_DELIVERER_LOG_PATH", "/var/log/zulip/email-deliverer.log"),
-    ("EMAIL_CONTENT_LOG_PATH", "/var/log/zulip/email_content.log"),
-    ("LDAP_SYNC_LOG_PATH", "/var/log/zulip/sync_ldap_user_data.log"),
-    ("QUEUE_ERROR_DIR", "/var/log/zulip/queue_error"),
-    ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
-    ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
-    ("ANALYTICS_LOCK_DIR", "/home/zulip/deployments/analytics-lock-dir"),
-    ("API_KEY_ONLY_WEBHOOK_LOG_PATH", "/var/log/zulip/webhooks_errors.log"),
-    ("WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH", "/var/log/zulip/webhooks_unexpected_events.log"),
-    ("SOFT_DEACTIVATION_LOG_PATH", "/var/log/zulip/soft_deactivation.log"),
-    ("TRACEMALLOC_DUMP_DIR", "/var/log/zulip/tracemalloc"),
-    ("SCHEDULED_MESSAGE_DELIVERER_LOG_PATH",
-     "/var/log/zulip/scheduled_message_deliverer.log"),
-    ("RETENTION_LOG_PATH", "/var/log/zulip/message_retention.log"),
-]
-
-# The Event log basically logs most significant database changes,
-# which can be useful for debugging.
-if EVENT_LOGS_ENABLED:
-    ZULIP_PATHS.append(("EVENT_LOG_DIR", "/home/zulip/logs/event_log"))
-else:
-    EVENT_LOG_DIR = None
-
-for (var, path) in ZULIP_PATHS:
+def zulip_path(path: str) -> str:
     if DEVELOPMENT:
         # if DEVELOPMENT, store these files in the Zulip checkout
         if path.startswith("/var/log"):
             path = os.path.join(DEVELOPMENT_LOG_DIRECTORY, os.path.basename(path))
         else:
             path = os.path.join(os.path.join(DEPLOY_ROOT, 'var'), os.path.basename(path))
-    vars()[var] = path
+    return path
+
+SERVER_LOG_PATH = zulip_path("/var/log/zulip/server.log")
+ERROR_FILE_LOG_PATH = zulip_path("/var/log/zulip/errors.log")
+MANAGEMENT_LOG_PATH = zulip_path("/var/log/zulip/manage.log")
+WORKER_LOG_PATH = zulip_path("/var/log/zulip/workers.log")
+JSON_PERSISTENT_QUEUE_FILENAME_PATTERN = zulip_path("/home/zulip/tornado/event_queues%s.json")
+EMAIL_LOG_PATH = zulip_path("/var/log/zulip/send_email.log")
+EMAIL_MIRROR_LOG_PATH = zulip_path("/var/log/zulip/email_mirror.log")
+EMAIL_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/email-deliverer.log")
+EMAIL_CONTENT_LOG_PATH = zulip_path("/var/log/zulip/email_content.log")
+LDAP_SYNC_LOG_PATH = zulip_path("/var/log/zulip/sync_ldap_user_data.log")
+QUEUE_ERROR_DIR = zulip_path("/var/log/zulip/queue_error")
+DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
+ANALYTICS_LOG_PATH = zulip_path("/var/log/zulip/analytics.log")
+ANALYTICS_LOCK_DIR = zulip_path("/home/zulip/deployments/analytics-lock-dir")
+API_KEY_ONLY_WEBHOOK_LOG_PATH = zulip_path("/var/log/zulip/webhooks_errors.log")
+WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_unexpected_events.log")
+SOFT_DEACTIVATION_LOG_PATH = zulip_path("/var/log/zulip/soft_deactivation.log")
+TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
+SCHEDULED_MESSAGE_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/scheduled_message_deliverer.log")
+RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
+
+# The Event log basically logs most significant database changes,
+# which can be useful for debugging.
+if EVENT_LOGS_ENABLED:
+    EVENT_LOG_DIR = zulip_path("/home/zulip/logs/event_log")  # type: Optional[str]
+else:
+    EVENT_LOG_DIR = None
 
 ZULIP_WORKER_TEST_FILE = '/tmp/zulip-worker-test-file'
 
