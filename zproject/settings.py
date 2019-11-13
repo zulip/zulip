@@ -443,12 +443,10 @@ DEFAULT_SETTINGS.update({
     'JWT_AUTH_KEYS': {},
 
     # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
-    # Django setting for what from address to use in error emails.  We
-    # set this to ZULIP_ADMINISTRATOR by default.
-    'SERVER_EMAIL': None,
-    # Django setting for who receives error emails.  We set to
-    # ZULIP_ADMINISTRATOR by default.
-    'ADMINS': '',
+    # Django setting for what from address to use in error emails.
+    'SERVER_EMAIL': ZULIP_ADMINISTRATOR,
+    # Django setting for who receives error emails.
+    'ADMINS': (("Zulip Administrator", ZULIP_ADMINISTRATOR),),
 
     # From address for welcome emails.
     'WELCOME_EMAIL_SENDER': None,
@@ -512,8 +510,6 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      ("AUTHENTICATION_BACKENDS", ()),
                      ]
 
-if ADMINS == "":
-    ADMINS = (("Zulip Administrator", ZULIP_ADMINISTRATOR),)
 MANAGERS = ADMINS
 
 ########################################################################
@@ -1424,10 +1420,6 @@ else:
 EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
 AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password', '')
-
-# Set the sender email address for Django traceback error reporting
-if SERVER_EMAIL is None:
-    SERVER_EMAIL = ZULIP_ADMINISTRATOR
 
 ########################################################################
 # MISC SETTINGS
