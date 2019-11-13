@@ -32,7 +32,7 @@ def set_up_django(external_host):
     os.environ['PYTHONUNBUFFERED'] = 'y'
 
 def assert_server_running(server, log_file):
-    # type: (subprocess.Popen, Optional[str]) -> None
+    # type: (subprocess.Popen[bytes], Optional[str]) -> None
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
         message = 'Server died unexpectedly!'
@@ -41,7 +41,7 @@ def assert_server_running(server, log_file):
         raise RuntimeError(message)
 
 def server_is_up(server, log_file):
-    # type: (subprocess.Popen, Optional[str]) -> bool
+    # type: (subprocess.Popen[bytes], Optional[str]) -> bool
     assert_server_running(server, log_file)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.

@@ -4,11 +4,9 @@ import re
 import sys
 import mock
 import inspect
-import typing
 from typing import Dict, Any, Set, Union, List, Callable, Tuple, Optional, Iterable, Mapping, Sequence
 from unittest.mock import patch, MagicMock
 
-from django.conf import settings
 from django.http import HttpResponse
 
 import zerver.lib.openapi as openapi
@@ -315,7 +313,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
         needs to be mapped to list."""
 
-        if sys.version_info < (3, 6) and type(t) == typing.UnionMeta:  # nocoverage # in python3.6+
+        if sys.version_info < (3, 6) and type(t) is type(Union):  # nocoverage # in python3.6+
             origin = Union
         else:  # nocoverage  # in python3.5. I.E. this is used in python3.6+
             origin = getattr(t, "__origin__", None)
@@ -456,7 +454,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         in code.
         """
 
-        urlconf = __import__(getattr(settings, "ROOT_URLCONF"), {}, {}, [''])
+        import zproject.urls as urlconf
 
         # We loop through all the API patterns, looking in particular
         # for those using the rest_dispatch decorator; we then parse

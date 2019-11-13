@@ -72,8 +72,8 @@ class Command(compilemessages.Command):
                 raise Exception("Unknown language %s" % (locale,))
 
     def get_locales(self) -> List[str]:
-        tracked_files = check_output(['git', 'ls-files', 'locale'])
-        tracked_files = tracked_files.decode().split()
+        output = check_output(['git', 'ls-files', 'locale'])
+        tracked_files = output.decode().split()
         regex = re.compile(r'locale/(\w+)/LC_MESSAGES/django.po')
         locales = ['en']
         for tracked_file in tracked_files:

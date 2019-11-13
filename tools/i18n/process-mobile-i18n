@@ -9,8 +9,8 @@ def get_json_filename(locale: str) -> str:
     return "locale/{}/mobile.json".format(locale)
 
 def get_locales() -> List[str]:
-    tracked_files = check_output(['git', 'ls-files', 'locale'])
-    tracked_files = tracked_files.decode().split()
+    output = check_output(['git', 'ls-files', 'locale'])
+    tracked_files = output.decode().split()
     regex = re.compile(r'locale/(\w+)/LC_MESSAGES/django.po')
     locales = ['en']
     for tracked_file in tracked_files:
