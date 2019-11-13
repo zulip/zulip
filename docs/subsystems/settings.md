@@ -71,12 +71,12 @@ In a production environment, we have:
 * `zproject/settings.py` is the main Django settings file for Zulip.
   It contains all the settings that are constant for all Zulip
   installations (e.g. configuration for logging, static assets,
-  middleware, etc.), as well as default values for the settings the
-  user would set in `/etc/zulip/settings.py` (you can look at the
-  `DEFAULT_SETTINGS` dictionary to easily review the settings
-  available).  `zproject/settings.py` has a line `from prod_settings
+  middleware, etc.).  It has a line `from prod_settings
   import *`, which in a prod environment has the effect of importing
   `/etc/zulip/settings.py` (via a symlink).
+
+* `zproject/default_settings.py` has the default values for the settings the
+  user would set in `/etc/zulip/settings.py`.
 
 In a development environment, we have `zproject/settings.py`, and
 additionally:
@@ -93,8 +93,10 @@ additionally:
 When adding a new server setting to Zulip, you will typically add it
 in two or three places:
 
-* In DEFAULT_SETTINGS in `zproject/settings.py`, with a default value
-  for production environments.  If the settings has a secret key,
+* `zproject/default_settings.py`, with a default value
+  for production environments.
+
+* If the settings has a secret key,
   you'll add a `get_secret` call in `zproject/settings.py` (and the
   user will add the value when they configure the feature).
 
