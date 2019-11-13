@@ -66,12 +66,13 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             generated_curl_command = [
                 x for x in shlex.split(curl_command_text) if x != "\n"]
 
+            response_json = None
             response = None
             try:
                 # We split this across two lines so if curl fails and
                 # returns non-JSON output, we'll still print it.
-                response = subprocess.check_output(generated_curl_command).decode('utf-8')
-                response = json.loads(response)
+                response_json = subprocess.check_output(generated_curl_command).decode('utf-8')
+                response = json.loads(response_json)
                 assert(response["result"] == "success")
             except (AssertionError, Exception):
                 error_template = """
@@ -100,7 +101,7 @@ To learn more about the test itself, see zerver/openapi/test_curl_examples.py.
                     file_name=file_name,
                     line=line,
                     curl_command=generated_curl_command,
-                    response=json.dumps(response, indent=4)))
+                    response=response_json if response is None else json.dumps(response, indent=4)))
                 raise
 
     if REGISTERED_GENERATOR_FUNCTIONS != CALLED_GENERATOR_FUNCTIONS:

@@ -295,8 +295,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertEqual(result.json()['storage'], updated_dict)
 
         # Assert errors on invalid requests.
-        params = {  # type: ignore # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
-            'keys': ["This is a list, but should be a serialized string."]
+        params = {
+            'keys': ["This is a list, but should be a serialized string."]  # type: ignore # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
         }
         result = self.client_get('/json/bot_storage', params)
         self.assert_json_error(result, 'Argument "keys" is not valid JSON.')

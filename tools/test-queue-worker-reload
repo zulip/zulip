@@ -16,7 +16,7 @@ sanity_check.check_venv(__file__)
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 successful_worker_launch = '[process_queue] 20 queue worker threads were launched\n'
 
-def check_worker_launch(run_dev: subprocess.Popen) -> bool:
+def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
     failed = False
     i = 0
 

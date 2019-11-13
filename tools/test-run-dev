@@ -13,7 +13,7 @@ sanity_check.check_venv(__file__)
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def start_server(run_dev: subprocess.Popen) -> Tuple[bool, str]:
+def start_server(run_dev: "subprocess.Popen[str]") -> Tuple[bool, str]:
     failure = False
     i = 0
 
