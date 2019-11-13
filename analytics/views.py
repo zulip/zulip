@@ -1122,6 +1122,7 @@ def support(request: HttpRequest) -> HttpResponse:
                 URLValidator()(key_word)
                 parse_result = urllib.parse.urlparse(key_word)
                 hostname = parse_result.hostname
+                assert hostname is not None
                 if parse_result.port:
                     hostname = "{}:{}".format(hostname, parse_result.port)
                 subdomain = get_subdomain_from_hostname(hostname)
@@ -1282,7 +1283,7 @@ def realm_activity_link(realm_str: str) -> mark_safe:
 def realm_stats_link(realm_str: str) -> mark_safe:
     url_name = 'analytics.views.stats_for_realm'
     url = reverse(url_name, kwargs=dict(realm_str=realm_str))
-    stats_link = '<a href="{}"><i class="fa fa-pie-chart"></i></a>'.format(url, realm_str)
+    stats_link = '<a href="{}"><i class="fa fa-pie-chart"></i>{}</a>'.format(url, realm_str)
     return mark_safe(stats_link)
 
 def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:

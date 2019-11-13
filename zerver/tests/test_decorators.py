@@ -181,8 +181,8 @@ class DecoratorTestCase(TestCase):
     def test_REQ_converter_and_validator_invalid(self) -> None:
         with self.assertRaisesRegex(AssertionError, "converter and validator are mutually exclusive"):
             @has_request_variables
-            def get_total(request: HttpRequest,  # type: ignore  # The condition being tested is in fact an error.
-                          numbers: Iterable[int]=REQ(validator=check_list(check_int),
+            def get_total(request: HttpRequest,
+                          numbers: Iterable[int]=REQ(validator=check_list(check_int),  # type: ignore  # The condition being tested is in fact an error.
                                                      converter=lambda x: [])) -> int:
                 return sum(numbers)  # nocoverage -- isn't intended to be run
 
@@ -263,8 +263,8 @@ class DecoratorTestCase(TestCase):
         # Test we properly handle an invalid argument_type.
         with self.assertRaises(Exception) as cm:
             @has_request_variables
-            def test(request: HttpRequest,  # type: ignore  # The condition being tested is in fact an error.
-                     payload: Any=REQ(argument_type="invalid")) -> None:
+            def test(request: HttpRequest,
+                     payload: Any=REQ(argument_type="invalid")) -> None:  # type: ignore  # The condition being tested is in fact an error.
                 # Any is ok; exception should occur in decorator:
                 pass  # nocoverage # this function isn't meant to be called
             test(request)
