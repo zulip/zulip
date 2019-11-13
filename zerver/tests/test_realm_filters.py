@@ -84,6 +84,21 @@ class RealmFilterTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], '!123'))
 
+        data['pattern'] = r'ZUL-(?P<id>\d+)'
+        data['url_format_string'] = r'https://realm.com/my_realm_filter/%(hello)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Group 'hello' in URL format string is not present in filter pattern.")
+
+        data['pattern'] = r'ZUL-(?P<id>\d+)-(?P<hello>\d+)'
+        data['url_format_string'] = r'https://realm.com/my_realm_filter/%(hello)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Group 'id' in filter pattern is not present in URL format string.")
+
+        data['pattern'] = r'ZUL-(?P<id>\d+)-(?P<hello>\d+)-(?P<world>\d+)'
+        data['url_format_string'] = r'https://realm.com/my_realm_filter/%(hello)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Group 'id' in filter pattern is not present in URL format string.")
+
         # This is something we'd like to support, but don't currently;
         # this test is a reminder of something we should allow in the
         # future.

@@ -775,6 +775,45 @@ class RealmFilter(models.Model):
     class Meta:
         unique_together = ("realm", "pattern")
 
+    def clean(self) -> None:
+        # Django's `full_clean` calls `clean_fields` followed by `clean` and
+        # stores all ValidationErrors from all stages to return as JSON. Thus,
+        # these validations are in addition to field specific validations.
+
+        # extract substitutions
+        try:
+            pattern = re.compile(self.pattern)
+        except Exception:
+            # regex validation errors would be caught by full_clean()
+            # so we can safely just return here.
+            return
+        group_list = list(pattern.groupindex.keys())
+        group_match_regex = re.compile(r'%\((?P<group_name>[^)]+)\)s')
+
+        # Report patterns missing in filter pattern.
+        for m in group_match_regex.finditer(self.url_format_string):
+            name = m.group('group_name')
+            if name not in group_list:
+                raise ValidationError(_("Group '{}' in URL format string is "
+                                        "not present in filter pattern.".format(name)))
+            group_list.remove(name)
+
+        # Report patterns missing in URL format string.
+        if len(group_list) >= 1:
+            # We just report the first missing pattern here. People can incrementally
+            # resolve errors if there are multiple missing patterns.
+            group_list.sort()
+            group_name = group_list[0]
+            raise ValidationError(_("Group '{}' in filter pattern is not present "
+                                    "in URL format string.".format(group_name)))
+
+        # Substitute all groups with common strings.
+        substituted = group_match_regex.sub('abc12345', self.url_format_string)
+        try:
+            URLValidator()(substituted)
+        except ValidationError:
+            raise ValidationError(_('Filter pattern does not result in valid URL.'))
+
     def __str__(self) -> str:
         return f"<RealmFilter({self.realm.string_id}): {self.pattern} {self.url_format_string}>"
 
