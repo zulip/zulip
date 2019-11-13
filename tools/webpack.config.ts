@@ -220,7 +220,6 @@ export default (env?: string): webpack.Configuration[] => {
         { path: "blueimp-md5/js/md5.js" },
         { path: "clipboard/dist/clipboard.js", name: "ClipboardJS" },
         { path: "xdate/src/xdate.js", name: "XDate" },
-        { path: "simplebar/dist/simplebar.js"},
         { path: "../static/third/marked/lib/marked.js" },
         { path: "../static/generated/emoji/emoji_codes.js" },
         { path: "../static/generated/pygments_data.js" },
