@@ -1919,7 +1919,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "topic": "Test topic",
-                                                     "forged": True})
+                                                     "forged": "true"})
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_send_message_as_not_superuser_to_different_domain(self) -> None:
@@ -2036,6 +2036,23 @@ class MessagePOSTTest(ZulipTestCase):
 
         result = self.api_post(email, "/api/v1/messages", {"type": "stream",
                                                            "forged": "true",
+                                                           "time": fake_timestamp,
+                                                           "sender": "irc-user@irc.zulip.com",
+                                                           "content": "Test message",
+                                                           "client": "irc_mirror",
+                                                           "topic": "from irc",
+                                                           "to": "IRCLand"})
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertEqual(int(datetime_to_timestamp(msg.date_sent)), int(fake_timestamp))
+
+        # Now test again using forged=yes
+        fake_date_sent = timezone_now() - datetime.timedelta(minutes=22)
+        fake_timestamp = datetime_to_timestamp(fake_date_sent)
+
+        result = self.api_post(email, "/api/v1/messages", {"type": "stream",
+                                                           "forged": "yes",
                                                            "time": fake_timestamp,
                                                            "sender": "irc-user@irc.zulip.com",
                                                            "content": "Test message",

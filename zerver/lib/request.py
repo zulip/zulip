@@ -11,7 +11,8 @@ from zerver.lib.types import Validator, ViewFuncT
 
 from django.http import HttpRequest, HttpResponse
 
-from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar, Union, cast
+from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar, Union, cast, overload
+from typing_extensions import Literal
 
 class RequestConfusingParmsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
@@ -131,12 +132,89 @@ class _REQ(Generic[ResultT]):
 # instance of class _REQ to enable the decorator to scan the parameter
 # list for _REQ objects and patch the parameters as the true types.
 
+# Overload 1: converter
+@overload
+def REQ(
+    whence: Optional[str] = ...,
+    *,
+    type: Type[ResultT] = ...,
+    converter: Callable[[str], ResultT],
+    default: ResultT = ...,
+    intentionally_undocumented: bool = ...,
+    documentation_pending: bool = ...,
+    aliases: Optional[List[str]] = ...,
+    path_only: bool = ...
+) -> ResultT:
+    ...
+
+# Overload 2: validator
+@overload
+def REQ(
+    whence: Optional[str] = ...,
+    *,
+    type: Type[ResultT] = ...,
+    default: ResultT = ...,
+    validator: Validator,
+    intentionally_undocumented: bool = ...,
+    documentation_pending: bool = ...,
+    aliases: Optional[List[str]] = ...,
+    path_only: bool = ...
+) -> ResultT:
+    ...
+
+# Overload 3: no converter/validator, default: str or unspecified, argument_type=None
+@overload
+def REQ(
+    whence: Optional[str] = ...,
+    *,
+    type: Type[str] = ...,
+    default: str = ...,
+    str_validator: Optional[Validator] = ...,
+    intentionally_undocumented: bool = ...,
+    documentation_pending: bool = ...,
+    aliases: Optional[List[str]] = ...,
+    path_only: bool = ...
+) -> str:
+    ...
+
+# Overload 4: no converter/validator, default=None, argument_type=None
+@overload
+def REQ(
+    whence: Optional[str] = ...,
+    *,
+    type: Type[str] = ...,
+    default: None,
+    str_validator: Optional[Validator] = ...,
+    intentionally_undocumented: bool = ...,
+    documentation_pending: bool = ...,
+    aliases: Optional[List[str]] = ...,
+    path_only: bool = ...
+) -> Optional[str]:
+    ...
+
+# Overload 5: argument_type="body"
+@overload
+def REQ(
+    whence: Optional[str] = ...,
+    *,
+    type: Type[ResultT] = ...,
+    default: ResultT = ...,
+    str_validator: Optional[Validator] = ...,
+    argument_type: Literal["body"],
+    intentionally_undocumented: bool = ...,
+    documentation_pending: bool = ...,
+    aliases: Optional[List[str]] = ...,
+    path_only: bool = ...
+) -> ResultT:
+    ...
+
+# Implementation
 def REQ(
     whence: Optional[str] = None,
     *,
     type: Type[ResultT] = Type[None],
     converter: Optional[Callable[[str], ResultT]] = None,
-    default: Union[_REQ._NotSpecified, ResultT, None] = _REQ.NotSpecified,
+    default: Union[_REQ._NotSpecified, ResultT] = _REQ.NotSpecified,
     validator: Optional[Validator] = None,
     str_validator: Optional[Validator] = None,
     argument_type: Optional[str] = None,

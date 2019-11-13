@@ -83,7 +83,7 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
                         full_name: Optional[str]=REQ(default="", validator=check_string),
                         is_admin: Optional[bool]=REQ(default=None, validator=check_bool),
                         is_guest: Optional[bool]=REQ(default=None, validator=check_bool),
-                        profile_data: List[Dict[str, Union[int, str, List[int]]]]=
+                        profile_data: Optional[List[Dict[str, Union[int, str, List[int]]]]]=
                         REQ(default=None,
                             validator=check_list(check_dict([('id', check_int)])))) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
@@ -165,7 +165,7 @@ def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
 def patch_bot_backend(
         request: HttpRequest, user_profile: UserProfile, bot_id: int,
         full_name: Optional[str]=REQ(default=None),
-        bot_owner_id: Optional[int]=REQ(default=None),
+        bot_owner_id: Optional[int]=REQ(validator=check_int, default=None),
         config_data: Optional[Dict[str, str]]=REQ(default=None,
                                                   validator=check_dict(value_validator=check_string)),
         service_payload_url: Optional[str]=REQ(validator=check_url, default=None),

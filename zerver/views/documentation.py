@@ -174,7 +174,7 @@ class IntegrationView(ApiURLView):
 
 
 @has_request_variables
-def integration_doc(request: HttpRequest, integration_name: str=REQ(default=None)) -> HttpResponse:
+def integration_doc(request: HttpRequest, integration_name: str=REQ()) -> HttpResponse:
     if not request.is_ajax():
         return HttpResponseNotFound()
     try:

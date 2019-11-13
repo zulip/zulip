@@ -1276,8 +1276,9 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_to: Union[Sequence[int], Sequence[str]]=REQ(
                              'to', type=Union[List[int], List[str]],
                              converter=extract_recipients, default=[]),
-                         forged: bool=REQ(default=False,
-                                          documentation_pending=True),
+                         forged_str: Optional[str]=REQ("forged",
+                                                       default=None,
+                                                       documentation_pending=True),
                          topic_name: Optional[str]=REQ_topic(),
                          message_content: str=REQ('content'),
                          widget_content: Optional[str]=REQ(default=None,
@@ -1295,6 +1296,10 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          tz_guess: Optional[str]=REQ('tz_guess', default=None,
                                                      documentation_pending=True)
                          ) -> HttpResponse:
+    # Temporary hack: We're transitioning `forged` from accepting
+    # `yes` to accepting `true` like all of our normal booleans.
+    forged = forged_str is not None and forged_str in ["yes", "true"]
+
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:

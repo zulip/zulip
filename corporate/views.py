@@ -34,7 +34,7 @@ def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
         raise BillingError('tampered seat count')
 
 def check_upgrade_parameters(
-        billing_modality: str, schedule: str, license_management: str, licenses: Optional[int],
+        billing_modality: str, schedule: str, license_management: Optional[str], licenses: Optional[int],
         has_stripe_token: bool, seat_count: int) -> None:
     if billing_modality not in ['send_invoice', 'charge_automatically']:
         raise BillingError('unknown billing_modality')
@@ -74,9 +74,9 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 def upgrade(request: HttpRequest, user: UserProfile,
             billing_modality: str=REQ(validator=check_string),
             schedule: str=REQ(validator=check_string),
-            license_management: str=REQ(validator=check_string, default=None),
-            licenses: int=REQ(validator=check_int, default=None),
-            stripe_token: str=REQ(validator=check_string, default=None),
+            license_management: Optional[str]=REQ(validator=check_string, default=None),
+            licenses: Optional[int]=REQ(validator=check_int, default=None),
+            stripe_token: Optional[str]=REQ(validator=check_string, default=None),
             signed_seat_count: str=REQ(validator=check_string),
             salt: str=REQ(validator=check_string)) -> HttpResponse:
     try:
@@ -89,6 +89,7 @@ def upgrade(request: HttpRequest, user: UserProfile,
         check_upgrade_parameters(
             billing_modality, schedule, license_management, licenses,
             stripe_token is not None, seat_count)
+        assert licenses is not None
         automanage_licenses = license_management == 'automatic'
 
         billing_schedule = {'annual': CustomerPlan.ANNUAL,
