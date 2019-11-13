@@ -1,4 +1,4 @@
-const SimpleBar = require("simplebar").default;
+const SimpleBar = require("simplebar/dist/simplebar.js");
 
 // What, if anything, obscures the home tab?
 
@@ -13,16 +13,18 @@ exports.replace_emoji_with_text = function (element) {
 
 exports.get_content_element = function (element_selector) {
     const element = element_selector.expectOne()[0];
-    if (element.SimpleBar) {
-        return $(element.SimpleBar.getContentElement());
+    const sb = SimpleBar.instances.get(element);
+    if (sb) {
+        return $(sb.getContentElement());
     }
     return element_selector;
 };
 
 exports.get_scroll_element = function (element_selector) {
     const element = element_selector.expectOne()[0];
-    if (element.SimpleBar) {
-        return $(element.SimpleBar.getScrollElement());
+    const sb = SimpleBar.instances.get(element);
+    if (sb) {
+        return $(sb.getScrollElement());
     } else if ('simplebar' in element.dataset) {
         // The SimpleBar mutation observer hasn’t processed this element yet.
         // Create the SimpleBar early in case we need to add event listeners.
@@ -33,8 +35,9 @@ exports.get_scroll_element = function (element_selector) {
 
 exports.reset_scrollbar = function (element_selector) {
     const element = element_selector.expectOne()[0];
-    if (element.SimpleBar) {
-        element.SimpleBar.getScrollElement().scrollTop = 0;
+    const sb = SimpleBar.instances.get(element);
+    if (sb) {
+        sb.getScrollElement().scrollTop = 0;
     } else {
         element.scrollTop = 0;
     }
