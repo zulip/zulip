@@ -31,9 +31,7 @@
                     </div>
                 </div>
             </form>
-            <div class="actions if-zulip-electron"><!-- only show if on `ZulipElectron` -->
-                <a class="back-to-login" href="{{login_url}}"><i class="fa fa-arrow-left"></i> Back to the login page</a>
-            </div>
+            {% include 'zerver/include/back_to_login_component.html' %}
         </div>
     </div>
 </div>
