@@ -14,8 +14,6 @@ from copy import deepcopy
 import os
 import time
 import sys
-from typing import Any, Optional
-import configparser
 
 from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
@@ -24,40 +22,7 @@ import zerver.lib.logging_util
 # INITIAL SETTINGS
 ########################################################################
 
-DEPLOY_ROOT = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
-
-config_file = configparser.RawConfigParser()
-config_file.read("/etc/zulip/zulip.conf")
-
-# Whether this instance of Zulip is running in a production environment.
-PRODUCTION = config_file.has_option('machine', 'deploy_type')
-DEVELOPMENT = not PRODUCTION
-
-secrets_file = configparser.RawConfigParser()
-if PRODUCTION:
-    secrets_file.read("/etc/zulip/zulip-secrets.conf")
-else:
-    secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
-
-def get_secret(key: str, default_value: Optional[Any]=None,
-               development_only: bool=False) -> Optional[Any]:
-    if development_only and PRODUCTION:
-        return default_value
-    if secrets_file.has_option('secrets', key):
-        return secrets_file.get('secrets', key)
-    return default_value
-
-def get_config(section: str, key: str, default_value: Optional[Any]=None) -> Optional[Any]:
-    if config_file.has_option(section, key):
-        return config_file.get(section, key)
-    return default_value
-
-def get_from_file_if_exists(path: str) -> str:
-    if os.path.exists(path):
-        with open(path, "r") as f:
-            return f.read()
-    else:
-        return ''
+from .config import DEPLOY_ROOT, PRODUCTION, DEVELOPMENT, get_secret, get_config, get_from_file_if_exists
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("secret_key")

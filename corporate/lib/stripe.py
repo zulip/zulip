@@ -20,7 +20,7 @@ from zerver.lib.utils import generate_random_token
 from zerver.models import Realm, UserProfile, RealmAuditLog
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
     get_current_plan
-from zproject.settings import get_secret
+from zproject.config import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
 stripe.api_key = get_secret('stripe_secret_key')
