@@ -649,8 +649,10 @@ TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
 SCHEDULED_MESSAGE_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/scheduled_message_deliverer.log")
 RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 
-# The Event log basically logs most significant database changes,
-# which can be useful for debugging.
+# The EVENT_LOGS feature is an ultra-legacy piece of code, which
+# originally logged all significant database changes for debugging.
+# We plan to replace it with RealmAuditLog, stored in the database,
+# everywhere that code mentioning it appears.
 if EVENT_LOGS_ENABLED:
     EVENT_LOG_DIR = zulip_path("/home/zulip/logs/event_log")  # type: Optional[str]
 else:
