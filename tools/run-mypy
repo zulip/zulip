@@ -5,6 +5,7 @@ import os
 import sys
 import argparse
 import subprocess
+from typing import List
 
 from zulint import lister
 
@@ -31,6 +32,8 @@ parser.add_argument('-a', '--all', action='store_true',
                     help="check all files, bypassing the default exclude list")
 parser.add_argument('--force', action="store_true",
                     help="run tests despite possible provisioning problems")
+parser.add_argument("--quiet", action="store_true",
+                    help="suppress mypy summary output")
 args = parser.parse_args()
 
 assert_provisioning_status_ok(args.force)
@@ -66,7 +69,10 @@ if not python_files and not pyi_files:
     print("There are no files to run mypy on.")
     sys.exit(0)
 
-mypy_args = python_files + pyi_files
+mypy_args = []  # type: List[str]
+if args.quiet:
+    mypy_args += ["--no-error-summary"]
+mypy_args += ["--"] + python_files + pyi_files
 rc = subprocess.call([mypy_command] + mypy_args)
 
 if rc != 0:
