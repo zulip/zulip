@@ -11,10 +11,6 @@ from zerver.models import get_realm
 from zerver.openapi.curl_param_value_generators import REGISTERED_GENERATOR_FUNCTIONS, CALLED_GENERATOR_FUNCTIONS
 
 exclude_list = [
-    # The endpoint in these docs expect one or more param values that reflects the DB state.
-    # We currently get the example values from openapi specs and they don't refelect the
-    # state of the DB. This results in the curl request to fail.
-    'update-stream.md',
     # Endpoint can be called only by administrators.
     'create-user.md',
     'add-linkifiers.md',

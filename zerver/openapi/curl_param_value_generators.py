@@ -72,9 +72,16 @@ def get_venice_stream_id() -> Dict[str, int]:
         "stream_id": helpers.get_stream_id("Venice"),
     }
 
+@openapi_param_value_generator(["/streams/{stream_id}:patch"])
+def update_stream() -> Dict[str, Any]:
+    stream = helpers.subscribe(helpers.example_user("iago"), "temp_stream 1")
+    return {
+        "stream_id": stream.id,
+    }
+
 @openapi_param_value_generator(["/streams/{stream_id}:delete"])
 def create_temp_stream_and_get_id() -> Dict[str, int]:
-    stream = helpers.subscribe(helpers.example_user("iago"), "temp_stream")
+    stream = helpers.subscribe(helpers.example_user("iago"), "temp_stream 2")
     return {
         "stream_id": stream.id,
     }
