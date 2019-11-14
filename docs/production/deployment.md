@@ -30,6 +30,8 @@ extremely reliable for years, whereas the Docker image is new and has
 rough edges, so we recommend the normal installer unless you have a
 specific reason to prefer Docker.
 
+To proxy serve via traefik, see the proxy section below
+
 ## Running Zulip's service dependencies on different machines
 
 Zulip has full support for each top-level service living on its own
@@ -194,6 +196,43 @@ backend zulip
 Since this configuration uses the `http` mode, you will also need to
 [configure Zulip to allow HTTP](#configuring-zulip-to-allow-http) as
 described above.
+
+### Docker swarm and Traefik configuration
+
+*NOTE*: this section is for traefik running as a container in docker in swarm mode
+
+To use [traefik](traefik.io) as proxy in a docker swarm to deploy the images from
+[docker image](https://github.com/zulip/docker-zulip),
+
+ - set the traefik to trust ssl certificate:
+
+```
+insecureSkipVerify = true
+```
+
+ - remove from the yaml file (docker-compose.yml) the `ports:` section
+   (traffic will be routed by traefik)
+ - add the labels in zulip.deploy:
+ ```
+   zulip:
+     ...
+     deploy:
+       labels:
+         - "traefik.port=443"
+         - "traefik.protocol=https"
+         - "traefik.backend=zulip_zulip"
+         - "traefik.frontend.rule=Host:yourownhostedzulip.com"
+         - "traefik.docker.network=zulipnetwork"
+  ```
+  - launch the service with
+`$ docker stack deploy --compose-file docker-compose.yml zulip`
+
+Here `zulip` (the first) is the stackname, and the second `zulip` is the
+container named into docker-compose file. Omit completely the backend label,
+or specify the exact container included the stackname (i.e. `zulip_zulip`).
+In kubernetes a default container could be defined in the pods, so it is ok
+to specify just the pod name.
+`zulipnetwork` must be reachable by traefik container (attached to the service).
 
 ### Other proxies
 
