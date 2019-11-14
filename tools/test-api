@@ -72,8 +72,8 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
         site=site
     )
 
-    test_generated_curl_examples_for_success(bot_client)
     test_the_api(client, nonadmin_client)
+    test_generated_curl_examples_for_success(bot_client)
 
     # Test error payloads
     client = Client(
