@@ -77,7 +77,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         user_agent = request.META.get('HTTP_USER_AGENT', "").lower()
 
         context = common_context(user)
-        context['user_email'] = user.email
+        context['user_email'] = user.delivery_email
         user_tz = user.timezone
         if user_tz == '':
             user_tz = timezone_get_current_timezone_name()
