@@ -180,7 +180,7 @@ public streams. Zulip’s topic-based threading keeps conversations coherent
 and organized, enabling a meaningful archive indexed by search engines.
 
 Currently implemented as an [out-of-tree
-tool](https://github.com/zulip/zulip_archive), though a native feature
+tool](https://github.com/zulip/zulip-archive), though a native feature
 built into the Zulip server is coming soon.
 
 ### Logged-out public access (coming soon)
