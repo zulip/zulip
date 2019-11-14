@@ -48,7 +48,7 @@ def patch_openapi_params(openapi_entry: str, openapi_params: List[Dict[str, Any]
     return openapi_params
 
 @openapi_param_value_generator(["/messages/{message_id}:get", "/messages/{message_id}/history:get",
-                                "/messages/{message_id}:patch"])
+                                "/messages/{message_id}:patch", "/messages/{message_id}:delete"])
 def iago_message_id() -> Dict[str, int]:
     return {
         "message_id": helpers.send_stream_message(helpers.example_email("iago"), "Denmark")
