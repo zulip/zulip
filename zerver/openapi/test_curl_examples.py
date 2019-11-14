@@ -14,7 +14,6 @@ exclude_list = [
     # The endpoint in these docs expect one or more param values that reflects the DB state.
     # We currently get the example values from openapi specs and they don't refelect the
     # state of the DB. This results in the curl request to fail.
-    'delete-user-group.md',
     'update-stream.md',
     # Endpoint can be called only by administrators.
     'create-user.md',
