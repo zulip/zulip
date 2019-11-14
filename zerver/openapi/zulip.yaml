@@ -2780,7 +2780,7 @@ paths:
         description: The new name of the group.
         schema:
           type: string
-        example: marketing
+        example: marketing team
         required: true
       - name: description
         in: query
