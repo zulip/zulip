@@ -142,3 +142,9 @@ def get_user_presence() -> Dict[None, None]:
     client = Client.objects.create(name="curl-test-client-3")
     update_user_presence(iago, client, timezone_now(), UserPresence.ACTIVE, False)
     return {}
+
+@openapi_param_value_generator(["/user_groups/create:post"])
+def create_user_group_data() -> Dict[str, Any]:
+    return {
+        "members": [helpers.example_user("hamlet").id, helpers.example_user("othello").id]
+    }
