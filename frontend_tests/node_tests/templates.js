@@ -1716,3 +1716,65 @@ run_test('recipient_row', () => {
     assert(html.indexOf('<script>alert("Hello")</script>') === -1);
     assert(html.indexOf('&lt;script&gt;alert(&quot;Hello&quot;)&lt;/script&gt;') !== -1);
 });
+
+run_test('invitation_failed_error', () => {
+    let err_list = [];
+    err_list.push("hamlet@zulip.com: Account has been deactivated.");
+    let data = {
+        error_message: "We weren't able to invite anyone.",
+        error_list: err_list,
+        is_invitee_deactivated: true,
+        is_admin: true,
+    };
+
+    let html = '<div>';
+    html += render('invitation_failed_error', data);
+    html += '</div>';
+    let p = $(html).find('p#invitation_error_message');
+    assert.equal(p.text().trim(), "We weren't able to invite anyone.");
+    let li = $(html).find("li").first();
+    assert.equal(li.text().trim(), "hamlet@zulip.com: Account has been deactivated.");
+    let p_admin = $(html).find("p#invitation_admin_message");
+    assert.equal(p_admin.text().trim(), 'translated: You can reactivate deactivated users from organization settings.');
+
+    err_list = [];
+    err_list.push("hamlet@zulip.com: Account has been deactivated.");
+    data = {
+        error_message: "We weren't able to invite anyone.",
+        error_list: err_list,
+        is_invitee_deactivated: true,
+        is_admin: false,
+    };
+
+    html = '<div>';
+    html += render('invitation_failed_error', data);
+    html += '</div>';
+    p = $(html).find("p#invitation_error_message");
+    assert.equal(p.text().trim(), "We weren't able to invite anyone.");
+    li = $(html).find("li").first();
+    assert.equal(li.text().trim(), "hamlet@zulip.com: Account has been deactivated.");
+    const msg = $(html).find("p#invitation_non_admin_message");
+    assert.equal(msg.text().trim(), 'translated: Organization administrators can reactivate deactivated users.');
+    p_admin = $(html).find("p#invitation_admin_message");
+    assert.equal(p_admin.length, 0);
+
+    err_list = [];
+    err_list.push("othello@zulip.com: Already has an account.");
+    data = {
+        error_message: "We weren't able to invite anyone.",
+        error_list: err_list,
+        is_invitee_deactivated: false,
+        is_admin: false,
+    };
+
+    html = '<div>';
+    html += render('invitation_failed_error', data);
+    html += '</div>';
+    p = $(html).find("p#invitation_error_message");
+    assert.equal(p.text().trim(), "We weren't able to invite anyone.");
+    li = $(html).find("li").first();
+    assert.equal(li.text().trim(), "othello@zulip.com: Already has an account.");
+    p_admin = $(html).find("p#invitation_admin_message");
+    assert.equal(p_admin.length, 0);
+
+});

@@ -92,7 +92,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
     if user_profile.delivery_email != new_email and new_email != '':
         if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
             return json_error(_("Email address changes are disabled in this organization."))
-        error, skipped = validate_email(user_profile, new_email)
+        error, skipped, deactivated = validate_email(user_profile, new_email)
         if error:
             return json_error(error)
         if skipped:

@@ -4949,40 +4949,42 @@ def validate_email_for_realm(target_realm: Realm, email: str) -> None:
             raise AssertionError("Mirror dummy user is already active!")
         # Other users should not already exist at all.
         raise ValidationError(_('%s already has an account') %
-                              (email,), code = _("Already has an account."))
+                              (email,), code = _("Already has an account."), params={'deactivated': False})
     elif not existing_user_profile.is_mirror_dummy:
         raise ValidationError('The account for %s has been deactivated' % (email,),
-                              code = _("Account has been deactivated."))
+                              code = _("Account has been deactivated."), params={'deactivated': True})
 
-def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str], Optional[str]]:
+def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str], Optional[str],
+                                                                   bool]:
     try:
         validators.validate_email(email)
     except ValidationError:
-        return _("Invalid address."), None
+        return _("Invalid address."), None, False
 
     try:
         email_allowed_for_realm(email, user_profile.realm)
     except DomainNotAllowedForRealmError:
-        return _("Outside your domain."), None
+        return _("Outside your domain."), None, False
     except DisposableEmailError:
-        return _("Please use your real email address."), None
+        return _("Please use your real email address."), None, False
     except EmailContainsPlusError:
-        return _("Email addresses containing + are not allowed."), None
+        return _("Email addresses containing + are not allowed."), None, False
 
     try:
         validate_email_for_realm(user_profile.realm, email)
     except ValidationError as error:
-        return None, (error.code)
+        return None, (error.code), (error.params['deactivated'])
 
-    return None, None
+    return None, None, False
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
     data_fields = ['errors', 'sent_invitations']
 
-    def __init__(self, msg: str, errors: List[Tuple[str, str]], sent_invitations: bool) -> None:
+    def __init__(self, msg: str, errors: List[Tuple[str, str, bool]],
+                 sent_invitations: bool) -> None:
         self._msg = msg  # type: str
-        self.errors = errors  # type: List[Tuple[str, str]]
+        self.errors = errors  # type: List[Tuple[str, str, bool]]
         self.sent_invitations = sent_invitations  # type: bool
 
 def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
@@ -5050,18 +5052,18 @@ def do_invite_users(user_profile: UserProfile,
                 [], sent_invitations=False)
 
     validated_emails = []  # type: List[str]
-    errors = []  # type: List[Tuple[str, str]]
-    skipped = []  # type: List[Tuple[str, str]]
+    errors = []  # type: List[Tuple[str, str, bool]]
+    skipped = []  # type: List[Tuple[str, str, bool]]
     for email in invitee_emails:
         if email == '':
             continue
-        email_error, email_skipped = validate_email(user_profile, email)
+        email_error, email_skipped, deactivated = validate_email(user_profile, email)
         if not (email_error or email_skipped):
             validated_emails.append(email)
         elif email_error:
-            errors.append((email, email_error))
+            errors.append((email, email_error, deactivated))
         elif email_skipped:
-            skipped.append((email, email_skipped))
+            skipped.append((email, email_skipped, deactivated))
 
     if errors:
         raise InvitationError(

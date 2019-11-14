@@ -3279,19 +3279,23 @@ class EmailValidatorTestCase(ZulipTestCase):
         inviter = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
 
-        error, _ = validate_email(inviter, 'fred+5555@zulip.com')
+        error, _, is_deactivated = validate_email(inviter, 'fred+5555@zulip.com')
+        self.assertEqual(False, is_deactivated)
         self.assertIn('containing + are not allowed', error)
 
-        _, error = validate_email(inviter, cordelia.email)
+        _, error, is_deactivated = validate_email(inviter, cordelia.email)
+        self.assertEqual(False, is_deactivated)
         self.assertEqual(error, 'Already has an account.')
 
         cordelia.is_active = False
         cordelia.save()
 
-        _, error = validate_email(inviter, cordelia.email)
+        _, error, is_deactivated = validate_email(inviter, cordelia.email)
+        self.assertEqual(True, is_deactivated)
         self.assertEqual(error, 'Account has been deactivated.')
 
-        _, error = validate_email(inviter, 'fred-is-fine@zulip.com')
+        _, error, is_deactivated = validate_email(inviter, 'fred-is-fine@zulip.com')
+        self.assertEqual(False, is_deactivated)
         self.assertEqual(error, None)
 
 class LDAPBackendTest(ZulipTestCase):

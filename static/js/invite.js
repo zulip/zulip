@@ -72,14 +72,21 @@ function submit_invitation_form() {
                 // Some users were not invited.
                 const invitee_emails_errored = [];
                 const error_list = [];
+                let is_invitee_deactivated = false;
                 arr.errors.forEach(function (value) {
-                    error_list.push(value.join(': '));
+                    const [email, error_message, deactivated] = value;
+                    error_list.push(`${email}: ${error_message}`);
+                    if (deactivated) {
+                        is_invitee_deactivated = true;
+                    }
                     invitee_emails_errored.push(value[0]);
                 });
 
                 const error_response = render_invitation_failed_error({
                     error_message: arr.msg,
                     error_list: error_list,
+                    is_admin: page_params.is_admin,
+                    is_invitee_deactivated: is_invitee_deactivated,
                 });
                 ui_report.message(error_response, invite_status, "alert-warning");
                 invitee_emails_group.addClass('warning');
