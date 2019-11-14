@@ -97,6 +97,16 @@ def update_subscription_data() -> Dict[str, List[Dict[str, Any]]]:
         ]
     }
 
+@openapi_param_value_generator(["/users/me/subscriptions:delete"])
+def delete_subscription_data() -> Dict[str, List[Dict[None, None]]]:
+    iago = helpers.example_user("iago")
+    zoe = helpers.example_user("ZOE")
+    helpers.subscribe(iago, "Verona")
+    helpers.subscribe(iago, "social")
+    helpers.subscribe(zoe, "Verona")
+    helpers.subscribe(zoe, "social")
+    return {}
+
 @openapi_param_value_generator(["/events:get"])
 def get_events() -> Dict[str, Any]:
     profile = helpers.example_user("iago")
