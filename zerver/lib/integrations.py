@@ -339,6 +339,7 @@ WEBHOOK_INTEGRATIONS = [
         function='zerver.webhooks.yo.view.api_yo_app_webhook',
         display_name='Yo App'
     ),
+    WebhookIntegration('wekan', ['productivity'], display_name='Wekan'),
     WebhookIntegration('wordpress', ['marketing'], display_name='WordPress'),
     WebhookIntegration('zapier', ['meta-integration']),
     WebhookIntegration('zendesk', ['customer-support']),
