@@ -463,6 +463,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         function="zerver.webhooks.yo.view.api_yo_app_webhook",
         display_name="Yo",
     ),
+    WebhookIntegration("wekan", ["productivity"], display_name="Wekan"),
     WebhookIntegration("wordpress", ["marketing"], display_name="WordPress"),
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
@@ -805,6 +806,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "trello": [ScreenshotConfig("adding_comment_to_card.json")],
     "updown": [ScreenshotConfig("check_multiple_events.json")],
     "uptimerobot": [ScreenshotConfig("uptimerobot_monitor_up.json")],
+    "wekan": [ScreenshotConfig("add_comment.json")],
     "wordpress": [ScreenshotConfig("publish_post.txt", "wordpress_post_created.png")],
     "yo": [
         ScreenshotConfig(
