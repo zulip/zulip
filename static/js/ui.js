@@ -39,8 +39,12 @@ exports.reset_scrollbar = function (element_selector) {
     }
 };
 
-exports.destroy_scrollbar = function (element) {
-    element[0].perfectScrollbar.destroy();
+exports.destroy_scrollbar = function (element_selector) {
+    var element = element_selector[0];
+    if (element.perfectScrollbar !== undefined) {
+        element.perfectScrollbar.destroy();
+        delete element.perfectScrollbar;
+    }
 };
 
 function update_message_in_all_views(message_id, callback) {

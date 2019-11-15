@@ -5,7 +5,12 @@ set_global('resize', {
     resize_stream_filters_container: function () {},
 });
 set_global('ui', {
-    set_up_scrollbar: function () {},
+    set_up_scrollbar: function (selector) {
+        selector.perfectScrollbar = null;
+    },
+    destroy_scrollbar: function (selector) {
+        delete selector.perfectScrollbar;
+    },
 });
 set_global('stream_popover', {
     hide_topic_popover: function () {},
@@ -129,6 +134,8 @@ run_test('expand_and_update_private_messages', () => {
     var collapsed;
     $('#private-container').remove = function () {
         collapsed = true;
+        // Ensure the scrollbar was destroyed before remove was called
+        assert.strictEqual(this.perfectScrollbar, undefined);
     };
 
     global.templates.render = function (template_name) {
