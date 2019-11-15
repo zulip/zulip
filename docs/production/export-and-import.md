@@ -41,7 +41,7 @@ service (or back):
   situations where an easily machine-parsable export format is desired.
 
 * Zulip also has an [HTML archive
-  tool](https://github.com/zulip/zulip_archive), which is primarily
+  tool](https://github.com/zulip/zulip-archive), which is primarily
   intended for public archives, but can also be useful to
   inexpensively preserve public stream conversations when
   decommissioning a Zulip organization.
