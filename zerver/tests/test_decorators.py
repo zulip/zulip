@@ -45,7 +45,7 @@ from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or, check_url, check_short_string,
     check_string_fixed_length, check_capped_string, check_color, to_non_negative_int,
-    check_string_or_int_list, check_string_or_int
+    check_string_or_int_list, check_string_or_int, check_int_in
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Realm
@@ -757,6 +757,11 @@ class ValidatorTestCase(TestCase):
 
         x = "hi"
         self.assertEqual(check_capped_string(5)('x', x), None)
+
+    def test_check_int_in(self) -> None:
+        self.assertEqual(check_int_in([1])("Test", 1), None)
+        self.assertEqual(check_int_in([1])("Test", 2), "Invalid Test")
+        self.assertEqual(check_int_in([1])("Test", "t"), "Test is not an integer")
 
     def test_check_short_string(self) -> None:
         x = "hello"  # type: Any
