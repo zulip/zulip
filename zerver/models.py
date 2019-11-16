@@ -357,6 +357,8 @@ class Realm(models.Model):
         user_group_edit_policy=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
+    DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
+
     # Icon is the square mobile icon.
     ICON_FROM_GRAVATAR = u'G'
     ICON_UPLOADED = u'U'

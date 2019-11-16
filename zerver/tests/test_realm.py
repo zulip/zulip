@@ -448,6 +448,47 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid user_group_edit_policy')
 
+    def test_invalid_integer_attribute_values(self) -> None:
+
+        integer_values = [key for key, value in Realm.property_types.items() if value is int]
+
+        invalid_values = dict(
+            bot_creation_policy=10,
+            create_stream_policy=10,
+            invite_to_stream_policy=10,
+            email_address_visibility=10,
+            message_retention_days=10,
+            video_chat_provider=0,
+            waiting_period_threshold=-10,
+            digest_weekday=10,
+            user_group_edit_policy=10,
+        )
+
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+
+        for name in integer_values:
+            invalid_value = invalid_values.get(name)
+            if invalid_value is None:
+                raise AssertionError('No test created for %s' % (name,))
+
+            self.do_test_invalid_integer_attribute_value(name, invalid_value)
+
+    def do_test_invalid_integer_attribute_value(self, val_name: str, invalid_val: int) -> None:
+
+        possible_messages = {
+            "Invalid %(field_name)s" % dict(field_name=val_name),
+            "Bad value for '%(field_name)s'" % dict(field_name=val_name),
+            "Bad value for '%(field_name)s': %(value)s" % dict(field_name=val_name, value=invalid_val),
+            "Invalid %(field_name)s %(value)s" % dict(field_name=val_name, value=invalid_val)
+        }
+
+        req = {val_name: invalid_val}
+        result = self.client_patch('/json/realm', req)
+        msg = self.get_json_error(result)
+        self.assertTrue(msg in possible_messages)
+
     def test_change_video_chat_provider(self) -> None:
         self.assertEqual(get_realm('zulip').video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
         email = self.example_email("iago")
@@ -457,7 +498,7 @@ class RealmTest(ZulipTestCase):
         req = {"video_chat_provider": ujson.dumps(invalid_video_chat_provider_value)}
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result,
-                               ("Invalid video chat provider {}").format(invalid_video_chat_provider_value))
+                               ("Invalid video_chat_provider {}").format(invalid_video_chat_provider_value))
 
         req = {"video_chat_provider": ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id'])}
         result = self.client_patch('/json/realm', req)
