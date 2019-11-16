@@ -297,7 +297,7 @@ class ZulipTestCase(TestCase):
 
     def create_test_bot(self, short_name: str, user_profile: UserProfile,
                         assert_json_error_msg: str=None, **extras: Any) -> Optional[UserProfile]:
-        self.login(user_profile.email)
+        self.login(user_profile.delivery_email)
         bot_info = {
             'short_name': short_name,
             'full_name': 'Foo Bot',
