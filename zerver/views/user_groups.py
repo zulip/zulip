@@ -17,7 +17,6 @@ from zerver.lib.user_groups import access_user_group_by_id, get_memberships_of_u
 from zerver.models import UserProfile
 from zerver.views.streams import compose_views, FuncKwargPair
 
-@require_member_or_admin
 @require_user_group_edit_permission
 @has_request_variables
 def add_user_group(request: HttpRequest, user_profile: UserProfile,
@@ -34,7 +33,6 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     user_groups = user_groups_in_realm_serialized(user_profile.realm)
     return json_success({"user_groups": user_groups})
 
-@require_member_or_admin
 @require_user_group_edit_permission
 @has_request_variables
 def edit_user_group(request: HttpRequest, user_profile: UserProfile,
@@ -54,7 +52,6 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
 
     return json_success()
 
-@require_member_or_admin
 @require_user_group_edit_permission
 @has_request_variables
 def delete_user_group(request: HttpRequest, user_profile: UserProfile,
@@ -63,7 +60,6 @@ def delete_user_group(request: HttpRequest, user_profile: UserProfile,
     check_delete_user_group(user_group_id, user_profile)
     return json_success()
 
-@require_member_or_admin
 @require_user_group_edit_permission
 @has_request_variables
 def update_user_group_backend(request: HttpRequest, user_profile: UserProfile,
