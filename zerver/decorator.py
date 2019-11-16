@@ -23,7 +23,8 @@ from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
-    InvalidJSONError, InvalidAPIKeyError
+    InvalidJSONError, InvalidAPIKeyError, \
+    OrganizationAdministratorRequired
 from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import to_non_negative_int
 
@@ -136,7 +137,7 @@ def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
     def wrapper(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
         if not user_profile.is_realm_admin:
-            raise JsonableError(_("Must be an organization administrator"))
+            raise OrganizationAdministratorRequired()
         return func(request, user_profile, *args, **kwargs)
     return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
 
