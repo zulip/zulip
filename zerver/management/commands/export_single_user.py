@@ -37,7 +37,7 @@ class Command(ZulipBaseCommand):
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
         os.makedirs(output_dir)
-        print("Exporting user %s" % (user_profile.email,))
+        print("Exporting user %s" % (user_profile.delivery_email,))
         do_export_user(user_profile, output_dir)
         print("Finished exporting to %s; tarring" % (output_dir,))
         tarball_path = output_dir.rstrip('/') + '.tar.gz'

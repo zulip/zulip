@@ -33,4 +33,4 @@ class Command(ZulipBaseCommand):
                 was_there_already = user_profile.id in {tup[0].id for tup in already_subscribed}
                 print("%s %s to %s" % (
                     "Already subscribed" if was_there_already else "Subscribed",
-                    user_profile.email, stream_name))
+                    user_profile.delivery_email, stream_name))

@@ -24,7 +24,7 @@ def sync_ldap_user_data(user_profiles: List[UserProfile]) -> None:
         try:
             sync_user_from_ldap(u, logger)
         except ZulipLDAPException as e:
-            logger.error("Error attempting to update user %s:" % (u.email,))
+            logger.error("Error attempting to update user %s:" % (u.delivery_email,))
             logger.error(e)
     logger.info("Finished update.")
 

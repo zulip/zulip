@@ -26,4 +26,4 @@ class Command(ZulipBaseCommand):
             else:
                 already_disabled_prefix = "(already off) "
             print("%s%s <%s>" % (already_disabled_prefix, user_profile.full_name,
-                                 user_profile.email))
+                                 user_profile.delivery_email))

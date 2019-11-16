@@ -32,6 +32,6 @@ class Command(ZulipBaseCommand):
 
         for user_profile in user_profiles:
             if user_profile in not_subscribed_users:
-                print("%s was not subscribed" % (user_profile.email,))
+                print("%s was not subscribed" % (user_profile.delivery_email,))
             else:
-                print("Removed %s from %s" % (user_profile.email, stream_name))
+                print("Removed %s from %s" % (user_profile.delivery_email, stream_name))

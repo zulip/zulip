@@ -12,12 +12,13 @@ from zerver.models import Realm, UserProfile
 
 def get_users_from_emails(emails: List[str],
                           filter_kwargs: Dict[str, Realm]) -> List[UserProfile]:
+    # Bug: Ideally, this would be case-insensitive like our other email queries.
     users = UserProfile.objects.filter(
-        email__in=emails,
+        delivery_email__in=emails,
         **filter_kwargs)
 
     if len(users) != len(emails):
-        user_emails_found = {user.email for user in users}
+        user_emails_found = {user.delivery_email for user in users}
         user_emails_not_found = '\n'.join(set(emails) - user_emails_found)
         raise CommandError('Users with the following emails were not found:\n\n%s\n\n'
                            'Check if they are correct.' % (user_emails_not_found,))

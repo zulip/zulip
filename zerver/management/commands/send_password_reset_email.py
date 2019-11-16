@@ -40,7 +40,7 @@ class Command(ZulipBaseCommand):
         """
         for user_profile in users:
             context = {
-                'email': user_profile.email,
+                'email': user_profile.delivery_email,
                 'reset_url': generate_password_reset_url(user_profile, default_token_generator),
                 'realm_uri': user_profile.realm.uri,
                 'realm_name': user_profile.realm.name,
