@@ -210,8 +210,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     user_profile.save(update_fields=[
         'long_term_idle',
         'last_active_message_id'])
-    logger.info('Soft Deactivated user %s (%s)' %
-                (user_profile.id, user_profile.email))
+    logger.info('Soft Deactivated user %s' % (user_profile.id,))
 
 def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
     BATCH_SIZE = 100
@@ -268,8 +267,7 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[User
             event_type=RealmAuditLog.USER_SOFT_ACTIVATED,
             event_time=timezone_now()
         )
-        logger.info('Soft Reactivated user %s (%s)' %
-                    (user_profile.id, user_profile.email))
+        logger.info('Soft Reactivated user %s' % (user_profile.id,))
         return user_profile
     return None
 
