@@ -6,7 +6,7 @@ from premailer import Premailer
 from cssutils import profile
 from cssutils.profiles import Profiles, properties, macros
 
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 
 if __name__ == "__main__":
     escaped_jinja2_characters = [('%7B%7B%20', '{{ '), ('%20%7D%7D', ' }}'), ('&gt;', '>')]

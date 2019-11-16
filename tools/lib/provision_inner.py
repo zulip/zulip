@@ -139,12 +139,12 @@ def main(options: argparse.Namespace) -> int:
     else:
         print("No need to run `tools/update-authors-json`.")
 
-    email_source_paths = ["tools/inline-email-css", "templates/zerver/emails/email.css"]
+    email_source_paths = ["scripts/setup/inline-email-css", "templates/zerver/emails/email.css"]
     email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
     if file_or_package_hash_updated(email_source_paths, "last_email_source_files_hash", options.is_force):
-        run(["tools/inline-email-css"])
+        run(["scripts/setup/inline-email-css"])
     else:
-        print("No need to run `tools/inline-email-css`.")
+        print("No need to run `scripts/setup/inline-email-css`.")
 
     if not options.is_production_travis:
         # The following block is skipped for the production Travis

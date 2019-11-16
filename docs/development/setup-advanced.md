@@ -159,7 +159,7 @@ yarn install
 sudo mkdir /srv/zulip-emoji-cache
 sudo chown -R `whoami`: /srv/zulip-emoji-cache
 ./tools/setup/emoji/build_emoji
-./tools/inline-email-css
+./scripts/setup/inline-email-css
 ./tools/setup/build_pygments_data
 ./tools/setup/generate_zulip_bots_static_files.py
 ./scripts/setup/generate_secrets.py --development
