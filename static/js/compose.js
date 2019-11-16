@@ -168,6 +168,17 @@ exports.abort_xhr = function () {
     uppy.cancelAll();
 };
 
+exports.zoom_token_callbacks = new Map();
+exports.zoom_xhrs = new Map();
+
+exports.abort_zoom = function (edit_message_id) {
+    const key = edit_message_id || "";
+    exports.zoom_token_callbacks.delete(key);
+    if (exports.zoom_xhrs.has(key)) {
+        exports.zoom_xhrs.get(key).abort();
+    }
+};
+
 exports.empty_topic_placeholder = function () {
     return i18n.t("(no topic)");
 };
@@ -1078,13 +1089,45 @@ exports.initialize = function () {
         if (page_params.realm_video_chat_provider === available_providers.google_hangouts.id) {
             video_call_link = "https://hangouts.google.com/hangouts/_/" + page_params.realm_google_hangouts_domain + "/" + video_call_id;
             insert_video_call_url(video_call_link, target_textarea);
-        } else if (page_params.realm_video_chat_provider === available_providers.zoom.id) {
-            channel.get({
-                url: '/json/calls/create',
-                success: function (response) {
-                    insert_video_call_url(response.zoom_url, target_textarea);
-                },
-            });
+        } else if (available_providers.zoom
+            && page_params.realm_video_chat_provider === available_providers.zoom.id) {
+            exports.abort_zoom(edit_message_id);
+            const key = edit_message_id || "";
+
+            const make_zoom_call = () => {
+                exports.zoom_xhrs.set(key, channel.post({
+                    url: "/json/calls/zoom/create",
+                    success(res) {
+                        exports.zoom_xhrs.delete(key);
+                        insert_video_call_url(res.url, target_textarea);
+                    },
+                    error(xhr, status) {
+                        exports.zoom_xhrs.delete(key);
+                        if (status === "error" &&
+                            xhr.responseJSON &&
+                            xhr.responseJSON.code === "INVALID_ZOOM_TOKEN") {
+                            page_params.has_zoom_token = false;
+                        }
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(i18n.t("Failed to create video call."));
+                        }
+                    },
+                }));
+            };
+
+            if (page_params.has_zoom_token) {
+                make_zoom_call();
+            } else {
+                exports.zoom_token_callbacks.set(key, make_zoom_call);
+                window.open(
+                    window.location.protocol +
+                        "//" +
+                        window.location.host +
+                        "/calls/zoom/register",
+                    "_blank",
+                    "width=800,height=500,noopener,noreferrer"
+                );
+            }
         } else {
             video_call_link = page_params.jitsi_server_url + "/" +  video_call_id;
             insert_video_call_url(video_call_link, target_textarea);

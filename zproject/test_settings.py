@@ -174,6 +174,9 @@ SOCIAL_AUTH_GOOGLE_KEY = "key"
 SOCIAL_AUTH_GOOGLE_SECRET = "secret"
 SOCIAL_AUTH_SUBDOMAIN = 'auth'
 
+VIDEO_ZOOM_CLIENT_ID = "client_id"
+VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
+
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False

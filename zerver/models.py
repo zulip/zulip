@@ -36,6 +36,7 @@ from zerver.lib.types import Validator, ExtendedValidator, \
     ExtendedFieldElement, UserFieldElement, FieldElement, \
     DisplayRecipientT
 from zerver.lib.exceptions import JsonableError
+from django.contrib.postgres.fields import JSONField
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -321,11 +322,12 @@ class Realm(models.Model):
             'name': "Google Hangouts",
             'id': 2
         },
-        'zoom': {
+    }
+    if settings.VIDEO_ZOOM_CLIENT_ID is not None and settings.VIDEO_ZOOM_CLIENT_SECRET is not None:
+        VIDEO_CHAT_PROVIDERS['zoom'] = {
             'name': "Zoom",
             'id': 3
         }
-    }
     video_chat_provider = models.PositiveSmallIntegerField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
     google_hangouts_domain = models.TextField(default="")
     zoom_user_id = models.TextField(default="")
@@ -350,9 +352,6 @@ class Realm(models.Model):
         email_address_visibility=int,
         email_changes_disabled=bool,
         google_hangouts_domain=str,
-        zoom_user_id=str,
-        zoom_api_key=str,
-        zoom_api_secret=str,
         invite_required=bool,
         invite_by_admins_only=bool,
         inline_image_preview=bool,
@@ -1025,6 +1024,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # where the second element of each tuple is if the step has been
     # completed.
     onboarding_steps: str = models.TextField(default='[]')
+
+    zoom_token: Optional[object] = JSONField(default=None, null=True)
 
     objects: UserManager = UserManager()
 

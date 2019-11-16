@@ -181,3 +181,7 @@ django-cookies-samesite
 
 # For server-side enforcement of password strength
 zxcvbn
+
+# Needed for sending HTTP requests
+requests[security]
+requests-oauthlib

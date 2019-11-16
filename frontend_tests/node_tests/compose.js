@@ -72,6 +72,7 @@ zrequire('compose_pm_pill');
 zrequire('echo');
 zrequire('compose');
 zrequire('upload');
+zrequire('server_events_dispatch');
 
 people.small_avatar_url_for_person = function () {
     return 'http://example.com/example.png';
@@ -1458,13 +1459,18 @@ run_test('on_events', () => {
 
         page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.zoom.id;
-        page_params.realm_zoom_user_id = 'example@example.com';
-        page_params.realm_zoom_api_key = 'abc';
-        page_params.realm_zoom_api_secret = 'abc';
 
-        channel.get = function (options) {
-            assert(options.url === '/json/calls/create');
-            options.success({ zoom_url: 'example.zoom.com' });
+        window.open = function (url) {
+            assert(url.endsWith('/calls/zoom/register'));
+            server_events_dispatch.dispatch_normal_event({
+                type: "has_zoom_token",
+                value: true,
+            });
+        };
+
+        channel.post = function (payload) {
+            assert.equal(payload.url, '/json/calls/zoom/create');
+            payload.success({ url: 'example.zoom.com' });
         };
 
         handler(ev);

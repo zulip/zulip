@@ -153,7 +153,6 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import claim_attachment, delete_message_image, \
     upload_emoji_image, delete_avatar_image, \
     delete_export_tarball
-from zerver.lib.video_calls import request_zoom_video_call_url
 from zerver.tornado.event_queue import send_event
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.streams import access_stream_for_send_message, subscribed_to_stream, check_stream_name, \
@@ -606,9 +605,6 @@ def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
     setattr(realm, name, value)
     realm.save(update_fields=[name])
 
-    if name == 'zoom_api_secret':
-        # Send '' as the value through the API for the API secret
-        value = ''
     event = dict(
         type='realm',
         op='update',
@@ -5749,17 +5745,12 @@ def do_send_realm_reactivation_email(realm: Realm) -> None:
         from_name=FromAddress.security_email_from_name(language=language),
         language=language, context=context)
 
-def get_zoom_video_call_url(realm: Realm) -> str:
-    response = request_zoom_video_call_url(
-        realm.zoom_user_id,
-        realm.zoom_api_key,
-        realm.zoom_api_secret
+def do_set_zoom_token(user: UserProfile, token: Optional[Dict[str, object]]) -> None:
+    user.zoom_token = token
+    user.save(update_fields=["zoom_token"])
+    send_event(
+        user.realm, dict(type="has_zoom_token", value=token is not None), [user.id]
     )
-
-    if response is None:
-        return ''
-
-    return response['join_url']
 
 def notify_realm_export(user_profile: UserProfile) -> None:
     # In the future, we may want to send this event to all realm admins.
