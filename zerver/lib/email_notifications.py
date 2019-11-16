@@ -418,6 +418,9 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         # However, one must ensure the Zulip server is in the SPF
         # record for the domain, or there will be spam/deliverability
         # problems.
+        #
+        # Also, this setting is not really compatible with
+        # EMAIL_ADDRESS_VISIBILITY_ADMINS.
         sender = senders[0]
         from_name, from_address = (sender.full_name, sender.email)
         context.update({
@@ -547,7 +550,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         'keyboard_shortcuts_link': user.realm.uri + '/help/keyboard-shortcuts',
         'realm_name': user.realm.name,
         'realm_creation': realm_creation,
-        'email': user.email,
+        'email': user.delivery_email,
         'is_realm_admin': user.role == UserProfile.ROLE_REALM_ADMINISTRATOR,
     })
     if user.is_realm_admin:
@@ -559,14 +562,14 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
     # Imported here to avoid import cycles.
     from zproject.backends import email_belongs_to_ldap, ZulipLDAPAuthBackend
 
-    if email_belongs_to_ldap(user.realm, user.email):
+    if email_belongs_to_ldap(user.realm, user.delivery_email):
         context["ldap"] = True
         for backend in get_backends():
             # If the user is doing authentication via LDAP, Note that
             # we exclude ZulipLDAPUserPopulator here, since that
             # isn't used for authentication.
             if isinstance(backend, ZulipLDAPAuthBackend):
-                context["ldap_username"] = backend.django_to_ldap_username(user.email)
+                context["ldap_username"] = backend.django_to_ldap_username(user.delivery_email)
                 break
 
     send_future_email(
