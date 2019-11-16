@@ -3,7 +3,7 @@ from django.utils.translation import ugettext as _
 
 from typing import List
 
-from zerver.decorator import require_member_or_admin, require_user_group_edit_policy
+from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
 from zerver.lib.actions import check_add_user_group, do_update_user_group_name, \
     do_update_user_group_description, bulk_add_members_to_user_group, \
     remove_members_from_user_group, check_delete_user_group
@@ -18,7 +18,7 @@ from zerver.models import UserProfile
 from zerver.views.streams import compose_views, FuncKwargPair
 
 @require_member_or_admin
-@require_user_group_edit_policy
+@require_user_group_edit_permission
 @has_request_variables
 def add_user_group(request: HttpRequest, user_profile: UserProfile,
                    name: str=REQ(),
@@ -35,7 +35,7 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     return json_success({"user_groups": user_groups})
 
 @require_member_or_admin
-@require_user_group_edit_policy
+@require_user_group_edit_permission
 @has_request_variables
 def edit_user_group(request: HttpRequest, user_profile: UserProfile,
                     user_group_id: int=REQ(validator=check_int),
@@ -55,7 +55,7 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 @require_member_or_admin
-@require_user_group_edit_policy
+@require_user_group_edit_permission
 @has_request_variables
 def delete_user_group(request: HttpRequest, user_profile: UserProfile,
                       user_group_id: int=REQ(validator=check_int)) -> HttpResponse:
@@ -64,7 +64,7 @@ def delete_user_group(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 @require_member_or_admin
-@require_user_group_edit_policy
+@require_user_group_edit_permission
 @has_request_variables
 def update_user_group_backend(request: HttpRequest, user_profile: UserProfile,
                               user_group_id: int=REQ(validator=check_int),

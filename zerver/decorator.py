@@ -534,10 +534,12 @@ def require_member_or_admin(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def require_user_group_edit_policy(view_func: ViewFuncT) -> ViewFuncT:
+def require_user_group_edit_permission(view_func: ViewFuncT) -> ViewFuncT:
+    check_member_or_admin = require_member_or_admin(view_func)
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, user_profile: UserProfile,
                            *args: Any, **kwargs: Any) -> HttpResponse:
+        check_member_or_admin(request, user_profile, *args, **kwargs)
         realm = user_profile.realm
         if realm.user_group_edit_policy != Realm.USER_GROUP_EDIT_POLICY_MEMBERS and \
                 not user_profile.is_realm_admin:
