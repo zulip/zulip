@@ -326,7 +326,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         if return_data.get('invalid_subdomain'):
             # By construction, this should never happen.
             logging.error("Subdomain mismatch in registration %s: %s" % (
-                realm.subdomain, user_profile.email,))
+                realm.subdomain, user_profile.delivery_email,))
             return redirect('/')
 
         return login_and_go_to_home(request, auth_result)
