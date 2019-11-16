@@ -70,7 +70,7 @@ def archive(request: HttpRequest,
                                                   if msg.last_edit_time
                                                   else msg.date_sent),
             'message_content': msg.rendered_content,
-            'avatar_url': get_gravatar_url(msg.sender.email, 1),
+            'avatar_url': get_gravatar_url(msg.sender.delivery_email, 1),
             'include_sender': include_sender,
             'status_message': status_message,
         }
