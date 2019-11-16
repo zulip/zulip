@@ -435,7 +435,7 @@ class HomeTest(ZulipTestCase):
         self.login(email)
         with patch('logging.warning') as mock:
             result = self._get_home_page()
-        mock.assert_called_once_with('hamlet@zulip.com has invalid pointer 999999')
+        mock.assert_called_once_with('User %s has invalid pointer 999999' % (user_profile.id,))
         self._sanity_check(result)
 
     def test_topic_narrow(self) -> None:
