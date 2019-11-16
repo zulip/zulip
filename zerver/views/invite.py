@@ -6,6 +6,7 @@ from zerver.decorator import require_realm_admin, require_member_or_admin
 from zerver.lib.actions import do_invite_users, do_revoke_user_invite, \
     do_revoke_multi_use_invite, do_resend_user_invite_email, \
     do_get_user_invites, do_create_multiuse_invite_link
+from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_id
@@ -24,7 +25,7 @@ def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
                          ) -> HttpResponse:
 
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
-        return json_error(_("Must be an organization administrator"))
+        raise OrganizationAdministratorRequired()
     if invite_as not in PreregistrationUser.INVITE_AS.values():
         return json_error(_("Must be invited as an valid type of user"))
     if invite_as == PreregistrationUser.INVITE_AS['REALM_ADMIN'] and not user_profile.is_realm_admin:

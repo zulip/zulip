@@ -8,6 +8,7 @@ from typing import Optional, Tuple
 from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
+from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 
 EMOJI_PATH = static_path("generated/emoji")
@@ -86,7 +87,7 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None)
     if user_profile.is_realm_admin:
         return
     if user_profile.realm.add_emoji_by_admins_only:
-        raise JsonableError(_("Must be an organization administrator"))
+        raise OrganizationAdministratorRequired()
 
     # Otherwise, normal users can add emoji
     if emoji_name is None:

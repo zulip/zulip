@@ -9,6 +9,7 @@ from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_i
     user_profile_by_id_cache_key
 from zerver.lib.request import JsonableError
 from zerver.lib.avatar import avatar_url
+from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import UserProfile, Service, Realm, \
     get_user_profile_by_id_in_realm, \
     CustomProfileField
@@ -103,10 +104,10 @@ def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_EVERYONE:
         return
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_ADMINS_ONLY:
-        raise JsonableError(_("Must be an organization administrator"))
+        raise OrganizationAdministratorRequired()
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS and \
             bot_type == UserProfile.DEFAULT_BOT:
-        raise JsonableError(_("Must be an organization administrator"))
+        raise OrganizationAdministratorRequired()
 
 def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
     if bot_type not in user_profile.allowed_bot_types:
