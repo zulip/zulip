@@ -213,8 +213,8 @@ def send_to_missed_message_address(address: str, message: message.Message) -> No
     else:
         raise AssertionError("Invalid recipient type!")
 
-    logger.info("Successfully processed email from %s to %s" % (
-        user_profile.email, recipient_str))
+    logger.info("Successfully processed email from user %s to %s" % (
+        user_profile.id, recipient_str))
 
 ## Sending the Zulip ##
 
