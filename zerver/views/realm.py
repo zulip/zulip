@@ -74,7 +74,7 @@ def update_realm(
         zoom_user_id: Optional[str]=REQ(validator=check_string, default=None),
         zoom_api_key: Optional[str]=REQ(validator=check_string, default=None),
         zoom_api_secret: Optional[str]=REQ(validator=check_string, default=None),
-        digest_weekday: Optional[int]=REQ(validator=check_int, default=None),
+        digest_weekday: Optional[int]=REQ(validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -90,7 +90,7 @@ def update_realm(
         return json_error(_("At least one authentication method must be enabled."))
     if (video_chat_provider is not None and
             video_chat_provider not in set(p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values())):
-        return json_error(_("Invalid video chat provider {}").format(video_chat_provider))
+        return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
     if video_chat_provider == Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']:
         try:
             validate_domain(google_hangouts_domain)
