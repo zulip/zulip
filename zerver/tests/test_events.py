@@ -496,7 +496,6 @@ class EventsRegisterTest(ZulipTestCase):
 
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
-                 user_profile_email = self.user_profile.email,
                  realm_id = self.user_profile.realm_id,
                  event_types = event_types,
                  client_type_name = "website",

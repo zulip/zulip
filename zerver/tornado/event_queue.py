@@ -63,7 +63,6 @@ HEARTBEAT_MIN_FREQ_SECS = 45
 class ClientDescriptor:
     def __init__(self,
                  user_profile_id: int,
-                 user_profile_email: str,
                  realm_id: int, event_queue: 'EventQueue',
                  event_types: Optional[Sequence[str]],
                  client_type_name: str,
@@ -77,7 +76,6 @@ class ClientDescriptor:
         # added to load_event_queues() to update the restored objects.
         # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
-        self.user_profile_email = user_profile_email
         self.realm_id = realm_id
         self.current_handler_id = None  # type: Optional[int]
         self.current_client_name = None  # type: Optional[str]
@@ -103,7 +101,6 @@ class ClientDescriptor:
         # migration code in from_dict or load_event_queues to account for
         # loading event queues that lack that key.
         return dict(user_profile_id=self.user_profile_id,
-                    user_profile_email=self.user_profile_email,
                     realm_id=self.realm_id,
                     event_queue=self.event_queue.to_dict(),
                     queue_timeout=self.queue_timeout,
@@ -120,10 +117,6 @@ class ClientDescriptor:
 
     @classmethod
     def from_dict(cls, d: MutableMapping[str, Any]) -> 'ClientDescriptor':
-        if 'user_profile_email' not in d:
-            # Temporary migration for the addition of the new user_profile_email field
-            from zerver.models import get_user_profile_by_id
-            d['user_profile_email'] = get_user_profile_by_id(d['user_profile_id']).email
         if 'client_type' in d:
             # Temporary migration for the rename of client_type to client_type_name
             d['client_type_name'] = d['client_type']
@@ -133,7 +126,6 @@ class ClientDescriptor:
 
         ret = cls(
             d['user_profile_id'],
-            d['user_profile_email'],
             d['realm_id'],
             EventQueue.from_dict(d['event_queue']),
             d['event_types'],
@@ -213,7 +205,7 @@ class ClientDescriptor:
             clear_handler_by_id(self.current_handler_id)
             if client_closed:
                 logging.info("Client disconnected for queue %s (%s via %s)" %
-                             (self.event_queue.id, self.user_profile_email,
+                             (self.event_queue.id, self.user_profile_id,
                               self.current_client_name))
         self.current_handler_id = None
         self.current_client_name = None
@@ -516,7 +508,6 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
     last_event_id = query["last_event_id"]  # type: int
     user_profile_id = query["user_profile_id"]  # type: int
     new_queue_data = query.get("new_queue_data")  # type: Optional[MutableMapping[str, Any]]
-    user_profile_email = query["user_profile_email"]  # type: str
     client_type_name = query["client_type_name"]  # type: str
     handler_id = query["handler_id"]  # type: int
 
@@ -568,7 +559,7 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
         # After this point, dont_block=False, the queue is empty, and we
         # have a pre-existing queue, so we wait for new events.
         if was_connected:
-            logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_email,
+            logging.info("Disconnected handler for queue %s (%s/%s)" % (queue_id, user_profile_id,
                                                                         client_type_name))
     except JsonableError as e:
         return dict(type="error", exception=e)

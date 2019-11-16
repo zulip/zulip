@@ -42,7 +42,7 @@ def get_events_internal(
     user_profile_id: int = REQ(validator=check_int),
 ) -> Union[HttpResponse, _RespondAsynchronously]:
     user_profile = get_user_profile_by_id(user_profile_id)
-    request._email = user_profile.email
+    request._email = user_profile.delivery_email
     process_client(request, user_profile, client_name="internal")
     return get_events_backend(request, user_profile, handler)
 
@@ -84,7 +84,6 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
 
     events_query = dict(
         user_profile_id = user_profile.id,
-        user_profile_email = user_profile.email,
         queue_id = queue_id,
         last_event_id = last_event_id,
         event_types = event_types,
@@ -99,7 +98,6 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
         events_query['new_queue_data'] = dict(
             user_profile_id = user_profile.id,
             realm_id = user_profile.realm_id,
-            user_profile_email = user_profile.email,
             event_types = event_types,
             client_type_name = valid_user_client.name,
             apply_markdown = apply_markdown,
