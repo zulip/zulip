@@ -212,17 +212,9 @@ function set_video_chat_provider_dropdown() {
     $("#id_realm_video_chat_provider").val(chat_provider_id);
     if (chat_provider_id === available_providers.google_hangouts.id) {
         $("#google_hangouts_domain").show();
-        $(".zoom_credentials").hide();
         $("#id_realm_google_hangouts_domain").val(page_params.realm_google_hangouts_domain);
-    } else if (chat_provider_id === available_providers.zoom.id) {
-        $("#google_hangouts_domain").hide();
-        $(".zoom_credentials").show();
-        $("#id_realm_zoom_user_id").val(page_params.realm_zoom_user_id);
-        $("#id_realm_zoom_api_key").val(page_params.realm_zoom_api_key);
-        $("#id_realm_zoom_api_secret").val(page_params.realm_zoom_api_secret);
     } else {
         $("#google_hangouts_domain").hide();
-        $(".zoom_credentials").hide();
     }
 }
 
@@ -845,13 +837,8 @@ exports.build_page = function () {
 
         if (video_chat_provider_id === available_providers.google_hangouts.id) {
             $("#google_hangouts_domain").show();
-            $(".zoom_credentials").hide();
-        } else if (video_chat_provider_id === available_providers.zoom.id) {
-            $("#google_hangouts_domain").hide();
-            $(".zoom_credentials").show();
         } else {
             $("#google_hangouts_domain").hide();
-            $(".zoom_credentials").hide();
         }
     });
 

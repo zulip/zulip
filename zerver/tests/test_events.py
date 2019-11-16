@@ -82,6 +82,7 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     do_set_realm_notifications_stream,
     do_set_realm_signup_notifications_stream,
+    do_set_zoom_token,
     do_unmute_topic,
     do_update_embedded_data,
     do_update_message,
@@ -1628,9 +1629,6 @@ class EventsRegisterTest(ZulipTestCase):
                 Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']
             ],
             google_hangouts_domain=["zulip.com", "zulip.org"],
-            zoom_api_secret=["abc", "xyz"],
-            zoom_api_key=["abc", "xyz"],
-            zoom_user_id=["example@example.com", "example@example.org"],
             default_code_block_language=['python', 'javascript'],
         )
 
@@ -1661,8 +1659,6 @@ class EventsRegisterTest(ZulipTestCase):
         do_set_realm_property(self.user_profile.realm, name, vals[0])
         for val in vals[1:]:
             state_change_expected = True
-            if name == "zoom_api_secret":
-                state_change_expected = False
             events = self.do_test(
                 lambda: do_set_realm_property(self.user_profile.realm, name, val),
                 state_change_expected=state_change_expected)
@@ -2940,6 +2936,25 @@ class EventsRegisterTest(ZulipTestCase):
         error = failed_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
+    def test_has_zoom_token(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('has_zoom_token')),
+            ('value', equals(True)),
+        ])
+        events = self.do_test(
+            lambda: do_set_zoom_token(self.user_profile, {'access_token': 'token'})
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        schema_checker = self.check_events_dict([
+            ('type', equals('has_zoom_token')),
+            ('value', equals(False)),
+        ])
+        events = self.do_test(lambda: do_set_zoom_token(self.user_profile, None))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
 class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots
     def test_realm_bots_non_admin(self) -> None:
@@ -3744,6 +3759,7 @@ class FetchQueriesTest(ZulipTestCase):
             update_global_notifications=0,
             update_message_flags=5,
             user_status=1,
+            video_calls=0,
         )
 
         wanted_event_types = {

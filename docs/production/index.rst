@@ -21,3 +21,4 @@ Zulip in Production
    email
    deployment
    email-gateway
+   zoom-configuration

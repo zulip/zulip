@@ -46,6 +46,7 @@ class ErrorCode(AbstractEnum):
     INVALID_MARKDOWN_INCLUDE_STATEMENT = ()
     REQUEST_CONFUSING_VAR = ()
     INVALID_API_KEY = ()
+    INVALID_ZOOM_TOKEN = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.

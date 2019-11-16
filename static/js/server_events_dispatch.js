@@ -38,6 +38,16 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
     }
 
+    case 'has_zoom_token':
+        page_params.has_zoom_token = event.value;
+        if (event.value) {
+            for (const callback of compose.zoom_token_callbacks.values()) {
+                callback();
+            }
+            compose.zoom_token_callbacks.clear();
+        }
+        break;
+
     case 'hotspots':
         hotspots.load_new(event.hotspots);
         page_params.hotspots = page_params.hotspots ?
@@ -121,9 +131,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             emails_restricted_to_domains: noop,
             video_chat_provider: compose.update_video_chat_button_display,
             waiting_period_threshold: noop,
-            zoom_user_id: noop,
-            zoom_api_key: noop,
-            zoom_api_secret: noop,
         };
         if (event.op === 'update' && Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;

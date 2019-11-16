@@ -25,8 +25,8 @@ By default, Zulip integrates with
 source video conferencing solution. Organization administrators can also
 change the organization's video chat provider.
 
-Note that both the Google Hangouts and Zoom integrations require paid
-accounts with their respective providers.
+Note that the Google Hangouts integration requires a paid Google G
+Suite account.
 
 ### Change your organization's video chat provider
 
@@ -48,13 +48,18 @@ accounts with their respective providers.
 
 1. Under **Other settings** set **Video chat provider** to **Zoom**.
 
-1. Enter your Zoom email address, API key, and API secret.
-
 1. Click **Save changes**.
 
-!!! warn ""
-    **Note**: Zoom support is experimental. In particular, Zulip currently
-    supports having only one active Zoom meeting at a time.
+Any user who creates a video call link using the instructions above
+will be prompted to link a Zoom account with their Zulip account.
+
+If you would like to unlink Zoom from your Zulip account:
+
+1. Log in to the [Zoom App Marketplace](https://marketplace.zoom.us/).
+
+1. Click **Manage** → **Installed Apps**.
+
+1. Click the **Uninstall** button next to the Zulip app.
 
 {tab|jitsi-on-premise}
 

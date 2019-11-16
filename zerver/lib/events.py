@@ -138,10 +138,6 @@ def fetch_initial_state_data(user_profile: UserProfile,
         for property_name in Realm.property_types:
             state['realm_' + property_name] = getattr(realm, property_name)
 
-        # Don't send the zoom API secret to clients.
-        if state.get('realm_zoom_api_secret'):
-            state['realm_zoom_api_secret'] = ''
-
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
         # fit into that framework.
@@ -324,6 +320,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('user_status'):
         state['user_status'] = get_user_info_dict(realm_id=realm.id)
+
+    if want('video_calls'):
+        state['has_zoom_token'] = user_profile.zoom_token is not None
 
     return state
 
@@ -811,6 +810,8 @@ def apply_event(state: Dict[str, Any],
             user_status.pop(user_id, None)
 
         state['user_status'] = user_status
+    elif event['type'] == 'has_zoom_token':
+        state['has_zoom_token'] = event['value']
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 

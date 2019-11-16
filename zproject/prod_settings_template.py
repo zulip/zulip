@@ -468,6 +468,16 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 
+########
+# Zoom integration.
+#
+# Zulip supports using Zoom as a video calling provider. To learn more about
+# configuring Zoom, see:
+# https://zulip.readthedocs.io/en/latest/production/zoom-configuration.html
+#
+#VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
+
+
 ################
 # LDAP integration.
 #

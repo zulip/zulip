@@ -255,7 +255,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Used for failed approach with dead Android app.
         '/fetch_google_client_id',
         # API for video calls we're planning to remove/replace.
-        '/calls/create',
+        '/calls/zoom/create',
 
         #### Documented endpoints not properly detected by tooling.
         # E.g. '/user_groups/<user_group_id>' in urls.py but fails the

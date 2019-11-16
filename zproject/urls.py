@@ -37,6 +37,7 @@ import zerver.views.digest
 import zerver.views.messages
 import zerver.views.realm_export
 import zerver.views.upload
+import zerver.views.video_calls
 
 from zerver.lib.rest import rest_dispatch
 
@@ -395,8 +396,8 @@ v1_api_and_json_patterns = [
         {'POST': ('zerver.views.report.report_unnarrow_times', {'intentionally_undocumented'})}),
 
     # Used to generate a Zoom video call URL
-    url(r'^calls/create$', rest_dispatch,
-        {'GET': 'zerver.views.video_calls.get_zoom_url'}),
+    url(r'^calls/zoom/create$', rest_dispatch,
+        {'POST': 'zerver.views.video_calls.make_zoom_video_call'}),
 
     # export/realm -> zerver.views.realm_export
     url(r'^export/realm$', rest_dispatch,
@@ -540,6 +541,11 @@ i18n_urls = [
     url(r'^join/(?P<confirmation_key>\S+)/$',
         zerver.views.registration.accounts_home_from_multiuse_invite,
         name='zerver.views.registration.accounts_home_from_multiuse_invite'),
+
+    # Used to generate a Zoom video call URL
+    url(r'^calls/zoom/register$', zerver.views.video_calls.register_zoom_user),
+    url(r'^calls/zoom/complete$', zerver.views.video_calls.complete_zoom_user),
+    url(r'^calls/zoom/deauthorize$', zerver.views.video_calls.deauthorize_zoom_user),
 
     # API and integrations documentation
     url(r'^integrations/doc-html/(?P<integration_name>[^/]*)$',
