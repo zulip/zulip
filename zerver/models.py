@@ -2154,7 +2154,7 @@ def get_user_by_id_in_realm_including_cross_realm(
 
     # Note: This doesn't validate whether the `realm` passed in is
     # None/invalid for the CROSS_REALM_BOT_EMAILS case.
-    if user_profile.email in settings.CROSS_REALM_BOT_EMAILS:
+    if user_profile.delivery_email in settings.CROSS_REALM_BOT_EMAILS:
         return user_profile
 
     raise UserProfile.DoesNotExist()
