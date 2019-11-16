@@ -171,7 +171,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         if self.did_close:
             user_email = 'unknown'
             if self.session.user_profile is not None:
-                user_email = self.session.user_profile.email
+                user_email = self.session.user_profile.delivery_email
             logger.info("Received message on already closed socket! transport=%s user=%s client_id=%s"
                         % (self.session.transport_name,
                            user_email,
@@ -186,7 +186,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                 # TODO: Fill in the correct client
                 write_log_line(log_data, path='/socket/auth', method='SOCKET',
                                remote_ip=self.session.conn_info.ip,
-                               email=self.session.user_profile.email,
+                               email=self.session.user_profile.delivery_email,
                                client_name='?')
             except JsonableError as e:
                 response = e.to_json()
@@ -235,7 +235,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                            error_content=self.close_info.err_msg)
         else:
             deregister_connection(self)
-            email = self.session.user_profile.email \
+            email = self.session.user_profile.delivery_email \
                 if self.session.user_profile is not None else 'unknown'
             write_log_line(log_data, path='/socket/close', method='SOCKET',
                            remote_ip=self.session.conn_info.ip, email=email,
@@ -267,7 +267,7 @@ def respond_send_message(data: Mapping[str, Any]) -> None:
         # TODO: Maybe fill in the status code correctly
         write_log_line(log_data, path='/socket/service_request', method='SOCKET',
                        remote_ip=connection.session.conn_info.ip,
-                       email=connection.session.user_profile.email, client_name='?')
+                       email=connection.session.user_profile.delivery_email, client_name='?')
 
 # We disable the eventsource and htmlfile transports because they cannot
 # securely send us the zulip.com cookie, which we use as part of our
