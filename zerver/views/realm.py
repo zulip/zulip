@@ -19,7 +19,7 @@ from zerver.lib.actions import (
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_string, check_dict, check_bool, check_int
+from zerver.lib.validator import check_string, check_dict, check_bool, check_int, check_int_in
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.domains import validate_domain
 from zerver.lib.video_calls import request_zoom_video_call_url
@@ -61,9 +61,12 @@ def update_realm(
         message_content_allowed_in_email_notifications:
         Optional[bool]=REQ(validator=check_bool, default=None),
         bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
-        create_stream_policy: Optional[int]=REQ(validator=check_int, default=None),
-        invite_to_stream_policy: Optional[int]=REQ(validator=check_int, default=None),
-        user_group_edit_policy: Optional[int]=REQ(validator=check_int, default=None),
+        create_stream_policy:
+        Optional[int]=REQ(validator=check_int_in(Realm.CREATE_STREAM_POLICY_TYPES), default=None),
+        invite_to_stream_policy:
+        Optional[int]=REQ(validator=check_int_in(Realm.INVITE_TO_STREAM_POLICY_TYPES), default=None),
+        user_group_edit_policy:
+        Optional[int]=REQ(validator=check_int_in(Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None),
         email_address_visibility: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
         video_chat_provider: Optional[int]=REQ(validator=check_int, default=None),
@@ -124,15 +127,6 @@ def update_realm(
     if email_address_visibility is not None and \
             email_address_visibility not in Realm.EMAIL_ADDRESS_VISIBILITY_TYPES:
         return json_error(_("Invalid %(field_name)s") % dict(field_name="email_address_visibility"))
-    if create_stream_policy is not None and \
-            create_stream_policy not in Realm.CREATE_STREAM_POLICY_TYPES:
-        return json_error(_("Invalid %(field_name)s") % dict(field_name="create_stream_policy"))
-    if invite_to_stream_policy is not None and \
-            invite_to_stream_policy not in Realm.INVITE_TO_STREAM_POLICY_TYPES:
-        return json_error(_("Invalid %(field_name)s") % dict(field_name="invite_to_stream_policy"))
-    if user_group_edit_policy is not None and \
-            user_group_edit_policy not in Realm.USER_GROUP_EDIT_POLICY_TYPES:
-        return json_error(_("Invalid %(field_name)s") % dict(field_name="user_group_edit_policy"))
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
