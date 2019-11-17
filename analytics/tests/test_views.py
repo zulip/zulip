@@ -515,10 +515,10 @@ class TestSupportEndpoint(ZulipTestCase):
             m.assert_called_once_with(lear_realm, self.example_user("iago"))
             self.assert_in_success_response(["Lear &amp; Co. deactivated"], result)
 
-        with mock.patch("analytics.views.do_reactivate_realm") as m:
+        with mock.patch("analytics.views.do_send_realm_reactivation_email") as m:
             result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "status": "active"})
             m.assert_called_once_with(lear_realm)
-            self.assert_in_success_response(["Lear &amp; Co. reactivated."], result)
+            self.assert_in_success_response(["Realm reactivation email sent to admins of Lear"], result)
 
     def test_scrub_realm(self) -> None:
         lear_realm = get_realm("lear")
