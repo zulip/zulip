@@ -212,6 +212,11 @@ class EmailAuthBackend(ZulipAuthMixin):
             if return_data is not None:
                 return_data['email_auth_disabled'] = True
             return None
+        if password == "":
+            # Never allow an empty password.  This is defensive code;
+            # a user having password "" should only be possible
+            # through a bug somewhere else.
+            return None
 
         user_profile = common_get_active_user(username, realm, return_data=return_data)
         if user_profile is None:
