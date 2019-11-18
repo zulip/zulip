@@ -13,7 +13,6 @@ from zerver.openapi.curl_param_value_generators import REGISTERED_GENERATOR_FUNC
 
 exclude_list = [
     # Example files do not exist
-    'upload-custom-emoji.md',
     'upload-file.md',
 ]
 
