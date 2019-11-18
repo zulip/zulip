@@ -12,7 +12,6 @@ from zerver.openapi.curl_param_value_generators import REGISTERED_GENERATOR_FUNC
 
 exclude_list = [
     # Endpoint can be called only by administrators.
-    'create-user.md',
     'add-linkifiers.md',
     'remove-linkifiers.md',
     # Endpoint does not accept bot requests
