@@ -243,21 +243,28 @@ class PasswordResetTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
         # Reset your password
-        result = self.client_post(password_reset_url,
-                                  {'new_password1': 'new_password',
-                                   'new_password2': 'new_password'})
+        with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
+            # Verify weak passwords don't work.
+            result = self.client_post(password_reset_url,
+                                      {'new_password1': 'easy',
+                                       'new_password2': 'easy'})
+            self.assert_in_response("The password is too weak.",
+                                    result)
 
-        # password reset succeeded
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith("/password/done/"))
+            result = self.client_post(password_reset_url,
+                                      {'new_password1': 'f657gdGGk9',
+                                       'new_password2': 'f657gdGGk9'})
+            # password reset succeeded
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result["Location"].endswith("/password/done/"))
 
-        # log back in with new password
-        self.login(email, password='new_password')
-        user_profile = self.example_user('hamlet')
-        self.assert_logged_in_user_id(user_profile.id)
+            # log back in with new password
+            self.login(email, password='f657gdGGk9')
+            user_profile = self.example_user('hamlet')
+            self.assert_logged_in_user_id(user_profile.id)
 
-        # make sure old password no longer works
-        self.login(email, password=old_password, fails=True)
+            # make sure old password no longer works
+            self.login(email, password=old_password, fails=True)
 
     def test_password_reset_for_non_existent_user(self) -> None:
         email = 'nonexisting@mars.com'
@@ -2237,6 +2244,43 @@ class UserSignUpTest(InviteUserBase):
              'full_name': "New Guy",
              'from_confirmation': '1'})
         self.assert_in_success_response(["We just need you to do one last thing."], result)
+
+    def test_signup_with_weak_password(self) -> None:
+        """
+        Check if signing up without a full name redirects to a registration
+        form.
+        """
+        email = "newguy@zulip.com"
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        with self.settings(PASSWORD_MIN_LENGTH=6, PASSWORD_MIN_GUESSES=1000):
+            result = self.client_post(
+                '/accounts/register/',
+                {'password': 'easy',
+                 'key': find_key_by_email(email),
+                 'terms': True,
+                 'full_name': "New Guy",
+                 'from_confirmation': '1'})
+            self.assert_in_success_response(["We just need you to do one last thing."], result)
+
+            result = self.submit_reg_form_for_user(email,
+                                                   'easy',
+                                                   full_name="New Guy")
+            self.assert_in_success_response(["The password is too weak."], result)
+            with self.assertRaises(UserProfile.DoesNotExist):
+                # Account wasn't created.
+                get_user(email, get_realm("zulip"))
 
     def test_signup_with_default_stream_group(self) -> None:
         # Check if user is subscribed to the streams of default

@@ -603,6 +603,11 @@ class AdminCreateUserTest(ZulipTestCase):
             full_name='Romeo Montague',
             short_name='Romeo',
         )
+        # Check can't use a bad password with zxcvbn enabled
+        with self.settings(PASSWORD_MIN_LENGTH=6, PASSWORD_MIN_GUESSES=1000):
+            result = self.client_post("/json/users", valid_params)
+            self.assert_json_error(result, "The password is too weak.")
+
         result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
 

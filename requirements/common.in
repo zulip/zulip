@@ -186,3 +186,6 @@ python3-saml
 
 # Use SameSite cookies in legacy Django (remove with Django 2.1)
 django-cookies-samesite
+
+# For server-side enforcement of password strength
+zxcvbn

@@ -24,7 +24,7 @@ from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, name_changes_disabled, avatar_changes_disabled
 from confirmation.models import get_object_from_key, render_confirmation_key_error, \
     ConfirmationKeyException, Confirmation
-from zproject.backends import email_belongs_to_ldap
+from zproject.backends import email_belongs_to_ldap, check_password_strength
 
 AVATAR_CHANGES_DISABLED_ERROR = _("Avatar changes are disabled in this organization.")
 
@@ -71,6 +71,8 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         if not authenticate(username=user_profile.delivery_email, password=old_password,
                             realm=user_profile.realm, return_data=return_data):
             return json_error(_("Wrong password!"))
+        if not check_password_strength(new_password):
+            return json_error(_("New password is too weak!"))
         do_change_password(user_profile, new_password)
         # In Django 1.10, password changes invalidates sessions, see
         # https://docs.djangoproject.com/en/1.10/topics/auth/default/#session-invalidation-on-password-change

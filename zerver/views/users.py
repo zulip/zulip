@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.conf import settings
 
 from zerver.decorator import require_realm_admin, require_member_or_admin
-from zerver.forms import CreateUserForm
+from zerver.forms import CreateUserForm, PASSWORD_TOO_WEAK_ERROR
 from zerver.lib.events import get_raw_user_data
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
@@ -38,6 +38,7 @@ from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm,
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
     EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm, Realm, \
     InvalidFakeEmailDomain
+from zproject.backends import check_password_strength
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
@@ -449,6 +450,9 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Email '%s' already in use") % (email,))
     except UserProfile.DoesNotExist:
         pass
+
+    if not check_password_strength(password):
+        return json_error(PASSWORD_TOO_WEAK_ERROR)
 
     do_create_user(email, password, realm, full_name, short_name)
     return json_success()
