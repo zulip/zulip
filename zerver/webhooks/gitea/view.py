@@ -6,48 +6,14 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header, UnexpectedWebhookEventType, \
-    get_http_headers_from_filename
-from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
-    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_create_branch_event_message, \
-    get_pull_request_event_message, get_push_commits_event_message, \
-    get_issue_event_message
+from zerver.lib.webhooks.common import get_http_headers_from_filename
+from zerver.lib.webhooks.git import get_pull_request_event_message
 from zerver.models import UserProfile
+# Gitea is a fork of Gogs, and so the webhook implementation is nearly the same.
+from zerver.webhooks.gogs.view import gogs_webhook_main
+
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITEA_EVENT")
-
-def get_issue_url(repo_url: str, issue_nr: int) -> str:
-    return "{}/issues/{}".format(repo_url, issue_nr)
-
-def format_push_event(payload: Dict[str, Any]) -> str:
-
-    for commit in payload['commits']:
-        commit['sha'] = commit['id']
-        commit['name'] = (commit['author']['username'] or
-                          commit['author']['name'].split()[0])
-
-    data = {
-        'user_name': payload['sender']['username'],
-        'compare_url': payload['compare_url'],
-        'branch_name': payload['ref'].replace('refs/heads/', ''),
-        'commits_data': payload['commits']
-    }
-
-    return get_push_commits_event_message(**data)
-
-def format_new_branch_event(payload: Dict[str, Any]) -> str:
-
-    branch_name = payload['ref']
-    url = '{}/src/{}'.format(payload['repository']['html_url'], branch_name)
-
-    data = {
-        'user_name': payload['sender']['username'],
-        'url': url,
-        'branch_name': branch_name
-    }
-    return get_create_branch_event_message(**data)
 
 def format_pull_request_event(payload: Dict[str, Any],
                               include_title: Optional[bool]=False) -> str:
@@ -69,99 +35,11 @@ def format_pull_request_event(payload: Dict[str, Any],
 
     return get_pull_request_event_message(**data)
 
-def format_issues_event(payload: Dict[str, Any], include_title: Optional[bool]=False) -> str:
-    issue_nr = payload['issue']['number']
-    assignee = payload['issue']['assignee']
-    return get_issue_event_message(
-        payload['sender']['login'],
-        payload['action'],
-        get_issue_url(payload['repository']['html_url'], issue_nr),
-        issue_nr,
-        payload['issue']['body'],
-        assignee=assignee['login'] if assignee else None,
-        title=payload['issue']['title'] if include_title else None
-    )
-
-def format_issue_comment_event(payload: Dict[str, Any], include_title: Optional[bool]=False) -> str:
-    action = payload['action']
-    comment = payload['comment']
-    issue = payload['issue']
-    issue_nr = issue['number']
-
-    if action == 'created':
-        action = '[commented]'
-    else:
-        action = '{} a [comment]'.format(action)
-    action += '({}) on'.format(comment['html_url'])
-
-    return get_issue_event_message(
-        payload['sender']['login'],
-        action,
-        get_issue_url(payload['repository']['html_url'], issue_nr),
-        issue_nr,
-        comment['body'],
-        title=issue['title'] if include_title else None
-    )
-
 @api_key_only_webhook_view('Gitea')
 @has_request_variables
 def api_gitea_webhook(request: HttpRequest, user_profile: UserProfile,
                       payload: Dict[str, Any]=REQ(argument_type='body'),
                       branches: Optional[str]=REQ(default=None),
                       user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
-
-    repo = payload['repository']['name']
-    event = validate_extract_webhook_http_header(request, 'X_GITEA_EVENT', 'Gitea')
-    if event == 'push':
-        branch = payload['ref'].replace('refs/heads/', '')
-        if branches is not None and branch not in branches.split(','):
-            return json_success()
-        body = format_push_event(payload)
-        topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
-            repo=repo,
-            branch=branch
-        )
-    elif event == 'create':
-        body = format_new_branch_event(payload)
-        topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
-            repo=repo,
-            branch=payload['ref']
-        )
-    elif event == 'pull_request':
-        body = format_pull_request_event(
-            payload,
-            include_title=user_specified_topic is not None
-        )
-        topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=repo,
-            type='PR',
-            id=payload['pull_request']['id'],
-            title=payload['pull_request']['title']
-        )
-    elif event == 'issues':
-        body = format_issues_event(
-            payload,
-            include_title=user_specified_topic is not None
-        )
-        topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=repo,
-            type='Issue',
-            id=payload['issue']['number'],
-            title=payload['issue']['title']
-        )
-    elif event == 'issue_comment':
-        body = format_issue_comment_event(
-            payload,
-            include_title=user_specified_topic is not None
-        )
-        topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=repo,
-            type='Issue',
-            id=payload['issue']['number'],
-            title=payload['issue']['title']
-        )
-    else:
-        raise UnexpectedWebhookEventType('Gitea', event)
-
-    check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return gogs_webhook_main('Gitea', 'X_GITEA_EVENT', format_pull_request_event,
+                             request, user_profile, payload, branches, user_specified_topic)

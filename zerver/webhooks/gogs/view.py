@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -107,9 +107,17 @@ def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
                      payload: Dict[str, Any]=REQ(argument_type='body'),
                      branches: Optional[str]=REQ(default=None),
                      user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
+    return gogs_webhook_main("Gogs", "X_GOGS_EVENT", format_pull_request_event,
+                             request, user_profile, payload, branches, user_specified_topic)
 
+def gogs_webhook_main(integration_name: str, http_header_name: str,
+                      format_pull_request_event: Callable[..., Any],
+                      request: HttpRequest, user_profile: UserProfile,
+                      payload: Dict[str, Any],
+                      branches: Optional[str],
+                      user_specified_topic: Optional[str]) -> HttpResponse:
     repo = payload['repository']['name']
-    event = validate_extract_webhook_http_header(request, 'X_GOGS_EVENT', 'Gogs')
+    event = validate_extract_webhook_http_header(request, http_header_name, integration_name)
     if event == 'push':
         branch = payload['ref'].replace('refs/heads/', '')
         if branches is not None and branch not in branches.split(','):

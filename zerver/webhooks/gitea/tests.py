@@ -95,7 +95,7 @@ class GiteaHookTests(WebhookTestCase):
 
         self.send_and_test_stream_message('issue_comment__edited', expected_topic, expected_message)
 
-    @patch('zerver.webhooks.gitea.view.check_send_webhook_message')
+    @patch('zerver.webhooks.gogs.view.check_send_webhook_message')
     def test_push_filtered_by_branches_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('push__5_commits')
