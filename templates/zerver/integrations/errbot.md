@@ -33,7 +33,7 @@ Run your favorite chatbot in Zulip!
         }
         BOT_ADMINS = ('<your@email.address',)
         CHATROOM_PRESENCE = ()
-        BOT_PREFIX = '<@**err-bot@your.zulip.server**>'  # Needed for errbot to respond to @-mentions
+        BOT_PREFIX = '<@**err-bot**>'  # Providing errbot's full name in Zulip lets it respond to @-mentions.
 
     Sections you need to edit are marked with `<>`.
 
