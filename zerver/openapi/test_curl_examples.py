@@ -12,8 +12,6 @@ from zerver.models import get_realm
 from zerver.openapi.curl_param_value_generators import REGISTERED_GENERATOR_FUNCTIONS, CALLED_GENERATOR_FUNCTIONS
 
 exclude_list = [
-    # Endpoint can be called only by administrators.
-    'remove-linkifiers.md',
     # Endpoint does not accept bot requests
     'get-user-groups.md',
     'update-notification-settings.md',

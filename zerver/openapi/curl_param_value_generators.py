@@ -7,7 +7,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import Client, UserPresence, UserGroup, get_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.events import do_events_register
-from zerver.lib.actions import update_user_presence
+from zerver.lib.actions import update_user_presence, do_add_realm_filter
 
 GENERATOR_FUNCTIONS = dict()  # type: Dict[str, Callable[..., Dict[Any, Any]]]
 REGISTERED_GENERATOR_FUNCTIONS = set()  # type: Set[str]
@@ -167,4 +167,11 @@ def get_temp_user_group_id() -> Dict[str, str]:
     user_group, _ = UserGroup.objects.get_or_create(name="temp", realm=get_realm("zulip"))
     return {
         "group_id": user_group.id,
+    }
+
+@openapi_param_value_generator(["/realm/filters/{filter_id}:delete"])
+def remove_realm_filters() -> Dict[str, Any]:
+    filter_id = do_add_realm_filter(get_realm("zulip"), "#(?P<id>[0-9]{2,8})", "https://github.com/zulip/zulip/pull/%(id)s")
+    return {
+        "filter_id": filter_id
     }
