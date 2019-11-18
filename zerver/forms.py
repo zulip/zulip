@@ -26,7 +26,7 @@ from zerver.models import Realm, get_user_by_delivery_email, UserProfile, get_re
     email_to_domain, \
     email_allowed_for_realm, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError
-from zproject.backends import email_auth_enabled, email_belongs_to_ldap
+from zproject.backends import email_auth_enabled, email_belongs_to_ldap, check_password_strength
 
 import logging
 import re
@@ -43,6 +43,7 @@ MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
 WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
                         "Please contact %s with any questions!" % (FromAddress.SUPPORT,)
+PASSWORD_TOO_WEAK_ERROR = u"The password is too weak."
 
 def email_is_not_mit_mailing_list(email: str) -> None:
     """Prevent MIT mailing lists from signing up for Zulip"""
@@ -106,6 +107,15 @@ class RegistrationForm(forms.Form):
             return check_full_name(self.cleaned_data['full_name'])
         except JsonableError as e:
             raise ValidationError(e.msg)
+
+    def clean_password(self) -> str:
+        password = self.cleaned_data['password']
+        if self.fields['password'].required and not check_password_strength(password):
+            # The frontend code tries to stop the user from submitting the form with a weak password,
+            # but if the user bypasses that protection, this error code path will run.
+            raise ValidationError(mark_safe(PASSWORD_TOO_WEAK_ERROR))
+
+        return password
 
     def clean_realm_subdomain(self) -> str:
         if not self.realm_creation:
@@ -178,6 +188,15 @@ class RealmCreationForm(forms.Form):
                                          email_is_not_disposable])
 
 class LoggingSetPasswordForm(SetPasswordForm):
+    def clean_new_password1(self) -> str:
+        new_password = self.cleaned_data['new_password1']
+        if not check_password_strength(new_password):
+            # The frontend code tries to stop the user from submitting the form with a weak password,
+            # but if the user bypasses that protection, this error code path will run.
+            raise ValidationError(PASSWORD_TOO_WEAK_ERROR)
+
+        return new_password
+
     def save(self, commit: bool=True) -> UserProfile:
         do_change_password(self.user, self.cleaned_data['new_password1'],
                            commit=commit)

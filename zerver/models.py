@@ -993,6 +993,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         else:
             return -1
 
+    def set_password(self, password: Optional[str]) -> None:
+        if password is None:
+            self.set_unusable_password()
+            return
+
+        from zproject.backends import check_password_strength
+        if not check_password_strength(password):
+            raise PasswordTooWeakError
+
+        super().set_password(password)
+
+class PasswordTooWeakError(Exception):
+    pass
+
 class UserGroup(models.Model):
     name = models.CharField(max_length=100)
     members = models.ManyToManyField(UserProfile, through='UserGroupMembership')

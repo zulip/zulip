@@ -10,7 +10,7 @@ from django.conf import settings
 
 from zerver.decorator import require_realm_admin, \
     require_non_guest_human_user
-from zerver.forms import CreateUserForm
+from zerver.forms import CreateUserForm, PASSWORD_TOO_WEAK_ERROR
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
@@ -37,6 +37,7 @@ from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm,
     get_user_by_delivery_email, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
     EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm
+from zproject.backends import check_password_strength
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
@@ -480,6 +481,9 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Email '%s' already in use") % (email,))
     except UserProfile.DoesNotExist:
         pass
+
+    if not check_password_strength(password):
+        return json_error(PASSWORD_TOO_WEAK_ERROR)
 
     do_create_user(email, password, realm, full_name, short_name)
     return json_success()
