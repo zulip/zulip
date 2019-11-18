@@ -185,7 +185,7 @@ def remove_realm_filters() -> Dict[str, Any]:
         "filter_id": filter_id
     }
 
-@openapi_param_value_generator(["/realm/emoji/{emoji_name}:post"])
+@openapi_param_value_generator(["/realm/emoji/{emoji_name}:post", "/user_uploads:post"])
 def upload_custom_emoji() -> Dict[str, Any]:
     return {
         "filename": "zerver/tests/images/animated_img.gif",

@@ -3,18 +3,12 @@ import json
 import shlex
 import subprocess
 import markdown
-import os
 import html
 
 from zulip import Client
 from zerver.lib.bugdown import api_code_examples
 from zerver.models import get_realm
 from zerver.openapi.curl_param_value_generators import REGISTERED_GENERATOR_FUNCTIONS, CALLED_GENERATOR_FUNCTIONS
-
-exclude_list = [
-    # Example files do not exist
-    'upload-file.md',
-]
 
 def test_generated_curl_examples_for_success(client: Client) -> None:
     authentication_line = "{}:{}".format(client.email, client.api_key)
@@ -24,9 +18,6 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
         api_url=realm.uri + "/api")])
 
     for file_name in glob.glob("templates/zerver/api/*.md"):
-        if os.path.basename(file_name) in exclude_list:
-            print("Skipping", file_name)
-            continue
         documentation_lines = open(file_name, "r").readlines()
         for line in documentation_lines:
             # A typical example from the markdown source looks like this:
