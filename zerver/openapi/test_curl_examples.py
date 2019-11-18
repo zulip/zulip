@@ -13,7 +13,6 @@ from zerver.openapi.curl_param_value_generators import REGISTERED_GENERATOR_FUNC
 
 exclude_list = [
     # Endpoint does not accept bot requests
-    'get-user-groups.md',
     'update-notification-settings.md',
     # Example files do not exist
     'upload-custom-emoji.md',
