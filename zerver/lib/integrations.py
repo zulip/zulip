@@ -273,6 +273,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('flock', ['customer-support'], display_name='Flock'),
     WebhookIntegration('freshdesk', ['customer-support']),
     WebhookIntegration('front', ['customer-support'], display_name='Front'),
+    WebhookIntegration('gitea', ['version-control'], stream_name='commits'),
     WebhookIntegration(
         'github',
         ['version-control'],
