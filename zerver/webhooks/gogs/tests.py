@@ -82,6 +82,61 @@ class GogsHookTests(WebhookTestCase):
         expected_message = u"""john merged [PR #2](http://localhost:3000/john/try-git/pulls/2) from `feature` to `master`."""
         self.send_and_test_stream_message('pull_request__merged', expected_topic, expected_message)
 
+    def test_pull_request_reopened(self) -> None:
+        expected_topic = u"test / PR #1349 reopened"
+        expected_message = u"""kostekIV reopened [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
+        self.send_and_test_stream_message('pull_request__reopened', expected_topic, expected_message)
+
+    def test_pull_request_edited(self) -> None:
+        expected_topic = u"test / PR #1349 Test"
+        expected_message = u"""kostekIV edited [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
+        self.send_and_test_stream_message('pull_request__edited', expected_topic, expected_message)
+
+    def test_pull_request_assigned(self) -> None:
+        expected_topic = u"test / PR #1349 Test"
+        expected_message = u"""kostekIV assigned [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
+        self.send_and_test_stream_message('pull_request__assigned', expected_topic, expected_message)
+
+    def test_pull_request_synchronized(self) -> None:
+        expected_topic = u"test / PR #1349 Test"
+        expected_message = u"""kostekIV synchronized [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
+        self.send_and_test_stream_message('pull_request__synchronized', expected_topic, expected_message)
+
+    def test_issues_opened(self) -> None:
+        expected_topic = u"test / Issue #3 New test issue"
+        expected_message = u"""kostekIV opened [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest\n~~~"""
+        self.send_and_test_stream_message('issues__opened', expected_topic, expected_message)
+
+    def test_issues_reopened(self) -> None:
+        expected_topic = u"test / Issue #3 New test issue"
+        expected_message = u"""kostekIV reopened [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest\n~~~"""
+        self.send_and_test_stream_message('issues__reopened', expected_topic, expected_message)
+
+    def test_issues_edited(self) -> None:
+        expected_topic = u"test / Issue #3 New test issue"
+        expected_message = u"""kostekIV edited [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest edit\n~~~"""
+        self.send_and_test_stream_message('issues__edited', expected_topic, expected_message)
+
+    def test_issues_assignee(self) -> None:
+        expected_topic = u"test / Issue #3 New test issue"
+        expected_message = u"""kostekIV assigned [Issue #3](https://try.gogs.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest\n~~~"""
+        self.send_and_test_stream_message('issues__assigned', expected_topic, expected_message)
+
+    def test_issues_closed(self) -> None:
+        expected_topic = u"test / Issue #3 New test issue"
+        expected_message = u"""kostekIV closed [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nClosed #3\n~~~"""
+        self.send_and_test_stream_message('issues__closed', expected_topic, expected_message)
+
+    def test_issue_comment_new(self) -> None:
+        expected_topic = u"test / Issue #3 New test issue"
+        expected_message = u"""kostekIV [commented](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3635) on [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest comment\n~~~"""
+        self.send_and_test_stream_message('issue_comment__new', expected_topic, expected_message)
+
+    def test_issue_comment_edited(self) -> None:
+        expected_topic = u"test / Issue #3 New test issue"
+        expected_message = u"""kostekIV edited a [comment](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3634) on [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nedit comment\n~~~"""
+        self.send_and_test_stream_message('issue_comment__edited', expected_topic, expected_message)
+
     @patch('zerver.webhooks.gogs.view.check_send_webhook_message')
     def test_push_filtered_by_branches_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
