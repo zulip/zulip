@@ -4,6 +4,7 @@ import shlex
 import subprocess
 import markdown
 import os
+import html
 
 from zulip import Client
 from zerver.lib.bugdown import api_code_examples
@@ -44,7 +45,8 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             # markdown rendering pipeline to compute the user-facing
             # example, and then run that to test it.
             curl_command_html = md_engine.convert(line.strip())
-            curl_command_text = curl_command_html[len("<p><code>curl\n"):-len("</code></p>")]
+            unescaped_html = html.unescape(curl_command_html)
+            curl_command_text = unescaped_html[len("<p><code>curl\n"):-len("</code></p>")]
 
             curl_command_text = curl_command_text.replace(
                 "BOT_EMAIL_ADDRESS:BOT_API_KEY", authentication_line)
