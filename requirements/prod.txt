@@ -575,6 +575,8 @@ https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca
     --hash=sha256:270cebf4554a3a2fb1c95190168c952ef97081541ed2be0a83f00fb48e29928a
 https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots \
     --hash=sha256:270cebf4554a3a2fb1c95190168c952ef97081541ed2be0a83f00fb48e29928a
+zxcvbn==4.4.28 \
+    --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1
 
 # The following packages are considered to be unsafe in a requirements file:
 pip==19.3.1 \

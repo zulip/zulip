@@ -77,6 +77,27 @@ class ChangeSettingsTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         self.assert_logged_in_user_id(user_profile.id)
 
+    def test_password_change_check_strength(self) -> None:
+        self.login(self.example_email("hamlet"))
+        with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
+            json_result = self.client_patch(
+                "/json/settings",
+                dict(
+                    full_name='Foo Bar',
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password='easy',
+                ))
+            self.assert_json_error(json_result, "New password is too weak!")
+
+            json_result = self.client_patch(
+                "/json/settings",
+                dict(
+                    full_name='Foo Bar',
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password='f657gdGGk9',
+                ))
+            self.assert_json_success(json_result)
+
     def test_illegal_name_changes(self) -> None:
         user = self.example_user('hamlet')
         email = user.email

@@ -18,6 +18,7 @@ import magic
 import ujson
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from typing_extensions import TypedDict
+from zxcvbn import zxcvbn
 
 from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, \
     _LDAPUser, ldap_error
@@ -192,6 +193,24 @@ class ZulipDummyBackend(ZulipAuthMixin):
         if use_dummy_backend:
             return common_get_active_user(username, realm, return_data)
         return None
+
+def check_password_strength(password: str) -> bool:
+    """
+    Returns True if the password is strong enough,
+    False otherwise.
+    """
+    if len(password) < settings.PASSWORD_MIN_LENGTH:
+        return False
+
+    if password == '':
+        # zxcvbn throws an exception when passed the empty string, so
+        # we need a special case for the empty string password here.
+        return False
+
+    if int(zxcvbn(password)['guesses']) < settings.PASSWORD_MIN_GUESSES:
+        return False
+
+    return True
 
 class EmailAuthBackend(ZulipAuthMixin):
     """

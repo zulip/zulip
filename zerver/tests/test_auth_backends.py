@@ -45,7 +45,7 @@ from zerver.lib.test_classes import (
 from zerver.models import \
     get_realm, email_to_username, CustomProfileField, CustomProfileFieldValue, \
     UserProfile, PreregistrationUser, Realm, RealmDomain, get_user, MultiuseInvite, \
-    clear_supported_auth_backends_cache
+    clear_supported_auth_backends_cache, PasswordTooWeakError
 from zerver.signals import JUST_CREATED_THRESHOLD
 
 from confirmation.models import Confirmation, create_confirmation_link
@@ -58,7 +58,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionNoMatchingLDAPUser, ZulipLDAPExceptionOutsideDomain, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
     PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
-    get_social_backend_dicts, AzureADAuthBackend
+    get_social_backend_dicts, AzureADAuthBackend, check_password_strength
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
@@ -226,7 +226,12 @@ class AuthBackendTest(ZulipTestCase):
 
         # Now do the same test with the empty string as the password.
         password = ""
-        user_profile.set_password(password)
+        with self.assertRaises(PasswordTooWeakError):
+            # UserProfile.set_password protects against setting an empty password.
+            user_profile.set_password(password)
+        # We do want to force an empty password for this test, so we bypass the protection
+        # by using Django's version of this method.
+        super(UserProfile, user_profile).set_password(password)
         user_profile.save()
         self.assertIsNone(EmailAuthBackend().authenticate(username=self.example_email('hamlet'),
                                                           password=password,
@@ -474,6 +479,20 @@ class AuthBackendTest(ZulipTestCase):
             backend.get_verified_emails = orig_get_verified_emails
             httpretty.disable()
             httpretty.reset()
+
+class CheckPasswordStrengthTest(ZulipTestCase):
+    def test_check_password_strength(self) -> None:
+        with self.settings(PASSWORD_MIN_LENGTH=0, PASSWORD_MIN_GUESSES=0):
+            # Never allow empty password.
+            self.assertFalse(check_password_strength(''))
+
+        with self.settings(PASSWORD_MIN_LENGTH=6, PASSWORD_MIN_GUESSES=1000):
+            self.assertFalse(check_password_strength(''))
+            self.assertFalse(check_password_strength('short'))
+            # Long enough, but too easy:
+            self.assertFalse(check_password_strength('longer'))
+            # Good password:
+            self.assertTrue(check_password_strength('f657gdGGk9'))
 
 class SocialAuthBase(ZulipTestCase):
     """This is a base class for testing social-auth backends. These
@@ -831,6 +850,8 @@ class SocialAuthBase(ZulipTestCase):
         user_profile = get_user(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
         self.assertEqual(user_profile.full_name, expected_final_name)
+
+        self.assertFalse(user_profile.has_usable_password())
 
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration(self) -> None:
