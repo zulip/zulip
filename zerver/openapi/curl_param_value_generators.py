@@ -150,6 +150,12 @@ def get_user_presence() -> Dict[None, None]:
     update_user_presence(iago, client, timezone_now(), UserPresence.ACTIVE, False)
     return {}
 
+@openapi_param_value_generator(["/users:post"])
+def create_user() -> Dict[str, str]:
+    return {
+        "email": helpers.nonreg_email("test")
+    }
+
 @openapi_param_value_generator(["/user_groups/create:post"])
 def create_user_group_data() -> Dict[str, Any]:
     return {
