@@ -1,4 +1,4 @@
-from typing import Dict, Any, Callable, Set, List
+from typing import Dict, Any, Callable, Set, List, Optional, Tuple
 
 from functools import wraps
 
@@ -36,16 +36,25 @@ def openapi_param_value_generator(endpoints: List[str]) -> Callable[[Callable[..
         return _record_calls_wrapper
     return wrapper
 
-def patch_openapi_params(openapi_entry: str, openapi_params: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    if openapi_entry not in GENERATOR_FUNCTIONS:
-        return openapi_params
-    func = GENERATOR_FUNCTIONS[openapi_entry]
-    realm_param_values = func()  # type: Dict[str, Any]
-    for param in openapi_params:
+def patch_openapi_example_values(entry: str, params: List[Dict[str, Any]],
+                                 request_body: Optional[Dict[str, Any]]=None) \
+        -> Tuple[List[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    if entry not in GENERATOR_FUNCTIONS:
+        return params, request_body
+    func = GENERATOR_FUNCTIONS[entry]
+    realm_example_values = func()  # type: Dict[str, Any]
+
+    for param in params:
         param_name = param["name"]
-        if param_name in realm_param_values:
-            param["example"] = realm_param_values[param_name]
-    return openapi_params
+        if param_name in realm_example_values:
+            param["example"] = realm_example_values[param_name]
+
+    if request_body is not None:
+        properties = request_body["content"]["multipart/form-data"]["schema"]["properties"]
+        for key, property in properties.items():
+            if key in realm_example_values:
+                property["example"] = realm_example_values[key]
+    return params, request_body
 
 @openapi_param_value_generator(["/messages/{message_id}:get", "/messages/{message_id}/history:get",
                                 "/messages/{message_id}:patch", "/messages/{message_id}:delete"])

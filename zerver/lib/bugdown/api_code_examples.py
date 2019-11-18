@@ -160,10 +160,12 @@ def generate_curl_example(endpoint: str, method: str,
     lines = ["```curl"]
     openapi_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
     openapi_params = openapi_entry.get("parameters", [])
+    openapi_request_body = openapi_entry.get("requestBody", None)
 
     if settings.RUNNING_OPENAPI_CURL_TEST:  # nocoverage
-        from zerver.openapi.curl_param_value_generators import patch_openapi_params
-        openapi_params = patch_openapi_params(endpoint + ":" + method.lower(), openapi_params)
+        from zerver.openapi.curl_param_value_generators import patch_openapi_example_values
+        openapi_params, openapi_request_body = patch_openapi_example_values(endpoint + ":" + method.lower(),
+                                                                            openapi_params, openapi_request_body)
 
     format_dict = {}
     for param in openapi_params:
