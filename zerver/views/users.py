@@ -328,7 +328,7 @@ def add_bot_backend(
     if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT) and service_name:
         check_valid_bot_config(bot_type, service_name, config_data)
 
-    bot_profile = do_create_user(email=email, password='',
+    bot_profile = do_create_user(email=email, password=None,
                                  realm=user_profile.realm, full_name=full_name,
                                  short_name=short_name,
                                  bot_type=bot_type,
