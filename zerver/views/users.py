@@ -323,7 +323,7 @@ def add_bot_backend(
     if bot_type == UserProfile.EMBEDDED_BOT:
         check_valid_bot_config(service_name, config_data)
 
-    bot_profile = do_create_user(email=email, password='',
+    bot_profile = do_create_user(email=email, password=None,
                                  realm=user_profile.realm, full_name=full_name,
                                  short_name=short_name,
                                  bot_type=bot_type,

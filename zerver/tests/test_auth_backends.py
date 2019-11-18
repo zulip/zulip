@@ -192,6 +192,26 @@ class AuthBackendTest(ZulipTestCase):
                                             realm=None,
                                             return_data=dict()))
 
+    def test_email_auth_backend_empty_password(self) -> None:
+        user_profile = self.example_user('hamlet')
+        password = "testpassword"
+        user_profile.set_password(password)
+        user_profile.save()
+
+        # First, verify authentication works with the a nonempty
+        # password so we know we've set up the test correctly.
+        self.assertIsNotNone(EmailAuthBackend().authenticate(username=self.example_email('hamlet'),
+                                                             password=password,
+                                                             realm=get_realm("zulip")))
+
+        # Now do the same test with the empty string as the password.
+        password = ""
+        user_profile.set_password(password)
+        user_profile.save()
+        self.assertIsNone(EmailAuthBackend().authenticate(username=self.example_email('hamlet'),
+                                                          password=password,
+                                                          realm=get_realm("zulip")))
+
     def test_email_auth_backend_disabled_password_auth(self) -> None:
         user_profile = self.example_user('hamlet')
         password = "testpassword"

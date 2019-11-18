@@ -184,10 +184,14 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             form['password'].field.required = False
 
     if form.is_valid():
-        if password_auth_enabled(realm):
+        if password_auth_enabled(realm) and form['password'].field.required:
             password = form.cleaned_data['password']
         else:
-            # SSO users don't need no passwords
+            # If the user wasn't prompted for a password when
+            # completing the authentication form (because they're
+            # signing up with SSO and no password is required), set
+            # the password field to `None` (Which causes Django to
+            # create an unusable password).
             password = None
 
         if realm_creation:
