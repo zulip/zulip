@@ -294,9 +294,20 @@ server, and suggested procedure.
 
 ### Other useful manage.py commands
 
-There are a large number of useful management commands under
-`zerver/management/commands/`; you can also see them listed using
-`./manage.py` with no arguments.
+There are dozens of useful management commands under
+`zerver/management/commands/`.  We detail a few here:
+
+* `manage.py help`: Lists all available management commands.
+* `manage.py send_custom_email`: Can be used to send an email to a set
+  of users.  The `--help` documents how to run it from a `manage.py
+  shell` for use with more complex programmatically computed sets of
+  users.
+* `manage.py send_password_reset_email`: Sends password reset email(s)
+  to one or more users.
+* `manage.py change_user_email`: Change a user's email address.
+
+All of our management commands have internal documentation available
+via `manage.py command_name --help`.
 
 ## Hosting multiple Zulip organizations
 
