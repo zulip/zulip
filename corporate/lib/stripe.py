@@ -178,7 +178,7 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=Non
     # customer that we can delete or ignore.
     stripe_customer = stripe.Customer.create(
         description="%s (%s)" % (realm.string_id, realm.name),
-        email=user.email,
+        email=user.delivery_email,
         metadata={'realm_id': realm.id, 'realm_str': realm.string_id},
         source=stripe_token)
     event_time = timestamp_to_datetime(stripe_customer.created)
@@ -298,7 +298,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
             currency='usd',
             customer=customer.stripe_customer_id,
             description="Upgrade to Zulip Standard, ${} x {}".format(price_per_license/100, licenses),
-            receipt_email=user.email,
+            receipt_email=user.delivery_email,
             statement_descriptor='Zulip Standard')
         # Not setting a period start and end, but maybe we should? Unclear what will make things
         # most similar to the renewal case from an accounting perspective.
