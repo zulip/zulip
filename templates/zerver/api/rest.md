@@ -8,7 +8,8 @@ you can do in Zulip, you can do with Zulip's REST API.  To use this API:
   using the API to interact with
   your own account (e.g. exporting your personal message history).
 * Choose what language you'd like to use.  You can download the
-  [Python or JavaScript bindings](/api/installation-instructions), or
+  [Python or JavaScript bindings](/api/installation-instructions), projects in
+  [other languages](/api/client-libraries), or
   just make HTTP requests with your favorite programming language.  If
   you're making your own HTTP requests, you'll want to send the
   appropriate HTTP Basic Authentication headers; see each endpoint's
