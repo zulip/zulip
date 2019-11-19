@@ -60,6 +60,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
         }
         send_email(email_id, to_user_ids=[user_profile.id],
                    from_address=FromAddress.SUPPORT,
+                   reply_to_email=options.get("reply_to"),
                    from_name=options["from_name"], context=context)
 
 class Command(ZulipBaseCommand):
@@ -81,6 +82,9 @@ class Command(ZulipBaseCommand):
                             required=True,
                             type=str,
                             help='From line for the email')
+        parser.add_argument('--reply-to',
+                            type=str,
+                            help='Optional reply-to line for the email')
 
         self.add_user_list_args(parser,
                                 help="Email addresses of user(s) to send emails to.",
